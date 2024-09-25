@@ -1,0 +1,231 @@
+# Project information 
+site_name: "RTEU CE407 Secure Programming Course"
+docs_dir: docs  # Where to find the markdown files
+site_dir: site  # Where to output the HTML files
+site_author: 'Asst. Prof. Dr. Uğur CORUH'
+site_url: 'https://ucoruh.github.io/ce407-secure-programming/'
+site_description: 'Course Notes for Software Developers'
+
+# Repository
+repo_name: 'GitHub'
+repo_url: 'https://github.com/ucoruh/ce407-secure-programming'
+edit_uri: 'https://github.com/ucoruh/ce407-secure-programming/edit/main/docs/'
+
+# Copyright
+copyright: Copyright &copy; 2006 - 2024 Recep Tayyip Erdoğan University
+
+# Configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+
+  favicon: images/favicon.png
+
+  icon:
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+    logo: logo  # Adjust the file name if necessary
+  
+  # Don't include MkDocs' JavaScript
+  include_search_page: false
+  search_index_only: true
+  
+  # Static files  
+  static_templates:
+   - 404.html
+    
+  # Default values, taken from mkdocs_theme.yml
+  language: en
+  features:
+    - content.code.annotate
+    - content.tabs.link
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+
+  palette:
+    - scheme: default
+      primary: cyan
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+# Customization
+extra:
+  annotate:
+    json: [.s2]
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_RTEU_CE100
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >- 
+            Thanks for your feedback! Help us improve this page by
+            using our <a href="..." target=_blank>feedback form</a>.
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+    cookies:
+      analytics: Google Analytics
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ucoruh
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/ugurcoruh/
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/u/ucoruh/
+    - icon: fontawesome/regular/id-card
+      link: https://dblp.org/pid/230/0394.html
+    - icon: fontawesome/brands/orcid
+      link: https://orcid.org/my-orcid?orcid=0000-0003-4193-8401
+    - icon: fontawesome/brands/google
+      link: https://scholar.google.com/citations?user=KIU4ltMAAAAJ&hl=tr
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - abbr
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: ucoruh
+      repo: ce407-secure-programming
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - codehilite:
+      guess_lang: true
+
+# Plugins
+plugins:
+  - mkdocs-simple-hooks:
+      hooks:
+        on_env: "hooks:on_env"
+  - external-markdown
+  - mkdocs-video
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      reconfigure_search: true
+      fallback_to_default: true
+      languages:
+        - locale: en
+          name: "English"
+          build: true
+          default: true
+          site_name: "RTEU CE407 Secure Programming Course"
+        - locale: tr
+          name: "Türkçe"
+          build: true
+          site_name: "RTEU CE407 Güvenli Programlama Kursu"
+          nav_translations:
+            Home: "Anasayfa"
+            Syllabus: "Ders Programı"
+            Course Modules: "Ders Modülleri"
+            License: "Lisans"
+            Resume: "Özgeçmiş"
+            Changelog: "Revizyonlar"
+  - tags:
+      tags_file: tags.md
+  - minify:
+      minify_html: true
+      htmlmin_opts:
+        remove_comments: true
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+      type: timeago
+  - git-authors:
+      sort_authors_by: contribution
+  - git-committers:
+      repository: ucoruh/ce407-secure-programming
+      docs_path: docs/
+      branch: main
+      token: !ENV MKDOCS_GIT_COMMITTERS_APIKEY
+  - macros
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+# Page tree (for navigation)
+nav:
+  - Home: index.md
+  - Syllabus: syllabus/syllabus.md
+  - Course Modules:
+    - Week-1 (Introduction to Secure Programming): week-1/ce407-week-1.md
+    - Week-2 (Development Environment Security): week-2/ce407-week-2.md
+    - Week-3 (Whitebox Cryptography): week-3/ce407-week-3.md
+    - Week-4 (Security Certificates): week-4/ce407-week-4.md
+    - Week-5 (Penetration Testing): week-5/ce407-week-5.md
+    - Week-6 (Encryption Techniques): week-6/ce407-week-6.md
+    - Week-7 (Advanced Cryptography Methods): week-7/ce407-week-7.md
+    - Week-8 (Quiz 1 and Midterm): week-8/ce407-week-8.md
+    - Week-9 (Certificates and Cryptography): week-9/ce407-week-9.md
+    - Week-10 (Whitebox Cryptography): week-10/ce407-week-10.md
+    - Week-11 (Security Certifications): week-11/ce407-week-11.md
+    - Week-12 (Security Requirements): week-12/ce407-week-12.md
+    - Week-13 (Tigress and Diversification): week-13/ce407-week-13.md
+    #- Week-14 (Final Project Presentation): week-14/ce407-week-14.md
+  - License: license.md
+  - Resume: resume/index.md
+  - Changelog: changelog/index.md

@@ -66,7 +66,16 @@ ref_link: na
 
 #### Course Plan and Communication, Secure Programming, and Computer Viruses
 
-Download [PDF](cen429-week-1.en_doc.pdf), [DOCX](cen429-week-1.en_word.docx), [SLIDE](cen429-week-1.en_slide.pdf), [PPTX](cen429-week-1.en_slide.pptx)
+---
+
+Download 
+
+- [PDF](pandoc_cen429-week-1.en_doc.pdf)
+- [DOC](pandoc_cen429-week-1.en_word.docx)
+- [SLIDE](cen429-week-1.en_slide.pdf)
+- [PPTX](cen429-week-1.en_slide.pptx)
+
+---
 
 <iframe width=700, height=500 frameBorder=0 src="../cen429-week-1.en_slide.html"></iframe>
 

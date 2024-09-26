@@ -67,7 +67,14 @@ tags:
 
 ---
 
-İndir [PDF](pandoc_syllabus.tr_doc.pdf), [DOC](pandoc_syllabus.tr_word.docx)
+Download 
+
+- [PDF](pandoc_syllabus.tr_doc.pdf)
+- [DOC](pandoc_syllabus.tr_word.docx)
+- [SLIDE](syllabus.tr_slide.pdf)
+- [PPTX](syllabus.tr_slide.pptx)
+
+---
 
 <iframe width=700, height=500 frameBorder=0 src="../syllabus.tr_slide.html"></iframe>
 

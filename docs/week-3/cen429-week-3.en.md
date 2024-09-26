@@ -62,7 +62,17 @@ ref_link: na
 
 #### Data Security: In Use, In Transit, and At Rest
 
-Download [PDF](cen429-week-3.en_doc.pdf), [DOCX](cen429-week-3.en_word.docx), [SLIDE](cen429-week-3.en_slide.pdf), [PPTX](cen429-week-3.en_slide.pptx)
+---
+
+Download 
+
+- [PDF](pandoc_cen429-week-3.en_doc.pdf)
+- [DOC](pandoc_cen429-week-3.en_word.docx)
+- [SLIDE](cen429-week-3.en_slide.pdf)
+- [PPTX](cen429-week-3.en_slide.pptx)
+
+---
+
 
 <iframe width=700, height=500 frameBorder=0 src="../cen429-week-3.en_slide.html"></iframe>
 

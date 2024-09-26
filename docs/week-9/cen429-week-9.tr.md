@@ -62,7 +62,17 @@ ref_link: na
 
 #### Sertifikalar ve Şifreleme Yöntemleri
 
-İndir [PDF](cen429-week-9.tr_doc.pdf), [DOCX](cen429-week-9.tr_word.docx), [SLIDE](cen429-week-9.tr_slide.pdf), [PPTX](cen429-week-9.tr_slide.pptx)
+---
+
+İndir 
+
+- [PDF](pandoc_cen429-week-9.tr_doc.pdf)
+- [DOC](pandoc_cen429-week-9.tr_word.docx)
+- [SLIDE](cen429-week-9.tr_slide.pdf)
+- [PPTX](cen429-week-9.tr_slide.pptx)
+
+---
+
 
 <iframe width=700, height=500 frameBorder=0 src="../cen429-week-9.tr_slide.html"></iframe>
 

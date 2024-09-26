@@ -61,9 +61,18 @@ ref_link: na
 
 #### Security Certificates and Penetration Testing Plans
 
-Download [PDF](cen429-week-11.tr_doc.pdf), [DOCX](cen429-week-11.tr_word.docx), [SLIDE](cen429-week-11.tr_slide.pdf), [PPTX](cen429-week-11.tr_slide.pptx)
+---
 
-<iframe width=700, height=500 frameBorder=0 src="../cen429-week-11.tr_slide.html"></iframe>
+Download
+
+- [PDF](pandoc_cen429-week-11.en_doc.pdf)
+- [DOC](pandoc_cen429-week-11.en_word.docx)
+- [SLIDE](cen429-week-11.en_slide.pdf)
+- [PPTX](cen429-week-11.en_slide.pptx)
+
+---
+
+<iframe width=700, height=500 frameBorder=0 src="../cen429-week-11.en_slide.html"></iframe>
 
 ---
 

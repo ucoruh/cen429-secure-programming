@@ -60,7 +60,16 @@ ref_link: na
 
 #### Quiz 1 & Midterm Project Report Submission
 
-Download [PDF](cen429-week-8.en_doc.pdf), [DOCX](cen429-week-8.en_word.docx), [SLIDE](cen429-week-8.en_slide.pdf), [PPTX](cen429-week-8.en_slide.pptx)
+---
+
+İndir 
+
+- [PDF](pandoc_cen429-week-8.en_doc.pdf)
+- [DOC](pandoc_cen429-week-8.en_word.docx)
+- [SLIDE](cen429-week-8.en_slide.pdf)
+- [PPTX](cen429-week-8.en_slide.pptx)
+
+---
 
 <iframe width=700, height=500 frameBorder=0 src="../cen429-week-8.en_slide.html"></iframe>
 

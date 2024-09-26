@@ -73,7 +73,7 @@ extra:
     json: [.s2]
   analytics:
     provider: google
-    property: !ENV GOOGLE_ANALYTICS_RTEU_CE100
+    property: !ENV GOOGLE_ANALYTICS_RTEU_CE407
     feedback:
       title: Was this page helpful?
       ratings:
@@ -197,7 +197,7 @@ plugins:
   - git-authors:
       sort_authors_by: contribution
   - git-committers:
-      repository: ucoruh/cen429-secure-programming
+      repository: ucoruh/ce407-secure-programming
       docs_path: docs/
       branch: main
       token: !ENV MKDOCS_GIT_COMMITTERS_APIKEY

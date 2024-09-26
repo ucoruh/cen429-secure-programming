@@ -61,9 +61,19 @@ ref_link: na
 
 #### Whitebox Cryptography
 
-Download [PDF](cen429-week-10.tr_doc.pdf), [DOCX](cen429-week-10.tr_word.docx), [SLIDE](cen429-week-10.tr_slide.pdf), [PPTX](cen429-week-10.tr_slide.pptx)
+---
 
-<iframe width=700, height=500 frameBorder=0 src="../cen429-week-10.tr_slide.html"></iframe>
+Download 
+
+- [PDF](pandoc_cen429-week-10.en_doc.pdf)
+- [DOC](pandoc_cen429-week-10.en_word.docx)
+- [SLIDE](cen429-week-10.en_slide.pdf)
+- [PPTX](cen429-week-10.en_slide.pptx)
+
+---
+
+
+<iframe width=700, height=500 frameBorder=0 src="../cen429-week-10.en_slide.html"></iframe>
 
 ---
 

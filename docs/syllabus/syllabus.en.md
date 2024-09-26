@@ -69,14 +69,14 @@ tags:
 
 Download 
 
-- [PDF](pandoc_syllabus.en_doc.pdf)
-- [DOC](pandoc_syllabus.en_word.docx)
-- [SLIDE](syllabus.en_slide.pdf)
-- [PPTX](syllabus.en_slide.pptx)
+- [PDF](pandoc_syllabus.pdf)
+- [DOC](pandoc_syllabus.docx)
+- [SLIDE](syllabus.pdf)
+- [PPTX](syllabus.pptx)
 
 ---
 
-<iframe width=700, height=500 frameBorder=0 src="../syllabus.en_slide.html"></iframe>
+<iframe width=700, height=500 frameBorder=0 src="../syllabus.html"></iframe>
 
 ---
 

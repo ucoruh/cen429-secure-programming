@@ -22,7 +22,7 @@ for /r %%# in (mkdocs_* pandoc_* panppt_*) do (
 echo All mkdocs_* files deleted, building again
 
 rem Delete any remaining mkdocs_ folders
-for /r %%# in (*_slide.pdf *_slide.html *_slide.pptx *_word.pptx) do (
+for /r %%# in (*.slide.pdf *.slide.html *.slide.pptx *.word.pptx) do (
     del "%%#"
     echo "%%~nx#" deleted.
 )

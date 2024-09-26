@@ -66,15 +66,15 @@ ref_link: na
 
 İndir 
 
-- [PDF](pandoc_cen429-week-9.tr_doc.pdf)
-- [DOC](pandoc_cen429-week-9.tr_word.docx)
-- [SLIDE](cen429-week-9.tr_slide.pdf)
-- [PPTX](cen429-week-9.tr_slide.pptx)
+- [PDF](pandoc_cen429-week-9.pdf)
+- [DOC](pandoc_cen429-week-9.docx)
+- [SLIDE](cen429-week-9.pdf)
+- [PPTX](cen429-week-9.pptx)
 
 ---
 
 
-<iframe width=700, height=500 frameBorder=0 src="../cen429-week-9.tr_slide.html"></iframe>
+<iframe width=700, height=500 frameBorder=0 src="../cen429-week-9.html"></iframe>
 
 ---
 

@@ -1,1 +1,1 @@
-start "" "https://rteu-ceng.github.io/rteu-internship-guideline/"
+start "" "https://ucoruh.github.io/cen429-secure-programming/"

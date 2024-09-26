@@ -29,14 +29,14 @@ for /r %%# in (mkdocs_*) do (
 echo Deleting files generated with mkdocs_***.md 
 
 rem Delete any remaining mkdocs_ folders
-for /r %%# in (mkdocs_*_slide.pdf mkdocs_*_slide.html mkdocs_*_slide.pptx mkdocs_*_word.pptx) do (
+for /r %%# in (mkdocs_*.slide.pdf mkdocs_*.slide.html mkdocs_*.slide.pptx mkdocs_*.word.pptx) do (
     del "%%#"
 	echo "%%~i" deleted.
 )
 
 echo All mkdocs_* related files deleted, building again
 
-java -jar markdown-slide-converter-0.0.1-SNAPSHOT-jar-with-dependencies.jar --mergefolder docs
+java -jar markdown-slide-converter.jar --mergefolder docs
 
 echo Revert to the original directory
 cd "%currentDir%"

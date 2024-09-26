@@ -65,14 +65,14 @@ ref_link: na
 
 Download
 
-- [PDF](pandoc_cen429-week-12.en_doc.pdf)
-- [DOC](pandoc_cen429-week-12.en_word.docx)
-- [SLIDE](cen429-week-12.en_slide.pdf)
-- [PPTX](cen429-week-12.en_slide.pptx)
+- [PDF](pandoc_cen429-week-12.pdf)
+- [DOC](pandoc_cen429-week-12.docx)
+- [SLIDE](cen429-week-12.pdf)
+- [PPTX](cen429-week-12.pptx)
 
 ---
 
-<iframe width=700, height=500 frameBorder=0 src="../cen429-week-12.en_slide.html"></iframe>
+<iframe width=700, height=500 frameBorder=0 src="../cen429-week-12.html"></iframe>
 
 ---
 

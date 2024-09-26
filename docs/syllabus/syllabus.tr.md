@@ -218,25 +218,29 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
 
 ---
 
-- **Güvenlik Sertifikasyonları ve Penetrasyon Testi Planlama**
+- **Güvenlik Sertifikaları ve Sızma Testi Planlaması**
   
   - ETSI ve EMV güvenlik standartları
-  - Penetrasyon testi planlama
+  - Sızma testi planlaması
   - PCI DSS ve ISO 27001 güvenlik testleri
 
 ---
 
-- **Ara Proje Rapor Teslimi**
+- **Güvenlik Gereksinimleri**
   
-  - Proje ilerlemesi ve rapor sunumu
+  - ETSI, GSMA ve EMV Güvenlik Gereksinimleri
+  - EAL Gereksinimleri
+  - FIPS Gereksinimleri
 
 ---
 
-- **Gerçek Dünya Vaka Çalışmaları**
+- **Tigress ve Çeşitlendirme**
   
-  - Mobil ve masaüstü uygulama güvenliği
-  - Çok katmanlı savunma uygulamaları
-  - Uygulamalı penetrasyon testleri
+  - Tigress ve Çeşitlendirme Teknikleri
+  
+  - Bulanıklaştırma (Obfuscation) Yöntemleri
+  
+  - Saldırılara Karşı Savunma
 
 ---
 
@@ -409,8 +413,8 @@ Gerektiğinde ders içeriği ve programda değişiklik yapılabilir. Herhangi bi
 
 | **Hafta**     | **Tarih**      | **Konu**                          | **Diğer Görevler**   |
 | ------------- | -------------- | --------------------------------- | -------------------- |
-| **12. Hafta** | 12 Aralık 2024 | Ara Proje Rapor Teslimi           | Ara Proje Raporu     |
-| **13. Hafta** | 19 Aralık 2024 | Gerçek Dünya Vaka Çalışmaları     |                      |
+| **12. Hafta** | 12 Aralık 2024 | Güvenlik Gereksinimleri           |                      |
+| **13. Hafta** | 19 Aralık 2024 | Tigress ve Çeşitlendirme          |                      |
 | **14. Hafta** | 26 Aralık 2024 | **Quiz 2**                        | Quiz 2               |
 | **15. Hafta** | 2 Ocak 2025    | **Final Proje Teslimi ve Sunumu** | Final Proje ve Sunum |
 
@@ -422,4 +426,4 @@ Gerektiğinde ders içeriği ve programda değişiklik yapılabilir. Herhangi bi
 
 ---
 
-$End-Of-Syllabus$
+$Ders-İzlence-Sonu$

@@ -226,17 +226,23 @@ After successfully completing this course, a student will be able to:
 
 ---
 
-- **Midterm Project Report Submission**
+
+
+- **Security Requirements**
   
-  - Project progress and report presentation
+  - ETSI,GSMA and EMV Security Requirements
+  - EAL Requirements
+  - FIPS Requirements
 
 ---
 
-- **Real-World Case Studies**
+- **Tigress and Diversification**
   
-  - Mobile and desktop application security
-  - Multi-layered defense implementations
-  - Applied penetration testing scenarios
+  - Tigress and Diversification Techniques
+  
+  - Obfuscation Methods
+  
+  - Defense Against Attacks
 
 ---
 
@@ -409,8 +415,8 @@ The course content and schedule may be updated as needed. Any changes will be co
 
 | **Week**     | **Date**         | **Topic**                                     | **Other Tasks**                |
 | ------------ | ---------------- | --------------------------------------------- | ------------------------------ |
-| **12. Week** | 12 December 2024 | Midterm Project Report Submission             | Midterm Project Report         |
-| **13. Week** | 19 December 2024 | Real-World Case Studies                       |                                |
+| **12. Week** | 12 December 2024 | Security Requirements                         |                                |
+| **13. Week** | 19 December 2024 | Tigress and Diversification                   |                                |
 | **14. Week** | 26 December 2024 | **Quiz 2**                                    | Quiz 2                         |
 | **15. Week** | 2 January 2025   | **Final Project Submission and Presentation** | Final Project and Presentation |
 

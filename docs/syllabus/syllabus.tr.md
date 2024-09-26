@@ -11,9 +11,9 @@ _class: lead
 paginate: true
 backgroundColor: #fff
 backgroundImage: url('https://marp.app/assets/hero-background.svg')
-header: 'CE407 Güvenli Programlama Dersi İzlencesi'
-footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CE407 İzlence'
-title: "CE407 Güvenli Programlama"
+header: 'CEN429 Güvenli Programlama Dersi İzlencesi'
+footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CEN429 İzlence'
+title: "CEN429 Güvenli Programlama"
 author: "Ders Sorumlusu: Dr. Öğr. Üyesi Uğur CORUH"
 date:
 subtitle: "Detaylı Ders İzlencesi"
@@ -43,10 +43,10 @@ subparagraph: true
 lang: tr-TR 
 math: katex
 tags:
-  - ce407-syllabus
+  - cen429-syllabus
   - güvenli-programlama
   - fall-2024
-  - ce407
+  - cen429
 ---
 
 <!-- _backgroundColor: aquq -->
@@ -61,15 +61,15 @@ tags:
 
 ### Mühendislik ve Mimarlık Fakültesi, Bilgisayar Mühendisliği
  
-### CE407 - Güvenli Programlama Ders İzlencesi
+### CEN429 - Güvenli Programlama Ders İzlencesi
 
 #### Güz Dönemi, 2024-2025
 
 ---
 
-Download [DOC](syllabus.en.md_doc.pdf), [SLIDE](syllabus.en.md_slide.pdf), [PPTX](syllabus.en.md_slide.pptx)
+İndir [PDF](pandoc_syllabus.tr_doc.pdf), [DOC](pandoc_syllabus.tr_word.docx)
 
-<iframe width=700, height=500 frameBorder=0 src="../syllabus.en.md_slide.html"></iframe>
+<iframe width=700, height=500 frameBorder=0 src="../syllabus.tr_slide.html"></iframe>
 
 ---
 
@@ -88,7 +88,7 @@ Download [DOC](syllabus.en.md_doc.pdf), [SLIDE](syllabus.en.md_slide.pdf), [PPTX
 
 | **Derslik**       | İBBF 402 4. Kat veya Online Google Meet / Microsoft Teams                                                                                                                                                                                                                                                            |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ofis Saatleri** | Toplantılar Google Meet veya Microsoft Teams üzerinden üniversite hesabınız ve e-posta adresiniz kullanılarak yapılacaktır. Talep doğrultusunda e-posta ile planlanacaktır. Daha hızlı yanıt almak için e-posta konu başlığının *[CE407]* etiketiyle başlamasına özen gösterin ve resmi, net, kısa e-postalar yazın. |
+| **Ofis Saatleri** | Toplantılar Google Meet veya Microsoft Teams üzerinden üniversite hesabınız ve e-posta adresiniz kullanılarak yapılacaktır. Talep doğrultusunda e-posta ile planlanacaktır. Daha hızlı yanıt almak için e-posta konu başlığının *[CEN429]* etiketiyle başlamasına özen gösterin ve resmi, net, kısa e-postalar yazın. |
 
 
 

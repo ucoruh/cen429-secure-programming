@@ -11,9 +11,9 @@ _class: lead
 paginate: true
 backgroundColor: #fff
 backgroundImage: url('https://marp.app/assets/hero-background.svg')
-header: 'CE407 Secure Programming Course Syllabus'
-footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CE407 Syllabus'
-title: "CE407 Secure Programming"
+header: 'CEN429 Secure Programming Course Syllabus'
+footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CEN429 Syllabus'
+title: "CEN429 Secure Programming"
 author: "Instructor: Asst. Prof. Dr. Uğur CORUH"
 date:
 subtitle: "Detailed Course Syllabus"
@@ -43,10 +43,10 @@ subparagraph: true
 lang: en-US 
 math: katex
 tags:
-  - ce407-syllabus
+  - cen429-syllabus
   - secure-programming
   - fall-2024
-  - ce407
+  - cen429
 ---
 
 <!-- _backgroundColor: aquq -->
@@ -61,15 +61,15 @@ tags:
 
 ### Faculty of Engineering and Architecture, Computer Engineering
  
-### CE407 - Secure Programming Course Syllabus
+### CEN429 - Secure Programming Course Syllabus
 
 #### Fall Semester, 2024-2025
 
 ---
 
-Download [DOC](syllabus.en.md_doc.pdf), [SLIDE](syllabus.en.md_slide.pdf), [PPTX](syllabus.en.md_slide.pptx)
+Download [PDF](pandoc_syllabus.en_doc.pdf), [DOC](pandoc_syllabus.en_word.docx), [SLIDE](syllabus.en_slide.pdf)
 
-<iframe width=700, height=500 frameBorder=0 src="../syllabus.en.md_slide.html"></iframe>
+<iframe width=700, height=500 frameBorder=0 src="../syllabus.en_slide.html"></iframe>
 
 ---
 
@@ -87,7 +87,7 @@ Download [DOC](syllabus.en.md_doc.pdf), [SLIDE](syllabus.en.md_slide.pdf), [PPTX
 
 | **Lecture Classroom**       | IBBF 402 4th Floor or Online via Google Meet / Microsoft Teams                                                                 |
 | ----------------------------| ----------------------------------------------------------------------------------------------------------------------------- |
-| **Office Hours**            | Meetings will be scheduled via Google Meet or Microsoft Teams using your university account and email. Email requests for meetings are required. To receive a faster response, ensure your email subject begins with *[CE407]*, and write clear, concise, formal emails. |
+| **Office Hours**            | Meetings will be scheduled via Google Meet or Microsoft Teams using your university account and email. Email requests for meetings are required. To receive a faster response, ensure your email subject begins with *[CEN429]*, and write clear, concise, formal emails. |
 
 
 ---

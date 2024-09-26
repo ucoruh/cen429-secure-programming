@@ -1,15 +1,15 @@
 # Project information 
-site_name: "RTEU CE407 Secure Programming Course"
+site_name: "RTEU CEN429 Secure Programming Course"
 docs_dir: docs  # Where to find the markdown files
 site_dir: site  # Where to output the HTML files
 site_author: 'Asst. Prof. Dr. Uğur CORUH'
-site_url: 'https://ucoruh.github.io/ce407-secure-programming/'
+site_url: 'https://ucoruh.github.io/cen429-secure-programming/'
 site_description: 'Course Notes for Software Developers'
 
 # Repository
 repo_name: 'GitHub'
-repo_url: 'https://github.com/ucoruh/ce407-secure-programming'
-edit_uri: 'https://github.com/ucoruh/ce407-secure-programming/edit/main/docs/'
+repo_url: 'https://github.com/ucoruh/cen429-secure-programming'
+edit_uri: 'https://github.com/ucoruh/cen429-secure-programming/edit/main/docs/'
 
 # Copyright
 copyright: Copyright &copy; 2006 - 2024 Recep Tayyip Erdoğan University
@@ -138,7 +138,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       repo_url_shorthand: true
       user: ucoruh
-      repo: ce407-secure-programming
+      repo: cen429-secure-programming
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences:
@@ -173,11 +173,11 @@ plugins:
           name: "English"
           build: true
           default: true
-          site_name: "RTEU CE407 Secure Programming Course"
+          site_name: "RTEU CEN429 Secure Programming Course"
         - locale: tr
           name: "Türkçe"
           build: true
-          site_name: "RTEU CE407 Güvenli Programlama Kursu"
+          site_name: "RTEU CEN429 Güvenli Programlama Kursu"
           nav_translations:
             Home: "Anasayfa"
             Syllabus: "Ders Programı"
@@ -197,7 +197,7 @@ plugins:
   - git-authors:
       sort_authors_by: contribution
   - git-committers:
-      repository: ucoruh/ce407-secure-programming
+      repository: ucoruh/cen429-secure-programming
       docs_path: docs/
       branch: main
       token: !ENV MKDOCS_GIT_COMMITTERS_APIKEY
@@ -212,20 +212,21 @@ nav:
   - Home: index.md
   - Syllabus: syllabus/syllabus.md
   - Course Modules:
-    - Week-1 (Introduction to Secure Programming): week-1/ce407-week-1.md
-    - Week-2 (Development Environment Security): week-2/ce407-week-2.md
-    - Week-3 (Whitebox Cryptography): week-3/ce407-week-3.md
-    - Week-4 (Security Certificates): week-4/ce407-week-4.md
-    - Week-5 (Penetration Testing): week-5/ce407-week-5.md
-    - Week-6 (Encryption Techniques): week-6/ce407-week-6.md
-    - Week-7 (Advanced Cryptography Methods): week-7/ce407-week-7.md
-    - Week-8 (Quiz 1 and Midterm): week-8/ce407-week-8.md
-    - Week-9 (Certificates and Cryptography): week-9/ce407-week-9.md
-    - Week-10 (Whitebox Cryptography): week-10/ce407-week-10.md
-    - Week-11 (Security Certifications): week-11/ce407-week-11.md
-    - Week-12 (Security Requirements): week-12/ce407-week-12.md
-    - Week-13 (Tigress and Diversification): week-13/ce407-week-13.md
-    #- Week-14 (Final Project Presentation): week-14/ce407-week-14.md
+    - Week-1 (Introduction to Secure Programming): week-1/cen429-week-1.md
+    - Week-2 (Development Environment Security): week-2/cen429-week-2.md
+    - Week-3 (Whitebox Cryptography): week-3/cen429-week-3.md
+    - Week-4 (Security Certificates): week-4/cen429-week-4.md
+    - Week-5 (Penetration Testing): week-5/cen429-week-5.md
+    - Week-6 (Encryption Techniques): week-6/cen429-week-6.md
+    - Week-7 (Advanced Cryptography Methods): week-7/cen429-week-7.md
+    - Week-8 (Quiz 1 and Project Report): week-8-quiz-report/cen429-week-8.md
+    - Week-9 (Certificates and Cryptography): week-9/cen429-week-9.md
+    - Week-10 (Whitebox Cryptography): week-10/cen429-week-10.md
+    - Week-11 (Security Certifications): week-11/cen429-week-11.md
+    - Week-12 (Security Requirements): week-12/cen429-week-12.md
+    - Week-13 (Tigress and Diversification): week-13/cen429-week-13.md
+    - Week-14 (Quiz 2): week-14-quiz/cen429-week-14.md
+    - Week-15 (Final Project Presentation): week-15-project/cen429-week-15.md
   - License: license.md
   - Resume: resume/index.md
   - Changelog: changelog/index.md

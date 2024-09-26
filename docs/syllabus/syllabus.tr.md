@@ -60,7 +60,7 @@ tags:
 ## Recep Tayyip Erdoğan Üniversitesi
 
 ### Mühendislik ve Mimarlık Fakültesi, Bilgisayar Mühendisliği
- 
+
 ### CEN429 - Güvenli Programlama Ders İzlencesi
 
 #### Güz Dönemi, 2024-2025
@@ -86,28 +86,25 @@ Download
 | -------------------------- | ---------------------------------------- |
 | **İletişim Bilgileri:**    | ugur.coruh@erdogan.edu.tr                |
 | **Ofis No:**               | F-301                                    |
-| **Google Classroom Code**  | ?????????                                |
-| **Microsoft Teams Code**   | ?????????                                |
+| **Google Classroom Code**  | Kullanılmıyor                            |
+| **Microsoft Teams Code**   | zk6388k                                  |
 | **Lecture Hours and Days** | Perşembe, 13:00 - 15:00 İBBF 402, 4. Kat |
 
 ---
 
-
-| **Derslik**       | İBBF 402 4. Kat veya Online Google Meet / Microsoft Teams                                                                                                                                                                                                                                                            |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Derslik**       | İBBF 402 4. Kat veya Online Google Meet / Microsoft Teams                                                                                                                                                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Ofis Saatleri** | Toplantılar Google Meet veya Microsoft Teams üzerinden üniversite hesabınız ve e-posta adresiniz kullanılarak yapılacaktır. Talep doğrultusunda e-posta ile planlanacaktır. Daha hızlı yanıt almak için e-posta konu başlığının *[CEN429]* etiketiyle başlamasına özen gösterin ve resmi, net, kısa e-postalar yazın. |
-
-
 
 ---
 
-| **Lecture and Communication Language**     | English                             |
-| ------------------------------------------ | ----------------------------------- |
-| **Theory Course Hour Per Week** 			 | 3 Hours                             |
-| **Credit**                                 | ?????                               |
-| **Prerequisite**                           | CE103- Algorithms and Programming I |
-| **Corequisite**                            | TBD                                 |
-| **Requirement**                            | TBD                                 |
+| **Lecture and Communication Language** | English                             |
+| -------------------------------------- | ----------------------------------- |
+| **Theory Course Hour Per Week**        | 3 Hours                             |
+| **Credit**                             | ?????                               |
+| **Prerequisite**                       | CE103- Algorithms and Programming I |
+| **Corequisite**                        | TBD                                 |
+| **Requirement**                        | TBD                                 |
 
 *TBD: To Be Defined.
 
@@ -179,6 +176,7 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Gelişmiş ProGuard kuralları
 
 ---
+
 - **Çalışma Zamanı Uygulama Kendini Koruma (RASP) Teknikleri (C/C++)**
   
   - Root tespiti ve APK imzalama kontrolü
@@ -187,6 +185,7 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Dinamik analiz araçlarına karşı koruma
 
 ---
+
 - **Gelişmiş Kod Karıştırma ve Çeşitlendirme Teknikleri**
   
   - Dinamik kontrol akışı karıştırma
@@ -195,12 +194,14 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Dinamik fonksiyon çağrıları ve çalışma zamanı optimizasyonları
 
 ---
+
 - **Quiz 1 + Ara Proje Rapor Teslimi**
   
   - İlk 7 hafta konularını kapsayan quiz
   - Ara proje rapor teslimi
 
 ---
+
 - **Sertifikalar ve Şifreleme Yöntemleri (AES, RSA, PKI)**
   
   - AES ve RSA şifreleme
@@ -208,6 +209,7 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Dijital imza ve sertifika oluşturma
 
 ---
+
 - **Whitebox Kriptografi**
   
   - Whitebox AES ve DES uygulamaları
@@ -215,6 +217,7 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Yazılım tabanlı güvenlik çözümleri
 
 ---
+
 - **Güvenlik Sertifikasyonları ve Penetrasyon Testi Planlama**
   
   - ETSI ve EMV güvenlik standartları
@@ -222,11 +225,13 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - PCI DSS ve ISO 27001 güvenlik testleri
 
 ---
+
 - **Ara Proje Rapor Teslimi**
   
   - Proje ilerlemesi ve rapor sunumu
 
 ---
+
 - **Gerçek Dünya Vaka Çalışmaları**
   
   - Mobil ve masaüstü uygulama güvenliği
@@ -234,11 +239,13 @@ Bu dersi başarıyla tamamlayan bir öğrenci:
   - Uygulamalı penetrasyon testleri
 
 ---
+
 - **Quiz 2**
   
   - İkinci quiz, önceki haftalardaki konuları kapsar
 
 ---
+
 - **Final Proje Teslimi ve Sunumu**
   
   - Final proje raporu ve sunumu
@@ -270,7 +277,6 @@ Dönem boyunca 1 adet Proje ve 2 adet yazılı Quiz olacaksınız. Vize zamanı 
 | Proje Final Raporu       | RAP2     | %70  | Final  |
 | Quiz-2                   | QUIZ2    | %30  | Final  |
 
-
 $$
 Not_{Vize} = 0.6RAP1 + 0.4QUIZ1
 $$
@@ -289,13 +295,11 @@ $$
 
 Dersler yüz yüze yapılacak olup, destekleyici materyaller ve duyurular Google Classroom veya Microsoft Teams üzerinden paylaşılacaktır. Salgına bağlı bir uzaktan eğitim gereksinimi oluşması durumunda, ders senkron ve asenkron uzaktan eğitim yöntemleri ile yürütülecektir.
 
-
 ---
 
 ## G. Geç Teslim
 
 Ödev ve projelerin belirlenen tarihlerde teslim edilmesi gerekmektedir. Geç teslimler kabul edilmeyecektir. Beklenmedik durumlar en kısa sürede dersin sorumlusuna bildirilmelidir.
-
 
 ---
 
@@ -367,51 +371,48 @@ Derslere zamanında katılmanız ve dönem boyunca haftalık ders gereksinimleri
 
 Gerektiğinde ders içeriği ve programda değişiklik yapılabilir. Herhangi bir değişiklik durumunda dersin sorumlusu, öğrencileri bilgilendirecektir.
 
+---
+
+### C. Haftalık Ders Planı
+
+| **Hafta**    | **Tarih**     | **Konu**                                             | **Diğer Görevler** |
+| ------------ | ------------- | ---------------------------------------------------- | ------------------ |
+| **1. Hafta** | 26 Eylül 2024 | Güvenli Programlamaya Giriş ve Uygulama Koruma Planı |                    |
+| **2. Hafta** | 3 Ekim 2024   | Bilgisayar Virüsleri ve Güvenlik Modelleri           |                    |
+| **3. Hafta** | 10 Ekim 2024  | Veri Güvenliği: Aktarımda, Depolamada ve Kullanımda  |                    |
 
 ---
 
 ### C. Haftalık Ders Planı
 
-| **Hafta**     | **Tarih**      | **Konu**                                                         | **Diğer Görevler**       |
-| ------------- | -------------- | ---------------------------------------------------------------- | ------------------------ |
-| **1. Hafta**  | 26 Eylül 2024  | Güvenli Programlamaya Giriş ve Uygulama Koruma Planı             |                          |
-| **2. Hafta**  | 3 Ekim 2024    | Bilgisayar Virüsleri ve Güvenlik Modelleri                       |                          |
-| **3. Hafta**  | 10 Ekim 2024   | Veri Güvenliği: Aktarımda, Depolamada ve Kullanımda              |                          |
-
-
----
-
-### C. Haftalık Ders Planı
-
-| **Hafta**     | **Tarih**      | **Konu**                                                         | **Diğer Görevler**       |
-| ------------- | -------------- | ---------------------------------------------------------------- | ------------------------ |
-| **4. Hafta**  | 17 Ekim 2024   | Kod Sertleştirme Teknikleri (C/C++)                              |                          |
-| **5. Hafta**  | 24 Ekim 2024   | Kod Sertleştirme Teknikleri (Java/Yorumlanan Diller)             |                          |
-| **6. Hafta**  | 31 Ekim 2024   | Çalışma Zamanı Uygulama Kendini Koruma (RASP) Teknikleri (C/C++) |                          |
-| **7. Hafta**  | 7 Kasım 2024   | Gelişmiş Kod Karıştırma ve Çeşitlendirme Teknikleri              |                          |
+| **Hafta**    | **Tarih**    | **Konu**                                                         | **Diğer Görevler** |
+| ------------ | ------------ | ---------------------------------------------------------------- | ------------------ |
+| **4. Hafta** | 17 Ekim 2024 | Kod Sertleştirme Teknikleri (C/C++)                              |                    |
+| **5. Hafta** | 24 Ekim 2024 | Kod Sertleştirme Teknikleri (Java/Yorumlanan Diller)             |                    |
+| **6. Hafta** | 31 Ekim 2024 | Çalışma Zamanı Uygulama Kendini Koruma (RASP) Teknikleri (C/C++) |                    |
+| **7. Hafta** | 7 Kasım 2024 | Gelişmiş Kod Karıştırma ve Çeşitlendirme Teknikleri              |                    |
 
 ---
 
 ### C. Haftalık Ders Planı
 
-| **Hafta**     | **Tarih**      | **Konu**                                                         | **Diğer Görevler**       |
-| ------------- | -------------- | ---------------------------------------------------------------- | ------------------------ |
-| **8. Hafta**  | 14 Kasım 2024  | **Quiz 1 + Ara Proje Rapor Teslimi**                             | Quiz ve Ara Proje Raporu |
-| **9. Hafta**  | 21 Kasım 2024  | Sertifikalar ve Şifreleme Yöntemleri (AES, RSA, PKI)             |                          |
-| **10. Hafta** | 28 Kasım 2024  | Whitebox Kriptografi                                             |                          |
-| **11. Hafta** | 5 Aralık 2024  | Güvenlik Sertifikasyonları ve Penetrasyon Testi Planlama         |                          |
+| **Hafta**     | **Tarih**     | **Konu**                                                 | **Diğer Görevler**       |
+| ------------- | ------------- | -------------------------------------------------------- | ------------------------ |
+| **8. Hafta**  | 14 Kasım 2024 | **Quiz 1 + Ara Proje Rapor Teslimi**                     | Quiz ve Ara Proje Raporu |
+| **9. Hafta**  | 21 Kasım 2024 | Sertifikalar ve Şifreleme Yöntemleri (AES, RSA, PKI)     |                          |
+| **10. Hafta** | 28 Kasım 2024 | Whitebox Kriptografi                                     |                          |
+| **11. Hafta** | 5 Aralık 2024 | Güvenlik Sertifikasyonları ve Penetrasyon Testi Planlama |                          |
 
 ---
 
 ### C. Haftalık Ders Planı
 
-| **Hafta**     | **Tarih**      | **Konu**                                                         | **Diğer Görevler**       |
-| ------------- | -------------- | ---------------------------------------------------------------- | ------------------------ |
-| **12. Hafta** | 12 Aralık 2024 | Ara Proje Rapor Teslimi                                          | Ara Proje Raporu         |
-| **13. Hafta** | 19 Aralık 2024 | Gerçek Dünya Vaka Çalışmaları                                    |                          |
-| **14. Hafta** | 26 Aralık 2024 | **Quiz 2**                                                       | Quiz 2                   |
-| **15. Hafta** | 2 Ocak 2025    | **Final Proje Teslimi ve Sunumu**                                | Final Proje ve Sunum     |
-
+| **Hafta**     | **Tarih**      | **Konu**                          | **Diğer Görevler**   |
+| ------------- | -------------- | --------------------------------- | -------------------- |
+| **12. Hafta** | 12 Aralık 2024 | Ara Proje Rapor Teslimi           | Ara Proje Raporu     |
+| **13. Hafta** | 19 Aralık 2024 | Gerçek Dünya Vaka Çalışmaları     |                      |
+| **14. Hafta** | 26 Aralık 2024 | **Quiz 2**                        | Quiz 2               |
+| **15. Hafta** | 2 Ocak 2025    | **Final Proje Teslimi ve Sunumu** | Final Proje ve Sunum |
 
 ---
 

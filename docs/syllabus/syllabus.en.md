@@ -60,7 +60,7 @@ tags:
 ## Recep Tayyip Erdoğan University
 
 ### Faculty of Engineering and Architecture, Computer Engineering
- 
+
 ### CEN429 - Secure Programming Course Syllabus
 
 #### Fall Semester, 2024-2025
@@ -82,30 +82,29 @@ Download
 
 <!-- paginate: true -->
 
-| Instructor:                | Asst. Prof. Dr. Uğur CORUH              |
-| -------------------------- | ---------------------------------------- |
-| **Contact Information:**   | ugur.coruh@erdogan.edu.tr                |
-| **Office No:**             | F-301                                    |
-| **Google Classroom Code**  | ?????????                                |
-| **Microsoft Teams Code**   | ?????????                                |
+| Instructor:                | Asst. Prof. Dr. Uğur CORUH                  |
+| -------------------------- | ------------------------------------------- |
+| **Contact Information:**   | ugur.coruh@erdogan.edu.tr                   |
+| **Office No:**             | F-301                                       |
+| **Google Classroom Code**  | Not Used                                    |
+| **Microsoft Teams Code**   | zk6388k                                     |
 | **Lecture Hours and Days** | Thursday, 13:00 - 15:00 IBBF 402, 4th Floor |
 
 ---
 
-| **Lecture Classroom**       | IBBF 402 4th Floor or Online via Google Meet / Microsoft Teams                                                                 |
-| ----------------------------| ----------------------------------------------------------------------------------------------------------------------------- |
-| **Office Hours**            | Meetings will be scheduled via Google Meet or Microsoft Teams using your university account and email. Email requests for meetings are required. To receive a faster response, ensure your email subject begins with *[CEN429]*, and write clear, concise, formal emails. |
-
+| **Lecture Classroom** | IBBF 402 4th Floor or Online via Google Meet / Microsoft Teams                                                                                                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Office Hours**      | Meetings will be scheduled via Google Meet or Microsoft Teams using your university account and email. Email requests for meetings are required. To receive a faster response, ensure your email subject begins with *[CEN429]*, and write clear, concise, formal emails. |
 
 ---
 
-| **Lecture and Communication Language**     | English                             |
-| ------------------------------------------ | ----------------------------------- |
-| **Theory Course Hour Per Week** 			 | 3 Hours                             |
-| **Credit**                                 | ?????                               |
-| **Prerequisite**                           | CE103- Algorithms and Programming I |
-| **Corequisite**                            | TBD                                 |
-| **Requirement**                            | TBD                                 |
+| **Lecture and Communication Language** | English                             |
+| -------------------------------------- | ----------------------------------- |
+| **Theory Course Hour Per Week**        | 3 Hours                             |
+| **Credit**                             | ?????                               |
+| **Prerequisite**                       | CE103- Algorithms and Programming I |
+| **Corequisite**                        | TBD                                 |
+| **Requirement**                        | TBD                                 |
 
 *TBD: To Be Defined.
 
@@ -271,12 +270,12 @@ You will complete one project and two written quizzes throughout the semester. Y
 
 ---
 
-| Assessment                  | Code  | Weight | Scope  |
-| ----------------------------| ----- | ------ | ------ |
-| Midterm Project Report       | RAP1  | 60%    | Midterm |
-| Quiz-1                       | QUIZ1 | 40%    | Midterm |
-| Final Project Report         | RAP2  | 70%    | Final  |
-| Quiz-2                       | QUIZ2 | 30%    | Final  |
+| Assessment             | Code  | Weight | Scope   |
+| ---------------------- | ----- | ------ | ------- |
+| Midterm Project Report | RAP1  | 60%    | Midterm |
+| Quiz-1                 | QUIZ1 | 40%    | Midterm |
+| Final Project Report   | RAP2  | 70%    | Final   |
+| Quiz-2                 | QUIZ2 | 30%    | Final   |
 
 $$
 Grade_{Midterm} = 0.6 RAP1 + 0.4 QUIZ1
@@ -376,45 +375,44 @@ The course content and schedule may be updated as needed. Any changes will be co
 
 ### C. Weekly Lesson Plan
 
-| **Week**     | **Date**        | **Topic**                                                      | **Other Tasks**        |
-| ------------ | --------------- | -------------------------------------------------------------- | ---------------------- |
-| **1. Week**  | 26 September 2024 | Introduction to Secure Programming and Application Protection Plan |                        |
-| **2. Week**  | 3 October 2024  | Computer Viruses and Security Models                           |                        |
-| **3. Week**  | 10 October 2024 | Data Security: In Transit, At Rest, and In Use                 |                        |
-
-
----
-
-### C. Weekly Lesson Plan
-
-| **Week**     | **Date**        | **Topic**                                                      | **Other Tasks**        |
-| ------------ | --------------- | -------------------------------------------------------------- | ---------------------- |
-| **4. Week**  | 17 October 2024 | Code Hardening Techniques (C/C++)                              |                        |
-| **5. Week**  | 24 October 2024 | Code Hardening Techniques (Java/Interpreted Languages)         |                        |
-| **6. Week**  | 31 October 2024 | Runtime Application Self-Protection (RASP) Techniques (C/C++)  |                        |
-| **7. Week**  | 7 November 2024 | Advanced Code Obfuscation and Diversification Techniques       |                        |
+| **Week**    | **Date**          | **Topic**                                                          | **Other Tasks** |
+| ----------- | ----------------- | ------------------------------------------------------------------ | --------------- |
+| **1. Week** | 26 September 2024 | Introduction to Secure Programming and Application Protection Plan |                 |
+| **2. Week** | 3 October 2024    | Computer Viruses and Security Models                               |                 |
+| **3. Week** | 10 October 2024   | Data Security: In Transit, At Rest, and In Use                     |                 |
 
 ---
 
 ### C. Weekly Lesson Plan
 
-| **Week**     | **Date**        | **Topic**                                                      | **Other Tasks**        |
-| ------------ | --------------- | -------------------------------------------------------------- | ---------------------- |
-| **8. Week**  | 14 November 2024 | **Quiz 1 + Midterm Project Report Submission**                   | Quiz and Midterm Report |
-| **9. Week**  | 21 November 2024 | Certificates and Cryptographic Methods (AES, RSA, PKI)          |                        |
-| **10. Week** | 28 November 2024 | Whitebox Cryptography                                          |                        |
-| **11. Week** | 5 December 2024  | Security Certifications and Penetration Testing Planning       |                        |
+| **Week**    | **Date**        | **Topic**                                                     | **Other Tasks** |
+| ----------- | --------------- | ------------------------------------------------------------- | --------------- |
+| **4. Week** | 17 October 2024 | Code Hardening Techniques (C/C++)                             |                 |
+| **5. Week** | 24 October 2024 | Code Hardening Techniques (Java/Interpreted Languages)        |                 |
+| **6. Week** | 31 October 2024 | Runtime Application Self-Protection (RASP) Techniques (C/C++) |                 |
+| **7. Week** | 7 November 2024 | Advanced Code Obfuscation and Diversification Techniques      |                 |
 
 ---
 
 ### C. Weekly Lesson Plan
 
-| **Week**     | **Date**        | **Topic**                                                      | **Other Tasks**        |
-| ------------ | --------------- | -------------------------------------------------------------- | ---------------------- |
-| **12. Week** | 12 December 2024 | Midterm Project Report Submission                              | Midterm Project Report |
-| **13. Week** | 19 December 2024 | Real-World Case Studies                                        |                        |
-| **14. Week** | 26 December 2024 | **Quiz 2**                                                     | Quiz 2                 |
-| **15. Week** | 2 January 2025   | **Final Project Submission and Presentation**                   | Final Project and Presentation |
+| **Week**     | **Date**         | **Topic**                                                | **Other Tasks**         |
+| ------------ | ---------------- | -------------------------------------------------------- | ----------------------- |
+| **8. Week**  | 14 November 2024 | **Quiz 1 + Midterm Project Report Submission**           | Quiz and Midterm Report |
+| **9. Week**  | 21 November 2024 | Certificates and Cryptographic Methods (AES, RSA, PKI)   |                         |
+| **10. Week** | 28 November 2024 | Whitebox Cryptography                                    |                         |
+| **11. Week** | 5 December 2024  | Security Certifications and Penetration Testing Planning |                         |
+
+---
+
+### C. Weekly Lesson Plan
+
+| **Week**     | **Date**         | **Topic**                                     | **Other Tasks**                |
+| ------------ | ---------------- | --------------------------------------------- | ------------------------------ |
+| **12. Week** | 12 December 2024 | Midterm Project Report Submission             | Midterm Project Report         |
+| **13. Week** | 19 December 2024 | Real-World Case Studies                       |                                |
+| **14. Week** | 26 December 2024 | **Quiz 2**                                    | Quiz 2                         |
+| **15. Week** | 2 January 2025   | **Final Project Submission and Presentation** | Final Project and Presentation |
 
 ---
 

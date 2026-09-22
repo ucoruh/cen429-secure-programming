@@ -1,0 +1,28 @@
+# CEN429 — Hafta 2 — Salt DAC (erisim denetim matrisi) ornegi
+# Butun ozne ve nesneler ayni seviyede -> MAC notr, karari yalniz matris verir.
+# Senaryo: mobil odeme uygulamasi + guvenlik kutuphanesi (jenerik).
+#   ozneler : uygulama (mesru), kutuphane (mesru), saldirgan (yetkisiz)
+#   nesneler: odeme_anahtari (gizli), gunluk (log)
+
+MODEL   BLP
+SEVIYE  D  0
+
+OZNE    uygulama   D
+OZNE    kutuphane  D
+OZNE    saldirgan  D
+
+NESNE   odeme_anahtari D
+NESNE   gunluk         D
+
+# Matris: yalniz kutuphane odeme anahtarini okuyup yazabilir.
+# Uygulama gunluge yazar; saldirganin hicbir hakki yok.
+HAK     kutuphane  odeme_anahtari  rw
+HAK     uygulama   gunluk          w
+HAK     kutuphane  gunluk          w
+
+# --- Istekler ---
+ISTEK   kutuphane  oku  odeme_anahtari    # mesru: matriste var
+ISTEK   uygulama   oku  odeme_anahtari    # matriste yok -> RED (en az ayricalik)
+ISTEK   saldirgan  oku  odeme_anahtari    # yetkisiz -> RED
+ISTEK   uygulama   yaz  gunluk            # mesru
+ISTEK   saldirgan  yaz  gunluk            # yetkisiz -> RED (log'a sahte kayit yok)

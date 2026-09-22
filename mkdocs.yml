@@ -2,9 +2,14 @@
 site_name: "RTEU CEN429 Secure Programming Course"
 docs_dir: docs  # Where to find the markdown files
 site_dir: site  # Where to output the HTML files
+# Google Drive her klasöre desktop.ini koyar; siteye girmesin
+exclude_docs: |
+  desktop.ini
+  **/desktop.ini
+  parcalar/
 site_author: 'Asst. Prof. Dr. Uğur CORUH'
 site_url: 'https://ucoruh.github.io/cen429-secure-programming/'
-site_description: 'Course Notes for Software Developers'
+site_description: 'CEN429 Secure Programming course notes, slides and hands-on labs'
 
 # Repository
 repo_name: 'GitHub'
@@ -12,7 +17,7 @@ repo_url: 'https://github.com/ucoruh/cen429-secure-programming'
 edit_uri: 'https://github.com/ucoruh/cen429-secure-programming/edit/main/docs/'
 
 # Copyright
-copyright: Copyright &copy; 2006 - 2024 Recep Tayyip Erdoğan University
+copyright: Copyright &copy; 2006 - 2026 Recep Tayyip Erdoğan University
 
 # Configuration
 theme:
@@ -158,6 +163,7 @@ markdown_extensions:
 plugins:
   - mkdocs-simple-hooks:
       hooks:
+        on_config: "hooks:on_config"
         on_env: "hooks:on_env"
   - external-markdown
   - mkdocs-video
@@ -185,6 +191,23 @@ plugins:
             License: "Lisans"
             Resume: "Özgeçmiş"
             Changelog: "Revizyonlar"
+            "Project Guide": "Proje Rehberi"
+            "Week-1 (Introduction and Application Protection Plan)": "Hafta-1 (Giriş ve Uygulama Koruma Planı)"
+            "Week-2 (Computer Viruses and Security Models)": "Hafta-2 (Bilgisayar Virüsleri ve Güvenlik Modelleri)"
+            "Week-3 (Data Security: In Transit, At Rest, In Use)": "Hafta-3 (Veri Güvenliği: Aktarımda, Beklemede, Kullanımda)"
+            "Week-4 (Code Hardening: C/C++)": "Hafta-4 (Kod Sağlamlaştırma: C/C++)"
+            "Week-5 (Code Hardening: Java and Interpreted Languages)": "Hafta-5 (Kod Sağlamlaştırma: Java ve Yorumlanan Diller)"
+            "Week-6 (Runtime Application Self-Protection)": "Hafta-6 (Çalışma Zamanı Uygulama Öz Koruması)"
+            "Week-7 (Midterm Project Demonstrations)": "Hafta-7 (Ara Proje Gösterimleri)"
+            "Week-8 (Midterm Exam Week: Quiz-1)": "Hafta-8 (Ara Sınav Haftası: Quiz-1)"
+            "Week-9 (Advanced Obfuscation and Diversification)": "Hafta-9 (Gelişmiş Kod Gizleme ve Çeşitlendirme)"
+            "Week-10 (Certificates and Cryptographic Methods)": "Hafta-10 (Sertifikalar ve Kriptografik Yöntemler)"
+            "Week-11 (Whitebox Cryptography)": "Hafta-11 (Whitebox Kriptografi)"
+            "Week-12 (Security Certifications and Penetration Test Planning)": "Hafta-12 (Güvenlik Sertifikasyonları ve Sızma Testi Planlaması)"
+            "Week-13 (Security Requirements)": "Hafta-13 (Güvenlik Gereksinimleri)"
+            "Week-14 (Tigress and Diversification)": "Hafta-14 (Tigress ve Çeşitlendirme)"
+            "Week-15 (Final Project Demonstrations)": "Hafta-15 (Final Proje Gösterimleri)"
+            "Week-16 (Final Exam Period: Quiz-2)": "Hafta-16 (Final Dönemi: Quiz-2)"
   - tags:
       tags_file: tags.md
   - minify:
@@ -196,12 +219,10 @@ plugins:
       type: timeago
   - git-authors:
       sort_authors_by: contribution
-  - git-committers:
-      repository: ucoruh/ce407-secure-programming
-      docs_path: docs/
-      branch: main
-      token: !ENV MKDOCS_GIT_COMMITTERS_APIKEY
   - macros
+
+extra_css:
+  - stylesheets/cen429.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
@@ -210,22 +231,24 @@ extra_javascript:
 nav:
   - Home: index.md
   - Syllabus: syllabus/syllabus.md
+  - Project Guide: project-guide/index.md
   - Course Modules:
-    - Week-1 (Introduction to Secure Programming): week-1/cen429-week-1.md
-    - Week-2 (Development Environment Security): week-2/cen429-week-2.md
-    - Week-3 (Whitebox Cryptography): week-3/cen429-week-3.md
-    - Week-4 (Security Certificates): week-4/cen429-week-4.md
-    - Week-5 (Penetration Testing): week-5/cen429-week-5.md
-    - Week-6 (Encryption Techniques): week-6/cen429-week-6.md
-    - Week-7 (Advanced Cryptography Methods): week-7/cen429-week-7.md
-    - Week-8 (Quiz 1 and Project Report): week-8-quiz-report/cen429-week-8.md
-    - Week-9 (Certificates and Cryptography): week-9/cen429-week-9.md
-    - Week-10 (Whitebox Cryptography): week-10/cen429-week-10.md
-    - Week-11 (Security Certifications): week-11/cen429-week-11.md
-    - Week-12 (Security Requirements): week-12/cen429-week-12.md
-    - Week-13 (Tigress and Diversification): week-13/cen429-week-13.md
-    - Week-14 (Quiz 2): week-14-quiz/cen429-week-14.md
-    - Week-15 (Final Project Presentation): week-15-project/cen429-week-15.md
+    - "Week-1 (Introduction and Application Protection Plan)": week-1/cen429-week-1.md
+    - "Week-2 (Computer Viruses and Security Models)": week-2/cen429-week-2.md
+    - "Week-3 (Data Security: In Transit, At Rest, In Use)": week-3/cen429-week-3.md
+    - "Week-4 (Code Hardening: C/C++)": week-4/cen429-week-4.md
+    - "Week-5 (Code Hardening: Java and Interpreted Languages)": week-5/cen429-week-5.md
+    - "Week-6 (Runtime Application Self-Protection)": week-6/cen429-week-6.md
+    - "Week-7 (Midterm Project Demonstrations)": week-7/cen429-week-7.md
+    - "Week-8 (Midterm Exam Week: Quiz-1)": week-8/cen429-week-8.md
+    - "Week-9 (Advanced Obfuscation and Diversification)": week-9/cen429-week-9.md
+    - "Week-10 (Certificates and Cryptographic Methods)": week-10/cen429-week-10.md
+    - "Week-11 (Whitebox Cryptography)": week-11/cen429-week-11.md
+    - "Week-12 (Security Certifications and Penetration Test Planning)": week-12/cen429-week-12.md
+    - "Week-13 (Security Requirements)": week-13/cen429-week-13.md
+    - "Week-14 (Tigress and Diversification)": week-14/cen429-week-14.md
+    - "Week-15 (Final Project Demonstrations)": week-15/cen429-week-15.md
+    - "Week-16 (Final Exam Period: Quiz-2)": week-16/cen429-week-16.md
   - License: license.md
   - Resume: resume/index.md
   - Changelog: changelog/index.md

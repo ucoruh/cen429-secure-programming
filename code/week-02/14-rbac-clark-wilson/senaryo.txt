@@ -1,0 +1,87 @@
+# CEN429 - Hafta 2 - Demo 14: RBAC + gorev ayriligi + Clark-Wilson
+# Kucuk bir hesap defteri. Butun adlar ve tutarlar SENTETIKTIR.
+
+# ---------- Kurulum (guvenlik yoneticisi; izlenmez) ----------
+ROL GISE
+ROL KIDEMLI_GISE
+ROL ONAYCI
+ROL DENETCI
+ROL SERTIFIKACI
+KALITIR KIDEMLI_GISE GISE        # RBAC1: kidemli gise, gisenin haklarini alir
+IZIN GISE          YATIR
+IZIN GISE          CEK
+IZIN KIDEMLI_GISE  HAVALE
+IZIN ONAYCI        ONAYLA
+IZIN DENETCI       IVP
+IZIN DENETCI       DEFTER_OKU
+SSD  GISE ONAYCI                 # RBAC2 statik: ayni kisiye ikisi atanamaz
+SSD  SERTIFIKACI GISE
+SSD  SERTIFIKACI ONAYCI
+DSD  GISE DENETCI                # RBAC2 dinamik: ayni oturumda ikisi olmaz
+KULLANICI ayse
+KULLANICI burak
+KULLANICI cem
+KULLANICI deniz
+KULLANICI ece
+ATA ayse  GISE
+ATA burak KIDEMLI_GISE
+ATA cem   ONAYCI
+ATA deniz GISE
+ATA deniz DENETCI
+ATA ece   SERTIFIKACI
+CDI hesap_A 12000
+CDI hesap_B  8000
+SERTIFIKALI YATIR      hesap_A,hesap_B
+SERTIFIKALI CEK        hesap_A,hesap_B
+SERTIFIKALI HAVALE     hesap_A,hesap_B
+SERTIFIKALI ONAYLA     hesap_A,hesap_B
+SERTIFIKALI IVP        -
+SERTIFIKALI DEFTER_OKU -
+ONAY_ESIGI 5000
+BASLA
+
+# ---------- 1. RBAC: atama, hiyerarsi, gorev ayriligi ----------
+BOLUM 1 - RBAC: rol atama ve gorev ayriligi (SSD/DSD)
+ATA cem GISE                     # SSD(GISE,ONAYCI) -> RED
+ATA burak ONAYCI                 # KIDEMLI_GISE, GISE'yi kapsar -> SSD RED
+OTURUM misafir GISE              # E3: taninmayan kullanici
+OTURUM deniz GISE,DENETCI        # DSD -> RED
+OTURUM deniz DENETCI
+OTURUM ayse GISE
+OTURUM burak KIDEMLI_GISE
+OTURUM cem ONAYCI
+OTURUM ece SERTIFIKACI
+
+# ---------- 2. Clark-Wilson: iyi bicimli islemler ----------
+BOLUM 2 - Clark-Wilson: CDI'ya yalniz sertifikali TP dokunur
+CALISTIR ayse YATIR hesap_A 250
+CALISTIR ayse YATIR hesap_A -500     # C5: dis girdi dogrulanmadan giremez
+CALISTIR ayse YATIR hesap_A 12abc
+DOGRUDAN_YAZ ayse hesap_A 1000000    # E1: TP'yi atlayip CDI'ya yazma
+CALISTIR ayse HAVALE hesap_A hesap_B 100   # E2: GISE'nin HAVALE izni yok
+CALISTIR burak HAVALE hesap_A hesap_B 700  # RBAC1: kidemli gise
+CALISTIR burak CEK hesap_B 999999          # C2: bakiye eksiye dusmez
+
+# ---------- 3. Gorev ayriligi: iki kisi kurali ----------
+BOLUM 3 - Gorev ayriligi: buyuk havaleye ikinci kisi onayi
+CALISTIR burak HAVALE hesap_B hesap_A 6000 # esik ustu -> talep
+CALISTIR burak ONAYLA 1                    # E2: burak ONAYCI degil
+CALISTIR cem ONAYLA 1                      # C3: farkli kisi onaylar
+CALISTIR deniz IVP
+
+# Yonetici SSD'yi yanlislikla kaldirirsa TP ici denetim yine korur
+SSD_KALDIR GISE ONAYCI
+ATA cem KIDEMLI_GISE
+OTURUM cem ONAYCI,KIDEMLI_GISE
+CALISTIR cem HAVALE hesap_A hesap_B 5500
+CALISTIR cem ONAYLA 2                      # C3: kendi talebi -> RED
+
+# ---------- 4. Sertifikasyon hatasi ve IVP ----------
+BOLUM 4 - Hatali bir TP sertifikalanirsa IVP yakalar
+CALISTIR ece HAVALE hesap_A hesap_B 10     # E4: sertifikaci calistiramaz
+SERTIFIKALA ece HATALI_HAVALE hesap_A,hesap_B
+IZIN KIDEMLI_GISE HATALI_HAVALE
+CALISTIR burak HATALI_HAVALE hesap_A hesap_B 3000
+DEFTER_SIL deniz 5                          # C4: defter salt-eklemeli
+CALISTIR deniz IVP
+CALISTIR deniz DEFTER_OKU

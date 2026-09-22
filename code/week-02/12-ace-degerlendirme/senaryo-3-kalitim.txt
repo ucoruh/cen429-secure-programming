@@ -1,0 +1,23 @@
+# CEN429 - Hafta 2 - Demo 12, senaryo 3: KALITIM
+# Ust klasorden gelen (miras) ACE'ler, dosyaya dogrudan yazilan (acik)
+# ACE'lerden SONRA gelir. Bu yuzden acik bir IZIN, miras bir RET'i gecer.
+
+SENARYO 3a - miras RET, acik IZIN (kanonik sira)
+BELIRTEC zeynep  Stajyer,Kullanicilar
+SAHIP    mehmet
+ACE IZIN Stajyer      YAZ
+ACE RET  Stajyer      YAZ,SIL       MIRAS
+ACE IZIN Kullanicilar OKU,CALISTIR  MIRAS
+ISTE YAZ
+ISTE SIL
+
+# Kalitimi kesmek: icacls /inheritance:r miras ACE'leri siler,
+# /inheritance:d ise onlari acik ACE'ye cevirerek korur.
+SENARYO 3b - kalitim kesildi (sil)
+BELIRTEC zeynep  Stajyer,Kullanicilar
+SAHIP    mehmet
+ACE IZIN Stajyer      YAZ
+ACE RET  Stajyer      YAZ,SIL       MIRAS
+ACE IZIN Kullanicilar OKU,CALISTIR  MIRAS
+KALITIM_KES sil
+ISTE OKU

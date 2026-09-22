@@ -1,429 +1,283 @@
 ---
-marp: true
-theme: default
-style: |
-    img[alt~="center"] {
-      display: block;
-      margin: 0 auto;
-      background-color: transparent!important;
-    }
-_class: lead
-paginate: true
-backgroundColor: #fff
-backgroundImage: url('https://marp.app/assets/hero-background.svg')
-header: 'CEN429 Güvenli Programlama Dersi İzlencesi'
-footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CEN429 İzlence'
-title: "CEN429 Güvenli Programlama"
-author: "Ders Sorumlusu: Dr. Öğr. Üyesi Uğur CORUH"
-date:
-subtitle: "Detaylı Ders İzlencesi"
-geometry: "left=2.54cm,right=2.54cm,top=1.91cm,bottom=1.91cm"
-titlepage: true
-titlepage-color: "FFFFFF"
-titlepage-text-color: "000000"
-titlepage-rule-color: "CCCCCC"
-titlepage-rule-height: 4
-logo: "assets/2021-10-19-15-01-36-image.png"
-logo-width: 100 
-page-background:
-page-background-opacity:
-links-as-notes: true
-lot: true
-lof: true
-listings-disable-line-numbers: true
-listings-no-page-break: false
-disable-header-and-footer: false
-header-left:
-header-center:
-header-right:
-footer-left: "© Dr. Uğur CORUH"
-footer-center: "License: CC BY-NC-ND 4.0"
-footer-right:
-subparagraph: true
-lang: tr-TR 
-math: katex
-tags:
-  - cen429-syllabus
-  - güvenli-programlama
-  - fall-2024
-  - cen429
+title: "CEN429 Güvenli Programlama — Ders İzlencesi"
+subtitle: "2026-2027 Güz Yarıyılı"
+author: "Dr. Öğr. Üyesi Uğur CORUH"
+lang: tr-TR
 ---
 
-<!-- _backgroundColor: aquq -->
+# Recep Tayyip Erdoğan Üniversitesi
 
-<!-- _color: orange -->
+## Mühendislik ve Mimarlık Fakültesi — Bilgisayar Mühendisliği
 
-<!-- paginate: false -->
+### CEN429 Güvenli Programlama — Ders İzlencesi
 
-<img src="http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg" title="" alt="height:100px" width="95">
-
-## Recep Tayyip Erdoğan Üniversitesi
-
-### Mühendislik ve Mimarlık Fakültesi, Bilgisayar Mühendisliği
-
-### CEN429 - Güvenli Programlama Ders İzlencesi
-
-#### Güz Dönemi, 2024-2025
+#### 2026-2027 Güz Yarıyılı
 
 ---
 
-Download 
+<!-- materyal:basla -->
 
-- [PDF](pandoc_syllabus.pdf)
-- [DOC](pandoc_syllabus.docx)
-- [SLIDE](syllabus.pdf)
-- [PPTX](syllabus.pptx)
+<div class="materyal" markdown>
 
----
+[:material-file-pdf-box: Ders notu (PDF)](cen429-izlence-ders-notu.pdf){ .md-button download="cen429-izlence-ders-notu.pdf" }
+[:material-file-word-box: Ders notu (DOCX)](cen429-izlence-ders-notu.docx){ .md-button download="cen429-izlence-ders-notu.docx" }
+[:material-presentation: Sunum (PDF)](cen429-izlence-sunum.pdf){ .md-button download="cen429-izlence-sunum.pdf" }
+[:material-microsoft-powerpoint: Sunum (PPTX)](cen429-izlence-sunum.pptx){ .md-button download="cen429-izlence-sunum.pptx" }
+[:material-language-html5: Sunum (HTML, çevrimdışı)](cen429-izlence-sunum.html){ .md-button download="cen429-izlence-sunum.html" }
+[:material-folder-zip: Tümünü indir (ZIP)](cen429-izlence-materyal.zip){ .md-button download="cen429-izlence-materyal.zip" }
+[:material-fullscreen: Sunumu tam ekran aç](cen429-izlence-sunum.html){ .md-button .md-button--primary target=_blank }
 
-<iframe width=700, height=500 frameBorder=0 src="../syllabus.html"></iframe>
+</div>
 
----
+<div class="sunum-cercevesi">
+<iframe src="../cen429-izlence-sunum.html" title="Ders İzlencesi" loading="lazy" allowfullscreen></iframe>
+</div>
 
-<!-- paginate: true -->
+<p class="sunum-ipucu">Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.</p>
 
-| Dersin Sorumlusu:          | Dr. Öğr. Üyesi Uğur CORUH                |
-| -------------------------- | ---------------------------------------- |
-| **İletişim Bilgileri:**    | ugur.coruh@erdogan.edu.tr                |
-| **Ofis No:**               | F-301                                    |
-| **Google Classroom Code**  | Kullanılmıyor                            |
-| **Microsoft Teams Code**   | zk6388k                                  |
-| **Lecture Hours and Days** | Perşembe, 13:00 - 15:00 İBBF 402, 4. Kat |
+<!-- materyal:bitis -->
 
----
+## Ders Bilgileri
 
-| **Derslik**       | İBBF 402 4. Kat veya Online Google Meet / Microsoft Teams                                                                                                                                                                                                                                                             |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ofis Saatleri** | Toplantılar Google Meet veya Microsoft Teams üzerinden üniversite hesabınız ve e-posta adresiniz kullanılarak yapılacaktır. Talep doğrultusunda e-posta ile planlanacaktır. Daha hızlı yanıt almak için e-posta konu başlığının *[CEN429]* etiketiyle başlamasına özen gösterin ve resmi, net, kısa e-postalar yazın. |
-
----
-
-| **Lecture and Communication Language** | English                             |
-| -------------------------------------- | ----------------------------------- |
-| **Theory Course Hour Per Week**        | 3 Hours                             |
-| **Credit**                             | ?????                               |
-| **Prerequisite**                       | CE103- Algorithms and Programming I |
-| **Corequisite**                        | TBD                                 |
-| **Requirement**                        | TBD                                 |
-
-*TBD: To Be Defined.
+| | |
+| --- | --- |
+| **Öğretim üyesi** | Dr. Öğr. Üyesi Uğur CORUH |
+| **İletişim** | ugur.coruh@erdogan.edu.tr — konu satırı **[CEN429]** ile başlamalıdır |
+| **Ofis** | F-301 |
+| **Görüşme saatleri** | E-posta ile randevu; ofiste ya da üniversite hesabıyla çevrim içi |
+| **Ders günü, saati, dersliği** | Cuma 09:00–12:00 · İİBF ve Hukuk Fakültesi Binası, D-402 (ED-K4-2) |
+| **Ders web sitesi** | https://ucoruh.github.io/cen429-secure-programming/ |
+| **Ders sınıfı** | Her dönem yeni sınıf açılır; sınıf kodu 1. haftada duyurulur |
+| **Eğitim dili** | Türkçe |
+| **Tür / yarıyıl** | Seçmeli · 7. yarıyıl |
+| **Haftalık saat / kredi / AKTS** | Kuramsal 3 saat · Kredi 3 · AKTS 5 |
+| **Ön koşul** | CEN107 Algoritmalar ve Programlama I (eski kodu CE103) |
 
 ---
 
-##### A. Ders Tanımı
+## A. Dersin Tanımı
 
-Bu ders, güvenli yazılım geliştirme tekniklerini anlamaya yönelik kapsamlı bir yaklaşım sunmaktadır. Öğrenciler, tampon taşmaları, bellek sızıntıları ve enjeksiyon saldırıları gibi yaygın güvenlik açıklarını ele almak için yazılım koruma yöntemleri öğreneceklerdir. Ders, güvenli yazılım geliştirmede gerçek dünya uygulamalarına ve en iyi uygulamalara odaklanmaktadır.
-
----
-
-##### B. Dersin Öğrenme Çıktıları
-
-Bu dersi başarıyla tamamlayan bir öğrenci:
-
-1. Yaygın yazılım güvenlik açıklarını tanımlar.
-2. Şifreleme yöntemlerini uygulayarak hassas verileri güvence altına alır.
-3. Kod sertleştirme tekniklerini (RASP ve kod karıştırma gibi) uygular.
-4. Güvenli iletişim kanallarını şifreleme ve kimlik doğrulama mekanizmaları ile kurar.
-5. Güvenli yazılım tasarımını, savunma stratejilerini kullanarak planlar.
-6. Güvenlik incelemeleri ve zafiyet değerlendirmeleri gerçekleştirir.
+Bu ders, güvenli yazılım geliştirme tekniklerini anlamaya yönelik kapsamlı bir yaklaşım sunar. Öğrenciler arabellek
+taşması, bellek sızıntıları ve enjeksiyon saldırıları gibi yaygın güvenlik açıklarını ele almak için yazılım koruma
+yöntemlerini öğrenir: veri güvenliği ve kriptografi, C/C++ ve Java için kod sağlamlaştırma, çalışma zamanı uygulama öz
+koruması (RASP), kod gizleme ve çeşitlendirme, whitebox kriptografi, güvenlik standartları ve sızma testi planlaması.
+Ders, güvenli yazılım geliştirmedeki gerçek dünya uygulamalarına ve en iyi uygulamalara odaklanır. Her konu hatalı kod
+→ saldırı → düzeltme sırasıyla, derste yapılan uygulamalarla ve bir sertifikasyon sürecinden geçiyormuş gibi
+yürütülen dönem projesiyle pekiştirilir.
 
 ---
 
-## C.Ders Konuları
+## B. Öğrenme Çıktıları
+
+Bu dersi başarıyla tamamlayan öğrenci:
+
+| Kod | Öğrenme çıktısı |
+| --- | --- |
+| ÖÇ.1 | Yaygın yazılım güvenlik açıklarını (arabellek taşması, enjeksiyon saldırıları, bellek sızıntıları vb.) tanımlar ve sınıflandırır. |
+| ÖÇ.2 | Hassas verileri korumak için temel şifreleme yöntemlerini (simetrik/asimetrik, özet fonksiyonları) ve güvenli iletişim ilkelerini (SSL/TLS) açıklar. |
+| ÖÇ.3 | Kod sağlamlaştırma tekniklerini (girdi doğrulama, güvenli bellek yönetimi, RASP, kod gizleme/karıştırma) açıklar ve farklı diller (C/C++, Java) için uygular. |
+| ÖÇ.4 | Şifreleme ve kimlik doğrulama mekanizmalarını kullanarak güvenli iletişim kanalları kurma prensiplerini açıklar. |
+| ÖÇ.5 | Güvenli yazılım tasarımı ilkelerini (en az ayrıcalık, savunma derinliği vb.) ve savunma stratejilerini kullanarak yazılım planı oluşturur. |
+| ÖÇ.6 | Yazılım güvenlik açıklarını tespit etmek için temel güvenlik incelemesi ve güvenlik açığı değerlendirme yöntemlerini bilir. |
+| ÖÇ.7 | Güvenli programlama standartlarını (örn: ETSI, EMV, FIPS) ve sızma testi planlaması prensiplerini bilir. |
+
+### Öğrenme çıktılarının program çıktılarına katkısı (0–5)
+
+| | PÇ.1 | PÇ.2 | PÇ.3 | PÇ.4 | PÇ.5 | PÇ.6 | PÇ.7 | PÇ.8 | PÇ.9 | PÇ.10 | PÇ.11 | PÇ.12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ÖÇ.1 | – | 3 | – | 5 | – | – | – | – | 3 | – | 3 | – |
+| ÖÇ.2 | – | – | – | 3 | – | – | – | – | – | – | 3 | – |
+| ÖÇ.3 | – | 3 | 3 | 3 | – | – | – | – | – | – | 3 | – |
+| ÖÇ.4 | – | – | 3 | 3 | – | – | – | – | – | – | 3 | – |
+| ÖÇ.5 | – | 3 | 3 | 3 | – | – | – | 3 | 3 | – | 3 | – |
+| ÖÇ.6 | – | 3 | – | 3 | 3 | – | – | – | – | – | 3 | – |
+| ÖÇ.7 | – | – | – | 3 | – | – | – | – | – | – | 3 | 3 |
+
+PÇ.2 Problem çözme · PÇ.3 Tasarım · PÇ.4 Modern teknik ve araçlar · PÇ.5 Araştırma ve deney · PÇ.8 İletişim ·
+PÇ.9 Toplumsal bilinç · PÇ.11 Etik ve standartlar · PÇ.12 Proje ve risk yönetimi.
 
 ---
 
-- **Güvenli Programlamaya Giriş ve Uygulama Koruma Planı**
-  
-  - Uygulama koruma genel bakış
-  - Tampon taşması ve önleme teknikleri
-  - Bellek yönetimi ve güvenlik
-  - Korumalı kod bölme ve şifreleme ile işlem güvenliği
+## C. Haftalık Program
+
+Bütün değerlendirmeler için kural: **proje gösterimleri vize ve final haftalarının hemen öncesindeki haftada; quizler
+vize ve final haftalarının içinde** yapılır, böylece her öğrenci katılabilir. Konular ritimdeki sırayla işlenir.
+
+| Hafta | Tarih | Konular | ÖÇ |
+| --- | --- | --- | --- |
+| 1 | 18.09.2026 (telafi 30.09) | Ders planı ve iletişim. Güvenli programlamaya giriş: güvenlik hedefleri (gizlilik, bütünlük, erişilebilirlik), saldırgan modeli, tehdit modelleme (saldırı ağaçları, STRIDE). Uygulama korumasına genel bakış; arabellek taşmaları ve önleme teknikleri; bellek yönetimi ve güvenlik; korunan kod bölümleme ve şifreleme ile güvenli işleme. Uygulama koruma planının hazırlanması. | 1, 5 |
+| 2 | 25.09.2026 | Bilgisayar virüsleri ve zararlı yazılımlar: virüs türleri (program, makro, önyükleme sektörü), solucanlar ve truva atları; virüslere karşı önlemler. Saldırı ağaçları ve güvenlik modelleri (Bell–LaPadula, Biba, Clark–Wilson). Yazılım güvenlik açıklarının sınıflandırılması: CWE ve CWE Top 25, OWASP Top 10, CVE ve CVSS. | 1 |
+| 3 | 02.10.2026 | Veri güvenliği: aktarımda, beklemede ve kullanımda. Şifreleme temelleri (simetrik/asimetrik, özet fonksiyonları, kimlik doğrulamalı şifreleme); SSL/TLS kullanımı ve TLS 1.3 el sıkışması; sertifika sabitleme; whitebox kriptografi uygulamalarına giriş; dinamik anahtar yönetimi ve oturum anahtarları; veri maskeleme teknikleri; bellekteki hassas verinin güvenli silinmesi. | 2, 4 |
+| 4 | 09.10.2026 | Kod sağlamlaştırma (C/C++): güvenli bellek yönetimi ve güvenli kodlama kuralları (SEI CERT C/C++); arabellek taşması, serbest bırakılmış belleğin kullanımı (use-after-free) ve tamsayı taşması örnekleri; sanitizer'lar (AddressSanitizer, UndefinedBehaviorSanitizer) ve fuzzing'e giriş; derleyici ve işletim sistemi korumaları (stack canary, ASLR, DEP/NX, CFI, SafeStack); kontrol akışı düzleştirme; fonksiyon adı gizleme; bellek tahsisi gizleme; dinamik şifreleme teknikleri. | 3 |
+| 5 | 16.10.2026 | Kod sağlamlaştırma (Java/yorumlanan diller): girdi doğrulama ve enjeksiyon saldırılarına karşı savunma (SQL, komut, yol geçişi; parametreli sorgular; SEI CERT Oracle Java); ProGuard ve R8 ile kod gizleme; dinamik yöntem gizleme; statik dize gizleme ve koruma; gelişmiş ProGuard kuralları; bağımlılık güvenliği ve yazılım malzeme listesi (SBOM). | 3 |
+| 6 | 23.10.2026 | Çalışma zamanı uygulama öz koruması (RASP) (C/C++): root ve emülatör algılama; APK imza doğrulaması; çalışma zamanında kod bloğu bütünlüğü (checksum) kontrolü; hata ayıklayıcı algılama ve bağlanmayı engelleme; kanca (hook) saldırısı algılama; dinamik bellek koruması ve bellek izleme tespiti; dinamik analiz araçlarına karşı koruma; müdahale algılandığında verilecek yanıtlar. | 3 |
+| 7 | 30.10.2026 | **Ara proje gösterimleri** ve ara proje raporu teslimi. | 1, 2, 3, 5, 7 |
+| 8 | 31.10–08.11.2026 | **Ara sınav haftası — Quiz-1** (1–6. haftalar). | 1, 2, 3 |
+| 9 | 13.11.2026 | Gelişmiş kod gizleme ve çeşitlendirme: dinamik kontrol akışı gizleme; opak yüklemler (opaque predicates), sahte kontrol akışları ve ölü kod ekleme; program gizleme teknikleri (veri kodlama, sanallaştırma tabanlı gizleme); dinamik fonksiyon çağrıları ve çalışma zamanı optimizasyonları; gizlemenin etkinliğinin ölçülmesi (güç, dayanıklılık, maliyet). | 3 |
+| 10 | 20.11.2026 | Sertifikalar ve kriptografik yöntemler (AES, RSA, PKI): AES ve RSA şifrelemesi, çalışma kipleri ve dolgu; HMAC ile veri bütünlüğü; dijital imza oluşturma ve doğrulama; PKI bileşenleri (CA, RA, sertifika zinciri); X.509 sertifika oluşturma (OpenSSL); sertifika iptali (CRL, OCSP); anahtar dağıtım problemi. | 2, 4 |
+| 11 | 27.11.2026 | Whitebox kriptografi: beyaz kutu ve kara kutu saldırgan modelleri; whitebox AES ve DES uygulamaları (tablo tabanlı gerçekleştirim); whitebox kriptografi ile anahtar koruması; bilinen saldırılar (diferansiyel hesaplama ve hata analizi) ve karşı önlemler; yazılım tabanlı güvenlik çözümleri (ör. SoftHSM ile yazılımsal güvenlik modülü). | 2, 3 |
+| 12 | 04.12.2026 | Güvenlik sertifikasyonları ve sızma testi planlaması: ETSI ve EMV güvenlik standartları; PCI DSS ve ISO/IEC 27001 kapsamındaki güvenlik testleri; güvenlik incelemesi ve zafiyet değerlendirme (kod incelemesi, statik ve dinamik analiz, fuzzing); sızma testi planı: kapsam, kurallar, yöntem (OWASP WSTG ve MASTG, PTES) ve raporlama. | 5, 6, 7 |
+| 13 | 11.12.2026 | Güvenlik gereksinimleri: ETSI, GSMA ve EMV güvenlik gereksinimleri; Ortak Kriterler (ISO/IEC 15408) ve EAL düzeyleri; FIPS 140-3 gereksinimleri; gereksinimlerin yazılım planına ve varlık yönetimine aktarılması. | 5, 7 |
+| 14 | 18.12.2026 | Tigress ve çeşitlendirme: Tigress ile C kaynak kodu dönüşümleri (kontrol akışı düzleştirme, sanallaştırma, sabit ve aritmetik kodlama, opak yüklemler, fonksiyon bölme ve birleştirme); gizleme yöntemlerinin birleştirilmesi; çeşitlendirme ile her kopya için farklı ikili; saldırılara karşı savunma ve gizlenmiş kodun analize dayanıklılığının değerlendirilmesi. | 3 |
+| 15 | 25.12.2026 | **Final proje gösterimleri** ve final proje raporu teslimi. | 1–7 |
+| 16 | 04–17.01.2027 | **Final sınav dönemi — Quiz-2** (9–14. haftalar). | 2–7 |
+
+Ders notlarında isteğe bağlı okuma olarak işlenecek zenginleştirme konuları: bellek güvenli diller (Rust) ve C/C++
+ile birlikte kullanımı, güvenli yazılım geliştirme yaşam döngüsü (NIST SSDF), yan kanal saldırılarına giriş, tersine
+mühendislik araçlarıyla (Ghidra) gizlenmiş kodun incelenmesi.
 
 ---
 
-- **Bilgisayar Virüsleri ve Güvenlik Modelleri**
-  
-  - Virüs türleri (program, makro, boot sektörü)
-  - Saldırı ağaçları ve güvenlik modelleri
-  - Virüs karşı önlemleri
+## D. Kaynaklar, Yazılım ve Donanım
+
+Ana kaynak, ders web sitesindeki ders notlarıdır ve kendi başına yeterlidir. Notlar aşağıdaki ders kitabının
+tarifleri ile öğretim üyesinin yazılım koruma ve güvenlik sertifikasyonu alanında geliştirdiği kod koruma ve
+güvenlik yöntemleri üzerine kuruludur; bu yöntemler ilgili haftaların konuları içinde işlenir.
+
+**Ders kitabı:**
+
+- J. Viega, M. Messier. *Secure Programming Cookbook for C and C++*. O'Reilly, 2003. — Kitaptaki kavramlar ve hata
+  desenleri bugün de geçerlidir; 2003 tarihli API ve algoritmaların güncel karşılıkları (OpenSSL 3, TLS 1.3, AES-GCM,
+  Argon2id vb.) ders notlarında verilir.
+
+**Ritimde tanımlı diğer kaynaklar:**
+
+- Deitel & Deitel. *C How to Program*, 7. baskı. Prentice Hall, 2013.
+- T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein. *Introduction to Algorithms*, 3. baskı. MIT Press.
+- J. R. Hanly, E. B. Koffman. *Problem Solving and Program Design in C*.
+
+**İleri okuma:**
+
+- R. C. Seacord. *Secure Coding in C and C++*, 2. baskı. Addison-Wesley, 2013.
+- C. Collberg, J. Nagra. *Surreptitious Software: Obfuscation, Watermarking, and Tamperproofing for Software
+  Protection*. Addison-Wesley, 2009.
+- M. Dowd, J. McDonald, J. Schuh. *The Art of Software Security Assessment*. Addison-Wesley, 2006.
+- R. Anderson. *Security Engineering*, 3. baskı. Wiley, 2020.
+- J.-P. Aumasson. *Serious Cryptography*, 2. baskı. No Starch Press, 2024.
+- Açık erişimli standartlar: SEI CERT C/C++ ve Oracle Java güvenli kodlama standartları, OWASP Top 10, ASVS, MASVS
+  ve MASTG, MITRE CWE, NIST FIPS 140-3.
+
+**Dizüstü bilgisayar gereklidir.** Derste ve projede kendi geliştirme ortamınızı kullanacaksınız: C/C++ derleyicisi
+(GCC, Clang ya da MSVC), CMake, GoogleTest, OpenSSL 3, SQLite, SoftHSM2, JDK 21 ile ProGuard/R8, Tigress (Linux;
+Windows'ta WSL2 ya da Docker ile), Git ve bir GitHub hesabı. Android konuları için Android Studio (SDK ve NDK) ile
+emülatör önerilir. Kurulum adımları 1. haftada ve ders notlarında verilir; proje şablonları sağlanır.
 
 ---
 
-- **Veri Güvenliği: Aktarımda, Depolamada ve Kullanımda**
-  
-  - SSL/TLS kullanımı
-  - Whitebox kriptografi uygulamaları
-  - Dinamik anahtar yönetimi
-  - Veri maskeleme teknikleri
+## E. Değerlendirme
 
----
+Dönem boyunca **tek bir proje** yürütülür: seçilen bir konu üzerinde, güvenlik gereksinimlerini karşılayan ve bir
+sertifikasyon sürecinden geçiyormuş gibi tasarlanan bir C/C++ uygulaması. Projeler bireysel olarak ya da en fazla 4
+kişilik takımlarla yapılır; geliştirmeye başlamadan önce GitHub'da proje planı hazırlanıp onaylatılır. Projenin her
+biri kendi rubriğiyle değerlendirilen iki ara kontrolü vardır: vize kontrolü ve final kontrolü. Ayrıca ara sınav
+haftasında bir, final döneminde bir quiz yapılır. Proje konuları, gereksinimler, teslimler ve **ayrıntılı vize ve final
+rubrikleri** (kriterler, puanlar, ilişkili öğrenme çıktıları ve başarı düzeyleri) dersin proje rehberinde verilir.
 
-- **Kod Sertleştirme Teknikleri (C/C++)**
-  
-  - Kontrol akışı düzleştirme
-  - Fonksiyon adı gizleme
-  - Bellek tahsisinin gizlenmesi
-  - Dinamik şifreleme teknikleri
+| Değerlendirme | Kod | Ağırlık | Zaman |
+| --- | --- | --- | --- |
+| Proje kontrolü 1 — ara rapor ve gösterim (rubrik) | RAP1 | Vizenin %60'ı | 7. hafta (30.10.2026) |
+| Quiz-1 (1–6. haftalar) | QUIZ1 | Vizenin %40'ı | 8. hafta, ara sınav haftası (31.10–08.11.2026) |
+| Proje kontrolü 2 — final rapor ve gösterim (rubrik) | RAP2 | Finalin %70'i | 15. hafta (25.12.2026) |
+| Quiz-2 (9–14. haftalar) | QUIZ2 | Finalin %30'u | 16. hafta, final dönemi (04–17.01.2027) |
 
----
-
-- **Kod Sertleştirme Teknikleri (Java/Yorumlanan Diller)**
-  
-  - ProGuard ile kod karıştırma
-  - Dinamik metot karıştırma
-  - Statik dize karıştırma ve korunması
-  - Gelişmiş ProGuard kuralları
-
----
-
-- **Çalışma Zamanı Uygulama Kendini Koruma (RASP) Teknikleri (C/C++)**
-  
-  - Root tespiti ve APK imzalama kontrolü
-  - Dinamik bellek koruması
-  - Debugger ve bellek izleme tespit etme
-  - Dinamik analiz araçlarına karşı koruma
-
----
-
-- **Gelişmiş Kod Karıştırma ve Çeşitlendirme Teknikleri**
-  
-  - Dinamik kontrol akışı karıştırma
-  - Sahte kontrol akışları ekleme
-  - Program karıştırma teknikleri
-  - Dinamik fonksiyon çağrıları ve çalışma zamanı optimizasyonları
-
----
-
-- **Quiz 1 + Ara Proje Rapor Teslimi**
-  
-  - İlk 7 hafta konularını kapsayan quiz
-  - Ara proje rapor teslimi
-
----
-
-- **Sertifikalar ve Şifreleme Yöntemleri (AES, RSA, PKI)**
-  
-  - AES ve RSA şifreleme
-  - HMAC ile veri bütünlüğü sağlama
-  - Dijital imza ve sertifika oluşturma
-
----
-
-- **Whitebox Kriptografi**
-  
-  - Whitebox AES ve DES uygulamaları
-  - Whitebox kriptografi ile anahtar koruma
-  - Yazılım tabanlı güvenlik çözümleri
-
----
-
-- **Güvenlik Sertifikaları ve Sızma Testi Planlaması**
-  
-  - ETSI ve EMV güvenlik standartları
-  - Sızma testi planlaması
-  - PCI DSS ve ISO 27001 güvenlik testleri
-
----
-
-- **Güvenlik Gereksinimleri**
-  
-  - ETSI, GSMA ve EMV Güvenlik Gereksinimleri
-  - EAL Gereksinimleri
-  - FIPS Gereksinimleri
-
----
-
-- **Tigress ve Çeşitlendirme**
-  
-  - Tigress ve Çeşitlendirme Teknikleri
-  
-  - Bulanıklaştırma (Obfuscation) Yöntemleri
-  
-  - Saldırılara Karşı Savunma
-
----
-
-- **Quiz 2**
-  
-  - İkinci quiz, önceki haftalardaki konuları kapsar
-
----
-
-- **Final Proje Teslimi ve Sunumu**
-  
-  - Final proje raporu ve sunumu
-
----
-
-## D. Ders Kitapları ve Gerekli Ekipmanlar
-
-Bu ders için zorunlu bir ders kitabı bulunmamaktadır. Ancak, aşağıdaki kaynaklar önerilmektedir:
-
-- **C How to Program, 7/E. Deitel & Deitel. 2013, Prentice-Hall.**
-- **Introduction to Algorithms, Third Edition By Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, and Clifford Stein.**
-- **Problem Solving and Program Design in C, J.R. Hanly, and E.B. Koffman.**
-
-Sınıf içi uygulamalar ve sınavlar için kişisel bir dizüstü bilgisayara sahip olmanız gerekmektedir.
-
----
-
-## E.Değerlendirme
-
-Dönem boyunca 1 adet Proje ve 2 adet yazılı Quiz olacaksınız. Vize zamanı Proje Ara Raporu Teslim Etmeniz ve Projenizin İlermesini İspatlayıcı Şekilde Çıktılar Oluşturmanız ve Projenizin Proje Planına Sadık Kalmanız Gerekiyor. 15. Hafta Projenizin Sonuç Raporunu ve Sunumunu Yapacaksınız. 8. Hafta 1 Adet Yazılı Quiz Olacaksınız ve 14. Hafta da 1 adet Yazılı Quiz Olacaksınız. 
-
----
-
-| Değerlendirme            | Kısaltma | Oran | Kapsam |
-| ------------------------ | -------- | ---- | ------ |
-| Proje Ara Raporu Teslimi | RAP1     | %60  | Vize   |
-| Quiz-1                   | QUIZ1    | %40  | Vize   |
-| Proje Final Raporu       | RAP2     | %70  | Final  |
-| Quiz-2                   | QUIZ2    | %30  | Final  |
+Rubrik kriterleri (ritim): **vize kontrolü** — güvenlik analizi (ÖÇ.1), veri güvenliği (ÖÇ.2), C/C++ kod
+sağlamlaştırma ve RASP teknikleri (ÖÇ.3), proje yönetimi (ÖÇ.5), ara rapor (ÖÇ.7); **final kontrolü** — kriptografi
+uygulaması (ÖÇ.2), güvenli iletişim (ÖÇ.4), varlık yönetimi (ÖÇ.5), ikili uygulama korumaları (ÖÇ.3), güvenlik testi
+ve birim testleri (ÖÇ.6), güvenlik standartları, final rapor ve sunum (ÖÇ.7).
 
 $$
-Not_{Vize} = 0.6RAP1 + 0.4QUIZ1
+Not_{Vize} = 0.6\,RAP1 + 0.4\,QUIZ1 \qquad Not_{Final} = 0.7\,RAP2 + 0.3\,QUIZ2
 $$
 
 $$
-Not_{Final}=0.7RAP2 + 0.3QUIZ2
+Başarı\ Notu = 0.4\,Not_{Vize} + 0.6\,Not_{Final}
 $$
 
-$$
-\text{Geçme Notu}=(40*Not{Vize}+60*Not_{Final})/100
-$$
+### İş yükü (AKTS 5 = 125 saat)
+
+| Etkinlik | Sayı | Süre | Toplam |
+| --- | --- | --- | --- |
+| Derse Katılım | 14 | 3 | 42 |
+| Bireysel Çalışma (haftalık notlar ve uygulamalar) | 14 | 1 | 14 |
+| Quiz (ara sınav haftası ve final dönemi) | 2 | 2 | 4 |
+| Quiz için Bireysel Çalışma | 2 | 10 | 20 |
+| Proje Hazırlama (vize ve final kontrolleri) | 2 | 16 | 32 |
+| Rapor Hazırlama | 2 | 5 | 10 |
+| Proje Sunma (gösterim ve sorular) | 2 | 1,5 | 3 |
+| **Toplam** | | | **125** |
 
 ---
 
-##### F. Dersin Yürütülmesi
+## F. Öğretim Yöntemleri
 
-Dersler yüz yüze yapılacak olup, destekleyici materyaller ve duyurular Google Classroom veya Microsoft Teams üzerinden paylaşılacaktır. Salgına bağlı bir uzaktan eğitim gereksinimi oluşması durumunda, ders senkron ve asenkron uzaktan eğitim yöntemleri ile yürütülecektir.
+Dersler sınıfta yüz yüze yapılır; anlatım, soru–cevap ve uygulamalı programlama bir arada kullanılır. Her içerik
+haftası ders notu, sunum, çözümlü örnekler ve kendini sınama sorularıyla birlikte gelir; uygulamalar hatalı kod →
+saldırı → düzeltme sırasıyla, derste verilen yalıtılmış ortamlarda (konteyner ya da sanal makine) yapılır. Derste
+öğrenilen saldırı teknikleri yalnızca bu ortamlarda ve öğrencinin kendi sistemlerinde denenir. Duyurular, kaynaklar ve
+teslimler ders sınıfında yürütülür. Yoklama alınır.
 
 ---
 
 ## G. Geç Teslim
 
-Ödev ve projelerin belirlenen tarihlerde teslim edilmesi gerekmektedir. Geç teslimler kabul edilmeyecektir. Beklenmedik durumlar en kısa sürede dersin sorumlusuna bildirilmelidir.
+Ödev ve projelerin belirlenen tarihlerde teslim edilmesi gerekir. Geç teslimler kabul edilmez. Beklenmedik durumlar en
+kısa sürede öğretim üyesine bildirilmelidir.
 
 ---
 
-##### H. İletişim ve Ders Platformu
+## H. Ders Platformu ve İletişim
 
-Google Classroom ve Teams bu dersin yönetim platformu olarak kullanılacaktır. Tüm kaynaklar ve duyurular burada paylaşılacaktır. Sağlıklı bir iletişim için bu platformu düzenli olarak kontrol ediniz.
-
----
-
-### I. Akademik Dürüstlük, İntihal ve Kopya
-
-Akademik dürüstlük, RTEÜ Üniversitesi'nin en önemli ilkelerinden biridir. Akademik dürüstlük ilkelerine aykırı davrananlar ciddi şekilde cezalandırılacaktır.
+Bütün duyurular, kaynaklar ve teslimler her dönem yeniden açılan ders sınıfında paylaşılır; sınıf kodu 1. haftada
+duyurulur. Ders notları, sunumlar ve indirilebilir belgeler ders web sitesindedir. Sınıfı ve üniversite e-postanızı her
+gün kontrol edin.
 
 ---
 
-Sınıf arkadaşlarınızla veya başkalarıyla "birlikte çalışmak" normaldir. Bir öğrenci, zor bir konuyu veya tüm dersi daha iyi anlamak için ücretli ya da ücretsiz birinden yardım istemiş olabilir. Ancak, "birlikte çalışmak" ile "özel ders almak" ve "akademik dürüstlük ihlali" arasındaki sınır nedir? Ne zaman intihal, ne zaman kopya çekme sayılır?
+## I. Akademik Dürüstlük, İntihal ve Kopya
+
+Akademik dürüstlük RTEÜ'nün en önemli ilkelerinden biridir. Akademik dürüstlük ilkelerine aykırı davrananlar ciddi
+şekilde cezalandırılır.
+
+Sınıf arkadaşlarınızla ya da başkalarıyla "birlikte çalışmak" doğaldır. Bir öğrenci zor bir konuyu ya da bütün dersi
+daha iyi anlamak için ücretli ya da ücretsiz birinden yardım istemiş olabilir. Peki "birlikte çalışmak" ya da "özel
+ders almak" ile "akademik dürüstlük ihlali" arasındaki sınır nedir? Ne zaman intihal, ne zaman kopya sayılır?
+
+Başka bir öğrencinin kâğıdına ya da sınavda izin verilmeyen bir kaynağa bakmak kopyadır ve cezalandırılır. Ancak pek
+çok öğrenci üniversiteye geldiğinde, özellikle ödevlerde neyin kabul edilebilir olduğu ve neyin "kopya" sayıldığı
+konusunda çok az deneyime sahiptir. Aşağıdaki açıklamalar notlandırılan ödevlerde akademik dürüstlük anlayışını
+özetler. Aşağıda tanımlanmayan bir durumla karşılaşırsanız, yapmak istediğinizin akademik dürüstlük çerçevesinde kalıp
+kalmadığını öğretim üyesine danışın.
+
+### a. Ödev hazırlarken neler kabul edilebilir?
+
+- Ödevi daha iyi anlamak için sınıf arkadaşlarınızla konuşmak.
+- İnternette ya da başka bir yerde bulduğunuz fikirleri, alıntıları, paragrafları ya da küçük kod parçalarını,
+  ödevin tamamının çözümü olmamak ve kaynağını belirtmek koşuluyla ödevinize eklemek.
+- Ödevinizin dili konusunda yardım istemek.
+- Sınıfta tartışma ortamı oluşturmak için ödevinizin küçük parçalarını paylaşmak.
+- Teknik sorunları çözmek için internetten ya da başka kaynaklardan talimat, başvuru kaynağı ya da çözüm aramak; ama
+  ödevin doğrudan cevabını aramamak.
+- Çözümleri başkalarıyla metin ya da kod paylaşmadan, diyagramlar ya da özet açıklamalarla tartışmak.
+- Ödevinizi sizin yerinize yapmaması koşuluyla bir eğitmenden (ücretli ya da ücretsiz) yardım almak.
+
+### b. Neler kabul edilemez?
+
+- Kendi çözümünüzü teslim etmeden önce bir sınıf arkadaşınızdan çözümünü görmek istemek.
+- Dış kaynaklardan alıp ödevinize kattığınız herhangi bir metnin ya da kodun kaynağını belirtmemek.
+- Çözmekte zorlanan bir sınıf arkadaşınıza kendi çözümünüzü vermek ya da göstermek.
 
 ---
 
-Bir başka öğrencinin kağıdına ya da sınavda izin verilmeyen başka bir kaynağa bakmanın kopya çekme olduğu ve cezalandırılacağı açıktır. Ancak, birçok öğrenci, üniversiteye geldiklerinde ödevlerde neyin kabul edilebilir olduğuna ve "kopyalama"nın ne olduğuna dair çok az deneyime sahip olabiliyor. Özellikle ödevlerde akademik dürüstlüğün sınırlarını anlamak her zaman kolay olmayabilir.
+## J. Beklentiler
 
-Aşağıda, Mühendislik ve Mimarlık Fakültesi öğrencilerine, notlandırılacakları ödevlerde akademik dürüstlük felsefesini vurgulamak için rehber niteliğinde bazı açıklamalar yer almaktadır. Aşağıda tanımlanmayan bir durumla karşılaşıldığında, öğrencinin, yapmayı düşündüğü şeyin akademik dürüstlük çerçevesinde olup olmadığını anlamak için dersin hocasına veya asistanına danışması önerilir.
-
----
-
-### a. Bir ödev hazırlanırken kabul edilebilir olan nedir?
-
-- Ödevi daha iyi anlamak için sınıf arkadaşlarınızla iletişim kurmak
+Derslere zamanında katılmanız ve haftalık gereksinimleri (okumalar ve proje adımları) tamamlamanız beklenir. Öğretim
+üyesi ile öğrenciler arasındaki ana iletişim kanalı e-postadır. Sorularınızı üniversite e-posta adresinizden gönderin;
+**konu satırına ders kodunu, mesaja adınızı yazın**. Öğretim üyesi de gerektiğinde sizinle e-posta ile iletişime
+geçer; bu yüzden e-postanızı her gün kontrol edin.
 
 ---
 
-- İnternette veya başka yerlerde bulduğunuz fikirler, alıntılar, paragraflar, küçük kod parçacıkları (snippet) gibi içerikleri ödevinize dahil etmek, şu şartla:
-  
-  - Bu içerikler, ödevin tamamının çözümü olmamalıdır.
-  
-  - İçeriklerin kaynağını mutlaka belirtmelisiniz.
+## K. Ders İçeriği ve İzlence Güncellemeleri
 
----
-
-- Ödevinizin İngilizce içeriği konusunda size rehberlik etmesi için bir kaynaktan yardım istemek.
-
-- Ödevin küçük parçalarını sınıfta tartışma ortamı oluşturmak için paylaşmak.
-
-- Teknik sorunları çözmek için web ya da başka kaynaklardan talimat, referans veya çözüm aramak, ancak doğrudan ödeve cevap aramamak.
-
-- Ödevlerin çözümlerini başkalarıyla diyagramlar ya da özet açıklamalar kullanarak tartışmak, ancak doğrudan metin ya da kod paylaşmamak.
-
-- Dersle ilgili bir eğitmenden yardım almak (ücretli ya da ücretsiz), ancak eğitmen ödevinizi sizin yerinize yapmamalıdır.
-
----
-
-### b. Kabul edilemez olan nedir?
-
-- Ödevi teslim etmeden önce bir sınıf arkadaşınızdan çözümünü görmek istemek.
-
-- Ödevde dış kaynaklardan alıntı yaptığınız her türlü metin ya da kodun kaynağını belirtmemek.
-
-- Çözmekte zorlanan bir sınıf arkadaşınıza kendi ödev çözümünüzü vermek veya göstermek.
-
----
-
-### J. Beklentiler
-
-Derslere zamanında katılmanız ve dönem boyunca haftalık ders gereksinimlerini (okuma ve ödevler) tamamlamanız beklenmektedir. Eğitmen ile öğrenciler arasındaki ana iletişim kanalı e-posta olacaktır. Dersle ilgili sorularınızı, üniversite tarafından size sağlanan e-posta adresi üzerinden eğitmenin e-posta adresine göndermelisiniz. ***Mesajınızın konu alanına dersin adını, metin alanına ise adınızı eklemeyi unutmayın.*** Ayrıca, eğitmen gerekli olduğunda sizinle e-posta yoluyla iletişime geçecektir. Bu nedenle, sağlıklı bir iletişim için e-posta adresinizi her gün kontrol etmeniz çok önemlidir.
-
----
-
-## K. Ders İçeriği ve Program Güncellemeleri
-
-Gerektiğinde ders içeriği ve programda değişiklik yapılabilir. Herhangi bir değişiklik durumunda dersin sorumlusu, öğrencileri bilgilendirecektir.
-
----
-
-### C. Haftalık Ders Planı
-
-| **Hafta**    | **Tarih**     | **Konu**                                             | **Diğer Görevler** |
-| ------------ | ------------- | ---------------------------------------------------- | ------------------ |
-| **1. Hafta** | 26 Eylül 2024 | Güvenli Programlamaya Giriş ve Uygulama Koruma Planı |                    |
-| **2. Hafta** | 3 Ekim 2024   | Bilgisayar Virüsleri ve Güvenlik Modelleri           |                    |
-| **3. Hafta** | 10 Ekim 2024  | Veri Güvenliği: Aktarımda, Depolamada ve Kullanımda  |                    |
-
----
-
-### C. Haftalık Ders Planı
-
-| **Hafta**    | **Tarih**    | **Konu**                                                         | **Diğer Görevler** |
-| ------------ | ------------ | ---------------------------------------------------------------- | ------------------ |
-| **4. Hafta** | 17 Ekim 2024 | Kod Sertleştirme Teknikleri (C/C++)                              |                    |
-| **5. Hafta** | 24 Ekim 2024 | Kod Sertleştirme Teknikleri (Java/Yorumlanan Diller)             |                    |
-| **6. Hafta** | 31 Ekim 2024 | Çalışma Zamanı Uygulama Kendini Koruma (RASP) Teknikleri (C/C++) |                    |
-| **7. Hafta** | 7 Kasım 2024 | Gelişmiş Kod Karıştırma ve Çeşitlendirme Teknikleri              |                    |
-
----
-
-### C. Haftalık Ders Planı
-
-| **Hafta**     | **Tarih**     | **Konu**                                                 | **Diğer Görevler**       |
-| ------------- | ------------- | -------------------------------------------------------- | ------------------------ |
-| **8. Hafta**  | 14 Kasım 2024 | **Quiz 1 + Ara Proje Rapor Teslimi**                     | Quiz ve Ara Proje Raporu |
-| **9. Hafta**  | 21 Kasım 2024 | Sertifikalar ve Şifreleme Yöntemleri (AES, RSA, PKI)     |                          |
-| **10. Hafta** | 28 Kasım 2024 | Whitebox Kriptografi                                     |                          |
-| **11. Hafta** | 5 Aralık 2024 | Güvenlik Sertifikasyonları ve Penetrasyon Testi Planlama |                          |
-
----
-
-### C. Haftalık Ders Planı
-
-| **Hafta**     | **Tarih**      | **Konu**                          | **Diğer Görevler**   |
-| ------------- | -------------- | --------------------------------- | -------------------- |
-| **12. Hafta** | 12 Aralık 2024 | Güvenlik Gereksinimleri           |                      |
-| **13. Hafta** | 19 Aralık 2024 | Tigress ve Çeşitlendirme          |                      |
-| **14. Hafta** | 26 Aralık 2024 | **Quiz 2**                        | Quiz 2               |
-| **15. Hafta** | 2 Ocak 2025    | **Final Proje Teslimi ve Sunumu** | Final Proje ve Sunum |
-
----
-
-### Bologna Information
-
-<iframe width=700, height=1000 frameBorder=0 src="../ce100-algorithms-and-prgramming-II-bologna-en.pdf"></iframe>
-
----
-
-$Ders-İzlence-Sonu$
+Gerektiğinde ders içeriği ya da ders takvimi değiştirilebilir. Bu belge kapsamındaki her değişiklik öğretim üyesi
+tarafından duyurulur.

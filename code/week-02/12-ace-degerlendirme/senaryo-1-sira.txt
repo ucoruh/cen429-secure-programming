@@ -1,0 +1,34 @@
+# CEN429 - Hafta 2 - Demo 12, senaryo 1: ACE SIRASI ve "en iyi eslesme" yanilgisi
+# Kitaptaki ornekteki DACL (Tarif 2.2): RET Herkes, IZIN Pazarlama, IZIN Herkes.
+# Kitap "Windows en iyi eslesmeyi secer, Pazarlama yazabilir" der. Gercekte
+# ACE'ler SIRAYLA gezilir; ilk RET ACE'si istegi hemen reddeder.
+
+SENARYO 1a - kitaptaki DACL, ayse Pazarlama uyesi
+BELIRTEC ayse   Pazarlama
+SAHIP    mehmet
+ACE RET  Herkes     TAM
+ACE IZIN Pazarlama  YAZ
+ACE IZIN Herkes     OKU
+ISTE YAZ
+
+# Ayni ACE'ler ters sirada (kanonik OLMAYAN DACL; ornegin ACE'leri kendi
+# kodunda elle ekleyen bir program boyle yazabilir).
+SENARYO 1b - ayni ACE'ler, IZIN once (kanonik degil)
+BELIRTEC ayse   Pazarlama
+SAHIP    mehmet
+ACE IZIN Pazarlama  YAZ
+ACE IZIN Herkes     OKU
+ACE RET  Herkes     TAM
+ISTE YAZ
+KANONIK
+ISTE YAZ
+
+# Sahip ozel durumu: RET Herkes TAM olsa bile sahibe IZIN_OKU ve IZIN_YAZ
+# ortuk verilir; sahip DACL'i degistirip kendine hak verebilir.
+SENARYO 1c - ayni DACL, istegi yapan sahibin kendisi
+BELIRTEC mehmet Pazarlama
+SAHIP    mehmet
+ACE RET  Herkes     TAM
+ACE IZIN Pazarlama  YAZ
+ISTE OKU
+ISTE IZIN_YAZ

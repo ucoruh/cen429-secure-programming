@@ -1,0 +1,6 @@
+# CEN429 Marp ayarları — sunum HTML'i internetsiz (çevrimdışı) açılabilsin diye
+# emojiler resme (twemoji, CDN) çevrilmez; karakter olarak kalır.
+options:
+  emoji:
+    shortcode: false
+    unicode: false

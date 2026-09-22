@@ -1,0 +1,23 @@
+# CEN429 - Hafta 2 - Demo 12, senaryo 2: NULL DACL ile BOS DACL ayni sey DEGIL
+# NULL DACL : nesnede hic DACL yok  -> HERKESE HER HAK (sahipligi almak dahil)
+# BOS DACL  : DACL var ama 0 ACE    -> KIMSEYE HAK YOK (sahibin ortuk haklari haric)
+
+SENARYO 2a - NULL DACL, istegi yapan yabanci bir hesap
+BELIRTEC saldirgan
+SAHIP    mehmet
+DACL NULL
+ISTE OKU,YAZ
+ISTE SAHIP_AL,IZIN_YAZ
+
+SENARYO 2b - BOS DACL, ayni yabanci hesap
+BELIRTEC saldirgan
+SAHIP    mehmet
+DACL BOS
+ISTE OKU
+
+SENARYO 2c - BOS DACL, istegi yapan sahip
+BELIRTEC mehmet
+SAHIP    mehmet
+DACL BOS
+ISTE OKU
+ISTE IZIN_YAZ

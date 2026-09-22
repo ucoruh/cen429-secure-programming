@@ -1,0 +1,20 @@
+# CEN429 - Hafta 6 - Demo 4: LD_PRELOAD / kanca algilama (yalniz Linux / WSL)
+# Bu demo LD_PRELOAD, dlsym ve dladdr kullanir; yalniz WSL/Linux'ta calisir.
+Set-Location $PSScriptRoot
+"=============================================================="
+"Demo 4 (LD_PRELOAD / fonksiyon kancasi algilama) WSL/Linux demosudur."
+"LD_PRELOAD ile sembol degistirme (interposition) Unix'e ozgudur."
+""
+"Calistirmak icin (WSL Ubuntu penceresinde):"
+"   cd ~/<ders-deposu>/code"
+"   ./build.sh"
+"   cd week-06/04-preload-kanca"
+"   sh demo.sh"
+""
+"Demo su noktayi gosterir: sahte bir kanca kutuphanesi LD_PRELOAD ile"
+"yuklendiginde time() sabit sahte deger dondurur; uygulama bunu dlsym +"
+"dladdr ile (fonksiyonun hangi .so'dan geldigine bakarak) ALGILAR."
+""
+"Windows'ta karsiligi IAT / satir-ici (inline) kanca tespitidir; farkli"
+"API gerektirir ve bu demoda islenmez."
+"=============================================================="

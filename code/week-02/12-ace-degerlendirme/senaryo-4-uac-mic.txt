@@ -1,0 +1,35 @@
+# CEN429 - Hafta 2 - Demo 12, senaryo 4: UAC suzgeci ve butunluk seviyeleri
+# Yonetici hesabi normalde SUZGECLI belirtecle calisir: Yoneticiler grubu
+# "yalniz ret" olur (IZIN ACE'lerinde sayilmaz, RET ACE'lerinde sayilir) ve
+# butunluk Orta'dir. "Yonetici olarak calistir" deyince tam belirtec gelir.
+
+SENARYO 4a - UAC suzgecli belirtec (yonetici, yukseltilmemis)
+BELIRTEC yonetici  Yoneticiler,Kullanicilar
+YALNIZRET Yoneticiler
+BUTUNLUK  Orta
+SAHIP     SISTEM
+ETIKET    Yuksek
+ACE IZIN Yoneticiler  TAM
+ACE IZIN Kullanicilar OKU,CALISTIR
+ISTE OKU
+ISTE YAZ
+
+SENARYO 4b - ayni hesap, yukseltilmis (tam) belirtec
+BELIRTEC yonetici  Yoneticiler,Kullanicilar
+BUTUNLUK  Yuksek
+SAHIP     SISTEM
+ETIKET    Yuksek
+ACE IZIN Yoneticiler  TAM
+ACE IZIN Kullanicilar OKU,CALISTIR
+ISTE YAZ
+
+# Dusuk butunluklu surec (ornegin kum havuzundaki bir belge goruntuleyici):
+# DACL kullaniciya TAM hak verse bile Orta etiketli dosyaya YAZAMAZ.
+SENARYO 4c - Dusuk butunluklu surec, kullanicinin kendi dosyasi
+BELIRTEC ayse  Kullanicilar
+BUTUNLUK  Dusuk
+SAHIP     ayse
+ETIKET    Orta
+ACE IZIN ayse  TAM
+ISTE OKU
+ISTE YAZ

@@ -1,0 +1,5 @@
+set(CEN429_KLASOR "Hafta 01/03 Tasmayla yetki yukseltme")
+cen429_ornek(giris           KAYNAK giris.c         MOD korumasiz)
+cen429_ornek(giris_denetimli KAYNAK giris.c         MOD denetimli)
+cen429_ornek(giris_asan      KAYNAK giris.c         MOD asan)
+cen429_ornek(giris_guvenli   KAYNAK giris_guvenli.c MOD guvenli)

@@ -1,0 +1,19 @@
+# CEN429 - Hafta 2 - Demo 12, senaryo 5: SAHIP_HAKLARI ve ayricaliklar
+# SAHIP_HAKLARI (OWNER RIGHTS, S-1-3-4) ACE'si varsa sahibin ortuk
+# IZIN_OKU/IZIN_YAZ haklari kalkar; sahip yalniz o ACE'nin verdigini alir.
+# Ayricalik (privilege) ise DACL'dan bagimsiz bir yetkidir.
+
+SENARYO 5a - SAHIP_HAKLARI ile sahibin izin degistirmesini engelle
+BELIRTEC ayse  Kullanicilar
+SAHIP    ayse
+ACE IZIN SAHIP_HAKLARI  OKU,YAZ
+ISTE YAZ
+ISTE IZIN_YAZ
+
+SENARYO 5b - SAHIPLIK_AL ayricaligi DACL'i atlar
+BELIRTEC operator  Yedekciler
+AYRICALIK SAHIPLIK_AL
+SAHIP    mehmet
+ACE IZIN mehmet  TAM
+ISTE OKU
+ISTE SAHIP_AL

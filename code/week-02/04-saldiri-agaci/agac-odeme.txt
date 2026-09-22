@@ -1,0 +1,17 @@
+# CEN429 — Hafta 2 — Saldiri agaci: "Odeme anahtarini ele gecir"
+# Jenerik mobil odeme uygulamasi + guvenlik kutuphanesi ornegi.
+# Yaprak maliyetleri ORNEK gun-adam eforudur (sentetik, ders icin).
+# HEDEF kok dugum VEYA'dir: saldirgana en ucuz yol yeter.
+# Girinti (iki bosluk) agac derinligini belirler.
+
+HEDEF: Odeme anahtarini ele gecir
+  VE Yerel veritabanini kopyala ve coz
+    YAPRAK Root yetkisi al                 maliyet=3
+    YAPRAK Veritabani anahtarini geri cat  maliyet=6
+  VEYA Kullanim aninda bellekten oku
+    YAPRAK Hata ayiklayici ile bellekten oku    maliyet=2
+    YAPRAK Bellek dokumu al ve anahtari ara      maliyet=2
+    YAPRAK Fonksiyona kanca at (hook)            maliyet=4
+  VE Sunucu ile telefon arasinda dinle
+    YAPRAK TLS'i kir / sahte sertifika kabul ettir  maliyet=7
+    YAPRAK Mesaj duzeyi sifrelemeyi kir             maliyet=8

@@ -1,0 +1,38 @@
+# CEN429 - Hafta 2 - Bell-LaPadula: seviye + KATEGORI (bolme) ornegi
+# Etiket = (seviye, kategori kumesi). "Bilmesi gereken" (need-to-know) ilkesi:
+# yuksek seviye tek basina yetmez, nesnenin kategorilerini de tasimalisiniz.
+# A, B'ye baskindir <=> seviye(A) >= seviye(B) VE kategori(A) kapsar kategori(B)
+
+MODEL   BLP
+
+SEVIYE  Genel     0
+SEVIYE  Gizli     1
+SEVIYE  CokGizli  2
+
+OZNE    analist   Gizli     AVRUPA
+OZNE    general   CokGizli  NUKLEER,AVRUPA
+OZNE    attase    CokGizli  ASYA
+
+NESNE   bulten        Genel
+NESNE   avrupa_rapor  Gizli     AVRUPA
+NESNE   asya_notu     Gizli     ASYA
+NESNE   nukleer_plan  CokGizli  NUKLEER
+NESNE   ortak_arsiv   CokGizli  NUKLEER,AVRUPA
+
+# DAC herkese her seyi acik birakiyor: kararlari yalniz BLP versin
+HAK     *  *  rw
+
+# general (CokGizli,{NUKLEER,AVRUPA}) Avrupa raporunu okur: baskin -> izin
+ISTEK   general  oku  avrupa_rapor
+# general Asya notunu okuyamaz: seviyesi yuksek ama ASYA kategorisi yok
+ISTEK   general  oku  asya_notu
+# attase ayni seviyede ama NUKLEER kategorisi yok -> red
+ISTEK   attase   oku  nukleer_plan
+# analist (Gizli,{AVRUPA}) ortak arsive YAZABILIR: nesne ona baskin (yukari yaz)
+ISTEK   analist  yaz  ortak_arsiv
+# analist nukleer plana yazamaz: {NUKLEER} kumesi {AVRUPA}'yi kapsamaz
+ISTEK   analist  yaz  nukleer_plan
+# general genel bultene yazamaz: asagi yazma (*-ozelligi)
+ISTEK   general  yaz  bulten
+# herkes bulteni okuyabilir (her etiket (Genel,{}) etiketine baskindir)
+ISTEK   attase   oku  bulten

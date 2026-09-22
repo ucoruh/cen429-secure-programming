@@ -1,0 +1,36 @@
+# Hafta 11 — Whitebox Kriptografi
+
+| | |
+| --- | --- |
+| **Tarih** | 27.11.2026 |
+| **Öğrenme çıktıları** | ÖÇ.2, 3 |
+| **Süre** | 3 saat |
+
+<!-- materyal:basla -->
+
+<div class="materyal" markdown>
+
+[:material-file-pdf-box: Ders notu (PDF)](cen429-week-11-ders-notu.pdf){ .md-button download="cen429-week-11-ders-notu.pdf" }
+[:material-file-word-box: Ders notu (DOCX)](cen429-week-11-ders-notu.docx){ .md-button download="cen429-week-11-ders-notu.docx" }
+[:material-presentation: Sunum (PDF)](cen429-week-11-sunum.pdf){ .md-button download="cen429-week-11-sunum.pdf" }
+[:material-microsoft-powerpoint: Sunum (PPTX)](cen429-week-11-sunum.pptx){ .md-button download="cen429-week-11-sunum.pptx" }
+[:material-language-html5: Sunum (HTML, çevrimdışı)](cen429-week-11-sunum.html){ .md-button download="cen429-week-11-sunum.html" }
+[:material-folder-zip: Tümünü indir (ZIP)](cen429-week-11-materyal.zip){ .md-button download="cen429-week-11-materyal.zip" }
+[:material-fullscreen: Sunumu tam ekran aç](cen429-week-11-sunum.html){ .md-button .md-button--primary target=_blank }
+
+</div>
+
+<div class="sunum-cercevesi">
+<iframe src="../cen429-week-11-sunum.html" title="Hafta 11 — Whitebox Kriptografi" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.</p>
+
+<!-- materyal:bitis -->
+
+!!! info "Bu sayfa hazırlanıyor"
+    Bu haftanın ders notu, sunumu ve uygulamaları sırası geldiğinde bu sayfada yayımlanacak. Konu başlıkları:
+
+    - Kara, gri ve beyaz kutu saldırgan modelleri; kod kaldırma (code lifting)
+    - Tablo tabanlı whitebox AES; iç ve dış kodlamalar
+    - Saldırılar (BGE, DFA, DCA) ve katmanlı savunma

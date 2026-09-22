@@ -1,0 +1,45 @@
+# CEN429 — Hafta 2 — Bell–LaPadula (gizlilik) örnek politikası
+# Askeri gizlilik benzetmesi: yuksek seviye = daha gizli.
+# Kural: "yukari okuma yok, asagi yazma yok" (no read up, no write down).
+
+MODEL   BLP
+
+SEVIYE  Genel     0
+SEVIYE  Gizli     1
+SEVIYE  CokGizli  2
+
+# Ozneler (kullanicilar) ve yetki seviyeleri
+OZNE    memur     Genel
+OZNE    subay     Gizli
+OZNE    general   CokGizli
+
+# Nesneler (belgeler) ve gizlilik seviyeleri
+NESNE   ilan      Genel
+NESNE   plan      Gizli
+NESNE   operasyon CokGizli
+
+# DAC matrisi: sahip herkese bol izin vermis olsun (BLP'nin tek basina
+# yaptigini gormek icin). Gercekte DAC ve MAC birlikte uygulanir.
+HAK     memur     ilan       rw
+HAK     memur     plan       rw
+HAK     memur     operasyon  rw
+HAK     subay     ilan       rw
+HAK     subay     plan       rw
+HAK     subay     operasyon  rw
+HAK     general   ilan       rw
+HAK     general   plan       rw
+HAK     general   operasyon  rw
+
+# --- Istekler ---
+# Memur kendi seviyesindekini okur/yazar: sorun yok
+ISTEK   memur   oku  ilan
+ISTEK   memur   yaz  ilan
+# Memur daha gizli belgeyi okumak istiyor: BLP "yukari okuma yok" der
+ISTEK   memur   oku  operasyon
+# General cok gizli belgeyi okur: kendi seviyesi, sorun yok
+ISTEK   general oku  operasyon
+# General cok gizli bilgiyi genel bir belgeye yaziyor (sizinti!):
+# BLP "asagi yazma yok" ile bunu engeller
+ISTEK   general yaz  ilan
+# Memur daha gizli bir belgeye yazabilir (yukari yazma BLP'de serbest)
+ISTEK   memur   yaz  operasyon

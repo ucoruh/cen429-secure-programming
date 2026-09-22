@@ -1,0 +1,16 @@
+# CEN429 — Hafta 2 — Ayni agac, SAVUNMA eklendikten sonra
+# "Bellekten oku" dalina RASP (hata ayiklayici + kanca algilama) eklendi:
+# bu ucuz saldirilarin maliyeti cok yukseldi. En ucuz yol simdi degisiyor.
+# Karsilastirma: agac-odeme.txt en ucuz = 2; burada en ucuz = ?
+
+HEDEF: Odeme anahtarini ele gecir
+  VE Yerel veritabanini kopyala ve coz
+    YAPRAK Root yetkisi al                 maliyet=3
+    YAPRAK Veritabani anahtarini geri cat  maliyet=6
+  VEYA Kullanim aninda bellekten oku
+    YAPRAK Hata ayiklayici (anti-debug'i as)     maliyet=9
+    YAPRAK Bellek dokumu (rastgele silme'yi as)  maliyet=8
+    YAPRAK Kanca at (hook algilamayi as)         maliyet=10
+  VE Sunucu ile telefon arasinda dinle
+    YAPRAK TLS'i kir / sahte sertifika kabul ettir  maliyet=7
+    YAPRAK Mesaj duzeyi sifrelemeyi kir             maliyet=8

@@ -1,8 +1,10 @@
-name: ci 
+name: ci
+# NOT: Derlemeler/dogrulamalar LOKALDE yapilir (GitHub Actions dakikasi harcanmasin).
+# Bu is akisi YALNIZ MkDocs sitesini GitHub Pages'e yayimlar.
 on:
   push:
     branches:
-      - master 
+      - master
       - main
 permissions:
   contents: write

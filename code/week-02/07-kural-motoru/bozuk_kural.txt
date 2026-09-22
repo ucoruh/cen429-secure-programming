@@ -1,0 +1,6 @@
+# CEN429 — Hafta 2 — Demo 07: BİLEREK bozuk kural dosyası
+# Motorun hatalı girdiyi reddettiğini göstermek içindir: kapanmayan tırnak.
+kural Bozuk {
+  dizge $a = "kapanmayan tirnak
+  kosul $a
+}

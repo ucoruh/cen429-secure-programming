@@ -1,204 +1,176 @@
----
-marp: true
-theme: default
-style: |
-    img[alt~="center"] {
-      display: block;
-      margin: 0 auto;
-    }
-_class: lead
-paginate: true
-backgroundColor: #fff
-backgroundImage: url('https://marp.app/assets/hero-background.svg')
-header: 'Güvenli Programlama ve Kod Karartma (Obfuscation)'
-footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CEN429 Hafta-7'
-title: "CEN429 Güvenli Programlama Hafta-7"
-author: "Yazar: Dr. Öğr. Üyesi Uğur CORUH"
-date:
-subtitle: "Kod Karartma ve Çeşitlendirme Teknikleri"
-geometry: "left=2.54cm,right=2.54cm,top=1.91cm,bottom=1.91cm"
-titlepage: true
-titlepage-color: "FFFFFF"
-titlepage-text-color: "000000"
-titlepage-rule-color: "CCCCCC"
-titlepage-rule-height: 4
-logo: "http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg"
-logo-width: 100
-page-background:
-page-background-opacity:
-links-as-notes: true
-lot: true
-lof: true
-listings-disable-line-numbers: true
-listings-no-page-break: false
-disable-header-and-footer: false
-header-left:
-header-center:
-header-right:
-footer-left: "© Dr. Uğur CORUH"
-footer-center: "Lisans: CC BY-NC-ND 4.0"
-footer-right:
-subparagraph: true
-lang: tr-TR
-math: katex
-tags:
-  - cen429-hafta-7
-  - kod-karartma
-  - çeşitlendirme
-  - obfuscation
-ref_link: na
----
+# Hafta 7 — Ara Proje Gösterimleri
 
-<!-- _backgroundColor: aquq -->
+| | |
+| --- | --- |
+| **Tarih** | 30.10.2026 |
+| **Öğrenme çıktıları** | ÖÇ.1, 2, 3, 5, 7 |
+| **Süre** | 3 saat |
 
-<!-- _color: orange -->
+<!-- materyal:basla -->
 
-<!-- paginate: false -->
+<div class="materyal" markdown>
 
-# CEN429 Güvenli Programlama
+[:material-file-pdf-box: Ders notu (PDF)](cen429-week-7-ders-notu.pdf){ .md-button download="cen429-week-7-ders-notu.pdf" }
+[:material-file-word-box: Ders notu (DOCX)](cen429-week-7-ders-notu.docx){ .md-button download="cen429-week-7-ders-notu.docx" }
+[:material-presentation: Sunum (PDF)](cen429-week-7-sunum.pdf){ .md-button download="cen429-week-7-sunum.pdf" }
+[:material-microsoft-powerpoint: Sunum (PPTX)](cen429-week-7-sunum.pptx){ .md-button download="cen429-week-7-sunum.pptx" }
+[:material-language-html5: Sunum (HTML, çevrimdışı)](cen429-week-7-sunum.html){ .md-button download="cen429-week-7-sunum.html" }
+[:material-folder-zip: Tümünü indir (ZIP)](cen429-week-7-materyal.zip){ .md-button download="cen429-week-7-materyal.zip" }
+[:material-fullscreen: Sunumu tam ekran aç](cen429-week-7-sunum.html){ .md-button .md-button--primary target=_blank }
 
-## Hafta-7
+</div>
 
-#### Kod Karartma (Obfuscation) ve Çeşitlendirme Teknikleri
+<div class="sunum-cercevesi">
+<iframe src="../cen429-week-7-sunum.html" title="Hafta 7 — Ara Proje Gösterimleri" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.</p>
+
+<!-- materyal:bitis -->
+
+!!! abstract "Bu hafta ne oluyor?"
+    Bu hafta ders anlatılmaz. Dönem projesinin **ilk kontrolü (RAP1)** yapılır: her takım ara raporunu (güvenlik
+    kılavuzunun vize bölümleri) teslim eder ve çalışan uygulamasını gösterir. RAP1, vize notunun **%60'ıdır**; kalan
+    %40 gelecek haftaki Quiz-1'dir (`Not_Vize = 0,6·RAP1 + 0,4·QUIZ1`). Ayrıntılı rubrik (kriterler, puanlar, başarı
+    düzeyleri) dersin proje rehberindedir; bu sayfa, gösterime hazırlanmanız için bir kontrol listesidir.
+
+!!! warning "Teslim ve süre kuralları"
+    Geç teslim kabul edilmez (izlence, bölüm G). Gösterim sırası, takım başına süre ve teslim saati ders sınıfında
+    duyurulur. Beklenmedik bir durum yaşarsanız öğretim üyesine **gösterimden önce** haber verin.
 
 ---
 
-İndir 
+## 1. Vize kontrolü neyi ölçer?
 
-- [PDF](pandoc_cen429-week-7.pdf)
-- [DOC](pandoc_cen429-week-7.docx)
-- [SLIDE](cen429-week-7.pdf)
-- [PPTX](cen429-week-7.pptx)
+İzlencedeki vize kontrolü rubriğinin beş kriteri ve güvenlik kılavuzunuzda karşılık gelen bölümler:
 
----
+| Kriter | Öğrenme çıktısı | Kılavuzda nerede? | Hangi haftalar? |
+| --- | --- | --- | --- |
+| **Güvenlik analizi** | ÖÇ.1 | S2 ürün genel bakışı · S3 mimari ve arayüz tablosu · S4 tehdit ve saldırgan modeli | 1, 2 |
+| **Veri güvenliği** | ÖÇ.2 | S5 varlık listesi (taslak) · S7 veri güvenliği ve güvenlik kabuğu matrisi | 1, 3 |
+| **C/C++ kod sağlamlaştırma ve RASP** | ÖÇ.3 | S9 kod sağlamlaştırma (temel) · S10 RASP ve tepki politikası | 4, 6 |
+| **Proje yönetimi** | ÖÇ.5 | S13 geliştirme ortamı ve süreci, SBOM, değişiklik yönetimi · GitHub deposu ve plan | 1, 5 |
+| **Ara rapor** | ÖÇ.7 | Vize sütunundaki bütün bölümler; belge düzeni, kaynaklar | Tümü |
 
+### Ara raporda bulunması gereken bölümler
 
-<iframe width=700, height=500 frameBorder=0 src="../cen429-week-7.html"></iframe>
+Güvenlik kılavuzunuzun bölüm yapısı dönem boyunca aynıdır; vize kontrolünde bir kısmı tam, bir kısmı taslak olarak
+beklenir:
 
----
+| No | Bölüm | Vize kontrolünde |
+| --- | --- | --- |
+| S0 | Kapak, belge kontrolü, sürüm geçmişi | Tam |
+| S1 | Kapsam, hedef kitle, kısaltmalar, kaynaklar | Taslak |
+| S2 | Ürün genel bakışı | Tam |
+| S3 | Mimari ve arayüz tablosu, güven sınırları | Tam |
+| S4 | Tehdit modeli ve saldırgan modeli (STRIDE, saldırı tablosu, CWE) | Tam |
+| S5 | Varlık listesi ve varlık koruma şeması (C/I/I+) | Taslak |
+| S7 | Veri güvenliği (beklemede/kullanımda/aktarımda) + güvenlik kabuğu matrisi | Tam |
+| S9 | Kod sağlamlaştırma (derleyici sertleştirmesi, gizleme) | Temel |
+| S10 | RASP + tepki politikası | Tam |
+| S12 | Raporlama ve günlükleme politikası | Kısa |
+| S13 | Geliştirme ortamı ve süreci, SBOM, değişiklik yönetimi | Tam |
+| S16 | Güvenlik testi ve doğrulama | Plan |
+| S17 | Gereksinim uyum matrisi | Taslak |
 
-### Outline
-
-- Kod Karartma ve Çeşitlendirme Teknikleri
-- Statik ve Dinamik Kod Karartma
-- Sanallaştırma ve Şifreleme
-
----
-
-## **Hafta-7: Kod Karartma (Code Obfuscation) ve Çeşitlendirme (Diversifications)**
-
-Kod karartma ve çeşitlendirme teknikleri, yazılımın güvenliğini artırmak amacıyla kaynak kodunun ve işlevlerinin karmaşık hale getirilmesini içerir. Bu hafta, bu teknikleri ve bunların uygulamalarını inceleyeceğiz. Bu yöntemler, özellikle yazılımların tersine mühendislikten korunması ve saldırıların zorlaştırılması için kritik öneme sahiptir.
-
----
-
-#### **1. Tigress Nedir?**
-
-**Teorik Açıklama:** Tigress, programları dönüştürmek, karartmak ve karmaşık hale getirmek için kullanılan bir araçtır. Karartma teknikleri ile yazılımların tersine mühendislikten korunmasını sağlar. Farklı karartma teknikleri sunarak kodun analizini zorlaştırır.
-
----
-
-#### **2. Kod Karartma Teknikleri (Types of Obfuscation)**
-
-**Teorik Açıklama:** Kod karartma, kodu insan ve araçlar tarafından anlaşılması zor hale getirir. Aşağıdaki teknikler kod karartmanın temel yöntemlerindendir:
-
-- **Abstraction Transformations:** Modül yapıları, sınıflar, fonksiyonlar vb. yapıların yok edilmesi.
-- **Data Transformations:** Veri yapılarını yeni temsillerle değiştirmek.
-- **Control Transformations:** Kontrol yapılarının (if, while, repeat vb.) yok edilmesi.
-- **Dynamic Transformations:** Programın çalışma zamanında değişiklik yapması.
+S6, S8, S11, S14 ve S15 final kontrolüne kalır.
 
 ---
 
-#### **3. Statik Kod Karartma (Static Obfuscation)**
+## 2. Hafta hafta hazırlık kontrol listesi
 
-**Teorik Açıklama:** Statik karartma, programın çalışma zamanında sabit kalan karartma türüdür. Programın yapısını değiştirir ancak çalışırken değişmez. Aşağıdaki teknikler bu kategoridedir:
+Aşağıdaki liste, ilk altı haftanın "Dönem projesi: bu hafta" bölümlerindeki görevleri tek yerde toplar. Her maddeyi
+kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
 
-- **Bogus Control Flow:** Programın kontrol akışını karmaşık hale getirir. Gerçek olmayan kontrol yapıları eklenir, ölü dallar ve gereksiz dallar kullanılır.
-- **Control Flow Flattening:** Kontrol yapılarının yapılarını bozarak kodu dümdüz hale getirir.
+??? success "1. hafta — Proje planı ve ilk bölümler"
+    - [ ] GitHub deposu, README, proje planı (iş paketleri, takvim, görev dağılımı) onaylatıldı.
+    - [ ] S0 kapak ve sürüm geçmişi.
+    - [ ] S2 ürün genel bakışı: uygulama ne yapıyor, kim kullanıyor?
+    - [ ] S3 mimari şema ve **arayüz tablosu** (her arayüz için uçlar, kimlik doğrulama, gizlilik/bütünlük).
+    - [ ] S4 saldırgan modeli, STRIDE tablosu, en az bir **saldırı ağacı**.
+    - [ ] S5 varlık listesi taslağı: konum, oluşma → silinme, C/I/I+.
 
-**Uygulama Örnekleri:**
+??? success "2. hafta — Tehdit tablosu ve sınıflandırma"
+    - [ ] S4 tehdit tablosunda her tehdit bir **CWE** ile eşleşiyor ve **CVSS v3.1** vektörü var.
+    - [ ] Saldırı ağacı bir aracın girdi biçiminde ya da çizim olarak ekli.
+    - [ ] Tehditler arayüz tablosundaki satırlardan çıkarıldı; her varlık en az bir tehditte geçiyor.
 
-1. Kodda gereksiz dallanmalar ve ölü dallar ekleyerek kontrol akışını zorlaştırmak.
-2. Fonksiyonların içine sahte işlemler yerleştirmek.
+??? success "3. hafta — Veri güvenliği"
+    - [ ] S7 aktarımda, beklemede ve kullanımda veri için hangi algoritma, hangi anahtar, hangi bağlama?
+    - [ ] En hassas varlık için **güvenlik kabuğu matrisi** (aşama × kabuk).
+    - [ ] Rastgele değerler CSPRNG'den; AEAD etiketi açık metin kullanılmadan önce doğrulanıyor.
+    - [ ] TLS kullanılıyorsa doğrulama + ana makine adı denetimi (+ varsa sabitleme) gösterilebiliyor.
 
----
+??? success "4. hafta — C/C++ sağlamlaştırma"
+    - [ ] S9: derleyici koruma tablosu (`checksec` / `dumpbin`); kapalı kalan koruma varsa gerekçesi.
+    - [ ] CERT kurallarına göre tarama; en az beş bulgu düzeltildi ve kural kimliğiyle belgelendi.
+    - [ ] Testler ASan + UBSan ile çalıştı; en az bir fuzz hedefi ve sonucu.
+    - [ ] Sürümde günlük yok, hassas dizge `strings` çıktısında yok.
 
-#### **4. Opaque Predicates ve Kırma (Breaking Opaque Predicates)**
+??? success "5. hafta — Bağımlılıklar ve girdi doğrulama"
+    - [ ] S13: CycloneDX biçiminde SBOM ve zafiyet taraması sonucu.
+    - [ ] Girdi doğrulama tablosu: her giriş noktası için biçim, uzunluk sınırı, doğrulayan fonksiyon.
 
-**Teorik Açıklama:** **Opaque Predicates**, her zaman sabit bir değere sahip olan, ancak dışarıdan bakıldığında değişiyormuş gibi görünen koşul ifadeleridir. Bu koşulların karmaşık matematiksel veya mantıksal ilişkilerle oluşturulması, kodun analiz edilmesini zorlaştırır.
-
-**Uygulama Örnekleri:**
-
-1. **Opaque Predicates** kullanarak sabit koşullar oluşturma.
-2. Opaque predicates’i kırma teknikleri ile matematiksel analizler yaparak bu yapıları çözme.
-
----
-
-#### **5. Şifreleme Tabanlı Sayısal Dönüşümler (Encoding Integer Arithmetic)**
-
-**Teorik Açıklama:** Sayılar üzerinde karmaşık matematiksel dönüşümler kullanarak orijinal işlemleri gizleme. Örneğin, toplama işlemini karmaşık matematiksel ifadelerle değiştirme, tersine mühendisliği zorlaştırır.
-
-**Uygulama Örnekleri:**
-
-1. **x + y** gibi basit aritmetik işlemleri gizleyerek yerine daha karmaşık matematiksel işlemler yerleştirme.
-2. Dönüştürülmüş sayısal işlemler üzerinde çalışarak orijinal aritmetik yapıyı geri çözme.
-
----
-
-#### **6. Linear Transformation ve Sayısal Dönüşümler (Linear Transformation and Number-Theoretic Tricks)**
-
-**Teorik Açıklama:** Doğrusal dönüşümler, orijinal veriyi karmaşık matematiksel dönüşümlerden geçirerek gizler. Bu dönüşümler geri döndürülemez değildir, ancak analiz edilmesi zordur.
-
-**Uygulama Örnekleri:**
-
-1. Mod 2^32 gibi büyük modüler aritmetiklerle doğrusal dönüşümler yaparak sayısal işlemleri gizleme.
-2. Euclid’in Genişletilmiş Algoritması gibi matematiksel yöntemlerle ters dönüşümleri yapma.
+??? success "6. hafta — RASP"
+    - [ ] S10: her kritik işlem için hangi RASP denetimleri, ne zaman, nerede çalışıyor?
+    - [ ] Tepki politikası: hangi sır silinir, fail-closed mı, decoy mu, olay nereye bildirilir?
+    - [ ] En az bir denetimin atlatma denemesi ve sonucu (S16 planına da yazılır).
 
 ---
 
-#### **7. Sanallaştırma (Virtualization)**
+## 3. Gösterim: önerilen akış
 
-**Teorik Açıklama:** Sanallaştırma, kodun doğrudan CPU'da çalıştırılması yerine bir sanal makine (interpreter) üzerinde çalıştırılmasını sağlar. Bu yöntemle, programın çalışma zamanında sürekli olarak çevrimi yapılır ve kodun tersine mühendisliği zorlaştırılır.
+Gösterim, bir değerlendiricinin ürününüzü ilk kez incelediği toplantı gibi düşünülmelidir. Süre sınırlıdır; önceden
+prova edin. Önerilen sıra:
 
-**Uygulama Örnekleri:**
+1. **Ürün ve mimari (S2–S3):** Uygulama ne yapıyor? Arayüz tablosunu ve güven sınırlarını tek bir şemada gösterin.
+2. **Tehditler ve varlıklar (S4–S5):** En kritik üç tehdit ve bunların hedeflediği varlıklar.
+3. **Canlı gösterim:** Uygulamayı çalıştırın; en az bir güvenlik önlemini **çalışırken** gösterin (ör. kurcalanmış bir
+   dosyanın reddedilmesi, bir RASP denetiminin tetiklenmesi).
+4. **Kanıt:** Koruma tablosu, sanitizer/fuzzing sonucu, SBOM; "yaptık" değil "şu komutla şu çıktıyı aldık".
+5. **Kalan risk ve plan:** Neyi henüz yapmadınız, finale kadar ne yapacaksınız?
 
-1. Programın tüm komutlarını bir interpreter aracılığıyla çalıştırarak orijinal kodu gizlemek.
-2. Interpreter bazlı sanallaştırmalarla kodun sürekli olarak değişken tutulması.
+!!! tip "Değerlendirici gibi düşünün"
+    Her önlem için üç soruya cevap hazırlayın: **Neyi korur?** (hangi varlık, hangi tehdit) · **Nasıl yapıldı?** (dosya,
+    fonksiyon, bayrak) · **Nasıl kanıtlandı?** (test, komut, çıktı). Cevabı "testini yapmadık" olan önlem, gözünde
+    henüz yoktur.
 
----
+### Gösterimde sorulabilecek örnek sorular
 
-#### **8. Çeşitlendirme (Diversity)**
+- Arayüz tablonuzda güven sınırını geçen hangi akış en riskli? Neden?
+- Bu varlık bellekte ne kadar süre açık kalıyor? Nerede siliniyor? Derleyicinin silmeyi kaldırmadığını nasıl
+  doğruladınız?
+- Şifreleme anahtarınız nereden geliyor, nerede duruyor? Nonce tekrar edebilir mi?
+- Hangi derleyici koruması kapalı? Neden?
+- RASP denetiminiz başarısız olunca ne oluyor? Tepki, tetikleyicinin hemen yanında mı?
+- SBOM'unuzda bilinen zafiyetli bir bileşen var mı? Etkileniyor musunuz?
+- Tehdit tablonuzdaki T3 için önlem hangi bölümde anlatılıyor ve nasıl test edildi?
 
-**Teorik Açıklama:** Çeşitlendirme, her bir programın farklı bir versiyonunu oluşturarak, kodun sabit bir yapıda olmamasını sağlar. Bu, virüslerin veya kötü niyetli yazılımların kodu analiz etmesini zorlaştırır.
+### Sık yapılan hatalar
 
-**Uygulama Örnekleri:**
-
-1. Aynı işlevi yerine getiren ancak farklı görünümlerdeki kod yapıları oluşturma.
-2. Her kod versiyonunda küçük yapısal değişiklikler yaparak kodun analiz edilmesini zorlaştırma.
-
----
-
-#### **9. Şifreleme ve Sayısal Dönüşümler (Encoding and Transforming)**
-
-**Teorik Açıklama:** Kodun bazı bölümleri, özel şifreleme algoritmalarıyla gizlenebilir. Bu, kodun analizini zorlaştıran başka bir karartma tekniğidir. Özellikle sayılar üzerinde şifreleme ve dönüşümler uygulanabilir.
-
-**Uygulama Örnekleri:**
-
-1. Kod içinde kullanılan sayıları şifreleyerek bu sayıların analizini zorlaştırma.
-2. Şifrelenmiş sayıların çözümlerini analiz ederek orijinal değerleri geri döndürme.
-
----
-
-#### **10. Opaque İfadeler ve Dinamik Karartma (Opaque Expressions and Dynamic Obfuscation)**
-
-**Teorik Açıklama:** Opaque ifadeler, kodun belirli kısımlarının karmaşık koşullar altında değerlendirilmesini sağlar. Dinamik karartma, kodun çalışma zamanında sürekli olarak dönüştürülmesi ve değişken tutulmasını içerir.
-
-**Uygulama Örnekleri:**
-
-1. Kodun çalıştığı sırada sürekli olarak dönüşümler uygulayarak analiz edilmesini zorlaştırmak.
-2. Çalışma zamanında kodu yeniden yapılandırarak sabit kalmasını engellemek.
+| Hata | Neden sorun? |
+| --- | --- |
+| Kılavuzda anlatılan önlem kodda yok (ya da tersi) | Belge ile ürün tutarsız: değerlendirici gözünde en ciddi bulgulardan biri |
+| "Güvenli" demek, kanıt göstermemek | Kanıtsız iddia puanlanmaz |
+| Varlık listesinde anahtarlar, günlükler ve kodun kendisi yok | Listede olmayan varlık korunmuyor demektir |
+| Tehdit tablosu arayüzlerden değil, genel bilgiden yazılmış | Projeye özgü tehditler kaçırılır |
+| Canlı gösterimin prova edilmemesi | Süre boşa gider; çalışmayan gösterim puanı düşürür |
+| Depoda gizli bilgi (parola, anahtar, kişisel veri) | Ciddi bir güvenlik hatası; bütün değerler sentetik olmalı |
 
 ---
 
-$$
-7.Hafta-Sonu
-$$
+## 4. Akademik dürüstlük
+
+İzlencenin "Akademik Dürüstlük" bölümü projede de geçerlidir: başkasının kodunu ya da metnini kaynak göstermeden
+kullanmak, takım dışından çalışma almak ve sonuçları uydurmak kabul edilmez. Teslim ettiğiniz her satırı açıklayabiliyor
+olmalısınız. Gösterimde takımın her üyesine soru sorulabilir.
+
+---
+
+## 5. Gösterimden sonra
+
+- Aldığınız geri bildirimleri bir **bulgu listesi** olarak yazın (bulgu, önem, düzeltme planı, hedef tarih). Bu liste,
+  12. haftada göreceğimiz değerlendirme sürecinin küçük bir modelidir.
+- Final kontrolünde beklenen bölümler (S6 kimlik doğrulama ve bağlama, S8 kripto ve anahtar yaşam döngüsü, S11 güvenli
+  iletişim, S14 varsayımlar ve devredilen gereksinimler, S15 derleme ve dağıtım hattı, S16 test sonuçları, S17 uyum
+  matrisi) 9–14. haftaların konularıyla doldurulacak.

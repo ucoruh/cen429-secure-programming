@@ -1,0 +1,17 @@
+# CEN429 - Hafta 2 - Saldiri agaci: cok oznitelikli surum
+# Ayni "Odeme anahtarini ele gecir" agaci; her yaprakta maliyet (gun-adam),
+# sure (gun) ve beceri (1-5 uzmanlik) verilir. Program en ucuz yolu secer ve
+# o yolun toplam suresini ve gereken en yuksek beceriyi de yazar.
+# Amac: tek sayiya (maliyet) degil, coklu ozniteliklere gore dusunmek.
+
+HEDEF: Odeme anahtarini ele gecir
+  VE Yerel veritabanini kopyala ve coz
+    YAPRAK Root yetkisi al                 maliyet=3 sure=2 beceri=3
+    YAPRAK Veritabani anahtarini geri cat  maliyet=6 sure=5 beceri=4
+  VEYA Kullanim aninda bellekten oku
+    YAPRAK Hata ayiklayici ile bellekten oku    maliyet=2 sure=1 beceri=2
+    YAPRAK Bellek dokumu al ve anahtari ara      maliyet=2 sure=1 beceri=2
+    YAPRAK Fonksiyona kanca at (hook)            maliyet=4 sure=3 beceri=4
+  VE Sunucu ile telefon arasinda dinle
+    YAPRAK TLS'i kir / sahte sertifika kabul ettir  maliyet=7 sure=6 beceri=5
+    YAPRAK Mesaj duzeyi sifrelemeyi kir             maliyet=8 sure=7 beceri=5

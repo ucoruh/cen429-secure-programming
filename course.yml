@@ -1,0 +1,239 @@
+# course-tools yapılandırması — CEN429 Güvenli Programlama (taslak)
+# Araç: tools/course-tools (alt modül). Kullanım: py -3.12 -m course_tools hepsi
+# Başvuru belgesi: tools/course-tools/README.md → "course.yml başvurusu".
+# Haftalar tools/build_outputs.py içindeki HAFTALAR verisinden aktarıldı (19.09.2026).
+surum: 1
+
+ders:
+  kod: CEN429
+  ad:
+    tr: Güvenli Programlama
+    en: Secure Programming
+  ogretim_uyesi:
+    tr: Dr. Öğr. Üyesi Uğur CORUH
+    en: Asst. Prof. Dr. Uğur CORUH
+  donem:
+    tr: 2026-2027 Güz
+    en: Fall 2026-2027
+  kurum:
+    ad:
+      tr: RECEP TAYYİP ERDOĞAN ÜNİVERSİTESİ
+      en: RECEP TAYYIP ERDOGAN UNIVERSITY
+    birim:
+      tr: Mühendislik ve Mimarlık Fakültesi · Bilgisayar Mühendisliği Bölümü
+      en: Faculty of Engineering and Architecture · Department of Computer Engineering
+    kisa:
+      tr: RTEÜ Bilgisayar Mühendisliği
+      en: RTEU Computer Engineering
+    docx:
+      tr: RECEP TAYYİP ERDOĞAN ÜNİVERSİTESİ · Bilgisayar Mühendisliği
+      en: RECEP TAYYIP ERDOGAN UNIVERSITY · Computer Engineering
+
+gorunum:
+  ana_renk: "#006d77"
+  logo: slides/tema/rteu_logo_kucuk.jpg      # sunum üst bilgisi ve PPTX
+  antet_logo: docs/images/rteu_logo.jpg      # ders notu PDF/DOCX anteti
+  marp_tema: cen429
+  site_css: docs/stylesheets/cen429.css
+  palet:                                     # önceki çıktılardaki tonlar birebir korunur
+    zemin: "#eef7f8"
+    cizgi: "#cfe3e5"
+    kenar: "#b7cfd2"
+    bolum_metin: "#d8f0f2"
+
+diller:
+  ana: tr          # sunum ve ders notu kaynakları Türkçe
+  kopya: [en]      # İngilizce sitede de aynı çıktılar (…-sunum.en.html kopyası)
+
+slayt:
+  baslik: "{kod} {kisa} — {konu}"
+  ust_bilgi: "{kod} {ad} · {kisa}"
+  alt_bilgi: "{kurum_kisa} · {donem}"
+
+hafta_deseni:
+  ad: "{kod_kucuk}-week-{no}"
+  sayfa: "week-{no}/{ad}.md"
+  sunum: "week-{no}/{ad}.{dil}.md"
+  kod: "week-{no:02d}"
+
+paket:                                       # haftalık ZIP (…-materyal.zip)
+  kod_ortak:                                 # code/'a göre; haftanın klasörüyle birlikte ZIP'e girer
+    - CMakeLists.txt                         # (kök CMake week-* klasörlerini kendisi bulur)
+    - CMakePresets.json
+    - build.ps1
+    - build.sh
+    - README.md
+    - .gitattributes
+    - cmake/
+    - common/
+  haric: [bin, dokum, build, __pycache__]    # derleme çıktıları ZIP'e girmez
+
+izlence:
+  ad: cen429-izlence
+  sayfa: syllabus/syllabus.md
+  sunum: "syllabus/{ad}.{dil}.md"
+  baslik:
+    tr: Ders İzlencesi
+    en: Syllabus
+  blok_oncesi:
+    tr: "## Ders Bilgileri"
+    en: "## Course Information"
+
+haftalar:
+  - no: 1
+    tarih: "18.09.2026"
+    oc: "1, 5"
+    baslik:
+      tr: Güvenli Programlamaya Giriş ve Uygulama Koruma Planı
+      en: Introduction to Secure Programming and the Application Protection Plan
+    konular: []
+  - no: 2
+    tarih: "25.09.2026"
+    oc: "1"
+    baslik:
+      tr: Bilgisayar Virüsleri ve Güvenlik Modelleri
+      en: Computer Viruses and Security Models
+    konular:
+      - "Virüs türleri (program, makro, önyükleme sektörü), solucan, truva atı; karşı önlemler"
+      - "Biçimsel güvenlik modelleri: Bell–LaPadula, Biba, Clark–Wilson"
+      - "Zafiyet sınıflandırma: CWE, OWASP Top 10, CVE, CVSS"
+      - Saldırı ağaçları
+  - no: 3
+    tarih: "02.10.2026"
+    oc: "2, 4"
+    baslik:
+      tr: "Veri Güvenliği: Aktarımda, Beklemede, Kullanımda"
+      en: "Data Security: In Transit, At Rest, In Use"
+    konular:
+      - Şifreleme temelleri ve kimlik doğrulamalı şifreleme
+      - TLS 1.3, sertifika doğrulama ve sabitleme
+      - Anahtar türetme, oturum anahtarları, veri maskeleme
+      - "Güvenlik kabukları: katmanlı veri koruması"
+  - no: 4
+    tarih: "09.10.2026"
+    oc: "3"
+    baslik:
+      tr: "Kod Sağlamlaştırma: C/C++"
+      en: "Code Hardening: C/C++"
+    konular:
+      - Girdi doğrulama, format string, taşmalar, serbest bırakılmış belleğin kullanımı
+      - SEI CERT C/C++, sanitizer'lar, fuzzing
+      - Derleyici ve işletim sistemi korumaları
+      - Sembol görünürlüğü, kontrol akışı düzleştirme, dize gizleme
+  - no: 5
+    tarih: "16.10.2026"
+    oc: "3"
+    baslik:
+      tr: "Kod Sağlamlaştırma: Java ve Yorumlanan Diller"
+      en: "Code Hardening: Java and Interpreted Languages"
+    konular:
+      - Enjeksiyon savunması ve parametreli sorgular
+      - ProGuard ve R8 ile küçültme ve gizleme
+      - Dize ve yöntem gizleme, JNI köprüsünün korunması
+      - Bağımlılık güvenliği ve SBOM
+  - no: 6
+    tarih: "23.10.2026"
+    oc: "3"
+    baslik:
+      tr: Çalışma Zamanı Uygulama Öz Koruması (RASP)
+      en: Runtime Application Self-Protection
+    konular:
+      - Algılama, savunma, caydırma; kod bütünlüğü denetimi
+      - Hata ayıklayıcı, kanca ve ortam algılama
+      - Kontrol akışı sayacı, cihaz ve sürüm bağlama
+      - Müdahaleye yanıt politikası
+  - no: 7
+    tarih: "30.10.2026"
+    oc: "1, 2, 3, 5, 7"
+    baslik:
+      tr: Ara Proje Gösterimleri
+      en: Midterm Project Demonstrations
+    konular:
+      - Ara proje gösterimleri
+      - "Ara proje raporu: güvenlik kılavuzunun vize bölümleri"
+  - no: 8
+    tarih: "31.10–08.11.2026"
+    oc: "1, 2, 3"
+    baslik:
+      tr: "Ara Sınav Haftası: Quiz-1"
+      en: "Midterm Exam Week: Quiz-1"
+    konular:
+      - "Quiz-1: 1–6. haftaların konuları"
+  - no: 9
+    tarih: "13.11.2026"
+    oc: "3"
+    baslik:
+      tr: Gelişmiş Kod Gizleme ve Çeşitlendirme
+      en: Advanced Obfuscation and Diversification
+    konular:
+      - Opak yüklemler, sahte kontrol akışı, ölü kod
+      - Veri kodlama, anti-disassembly, kendini değiştiren kod
+      - "Gizlemenin ölçülmesi: güç, dayanıklılık, maliyet"
+  - no: 10
+    tarih: "20.11.2026"
+    oc: "2, 4"
+    baslik:
+      tr: Sertifikalar ve Kriptografik Yöntemler
+      en: Certificates and Cryptographic Methods
+    konular:
+      - AES ve AEAD, HMAC, RSA-OAEP/PSS, Ed25519
+      - PKI, X.509, CRL ve OCSP
+      - Anahtar hiyerarşisi, rastgele sayı, PKCS#11 ve SoftHSM
+  - no: 11
+    tarih: "27.11.2026"
+    oc: "2, 3"
+    baslik:
+      tr: Whitebox Kriptografi
+      en: Whitebox Cryptography
+    konular:
+      - Beyaz kutu saldırgan modeli, kod kaldırma
+      - Tablo tabanlı whitebox AES, iç ve dış kodlamalar
+      - BGE, DFA, DCA saldırıları ve katmanlı savunma
+  - no: 12
+    tarih: "04.12.2026"
+    oc: "5, 6, 7"
+    baslik:
+      tr: Güvenlik Sertifikasyonları ve Sızma Testi Planlaması
+      en: Security Certifications and Penetration Test Planning
+    konular:
+      - Üçüncü taraf güvenlik değerlendirmesinin akışı
+      - Saldırı potansiyeli derecelendirmesi
+      - SAST/DAST, fuzzing, kod incelemesi
+      - Sızma testi planı ve raporu
+  - no: 13
+    tarih: "11.12.2026"
+    oc: "5, 7"
+    baslik:
+      tr: Güvenlik Gereksinimleri
+      en: Security Requirements
+    konular:
+      - Gereksinim → durum → kanıt izlenebilirliği
+      - ETSI, GSMA, EMV; Ortak Kriterler ve EAL; FIPS 140-3
+      - Devredilen gereksinimler
+  - no: 14
+    tarih: "18.12.2026"
+    oc: "3"
+    baslik:
+      tr: Tigress ve Çeşitlendirme
+      en: Tigress and Diversification
+    konular:
+      - Tigress dönüşümleri
+      - Tohum ile çeşitlendirme
+      - Dayanıklılığın değerlendirilmesi
+  - no: 15
+    tarih: "25.12.2026"
+    oc: "1–7"
+    baslik:
+      tr: Final Proje Gösterimleri
+      en: Final Project Demonstrations
+    konular:
+      - Final proje gösterimleri
+      - "Final raporu: güvenlik kılavuzunun tamamı"
+  - no: 16
+    tarih: "04–17.01.2027"
+    oc: "2–7"
+    baslik:
+      tr: "Final Dönemi: Quiz-2"
+      en: "Final Exam Period: Quiz-2"
+    konular:
+      - "Quiz-2: 9–14. haftaların konuları"

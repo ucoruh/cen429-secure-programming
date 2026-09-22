@@ -1,0 +1,44 @@
+# CEN429 — Hafta 2 — Biba (butunluk) ve DAC ornek politikasi
+# Yazilim benzetmesi: yuksek seviye = daha GUVENILIR (dogrulanmis) veri.
+# Biba kurali: "asagi okuma yok, yukari yazma yok" (no read down, no write up).
+# Amac: guvenilmez veri, guvenilir veriyi bozmasin.
+
+MODEL   BIBA
+
+SEVIYE  Dis       0     # internetten gelen, guvenilmez girdi
+SEVIYE  Uygulama  1     # dogrulanmis uygulama verisi
+SEVIYE  Cekirdek  2     # en guvenilir: yapilandirma / imzali kod
+
+OZNE    aglayici  Dis        # agdan veri alan bilesen (dusuk butunluk)
+OZNE    islemci   Uygulama   # is mantigi
+OZNE    yukleyici Cekirdek   # imzali yapilandirmayi yazan bilesen
+
+NESNE   gelen     Dis
+NESNE   kayit     Uygulama
+NESNE   ayar      Cekirdek
+
+# DAC: her ozneye kendi ve komsu nesnelerde bol izin verelim
+HAK     aglayici  gelen  rw
+HAK     aglayici  kayit  rw
+HAK     aglayici  ayar   rw
+HAK     islemci   gelen  rw
+HAK     islemci   kayit  rw
+HAK     islemci   ayar   rw
+HAK     yukleyici gelen  rw
+HAK     yukleyici kayit  rw
+HAK     yukleyici ayar   rw
+
+# --- Istekler ---
+# Aglayici gelen (dis) veriyi okur/yazar: kendi seviyesi, sorun yok
+ISTEK   aglayici  oku  gelen
+ISTEK   aglayici  yaz  gelen
+# Aglayici guvenilmez veriyi uygulama kaydina yaziyor: Biba "yukari yazma
+# yok" ile engeller (kirli veri temiz veriyi bozmasin)
+ISTEK   aglayici  yaz  kayit
+# Islemci imzali ayari (daha guvenilir) OKUYABILIR mi? Biba der ki
+# "asagi okuma yok" -> yukaridan okuma serbesttir, izin
+ISTEK   islemci   oku  ayar
+# Islemci dis (guvenilmez) veriyi okuyor: Biba "asagi okuma yok" -> RED
+ISTEK   islemci   oku  gelen
+# Yukleyici en guvenilir ayari yazar: kendi seviyesi, sorun yok
+ISTEK   yukleyici yaz  ayar

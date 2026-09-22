@@ -1,0 +1,42 @@
+# CEN429 - Hafta 2 - Cin Seddi (Brewer-Nash, 1989) ornegi
+# Bir danismanlik firmasi: ayni CIKAR CATISMASI SINIFINDAKI (ornegin iki
+# banka) sirketlerden birinin verisini okuyan danisman, digerininkine
+# ARTIK erisemez. Kural gecmise baglidir; istekler SIRAYLA islenir.
+# Seviye kullanilmaz (hepsi ayni seviye); yalniz sirket ve sinif onemli.
+
+MODEL   CIN
+
+SEVIYE  D  0
+
+OZNE    danisman1  D
+OZNE    danisman2  D
+
+NESNE   a_bilanco     D
+NESNE   b_bilanco     D
+NESNE   x_rapor       D
+NESNE   piyasa_ozeti  D
+
+#       nesne         sirket   catisma sinifi
+SIRKET  a_bilanco     BankaA   banka
+SIRKET  b_bilanco     BankaB   banka
+SIRKET  x_rapor       PetrolX  petrol
+SIRKET  piyasa_ozeti  -        -          # arindirilmis, herkese acik
+
+HAK     *  *  rw
+
+# danisman1 BankaA'yi okur: ilk erisim, serbest
+ISTEK   danisman1  oku  a_bilanco
+# PetrolX baska bir sinifta: serbest
+ISTEK   danisman1  oku  x_rapor
+# BankaB ayni sinifta ve BankaA okundu: duvar kapandi
+ISTEK   danisman1  oku  b_bilanco
+# Yazma (*-ozelligi): PetrolX verisini okumus biri BankaA dosyasina yazarsa
+# PetrolX bilgisi oradan BankaA'yi okuyabilen herkese sizabilir -> red
+ISTEK   danisman1  yaz  a_bilanco
+# danisman2 yalniz BankaB ile calisiyor: okur ve yazar
+ISTEK   danisman2  oku  b_bilanco
+ISTEK   danisman2  yaz  b_bilanco
+# Arindirilmis piyasa ozeti herkese acik: okuma serbest
+ISTEK   danisman2  oku  piyasa_ozeti
+# Ama banka verisi okumus biri kamuya acik ozete yazamaz
+ISTEK   danisman2  yaz  piyasa_ozeti

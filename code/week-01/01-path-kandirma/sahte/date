@@ -1,0 +1,9 @@
+#!/bin/sh
+# CEN429 demo: gerçek "date" yerine çalışan SAHTE program.
+# Zararsızdır: yalnız ekrana bir uyarı basar. Gerçek bir saldırgan burada
+# istediği her şeyi, programı çalıştıran kullanıcının yetkisiyle yapabilirdi.
+echo ""
+echo "  !!! SAHTE 'date' calisti !!!"
+echo "  Program PATH uzerinden kandirildi. Bu satiri yazan kod sizin degil,"
+echo "  demo klasorundeki sahte/date dosyasi."
+echo ""

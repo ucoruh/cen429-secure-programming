@@ -1,431 +1,287 @@
 ---
-marp: true
-theme: default
-style: |
-    img[alt~="center"] {
-      display: block;
-      margin: 0 auto;
-      background-color: transparent!important;
-    }
-_class: lead
-paginate: true
-backgroundColor: #fff
-backgroundImage: url('https://marp.app/assets/hero-background.svg')
-header: 'CEN429 Secure Programming Course Syllabus'
-footer: '![height:50px](http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg) RTEU CEN429 Syllabus'
-title: "CEN429 Secure Programming"
-author: "Instructor: Asst. Prof. Dr. Uğur CORUH"
-date:
-subtitle: "Detailed Course Syllabus"
-geometry: "left=2.54cm,right=2.54cm,top=1.91cm,bottom=1.91cm"
-titlepage: true
-titlepage-color: "FFFFFF"
-titlepage-text-color: "000000"
-titlepage-rule-color: "CCCCCC"
-titlepage-rule-height: 4
-logo: "assets/2021-10-19-15-01-36-image.png"
-logo-width: 100 
-page-background:
-page-background-opacity:
-links-as-notes: true
-lot: true
-lof: true
-listings-disable-line-numbers: true
-listings-no-page-break: false
-disable-header-and-footer: false
-header-left:
-header-center:
-header-right:
-footer-left: "© Dr. Uğur CORUH"
-footer-center: "License: CC BY-NC-ND 4.0"
-footer-right:
-subparagraph: true
-lang: en-US 
-math: katex
-tags:
-  - cen429-syllabus
-  - secure-programming
-  - fall-2024
-  - cen429
+title: "CEN429 Secure Programming — Syllabus"
+subtitle: "Fall Semester 2026-2027"
+author: "Asst. Prof. Dr. Uğur CORUH"
+lang: en-US
 ---
 
-<!-- _backgroundColor: aquq -->
+# Recep Tayyip Erdoğan University
 
-<!-- _color: orange -->
+## Faculty of Engineering and Architecture — Computer Engineering
 
-<!-- paginate: false -->
+### CEN429 Secure Programming — Syllabus
 
-<img src="http://erdogan.edu.tr/Images/Uploads/MyContents/L_379-20170718142719217230.jpg" title="" alt="height:100px" width="95">
-
-## Recep Tayyip Erdoğan University
-
-### Faculty of Engineering and Architecture, Computer Engineering
-
-### CEN429 - Secure Programming Course Syllabus
-
-#### Fall Semester, 2024-2025
+#### Fall Semester, 2026-2027
 
 ---
 
-Download 
+<!-- materyal:basla -->
 
-- [PDF](pandoc_syllabus.pdf)
-- [DOC](pandoc_syllabus.docx)
-- [SLIDE](syllabus.pdf)
-- [PPTX](syllabus.pptx)
+<div class="materyal" markdown>
 
----
+[:material-file-pdf-box: Lecture notes (PDF)](cen429-izlence-ders-notu.pdf){ .md-button download="cen429-izlence-ders-notu.pdf" }
+[:material-file-word-box: Lecture notes (DOCX)](cen429-izlence-ders-notu.docx){ .md-button download="cen429-izlence-ders-notu.docx" }
+[:material-presentation: Slides (PDF)](cen429-izlence-sunum.pdf){ .md-button download="cen429-izlence-sunum.pdf" }
+[:material-microsoft-powerpoint: Slides (PPTX)](cen429-izlence-sunum.pptx){ .md-button download="cen429-izlence-sunum.pptx" }
+[:material-language-html5: Slides (HTML, offline)](cen429-izlence-sunum.html){ .md-button download="cen429-izlence-sunum.html" }
+[:material-folder-zip: Download all (ZIP)](cen429-izlence-materyal.zip){ .md-button download="cen429-izlence-materyal.zip" }
+[:material-fullscreen: Open slides full screen](cen429-izlence-sunum.html){ .md-button .md-button--primary target=_blank }
 
-<iframe width=700, height=500 frameBorder=0 src="../syllabus.html"></iframe>
+</div>
 
----
+<div class="sunum-cercevesi">
+<iframe src="../cen429-izlence-sunum.html" title="Syllabus" loading="lazy" allowfullscreen></iframe>
+</div>
 
-<!-- paginate: true -->
+<p class="sunum-ipucu">Click inside the slides and use the arrow keys; use the button at the bottom right of the slides or the link above for full screen.</p>
 
-| Instructor:                | Asst. Prof. Dr. Uğur CORUH                  |
-| -------------------------- | ------------------------------------------- |
-| **Contact Information:**   | ugur.coruh@erdogan.edu.tr                   |
-| **Office No:**             | F-301                                       |
-| **Google Classroom Code**  | Not Used                                    |
-| **Microsoft Teams Code**   | zk6388k                                     |
-| **Lecture Hours and Days** | Thursday, 13:00 - 15:00 IBBF 402, 4th Floor |
+<!-- materyal:bitis -->
 
----
+## Course Information
 
-| **Lecture Classroom** | IBBF 402 4th Floor or Online via Google Meet / Microsoft Teams                                                                                                                                                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Office Hours**      | Meetings will be scheduled via Google Meet or Microsoft Teams using your university account and email. Email requests for meetings are required. To receive a faster response, ensure your email subject begins with *[CEN429]*, and write clear, concise, formal emails. |
-
----
-
-| **Lecture and Communication Language** | English                             |
-| -------------------------------------- | ----------------------------------- |
-| **Theory Course Hour Per Week**        | 3 Hours                             |
-| **Credit**                             | ?????                               |
-| **Prerequisite**                       | CE103- Algorithms and Programming I |
-| **Corequisite**                        | TBD                                 |
-| **Requirement**                        | TBD                                 |
-
-*TBD: To Be Defined.
+| | |
+| --- | --- |
+| **Instructor** | Asst. Prof. Dr. Uğur CORUH |
+| **Contact** | ugur.coruh@erdogan.edu.tr — subject line must start with **[CEN429]** |
+| **Office** | F-301 |
+| **Office hours** | By appointment by e-mail; meetings in the office or online with the university account |
+| **Lecture day, time, room** | Friday 09:00–12:00 · İİBF & Faculty of Law Building, D-402 (ED-K4-2) |
+| **Course website** | https://ucoruh.github.io/cen429-secure-programming/ |
+| **Course class** | A new class is opened every term; the class code is announced in week 1 |
+| **Language** | Turkish |
+| **Type / semester** | Elective · 7th semester |
+| **Weekly hours / credit / ECTS** | Theory 3 h · Credit 3 · ECTS 5 |
+| **Prerequisite** | CEN107 Algorithms and Programming I (former code CE103) |
 
 ---
 
-##### A. Course Description
+## A. Course Description
 
-This course provides a comprehensive approach to understanding secure software development techniques. Students will learn software protection methods to address common security vulnerabilities such as buffer overflows, memory leaks, and injection attacks. The course focuses on real-world applications and best practices in secure software development.
-
----
-
-##### B. Course Learning Outcomes
-
-After successfully completing this course, a student will be able to:
-
-1. Identify common software security vulnerabilities.
-2. Apply encryption methods to secure sensitive data.
-3. Implement code hardening techniques (such as RASP and code obfuscation).
-4. Establish secure communication channels using encryption and authentication mechanisms.
-5. Plan secure software design by employing defense strategies.
-6. Perform security reviews and vulnerability assessments.
+This course offers a comprehensive approach to understanding secure software development techniques. Students learn
+software protection methods to address common vulnerabilities such as buffer overflows, memory leaks and injection
+attacks: data security and cryptography, code hardening for C/C++ and Java, runtime application self-protection
+(RASP), code obfuscation and diversification, white-box cryptography, security standards and penetration test
+planning. The course focuses on real-world applications and best practices in secure software development. Each topic
+follows the order vulnerable code → attack → fix and is reinforced by in-class exercises and by a term project run as
+if it were going through a certification process.
 
 ---
 
-## C. Course Topics
+## B. Learning Outcomes
+
+A student who completes this course successfully:
+
+| Code | Learning outcome |
+| --- | --- |
+| LO.1 | Identifies and classifies common software vulnerabilities (buffer overflow, injection attacks, memory leaks, etc.). |
+| LO.2 | Explains basic encryption methods (symmetric/asymmetric, hash functions) and secure communication principles (SSL/TLS) for protecting sensitive data. |
+| LO.3 | Explains code hardening techniques (input validation, secure memory management, RASP, code obfuscation) and applies them to different languages (C/C++, Java). |
+| LO.4 | Explains the principles of building secure communication channels using encryption and authentication mechanisms. |
+| LO.5 | Creates a software plan using secure software design principles (least privilege, defense in depth, etc.) and defense strategies. |
+| LO.6 | Knows basic security review and vulnerability assessment methods for detecting software vulnerabilities. |
+| LO.7 | Knows secure programming standards (e.g. ETSI, EMV, FIPS) and the principles of penetration test planning. |
+
+### Contribution of learning outcomes to program outcomes (0–5)
+
+| | PO.1 | PO.2 | PO.3 | PO.4 | PO.5 | PO.6 | PO.7 | PO.8 | PO.9 | PO.10 | PO.11 | PO.12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LO.1 | – | 3 | – | 5 | – | – | – | – | 3 | – | 3 | – |
+| LO.2 | – | – | – | 3 | – | – | – | – | – | – | 3 | – |
+| LO.3 | – | 3 | 3 | 3 | – | – | – | – | – | – | 3 | – |
+| LO.4 | – | – | 3 | 3 | – | – | – | – | – | – | 3 | – |
+| LO.5 | – | 3 | 3 | 3 | – | – | – | 3 | 3 | – | 3 | – |
+| LO.6 | – | 3 | – | 3 | 3 | – | – | – | – | – | 3 | – |
+| LO.7 | – | – | – | 3 | – | – | – | – | – | – | 3 | 3 |
+
+PO.2 Problem solving · PO.3 Design · PO.4 Modern tools and techniques · PO.5 Research and experimentation ·
+PO.8 Communication · PO.9 Social awareness · PO.11 Ethics and standards · PO.12 Project and risk management.
 
 ---
 
-- **Introduction to Secure Programming and Application Protection Plan**
-  
-  - Overview of application protection
-  - Buffer overflows and prevention techniques
-  - Memory management and security
-  - Protected code partitioning and secure processing with encryption
+## C. Weekly Schedule
+
+Rule for all assessments: **project demonstrations take place in the week just before the midterm and final exam
+weeks; quizzes take place inside the midterm and final exam weeks** so that every student can attend. Topics follow
+the order defined in ritim.
+
+| Week | Date | Topics | LO |
+| --- | --- | --- | --- |
+| 1 | 18.09.2026 (make-up 30.09) | Course plan and communication. Introduction to secure programming: security goals (confidentiality, integrity, availability), attacker model, threat modeling (attack trees, STRIDE). Overview of application protection; buffer overflows and prevention techniques; memory management and security; secure processing with protected code partitioning and encryption. Preparing an application protection plan. | 1, 5 |
+| 2 | 25.09.2026 | Computer viruses and malware: virus types (program, macro, boot sector), worms and trojans; countermeasures against viruses. Attack trees and security models (Bell–LaPadula, Biba, Clark–Wilson). Classifying software vulnerabilities: CWE and the CWE Top 25, OWASP Top 10, CVE and CVSS. | 1 |
+| 3 | 02.10.2026 | Data security: in transit, at rest and in use. Encryption basics (symmetric/asymmetric, hash functions, authenticated encryption); using SSL/TLS and the TLS 1.3 handshake; certificate pinning; introduction to white-box cryptography applications; dynamic key management and session keys; data masking techniques; secure erasure of sensitive data in memory. | 2, 4 |
+| 4 | 09.10.2026 | Code hardening (C/C++): secure memory management and secure coding rules (SEI CERT C/C++); buffer overflow, use-after-free and integer overflow examples; sanitizers (AddressSanitizer, UndefinedBehaviorSanitizer) and an introduction to fuzzing; compiler and operating system protections (stack canaries, ASLR, DEP/NX, CFI, SafeStack); control flow flattening; function name obfuscation; memory allocation obfuscation; dynamic encryption techniques. | 3 |
+| 5 | 16.10.2026 | Code hardening (Java/interpreted languages): input validation and defense against injection attacks (SQL, command, path traversal; parameterized queries; SEI CERT Oracle Java); code obfuscation with ProGuard and R8; dynamic method obfuscation; static string obfuscation and protection; advanced ProGuard rules; dependency security and the software bill of materials (SBOM). | 3 |
+| 6 | 23.10.2026 | Runtime application self-protection (RASP) (C/C++): root and emulator detection; APK signature verification; runtime code block integrity (checksum) checks; debugger detection and attach prevention; hook attack detection; dynamic memory protection and memory monitoring detection; protection against dynamic analysis tools; responses when tampering is detected. | 3 |
+| 7 | 30.10.2026 | **Midterm project demonstrations** and midterm project report submission. | 1, 2, 3, 5, 7 |
+| 8 | 31.10–08.11.2026 | **Midterm exam week — Quiz-1** (weeks 1–6). | 1, 2, 3 |
+| 9 | 13.11.2026 | Advanced code obfuscation and diversification: dynamic control flow obfuscation; opaque predicates, bogus control flow and dead code insertion; program obfuscation techniques (data encoding, virtualization-based obfuscation); dynamic function calls and runtime optimizations; measuring obfuscation (potency, resilience, cost). | 3 |
+| 10 | 20.11.2026 | Certificates and cryptographic methods (AES, RSA, PKI): AES and RSA encryption, modes of operation and padding; data integrity with HMAC; creating and verifying digital signatures; PKI components (CA, RA, certificate chain); creating X.509 certificates (OpenSSL); certificate revocation (CRL, OCSP); the key distribution problem. | 2, 4 |
+| 11 | 27.11.2026 | White-box cryptography: white-box and black-box attacker models; white-box AES and DES implementations (table-based); key protection with white-box cryptography; known attacks (differential computation and fault analysis) and countermeasures; software-based security solutions (e.g. a software security module with SoftHSM). | 2, 3 |
+| 12 | 04.12.2026 | Security certifications and penetration test planning: ETSI and EMV security standards; security testing under PCI DSS and ISO/IEC 27001; security review and vulnerability assessment (code review, static and dynamic analysis, fuzzing); penetration test plan: scope, rules of engagement, methodology (OWASP WSTG and MASTG, PTES) and reporting. | 5, 6, 7 |
+| 13 | 11.12.2026 | Security requirements: ETSI, GSMA and EMV security requirements; Common Criteria (ISO/IEC 15408) and EAL levels; FIPS 140-3 requirements; turning requirements into the software plan and asset management. | 5, 7 |
+| 14 | 18.12.2026 | Tigress and diversification: C source transformations with Tigress (control flow flattening, virtualization, literal and arithmetic encoding, opaque predicates, function split and merge); combining obfuscation methods; diversification to produce a different binary for each copy; defending against attacks and evaluating how well obfuscated code resists analysis. | 3 |
+| 15 | 25.12.2026 | **Final project demonstrations** and final project report submission. | 1–7 |
+| 16 | 04–17.01.2027 | **Final exam period — Quiz-2** (weeks 9–14). | 2–7 |
+
+Enrichment topics covered in the course notes as optional reading: memory-safe languages (Rust) and their use
+alongside C/C++, the secure software development life cycle (NIST SSDF), an introduction to side-channel attacks,
+and examining obfuscated code with reverse engineering tools (Ghidra).
 
 ---
 
-- **Computer Viruses and Security Models**
-  
-  - Types of viruses (program, macro, boot sector)
-  - Attack trees and security models
-  - Virus countermeasures
+## D. Textbooks, Software and Equipment
+
+The course notes on the course website are the main resource and are self-contained. The notes are built on the
+recipes of the textbook below and on the code protection and security methods the instructor developed in
+software protection and security certification; these methods are taught within the related weeks.
+
+**Textbook:**
+
+- J. Viega, M. Messier. *Secure Programming Cookbook for C and C++*. O'Reilly, 2003. — The book's concepts and error
+  patterns still hold; up-to-date replacements for its 2003 APIs and algorithms (OpenSSL 3, TLS 1.3, AES-GCM,
+  Argon2id, etc.) are given in the course notes.
+
+**Other resources defined in ritim:**
+
+- Deitel & Deitel. *C How to Program*, 7th ed. Prentice Hall, 2013.
+- T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein. *Introduction to Algorithms*, 3rd ed. MIT Press.
+- J. R. Hanly, E. B. Koffman. *Problem Solving and Program Design in C*.
+
+**Further reading:**
+
+- R. C. Seacord. *Secure Coding in C and C++*, 2nd ed. Addison-Wesley, 2013.
+- C. Collberg, J. Nagra. *Surreptitious Software: Obfuscation, Watermarking, and Tamperproofing for Software
+  Protection*. Addison-Wesley, 2009.
+- M. Dowd, J. McDonald, J. Schuh. *The Art of Software Security Assessment*. Addison-Wesley, 2006.
+- R. Anderson. *Security Engineering*, 3rd ed. Wiley, 2020.
+- J.-P. Aumasson. *Serious Cryptography*, 2nd ed. No Starch Press, 2024.
+- Open standards: SEI CERT C/C++ and Oracle Java secure coding standards, OWASP Top 10, ASVS, MASVS and MASTG,
+  MITRE CWE, NIST FIPS 140-3.
+
+**Laptop required.** You will use your own development environment in class and in the project: a C/C++ compiler
+(GCC, Clang or MSVC), CMake, GoogleTest, OpenSSL 3, SQLite, SoftHSM2, JDK 21 with ProGuard/R8, Tigress (Linux; on
+Windows through WSL2 or Docker), and Git with a GitHub account. For the Android topics, Android Studio (SDK and NDK)
+with an emulator is recommended. Installation steps are given in week 1 and in the course notes; project templates are
+provided.
 
 ---
 
-- **Data Security: In Transit, At Rest, and In Use**
-  
-  - SSL/TLS usage
-  - Whitebox cryptography applications
-  - Dynamic key management
-  - Data masking techniques
+## E. Assessment
 
----
+You carry out **one term project**: a C/C++ application on a chosen topic that meets security requirements and is
+designed as if it were going through a certification process. Projects are done individually or in teams of at most
+4 students; a project plan is prepared on GitHub and approved before development starts. The project has two
+checkpoints, each evaluated with its rubric: a midterm checkpoint and a final checkpoint. You also take one quiz in the
+midterm exam week and one quiz in the final exam period. The project topics, requirements, deliverables and the
+**detailed midterm and final rubrics** (criteria, points, related learning outcomes and performance levels) are given
+in the course's project guide.
 
-- **Code Hardening Techniques (C/C++)**
-  
-  - Control flow flattening
-  - Function name hiding
-  - Memory allocation obfuscation
-  - Dynamic encryption techniques
+| Assessment | Code | Weight | When |
+| --- | --- | --- | --- |
+| Project checkpoint 1 — midterm report and demonstration (rubric) | RAP1 | 60% of midterm | Week 7 (30.10.2026) |
+| Quiz-1 (weeks 1–6) | QUIZ1 | 40% of midterm | Week 8, midterm exam week (31.10–08.11.2026) |
+| Project checkpoint 2 — final report and demonstration (rubric) | RAP2 | 70% of final | Week 15 (25.12.2026) |
+| Quiz-2 (weeks 9–14) | QUIZ2 | 30% of final | Week 16, final exam period (04–17.01.2027) |
 
----
-
-- **Code Hardening Techniques (Java/Interpreted Languages)**
-  
-  - Code obfuscation with ProGuard
-  - Dynamic method obfuscation
-  - Static string obfuscation and protection
-  - Advanced ProGuard rules
-
----
-
-- **Runtime Application Self-Protection (RASP) Techniques (C/C++)**
-  
-  - Root detection and APK signature verification
-  - Dynamic memory protection
-  - Debugger and memory monitoring detection
-  - Protection against dynamic analysis tools
-
----
-
-- **Advanced Code Obfuscation and Diversification Techniques**
-  
-  - Dynamic control flow obfuscation
-  - Adding fake control flows
-  - Program obfuscation techniques
-  - Dynamic function calls and runtime optimizations
-
----
-
-- **Quiz 1 + Midterm Project Report Submission**
-  
-  - Quiz covering the first 7 weeks of content
-  - Submission of midterm project report
-
----
-
-- **Certificates and Cryptographic Methods (AES, RSA, PKI)**
-  
-  - AES and RSA encryption
-  - Data integrity with HMAC
-  - Creating digital signatures and certificates
-
----
-
-- **Whitebox Cryptography**
-  
-  - Whitebox AES and DES applications
-  - Key protection with whitebox cryptography
-  - Software-based security solutions
-
----
-
-- **Security Certifications and Penetration Testing Planning**
-  
-  - ETSI and EMV security standards
-  - Penetration testing planning
-  - PCI DSS and ISO 27001 security testing
-
----
-
-
-
-- **Security Requirements**
-  
-  - ETSI,GSMA and EMV Security Requirements
-  - EAL Requirements
-  - FIPS Requirements
-
----
-
-- **Tigress and Diversification**
-  
-  - Tigress and Diversification Techniques
-  
-  - Obfuscation Methods
-  
-  - Defense Against Attacks
-
----
-
-- **Quiz 2**
-  
-  - The second quiz covers topics from the previous weeks
-
----
-
-- **Final Project Submission and Presentation**
-  
-  - Final project report and presentation
-
----
-
-## D. Textbooks and Required Hardware or Equipment
-
-There is no required textbook for this course. However, the following sources are recommended:
-
-- **C How to Program, 7/E. Deitel & Deitel. 2013, Prentice-Hall.**
-- **Introduction to Algorithms, Third Edition By Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, and Clifford Stein.**
-- **Problem Solving and Program Design in C, J.R. Hanly, and E.B. Koffman.**
-
-You are expected to have a personal laptop for class activities and exams.
-
----
-
-## E. Grading
-
-You will complete one project and two written quizzes throughout the semester. You are expected to submit your Midterm Project Report at the midterm, demonstrating progress and outputs aligned with your project plan. In the 15th week, you will present and submit your Final Project Report. You will take a written quiz in the 8th week and another in the 14th week.
-
----
-
-| Assessment             | Code  | Weight | Scope   |
-| ---------------------- | ----- | ------ | ------- |
-| Midterm Project Report | RAP1  | 60%    | Midterm |
-| Quiz-1                 | QUIZ1 | 40%    | Midterm |
-| Final Project Report   | RAP2  | 70%    | Final   |
-| Quiz-2                 | QUIZ2 | 30%    | Final   |
+Rubric criteria (ritim): **midterm checkpoint** — security analysis (LO.1), data security (LO.2), C/C++ code
+hardening and RASP techniques (LO.3), project management (LO.5), midterm report (LO.7); **final checkpoint** —
+cryptography implementation (LO.2), secure communication (LO.4), asset management (LO.5), binary application
+protections (LO.3), security testing and unit tests (LO.6), security standards, final report and presentation (LO.7).
 
 $$
-Grade_{Midterm} = 0.6 RAP1 + 0.4 QUIZ1
+Grade_{Midterm} = 0.6\,RAP1 + 0.4\,QUIZ1 \qquad Grade_{Final} = 0.7\,RAP2 + 0.3\,QUIZ2
 $$
 
 $$
-Grade_{Final} = 0.7 RAP2 + 0.3 QUIZ2
+Passing\ Grade = 0.4\,Grade_{Midterm} + 0.6\,Grade_{Final}
 $$
 
-$$
-Passing Grade = (40 * Grade_{Midterm} + 60 * Grade_{Final}) / 100
-$$
+### Workload (ECTS 5 = 125 hours)
+
+| Activity | Count | Hours | Total |
+| --- | --- | --- | --- |
+| Class attendance | 14 | 3 | 42 |
+| Individual study (weekly notes and exercises) | 14 | 1 | 14 |
+| Quiz (midterm exam week and final exam period) | 2 | 2 | 4 |
+| Individual study for quizzes | 2 | 10 | 20 |
+| Project preparation (midterm and final checkpoints) | 2 | 16 | 32 |
+| Report preparation | 2 | 5 | 10 |
+| Project presentation (demonstration and questions) | 2 | 1.5 | 3 |
+| **Total** | | | **125** |
 
 ---
 
-##### F. Course Execution
+## F. Instructional Strategies and Methods
 
-Classes will be conducted in person, with supplemental materials and announcements shared via Google Classroom or Microsoft Teams. In the event of a pandemic-related shift to remote learning, the course will transition to synchronous and asynchronous online education methods.
-
----
-
-## G. Late Submissions
-
-Assignments and projects must be submitted by the specified deadlines. Late submissions will not be accepted. Any unexpected situations must be communicated to the instructor as soon as possible.
+Lectures are face-to-face in the classroom and combine explanation, question–answer and hands-on programming.
+Each content week comes with course notes, slides, worked examples and self-check questions; exercises follow the
+order vulnerable code → attack → fix and run in the isolated environments provided in class (containers or virtual
+machines). Attack techniques learned in class are tried only in these environments and on the student's own systems.
+Announcements, resources and submissions are handled in the course class. Attendance is taken.
 
 ---
 
-##### H. Communication and Course Platform
+## G. Late Homework
 
-Google Classroom and Microsoft Teams will serve as the platforms for this course. All resources and announcements will be shared through these channels. To ensure smooth communication, you are expected to check these platforms regularly.
-
----
-
-### I. Academic Integrity, Plagiarism, and Cheating
-
-Academic integrity is one of the most important principles at RTEÜ University. Anyone who violates academic honesty will face serious consequences.
+Assignments and projects must be submitted by the announced deadlines. Late submissions will not be accepted.
+Unexpected situations must be reported to the instructor as soon as possible.
 
 ---
 
-Collaborating with classmates or others to "study together" is normal. A student may seek help from someone else, paid or unpaid, to better understand a difficult topic or course. However, where is the line between "studying together" and "academic dishonesty"? When does it become plagiarism, and when is it cheating?
+## H. Course Platform and Communication
+
+All announcements, resources and submissions are shared in the course class, which is opened anew every term; the
+class code is announced in week 1. Course notes, slides and downloadable documents are on the course website. Check
+the class and your university e-mail every day.
 
 ---
 
-It is clear that looking at another student’s paper or any unauthorized sources during the exam is cheating and will be punished. However, many students enter university with little experience regarding what is acceptable in assignments, particularly when it comes to "copying."
+## I. Academic Integrity, Plagiarism & Cheating
 
-The following guidelines for the Faculty of Engineering and Architecture students highlight the philosophy of academic honesty for graded assignments. Should any situation arise that is not described here, students are advised to consult with the course instructor or assistant to determine whether their actions fall within the bounds of academic honesty.
+Academic integrity is one of the most important principles of RTEÜ. Anyone who breaches the principles of
+academic honesty is severely punished.
 
----
+It is natural to interact with classmates and others to "study together". It may also be the case where a student
+asks for help from someone else, paid or unpaid, to better understand a difficult topic or a whole course. However,
+what is the borderline between "studying together" or "taking private lessons" and "academic dishonesty"? When is
+it plagiarism, when is it cheating?
+
+Looking at another student's paper or any source other than what is allowed during the exam is cheating and will be
+punished. However, many students come to university with very little experience of what is acceptable and what
+counts as "copying", especially for assignments. The following guidelines highlight the philosophy of academic
+honesty for graded assignments. If a situation arises that is not described below, ask the instructor whether what
+you intend to do stays within academic honesty.
 
 ### a. What is acceptable when preparing an assignment?
 
-- Communicating with classmates to better understand the assignment.
-
----
-
-- Including ideas, quotes, paragraphs, or small code snippets found online or elsewhere in your assignment, provided that:
-  
-  - These do not represent the entire solution to the assignment.
-  
-  - The sources are properly cited.
-
----
-
-- Asking for guidance in improving the English content of your assignment.
-
-- Sharing small portions of your assignment in class for discussion.
-
-- Using external sources for technical instructions, references, or troubleshooting, but not for direct answers to the assignment.
-
-- Discussing solutions using diagrams or summarized statements, but not actual text or code.
-
-- Working with (and even paying) a tutor to help with the course, as long as the tutor does not complete the assignment for you.
-
----
+- Communicating with classmates about the assignment to understand it better.
+- Putting ideas, quotes, paragraphs or small pieces of code (snippets) found online or elsewhere into your
+  assignment, provided that they are not themselves the whole solution and you cite their origin.
+- Asking for help with the language of your assignment.
+- Sharing small pieces of your assignment in class to start a discussion.
+- Turning to the web or elsewhere for instructions, references and solutions to technical difficulties, but not
+  for direct answers to the assignment.
+- Discussing solutions with others using diagrams or summarized statements, but not actual text or code.
+- Working with (even paying) a tutor, provided the tutor does not do your assignment for you.
 
 ### b. What is not acceptable?
 
-- Asking to see a classmate’s solution to a problem before submitting your own.
-
-- Failing to cite the source of any text or code used from outside the course.
-
-- Giving or showing your solution to a classmate struggling to solve the problem.
+- Asking a classmate to see their solution before submitting your own.
+- Failing to cite the origin of any text or code that you found outside the course and used in your work.
+- Giving or showing your solution to a classmate who is struggling to solve the problem.
 
 ---
 
-### J. Expectations
+## J. Expectations
 
-You are expected to attend classes on time and complete weekly course requirements (readings and assignments) throughout the semester. The primary communication channel between the instructor and students will be email. Please send your questions to the instructor’s university-provided email address. ***Be sure to include the course name in the subject line and your name in the body of the email.*** The instructor will also contact you via email when necessary, so it is crucial to check your email regularly for communication.
-
----
-
-## K. Course Content and Schedule Updates
-
-The course content and schedule may be updated as needed. Any changes will be communicated to students by the instructor.
+You are expected to attend classes on time and complete the weekly requirements (readings and project milestones).
+The main communication channel between the instructor and students is e-mail. Send your questions from your
+university e-mail address; **include the course code in the subject line and your name in the message**. The
+instructor will also contact you by e-mail when necessary, so check your e-mail every day.
 
 ---
 
-### C. Weekly Lesson Plan
+## K. Lecture Content and Syllabus Updates
 
-| **Week**    | **Date**          | **Topic**                                                          | **Other Tasks** |
-| ----------- | ----------------- | ------------------------------------------------------------------ | --------------- |
-| **1. Week** | 26 September 2024 | Introduction to Secure Programming and Application Protection Plan |                 |
-| **2. Week** | 3 October 2024    | Computer Viruses and Security Models                               |                 |
-| **3. Week** | 10 October 2024   | Data Security: In Transit, At Rest, and In Use                     |                 |
-
----
-
-### C. Weekly Lesson Plan
-
-| **Week**    | **Date**        | **Topic**                                                     | **Other Tasks** |
-| ----------- | --------------- | ------------------------------------------------------------- | --------------- |
-| **4. Week** | 17 October 2024 | Code Hardening Techniques (C/C++)                             |                 |
-| **5. Week** | 24 October 2024 | Code Hardening Techniques (Java/Interpreted Languages)        |                 |
-| **6. Week** | 31 October 2024 | Runtime Application Self-Protection (RASP) Techniques (C/C++) |                 |
-| **7. Week** | 7 November 2024 | Advanced Code Obfuscation and Diversification Techniques      |                 |
-
----
-
-### C. Weekly Lesson Plan
-
-| **Week**     | **Date**         | **Topic**                                                | **Other Tasks**         |
-| ------------ | ---------------- | -------------------------------------------------------- | ----------------------- |
-| **8. Week**  | 14 November 2024 | **Quiz 1 + Midterm Project Report Submission**           | Quiz and Midterm Report |
-| **9. Week**  | 21 November 2024 | Certificates and Cryptographic Methods (AES, RSA, PKI)   |                         |
-| **10. Week** | 28 November 2024 | Whitebox Cryptography                                    |                         |
-| **11. Week** | 5 December 2024  | Security Certifications and Penetration Testing Planning |                         |
-
----
-
-### C. Weekly Lesson Plan
-
-| **Week**     | **Date**         | **Topic**                                     | **Other Tasks**                |
-| ------------ | ---------------- | --------------------------------------------- | ------------------------------ |
-| **12. Week** | 12 December 2024 | Security Requirements                         |                                |
-| **13. Week** | 19 December 2024 | Tigress and Diversification                   |                                |
-| **14. Week** | 26 December 2024 | **Quiz 2**                                    | Quiz 2                         |
-| **15. Week** | 2 January 2025   | **Final Project Submission and Presentation** | Final Project and Presentation |
-
----
-
-### Bologna Information
-
-<iframe width=700, height=1000 frameBorder=0 src="../ce100-algorithms-and-prgramming-II-bologna-en.pdf"></iframe>
-
----
-
-$End-Of-Syllabus$
+If deemed necessary, the lecture content or course schedule may change. Any change within the scope of this
+document will be announced by the instructor.

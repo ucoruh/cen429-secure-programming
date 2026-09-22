@@ -1,0 +1,44 @@
+# CEN429 — Hafta 2 — Demo 07: örnek kural dosyası (YARA'dan esinlenildi)
+# Yalnız bu ders için uydurulmuş ZARARSIZ desenler içerir.
+#
+#   kural <Ad> {
+#     dizge $id = "metin"              büyük/küçük harf duyarlı
+#     hex   $id = { 4d 41 ?? 49 }      ?? = herhangi bir bayt (joker)
+#     kosul <ifade>
+#   }
+#   Koşul: $id   #id >= n   and   or   not   ( )
+#          n of them   all of them   any of them
+
+# 1) İki dizge birlikte: oyuncak kapsül biçimi
+kural Kapsul_Bicimi {
+  dizge $sihir = "KAPSUL/1"
+  dizge $coz   = "COZUCU:"
+  kosul $sihir and $coz
+}
+
+# 2) Joker içeren hex desen: "MAVI?KEDI" (ayraç ne olursa olsun)
+kural Isaret_Hex {
+  hex $h = { 4d 41 56 49 ?? 4b 45 44 49 }
+  kosul $h
+}
+
+# 3) Saf kelime kuralı: iki kelime geçiyorsa işaretle (FAZLA GENİŞ)
+kural Kelime_Cifti {
+  dizge $a = "indir"
+  dizge $b = "calistir"
+  kosul $a and $b
+}
+
+# 4) Aynı kelimeler + bağlam: yalnız kapsül biçimindeki dosyada
+kural Kelime_Baglam {
+  dizge $a = "indir"
+  dizge $b = "calistir"
+  dizge $sihir = "KAPSUL/1"
+  kosul ($a and $b) and $sihir
+}
+
+# 5) Sayım koşulu: aynı dizge en az üç kez
+kural Cok_Tekrar {
+  dizge $t = "YAPILACAK"
+  kosul #t >= 3
+}

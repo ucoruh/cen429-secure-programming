@@ -1,0 +1,30 @@
+# CEN429 - Hafta 2 - Biba DUSUK SU ISARETI (low-water-mark) ornegi
+# Kati Biba "asagi okumayi" tamamen yasaklar. Dusuk su isareti politikasi
+# okumaya izin verir ama bedelini alir: ozne daha az guvenilir bir nesneyi
+# okuyunca kendi butunluk seviyesi o nesnenin seviyesine INER; artik
+# daha guvenilir nesnelere yazamaz. (Istekler SIRAYLA islenir.)
+
+MODEL   BIBA-LWM
+
+SEVIYE  Dis       0
+SEVIYE  Uygulama  1
+SEVIYE  Cekirdek  2
+
+OZNE    islemci   Uygulama
+
+NESNE   gelen     Dis
+NESNE   kayit     Uygulama
+NESNE   ayar      Cekirdek
+
+HAK     *  *  rw
+
+# Once guvenilir ayari okur (yukaridan okuma): seviye degismez
+ISTEK   islemci  oku  ayar
+# Kendi seviyesindeki kayda yazar: izin
+ISTEK   islemci  yaz  kayit
+# Dis (guvenilmez) veriyi okur: izin, AMA seviyesi Dis'e duser
+ISTEK   islemci  oku  gelen
+# Artik kayda yazamaz: kirlenmis ozne temiz veriyi bozmasin
+ISTEK   islemci  yaz  kayit
+# Dis seviyesindeki nesneye yazmak hala serbest
+ISTEK   islemci  yaz  gelen

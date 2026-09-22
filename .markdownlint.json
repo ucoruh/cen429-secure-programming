@@ -1,0 +1,10 @@
+{
+  "$comment": "MkDocs Material sözdizimine uyum: 4 boşluk girinti, sekme/kutu içindeki kod blokları, HTML (iframe, materyal düğmeleri), ön bilgideki başlık ve Türkçe çapa üretimi yanlış uyarı vermesin.",
+  "MD007": { "indent": 4 },
+  "MD013": false,
+  "MD025": { "front_matter_title": "" },
+  "MD033": false,
+  "MD036": false,
+  "MD046": false,
+  "MD051": false
+}

@@ -1,0 +1,1009 @@
+---
+marp: true
+theme: cen429
+paginate: true
+lang: tr
+title: "CEN429 Hafta 5 — Kod Sağlamlaştırma: Java ve Yorumlanan Diller"
+author: "Dr. Öğr. Üyesi Uğur CORUH"
+header: "CEN429 Güvenli Programlama · Hafta 5"
+footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
+---
+
+
+
+
+
+<!-- _class: baslik -->
+<!-- _paginate: false -->
+
+# Kod Sağlamlaştırma: Java ve Yorumlanan Diller
+
+**CEN429 Güvenli Programlama — Hafta 5**
+
+Dr. Öğr. Üyesi Uğur CORUH · 16.10.2026
+
+<!--
+Konuşma notu: Bu hafta yönetilen dillere geçiyoruz: bellek güvenliği bedava gelir ama enjeksiyon, seri durumdan çıkarma, okunabilir bayt kodu ve bağımlılıklar yeni riskler getirir.
+-->
+
+<!--
+Konuşma notu: Bu hafta yönetilen dillere geçiyoruz: bellek güvenliği bedava gelir ama enjeksiyon, seri durumdan çıkarma, okunabilir bayt kodu ve bağımlılıklar yeni riskler getirir.
+-->
+
+<!--
+Konuşma notu: Bu hafta yönetilen dillere geçiyoruz: bellek güvenliği bedava gelir ama enjeksiyon, seri durumdan çıkarma, okunabilir bayt kodu ve bağımlılıklar yeni riskler getirir.
+-->
+
+---
+
+# Bugünün planı (3 saat)
+
+| Saat | Bölüm | Konu |
+| --- | --- | --- |
+| 1 | 0–3 | Temel kavramlar · yönetilen diller · CERT Java · enjeksiyonun kökü |
+| 2 | 4–9 | SQL/komut/yol enjeksiyonu · seri durumdan çıkarma · XML/XXE · Python/JS |
+| 3 | 10–16 | Bayt kodu · ProGuard/R8 · dize gizleme · Android · SBOM · proje |
+
+<!-- Konuşma notu: 4. haftanın C/C++ karşılığını Java/yorumlanan dillerde işliyoruz. Sıfır ön bilgi varsayıyoruz; her terimi tanımlayacağız. -->
+
+---
+
+# Bu hafta nereye oturuyor?
+
+- **4. hafta:** C/C++ sağlamlaştırma (bellek hataları).
+- **Bu hafta (5):** Java/yorumlanan diller — bellek hataları çoğu **çözülmüş**, ama yeni sınıf: **enjeksiyon** ve **bağımlılık**.
+- İkili koruma tarafı: **ProGuard/R8** ve **SBOM**.
+
+---
+
+# Öğrenme çıktısı
+
+Bu hafta **ÖÇ.3 / ÖÇ.4** üstünedir.
+
+Sonunda yapabileceğiniz:
+
+- Enjeksiyon sınıfını tanımak ve önlemek (SQL, komut, yol, XML, seri durum)
+- ProGuard/R8 ile gizleme ve `-keep` kurallarını yazmak
+- Bir **SBOM** üretip bağımlılık riskini yönetmek
+
+---
+
+# Ana fikir
+
+> Yönetilen dil bellek hatalarını büyük ölçüde **çözer**; ama **veri ile komutun karışması** (enjeksiyon) her dilde vardır.
+
+Bugün bu ortak kökü ve dile özgü korumaları göreceğiz.
+
+---
+
+<!-- _class: bolum -->
+
+# 0. Temel kavramlar (sıfırdan)
+
+<!-- Konuşma notu: Java/web temel terimlerini sıfırdan tanımlıyoruz. -->
+
+---
+
+# Yönetilen dil nedir?
+
+- **Yönetilen dil:** belleği **otomatik** yöneten dil (Java, C#, Python, JS).
+- Programcı `malloc`/`free` yapmaz; **çöp toplayıcı** (GC) hallreder.
+- → çoğu bellek hatası (taşma, UAF) **ortadan kalkar**.
+
+---
+
+# JVM ve bayt kodu
+
+- **JVM (Java Virtual Machine):** Java'yı çalıştıran sanal makine.
+- **Bayt kodu:** Java kaynağının derlendiği ara biçim (`.class` dosyaları).
+- Bayt kodu makineden bağımsız; JVM onu çalıştırır.
+
+---
+
+# Çöp toplayıcı (GC)
+
+- **GC (Garbage Collector):** artık kullanılmayan nesneleri otomatik temizler.
+- Programcı belleği elle bırakmaz.
+- Bu yüzden UAF/çift bırakma Java'da **yok denecek kadar az**.
+
+---
+
+# Enjeksiyon nedir?
+
+- **Enjeksiyon:** kullanıcı **verisinin** bir **komut** olarak yorumlanması.
+- Örnek: kullanıcı adı diye girilen metnin SQL sorgusuna komut olarak sızması.
+- Bu haftanın ana teması.
+
+---
+
+# SQL ve veritabanı
+
+- **SQL:** veritabanı sorgulama dili (`SELECT ... WHERE ...`).
+- Uygulama, kullanıcı girdisini sorguya koyar.
+- Yanlış konursa → **SQL enjeksiyonu**.
+
+---
+
+# Parametreli sorgu
+
+- **Parametreli sorgu (prepared statement):** sorgu iskeleti sabit, veriler ayrı **parametre** olarak verilir.
+- Veri asla komut olarak yorumlanmaz.
+- SQL enjeksiyonuna karşı **asıl** çözüm.
+
+---
+
+# Seri durum (serialization)
+
+- **Serileştirme:** bir nesneyi bayt dizisine çevirme (kaydetmek/göndermek için).
+- **Seri durumdan çıkarma (deserialization):** baytları geri nesneye çevirme.
+- Güvenilmez baytları çıkarmak **tehlikeli** (kod çalıştırma).
+
+---
+
+# XML ve XXE
+
+- **XML:** yapılandırılmış veri biçimi (etiketlerle).
+- **XXE (XML External Entity):** XML'in "dış varlık" özelliğinin kötüye kullanımı → dosya okuma, SSRF.
+- XML ayrıştırıcıda dış varlıklar **kapatılır**.
+
+---
+
+# Yol geçişi (path traversal)
+
+- **Yol geçişi:** `../` ile izin verilen klasörün **dışına** çıkma.
+- `dosyalar/../../etc/passwd` gibi.
+- Kanonikleştirme + kök denetimiyle önlenir.
+
+---
+
+# ProGuard ve R8
+
+- **ProGuard / R8:** Java/Android bayt kodunu **küçülten, adları gizleyen** araçlar.
+- R8, Android'in varsayılan aracı.
+- Ad gizleme + ölü kod eleme + küçültme.
+
+---
+
+# `-keep` kuralı
+
+- **`-keep`:** ProGuard/R8'e "bu sınıf/metodun adını **değiştirme**" demek.
+- Reflection ile ada göre çağrılan kod korunmalı.
+- Yanlış `-keep` → ya çökme ya zayıf gizleme.
+
+---
+
+# Reflection nedir?
+
+- **Reflection:** bir sınıfı/metodu **çalışma anında adıyla** bulup çağırma.
+- `Class.forName("...")`, `getMethod("...")`.
+- Gizleme bunu bozabilir → `-keep` gerekir.
+
+---
+
+# SBOM nedir?
+
+- **SBOM (Software Bill of Materials):** yazılımın **malzeme listesi** — hangi kütüphaneler, hangi sürümler.
+- Bir kütüphanede açık çıkınca "etkilendik mi?" sorusunu **hızlı** yanıtlar.
+- Biçimler: CycloneDX, SPDX.
+
+---
+
+# Bağımlılık (dependency)
+
+- **Bağımlılık:** projenizin kullandığı dış kütüphaneler.
+- Kendi kodunuz güvenli olsa bile, bir bağımlılıktaki açık sizi etkiler.
+- Tedarik zinciri güvenliği.
+
+---
+
+# Şimdi hazırız
+
+Terimler:
+
+yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · serileştirme · XML/XXE · yol geçişi · ProGuard/R8 · `-keep` · reflection · SBOM · bağımlılık
+
+Şimdi: yönetilen diller neyi çözer, neyi çözmez?
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Yönetilen diller ve enjeksiyonun kökü
+
+---
+
+# Yönetilen dil neyi çözer?
+
+- Otomatik bellek yönetimi (GC) → taşma, UAF, çift bırakma **büyük ölçüde yok**.
+- Dizi erişimi sınır denetimli → `ArrayIndexOutOfBounds` (çökme, sömürü değil).
+- Tür güvenliği daha sıkı.
+
+---
+
+# Yönetilen dil neyi ÇÖZMEZ?
+
+- **Enjeksiyon** (veri = komut) — her dilde var.
+- **Mantık hataları**, yetki hataları.
+- **Bağımlılık** açıkları.
+- **Seri durumdan çıkarma** saldırıları.
+
+> Bellek hatası azaldı; yeni cephe: enjeksiyon ve tedarik zinciri.
+
+---
+
+# SEI CERT Oracle Java
+
+- Java için ayrı bir **kural kitabı** (CERT Oracle Coding Standard for Java).
+- Aynı yapı: hatalı örnek + uyumlu çözüm + risk.
+- Örnek alanlar: enjeksiyon, seri durum, eşzamanlılık, hassas veri.
+
+---
+
+# Java'da hassas veri
+
+- Java `String` **değişmezdir** (immutable) → bellekten silinemez.
+- Parola/anahtar için `char[]` kullan, işi bitince **doldur** (`Arrays.fill`).
+- GC ne zaman toplayacağını **garanti etmez**.
+
+---
+
+# Enjeksiyonun ortak kökü
+
+> Enjeksiyon = **veri** ile **komutun** karışması.
+
+- Kullanıcı verisi bir yorumlayıcıya (SQL, kabuk, XML) **komut** olarak gider.
+- Kök aynı; hedef (SQL/kabuk/XML) değişir.
+
+---
+
+# Çözümün ortak kökü
+
+Her enjeksiyon türünde aynı ilke:
+
+- **Veriyi koddan ayır** (parametreli API).
+- Veriyi asla **string birleştirmeyle** komuta gömme.
+- Beyaz liste + bağlama uygun kaçış (son çare).
+
+---
+
+# Enjeksiyon aileleri (bugün)
+
+- SQL enjeksiyonu
+- Komut enjeksiyonu
+- Yol geçişi
+- Seri durumdan çıkarma
+- XML/XXE, şablon, XSS
+
+Hepsinin kökü ve çözümü **aynı mantık**.
+
+---
+
+# Bölüm 1 — kısa sınama
+
+1. Yönetilen dil hangi hata sınıfını büyük ölçüde çözer?
+2. Neyi çözmez?
+3. Enjeksiyonun ortak kökü nedir?
+
+<!-- Konuşma notu: Sonra SQL enjeksiyonu. -->
+
+---
+
+<!-- _class: bolum -->
+
+# 2. SQL enjeksiyonu
+
+---
+
+# Hatalı kod
+
+```java
+String q = "SELECT * FROM kul WHERE ad = '" + ad + "'";
+stmt.executeQuery(q);   // HATALI: ad komuta karışır
+```
+
+`ad` içine tırnak ve SQL koyulursa?
+
+---
+
+# Saldırı · örnek
+
+Kullanıcı `ad` olarak şunu girer:
+
+```text
+' OR '1'='1
+```
+
+Sorgu şuna döner:
+
+```sql
+SELECT * FROM kul WHERE ad = '' OR '1'='1'
+```
+
+`'1'='1'` her zaman doğru → **tüm satırlar** döner.
+
+---
+
+# Neden oldu?
+
+- `ad`, sorgu **metnine** birleştirildi.
+- Tırnak, veriyi bitirip **komut** kısmına geçmeyi sağladı.
+- Veri ile komut **karıştı**.
+
+---
+
+# Doğru · parametreli sorgu
+
+```java
+PreparedStatement ps =
+    con.prepareStatement("SELECT * FROM kul WHERE ad = ?");
+ps.setString(1, ad);    // ad yalnız VERİ
+ps.executeQuery();
+```
+
+`?` bir **parametre**; `ad` asla komut olarak yorumlanmaz.
+
+---
+
+# Neden çalışır?
+
+- Sorgu iskeleti **önceden** veritabanına gönderilir (derlenir).
+- `ad` sonradan **veri** olarak bağlanır.
+- Tırnak koysa bile veri olarak kalır.
+
+---
+
+# Diğer katmanlar
+
+- **En az yetki:** uygulamanın DB kullanıcısı yalnız gerekeni yapsın.
+- **Girdi doğrulama:** yine de beyaz liste.
+- **ORM** kullanıyorsanız da parametreli API'yi kullanın (string birleştirme değil).
+
+---
+
+# ⚠️ Kaçış (escaping) son çaredir
+
+- Elle tırnak kaçırmak **hataya açık**; her DB farklı.
+- Öncelik **her zaman** parametreli sorgu.
+- Kaçış yalnız parametrelenemeyen yerlerde, dikkatle.
+
+---
+
+<!-- _class: bolum -->
+
+# 3. Komut enjeksiyonu
+
+---
+
+# Hatalı kod
+
+```java
+Runtime.getRuntime().exec("ping " + host);  // HATALI
+```
+
+`host` içine kabuk metakarakteri koyulursa?
+
+---
+
+# Saldırı · örnek
+
+`host` olarak:
+
+```text
+example.com; rm -rf veri
+```
+
+Kabuk bunu **iki komut** olarak çalıştırır: `ping` **ve** `rm`.
+
+*(Örnek sentetik; asla çalıştırmayın.)*
+
+---
+
+# Neden oldu?
+
+- Komut bir **kabuğa** metin olarak verildi.
+- `;`, `|`, `&&` kabukta **komut ayırıcı**.
+- Veri, komut satırına karıştı.
+
+---
+
+# Doğru · argüman dizisi
+
+```java
+new ProcessBuilder("ping", "-c", "1", host).start();
+```
+
+- Kabuk **yok**; `host` tek bir **argüman**.
+- Metakarakterler yorumlanmaz.
+
+---
+
+# Ek kurallar
+
+- Mümkünse dış komut **hiç** çalıştırma; kütüphane API'si kullan.
+- Çalıştıracaksan: sabit yol, argüman dizisi, beyaz liste.
+- `ENV33-C` benzeri: `system()`/kabuk çağırma.
+
+---
+
+<!-- _class: bolum -->
+
+# 4. Yol geçişi
+
+---
+
+# Hatalı kod
+
+```java
+File f = new File("yuklenen/" + adi);  // HATALI
+```
+
+`adi` içine `../` koyulursa?
+
+---
+
+# Saldırı · örnek
+
+`adi` olarak:
+
+```text
+../../etc/passwd
+```
+
+Sonuç: `yuklenen/../../etc/passwd` → izin verilen klasörün **dışı**.
+
+---
+
+# Doğru · kanonikleştir + kök denetimi
+
+```java
+Path kok = Paths.get("yuklenen").toRealPath();
+Path hedef = kok.resolve(adi).normalize().toRealPath();
+if (!hedef.startsWith(kok)) throw new SecurityException();
+```
+
+Kanonik yol **kökün altında** mı? Değilse reddet.
+
+---
+
+# Yol geçişi · ek
+
+- Dosya adını **beyaz listeyle** sınırla (`[a-zA-Z0-9_.-]`).
+- Sembolik bağlantılar (`symlink`) kanonikleştirmeyle çözülür.
+- Kullanıcı adını **doğrudan** dosya adı yapma.
+
+---
+
+# Üç enjeksiyon · ortak ders
+
+| Tür | Yanlış | Doğru |
+| --- | --- | --- |
+| SQL | String birleştirme | Parametreli sorgu |
+| Komut | Kabuğa metin | Argüman dizisi |
+| Yol | `../` birleştirme | Kanonikleştir + kök denetimi |
+
+Kök aynı: **veriyi koddan/komuttan ayır**.
+
+---
+
+# Bölüm 2–4 — kısa sınama
+
+1. `' OR '1'='1` neden tüm satırları döndürür?
+2. `ProcessBuilder` argüman dizisi neden güvenli?
+3. Yol geçişini hangi iki adım kapatır?
+
+<!-- Konuşma notu: Sonra seri durumdan çıkarma ve XML. -->
+
+---
+
+<!-- _class: bolum -->
+
+# 5. Güvensiz seri durumdan çıkarma
+
+---
+
+# Sorun
+
+- Güvenilmez baytları bir nesneye çevirmek **tehlikelidir**.
+- Java'da `ObjectInputStream.readObject()` çıkarken **kod** çalıştırabilir (gadget zincirleri).
+- Sonuç: uzaktan kod çalıştırma.
+
+---
+
+# Neden bu kadar kötü?
+
+- Çıkarma sırasında nesnelerin **kurucuları/metotları** çalışır.
+- Uygun kütüphaneler varsa (gadget), zincirlenip komut çalıştırılabilir.
+- Girdi "sadece veri" sanılır ama **kod** gibi davranır.
+
+---
+
+# Doğru · en iyisi: hiç yapma
+
+- Güvenilmez veriyi **native serileştirmeyle** çıkarma.
+- Onun yerine **JSON/veri** biçimi + katı şema.
+- Yalnız beklediğiniz alanları okuyun.
+
+---
+
+# Zorundaysanız · filtre
+
+```java
+ObjectInputFilter f = ObjectInputFilter.Config
+    .createFilter("com.uygulama.*;!*");  // yalnız izinli sınıflar
+ois.setObjectInputFilter(f);
+```
+
+- **Beyaz liste**: yalnız beklenen sınıflar.
+- Derinlik/boyut sınırı da koyun (DoS'a karşı).
+
+---
+
+<!-- _class: bolum -->
+
+# 6. XML, şablon, XSS
+
+---
+
+# XXE · sorun
+
+- XML'de **dış varlık** tanımlanabilir; ayrıştırıcı onu **çözer**.
+- Saldırgan bununla dosya okutabilir ya da sunucudan istek yaptırabilir (SSRF).
+
+---
+
+# XXE · doğru
+
+```java
+dbf.setFeature(
+  "http://apache.org/xml/features/disallow-doctype-decl", true);
+// ya da dış varlıkları kapat
+```
+
+- **Dış varlıkları kapat**, DOCTYPE'ı reddet.
+- Çoğu kütüphanede tek satırlık ayar.
+
+---
+
+# Şablon enjeksiyonu (SSTI)
+
+- Şablon motoruna kullanıcı girdisini **şablon** olarak vermek.
+- Motor onu kod gibi çalıştırabilir.
+- Kural: kullanıcı girdisi **veri**, şablon **sabit**.
+
+---
+
+# XSS (kısaca)
+
+- **XSS:** kullanıcı verisinin bir web sayfasına **HTML/JS** olarak sızması.
+- Çözüm: çıktı **bağlama uygun kodlama** (HTML-encode), CSP.
+- Kök yine aynı: veri ≠ kod.
+
+---
+
+<!-- _class: bolum -->
+
+# 7. Python ve JavaScript'te aynı hatalar
+
+---
+
+# Aynı kök, farklı dil
+
+- Enjeksiyon her dilde: Python `os.system`, JS `child_process`.
+- Çözüm aynı: argüman dizisi, parametreli sorgu.
+
+---
+
+# Python · örnekler
+
+- `os.system("cmd " + x)` → komut enjeksiyonu; `subprocess.run([...])` kullan.
+- `eval(girdi)` / `pickle.loads(güvenilmez)` → **asla** güvenilmez veriyle.
+- SQL: parametreli (`cursor.execute("... ?", (x,))`).
+
+---
+
+# ReDoS (düzenli ifade DoS)
+
+- Kötü bir **regex**, belirli girdilerde **üstel** zaman harcayabilir.
+- Saldırgan bununla CPU'yu kilitler.
+- Çözüm: güvenli regex, girdi uzunluğu sınırı, zaman aşımı.
+
+---
+
+# JavaScript · prototype pollution
+
+- **Prototype pollution:** saldırgan `__proto__` üzerinden tüm nesnelerin **ortak** özelliğini bozar.
+- Beklenmedik davranış, yetki atlatma.
+- Çözüm: güvenli birleştirme, `Object.create(null)`, kütüphane güncelliği.
+
+---
+
+# Yorumlanan diller · ortak kural
+
+- `eval`, `exec`, `pickle`, dinamik `require` → güvenilmez veriyle **kullanma**.
+- Girdi doğrulama + parametreli API + güncel bağımlılık.
+
+---
+
+# Bölüm 5–9 — kısa sınama
+
+1. Güvensiz deserialization neden kod çalıştırabilir?
+2. XXE'yi hangi ayar kapatır?
+3. ReDoS nedir, nasıl azaltılır?
+
+<!-- Konuşma notu: Sonra bayt kodu ve gizleme. -->
+
+---
+
+<!-- _class: bolum -->
+
+# 8. Bayt kodu ve tersine derleme
+
+---
+
+# Java bayt kodu kolay okunur
+
+- `.class`/`.jar` bayt kodu, kaynağa **çok yakın** geri çevrilebilir.
+- Araçlar: `javap` (sökme), JD-GUI/CFR/Procyon (tersine derleme).
+- Adlar, dizgeler, yapı büyük ölçüde **görünür**.
+
+---
+
+# `javap` örneği
+
+```bash
+javap -c -p Uygulama.class    # bayt kodunu sök
+```
+
+- Metot adları, çağrılar, sabitler görünür.
+- Bu yüzden Java'da gizleme **daha da** gerekli.
+
+---
+
+# Neden C'den daha kolay?
+
+- Bayt kodu **yüksek seviyeli** ve tür bilgisi taşır.
+- Değişken/metot adları çoğunlukla korunur.
+- → tersine mühendislik ucuz; gizleme şart.
+
+---
+
+<!-- _class: bolum -->
+
+# 9. ProGuard ve R8
+
+---
+
+# ProGuard/R8 ne yapar?
+
+Üç iş:
+
+- **Küçültme (shrink):** kullanılmayan kodu atar.
+- **İyileştirme (optimize):** kodu sadeleştirir.
+- **Gizleme (obfuscate):** adları anlamsızlaştırır (`a`, `b`, `c`).
+
+---
+
+# Ad gizleme örneği
+
+```text
+LisansDenetleyici.dogrula()  →  a.b()
+```
+
+- Anlamlı adlar kaybolur.
+- Tersine mühendis için harita zorlaşır.
+- Ölü kod atılınca ikili küçülür.
+
+---
+
+# `-keep` neden gerekir?
+
+- Reflection ile **adıyla** çağrılan kod (API, giriş noktaları, JNI) korunmalı.
+- Gizleme adı değiştirirse çağrı **kırılır**.
+
+```proguard
+-keep class com.uygulama.Api { public *; }
+```
+
+---
+
+# `-keep` dengesi
+
+- **Çok az `-keep`:** uygulama çöker (reflection kırılır).
+- **Çok fazla `-keep`:** gizleme zayıflar (her şey açık kalır).
+- Yalnız **gerçekten gereken** giriş noktalarını tut.
+
+---
+
+# Eşleme dosyası (mapping)
+
+- R8 bir `mapping.txt` üretir: gizli ad → gerçek ad.
+- **Gizli tutulur** (dağıtılmaz), ama çökme izlerini çözmek için saklanır.
+- Sürüm kimliğiyle birlikte arşivlenir.
+
+---
+
+<!-- _class: bolum -->
+
+# 10. Dize gizleme ve reflection
+
+---
+
+# Java'da dizgeler açık
+
+- `.class` içindeki sabit dizgeler **düz** görünür (`strings`, tersine derleyici).
+- Hassas URL, anahtar parçası, mesajlar sızar.
+
+---
+
+# Dize gizleme
+
+- Dizgeler derlemede **kodlanır**, kullanımda çözülür.
+- 4. haftadaki kuralla aynı: `strings`'i durdurur, **anahtar saklamaz**.
+- Çözme kodu da bytecode'da → sınırlı koruma.
+
+---
+
+# ⚠️ Reflection ile gizleme çatışması
+
+- Ada göre çağrı (`getMethod("dogrula")`) gizlemeden **sonra** kırılır.
+- Çözüm: ya `-keep` ya reflection'ı bırakıp doğrudan çağrı.
+- Reflection'ı azaltmak hem güvenlik hem gizleme için iyidir.
+
+---
+
+<!-- _class: bolum -->
+
+# 11. Android R8 ve ölçme
+
+---
+
+# Android'de R8
+
+- R8, Android derlemesinin **varsayılan** küçültücü/gizleyicisi.
+- `minifyEnabled true` + `proguard-rules.pro`.
+- DEX (Android bayt kodu) üretir.
+
+---
+
+# Gizlemenin etkisini ölçmek
+
+- Gizleme öncesi/sonrası:
+  - anlamlı ad oranı
+  - düz metin hassas dize sayısı
+  - APK boyutu
+- Ölç ve S9'a yaz (9. haftadaki ölçme mantığı).
+
+---
+
+# Java için statik analiz
+
+- SpotBugs, Error Prone, SonarQube.
+- CERT Java kurallarına yakın denetimler.
+- CI'da her birleştirmede.
+
+---
+
+# Bölüm 8–13 — kısa sınama
+
+1. Java bayt kodu neden C'den kolay okunur?
+2. `-keep` dengesi nedir?
+3. Reflection gizlemeyle neden çatışır?
+
+<!-- Konuşma notu: Sonra SBOM ve bağımlılık güvenliği. -->
+
+---
+
+<!-- _class: bolum -->
+
+# 12. Bağımlılık güvenliği ve SBOM
+
+---
+
+# Sorun · tedarik zinciri
+
+- Kendi kodunuz kusursuz olsa bile, kullandığınız **kütüphanelerdeki** açık sizi etkiler.
+- Modern uygulama yüzlerce bağımlılık içerir.
+- "Hangi sürüm bende var?" sorusu kritik.
+
+---
+
+# Gerçek örnekler
+
+- Log4Shell (Log4j): tek bir kütüphane açığı, milyonlarca sistemi etkiledi.
+- Kötü niyetli paket (typosquatting): benzer adlı sahte paket.
+- Bakımsız/terk edilmiş bağımlılık.
+
+---
+
+# SBOM nedir? (hatırlatma)
+
+- Yazılımın **malzeme listesi**: hangi bileşen, hangi sürüm, hangi lisans.
+- Bir açık duyurulunca "etkilendim mi?" **hızlı** yanıtlanır.
+
+---
+
+# SBOM biçimleri
+
+- **CycloneDX** (OWASP) — güvenlik odaklı, yaygın.
+- **SPDX** (Linux Foundation) — lisans odaklı da güçlü.
+- Araçlarla otomatik üretilir (derleme adımında).
+
+---
+
+# VEX nedir?
+
+- **VEX (Vulnerability Exploitability eXchange):** "bu açık bende var ama **sömürülebilir değil**" bilgisini paylaşır.
+- Gürültüyü azaltır: her CVE panik değil.
+- SBOM'a eşlik eder.
+
+---
+
+# Bağımlılık yönetimi kuralları
+
+- Sürümleri **sabitle** (pin); rastgele "en son" çekme.
+- Bilinen açıkları tara (`dependency-check`, `npm audit`, `pip-audit`).
+- Güvenli güncelleme süreci; kritik yamaları hızlı uygula.
+
+---
+
+# SBOM üretimi · örnek akış
+
+```text
+derleme → SBOM üret (CycloneDX) → açık tarama
+        → VEX ile değerlendir → sürümle birlikte arşivle
+```
+
+Her sürümün SBOM'u sürüm kimliğiyle saklanır.
+
+---
+
+# Projeye bağ
+
+- **S13:** güvenli geliştirme süreci + SBOM.
+- Her sürüm için güncel SBOM ve bağımlılık taraması.
+- Devredilen gereksinimler: "güvenli güncelleme" üst uygulamaya (13. hafta).
+
+---
+
+# Bölüm 14 — kısa sınama
+
+1. SBOM ne işe yarar?
+2. VEX neden gürültüyü azaltır?
+3. Bağımlılık sürümlerini neden sabitleriz?
+
+<!-- Konuşma notu: Sonra proje ve çözümlü sınama. -->
+
+---
+
+<!-- _class: bolum -->
+
+# Proje ve kapanış
+
+---
+
+# Proje · S9/S13 (Java tarafı)
+
+- [ ] Enjeksiyona açık noktaları parametreli API'ye çevir (SQL, komut, yol).
+- [ ] Güvensiz deserialization varsa filtre/şema.
+- [ ] R8/ProGuard ile gizleme; `-keep` yalnız gereken giriş noktaları.
+- [ ] Dize gizleme; hassas dize `strings`/tersine derlemede yok.
+- [ ] SBOM üret + bağımlılık taraması (S13).
+
+---
+
+<!-- _class: bolum -->
+
+# Çözümlü kendini sınama
+
+---
+
+# Soru 1
+
+**Yönetilen dil hangi hata sınıfını çözer, neyi çözmez?**
+
+**Cevap:** Bellek hatalarını (taşma, UAF) büyük ölçüde çözer. Enjeksiyon, mantık/yetki hataları, bağımlılık ve deserialization saldırılarını **çözmez**.
+
+---
+
+# Soru 2
+
+**`' OR '1'='1` neden tüm satırları döndürür?**
+
+**Cevap:** Girdi string birleştirmeyle sorguya girer; tırnak veriyi bitirir, `OR '1'='1'` her zaman doğru olur. Parametreli sorgu bunu engeller.
+
+---
+
+# Soru 3
+
+**Komut enjeksiyonunu `ProcessBuilder` nasıl önler?**
+
+**Cevap:** Kabuk kullanmadan argümanları **dizi** olarak verir; metakarakterler (`;`, `|`) yorumlanmaz, girdi tek argüman kalır.
+
+---
+
+# Soru 4
+
+**Yol geçişini hangi iki adım kapatır?**
+
+**Cevap:** Kanonikleştirme (`normalize`/`toRealPath`) + kök denetimi (`startsWith(kok)`). Ayrıca dosya adı beyaz listesi.
+
+---
+
+# Soru 5
+
+**Güvensiz deserialization neden tehlikelidir? Çözüm?**
+
+**Cevap:** Çıkarma sırasında nesne metotları çalışır; gadget zinciriyle kod çalıştırılabilir. Çözüm: native serileştirme yerine veri biçimi + şema; zorunda kalınırsa `ObjectInputFilter` beyaz listesi.
+
+---
+
+# Soru 6
+
+**XXE nedir, hangi ayar kapatır?**
+
+**Cevap:** XML dış varlıklarının kötüye kullanımı (dosya okuma/SSRF). Dış varlıkları ve DOCTYPE'ı kapatan ayrıştırıcı ayarı kapatır.
+
+---
+
+# Soru 7
+
+**ReDoS ve prototype pollution nedir?**
+
+**Cevap:** ReDoS: kötü regex'in üstel zaman harcaması (DoS). Prototype pollution: JS'te `__proto__` üzerinden tüm nesneleri bozma. İkisi de girdi denetimi + güvenli API ister.
+
+---
+
+# Soru 8
+
+**Java bayt kodu neden gizlemeye daha çok ihtiyaç duyar?**
+
+**Cevap:** Bayt kodu yüksek seviyeli, tür ve ad bilgisi taşır; kaynağa çok yakın tersine derlenir. Adlar/dizgeler açık görünür.
+
+---
+
+# Soru 9
+
+**`-keep` dengesi nedir?**
+
+**Cevap:** Çok az `-keep` → reflection kırılır, uygulama çöker. Çok fazla → gizleme zayıflar. Yalnız gerçekten reflection'la çağrılan giriş noktaları tutulur.
+
+---
+
+# Soru 10
+
+**Dize gizleme Java'da anahtar saklar mı?**
+
+**Cevap:** Hayır. `strings`/statik taramayı durdurur ama çözülen dize bellekte açıktır ve çözme kodu bytecode'dadır. Anahtar için farklı koruma gerekir.
+
+---
+
+# Soru 11
+
+**SBOM ve VEX ne işe yarar?**
+
+**Cevap:** SBOM bileşen listesidir; açık duyurulunca etkilenip etkilenmediğinizi hızla söyler. VEX, açığın sömürülebilir olup olmadığını belirtir, gürültüyü azaltır.
+
+---
+
+# Soru 12
+
+**Tüm enjeksiyon türlerinin ortak kökü ve çözümü?**
+
+**Cevap:** Kök: veri ile komutun karışması. Çözüm: veriyi koddan **ayırmak** (parametreli/argüman dizisi API), string birleştirmeyle komut kurmamak.
+
+---
+
+# Özet: bu haftanın tek cümlesi
+
+> Yönetilen dil bellek hatalarını çözer ama **enjeksiyon her dilde vardır**; çözüm her zaman veriyi komuttan ayırmak,
+> koruma tarafında ise gizleme (R8) ve **bağımlılık/SBOM** yönetimidir.
+
+---
+
+<!-- _class: bolum -->
+
+# Gelecek hafta
+
+**6. hafta — RASP ve çalışma anı korumaları**
+
+Kurcalama/hata ayıklama tespiti, bütünlük denetimi, tepki politikası ve katmanlı savunma.

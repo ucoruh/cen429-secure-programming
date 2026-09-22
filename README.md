@@ -1,23 +1,34 @@
-# ce205-data-structures
+# CEN429 Güvenli Programlama — Ders Notları
 
-ce205 data structure course notes
+Recep Tayyip Erdoğan Üniversitesi, Bilgisayar Mühendisliği · Dr. Öğr. Üyesi Uğur CORUH
 
-Website : [Home - RTEU CE205 Data Structures Course Notes](https://ucoruh.github.io/ce205-data-structures/)
+**Ders sitesi:** <https://ucoruh.github.io/cen429-secure-programming/>
 
-ce103 algorithms and programming I course notes
+Bu depo dersin bütün malzemesini tek yerde tutar: ders notları (site), sunumlar ve derste gösterilen çalışan
+kod örnekleri. Notlar kendi başına yeterlidir; dışarıdan bir kaynağa ihtiyaç duymadan çalışılabilir.
 
-Website: [Home - RTEU CE103 Algorithms and Programming-I Course Notes](https://ucoruh.github.io/ce103-algorithms-and-programming-I/)
+## Klasörler
 
-ce100 algorithms and programming II course notes
+| Klasör | İçerik |
+| --- | --- |
+| [`docs/`](docs/) | Ders sitesinin kaynağı (MkDocs Material): izlence ve haftalık ders notları (TR/EN) |
+| [`slides/`](slides/) | Haftalık sunumların kaynağı (Marp) |
+| [`code/`](code/) | Derste gösterilen demolar ve kendi başınıza çalışacağınız alıştırmalar — her hafta bir klasör |
+| [`tools/`](tools/) | Siteyi ve belgeleri yerelde üretme betikleri, git yardımcıları |
 
-Website : [Home - RTEU CE100 Algorithms and Programming-II Course Notes](https://ucoruh.github.io/ce100-algorithms-and-programming-II/)
+## Uygulamaları çalıştırmak
 
-ce204 object-oriented programming course notes
+Laboratuvar ortamının kurulumu ve güvenlik kuralları için [`code/README.md`](code/README.md) dosyasını okuyun.
+Kısaca: Windows'ta WSL2 ile Ubuntu, ardından her demo klasöründe `make demo`.
 
-Website : [Home - RTEU CE204 Object-Oriented Programming Course Notes](https://ucoruh.github.io/ce204-object-oriented-programming/)
+## Siteyi yerelde görmek
 
-cen429 secure programming course notes
+```bash
+py -3.12 -m pip install -r requirements.txt
+py -3.12 tools/site.py serve      # http://127.0.0.1:8000/cen429-secure-programming/tr/
+```
 
-Website : [Home - RTEU CEN429 Secure Programming Course Notes](https://ucoruh.github.io/cen429-secure-programming/)
+## Lisans
 
-
+Ders notları ve kod örnekleri eğitim amaçlıdır. Saldırı teknikleri yalnızca kendi bilgisayarınızda ve verilen demolar
+üzerinde denenmelidir.

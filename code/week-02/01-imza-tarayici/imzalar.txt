@@ -1,0 +1,7 @@
+# CEN429 — Hafta 2 — Demo 1: oyuncak imza veritabanı
+# Biçim:  TUR  AD  DEGER
+#   HASH  : dosyanın SHA-256 özeti (onaltılık)
+#   DESEN : dosyada aranan bayt dizisi (satırın geri kalanı)
+HASH  Ornek.MaviKedi.A   5162a58fc658f8d5587e7a89780d5392669b401469a716bc34d54f528769029f
+DESEN Ornek.MaviKedi.A   MAVI-KEDI-42
+DESEN Ornek.Cozucu.xs32  COZUCU: ALGO=xs32

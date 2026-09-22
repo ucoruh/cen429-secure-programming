@@ -279,24 +279,7 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 
 # İzlenebilirlik zinciri — iki yön
 
-<svg viewBox="0 0 960 250" style="width:96%;height:auto;display:block;margin:4px auto" font-family="sans-serif">
-  <rect x="15" y="80" width="200" height="80" rx="10" fill="#eef2ff" stroke="#4054b2" stroke-width="2"/><text x="115" y="112" text-anchor="middle" font-size="16" fill="#2a3a8c" font-weight="bold">TEHDİT / STANDART</text><text x="115" y="138" text-anchor="middle" font-size="13" fill="#333">neden var?</text>
-  <rect x="260" y="80" width="200" height="80" rx="10" fill="#e8f6f7" stroke="#0a9396" stroke-width="2"/><text x="360" y="112" text-anchor="middle" font-size="16" fill="#005f66" font-weight="bold">GEREKSİNİM</text><text x="360" y="138" text-anchor="middle" font-size="13" fill="#333">ölçülebilir ifade</text>
-  <rect x="505" y="80" width="200" height="80" rx="10" fill="#eaf4ea" stroke="#2e7d32" stroke-width="2"/><text x="605" y="112" text-anchor="middle" font-size="16" fill="#1b5e20" font-weight="bold">TASARIM / KOD</text><text x="605" y="138" text-anchor="middle" font-size="13" fill="#333">nasıl yapıldı</text>
-  <rect x="750" y="80" width="200" height="80" rx="10" fill="#fdf1e7" stroke="#b5651d" stroke-width="2"/><text x="850" y="112" text-anchor="middle" font-size="16" fill="#8a4b12" font-weight="bold">TEST / KANIT</text><text x="850" y="138" text-anchor="middle" font-size="13" fill="#333">karşılandı mı</text>
-  <line x1="215" y1="112" x2="260" y2="112" stroke="#2e7d32" stroke-width="3" marker-end="url(#f13)"/>
-  <line x1="460" y1="112" x2="505" y2="112" stroke="#2e7d32" stroke-width="3" marker-end="url(#f13)"/>
-  <line x1="705" y1="112" x2="750" y2="112" stroke="#2e7d32" stroke-width="3" marker-end="url(#f13)"/>
-  <line x1="260" y1="132" x2="215" y2="132" stroke="#c0392b" stroke-width="2.5" marker-end="url(#b13)"/>
-  <line x1="505" y1="132" x2="460" y2="132" stroke="#c0392b" stroke-width="2.5" marker-end="url(#b13)"/>
-  <line x1="750" y1="132" x2="705" y2="132" stroke="#c0392b" stroke-width="2.5" marker-end="url(#b13)"/>
-  <text x="480" y="45" text-anchor="middle" font-size="16" fill="#2e7d32" font-weight="bold">ileri: her tehdit bir gereksinime, her gereksinim bir kanıta →</text>
-  <text x="480" y="205" text-anchor="middle" font-size="15" fill="#c0392b">← geri: her kanıt/kod hangi gereksinimden geldi? (kaynaksız kod, kanıtsız "karşılandı" = kırmızı bayrak)</text>
-  <defs>
-   <marker id="f13" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2e7d32"/></marker>
-   <marker id="b13" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#c0392b"/></marker>
-  </defs>
-</svg>
+![w:1000](assets/h13-01-izlenebilirlik.svg)
 
 ---
 

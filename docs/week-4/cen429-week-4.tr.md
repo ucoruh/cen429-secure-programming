@@ -988,16 +988,7 @@ açık kaynak projeler için sürdürdüğü OSS-Fuzz hizmeti, yıllar içinde o
 Modern fuzzer'lar (libFuzzer, AFL++, honggfuzz) rastgele girdi üretmekle kalmaz; programın **hangi kod yollarını**
 çalıştırdığını ölçer ve yeni bir yol açan girdileri saklayıp onları değiştirerek devam eder:
 
-```mermaid
-flowchart LR
-    T["Tohum girdiler<br/>(corpus)"] --> M["Değiştir<br/>(bit çevir, baytı sil,<br/>parça ekle, birleştir)"]
-    M --> C["Hedefi çalıştır<br/>(sanitizer açık)"]
-    C --> K{"Yeni kod yolu?"}
-    K -- evet --> S["Corpus'a ekle"] --> M
-    K -- hayır --> M
-    C --> H{"Çökme /<br/>sanitizer hatası?"}
-    H -- evet --> R["Girdiyi kaydet:<br/>yeniden üretilebilir hata"]
-```
+![Kapsam güdümlü fuzzing döngüsü](assets/h04-01-fuzzing-dongusu.svg)
 
 Bu geri besleme sayesinde fuzzer, örneğin bir dosya biçiminin "sihirli baytlarını" ya da bir uzunluk alanının doğru
 değerini kendiliğinden bulabilir. Sanitizer'la birlikte kullanıldığında, programın çökmediği ama belleği bozduğu
@@ -1077,18 +1068,7 @@ Güvenli kodlama hataları **önler**; derleyici ve işletim sistemi korumaları
 zorlaştırır**. Kitap bunlardan yalnız yığın koruyucuyu (StackGuard, ProPolice, MSVC `/GS`) anar (Tarif 3.3); ASLR,
 DEP/NX, RELRO ve kontrol akışı bütünlüğü kitabın yazılmasından sonra yaygınlaştı.
 
-```mermaid
-flowchart TD
-    A["Saldırgan: tampon taşması"] --> B["Yığın kanaryası<br/>dönüş adresi ezilirse durdurur"]
-    B --> C["ASLR<br/>adresler her çalıştırmada değişir"]
-    C --> D["DEP / NX<br/>veri sayfası çalıştırılamaz"]
-    D --> E["RELRO / PIE / CFI<br/>GOT yazılamaz, akış denetlenir"]
-    E --> F["Hepsi aşılırsa:<br/>mantık hatası hâlâ açıktır"]
-    classDef k fill:#e8f6f7,stroke:#0a9396,color:#005f66;
-    classDef u fill:#fff3cd,stroke:#b5651d,color:#8a4b12;
-    class B,C,D,E k;
-    class F u;
-```
+![Derleyici ve işletim sistemi koruma katmanları](assets/h04-02-derleyici-os-korumalari.svg)
 
 Bu katmanlar **sömürüyü zorlaştırır, hatayı silmez**. Hatanın kendisi ancak 3–8. bölümlerdeki güvenli kodlamayla
 ortadan kalkar.
@@ -1192,16 +1172,7 @@ kazanır. Bir güvenlik hatası çoğu zaman, önceden doğru olan bir kodun kü
 
 ### Örnek bir hat
 
-```mermaid
-flowchart LR
-    A["Değişiklik<br/>(pull request)"] --> B["Derle: uyarılar<br/>hata sayılır"]
-    B --> C["Statik analiz<br/>(clang-tidy, cppcheck)"]
-    C --> D["Birim testleri<br/>ASan + UBSan"]
-    D --> E["Kısa fuzzing<br/>(her hedef 1-5 dk)"]
-    E --> F["Sürüm derlemesi<br/>korumalar açık"]
-    F --> G["İkili denetimi<br/>(checksec, strings)"]
-    G --> H["Birleştir"]
-```
+![Güvenli derleme hattının yedi adımı](assets/h04-03-ci-hatti.svg)
 
 | Aşama | Başarısızlık ölçütü |
 | --- | --- |

@@ -1066,21 +1066,7 @@ Hata kaçtı diyelim.
 
 # Yığın taşması ve kanarya — şema
 
-<svg viewBox="0 0 900 300" style="width:92%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <text x="450" y="24" text-anchor="middle" font-size="16" fill="#555">Taşma tampondan aşağı, dönüş adresine doğru yazar →</text>
-  <rect x="120" y="46" width="300" height="44" fill="#e8f6f7" stroke="#0a9396"/><text x="270" y="74" text-anchor="middle" font-size="16">char buf[8] (yerel tampon)</text>
-  <rect x="120" y="90" width="300" height="44" fill="#fff3cd" stroke="#b5651d" stroke-width="2"/><text x="270" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#8a4b12">KANARYA (rastgele nöbetçi)</text>
-  <rect x="120" y="134" width="300" height="44" fill="#eef" stroke="#4054b2"/><text x="270" y="162" text-anchor="middle" font-size="15">saved rbp</text>
-  <rect x="120" y="178" width="300" height="44" fill="#fde8e8" stroke="#c0392b" stroke-width="2"/><text x="270" y="206" text-anchor="middle" font-size="15" font-weight="bold" fill="#a01f1f">DÖNÜŞ ADRESİ</text>
-  <line x1="470" y1="216" x2="470" y2="64" stroke="#c0392b" stroke-width="4" marker-end="url(#up4)"/>
-  <text x="560" y="110" font-size="15" fill="#333">Dönüş adresine ulaşmak</text>
-  <text x="560" y="134" font-size="15" fill="#333">için önce</text>
-  <text x="560" y="158" font-size="15" fill="#8a4b12" font-weight="bold">KANARYA ezilmeli.</text>
-  <text x="560" y="188" font-size="15" fill="#333">Dönüşte kanarya bozuksa</text>
-  <text x="560" y="212" font-size="15" fill="#2e7d32" font-weight="bold">program durur.</text>
-  <text x="450" y="268" text-anchor="middle" font-size="14" fill="#777">Durdurmaz: hedefli yazma · heap taşması · bilgi sızıntısı</text>
-  <defs><marker id="up4" markerWidth="12" markerHeight="12" refX="4" refY="9" orient="auto"><path d="M4,0 L8,9 L0,9 Z" fill="#c0392b"/></marker></defs>
-</svg>
+![w:1000](assets/h04-04-yigin-kanarya.svg)
 
 ---
 

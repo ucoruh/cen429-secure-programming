@@ -285,27 +285,7 @@ Kripto **kara kutu** için tasarlandı; biz **beyaz kutudayız**.
 
 # Üç saldırgan modeli — ne görüyor?
 
-<svg viewBox="0 0 960 290" style="width:96%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <!-- kara kutu -->
-  <rect x="20" y="55" width="290" height="185" rx="12" fill="#20232a"/>
-  <text x="165" y="86" text-anchor="middle" font-size="20" fill="#fff" font-weight="bold">KARA KUTU</text>
-  <rect x="70" y="105" width="190" height="70" rx="8" fill="#3a3f4a"/><text x="165" y="146" text-anchor="middle" font-size="15" fill="#888">? gizli ?</text>
-  <text x="165" y="200" text-anchor="middle" font-size="14" fill="#9ed6d7">yalnız giriş → çıkış</text>
-  <text x="165" y="224" text-anchor="middle" font-size="13" fill="#aaa">klasik AES kanıtı bunu varsayar</text>
-  <!-- gri kutu -->
-  <rect x="335" y="55" width="290" height="185" rx="12" fill="#4a3f2a"/>
-  <text x="480" y="86" text-anchor="middle" font-size="20" fill="#fff" font-weight="bold">GRİ KUTU</text>
-  <rect x="385" y="105" width="190" height="70" rx="8" fill="#6b5a3a"/><text x="480" y="140" text-anchor="middle" font-size="14" fill="#ffd27f">güç / zaman izi</text><text x="480" y="160" text-anchor="middle" font-size="13" fill="#ffd27f">yan kanal</text>
-  <text x="480" y="200" text-anchor="middle" font-size="14" fill="#ffd27f">+ yan kanal (DPA)</text>
-  <text x="480" y="224" text-anchor="middle" font-size="13" fill="#e0c9a0">donanım gözlem</text>
-  <!-- beyaz kutu -->
-  <rect x="650" y="55" width="290" height="185" rx="12" fill="#eef7f7" stroke="#c0392b" stroke-width="3"/>
-  <text x="795" y="86" text-anchor="middle" font-size="20" fill="#a01f1f" font-weight="bold">BEYAZ KUTU</text>
-  <rect x="700" y="105" width="190" height="70" rx="8" fill="#fff" stroke="#0a9396"/><text x="795" y="132" text-anchor="middle" font-size="13" fill="#005f66">bellek · kod · ara</text><text x="795" y="152" text-anchor="middle" font-size="13" fill="#005f66">değerler HEPSİ açık</text>
-  <text x="795" y="200" text-anchor="middle" font-size="14" fill="#c0392b">tam erişim (MATE)</text>
-  <text x="795" y="224" text-anchor="middle" font-size="13" fill="#a01f1f">WBC bu modelde savaşır</text>
-  <text x="480" y="272" text-anchor="middle" font-size="15" fill="#555">Görünürlük soldan sağa artar → WBC en zor modelde anahtar çıkarmayı geciktirir.</text>
-</svg>
+![w:1000](assets/h11-01-saldirgan-modelleri.svg)
 
 ---
 

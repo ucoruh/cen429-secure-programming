@@ -225,20 +225,13 @@ muhafızıdır.
     | Ağ güvenlik duvarı | Ağ kenarında | Paketler |
     | WAF (Web App Firewall) | Uygulamanın **önünde** | HTTP istekleri |
     | **RASP** | Uygulamanın **içinde** | Kendi kodu, belleği, çalıştığı ortam |
-    Bir WAF "dışarıdan gelen istek zararlı mı?" diye sorar. RASP "**ben** kurcalandım mı, **beni** kim izliyor, **hangi
-    cihazdayım**?" diye sorar. Bu derste RASP'i mobil/gömülü ve masaüstü C/C++ bağlamında, uygulamanın kendini koruması
+    Bir WAF "dışarıdan gelen istek zararlı mı?" diye sorar. RASP "**ben** kurcalandım mı, **beni** kim izliyor,
+    **hangi cihazdayım**?" diye sorar. Bu derste RASP'i mobil/gömülü ve masaüstü C/C++ bağlamında, uygulamanın kendini koruması
     olarak ele alıyoruz.
 
 RASP üç iş yapar; bu haftanın omurgası bu üçlüdür:
 
-```mermaid
-flowchart LR
-    A["ALGILAMA<br/>(detection)"] --> S["SAVUNMA<br/>(defense)"]
-    S --> C["CAYDIRMA<br/>(deterrence)"]
-    A -.-> A1["butunluk denetimi<br/>debugger / kanca / ortam<br/>root / imza"]
-    S -.-> S1["fail-closed, sirri sil<br/>cihaza bagla, akis sayaci"]
-    C -.-> C1["decoy cikti, gecikme<br/>telemetri / attestation<br/>saldirgani yavaslat"]
-```
+![RASP döngüsü: algıla, savun, caydır](assets/h06-01-rasp-dongusu.svg)
 
 - **Algılama (detection):** Bir şeyin yanlış olduğunu anlamak — ikili yamalanmış, bir hata ayıklayıcı bağlı, ortam bir
   emülatör, uygulama root'lu cihazda, bileşen yeniden paketlenmiş.
@@ -330,18 +323,7 @@ karışır:
 
 ### Katmanlar birbirini korur
 
-```mermaid
-flowchart TB
-    subgraph Katmanlar["Aynı hassas işlemi saran katmanlar"]
-      G["Gizleme (4, 5, 9. hafta)<br/>denetimleri bulmayı zorlaştırır"]
-      B["Bütünlük denetimi<br/>denetimlerin yamalanmasını fark eder"]
-      D["Hata ayıklayıcı / kanca / ortam<br/>çalışma anı analizini fark eder"]
-      S["Kontrol akışı sayacı<br/>denetimlerin atlanmasını fark eder"]
-      C["Cihaz ve sürüm bağlama<br/>kopyalanan veriyi işe yaramaz kılar"]
-      V["Sunucu doğrulaması<br/>istemci tamamen ele geçse bile son kararı verir"]
-    end
-    G --> B --> D --> S --> C --> V
-```
+![Hassas işlemi saran RASP katmanları](assets/h06-02-katmanlar.svg)
 
 Her katman bir öncekinin zayıflığını kapatır: gizleme denetimleri saklar, bütünlük denetimi gizlenmiş denetimlerin
 **değiştirilmesini** fark eder, kontrol akışı sayacı bütünlük denetiminin **atlanmasını** fark eder, cihaz bağlama
@@ -373,13 +355,7 @@ yakalanır.
     seçmesinin bir nedeni vardır: asıl saldırı zaten **checksum kodunun kendisini** yamalamaktır — bu bölümün ana
     tartışması budur.
 
-```mermaid
-flowchart LR
-    B[("Ikili dosya<br/>/ korunan bolge")] --> H["HMAC-SHA-256<br/>(gizli anahtar)"]
-    H --> K{"altin deger<br/>== hesaplanan?"}
-    K -->|evet| T["butunluk TAMAM"]
-    K -->|hayir| Y["YAMA ALGILANDI<br/>-> tepki"]
-```
+![Self-hashing ile bütünlük denetimi akışı](assets/h06-03-self-hashing.svg)
 
 ### Demo 1 — Çalışma zamanı bütünlük denetimi ve yama tespiti
 
@@ -796,15 +772,7 @@ doğru sonucu **ancak** bütün kontrol noktalarından **sırayla** geçilmişse
 kurarız: her kontrol noktası bir anahtar zincirini ilerletir (`acc = HMAC(acc, "asama-i")`); kritik işlem bu zincirden
 türetilen anahtarla bir sırrı açar.
 
-```mermaid
-flowchart LR
-    S["tohum"] --> K0["kontrol 0<br/>acc=HMAC(acc,'0')"]
-    K0 --> K1["kontrol 1<br/>acc=HMAC(acc,'1')"]
-    K1 --> K2["kontrol 2<br/>acc=HMAC(acc,'2')"]
-    K2 --> OP["kritik islem:<br/>sirri acc ile AC"]
-    OP -->|zincir dogru| R["gercek sonuc"]
-    OP -->|zincir yanlis| D["decoy"]
-```
+![Kontrol akışı sayacı ile denetim atlamanın yakalanması](assets/h06-04-akis-sayaci.svg)
 
 Bir kontrol atlanır ya da sırası bozulursa **acc** farklı çıkar, anahtar yanlış olur ve GCM çözme **reddedilir** — gerçek
 sonuç üretilemez. Böylece tek bir `jmp` yaması işe yaramaz.
@@ -891,14 +859,7 @@ Normal akışta kontroller geçti, cihaz doğruydu, sır açıldı, kullanıldı
 anahtar tutmadı ve sır açılamadı. Bu, Hafta 3'teki **güvenlik kabuğunun** en iç katmanının (cihaz bağlama) RASP ile
 birleşmiş hâlidir.
 
-```mermaid
-flowchart TB
-    subgraph Motor["RASP motoru (her kritik islemde)"]
-        A["algila:<br/>butunluk+debug+ortam+kanca+root"] --> Q{"tamper?"}
-        Q -->|hayir| B["cihaz-bagli anahtarla<br/>sirri AC, kullan, SIL"]
-        Q -->|evet| C["sirri SIL<br/>tamper bayragi<br/>decoy dondur<br/>olayi bildir"]
-    end
-```
+![RASP motorunun her kritik işlemdeki karar akışı](assets/h06-05-rasp-motoru.svg)
 
 !!! success "Kural"
     Tepkiyi tetikleyiciden **ayırın**: hemen `exit()` yapmak saldırgana yol gösterir. Tamper anında değerli veriyi

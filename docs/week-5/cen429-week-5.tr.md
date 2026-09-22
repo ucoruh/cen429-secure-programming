@@ -253,18 +253,7 @@ ve 4. haftadaki biçim dizisi açığı aynı hatanın farklı yüzleridir: bir 
 sistemi, XML ayrıştırıcı, `printf`) verilen metnin içinde **komut** ile **veri** aynı kanaldan geçer. Kullanıcı
 verisi, yorumlayıcının özel karakterlerini (`'`, `;`, `../`, `<`, `%`) içeriyorsa, veri komutun bir parçası olur.
 
-```mermaid
-flowchart LR
-    subgraph Kotu["Hatalı: tek kanal"]
-      K1["Komut şablonu"] --> B["Birleştir<br/>(dize)"]
-      V1["Kullanıcı verisi"] --> B
-      B --> Y1["Yorumlayıcı<br/>ayrıştırır"]
-    end
-    subgraph Iyi["Doğru: iki kanal"]
-      K2["Komut şablonu<br/>(sabit)"] --> Y2["Yorumlayıcı"]
-      V2["Kullanıcı verisi"] -->|"parametre / argüman"| Y2
-    end
-```
+![Enjeksiyonun kökü: tek kanal ile ayrı kanalın karşılaştırması](assets/h05-01-enjeksiyon-koku.svg)
 
 Bu yüzden bütün enjeksiyonların **asıl** düzeltmesi aynıdır: **komut ile veriyi ayrı kanallardan ver**. Kaçış
 karakteriyle temizlemek (`'` → `''`) ikinci savunma hattıdır; her yorumlayıcının kaçış kuralları farklıdır ve bir

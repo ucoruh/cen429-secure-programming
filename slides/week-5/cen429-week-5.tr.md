@@ -273,24 +273,7 @@ yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · 
 
 # Enjeksiyonun kökü — veri mi, kod mu?
 
-<svg viewBox="0 0 940 300" style="width:96%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <rect x="20" y="30" width="150" height="52" rx="8" fill="#fdeaea" stroke="#c0392b"/><text x="95" y="55" text-anchor="middle" font-size="14" fill="#a01f1f">güvenilmeyen</text><text x="95" y="73" text-anchor="middle" font-size="14" fill="#a01f1f">girdi</text>
-  <!-- kötü yol -->
-  <line x1="170" y1="70" x2="330" y2="95" stroke="#c0392b" stroke-width="3" marker-end="url(#a5)"/>
-  <rect x="330" y="70" width="260" height="52" rx="8" fill="#fdeaea" stroke="#c0392b" stroke-width="2"/><text x="460" y="92" text-anchor="middle" font-size="14">dize birleştirme:</text><text x="460" y="112" text-anchor="middle" font-size="14" font-family="monospace">"...WHERE x='" + girdi</text>
-  <line x1="590" y1="96" x2="720" y2="96" stroke="#c0392b" stroke-width="3" marker-end="url(#a5)"/>
-  <rect x="720" y="66" width="200" height="62" rx="8" fill="#c0392b"/><text x="820" y="92" text-anchor="middle" font-size="15" fill="#fff" font-weight="bold">girdi KOD olur</text><text x="820" y="113" text-anchor="middle" font-size="13" fill="#fff">SQLi / RCE / XXE</text>
-  <!-- iyi yol -->
-  <line x1="170" y1="70" x2="330" y2="210" stroke="#2e7d32" stroke-width="3" marker-end="url(#g5)"/>
-  <rect x="330" y="185" width="260" height="52" rx="8" fill="#eaf4ea" stroke="#2e7d32" stroke-width="2"/><text x="460" y="207" text-anchor="middle" font-size="14">parametreli sorgu /</text><text x="460" y="227" text-anchor="middle" font-size="14">argüman dizisi (? yer tutucu)</text>
-  <line x1="590" y1="211" x2="720" y2="211" stroke="#2e7d32" stroke-width="3" marker-end="url(#g5)"/>
-  <rect x="720" y="181" width="200" height="62" rx="8" fill="#2e7d32"/><text x="820" y="207" text-anchor="middle" font-size="15" fill="#fff" font-weight="bold">girdi VERİ kalır</text><text x="820" y="228" text-anchor="middle" font-size="13" fill="#fff">güvenli</text>
-  <text x="460" y="275" text-anchor="middle" font-size="15" fill="#555">Tek kök: veri ile kodu ayrı kanalda tut → enjeksiyon kapanır.</text>
-  <defs>
-   <marker id="a5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#c0392b"/></marker>
-   <marker id="g5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2e7d32"/></marker>
-  </defs>
-</svg>
+![w:1000](assets/h05-01-enjeksiyon-koku.svg)
 
 ---
 

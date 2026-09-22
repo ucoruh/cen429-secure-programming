@@ -217,15 +217,7 @@ karşılandığı gösterilebilir), **izlenebilir** (bir kimliği vardır ve bir
 
 Bir gereksinim ancak **kanıtıyla** karşılanmış sayılır. Sertifikasyonda her gereksinim için şu zincir kurulur:
 
-```mermaid
-flowchart LR
-    G["Gereksinim<br/>(kimlik + metin)"] --> T["Tehdit / varlık<br/>(S4, S5)"]
-    G --> O["Önlem kartı<br/>(S7–S12)"]
-    O --> K["Kod<br/>(dosya, fonksiyon)"]
-    O --> D["Doğrulama<br/>(test, inceleme)"]
-    D --> KN["Kanıt<br/>(çıktı, rapor)"]
-    KN --> S["Durum<br/>karşılandı / devredildi / karşılanmadı"]
-```
+![Gereksinimden kanıta izlenebilirlik zinciri](assets/h13-01-izlenebilirlik.svg)
 
 Bu zincirin tablo haline **uyum matrisi** (compliance matrix) denir:
 
@@ -439,14 +431,7 @@ Bir gereksinim setini okumak işin kolay kısmıdır. Asıl iş, onu ürünün p
 6. **Sürüm planı:** Hangi gereksinimin hangi sürümde karşılanacağı proje planına işlenir; karşılanamayanlar kalan riske
    yazılır.
 
-```mermaid
-flowchart LR
-    GS["Gereksinim seti"] --> U{"Uygulanır mı?"}
-    U -- hayır --> G1["Gerekçe"]
-    U -- evet --> S{"Sorumlu kim?"}
-    S -- devret --> D["S14: devredilen"]
-    S -- biz --> V["Varlık + tehdit<br/>(S4, S5)"] --> O["Önlem kartı<br/>(S6–S13)"] --> T["Doğrulama<br/>(S16)"] --> M["Uyum matrisi<br/>(S17)"]
-```
+![Gereksinimi projeye aktarma karar akışı](assets/h13-02-gereksinim-karari.svg)
 
 !!! note "Sahada nasıl uygulanır?"
     Bir kütüphanenin kılavuzunda varlık tablosu, gereksinimlerin doğrudan yansımasıdır: her varlık için boyutu, kaynağı,

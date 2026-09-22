@@ -207,13 +207,7 @@ varsayıma dayanır. Ama bu varsayım, kodu kullanıcıya teslim ettiğimizde ç
     - **2016** — Bos vd. **DCA** (Differential Computation Analysis): donanımdaki DPA'yı yazılıma taşır, birçok WBC'yi **otomatik** kırar.
     - **2017–2024** — **WhibOx** yarışmalarında yayımlanan tüm saf-yazılım WB-AES adayları kırıldı → bugünkü kural: WBC bir **geciktirme katmanıdır**; mümkünse donanım (TEE/SE/HSM) tercih edilir.
 
-```mermaid
-flowchart LR
-    K["KARA KUTU<br/>yalnız giriş/çıkış<br/>(AES kanıtı bunu varsayar)"] --> G["GRİ KUTU<br/>+ yan kanal<br/>güç/zaman (DPA)"]
-    G --> B["BEYAZ KUTU<br/>bellek + kod + ara değerler<br/>MATE — WBC burada savaşır"]
-    classDef beyaz fill:#eef7f7,stroke:#c0392b,stroke-width:2px,color:#a01f1f;
-    class B beyaz;
-```
+![Kara, gri ve beyaz kutu saldırgan modelleri](assets/h11-01-saldirgan-modelleri.svg)
 
 Görünürlük soldan sağa artar; WBC en zor (beyaz kutu) modelde anahtar çıkarmayı **geciktirmeye** çalışır.
 
@@ -308,7 +302,7 @@ T[0x00] = S-box[0x00 XOR 0x3C] = S-box[0x3C] = 0xEB
 
 Yani ikili dosyada okuduğu değer: `T[0x00] = 0xEB`.
 
-**Adım 2 — S-box'ı tersine çevir.** S-box herkese açık ve **birebir**dir; tersi de bilinir:
+**Adım 2 — S-box'ı tersine çevir.** S-box herkese açık ve **birebirdir**; tersi de bilinir:
 
 ```text
 S-box⁻¹[0xEB] = 0x3C        (çünkü S-box[0x3C] = 0xEB)

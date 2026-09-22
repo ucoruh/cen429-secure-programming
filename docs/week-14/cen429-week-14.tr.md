@@ -270,18 +270,7 @@ farklar olabilir):
 Dokuzuncu haftanın en önemli kuralı "tek teknik değil, birlikte" idi. Tigress'te bu, dönüşümleri **sırayla** (bir hat olarak)
 uygulamak demektir. Her `--Transform` bir öncekinin çıktısına uygulanır; sıra önemlidir.
 
-```mermaid
-flowchart LR
-    A["temiz.c<br/>okunur kaynak"] --> B["Tigress<br/>+ tohum · dönüşüm"]
-    B --> C["gizli.c<br/>gizlenmiş kaynak"]
-    C --> D["derle<br/>+ SBOM"]
-    D --> E["İMZALA<br/>son ikili"]
-    E --> F["dağıt"]
-    classDef t fill:#006d77,color:#fff,stroke:#004d55;
-    classDef s fill:#fdf1e7,stroke:#b5651d,color:#8a4b12;
-    class B t;
-    class E s;
-```
+![Kaynaktan kaynağa gizleme ve imzalama hattı](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
 İmza **en son** gelir (önce gizle, sonra imzala); her hattan sonra **davranışı test et** ve **maliyeti ölç**.
 
@@ -467,7 +456,7 @@ kaynak → (Tigress dönüşüm hattı) → gizli kaynak → derleyici → ikili
     Sanallaştırma büyük **performans** ve **boyut** cezası getirir; her yere uygulanamaz. Bu yüzden yalnız değeri yüksek, küçük ve kritik fonksiyonlarda — maliyetin haklı çıktığı yerlerde — kullanılır.
 
 ??? question "7. Tohum (`--Seed`) çeşitlendirmeyi nasıl sağlar? Uzayda ve zamanda çeşitlendirme farkı nedir?"
-    Aynı kaynak farklı **tohum**la gizlendiğinde araç farklı rastgele seçimler yapar → farklı ikili (aynı davranış). **Uzayda çeşitlendirme:** farklı kopyalar/kullanıcılar farklıdır (bir kırık herkesi kırmaz). **Zamanda çeşitlendirme:** sürümler arası değişir (bir kırık kalıcı olmaz).
+    Aynı kaynak farklı **tohumla** gizlendiğinde araç farklı rastgele seçimler yapar → farklı ikili (aynı davranış). **Uzayda çeşitlendirme:** farklı kopyalar/kullanıcılar farklıdır (bir kırık herkesi kırmaz). **Zamanda çeşitlendirme:** sürümler arası değişir (bir kırık kalıcı olmaz).
 
 ??? question "8. Çeşitlendirme gizlemenin gücünü mü, ölçeklenmesini mi engeller?"
     **Ölçeklenmesini** engeller: tek bir kopyanın gücünü artırmaz ama bir saldırının tüm kopyalara/kullanıcılara yayılmasını (yeniden kullanımını) engeller.

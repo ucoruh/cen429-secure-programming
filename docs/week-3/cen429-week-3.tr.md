@@ -258,20 +258,7 @@ de savunması da farklıdır:
 | **Beklemede** (at rest) | Disk, veritabanı, yedek | Dosyanın/DB'nin çalınması | Dosya/alan şifreleme (AEAD), cihaza bağlı anahtar, maskeleme |
 | **Kullanımda** (in use) | RAM, önbellek, yazmaç | Bellek dökümü, hata ayıklayıcı, takas alanı | Kısa ömür, güvenli silme, bellek kilitleme, whitebox |
 
-```mermaid
-flowchart LR
-    subgraph Sunucu["Sunucu (güvenilir)"]
-        S[("Veri")]
-    end
-    subgraph Ag["Ağ"]
-        T["Aktarımda<br/>TLS + mesaj AEAD"]
-    end
-    subgraph Cihaz["Kullanıcının cihazı (güvenilmez)"]
-        R[("Beklemede<br/>şifreli dosya/DB")]
-        U["Kullanımda<br/>kısa ömür + silme"]
-    end
-    S --> T --> R --> U
-```
+![Verinin üç hâli: aktarımda, beklemede, kullanımda](assets/h03-01-verinin-uc-hali.svg)
 
 !!! note "Bu haftanın ana fikri: güvenlik kabuğu"
     Tek bir önlem yetmez. Hassas bir varlığı, yaşam döngüsünün **her aşamasında** iç içe geçmiş **koruma katmanlarıyla**
@@ -330,15 +317,7 @@ oynadıysa çözme **reddedilir**.
 - **ChaCha20-Poly1305** — AES donanımı olmayan cihazlarda (bazı mobil/gömülü) daha hızlı ve yan kanala dirençli.
   RFC 8439.
 
-```mermaid
-flowchart LR
-    A["Anahtar (32 bayt)"] --> E["AES-256-GCM"]
-    N["Nonce (12 bayt)<br/>her mesajda BENZERSİZ"] --> E
-    P["Düz metin"] --> E
-    AAD["İlişkili veri (AAD)<br/>şifrelenmez, doğrulanır"] --> E
-    E --> C["Şifreli metin"]
-    E --> T["Etiket (16 bayt)"]
-```
+![AEAD girdileri (anahtar, nonce, düz metin, AAD) ve çıktıları](assets/h03-02-aead.svg)
 
 !!! info "Kitap tarifi ve güncelleme"
     Ders kitabı (Viega & Messier) simetrik şifrelemeyi **tarif 5.x**'te işler ama 2003 tarihlidir: DES/3DES/RC4 ve ayrı
@@ -1053,13 +1032,7 @@ Araç: **HKDF** (RFC 5869), iki aşamalı bir KDF:
 - **Extract:** ana sır + tuz → tekdüze bir ara anahtar (PRK).
 - **Expand:** PRK + "info" etiketi → istenen boyda anahtar. Farklı `info` → farklı anahtar.
 
-```mermaid
-flowchart TB
-    M["Ana sır"] --> EX["HKDF-Extract<br/>(+ tuz)"] --> PRK["PRK"]
-    PRK --> E1["Expand info='şifreleme'"] --> K1["Şifreleme anahtarı"]
-    PRK --> E2["Expand info='MAC'"] --> K2["MAC anahtarı"]
-    PRK --> E3["Expand info='oturum-42'"] --> K3["Oturum-42 anahtarı"]
-```
+![HKDF Extract ve Expand ile ana sırdan amaca özel anahtarlar](assets/h03-03-hkdf.svg)
 
 !!! info "Kitap tarifi"
     Kitap **tarif 4.11**'de "tek bir ana sırdan algoritmayla anahtar üretme" ve **4.13**'te anahtar malzemesini güvenli
@@ -1130,19 +1103,7 @@ bölümde konuyu sahada kullanılan biçimiyle genişletiyoruz.
 
 NIST SP 800-57, bir anahtarın yaşam döngüsünü durumlarla tanımlar. Sade haliyle:
 
-```mermaid
-stateDiagram-v2
-    [*] --> Uretildi: CSPRNG / KDF
-    Uretildi --> Dagitildi: güvenli kanal, sarılı (wrapped)
-    Dagitildi --> Etkin: kullanıma alındı
-    Etkin --> Askida: şüphe / geçici durdurma
-    Askida --> Etkin
-    Etkin --> PasifYalnizCozme: kripto-periyot doldu
-    PasifYalnizCozme --> Imha: eski veri yeniden şifrelendi
-    Etkin --> Ele_gecirildi: sızıntı
-    Ele_gecirildi --> Imha: iptal + yeni anahtar
-    Imha --> [*]
-```
+![Anahtarın yaşam döngüsü: üretim, dağıtım, etkin, pasif, imha](assets/h03-04-anahtar-yasam-dongusu.svg)
 
 | Aşama | Sorulacak soru | Tipik hata |
 | --- | --- | --- |
@@ -1165,15 +1126,7 @@ Tek bir anahtarla her şeyi yapmak yerine, anahtarlar bir **ağaç** halinde dü
 kullanılır ve en iyi korunan yerde durur; alttakiler sık kullanılır, kısa ömürlüdür ve kaybedildiklerinde zarar
 küçüktür.
 
-```mermaid
-flowchart TB
-    R["Kök / ana anahtar<br/>(HSM'de, neredeyse hiç kullanılmaz)"]
-    R --> K1["Anahtar şifreleme anahtarı (KEK)<br/>müşteri ya da cihaz başına"]
-    R --> K2["İmza anahtarı<br/>(güncelleme paketleri)"]
-    K1 --> D1["Veri anahtarı (DEK)<br/>dosya / kayıt başına"]
-    K1 --> S1["Oturum anahtarı<br/>oturum başına, dakikalar"]
-    S1 --> T1["Tek kullanımlık anahtar<br/>işlem başına"]
-```
+![Kök anahtardan KEK, DEK ve oturum anahtarlarına hiyerarşi](assets/h03-05-anahtar-hiyerarsisi.svg)
 
 İki temel fikir:
 
@@ -1333,20 +1286,7 @@ TLS 1.0/1.1 kırık kabul edilir ve bırakılmıştır (POODLE, BEAST gibi sald�
 
 ### 9.1 TLS 1.3 el sıkışması
 
-```mermaid
-sequenceDiagram
-    participant I as İstemci
-    participant S as Sunucu
-    I->>S: ClientHello (+ anahtar payları, desteklenen şifre takımları)
-    S->>I: ServerHello (+ anahtar payı)
-    Note over I,S: Ortak sır (ECDHE) — her oturuma yeni: ileri gizlilik
-    S->>I: {Sertifika} (şifreli)
-    S->>I: {CertificateVerify} (özel anahtarla imza)
-    S->>I: {Finished}
-    Note over I: Sertifikayı DOĞRULA:<br/>zincir + süre + ad (+ pin)
-    I->>S: {Finished}
-    Note over I,S: Uygulama verisi (AEAD ile şifreli)
-```
+![TLS 1.3 el sıkışması adımları ve sertifika doğrulama](assets/h03-06-tls13.svg)
 
 TLS 1.3'ün iki kilit özelliği: (1) el sıkışma **tek gidiş-dönüşte** biter (hızlı); (2) anahtar değişimi her zaman
 **geçici (ephemeral) ECDHE** ile yapılır, yani **ileri gizlilik** varsayılan olarak açıktır (RFC 8446).
@@ -1831,18 +1771,7 @@ ya da istemci belleğini inceleyen biri tam değeri görür. Doğrusu, istemciye
 
 ### 2. Tokenizasyon
 
-```mermaid
-sequenceDiagram
-    participant U as Uygulama
-    participant T as Belirteç kasası (korunan)
-    participant D as Uygulama veritabanı
-    U->>T: kart numarası
-    T-->>U: belirteç (ör. tok_7f3a...)
-    U->>D: yalnız belirteci sakla
-    Note over D: Veritabanı çalınsa bile kart numarası yok
-    U->>T: ödeme anında belirteç
-    T-->>U: yetkili işlem için gerçek değer (ya da işlemi kasa yapar)
-```
+![Tokenizasyon: gerçek kart numarası kasada, uygulamada belirteç](assets/h03-07-tokenizasyon.svg)
 
 Tokenizasyonun gücü, gerçek verinin **tek bir küçük ve çok iyi korunan** sistemde toplanmasıdır. Uygulamanın geri
 kalanı, veritabanları, raporlar ve günlükler yalnız belirteci görür; bunlar ele geçirilse bile kart verisi sızmaz.
@@ -2011,18 +1940,7 @@ birleştireceğiz.
 Şimdi bu haftanın bütün parçalarını tek bir fikirde birleştiriyoruz. Hassas bir varlığı **tek** bir korumaya
 bırakmayız; onu, yaşam döngüsünün her aşamasına karşılık gelen **iç içe kabuklarla** sararız:
 
-```mermaid
-flowchart TB
-    subgraph K4["Kabuk 4 — Kanal (TLS 1.3 + pinning)"]
-        subgraph K3["Kabuk 3 — Oturum (mesaj AEAD + MAC)"]
-            subgraph K2["Kabuk 2 — Depolama (AES-GCM, beklemede)"]
-                subgraph K1["Kabuk 1 — Cihaz bağlama (HKDF + AEAD)"]
-                    S["SIR"]
-                end
-            end
-        end
-    end
-```
+![Sırrı saran dört güvenlik kabuğu](assets/h03-08-guvenlik-kabuklari.svg)
 
 Saldırganın sırra ulaşması için **dört kabuğu da** sırayla açması gerekir: TLS'i kır, mesaj şifrelemesini kır, depolama
 şifrelemesini kır **ve** doğru cihazda ol. Bu, "aktarımda yalnız TLS'e güvenmeme", "beklemede alan şifreleme" ve

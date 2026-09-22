@@ -681,17 +681,7 @@ Her seviye bir alttakini **imzalar**.
 
 # Sertifika zinciri — kim kimi imzalar?
 
-<svg viewBox="0 0 960 260" style="width:96%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <rect x="30" y="70" width="240" height="90" rx="10" fill="#006d77"/><text x="150" y="102" text-anchor="middle" font-size="18" fill="#fff" font-weight="bold">KÖK CA</text><text x="150" y="128" text-anchor="middle" font-size="13" fill="#cdeff1">kendini imzalar</text><text x="150" y="148" text-anchor="middle" font-size="13" fill="#cdeff1">güven demiri</text>
-  <rect x="360" y="70" width="240" height="90" rx="10" fill="#0a9396"/><text x="480" y="102" text-anchor="middle" font-size="18" fill="#fff" font-weight="bold">ARA CA</text><text x="480" y="128" text-anchor="middle" font-size="13" fill="#e6fbfc">CA:TRUE</text><text x="480" y="148" text-anchor="middle" font-size="13" fill="#e6fbfc">kök tarafından imzalı</text>
-  <rect x="690" y="70" width="240" height="90" rx="10" fill="#4cb5ac"/><text x="810" y="102" text-anchor="middle" font-size="18" fill="#fff" font-weight="bold">SUNUCU</text><text x="810" y="128" text-anchor="middle" font-size="13" fill="#effaf9">SAN=ornek.com</text><text x="810" y="148" text-anchor="middle" font-size="13" fill="#effaf9">ara tarafından imzalı</text>
-  <line x1="270" y1="115" x2="360" y2="115" stroke="#333" stroke-width="3" marker-end="url(#s10)"/><text x="315" y="106" text-anchor="middle" font-size="13" fill="#333">imzalar</text>
-  <line x1="600" y1="115" x2="690" y2="115" stroke="#333" stroke-width="3" marker-end="url(#s10)"/><text x="645" y="106" text-anchor="middle" font-size="13" fill="#333">imzalar</text>
-  <text x="480" y="30" text-anchor="middle" font-size="16" fill="#005f66" font-weight="bold">Doğrulamanın 4 sorusu</text>
-  <text x="480" y="210" text-anchor="middle" font-size="14.5" fill="#333">1) zincir kök'e geçerli mi · 2) süre içinde mi · 3) amaç/kısıt (CA:TRUE, EKU) · 4) iptal (CRL/OCSP)</text>
-  <text x="480" y="236" text-anchor="middle" font-size="14" fill="#c0392b">Ara eksikse zincir kurulamaz · ad SAN'a bakılır (CN değil).</text>
-  <defs><marker id="s10" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
-</svg>
+![w:1000](assets/h10-03-pki.svg)
 
 ---
 

@@ -87,6 +87,139 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm?
+
+Bu hafta "değerlendirme", "sertifikasyon", "sızma testi" gibi terimler geçecek.
+
+Önce hepsini **tek tek** tanımlayalım ki konu havada kalmasın.
+
+### Güvenlik değerlendirmesi nedir?
+
+- **Güvenlik değerlendirmesi:** bir ürünün güvenlik iddialarının **bağımsız** biri tarafından **sınanması**.
+- "Ben güvenliyim" demek yetmez; **kanıt** ve **test** gerekir.
+
+### Sertifikasyon nedir?
+
+- **Sertifikasyon:** bir ürünün/kurumun belirli bir **standarda** uyduğunun, yetkili bir tarafça **belgelenmesi**.
+- Değerlendirme başarılıysa bir **sertifika** verilir.
+
+### Laboratuvar (değerlendirici) kim?
+
+- **Değerlendirme laboratuvarı:** ürünü sınayan bağımsız, akredite kuruluş.
+- Ürünü geliştiren **değildir** (tarafsızlık için).
+- Bütün kaynak koda ve belgeye erişir.
+
+### Standart nedir?
+
+- **Standart:** neyin nasıl yapılacağını belirleyen ortak kurallar bütünü.
+- Örnek: ISO/IEC 27001, Ortak Kriterler, FIPS 140-3, PCI, OWASP MASVS.
+- Her biri farklı şeyi ölçer (birazdan).
+
+### Zafiyet (vulnerability) nedir?
+
+- **Zafiyet:** bir sistemde kötüye kullanılabilecek **zayıf nokta** (ör. sınır denetimsiz tampon).
+- Zafiyet + kötüye kullanım = güvenlik olayı.
+
+### Bulgu (finding) nedir?
+
+- **Bulgu:** değerlendirmede tespit edilen bir sorun ya da iyileştirme noktası.
+- Her bulgu için: kanıt, ciddiyet, **öneri**.
+
+### Beyaz kutu vs kara kutu test
+
+- **Beyaz kutu test:** test eden **kaynak koda + belgeye** sahip.
+- **Kara kutu test:** test eden yalnız dışarıdan (kullanıcı gibi) erişir.
+- Değerlendirici genelde **beyaz kutu** çalışır (her şeyi görür).
+
+### SAST nedir?
+
+- **SAST (Static Application Security Testing):** kaynağı **çalıştırmadan** analiz eden araç.
+- Tehlikeli kalıpları, olası bellek hatalarını bulur.
+- Hızlı ve geniş; ama **yanlış pozitif** üretir.
+
+*(4. haftada "statik analiz" olarak gördük.)*
+
+### DAST nedir?
+
+- **DAST (Dynamic Application Security Testing):** programı **çalıştırırken** sınar.
+- Bellek erişim hataları, tanımsız davranışları yakalar (ör. sanitizer'lar).
+
+*(4. haftada ASan/UBSan.)*
+
+### Fuzzing nedir?
+
+- **Fuzzing:** programa **beklenmeyen/rastgele girdiler** verip çökme/bozulma aramak.
+- İnsanın aklına gelmeyen girdileri bulur.
+
+*(4. haftada libFuzzer/AFL kavramı.)*
+
+### Sızma testi (pentest) nedir?
+
+- **Sızma testi (penetration test):** bir saldırganın bakışıyla, **izinli** ve **planlı** olarak sistemi aşmayı denemek.
+- Yukarıdaki yöntemleri **birleştirir**; en son ve en pahalı adımdır.
+
+### TOE nedir?
+
+- **TOE (Target of Evaluation):** değerlendirilen **tam olarak ne**?
+- Ortak Kriterler terimidir.
+- Benzersiz tanımlanır: sürüm + ikili + kaynak + özet değeri.
+
+### CVSS nedir?
+
+- **CVSS (Common Vulnerability Scoring System):** bir zafiyetin **etkisini** standart bir puanla (0–10) ifade eder.
+- Yüksek puan = daha ciddi etki.
+- Önceliklendirmede kullanılır.
+
+### Saldırı potansiyeli nedir?
+
+- **Saldırı potansiyeli:** bir saldırıyı gerçekleştirmenin **ne kadar zor** olduğu.
+- Süre, uzmanlık, ekipman gibi faktörlerle puanlanır.
+- Düşük potansiyel (kolay saldırı) = ciddi bulgu.
+
+### Saldırı potansiyeli — beş faktör
+
+<svg viewBox="0 0 940 300" style="width:95%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
+  <text x="470" y="24" text-anchor="middle" font-size="16" fill="#005f66" font-weight="bold">Beş faktörün toplamı → puan → derece</text>
+  <g font-size="15" fill="#333">
+   <text x="30" y="66">Geçen zaman</text><rect x="200" y="52" width="150" height="18" rx="4" fill="#0a9396"/>
+   <text x="30" y="98">Uzmanlık</text><rect x="200" y="84" width="200" height="18" rx="4" fill="#0a9396"/>
+   <text x="30" y="130">Hedef bilgisi</text><rect x="200" y="116" width="110" height="18" rx="4" fill="#0a9396"/>
+   <text x="30" y="162">Fırsat (erişim)</text><rect x="200" y="148" width="170" height="18" rx="4" fill="#0a9396"/>
+   <text x="30" y="194">Ekipman</text><rect x="200" y="180" width="130" height="18" rx="4" fill="#0a9396"/>
+  </g>
+  <line x1="470" y1="45" x2="470" y2="205" stroke="#bbb" stroke-dasharray="4,4"/>
+  <rect x="560" y="100" width="120" height="60" rx="8" fill="#006d77"/><text x="620" y="128" text-anchor="middle" font-size="15" fill="#fff">TOPLAM</text><text x="620" y="150" text-anchor="middle" font-size="14" fill="#cdeff1">puan</text>
+  <line x1="680" y1="130" x2="720" y2="130" stroke="#333" stroke-width="3" marker-end="url(#a12)"/>
+  <g font-size="13">
+   <rect x="720" y="70" width="200" height="26" fill="#2e7d32"/><text x="820" y="88" text-anchor="middle" fill="#fff">DÜŞÜK pot. = ciddi bulgu</text>
+   <rect x="720" y="100" width="200" height="26" fill="#8bc34a"/><text x="820" y="118" text-anchor="middle" fill="#123">Temel / Gelişmiş</text>
+   <rect x="720" y="130" width="200" height="26" fill="#ffb300"/><text x="820" y="148" text-anchor="middle" fill="#123">Orta / Yüksek</text>
+   <rect x="720" y="160" width="200" height="26" fill="#c0392b"/><text x="820" y="178" text-anchor="middle" fill="#fff">YÜKSEK pot. = zor saldırı</text>
+  </g>
+  <text x="470" y="250" text-anchor="middle" font-size="14.5" fill="#555">Düşük potansiyel = az zaman/beceri/araç → çok saldırgan yapabilir → yüksek risk.</text>
+  <text x="470" y="276" text-anchor="middle" font-size="14" fill="#777">Saldırı potansiyeli = saldırının ZORLUĞU · CVSS = açığın ETKİSİ (ayrı eksenler).</text>
+  <defs><marker id="a12" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+</svg>
+
+### Etki analizi ve delta değerlendirme
+
+- **Güvenlik etki analizi:** bir değişikliğin güvenlik etkisini **belgeleyen** rapor.
+- **Delta değerlendirme:** yalnız **değişen kısmın** yeniden değerlendirilmesi.
+
+Bunları 5. bölümde ayrıntılı göreceğiz.
+
+### Şimdi hazırız
+
+Bildiğimiz terimler:
+
+değerlendirme · sertifikasyon · laboratuvar · standart · zafiyet · bulgu · beyaz/kara kutu · SAST · DAST · fuzzing · sızma testi · TOE · CVSS · saldırı potansiyeli · etki analizi/delta
+
+Şimdi: **neden bağımsız değerlendirme?**
+
 ## 1. Neden bağımsız değerlendirme?
 
 Bir yazılımı yazan ekip, onun en iyi test edicisi değildir: tasarım varsayımlarını paylaşır, "bu nasılsa olmaz" dediği
@@ -277,6 +410,73 @@ gücü, onu aşmanın maliyetiyle ölçülür.
     saatte bulup tek bayt yamasıyla atlayabildiği bir dala bağlıydı." → süre: düşük, uzmanlık: orta, bilgi: kamuya
     açık, ekipman: ücretsiz → **düşük saldırı potansiyeli → ciddi bulgu.** Öneri: opak boolean + rastgele çıkış
     (9. hafta) ve sunucu tarafı denetim.
+
+### Puan tablosu (derste kullanacağımız sadeleştirilmiş ölçek)
+
+Yukarıdaki tablo "düşük/yüksek" diyor; puanlama yapabilmek için **sayılar** gerekir. Derste (ve demoda) şu
+sadeleştirilmiş Ortak Kriterler/JIL ölçeğini kullanıyoruz:
+
+| Faktör | Seviye 0 | Seviye 1 | Seviye 2 | Seviye 3 |
+| --- | --- | --- | --- | --- |
+| **Geçen süre** | < 1 gün → **0** | < 1 hafta → **4** | < 1 ay → **10** | aylar → **19** |
+| **Uzmanlık** | sıradan → **0** | yetkin → **3** | uzman → **6** | çoklu uzman → **8** |
+| **Hedef bilgisi** | kamuya açık → **0** | kısıtlı → **3** | hassas → **7** | kritik → **11** |
+| **Fırsat** | sınırsız/uzak → **0** | kısıtlı → **4** | çok kısıtlı → **10** | — |
+| **Ekipman** | standart/ücretsiz → **0** | özel → **4** | özel-uyarlanmış → **7** | — |
+
+Toplam puanın karşılığı:
+
+| Toplam | Düzey |
+| --- | --- |
+| **0–9** | **TEMEL** — düşük direnç → **ciddi bulgu** |
+| 10–13 | ORTA |
+| 14–19 | YÜKSEK |
+| 20–24 | ÇOK YÜKSEK |
+| 25+ | ÖTESİ (yalnız çok yetenekli saldırgan) |
+
+#### Uçtan uca örnek: bir bulguyu baştan sona puanlayalım
+
+**Senaryo.** "Sürüm derlemesindeki lisans denetimi, ücretsiz bir tersine derleyiciyle, **yetkin** (uzman değil) bir
+kullanıcının **bir saatte** bulup **tek bayt yamasıyla** atlayabildiği bir dala bağlı."
+
+Beş faktörü tek tek okuyup puanlıyoruz:
+
+| # | Faktör | Senaryodaki karşılığı | Seviye | Puan |
+| --- | --- | --- | --- | --- |
+| 1 | Geçen süre | bir saat | < 1 gün | **0** |
+| 2 | Uzmanlık | yetkin kullanıcı | yetkin | **3** |
+| 3 | Hedef bilgisi | mağazadan inen ikili, belge gerekmedi | kamuya açık | **0** |
+| 4 | Fırsat | kendi cihazında sınırsız deneme | sınırsız/uzak | **0** |
+| 5 | Ekipman | ücretsiz tersine derleyici | standart/ücretsiz | **0** |
+
+```text
+Toplam = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  TEMEL
+```
+
+**Sonuç:** **TEMEL düzey = düşük direnç = ciddi bulgu.** Rapora "önce bu kapatılmalı" diye yazılır.
+
+**Şimdi koruma ekleyelim ve yeniden puanlayalım.** 9. haftadan opak boolean + rastgele çıkış, üstüne sunucu tarafı
+denetim koyduk. Aynı saldırı artık: bir haftada (4), **uzman** gerektiriyor (6), iç davranışı öğrenmek **kısıtlı
+bilgi** istiyor (3), sunucu denetimi yüzünden deneme **kısıtlı** (4), ekipman hâlâ ücretsiz (0):
+
+```text
+Toplam = 4 + 6 + 3 + 4 + 0 = 17       →  14 ≤ 17 ≤ 19  →  YÜKSEK
+```
+
+Yani koruma, bulguyu **TEMEL (3)** düzeyinden **YÜKSEK (17)** düzeyine taşıdı. "Koruma ekledim" demek yerine
+**ölçüyle** konuşmuş olduk; S16'ya yazılacak cümle budur.
+
+!!! tip "Aynı sayıları demoda üretin"
+    `code/week-12/02-saldiri-potansiyeli` demosu bu ölçeği uygular. Faktör seviyelerini argüman olarak verin
+    (sıra: süre uzmanlık bilgi fırsat ekipman):
+
+    ```sh
+    ./bin/linux/saldiri_potansiyeli 0 1 0 0 0     # korumasız hâl  -> puan 3  (TEMEL)
+    ./bin/linux/saldiri_potansiyeli 1 2 1 1 0     # korumalı hâl   -> puan 17 (YÜKSEK)
+    ```
+
+    Windows'ta: `.\bin\windows\saldiri_potansiyeli.exe 0 1 0 0 0`. Argümansız çalıştırırsanız gömülü üç örnek
+    bulguyu (lisans yaması · WBC anahtar çıkarma · güvenli öğe kırma) puanlar.
 
 ### CVSS ile derecelendirme
 

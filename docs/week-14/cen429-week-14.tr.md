@@ -79,6 +79,86 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm?
+
+Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terimler geçecek.
+
+Önce hepsini **tek tek** tanımlayalım.
+
+### Hatırlatma · kaynak, derleyici, ikili
+
+- **Kaynak kod:** insanın yazdığı program metni (C dosyası).
+- **Derleyici:** kaynağı makine koduna çeviren program (gcc/clang).
+- **İkili dosya:** çalıştırılan sonuç.
+
+### Hatırlatma · gizleme
+
+- **Kod gizleme (obfuscation):** davranışı değiştirmeden kodu **anlaşılması zor** hale getirmek.
+- Amaç: saldırgan için maliyeti artırmak (9. hafta).
+
+### Kaynaktan kaynağa (source-to-source)
+
+- Girdi: C kaynağı. Çıktı: **yine C kaynağı** — ama gizlenmiş.
+- Sonra normal derleyicinizle derlenir.
+
+```text
+temiz.c → [araç] → gizli.c → derleyici → ikili
+```
+
+### Dönüşüm (transform) nedir?
+
+- **Dönüşüm:** kaynağa uygulanan tek bir gizleme işlemi (ör. düzleştirme).
+- Araç birçok dönüşüm sunar; siz hangisini, nereye seçersiniz.
+
+### Dönüşüm hattı (pipeline)
+
+- **Hat:** birden çok dönüşümün **sırayla** uygulanması.
+- Her dönüşüm bir öncekinin çıktısına uygulanır.
+- Sıra önemlidir.
+
+### Tohum (seed) nedir?
+
+- **Tohum:** rastgeleliği yöneten bir başlangıç sayısı.
+- Aynı dönüşüm + farklı tohum = **farklı** gizlenmiş çıktı.
+- Çeşitlendirmenin anahtarı budur.
+
+### Çeşitlendirme (diversification)
+
+- **Çeşitlendirme:** aynı kaynaktan **davranışça eş, yapıca farklı** ikili dosyalar üretmek.
+- Bir kopyaya yazılan saldırı diğerinde çalışmaz (9. hafta Kural 2).
+
+### CLI (komut satırı) nedir?
+
+- **CLI (Command-Line Interface):** komutları yazarak çalıştırdığınız arayüz.
+- Tigress bir CLI aracıdır: `tigress --Transform=... dosya.c`.
+
+### Birim testi (unit test)
+
+- **Birim testi:** bir fonksiyonun doğru çalıştığını otomatik denetleyen küçük test.
+- Gizlemeden **sonra** aynı testler geçmeli (davranış korunmalı).
+
+### CFG hatırlatma
+
+- **CFG (Control Flow Graph):** temel blokları düğüm, geçişleri kenar yapan şema.
+- Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz (9. hafta).
+
+### Sembolik yürütme (kısaca)
+
+- **Sembolik yürütme:** program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE).
+- Gizlemeye karşı bir **deobfuscation** yöntemidir; dayanıklılığı bununla sınarız.
+
+### Şimdi hazırız
+
+Terimler:
+
+kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · birim testi · CFG · sembolik yürütme
+
+Şimdi: Tigress nedir ve nasıl çalışır?
+
 ## 1. Kaynaktan kaynağa gizleme nedir?
 
 Dokuzuncu haftada gizleme kurallarını **el ile** uyguladık: opak yüklem, düzleştirme, dize kodlama, sahte dal. El ile

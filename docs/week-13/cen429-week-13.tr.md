@@ -88,6 +88,87 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Gereksinim (requirement) nedir?
+
+- **Gereksinim:** sistemin **karşılaması gereken** bir koşul.
+- Güvenlik gereksinimi: bir güvenlik koşulu.
+- İyi gereksinim **doğrulanabilir** (test edilebilir).
+
+### Üç tür gereksinim
+
+- **İşlevsel:** hangi güvenlik işlevi olacak? (ör. veri AEAD ile korunur)
+- **Güvence:** doğru yapıldığına nasıl güveneceğiz? (ör. test raporu)
+- **Süreç:** kurum nasıl çalışmalı? (ör. her değişiklik incelenir)
+
+### İyi vs kötü gereksinim
+
+- **Kötü:** "Uygulama güvenli olmalıdır." (doğrulanamaz)
+- **İyi:** "Sürüm derlemesi yığın koruyucu, PIE ve tam RELRO ile üretilmelidir." (ölçülebilir)
+
+### İzlenebilirlik (traceability)
+
+- **İzlenebilirlik:** her gereksinimi bir **önleme**, **teste** ve **kanıta** bağlamak.
+- "Bu gereksinim nerede karşılandı, nasıl doğrulandı?"
+
+### Uyum matrisi
+
+- **Uyum matrisi:** gereksinim → durum → bölüm → doğrulama → kanıt tablosu.
+- Projenin **S17** bölümü.
+- Değerlendiricinin ilk baktığı yer.
+
+### Gereksinim durumları
+
+- **Karşılandı:** ürün bu gereksinimi sağlar (kanıtla).
+- **Devredildi:** başka bir taraf sağlar (kime, neden, nasıl).
+- **Karşılanmadı:** henüz sağlanmıyor.
+
+### Devredilen gereksinim
+
+- Bir bileşen bir gereksinimi **karşılayamıyorsa**, üst uygulamaya/OS'a **devreder**.
+- Kılavuza: **kime**, **neden**, **nasıl** karşılanacağı yazılır.
+- Projenin **S14** bölümü.
+
+### Ortak Kriterler (CC)
+
+- **Ortak Kriterler (ISO/IEC 15408):** ürün güvenliği değerlendirme standardı.
+- Kavramlar: TOE, ST, PP, SFR, SAR, EAL (birazdan).
+
+### CC · temel terimler
+
+- **TOE:** değerlendirilen ürün.
+- **ST (Security Target):** bu ürünün güvenlik hedefi belgesi.
+- **PP (Protection Profile):** bir ürün **sınıfı** için ortak gereksinim seti.
+
+### CC · SFR, SAR, EAL
+
+- **SFR:** güvenlik **işlevsel** gereksinimleri.
+- **SAR:** güvenlik **güvence** gereksinimleri.
+- **EAL:** değerlendirmenin **derinlik** düzeyi (EAL1–EAL7).
+
+### FIPS 140-3
+
+- **FIPS 140-3:** kriptografik **modüllerin** doğrulanması standardı.
+- Güvenlik düzeyleri (1–4).
+- Yalnız modülü kapsar, uygulamanın tamamını değil.
+
+### Sektör standartları
+
+- **ETSI EN 303 645:** IoT temel güvenlik.
+- **GSMA, EMVCo, PCI:** mobil/ödeme.
+- **OWASP MASVS:** mobil uygulama gereksinimleri.
+
+### Şimdi hazırız
+
+Terimler:
+
+gereksinim (işlevsel/güvence/süreç) · izlenebilirlik · uyum matrisi · durum (karşılandı/devredildi/karşılanmadı) · devredilen · CC (TOE/ST/PP/SFR/SAR/EAL) · FIPS 140-3 · ETSI/GSMA/EMVCo/PCI/MASVS
+
+Şimdi: iyi gereksinim nasıl yazılır?
+
 ## 1. Güvenlik gereksinimi nedir? İyi gereksinim nasıl yazılır?
 
 Dönem boyunca her önlemi bir **tehdide** bağladık: "şu varlığı, şu saldırgana karşı koruyoruz." Sertifikasyon dünyasında

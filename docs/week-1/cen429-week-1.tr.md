@@ -109,6 +109,135 @@ tags:
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm?
+
+Bu ders "güvenlik", "zafiyet", "tehdit modeli" gibi terimlerle dolu.
+
+Hiçbirini bilmediğinizi varsayıyoruz.
+
+Önce hepsini **tek tek** tanımlayalım.
+
+### Güvenlik nedir?
+
+- **Güvenlik:** bir sistemi, ona **zarar vermek isteyen** birine karşı korumak.
+- Normal hata: yanlışlıkla olur.
+- Güvenlik: **kasıtlı** bir saldırgan var.
+
+### Varlık (asset) nedir?
+
+- **Varlık:** korumaya değer her şey (veri, anahtar, işlev).
+- Örnek: parola, kredi kartı, lisans, kullanıcı verisi.
+- Güvenlik "neyi koruyoruz?" ile başlar.
+
+### Tehdit ve zafiyet
+
+- **Tehdit:** olabilecek kötü bir olay (veri çalınması).
+- **Zafiyet:** bunu mümkün kılan **zayıf nokta** (denetimsiz girdi).
+- Tehdit + zafiyet + saldırgan = risk.
+
+### CIA üçlüsü
+
+Güvenliğin üç temel hedefi:
+
+- **Gizlilik (C):** yalnız yetkili görsün.
+- **Bütünlük (I):** izinsiz değişmesin.
+- **Erişilebilirlik (A):** gerektiğinde çalışsın.
+
+### Saldırgan modeli
+
+- **Saldırgan modeli:** "saldırgan neyi görebilir/yapabilir?"
+- Ağdan mı bağlanıyor, cihaza mı sahip?
+- Savunmayı buna göre tasarlarız.
+
+### Beyaz kutu / MATE
+
+- **MATE (Man-At-The-End):** programa **sahip** saldırgan.
+- Kodu okur, belleği görür, değiştirir.
+- Mobil/masaüstü uygulamanın gerçek durumu (bu dersin ana teması).
+
+### Tehdit modelleme
+
+- **Tehdit modelleme:** "neyi, kime karşı, nasıl koruyacağız?" sorusunu **sistemli** yanıtlamak.
+- Varlıkları, tehditleri, önlemleri listeler.
+- Bugün STRIDE ve saldırı ağaçlarıyla yapacağız.
+
+### STRIDE
+
+- Tehditleri altı harfle sınıflandıran yöntem:
+- **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, **E**levation of privilege.
+- Her öğe için "hangi tehdit?" diye sorar.
+
+### Saldırı ağacı
+
+- **Saldırı ağacı:** bir hedefi (ör. "anahtarı çal") **alt adımlara** bölen ağaç.
+- Kök: saldırganın amacı.
+- Dallar: bunu başarmanın yolları.
+
+### Veri akış diyagramı (DFD)
+
+- **DFD:** verinin sistemde **nasıl aktığını** gösteren şema.
+- Süreç, veri deposu, dış varlık, akış, güven sınırı.
+- Tehditleri bulmak için harita.
+
+### Katmanlı savunma
+
+- **Katmanlı savunma (defense in depth):** tek önlem değil, **birçok** önlem.
+- Biri aşılırsa diğeri durdurur.
+- "Güvenlik kabuğu" bu katmanların birleşimi.
+
+### Güvenli tasarım ilkeleri
+
+- Saltzer & Schroeder (1975): en az yetki, güvenli varsayılan, ekonomi, açık tasarım…
+- Bugün hâlâ geçerli.
+- Bu dersin omurgası.
+
+### Ödünleşim (trade-off)
+
+- Her koruma bir **bedel** getirir: hız, karmaşıklık, maliyet.
+- Güvenlik "sonsuz koruma" değil, **dengeli** koruma.
+- Kalan riski açıkça yazarız.
+
+### Şimdi hazırız
+
+Terimler:
+
+güvenlik · varlık · tehdit/zafiyet · CIA · saldırgan modeli · MATE · tehdit modelleme · STRIDE · saldırı ağacı · DFD · katmanlı savunma · tasarım ilkeleri · ödünleşim
+
+Şimdi: güvenlik nedir, derinlemesine.
+
+### Bugünün planı (3 saat)
+
+| Saat | Konu |
+| --- | --- |
+| 1 | Ders tanıtımı · Güvenlik nedir? · Saldırgan · İlkeler · **Uygulama korumasına genel bakış** |
+| 2 | Koruma planı · STRIDE ve risk puanı · Saldırı ağacı · **Uygulamalı örnek "Kasa"** · Sınıf alıştırması |
+| 3 | **Demo 1–2** · Güvenli başlatma · Taşmalar · **Demo 3–4** · Bellek yönetimi · Bölümleme · Güvenli süreç · Proje |
+
+**Demolar:** `code/week-01` — Windows `.\demo.ps1` · WSL / Linux `sh demo.sh` · Visual Studio: Klasör Aç → `code`
+
+### Kısa tarihçe — güvenli programlama fikri
+
+- **1975** — Saltzer & Schroeder: güvenli tasarımın **8 ilkesi** (en az ayrıcalık, derinlemesine savunma…)
+- **1970–80'ler** — **CIA üçlüsü** ortak dil hâline gelir
+- **1998–99** — Microsoft'ta **STRIDE**; Schneier **saldırı ağaçlarını** tanıtır
+- **2001–03** — *Building Secure Software* ve **Secure Programming Cookbook** (dersin ana kaynağı)
+
+> Bugünkü araçlar (CIA · saldırgan modeli · STRIDE · saldırı ağacı) bu çizginin ürünüdür.
+
+### Ders nasıl yürüyor?
+
+- **Tek dönem projesi:** C/C++ uygulaması + "sertifikasyondan geçecekmiş gibi" bir **güvenlik kılavuzu**
+  - Vize kontrolü: **7. hafta** gösterim · Final kontrolü: **15. hafta** gösterim
+- **İki quiz:** 8. hafta (1–6) · 16. hafta (9–14)
+- Not: `Vize = 0,6·Proje1 + 0,4·Quiz1` · `Final = 0,7·Proje2 + 0,3·Quiz2`
+- Her hafta: **hatalı kod → saldırı → düzeltme**
+
+> ⚠️ **Etik:** Teknikleri yalnız **kendi bilgisayarınızda** ve verilen demolar üzerinde deneyin.
+
 ## 1. Güvenlik nedir?
 
 Bir bankanın kasasını düşünün. Kasanın içindeki para **varlıktır**. Parayı çalmak isteyen biri **tehdittir**.

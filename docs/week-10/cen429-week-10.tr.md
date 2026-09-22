@@ -104,6 +104,102 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Simetrik vs asimetrik (hatırlatma)
+
+- **Simetrik:** tek anahtar, şifrele ve çöz (AES). Hızlı.
+- **Asimetrik:** açık + gizli anahtar çifti (RSA, ECC). Yavaş ama anahtar dağıtımı kolay.
+- Pratikte **birlikte**: asimetrik ile anahtar taşı, simetrik ile veri şifrele.
+
+### Blok şifre ve kip
+
+- **Blok şifre:** sabit boyutlu bloğu şifreler (AES: 16 bayt).
+- **Kip (mode):** blokları **nasıl** zincirleyeceğimiz (CBC, GCM…).
+- Kip seçimi güvenliğin **kalbidir**.
+
+### Dolgu (padding)
+
+- **Dolgu:** veri blok boyutunun katı değilse tamamlama.
+- Bazı kiplerde gerekir (CBC), bazılarında **yok** (GCM).
+- Yanlış dolgu işleme → **dolgu kâhini** saldırısı.
+
+### AEAD nedir?
+
+- **AEAD (Authenticated Encryption with Associated Data):** gizlilik **+** bütünlüğü **birlikte** veren şifreleme.
+- Örnek: AES-GCM, ChaCha20-Poly1305.
+- Modern tercih: ayrı MAC uğraşma, AEAD kullan.
+
+### MAC ve HMAC
+
+- **MAC (Message Authentication Code):** bir mesajın **değişmediğini** ve doğru taraftan geldiğini kanıtlayan etiket (simetrik).
+- **HMAC:** özet fonksiyonuna dayalı yaygın bir MAC.
+- Bütünlük için.
+
+### Özet (hash)
+
+- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
+- Tek yönlü: özetten veri geri gelmez.
+- İmza ve MAC'in yapı taşı.
+
+### Dijital imza
+
+- **İmza:** asimetrik; **gizli** anahtarla imzala, **açık** anahtarla doğrula.
+- Sağlar: bütünlük + **inkâr edilemezlik** (kim imzaladı).
+- MAC'ten farkı: asimetrik, herkes doğrulayabilir.
+
+### RSA ve eliptik eğri (ECC)
+
+- **RSA:** klasik asimetrik; büyük anahtarlar (2048+ bit).
+- **ECC:** eliptik eğri; aynı güvenlik **daha küçük** anahtarla (Ed25519, X25519).
+- Modern tercih giderek ECC.
+
+### Diffie–Hellman (DH)
+
+- **DH:** iki tarafın, gizli anahtar **paylaşmadan** ortak bir sır türetmesi.
+- Ağ üzerinden anahtar anlaşması.
+- Kimlik doğrulanmazsa **araya girme** (MITM) riski.
+
+### PKI ve CA
+
+- **PKI (Public Key Infrastructure):** "hangi açık anahtar kime ait?" sorusunu çözen güven sistemi.
+- **CA (Certificate Authority):** sertifikaları imzalayan güvenilir taraf.
+- Kök CA → ara CA → sunucu sertifikası.
+
+### Sertifika ve X.509
+
+- **Sertifika:** bir açık anahtarı bir kimliğe (alan adı) bağlayan, CA'nın imzaladığı belge.
+- **X.509:** sertifikaların standart biçimi.
+- İçinde: konu, açık anahtar, geçerlilik, imza, SAN.
+
+### CRL ve OCSP
+
+- **CRL (Certificate Revocation List):** iptal edilmiş sertifikaların **listesi**.
+- **OCSP:** bir sertifikanın iptal durumunu **anlık** sorma.
+- "Bu sertifika hâlâ geçerli mi?" sorusu.
+
+### HSM, PKCS#11, SoftHSM
+
+- **HSM:** anahtarları saklayan/işleten özel **donanım**; anahtar dışarı çıkmaz.
+- **PKCS#11:** anahtar modülleriyle konuşmanın standart arayüzü.
+- **SoftHSM:** HSM'in yazılım benzetimi (test için).
+
+### Kuantum sonrası (PQC)
+
+- **PQC (Post-Quantum Cryptography):** kuantum bilgisayara dayanıklı algoritmalar.
+- Bugünkü RSA/ECC gelecekte tehdit altında.
+- Standartlaşma sürüyor (ör. ML-KEM).
+
+### Şimdi hazırız
+
+Terimler:
+
+simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · imza · RSA/ECC · DH · PKI/CA · sertifika/X.509 · CRL/OCSP · HSM/PKCS#11 · PQC
+
+Şimdi: doğru algoritma ve anahtar seçimi.
+
 ## 1. Kriptografinin haritası ve algoritma seçimi
 
 Üçüncü haftada veriyi aktarımda, beklemede ve kullanımda korumak için kriptografiyi bir **araç** olarak kullandık. Bu hafta

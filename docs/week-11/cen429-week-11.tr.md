@@ -90,6 +90,110 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Şifreleme nedir?
+
+- **Şifreleme (encryption):** okunur veriyi (**açık metin**), bir **anahtar** kullanarak okunamaz hale (**şifreli metin**) getirmek.
+- **Çözme (decryption):** anahtarla geri açmak.
+
+```text
+açık metin --(anahtar ile şifrele)--> şifreli metin
+şifreli metin --(anahtar ile çöz)--> açık metin
+```
+
+### Anahtar nedir?
+
+- **Anahtar (key):** şifrelemeyi yöneten gizli sayı (bir bayt dizisi).
+- Aynı algoritma + farklı anahtar = farklı sonuç.
+- **Güvenlik anahtarın gizliliğine bağlıdır**, algoritmanın gizliliğine değil (Kerckhoffs ilkesi).
+
+### Simetrik ve asimetrik
+
+- **Simetrik:** şifreleme ve çözme **aynı** anahtar (ör. **AES**). Hızlı.
+- **Asimetrik:** açık ve gizli anahtar çifti (ör. RSA). Yavaş ama anahtar dağıtımı kolay.
+
+Bu hafta ağırlıklı **AES** (simetrik) üstünden gideceğiz.
+
+### AES nedir? (yüksekten)
+
+- **AES:** en yaygın simetrik şifreleme algoritması.
+- 16 baytlık **bloklar** üzerinde çalışır.
+- Veriyi **turlar** (rounds) halinde karıştırır; her turda: bayt değiştirme, satır/sütun karıştırma, anahtar ekleme.
+
+Ayrıntı bu hafta sınavda sorulmayacak; **fikir** yeter.
+
+### S-box nedir?
+
+- **S-box (substitution box):** bir baytı başka bir baytla değiştiren **sabit bir tablo**.
+- AES'in "bayt değiştirme" adımı budur.
+- Örnek: `S-box[0x53] = 0xED` gibi 256 girişli bir eşleme.
+
+Bu tabloyu aklınızda tutun; whitebox'ın kalbi budur.
+
+### Arama tablosu (lookup table)
+
+- **Arama tablosu:** "girdiye karşılık çıktı" veren dizi.
+- `T[x]` = x için önceden hesaplanmış sonuç.
+- Hesap yapmak yerine **tablodan okursunuz**; hızlıdır.
+
+Whitebox, hesabı tablolara gömer.
+
+### XOR hatırlatma
+
+- **XOR** (`^`): bitler farklıysa 1, aynıysa 0.
+- `a ^ b ^ b == a` → geri alınabilir.
+- AES'te "anahtar ekleme" adımı bir XOR'dur: `durum ^ anahtar`.
+
+### Bit güvenlik düzeyi
+
+- "**n-bit güvenlik**" = kırmak için kabaca 2ⁿ deneme gerekir.
+- AES-128 → 128 bit; bugün kırılamaz sayılır.
+- Yüksek sayı = daha güçlü.
+
+### Yan kanal (side channel) nedir?
+
+- **Yan kanal:** algoritmanın matematiğini değil, çalışırken **sızdırdığı fiziksel/dolaylı bilgiyi** kullanan saldırı.
+- Örnek: harcanan **zaman**, **güç** tüketimi, elektromanyetik yayım.
+
+Kartlarda klasiktir; birazdan whitebox'ta yazılım karşılığını göreceğiz.
+
+### DPA nedir?
+
+- **DPA (Differential Power Analysis):** bir cihazın **güç tüketimi** ölçümlerine istatistik uygulayıp anahtarı çıkaran yan kanal saldırısı.
+- Cihazın içine bakmaz; dışarıdan ölçer.
+
+Bu fikri aklınızda tutun; whitebox'ın en güçlü saldırısı (DCA) bunun yazılım hâlidir.
+
+### Bijeksiyon (birebir-örten eşleme)
+
+- **Bijeksiyon:** her girdiyi tam bir çıktıya eşleyen, **tersi alınabilen** dönüşüm.
+- Örnek: `f(x) = x ^ 0x5A` bir bijeksiyondur (tersi yine kendisi).
+
+Whitebox, tabloları **gizli bijeksiyonlarla** sarar.
+
+### TEE ve güvenli öğe (SE)
+
+- **TEE (Trusted Execution Environment):** telefon işlemcisinin, işletim sisteminden **yalıtılmış** güvenli bölgesi.
+- **Güvenli öğe (SE):** anahtarları saklayan ayrı, kurcalamaya dirençli **donanım** çip.
+
+Anahtar için en güçlü koruma bunlardır; whitebox bunların **olmadığı** durum içindir.
+
+### HSM ve SoftHSM
+
+- **HSM (Hardware Security Module):** sunucuda anahtarları saklayan/işleten özel donanım; anahtar **dışarı çıkmaz**.
+- **SoftHSM:** HSM'in **yazılım benzetimi**; aynı arayüz (PKCS#11), ama donanım koruması yok (geliştirme/test için).
+
+### Şimdi hazırız
+
+Bildiğimiz terimler:
+
+şifreleme/çözme · anahtar · simetrik/asimetrik · AES · S-box · arama tablosu · XOR · bit güvenlik · yan kanal · DPA · bijeksiyon · TEE/SE · HSM/SoftHSM
+
+Şimdi asıl soruya: **anahtar saldırganın elindeyken ne yaparız?**
+
 ## 1. Üç saldırgan modeli: kara, gri, beyaz kutu
 
 Kriptografiyi 3. ve 10. haftalarda **kara kutu** varsayımıyla ele aldık: saldırgan yalnız girdiyi ve çıktıyı görür,
@@ -187,6 +291,52 @@ WBC:      T[x] = S-box[ x XOR k ]      → 256 girişli bir tablo, k tablonun İ
 Artık kodda `k` diye bir değişken yoktur; `k` tablonun içeriğine gömülmüştür. Ama bu **tek başına güvensizdir**:
 saldırgan tabloyu S-box ile karşılaştırıp `k`'yı geri çıkarabilir (tablo, `S-box`'ın `x XOR k` ile ötelenmiş
 halidir). O yüzden tablolar **kodlanır**.
+
+#### Sayısal mikro-örnek: anahtar tablodan nasıl sızıyor? (uçtan uca)
+
+Yukarıdaki cümle ("saldırgan `k`'yı geri çıkarabilir") havada kalmasın; **gerçek sayılarla, tek tek** yapalım.
+Elimizde yalnız şunlar var: herkesin bildiği **AES S-box**'ı ve saldırganın ikili dosyadan okuduğu **tablo**.
+
+**Kurulum.** Gizli anahtar baytı `k = 0x3C` olsun (saldırgan bunu **bilmiyor**). Geliştirici Adım 1'i uygulayıp
+şu tabloyu üretmiş: `T[x] = S-box[x XOR k]`.
+
+**Adım 1 — Tablodan tek bir değer oku.** Saldırgan `x = 0x00` girişine bakar:
+
+```text
+T[0x00] = S-box[0x00 XOR 0x3C] = S-box[0x3C] = 0xEB
+```
+
+Yani ikili dosyada okuduğu değer: `T[0x00] = 0xEB`.
+
+**Adım 2 — S-box'ı tersine çevir.** S-box herkese açık ve **birebir**dir; tersi de bilinir:
+
+```text
+S-box⁻¹[0xEB] = 0x3C        (çünkü S-box[0x3C] = 0xEB)
+```
+
+**Adım 3 — Anahtarı çöz.** Tanım gereği `S-box⁻¹[T[x]] = x XOR k` olduğundan:
+
+```text
+x XOR k = 0x3C
+0x00 XOR k = 0x3C
+k = 0x3C XOR 0x00 = 0x3C        ← ANAHTAR BULUNDU
+```
+
+**Sonuç.** Saldırgan **tek bir tablo girdisiyle**, 256 deneme bile yapmadan anahtarı buldu. "Anahtar kodda
+görünmüyor" demek, "anahtar korunuyor" demek **değildir**.
+
+!!! danger "Çıkarılan kural"
+    Kısmi değerlendirme **tek başına** anahtarı gizlemez; çünkü tablo, bilinen S-box'ın `k` kadar **ötelenmiş**
+    hâlidir ve bu öteleme geri alınabilir. Tabloyu güvenli kılan şey Adım 3'teki **iç kodlamalardır**.
+
+**Peki kodlama ne değiştirir?** Tabloyu gizli bir bijeksiyon `G` ile sararsak: `T'[x] = G( S-box[x XOR k] )`.
+Saldırgan artık `S-box⁻¹[T'[x]]` hesaplayamaz, çünkü önce `G`'yi kaldırması gerekir ama `G`'yi bilmiyor. Adım 2
+kırılır, dolayısıyla Adım 3 de çalışmaz.
+
+!!! tip "Bunu demoda kendi gözünüzle görün"
+    `code/week-11/01-oyuncak-tablo` demosu tam bu iki tabloyu üretir: **naif** tabloda yukarıdaki üç adım anahtarı
+    (`0x3C`) bulur, **kodlanmış** tabloda aynı adımlar başarısız olur. Çalıştırma komutları bu sayfanın başındaki
+    "Demoyu kendiniz çalıştırın" kutusunda.
 
 ### Adım 2 — Tabloları birleştir ve genişlet (T-box + MixColumns)
 

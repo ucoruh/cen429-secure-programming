@@ -91,6 +91,14 @@
 Java, Kotlin, C#, Python, JavaScript gibi **yönetilen** (managed) dillerde bu hataların büyük kısmı **dil düzeyinde**
 ortadan kalkar:
 
+!!! note "Kısa tarihçe: yönetilen diller ve kalan açıklar"
+    - **1995** — **Java** ve JVM: çöp toplayıcı ve sınır denetimi **bellek hatalarının** çoğunu dil düzeyinde kaldırır.
+    - **1998** — SQL enjeksiyonu ilk kez belgelenir (Rain Forest Puppy); **2003** **OWASP Top 10** yayımlanır — bellek değil **mantık/enjeksiyon** hataları öne çıkar.
+    - **2002** — **ProGuard** (Java küçültme/gizleme), sonra **R8**: bayt kodun kolay geri çevrilmesine yanıt.
+    - **2015** — Java **deserialization** saldırıları; **2020–21** **SolarWinds** ve **Log4Shell** tedarik zinciri/**SBOM** çağını başlatır.
+
+    Ana fikir: dil bellek hatasını çözer, **enjeksiyonu ve bağımlılık riskini çözmez**.
+
 | Hata sınıfı | C/C++ | Java / yönetilen diller |
 | --- | --- | --- |
 | Arabellek taşması | Programcının sorumluluğu | Her dizi erişimi denetlenir → `ArrayIndexOutOfBoundsException` |

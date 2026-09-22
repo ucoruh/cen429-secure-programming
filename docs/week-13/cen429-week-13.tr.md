@@ -35,6 +35,27 @@
     Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
 
 
+!!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
+    İlk derleme `code/README.md`'de anlatılır. **`code`** klasöründen:
+
+    ```powershell
+    # Windows (PowerShell)
+    .\build.ps1
+    cd week-13\01-uyum-matrisi
+    .\bin\windows\uyum.exe
+    cd ..\02-gereksinim-kalite
+    .\bin\windows\gereksinim_kalite.exe
+    ```
+
+    ```sh
+    # WSL / Linux
+    ./build.sh
+    cd week-13/01-uyum-matrisi && ./bin/linux/uyum
+    cd ../02-gereksinim-kalite && ./bin/linux/gereksinim_kalite
+    ```
+
+    **Beklenen çıktı:** Birinci demo bir **uyum matrisini** satır satır okur ve **kanıtı olmayan "karşılandı"** satırlarını kırmızı bayrakla işaretler. İkinci demo örnek gereksinimleri tarar; "güvenli olmalı", "uygun şekilde" gibi **belirsiz/ölçülemez** ifadeleri **ZAYIF** diye işaretler ve **çıkış kodu = zayıf gereksinim sayısı** olur.
+
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. İyi bir **güvenlik gereksinimini** kötüsünden ayırmak; gereksinimi tasarıma, önleme, teste ve kanıta bağlayan bir
        **izlenebilirlik matrisi** kurmak.
@@ -73,6 +94,14 @@ Dönem boyunca her önlemi bir **tehdide** bağladık: "şu varlığı, şu sald
 aynı bağ bir adım daha uzar: her önlem bir **gereksinime** bağlanır. Gereksinim, ürünün **ne yapması gerektiğini**
 söyler; nasıl yapacağını söylemez. Tasarım ve kod "nasıl"ı cevaplar; değerlendirici ise "gereksinim karşılanmış mı, kanıtı
 nerede?" diye sorar.
+
+!!! note "Kısa tarihçe: güvenlik gereksinimleri nasıl standartlaştı?"
+    - **1985** — **TCSEC** ("Orange Book") güvenlik **gereksinim düzeylerini** ilk kez resmîleştirir.
+    - **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**, 2019).
+    - **1999** — **Ortak Kriterler (ISO/IEC 15408)**: **PP/ST**, **SFR/SAR** ve **EAL** kavramları buradan gelir (12. hafta süreci).
+    - **2010'lar** — sektöre özgü setler: mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**, ödeme için **EMVCo/PCI**.
+
+    Değişmeyen ilke: iyi gereksinim **ölçülebilir** ve **izlenebilir** olmalıdır; kanıtsız "karşılandı" geçersizdir.
 
 ### Üç tür gereksinim
 

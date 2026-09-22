@@ -35,6 +35,27 @@
     Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
 
 
+!!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
+    İlk derleme `code/README.md`'de anlatılır. **`code`** klasöründen:
+
+    ```powershell
+    # Windows (PowerShell)
+    .\build.ps1
+    cd week-12\01-birim-test
+    .\bin\windows\birim_test.exe
+    cd ..\02-saldiri-potansiyeli
+    .\bin\windows\saldiri_potansiyeli.exe
+    ```
+
+    ```sh
+    # WSL / Linux
+    ./build.sh
+    cd week-12/01-birim-test && ./bin/linux/birim_test
+    cd ../02-saldiri-potansiyeli && ./bin/linux/saldiri_potansiyeli
+    ```
+
+    **Beklenen çıktı:** Birim test koşucusu iki güvenlik fonksiyonunu **test kartlarıyla** sınar; her test için amaç/gözlenen/karar basar ve **çıkış kodu = başarısız test sayısıdır** (hepsi geçerse 0 — S16'nın "plan değil **sonuç**" mantığı). İkinci demo beş faktörden (zaman · uzmanlık · bilgi · fırsat · ekipman) **toplam puanı ve dereceyi** hesaplar.
+
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. Bir ürünün **bağımsız bir laboratuvarda** güvenlik değerlendirmesinden geçişini uçtan uca, adım adım anlatmak.
     2. ETSI, EMV, PCI DSS ve ISO/IEC 27001'in **ne tür güvenlik testleri** istediğini ayırt etmek.
@@ -73,6 +94,16 @@ yolları hiç denemez. Bu yüzden ödeme, kimlik, sağlık ve kamu gibi alanlard
 değerlendirmesinden geçer. Değerlendirmenin sonunda bir sertifika (ya da onay) verilir; sertifika "bu ürün kırılamaz"
 demez, "bu ürün şu standardın şu gereksinimlerini, şu saldırgan modeline karşı, şu tarihte karşılıyordu" der.
 
+!!! note "Kısa tarihçe: güvenlik değerlendirmesi ve sertifikasyon"
+    - **1985** — ABD **TCSEC** ("Orange Book"): ilk resmi güvenlik değerlendirme ölçütleri.
+    - **1991–1993** — Avrupa **ITSEC** ve Kanada **CTCPEC**.
+    - **1999** — bunlar **Ortak Kriterler (ISO/IEC 15408)** altında birleşir; **EAL** güvence ölçeği buradan gelir (13. hafta).
+    - **2001** — **OWASP** kurulur (uygulama güvenliği testi kültürü); sonra **PTES** ve **NIST SP 800-115** sızma testi metodolojilerini standartlaştırır.
+    - **2005 → 2023** — **CVSS** zafiyet ciddiyet puanı (v2 → v3.1 → v4.0).
+    - **2010'lar** — mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**.
+
+    Ortak fikir tek cümlede: **üretici kendi ürününü onaylayamaz** — bağımsız, kanıta dayalı değerlendirme gerekir.
+
 Bu dersin projesini baştan beri "bir sertifikasyondan geçecekmiş gibi" tasarladık. Bu hafta o sürecin kendisini, bir
 değerlendiricinin gözünden, adım adım işliyoruz.
 
@@ -101,6 +132,14 @@ değerlendiricinin gözünden, adım adım işliyoruz.
 Aşağıdaki akış, bir yazılım bileşeninin (ör. bir mobil ödeme kütüphanesi) üçüncü taraf bir laboratuvarda
 değerlendirilmesinin genelleştirilmiş halidir. Ürün, kurum ve şema adları çıkarılmıştır; adımlar birçok şemada
 benzerdir.
+
+```mermaid
+flowchart LR
+    H["HAZIRLIK<br/>TOE·kapsam·gereksinim·plan<br/>(adım 1-4)"] --> D["DEĞERLENDİRME<br/>kod inceleme→SAST→DAST→<br/>fuzzing→sızma testi<br/>+ derecelendirme"]
+    D --> S["SÜREKLİLİK<br/>karar/sertifika<br/>etki analizi + delta"]
+    classDef vurgu fill:#e8f6f7,stroke:#0a9396,color:#005f66;
+    class H,D,S vurgu;
+```
 
 ```mermaid
 flowchart TB

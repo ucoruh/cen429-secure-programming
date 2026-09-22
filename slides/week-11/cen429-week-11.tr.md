@@ -40,6 +40,21 @@ Konuşma notu: Bu hafta whitebox kriptografiyi bir güvenlik katmanı olarak iş
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — whitebox kriptografi
+
+- **1883** — **Kerckhoffs**: güvenlik **anahtarda** olmalı, sistemin gizliliğinde değil
+- **2002** — Chow vd. ilk **whitebox AES/DES** (DRM için) — WBC'nin doğuşu
+- **2004** — **BGE saldırısı** ilk WB-AES'i kırar
+- **2016** — **DCA** (Bos vd.): donanım DPA'sı yazılıma taşınır, otomatik kırar
+- **2017–2024** — **WhibOx**: yayımlanan tüm saf-yazılım adaylar kırıldı
+
+> Bugünkü kural: WBC bir **geciktirme katmanı**; mümkünse **donanım** (TEE/SE/HSM).
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **9. hafta:** kod gizleme — "gizleme anahtarı korumaz" dedik

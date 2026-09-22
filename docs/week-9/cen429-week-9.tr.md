@@ -35,6 +35,26 @@
     Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
 
 
+!!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
+    Kurulum ve ilk derleme `code/README.md`'de (Visual Studio ya da komut satırı). Depoyu klonlayıp **`code`** klasörüne girdikten sonra:
+
+    ```powershell
+    # Windows (PowerShell) — 'code' klasöründe
+    .\build.ps1                                    # tüm demoları bir kez derle
+    cd week-09\01-manuel-gizleme
+    .\bin\windows\erisim_temiz.exe CEN429-OK     # korumasız sürüm
+    .\bin\windows\erisim_gizli.exe CEN429-OK     # gizli sürüm — çıktı AYNI
+    ```
+
+    ```sh
+    # WSL / Linux — 'code' klasöründe
+    ./build.sh
+    cd week-09/01-manuel-gizleme
+    sh demo.sh                                     # açıklamalı tam akış
+    ```
+
+    **Beklenen çıktı:** İki sürüm de `CEN429-OK` için **aynı** "erişim verildi" satırını basar (davranış korundu). `strings` çıktısında `CEN429-OK` **temizde görünür, gizlide görünmez** (K-07 dize kodlama). `objdump` ölçümü: `erisim_ver` **~28 komut / 3 dal → ~51 komut / 6 dal** (maliyet arttı). İkinci demo (`02-cesitlendirme`) aynı kaynağı iki tohumla derler → **davranış aynı, ikili farklı**.
+
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. **Kod gizlemeyi** (obfuscation) bir güvenlik **kuralı/karşı önlemi** olarak tanımlamak; her tekniği "neyi korur,
        hangi gereksinimi karşılar, maliyeti nedir, sınırı nedir" biçiminde yazmak.
@@ -80,6 +100,15 @@ literatürde **MATE** (Man-At-The-End, "uçtaki insan") ya da **beyaz kutu** den
 derleyicide açabilir, adım adım çalıştırabilir, belleği okuyup değiştirebilir, istediği kadar deneyebilir. Sunucu
 tarafındaki hiçbir güvenlik denetimi burada geçerli değildir; çünkü kod saldırganın makinesinde çalışır.
 
+!!! note "Kısa tarihçe: kod gizleme nereden geldi?"
+    - **1976** — Diffie & Hellman, bir programı "anlaşılmaz ama çalışır" kılma fikrini ilk kez tartışır (gizlilik-yoluyla değil, **çaba-yoluyla** koruma).
+    - **1997** — Collberg, Thomborson ve Low ilk **gizleme taksonomisini** (düzen · veri · kontrol akışı · önleyici) ve *güç–dayanıklılık–gizlilik–maliyet* çerçevesini yayımlar. Bu dersteki **beş aile** buradan gelir.
+    - **2001** — Barak vd. "kusursuz (kara-kutu) gizleme genel olarak **imkânsızdır**" teoremini kanıtlar → gizleme bu yüzden "kırılamazlık" değil, **maliyet** olarak öğretilir.
+    - **2002** — Chow vd. **whitebox AES** ile anahtarı yazılıma gömme fikrini başlatır (11. hafta).
+    - **2010'lar** — DRM, mobil bankacılık ve oyun sektörü gizlemeyi yaygınlaştırır; **Tigress** (Collberg) ve **Obfuscator-LLVM** işi araç hâline getirir (14. hafta).
+
+    Yani gizleme, akademik bir **imkânsızlık** sonucunun üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
+
 Bu modelde bir gerçekle başlamak dürüstlüktür: **yeterli zamanı, becerisi ve motivasyonu olan bir saldırgan her
 gizlemeyi eninde sonunda çözer.** Cookbook bunu açıkça söyler (Tarif 12.1): anti-tampering önlemleri "kırılamaz"
 değildir; amaçları **kırmayı ekonomik olmaktan çıkarmaktır**. O yüzden gizlemeyi bir sır saklama yöntemi değil, bir
@@ -104,6 +133,17 @@ değildir; amaçları **kırmayı ekonomik olmaktan çıkarmaktır**. O yüzden 
 Collberg ve arkadaşlarının yazılım koruma dizisinden bu derse taşıdığımız sınıflandırma, gizlemeyi **neyi
 gizlediğine** göre beş aileye ayırır. Bu harita 4. haftada tanıtıldı; burada her ailenin "ne zaman kural haline
 geldiğini" netleştiriyoruz.
+
+```mermaid
+flowchart LR
+    A["1 · Düzen/Ad<br/>isim·biçim·dize"] --> B["2 · Veri<br/>aritmetik·sabit"]
+    B --> C["3 · Kontrol akışı<br/>düzleştirme·opak yüklem"]
+    C --> D["4 · Önleyici<br/>anti-debug·anti-analiz"]
+    D --> E["5 · Sanallaştırma<br/>bytecode + yorumlayıcı"]
+    E --> N["Aşağıdan yukarı<br/>güç ↑ · maliyet ↑<br/>hiçbiri anahtarı korumaz"]
+    classDef son fill:#006d77,color:#fff,stroke:#004d55;
+    class N son;
+```
 
 | Aile | Neyi gizler? | Örnek kurallar | Bu dersteki yeri |
 | --- | --- | --- | --- |

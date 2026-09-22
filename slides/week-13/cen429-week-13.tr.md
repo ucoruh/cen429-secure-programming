@@ -38,6 +38,20 @@ Konuşma notu: Bu hafta güvenlik gereksinimlerini okuyup kendi projemize eşlem
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — güvenlik gereksinimleri nasıl standartlaştı?
+
+- **1985** — **TCSEC** gereksinim düzeylerini resmîleştirir
+- **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**)
+- **1999** — **Ortak Kriterler**: **PP/ST**, **SFR/SAR**, **EAL**
+- **2010'lar** — **OWASP MASVS** (mobil), **ETSI EN 303 645** (IoT), **EMVCo/PCI** (ödeme)
+
+> Değişmeyen ilke: gereksinim **ölçülebilir** ve **izlenebilir** olmalı; kanıtsız "karşılandı" geçersizdir.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **12. hafta:** bir ürün nasıl **değerlendirilir/test edilir**.

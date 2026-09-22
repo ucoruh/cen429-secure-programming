@@ -277,16 +277,7 @@ Collberg ve arkadaşlarının yazılım koruma dizisinden bu derse taşıdığı
 gizlediğine** göre beş aileye ayırır. Bu harita 4. haftada tanıtıldı; burada her ailenin "ne zaman kural haline
 geldiğini" netleştiriyoruz.
 
-```mermaid
-flowchart LR
-    A["1 · Düzen/Ad<br/>isim·biçim·dize"] --> B["2 · Veri<br/>aritmetik·sabit"]
-    B --> C["3 · Kontrol akışı<br/>düzleştirme·opak yüklem"]
-    C --> D["4 · Önleyici<br/>anti-debug·anti-analiz"]
-    D --> E["5 · Sanallaştırma<br/>bytecode + yorumlayıcı"]
-    E --> N["Aşağıdan yukarı<br/>güç ↑ · maliyet ↑<br/>hiçbiri anahtarı korumaz"]
-    classDef son fill:#006d77,color:#fff,stroke:#004d55;
-    class N son;
-```
+![Gizlemenin beş ailesi: düzen, veri, kontrol akışı, önleyici, sanallaştırma; aşağıdan yukarı güç ve maliyet artar](assets/h09-01-bes-aile.svg)
 
 | Aile | Neyi gizler? | Örnek kurallar | Bu dersteki yeri |
 | --- | --- | --- | --- |

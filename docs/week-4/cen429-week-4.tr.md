@@ -1077,6 +1077,22 @@ Güvenli kodlama hataları **önler**; derleyici ve işletim sistemi korumaları
 zorlaştırır**. Kitap bunlardan yalnız yığın koruyucuyu (StackGuard, ProPolice, MSVC `/GS`) anar (Tarif 3.3); ASLR,
 DEP/NX, RELRO ve kontrol akışı bütünlüğü kitabın yazılmasından sonra yaygınlaştı.
 
+```mermaid
+flowchart TD
+    A["Saldırgan: tampon taşması"] --> B["Yığın kanaryası<br/>dönüş adresi ezilirse durdurur"]
+    B --> C["ASLR<br/>adresler her çalıştırmada değişir"]
+    C --> D["DEP / NX<br/>veri sayfası çalıştırılamaz"]
+    D --> E["RELRO / PIE / CFI<br/>GOT yazılamaz, akış denetlenir"]
+    E --> F["Hepsi aşılırsa:<br/>mantık hatası hâlâ açıktır"]
+    classDef k fill:#e8f6f7,stroke:#0a9396,color:#005f66;
+    classDef u fill:#fff3cd,stroke:#b5651d,color:#8a4b12;
+    class B,C,D,E k;
+    class F u;
+```
+
+Bu katmanlar **sömürüyü zorlaştırır, hatayı silmez**. Hatanın kendisi ancak 3–8. bölümlerdeki güvenli kodlamayla
+ortadan kalkar.
+
 ### Korumalar ve bayraklar
 
 | Koruma | Ne yapar? | GCC/Clang (Linux) | MSVC (Windows) |

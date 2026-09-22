@@ -295,18 +295,7 @@ Beş aile var. Sırayla görelim.
 
 # Beş aile — güç ↑ maliyet ↑
 
-<svg viewBox="0 0 900 300" style="width:90%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <line x1="90" y1="30" x2="90" y2="250" stroke="#555" stroke-width="2"/>
-  <text x="60" y="150" font-size="14" fill="#555" transform="rotate(-90 60 150)" text-anchor="middle">güç &amp; maliyet →</text>
-  <g font-size="15" fill="#fff">
-   <rect x="100" y="215" width="260" height="34" fill="#9ed6d7"/><text x="115" y="238" fill="#083a3e">1 · Düzen/Ad (isim, biçim, dize)</text>
-   <rect x="100" y="173" width="360" height="34" fill="#6ec6c8"/><text x="115" y="196" fill="#083a3e">2 · Veri (aritmetik, dizi, sabit gizleme)</text>
-   <rect x="100" y="131" width="470" height="34" fill="#33a7ab"/><text x="115" y="154">3 · Kontrol akışı (düzleştirme, opak yüklem)</text>
-   <rect x="100" y="89" width="590" height="34" fill="#0a9396"/><text x="115" y="112">4 · Önleyici (anti-debug, anti-analiz)</text>
-   <rect x="100" y="47" width="710" height="34" fill="#006d77"/><text x="115" y="70">5 · Sanallaştırma (bytecode + yorumlayıcı) — en güçlü/en pahalı</text>
-  </g>
-  <text x="450" y="285" text-anchor="middle" font-size="15" fill="#c0392b">Güç birliktelikten + çeşitlendirmeden gelir; her aile ölçülmeli. Hiçbiri anahtarı korumaz.</text>
-</svg>
+![w:1000](assets/h09-01-bes-aile.svg)
 
 ---
 

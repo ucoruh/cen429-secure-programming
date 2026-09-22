@@ -4,6 +4,9 @@ Marp'ın PPTX çıktısı her slaytı resim olarak gömer (büyük ve düzenlene
 alıntı ve konuşma notlarını PowerPoint'in kendi nesneleriyle yazar. Slayt sınıfları: baslik, bolum, yogun, sema.
 """
 import math
+import os
+import pathlib
+from PIL import Image
 import re
 
 from pptx import Presentation
@@ -109,8 +112,13 @@ def cozumle(metin):
                 i += 1
             bloklar.append(('liste', ogeler))
             continue
+        mg = re.match(r'^!\[([^\]]*)\]\(([^)]+)\)\s*$', s.strip())
+        if mg:
+            bloklar.append(('gorsel', mg.group(1), mg.group(2)))
+            i += 1
+            continue
         paragraf = []
-        while i < len(satirlar) and satirlar[i].strip() and not re.match(r'^(```|#|\||>|\s*([-*]|\d+\.)\s)', satirlar[i]):
+        while i < len(satirlar) and satirlar[i].strip() and not re.match(r'^(```|#|\||>|!\[|\s*([-*]|\d+\.)\s)', satirlar[i]):
             paragraf.append(satirlar[i].strip())
             i += 1
         bloklar.append(('p', ' '.join(paragraf)))
@@ -145,6 +153,56 @@ def calistir_yaz(paragraf, metin, boyut, renk=KOYU, kalin=False):
             run.text = re.match(r'\[([^\]]+)\]', parca).group(1)
         else:
             run.text = parca
+
+
+# ------------------------------------------------------------------ görseller
+KAYNAK_KLASOR = None
+
+
+def gorsel_yolu(yol):
+    """Markdown'daki göreli yolu gerçek dosyaya çevirir. PPTX SVG alamadığı için
+    PNG kardeşi tercih edilir. Slayt kaynağı slides/week-N altında, görseller ise
+    docs/week-N/assets altında olduğu için oraya da bakılır."""
+    if KAYNAK_KLASOR is None:
+        return None
+    kok = pathlib.Path(KAYNAK_KLASOR)
+    adaylar = [kok / yol, kok.parent.parent / 'docs' / kok.name / yol]
+    for a in adaylar:
+        png = a.with_suffix('.png')
+        if png.exists():
+            return png
+        if a.exists() and a.suffix.lower() != '.svg':
+            return a
+    return None
+
+
+def gorsel_olcu(blok, genis_in):
+    """(genişlik_in, yükseklik_in) — Marp 'w:NNN' ipucunu da dikkate alır."""
+    _, alt, yol = blok
+    p = gorsel_yolu(yol)
+    if not p:
+        return 0.0, 0.0
+    with Image.open(p) as im:
+        gw, gh = im.size
+    oran = gh / float(gw)
+    g = genis_in
+    m = re.search(r'w:(\d+)', alt or '')
+    if m:
+        g = min(genis_in, genis_in * (int(m.group(1)) / 1280.0))
+    return g, g * oran
+
+
+def yaz_gorsel(slayt, blok, ust, boyut, kalan_in):
+    g, y = gorsel_olcu(blok, GENIS / 914400)
+    if g <= 0:
+        return 0.0
+    if kalan_in and y > kalan_in:
+        oran = kalan_in / y
+        g, y = g * oran, kalan_in
+    p = gorsel_yolu(blok[2])
+    sol = SOL + int((GENIS - Inches(g)) / 2)
+    slayt.shapes.add_picture(str(p), sol, ust, width=Inches(g), height=Inches(y))
+    return y
 
 
 def metin_kutusu(slayt, sol, ust, gen, yuk):
@@ -183,6 +241,8 @@ def blok_yuksekligi(blok, boyut, genislik_in):
             en_uzun = max(satir_sayisi(h, tb, genislik_in / sutun) for h in r) if r else 1
             toplam += en_uzun * tb * 1.3 / 72 + 0.12
         return toplam + 0.15
+    if tur == 'gorsel':
+        return gorsel_olcu(blok, genislik_in)[1]
     if tur in ('h2', 'h3'):
         return boyut * 1.5 / 72 + 0.1
     return 0.3
@@ -299,6 +359,8 @@ def cerceve(slayt, bilgi, no, logo, koyu=False):
 
 
 def donustur(md_yolu, pptx_yolu, logo=None):
+    global KAYNAK_KLASOR
+    KAYNAK_KLASOR = os.path.dirname(os.path.abspath(md_yolu))
     md = open(md_yolu, encoding='utf-8').read()
     bilgi, govde = on_bilgi(md)
     sunum = Presentation()
@@ -350,6 +412,8 @@ def donustur(md_yolu, pptx_yolu, logo=None):
                     yuk = yaz_kod(slayt, b, ust, boyut)
                 elif b[0] == 'alinti':
                     yuk = yaz_paragraf(slayt, b[1], ust, boyut, alinti=True)
+                elif b[0] == 'gorsel':
+                    yuk = yaz_gorsel(slayt, b, ust, boyut, (GOVDE_ALT - ust) / 914400)
                 elif b[0] in ('h2', 'h3'):
                     yuk = yaz_paragraf(slayt, f'**{b[1]}**', ust, boyut + 2, TEAL)
                 else:

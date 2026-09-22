@@ -302,6 +302,27 @@ Savunmalar:
 
 ### HMAC nasıl çalışır?
 
+```mermaid
+flowchart LR
+    subgraph GONDER["Gönderen"]
+    M["açık metin m"] --> E["1· ŞİFRELE<br/>c = ENC(k1, m)"]
+    E --> T["2· MAC'LE<br/>t = MAC(k2, c)"]
+    end
+    T --> W["gönder: c || t"]
+    subgraph ALICI["Alıcı"]
+    W --> V{"3· ÖNCE MAC doğrula"}
+    V -- "geçmedi" --> R["ÇÖZMEDEN REDDET"]
+    V -- "geçti" --> C["4· Çöz → m"]
+    end
+    classDef kotu fill:#fdeaea,stroke:#c0392b,color:#a01f1f;
+    classDef iyi fill:#eaf4ea,stroke:#2e7d32,color:#1b5e20;
+    class R kotu;
+    class C iyi;
+```
+
+**Encrypt-then-MAC**: alıcı geçersiz metni hiç çözmediği için dolgu kâhini (padding oracle) için gereken
+"hata sızıntısı" oluşmaz. AES-GCM bu iki adımı tek işlemde yapar.
+
 **MAC** (mesaj kimlik doğrulama kodu), gizli bir anahtar ve bir mesajdan kısa bir etiket üretir; anahtarı bilmeyen biri
 geçerli bir etiket üretemez. **HMAC**, bir özet fonksiyonundan (SHA-256) MAC üretmenin standart yoludur (RFC 2104):
 
@@ -637,6 +658,21 @@ Her adımda `openssl verify` çıktısını not edin:
 
 Bir sertifikanın özel anahtarı çalınırsa ya da sertifika hatalı çıkarılmışsa, geçerlilik süresi dolmadan **iptal**
 edilmesi gerekir. İstemcinin bunu öğrenmesinin üç yolu vardır:
+
+```mermaid
+flowchart TD
+    I["Sertifika iptal edildi mi?"] --> C["CRL<br/>uzun iptal listesi indir"]
+    I --> O["OCSP<br/>tek sertifikayı sor"]
+    I --> S["OCSP Stapling<br/>sunucu taze yanıtı kendisi sunar"]
+    C --> P1["büyük, gecikmeli"]
+    O --> P2["gizlilik sızdırır,<br/>erişilemezse ne olacak?"]
+    S --> P3["hızlı + gizlilik dostu<br/>(tercih)"]
+    P2 --> F["FAIL-OPEN tuzağı:<br/>erişilemedi = geçti sayma!"]
+    classDef kotu fill:#fdeaea,stroke:#c0392b,color:#a01f1f;
+    classDef iyi fill:#eaf4ea,stroke:#2e7d32,color:#1b5e20;
+    class F kotu;
+    class P3 iyi;
+```
 
 | Yöntem | Nasıl? | Artı | Eksi |
 | --- | --- | --- | --- |

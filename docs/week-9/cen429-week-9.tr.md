@@ -91,6 +91,149 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm var?
+
+Bu haftanın konusu **kod gizleme**. Ama önce birkaç temel terimi netleştirelim.
+
+Bu terimleri bilmeden konu **havada kalır**.
+
+Hiçbir şey bilmediğinizi varsayıyoruz — bu iyi bir başlangıç.
+
+### Kaynak kod nedir?
+
+- Sizin yazdığınız, **insanın okuyabildiği** program metni (ör. C dosyası).
+- Örnek: `int topla(int a, int b) { return a + b; }`
+
+Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
+
+### Derleyici ve ikili dosya
+
+- **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
+- **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
+
+```text
+kaynak.c  --(derleyici)-->  program (ikili)
+insan okur              makine çalıştırır
+```
+
+### Makine kodu ve assembly
+
+- **Makine kodu:** işlemcinin anladığı sayısal komutlar.
+- **Assembly:** makine kodunun insana biraz daha okunur hali (`mov`, `cmp`, `jmp`).
+
+İkili dosyayı açtığınızda gördüğünüz şey budur.
+
+### Tersine mühendislik nedir?
+
+**Tersine mühendislik** (reverse engineering): ikili dosyaya bakıp programın **ne yaptığını** anlamaya çalışmak.
+
+Saldırganın temel işi budur.
+
+### Tersine derleyici (decompiler)
+
+- **Tersine derleyici** (decompiler): ikili dosyayı geri, okunabilir koda yakın bir biçime çeviren araç.
+- Örnekler: Ghidra, IDA.
+
+Amaç: kaynağa erişimi olmayan biri, ikiliye bakarak mantığı çıkarsın.
+
+### `strings` komutu
+
+- **`strings`:** bir ikili dosyanın içindeki **okunabilir metinleri** listeleyen basit araç.
+- `strings program` → `"Lisans gecersiz"`, `"http://..."` gibi metinler.
+
+Saldırganın attığı **ilk adım** genelde budur.
+
+### Sembol ve sembol tablosu
+
+- **Sembol:** ikili dosyadaki bir fonksiyonun ya da değişkenin **adı** (ör. `lisans_dogrula`).
+- **Sembol tablosu:** bu adların listesi.
+
+`lisans_dogrula` adı görünüyorsa, saldırgan nereye bakacağını bilir.
+
+### Hata ayıklayıcı (debugger)
+
+- **Hata ayıklayıcı** (debugger): programı **adım adım** çalıştıran, değişkenleri gösteren araç (gdb, lldb).
+- Saldırgan programı durdurup belleği okuyabilir, değerleri değiştirebilir.
+
+### Bit, bayt, onaltılık
+
+- **Bit:** 0 veya 1.
+- **Bayt:** 8 bit.
+- **Onaltılık (hex):** `0x` ile yazılır; `0x2A` = 42.
+
+Kodda `0x5A` gibi değerler göreceğiz; bunlar sadece sayılardır.
+
+### XOR nedir?
+
+- **XOR** (`^`): iki bit farklıysa 1, aynıysa 0.
+- Özelliği: `a ^ b ^ b == a` → **kendini geri alır**.
+
+```c
+c = a ^ 0x5A;   /* şifrele */
+a = c ^ 0x5A;   /* geri çöz */
+```
+
+Gizlemede çok kullanılır çünkü tersine çevrilebilir.
+
+### Entropi (rastgelelik) nedir?
+
+- **Entropi:** bir verinin ne kadar "rastgele" göründüğü.
+- Kriptografik anahtarlar **yüksek entropili** görünür (düzensiz baytlar).
+
+Saldırgan, ikilide yüksek entropili bir blok görürse "burada anahtar olabilir" der.
+
+### Fonksiyon, dal, koşul
+
+- **Fonksiyon:** bir işi yapan kod bloğu (`erisim_ver`).
+- **Dal (branch):** `if` gibi bir yol ayrımı.
+- **Koşul:** dalın hangi yöne gideceğini belirleyen ifade.
+
+### Temel blok (basic block)
+
+- **Temel blok:** dalsız, baştan sona akan komut dizisi.
+- Bir `if` gelince blok biter, iki yeni blok başlar.
+
+Program = temel blokların birbirine bağlanması.
+
+### Kontrol akışı grafiği (CFG)
+
+- **CFG** (Control Flow Graph): temel blokları **düğüm**, geçişleri **kenar** yapan şema.
+- Programın "yol haritası"dır.
+
+```text
+[giriş] → [koşul] → [evet bloğu] → [çıkış]
+                 ↘ [hayır bloğu] → [çıkış]
+```
+
+### Derleme bayrağı (flag)
+
+- **Derleme bayrağı:** derleyiciye verilen seçenek (ör. `-O2`, `-DGUNLUK_ACIK`).
+- Aynı kaynağı farklı bayraklarla farklı derleyebilirsiniz (ör. günlüklü / günlüksüz).
+
+### Günlük (log) nedir?
+
+- **Günlük:** programın çalışırken yazdığı bilgi mesajları (`printf("...")`).
+- Sorun: hassas bilgi ya da iç durum günlüğe düşerse, saldırgan okur.
+
+### Şimdi hazırız
+
+Artık şu terimleri biliyoruz:
+
+kaynak · derleyici · ikili · tersine derleme · `strings` · sembol · hata ayıklayıcı · XOR · entropi · dal · temel blok · CFG · günlük
+
+Bunları bu hafta boyunca **sürekli** kullanacağız. Takıldığınızda bu bölüme dönün.
+
+### Bir cümlede bu haftanın sorusu
+
+> Programı kullanıcıya teslim ettim; **saldırgan artık ona sahip.** Kodumu okumasını ve değiştirmesini nasıl
+> **zorlaştırırım**?
+
+Yanıt: **kod gizleme kuralları.** Başlıyoruz.
+
 ## 1. Gizleme neden bir güvenlik kuralıdır?
 
 Dersin ilk haftasında saldırgan modellerini ayırmıştık. Ağdan girdi gönderen bir saldırgana karşı savunmamız girdi
@@ -226,6 +369,31 @@ if (opak_dogru(sayac)) {          /* gerçek yol: daima buraya girer */
 }
 ```
 
+??? question "Neden `x*(x+1)` her zaman çift? (tek tek görelim)"
+    Ardışık iki tam sayıdan **biri mutlaka çifttir**; çift bir sayıyla çarpılan her şey çifttir. Sayılarla:
+
+    | `x` | `x + 1` | `x * (x+1)` | Çift mi? |
+    | --- | --- | --- | --- |
+    | 0 | 1 | 0 | evet |
+    | 1 | 2 | 2 | evet |
+    | 2 | 3 | 6 | evet |
+    | 3 | 4 | 12 | evet |
+    | 4 | 5 | 20 | evet |
+    | 7 | 8 | 56 | evet |
+
+    Demek ki `(x * (x+1)) & 1` **her zaman 0**'dır, yani `opak_dogru(x)` **her x için `true`** döner. Program
+    çalışırken daima "gerçek yol"a girer.
+
+    **Peki neden buna 'opak' diyoruz?** Çünkü bunu *biz* biliyoruz; **statik analiz aracı bilmiyor**. Araç kodu
+    çalıştırmadan baktığında `x`'in her değeri için bu çarpımın çift olduğunu kanıtlamak zorundadır — bu, basit bir
+    sabit-katlama (constant folding) işiyle çözülemez. Bu yüzden araç **iki dalı da olası** sayar ve sahte dalı da
+    çözümlemek zorunda kalır. Analizcinin işi ikiye katlanır; programın davranışı ise hiç değişmez.
+
+    !!! warning "Sınırı da bilin"
+        Bu **klasik** bir kalıptır; modern araçların kütüphanelerinde tanınır. Bu yüzden 14. haftada Tigress ile
+        **tohumla çeşitlendirilmiş** ve daha zor yüklemler üretiyoruz — aynı kalıbı her derlemede tekrarlamak
+        dayanıklılığı düşürür.
+
 Kılavuz, opak döngüleri ayrı bir kural olarak yazar: döngüler (for, while) doğrudan görünmez; **kontrol akışı
 düzleştirmenin içine gizlenir**, gövde küçük bloklara bölünür ve yineleme bir durum değişkeniyle yönetilir. Böylece
 "şu döngü N kez dönüyor" bilgisi CFG'den okunamaz.
@@ -241,6 +409,7 @@ boolean-arithmetic). Örneğin `a + b`, `(a ^ b) + 2*(a & b)` ile aynıdır; `x 
 yazılmaz, çalışma anında küçük bir hesapla üretilir:
 
 ```c title="Sabit dönüşümü: 0x2A doğrudan görünmez"
+
 /* 0x2A yerine iki parçadan üret; ikili dosyada '0x2A' araması sonuç vermez. */
 static uint8_t esik(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
 ```

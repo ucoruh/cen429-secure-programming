@@ -87,6 +87,108 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Bellek: yığın ve öbek
+
+- **Yığın (stack):** fonksiyon çağrılarının yerel değişkenlerini tuttuğu, otomatik yönetilen bellek.
+- **Öbek (heap):** `malloc`/`new` ile **elle** ayrılan, `free`/`delete` ile bırakılan bellek.
+
+İkisi de taşma ve hata kaynağı olabilir.
+
+### İşaretçi (pointer)
+
+- **İşaretçi:** bir bellek **adresini** tutan değişken.
+- `p` bir adres; `*p` o adresteki değer.
+- Yanlış adres → çökme ya da yanlış veri.
+
+### Tampon (buffer) ve taşma
+
+- **Tampon:** ardışık bellek bloğu (ör. `char ad[16]`).
+- **Taşma (buffer overflow):** tampona **sığmayan** kadar veri yazmak → komşu belleği bozar.
+- Klasik ve tehlikeli bir hata sınıfı.
+
+### Neden taşma tehlikeli?
+
+- Komşu değişkenleri, dönüş adresini bozabilir.
+- Saldırgan bunu **denetim akışını** ele geçirmek için kullanabilir.
+- Bu yüzden **sınır denetimi** hayatidir.
+
+### Tanımsız davranış (UB) nedir?
+
+- **Tanımsız davranış (undefined behavior):** C/C++ standardının "sonucu belirsiz" dediği durumlar.
+- Örnek: işaretli tamsayı taşması, dizinin dışına erişim.
+- Derleyici bunu **istediği gibi** ele alabilir — hatta ilgili denetimi **silebilir**.
+
+### Derleyici bayrağı (flag)
+
+- **Bayrak:** derleyiciye verilen seçenek.
+- Örnek: `-O2` (optimizasyon), `-Wall` (uyarılar), `-fsanitize=address`.
+- Doğru bayraklar birçok hatayı **derleme anında** yakalar.
+
+### Uyarı (warning) vs hata (error)
+
+- **Hata:** derleme durur.
+- **Uyarı:** derleme sürer ama bir sorun bildirilir.
+- Kural: uyarıları **hataya çevir** (`-Werror`) — görmezden gelinen uyarı, gelecekteki açıktır.
+
+### CWE nedir?
+
+- **CWE (Common Weakness Enumeration):** yazılım zayıflıklarının numaralı kataloğu.
+- Örnek: CWE-416 = "use-after-free".
+- Bir bulguyu CWE numarasıyla adlandırmak, onu **aranabilir** yapar.
+
+### CERT nedir?
+
+- **SEI CERT C/C++:** güvenli kodlamanın **kural kitabı**.
+- Her kural: hatalı örnek + uyumlu çözüm + risk + CWE bağı.
+- Örnek: `STR31-C` = dizgeye yeterli yer ayır.
+
+### Statik vs dinamik analiz
+
+- **Statik analiz:** kodu **çalıştırmadan** inceleme (derleyici uyarıları, clang-tidy).
+- **Dinamik analiz:** kodu **çalıştırırken** izleme (sanitizer'lar).
+- İkisi birbirini tamamlar.
+
+### Sanitizer nedir?
+
+- **Sanitizer:** programı çalıştırırken bellek/UB hatalarını yakalayan derleyici aracı.
+- Örnek: **ASan** (adres), **UBSan** (tanımsız davranış).
+- Sürüme gitmez; **test/CI**'da kullanılır.
+
+### Fuzzing nedir?
+
+- **Fuzzing:** programa **rastgele/beklenmeyen** girdiler verip çökme aramak.
+- İnsanın düşünmediği girdileri bulur.
+- Sanitizer'la birlikte çok güçlü.
+
+### ASLR, NX/DEP, kanarya
+
+- **ASLR:** bellek adreslerini **rastgeleleştirir** (saldırgan adresi tahmin edemesin).
+- **NX/DEP:** veri bölgesindeki baytları **kod olarak çalıştırmayı** engeller.
+- **Yığın kanaryası:** dönüş adresinden önce bir **nöbetçi değer**; taşma onu bozarsa program durur.
+
+### Beyaz kutu saldırgan (hatırlatma)
+
+- Programa sahip saldırgan (1. hafta MATE).
+- Dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
+- Gizleme bölümünde (bugün sonunda) buna döneceğiz.
+
+### CI (sürekli entegrasyon)
+
+- **CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
+- Güvenlik araçlarını (uyarı, statik analiz, sanitizer, fuzzing) **her birleştirmede** koşturur.
+
+### Şimdi hazırız
+
+Terimler:
+
+yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · CWE · CERT · statik/dinamik · sanitizer · fuzzing · ASLR/NX/kanarya · CI
+
+Şimdi: kod sağlamlaştırmanın katmanları.
+
 ## 1. Kod sağlamlaştırma nedir?
 
 Birinci haftada uygulama korumasının yedi katmanını gördük. Bu hafta bunlardan üçünü, C ve C++ kodu özelinde açıyoruz:

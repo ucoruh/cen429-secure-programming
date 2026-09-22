@@ -101,6 +101,132 @@ tags:
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm?
+
+Bu hafta "polimorfik virüs", "Bell–LaPadula", "CVSS" gibi terimler geçecek.
+
+Hiçbirini bilmediğinizi varsayıyoruz.
+
+Önce hepsini **tek tek** tanımlayalım.
+
+### Zararlı yazılım (malware)
+
+- **Zararlı yazılım:** zarar vermek için yazılmış program.
+- "Virüs" bir alt türdür; hepsi virüs değildir.
+- Türler: virüs, solucan, truva atı, fidye, casus…
+
+### Virüs, solucan, truva atı
+
+- **Virüs:** başka bir programa **bulaşarak** yayılır.
+- **Solucan:** kendi başına, ağ üzerinden **kendini kopyalar**.
+- **Truva atı:** faydalı görünüp gizli zararlı taşır.
+
+### Fidye ve diğerleri
+
+- **Fidye (ransomware):** dosyaları şifreleyip fidye ister.
+- **Casus (spyware):** gizlice bilgi toplar.
+- **Arka kapı (backdoor):** gizli erişim bırakır.
+
+### Bir virüsün üç parçası
+
+- **Bulaştırıcı:** nasıl yayılır.
+- **Tetikleyici:** ne zaman etkinleşir.
+- **Yük (payload):** ne yapar.
+
+### Gizlenme: polimorfik/metamorfik
+
+- **Polimorfik:** her kopyada kendini **farklı şifreler** (imzadan kaçar).
+- **Metamorfik:** her kopyada kodunu **yeniden yazar**.
+- Amaç: imza tabanlı tespitten kaçmak.
+
+### Tespit: imza vs sezgisel
+
+- **İmza tabanlı:** bilinen zararlının parmak izini arar (hızlı, yeniyi kaçırır).
+- **Sezgisel/davranış:** şüpheli **davranışı** arar (yeniyi bulur, yanlış alarm).
+
+### Entropi (rastgelelik)
+
+- **Entropi:** verinin ne kadar rastgele göründüğü.
+- Şifreli/paketlenmiş kod **yüksek entropili**.
+- Tespitte ipucu: yüksek entropili bölge şüphelidir.
+
+### Erişim denetimi
+
+- **Erişim denetimi:** kim (özne), neye (nesne), ne yapabilir (hak)?
+- Bir **matris** ile modellenir.
+- Modeller: DAC, MAC, RBAC.
+
+### DAC / MAC / RBAC
+
+- **DAC:** sahibi izinleri belirler (Unix dosya izinleri).
+- **MAC:** sistem zorunlu kurallar koyar (etiketli).
+- **RBAC:** izinler **rollere** bağlı.
+
+### Biçimsel modeller
+
+- **Bell–LaPadula:** **gizlilik** (yukarı okuma yok).
+- **Biba:** **bütünlük** (aşağı okuma yok — BLP'nin tersi).
+- **Clark–Wilson:** ticari bütünlük (iyi biçimli işlemler).
+
+### Denetim kaydı (audit log)
+
+- **Denetim kaydı:** kim ne zaman ne yaptı — **kanıt** olarak günlük.
+- Kurcalamaya dayanıklı olmalı.
+- Günlük enjeksiyonuna (CWE-117) dikkat.
+
+### CWE, CVE, CVSS
+
+- **CWE:** zayıflık **türü** kataloğu (ör. CWE-416).
+- **CVE:** **belirli** bir üründeki açık (ör. CVE-2024-xxxx).
+- **CVSS:** bir açığın **ciddiyet puanı** (0–10).
+
+### OWASP ve zafiyet yaşam döngüsü
+
+- **OWASP Top 10 / MASVS:** yaygın açıklar ve mobil gereksinimler.
+- **Sorumlu ifşa:** açığı önce üreticiye bildirme.
+- Açık: keşif → bildirim → yama → yayın.
+
+### Şimdi hazırız
+
+Terimler:
+
+zararlı yazılım · virüs/solucan/truva/fidye · virüsün üç parçası · polimorfik · imza/sezgisel tespit · entropi · erişim denetimi (DAC/MAC/RBAC) · BLP/Biba · denetim kaydı · CWE/CVE/CVSS · OWASP
+
+Şimdi: tehdit, model, sınıflandırmanın büyük resmi.
+
+### Bugünün planı (3 saat)
+
+| Saat | Konu |
+| --- | --- |
+| 1 | Zararlı yazılım: tarih, anatomi, türler · gizlenme |
+| 2 | **Demo 1–2** · karşı önlemler · saldırı ağacı (**Demo 4**) · erişim ve modeller (**Demo 3, 6**) |
+| 3 | CWE · OWASP · CVE · CVSS (**Demo 5**) · yaşam döngüsü · proje |
+
+**Demolar:** `code/week-02` — Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+
+### Kısa tarihçe — zararlı yazılım ve güvenlik modelleri
+
+- **1949** — von Neumann: **kendini çoğaltan** otomata (virüsün matematiksel kökü)
+- **1971** Creeper · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** interneti durdurur
+- **1973–77** — **Bell–LaPadula** (gizlilik), **Biba** (bütünlük); **1987** Clark–Wilson
+- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
+
+> İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
+
+### Öğrenme çıktısı ve kapsam
+
+- **ÖÇ.1:** Yaygın yazılım güvenlik açıklarını **tanımlar ve sınıflandırır.**
+- Bu hafta üç konu bir arada:
+  - **Tehdit:** zararlı yazılım türleri ve gizlenmesi
+  - **Savunma:** erişim denetimi ve biçimsel modeller
+  - **Ortak dil:** CWE · CVE · CVSS · OWASP · MASVS
+
+> ⚠️ **Etik:** Hiçbir demoda gerçek zararlı yazılım yok. Hepsi kendi klasöründe, yönetici yetkisi olmadan çalışan **güvenli benzetimlerdir.**
+
 ## 1. Bu haftanın büyük resmi: tehdit, model, sınıflandırma
 
 Geçen hafta güvenliğin dilini kurduk: varlık, tehdit, zafiyet, risk; saldırgan modeli; STRIDE ve saldırı ağacı.

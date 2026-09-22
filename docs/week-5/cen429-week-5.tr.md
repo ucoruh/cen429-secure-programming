@@ -85,6 +85,102 @@
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Yönetilen dil nedir?
+
+- **Yönetilen dil:** belleği **otomatik** yöneten dil (Java, C#, Python, JS).
+- Programcı `malloc`/`free` yapmaz; **çöp toplayıcı** (GC) hallreder.
+- → çoğu bellek hatası (taşma, UAF) **ortadan kalkar**.
+
+### JVM ve bayt kodu
+
+- **JVM (Java Virtual Machine):** Java'yı çalıştıran sanal makine.
+- **Bayt kodu:** Java kaynağının derlendiği ara biçim (`.class` dosyaları).
+- Bayt kodu makineden bağımsız; JVM onu çalıştırır.
+
+### Çöp toplayıcı (GC)
+
+- **GC (Garbage Collector):** artık kullanılmayan nesneleri otomatik temizler.
+- Programcı belleği elle bırakmaz.
+- Bu yüzden UAF/çift bırakma Java'da **yok denecek kadar az**.
+
+### Enjeksiyon nedir?
+
+- **Enjeksiyon:** kullanıcı **verisinin** bir **komut** olarak yorumlanması.
+- Örnek: kullanıcı adı diye girilen metnin SQL sorgusuna komut olarak sızması.
+- Bu haftanın ana teması.
+
+### SQL ve veritabanı
+
+- **SQL:** veritabanı sorgulama dili (`SELECT ... WHERE ...`).
+- Uygulama, kullanıcı girdisini sorguya koyar.
+- Yanlış konursa → **SQL enjeksiyonu**.
+
+### Parametreli sorgu
+
+- **Parametreli sorgu (prepared statement):** sorgu iskeleti sabit, veriler ayrı **parametre** olarak verilir.
+- Veri asla komut olarak yorumlanmaz.
+- SQL enjeksiyonuna karşı **asıl** çözüm.
+
+### Seri durum (serialization)
+
+- **Serileştirme:** bir nesneyi bayt dizisine çevirme (kaydetmek/göndermek için).
+- **Seri durumdan çıkarma (deserialization):** baytları geri nesneye çevirme.
+- Güvenilmez baytları çıkarmak **tehlikeli** (kod çalıştırma).
+
+### XML ve XXE
+
+- **XML:** yapılandırılmış veri biçimi (etiketlerle).
+- **XXE (XML External Entity):** XML'in "dış varlık" özelliğinin kötüye kullanımı → dosya okuma, SSRF.
+- XML ayrıştırıcıda dış varlıklar **kapatılır**.
+
+### Yol geçişi (path traversal)
+
+- **Yol geçişi:** `../` ile izin verilen klasörün **dışına** çıkma.
+- `dosyalar/../../etc/passwd` gibi.
+- Kanonikleştirme + kök denetimiyle önlenir.
+
+### ProGuard ve R8
+
+- **ProGuard / R8:** Java/Android bayt kodunu **küçülten, adları gizleyen** araçlar.
+- R8, Android'in varsayılan aracı.
+- Ad gizleme + ölü kod eleme + küçültme.
+
+### `-keep` kuralı
+
+- **`-keep`:** ProGuard/R8'e "bu sınıf/metodun adını **değiştirme**" demek.
+- Reflection ile ada göre çağrılan kod korunmalı.
+- Yanlış `-keep` → ya çökme ya zayıf gizleme.
+
+### Reflection nedir?
+
+- **Reflection:** bir sınıfı/metodu **çalışma anında adıyla** bulup çağırma.
+- `Class.forName("...")`, `getMethod("...")`.
+- Gizleme bunu bozabilir → `-keep` gerekir.
+
+### SBOM nedir?
+
+- **SBOM (Software Bill of Materials):** yazılımın **malzeme listesi** — hangi kütüphaneler, hangi sürümler.
+- Bir kütüphanede açık çıkınca "etkilendik mi?" sorusunu **hızlı** yanıtlar.
+- Biçimler: CycloneDX, SPDX.
+
+### Bağımlılık (dependency)
+
+- **Bağımlılık:** projenizin kullandığı dış kütüphaneler.
+- Kendi kodunuz güvenli olsa bile, bir bağımlılıktaki açık sizi etkiler.
+- Tedarik zinciri güvenliği.
+
+### Şimdi hazırız
+
+Terimler:
+
+yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · serileştirme · XML/XXE · yol geçişi · ProGuard/R8 · `-keep` · reflection · SBOM · bağımlılık
+
+Şimdi: yönetilen diller neyi çözer, neyi çözmez?
+
 ## 1. Yönetilen diller neyi çözer, neyi çözmez?
 
 İlk dört hafta C ve C++ ile geçti: arabellek taşması, serbest bırakılmış bellek, tamsayı taşması, tanımsız davranış.

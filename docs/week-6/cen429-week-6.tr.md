@@ -112,6 +112,94 @@ tags:
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Çalışma anı (runtime) nedir?
+
+- **Çalışma anı:** programın **çalıştığı** an (derleme değil).
+- RASP korumaları burada devreye girer: program kendini **çalışırken** izler.
+
+### RASP nedir?
+
+- **RASP (Runtime Application Self-Protection):** uygulamanın çalışırken kendini koruması.
+- Kurcalama, hata ayıklama, sahte ortam gibi tehditleri **algılar** ve **tepki** verir.
+
+### Hata ayıklayıcı (debugger)
+
+- **Debugger:** programı adım adım çalıştırıp durduran, belleği okuyan araç (gdb, lldb).
+- Saldırgan bununla akışı izler, değer değiştirir.
+- RASP "bana debugger bağlı mı?" diye bakar.
+
+### Emülatör ve sanal makine
+
+- **Emülatör/VM:** bir cihazı **taklit eden** yazılım ortamı (Android emülatör, QEMU).
+- Saldırgan analizini gerçek cihaz yerine burada yapar (daha kolay).
+- RASP sahte ortamı sezmeye çalışır.
+
+### Kanca (hook) ve enstrümantasyon
+
+- **Kanca (hook):** bir fonksiyonun çağrısını **araya girip** değiştirme.
+- **Enstrümantasyon:** çalışan programa kod enjekte edip davranışını izleme/değiştirme.
+- Araç: **Frida** (çok yaygın dinamik enstrümantasyon aracı).
+
+### LD_PRELOAD
+
+- **LD_PRELOAD:** Linux'ta bir kütüphaneyi programdan **önce** yükletip fonksiyonları değiştirme yolu.
+- Saldırgan bununla kritik fonksiyonları **kancalayabilir**.
+- RASP bunu tespit etmeye çalışır.
+
+### Bütünlük ve self-hashing
+
+- **Bütünlük (integrity):** kodun/dosyanın **değişmemiş** olması.
+- **Self-hashing:** programın **kendi kodunun** özetini hesaplayıp beklenenle karşılaştırması.
+- Kurcalanmışsa özet tutmaz.
+
+### Özet (checksum/hash)
+
+- **Özet:** bir veriden hesaplanan sabit boyutlu **parmak izi** (SHA-256).
+- Veri değişirse özet değişir.
+- Bütünlük denetiminin temeli.
+
+### Kök (root) / jailbreak
+
+- **Kök (root):** cihaz üzerinde tam yetki (normalde kısıtlı).
+- Köklü cihazda korumalar zayıflar; saldırgan her şeye erişir.
+- RASP "cihaz köklü mü?" diye bakar.
+
+### İmza doğrulama
+
+- Uygulama paketleri **dijital imzayla** imzalanır.
+- **İmza doğrulama:** çağıran/yüklenen bileşenin imzasının beklenen olup olmadığını denetleme.
+- Sahte/değiştirilmiş bileşeni yakalar.
+
+### Kontrol akışı bütünlüğü (sayaç)
+
+- Kritik denetimler **tek bir `if`** ile yapılırsa, tek nokta yamayla atlanır.
+- **Kontrol akışı sayacı:** denetimlerin doğru **sırayla** geçtiğini sayarak doğrulama.
+- Tek yama yetmez hale gelir.
+
+### Tepki politikası (response)
+
+- **Tepki politikası:** RASP bir tehdit görünce **ne yapacak**?
+- Sessizce kapan, işlevi kısıtla, sunucuya bildir, gecikmeli tepki…
+- "Hemen çök" her zaman en iyisi değildir.
+
+### Cihaz bağlama ve caydırma
+
+- **Cihaz bağlama:** verilerin/anahtarların yalnız **belirli cihazda** anlamlı olması.
+- **Caydırma (deterrence):** saldırıyı zahmetli/riskli kılıp vazgeçirme.
+- RASP'in nihai amacı: maliyeti yükseltmek.
+
+### Şimdi hazırız
+
+Terimler:
+
+çalışma anı · RASP · debugger · emülatör/VM · hook/Frida · LD_PRELOAD · bütünlük/self-hashing · özet · kök · imza doğrulama · kontrol akışı sayacı · tepki politikası · cihaz bağlama · caydırma
+
+Şimdi: RASP nedir, ne yapar?
+
 ## 1. RASP nedir? Algılama → savunma → caydırma
 
 İlk beş hafta boyunca uygulamayı **statik** olarak sağlamlaştırdık: girdiyi doğruladık (Hafta 1, 4), veriyi şifreledik

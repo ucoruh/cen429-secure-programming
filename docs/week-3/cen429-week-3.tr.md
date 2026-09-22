@@ -114,6 +114,130 @@ tags:
 
 ---
 
+## 0. Temel kavramlar (sıfırdan)
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+
+### Neden bu bölüm?
+
+Bu hafta "şifreleme", "nonce", "anahtar türetme" gibi terimler geçecek.
+
+Hiçbirini bilmediğinizi varsayıyoruz.
+
+Önce hepsini **tek tek** tanımlayalım.
+
+### Verinin üç hâli
+
+- **Aktarımda:** ağda giderken (TLS).
+- **Beklemede:** diskte dururken (dosya şifreleme).
+- **Kullanımda:** bellekte işlenirken (en zor).
+
+Her hâl farklı koruma ister.
+
+### Şifreleme nedir?
+
+- **Şifreleme:** okunur veriyi (açık metin) bir **anahtarla** okunamaz hale (şifreli metin) getirmek.
+- **Çözme:** anahtarla geri açmak.
+- Güvenlik **anahtarın** gizliliğine bağlı.
+
+### Simetrik vs asimetrik
+
+- **Simetrik:** tek anahtar (AES). Hızlı.
+- **Asimetrik:** açık + gizli çift (RSA/ECC). Anahtar dağıtımı kolay.
+- Pratikte **birlikte** (hibrit).
+
+### Özet (hash)
+
+- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
+- Tek yönlü; veri değişirse özet değişir.
+- Bütünlük ve imzanın temeli.
+
+### MAC ve imza
+
+- **MAC:** simetrik; mesaj değişmedi + doğru taraftan.
+- **İmza:** asimetrik; kim imzaladı (inkâr edilemezlik).
+- İkisi de **bütünlük** sağlar.
+
+### AEAD
+
+- **AEAD:** gizlilik **+** bütünlük **birlikte** (AES-GCM).
+- Ayrı MAC uğraşmadan ikisini verir.
+- Modern tercih.
+
+### IV / nonce / tuz
+
+- **IV/nonce:** her şifrelemede **benzersiz** başlangıç değeri.
+- **Tuz (salt):** paroladan anahtar türetirken eklenen rastgele değer.
+- Üçü de **gizli değil**, ama **tekrarsız/benzersiz** olmalı.
+
+### Rastgelelik ve CSPRNG
+
+- **CSPRNG:** kriptografik olarak güvenli rastgele üreteç (işletim sisteminin `getrandom`/`BCryptGenRandom`).
+- `rand()` **güvensizdir**.
+- Anahtar/nonce/tuz bundan üretilir.
+
+### Anahtar türetme (KDF)
+
+- **KDF:** bir sırdan (parola ya da ana anahtar) **anahtar üretme**.
+- **PBKDF2/Argon2:** paroladan (yavaş, tuzlu).
+- **HKDF:** ana sırdan çok anahtar.
+
+### Anahtar hiyerarşisi
+
+- Tek anahtar her işte kullanılmaz.
+- Ana anahtar → türev anahtarlar (veri, oturum).
+- **Kripto-periyot:** her anahtarın ömrü.
+
+### İleri gizlilik
+
+- **İleri gizlilik:** her oturum için yeni anahtar.
+- Uzun vadeli anahtar sızsa bile **eski** oturumlar çözülemez.
+- Modern TLS sağlar.
+
+### TLS (kısaca)
+
+- **TLS:** ağda güvenli iletişim protokolü (HTTPS'in altında).
+- Anahtar anlaşması + AEAD + sertifika doğrulama.
+- 8. bölümde göreceğiz.
+
+### Şimdi hazırız
+
+Terimler:
+
+verinin üç hâli · şifreleme · simetrik/asimetrik · özet · MAC/imza · AEAD · IV/nonce/tuz · CSPRNG · KDF/HKDF · anahtar hiyerarşisi · ileri gizlilik · TLS
+
+Şimdi: verinin üç hâli ve güvenlik kabuğu.
+
+### Bugünün planı (3 saat)
+
+| Saat | Konu |
+| --- | --- |
+| 1 | Veri durumları · Şifreleme temelleri **Demo 1** · Rastgele sayılar · Kripto API'leri · IV/nonce **Demo 2–3** |
+| 2 | Parola ve HKDF **Demo 4–5** · Anahtar yönetimi · TLS 1.3 **Demo 6** · TLS'i kodda kurmak, fail-open |
+| 3 | Beklemede **Demo 7** · Maskeleme · Kullanımda **Demo 8** · Kabuklar **Demo 9** · Whitebox · Proje |
+
+**Öğrenme çıktıları:** ÖÇ.2 (şifreleme, güvenli iletişim) · ÖÇ.4 (güvenli kanal)
+
+### Kısa tarihçe — veriyi korumanın araçları
+
+- **1976** Diffie–Hellman (açık anahtar) · **1977** **RSA** ve **DES**
+- **2001** — **AES** (Rijndael) DES'in yerini alır
+- **2007** — **GCM** standart olur: **AEAD** çağı (gizlilik + bütünlük birlikte)
+- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
+
+> Kural buradan çıkar: kendi kriptonu yazma, **AEAD** kullan, **anahtarı** doğru yönet.
+
+### Demolar nasıl çalışıyor?
+
+- Tek kaynak, iki platform: **Windows (Visual Studio 2022)** ve **WSL/Linux (GCC)**
+- Kripto ortak başlıktan: **Linux → OpenSSL**, **Windows → BCrypt (CNG)** — OpenSSL kurmaya gerek yok
+- Derle: Windows `.\build.ps1` · WSL `./build.sh`
+- Çalıştır: Windows `.\demo.ps1` · WSL `sh demo.sh`
+- İkili dosyalar her demonun `bin\windows` / `bin/linux` klasöründe
+
+> ⚠️ **Etik:** ağ yalnız `localhost`; sertifikalar bizim; teknikleri yalnız kendi
+> bilgisayarınızda deneyin.
+
 ## 1. Verinin üç hâli ve güvenlik kabuğu
 
 Geçen iki hafta "hata → saldırı → düzeltme" ile programın **kendisini** koruduk. Bu hafta odağı **veriye** çeviriyoruz.

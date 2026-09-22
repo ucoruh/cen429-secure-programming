@@ -233,11 +233,15 @@ def sunum_pdf(oge):
     # çıkar. Baskı, öğenin kaldırıldığı geçici bir kopyadan alınır (kod satırları kısa, ölçeklemeye gerek yok).
     html = kaynak.read_text(encoding='utf-8')
     html = re.sub(r'<pre is="marp-pre"[^>]*>', '<pre>', html)
-    with tempfile.TemporaryDirectory(prefix='cen429-pdf-') as gecici:
-        baski = pathlib.Path(gecici) / kaynak.name
+    # Baskı kopyası, göreli görsel yolları (assets/...) çözülsün diye HTML ile AYNI klasöre yazılır.
+    baski = kaynak.with_name(kaynak.stem + '.baski.html')
+    try:
         baski.write_text(html, encoding='utf-8')
         tamam = calistir([chrome, '--headless=new', '--disable-gpu', '--no-pdf-header-footer',
                           f'--print-to-pdf={hedef}', baski.as_uri()])
+    finally:
+        if baski.exists():
+            baski.unlink()
     if tamam:
         oge.en_kopya('sunum_pdf')
         print('   sunum pdf :', hedef.relative_to(KOK))
@@ -600,11 +604,37 @@ def mermaid_png(site, kod, hedef):
     return img.size
 
 
-def docx_on_isle(metin, site, gecici):
+def docx_on_isle(metin, site, gecici, sayfa_klasor=None):
     """MkDocs'a özgü sözdizimini pandoc'un anlayacağı Markdown'a çevirir."""
     metin = re.sub(r'\A---\n.*?\n---\n', '', metin, flags=re.S)                     # ön bilgi
     metin = re.sub(re.escape(BASLA) + r'.*?' + re.escape(BITIR), '', metin, flags=re.S)  # indirme/iframe bloğu
     metin = re.sub(r'\{ *\.md-button[^}]*\}', '', metin)
+
+    # Yerel görseller (assets/...): SVG yerine PNG kardeşi geçici klasöre kopyalanır
+    # (pandoc/Word SVG'yi güvenilir gömemez). Mermaid'den ÖNCE çalışır ki onun
+    # ürettiği PNG bağlantıları bu adımdan etkilenmesin.
+    def yerel_gorsel(m):
+        from PIL import Image as _Im
+        alt, yol = m.group(1), m.group(2)
+        if yol.startswith(('http://', 'https://', 'data:')) or sayfa_klasor is None:
+            return m.group(0)
+        kaynak = pathlib.Path(sayfa_klasor) / yol
+        png = kaynak.with_suffix('.png')
+        if not png.exists():
+            png = kaynak
+        if not png.exists():
+            return '*(görsel ders sayfasında)*'
+        hedef = gecici / png.name
+        if not hedef.exists():
+            shutil.copy2(png, hedef)
+        try:
+            with _Im.open(hedef) as im:
+                gw = im.size[0]
+            genislik = min(16.0, gw / 2 * 2.54 / 96)
+        except Exception:
+            genislik = 15.0
+        return f'![{alt}]({hedef.name}){{width={genislik:.1f}cm}}'
+    metin = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', yerel_gorsel, metin)
 
     # Mermaid → PNG
     sayac = [0]
@@ -668,7 +698,8 @@ def not_docx(oge, site):
     referans_docx()
     gecici = pathlib.Path(tempfile.mkdtemp(prefix='cen429-docx-'))
     try:
-        md = docx_on_isle(oge.sayfa_tr.read_text(encoding='utf-8'), site, gecici)
+        md = docx_on_isle(oge.sayfa_tr.read_text(encoding='utf-8'), site, gecici,
+                          sayfa_klasor=oge.sayfa_tr.parent)
         kaynak = gecici / 'not.md'
         kaynak.write_text(md, encoding='utf-8')
         hedef = oge.dosya('not_docx')

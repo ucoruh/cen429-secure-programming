@@ -168,7 +168,7 @@ Güvenliğin üç temel hedefi:
 ### STRIDE
 
 - Tehditleri altı harfle sınıflandıran yöntem:
-- **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, **E**levation of privilege.
+- **Spoofing**, **Tampering**, **Repudiation**, **Information disclosure**, **Denial of service**, **Elevation of privilege**.
 - Her öğe için "hangi tehdit?" diye sorar.
 
 ### Saldırı ağacı
@@ -263,14 +263,7 @@ Yazılımda da aynı zincir vardır; yalnız kasanın yerinde program, paranın 
 | **Karşı önlem** (countermeasure) | Riski azaltan önlem | Yeni kilit, alarm | Uzunluk denetimi, derleyici koruması |
 | **Risk** | Olasılık × etki | "Bu mahallede bu kilitle yılda bir soygun olur" | "Bu hata bulunursa bütün hesaplar ele geçer" |
 
-```mermaid
-flowchart LR
-    T["Tehdit<br/>(saldırgan)"] -- "kullanır" --> Z["Zafiyet<br/>(hatalı kod)"]
-    Z -- "zarar verir" --> V["Varlık<br/>(veri, anahtar)"]
-    K["Karşı önlem"] -. "kapatır" .-> Z
-    K -. "korur" .-> V
-    R["Risk = olasılık × etki"] --- V
-```
+![Tehdit zafiyeti kullanır, zafiyet varlığa zarar verir; karşı önlem zafiyeti kapatır](assets/h01-01-tehdit-zafiyet-varlik.svg)
 
 ### Güvenliğin üç hedefi: CIA
 
@@ -338,23 +331,7 @@ başka birine karşı işe yaramaz olabilir. Bu yüzden her projede önce **sald
 | **Kötü niyetli içeriden kişi** | Kaynak koda, sunuculara yetkili erişim | Arka kapı ekler, veri sızdırır | Görevini kötüye kullanan çalışan | Ayrıcalık ayrımı, denetim kaydı |
 | **Cihazın sahibi saldırgan** (beyaz kutu, "Man-At-The-End") | Programın kendisine **tam** erişim | Hata ayıklayıcıyla adım adım izler, belleği döker, ikili dosyayı değiştirir | Mobil ödeme uygulamasını kendi telefonunda kırmaya çalışan biri | Çalışma zamanı koruması, kod gizleme, whitebox kriptografi |
 
-```mermaid
-flowchart TB
-    subgraph Uzak["Uzak saldırgan"]
-      direction LR
-      A1["Yalnız ağ mesajları"]
-    end
-    subgraph Yerel["Yerel kullanıcı"]
-      direction LR
-      B1["Dosyalar, ortam,<br/>başka süreçler"]
-    end
-    subgraph Beyaz["Beyaz kutu saldırgan"]
-      direction LR
-      C1["Bellek, işlemci yazmaçları,<br/>ikili kod, hata ayıklayıcı"]
-    end
-    Uzak --> Yerel --> Beyaz
-    Beyaz -. "görebildiği arttıkça<br/>savunma zorlaşır" .-> Beyaz
-```
+![Uzak, yerel ve beyaz kutu saldırgan modellerinin görebildikleri](assets/h01-02-saldirgan-modelleri.svg)
 
 !!! note "Bu dersin farkı"
     Klasik güvenlik dersleri çoğunlukla ilk iki saldırganla ilgilenir. Bu derste son satıra — **programın saldırganın
@@ -414,22 +391,7 @@ açık bıraktığı yolu kapatır; saldırganın hepsini **aynı anda** aşmas�
 Aşağıdaki şema, bu dönem göreceğimiz katmanları **içten dışa** sıralar. İç katmanlar "kodu doğru yaz" sorusuyla,
 dış katmanlar "kod saldırganın elindeyken ne olacak?" sorusuyla ilgilenir.
 
-```mermaid
-flowchart TB
-    subgraph K7["7 · Güvence: gereksinim, test, sertifikasyon (12–13. hafta)"]
-      subgraph K6["6 · Kriptografik koruma: AES, RSA, PKI, whitebox (3, 10, 11. hafta)"]
-        subgraph K5["5 · Çalışma zamanı öz koruması — RASP (6. hafta)"]
-          subgraph K4["4 · Kod gizleme ve çeşitlendirme (4, 5, 9, 14. hafta)"]
-            subgraph K3["3 · Derleyici ve işletim sistemi korumaları (4. hafta)"]
-              subgraph K2["2 · Güvenli kodlama kuralları (1, 4, 5. hafta)"]
-                K1["1 · Güvenli tasarım ve tehdit modeli (1–2. hafta)"]
-              end
-            end
-          end
-        end
-      end
-    end
-```
+![Yedi koruma katmanı: güvenli tasarımdan güvenceye](assets/h01-03-yedi-katman.svg)
 
 | Katman | Cevapladığı soru | Tipik teknikler | Durduğu saldırgan |
 | --- | --- | --- | --- |
@@ -566,18 +528,7 @@ Bir yazılımın güvenliği şansa bırakılmaz; **yazılı bir planla** yönet
 sertifikasyonundan geçen ürünlerde bu plan, yüzlerce sayfalık bir **güvenlik kılavuzuna** dönüşür. Bu derste siz de
 dönem projeniz için bunun küçük bir sürümünü yazacaksınız. Planın omurgası şudur:
 
-```mermaid
-flowchart TB
-    subgraph Tanimla["Tanımla"]
-        direction LR
-        A["1. Kapsam"] --> B["2. Mimari ve<br/>arayüzler"] --> C["3. Varlıklar"]
-    end
-    subgraph Koru["Koru ve kanıtla"]
-        direction LR
-        D["4. Tehdit<br/>modeli"] --> E["5. Karşı<br/>önlemler"] --> F["6. Doğrulama"] --> G["7. Kalan risk"]
-    end
-    Tanimla --> Koru
-```
+![Uygulama koruma planının yedi adımı](assets/h01-04-koruma-plani.svg)
 
 Plan bir kez yazılıp bırakılmaz: ürün her değiştiğinde (yeni özellik, hata düzeltmesi, yeni sürüm) 1. adıma dönülür
 ve plan güncellenir.
@@ -600,26 +551,7 @@ Planın 2. ve 3. adımları iki tabloyla yazılır; bu derste bütün dönem boy
 işlerini yapan bir **güvenlik kütüphanesi**. Kütüphanenin bir kısmı Java'da, güvenlik açısından en hassas kısmı ise
 **C/C++ ile yazılmış yerel (native) katmanda** çalışır.
 
-```mermaid
-flowchart TB
-    subgraph Telefon["Kullanıcının telefonu — GÜVENİLMEZ ORTAM"]
-        UI["Mobil uygulama"]
-        SDKJ["Güvenlik kütüphanesi — Java katmanı"]
-        SDKN["Güvenlik kütüphanesi — native C/C++ katmanı"]
-        DB[("Yerel veritabanı (şifreli)")]
-        UI -- "A: kütüphane çağrıları" --> SDKJ
-        SDKJ -- "B: JNI" --> SDKN
-        SDKN -- "C" --> DB
-    end
-    subgraph Sunucu["Hizmet sağlayıcı — GÜVENİLİR ORTAM"]
-        API["Arka uç sunucu"]
-        HSM["HSM"]
-        API --- HSM
-    end
-    POS["Ödeme terminali (POS)"]
-    SDKJ -- "D: TLS + mesaj şifreleme" --> API
-    SDKN -- "E: NFC" --> POS
-```
+![Mobil ödeme mimarisi: güvenilmez telefon, güvenilir sunucu ve arayüzler](assets/h01-05-mimari-arayuzler.svg)
 
 Bu şemada iki şeye dikkat edin:
 
@@ -683,24 +615,7 @@ Saldırı ağacında kök, saldırganın **hedefidir**; alt dallar o hedefe ula�
 dallardan biri yeter, **VE** düğümünde hepsi gerekir. Ağaç çizildiğinde en ucuz yol ve savunulacak kilit noktalar
 kendiliğinden ortaya çıkar.
 
-```mermaid
-flowchart LR
-    G["HEDEF: Ödeme anahtarını ele geçir"]
-    G --> O1{"VEYA"}
-    O1 --> A["Yerel veritabanını<br/>kopyala ve çöz"]
-    O1 --> B["Kullanım anında<br/>bellekten oku"]
-    O1 --> C["Sunucu ile telefon<br/>arasında dinle"]
-    A --> A1{"VE"}
-    A1 --> A2["Root yetkisi al"]
-    A1 --> A3["Veritabanı anahtarını bul"]
-    B --> B1{"VEYA"}
-    B1 --> B2["Hata ayıklayıcı bağla"]
-    B1 --> B3["Bellek dökümü al"]
-    B1 --> B4["Fonksiyona kanca at"]
-    C --> C1{"VE"}
-    C1 --> C2["TLS'i kır ya da<br/>sahte sertifika kabul ettir"]
-    C1 --> C3["Mesaj düzeyi<br/>şifrelemeyi kır"]
-```
+![Ödeme anahtarını ele geçirme saldırı ağacı, VE/VEYA düğümleriyle](assets/h01-06-saldiri-agaci.svg)
 
 Bu ağaçtan hemen şu sonuçlar çıkar: (1) C yolu **iki** katmanı birden kırmayı gerektirdiği için pahalıdır — işte
 derinlemesine savunma. (2) B yolunun üç alternatifi var; demek ki **bellekteki anahtar** en zayıf nokta ve buna
@@ -846,26 +761,7 @@ projenizin ilk teslimi için bir **şablon** görevi görecek.
 
 ### Adım 2 — Mimari ve arayüzler
 
-```mermaid
-flowchart LR
-    U["Kullanıcı"]
-    subgraph PC["Kullanıcının bilgisayarı"]
-      UI(("Arayüz"))
-      CORE(("Çekirdek<br/>kütüphane"))
-      F[("Kasa dosyası")]
-      CB[("Pano")]
-    end
-    subgraph Net["İnternet — güvenilmez"]
-      B["Yedekleme sunucusu"]
-      G["Güncelleme sunucusu"]
-    end
-    U -- "A: klavye" --> UI
-    UI -- "B: fonksiyon çağrısı" --> CORE
-    CORE -- "C: dosya okuma/yazma" --> F
-    CORE -- "D: kopyala" --> CB
-    CORE -- "E: TLS" --> B
-    UI -- "F: TLS + imza" --> G
-```
+![Parola kasası bileşenleri ve A-F arayüzleri](assets/h01-07-kasa-mimari.svg)
 
 | Arayüz | Uç A | Uç B | Kimlik doğrulama | Gizlilik / bütünlük |
 | --- | --- | --- | --- | --- |
@@ -979,13 +875,7 @@ Kaynak kitabımızın ilk bölümü (Viega & Messier, tarif 1.1–1.9) tam olara
 Kabuk bir komutu mutlak yolu olmadan çağırdığınızda, programı `PATH` değişkenindeki klasörlerde **soldan sağa**
 arar ve **ilk bulduğunu** çalıştırır:
 
-```mermaid
-flowchart LR
-    P["system(&quot;date&quot;)"] --> S["/bin/sh date"]
-    S --> L1["PATH[0] = /home/ogrenci/sahte<br/>date var mı? EVET → çalıştır"]
-    L1 -.-> L2["PATH[1] = /usr/bin<br/>(hiç bakılmaz)"]
-    style L1 fill:#ffdddd,stroke:#cc0000
-```
+![PATH ile kandırma: kabuk sahte programı önce bulur](assets/h01-08-path-kandirma.svg)
 
 Windows'ta durum daha da kötüdür: `cmd.exe` komutu `PATH`'ten **önce çalışma klasöründe** arar ve `.bat`, `.cmd`
 gibi uzantıları da dener. Programı hangi klasörden çalıştırdığınız bile hangi dosyanın çalışacağını değiştirir.
@@ -1939,15 +1829,7 @@ bellek, programcı serbest bırakana kadar yaşar; dil bu süreyi sizin yerinize
 Dinamik belleğin yaşam döngüsü dört adımdır: **ayır → doğrula → kullan → serbest bırak**. Her adımda ayrı bir hata
 sınıfı yaşar.
 
-```mermaid
-flowchart LR
-    A["Ayır<br/>malloc / new"] --> B{"NULL mı?"}
-    B -- evet --> H["Hata yolu<br/>(CWE-476)"]
-    B -- hayır --> C["Kullan<br/>sınır içinde (CWE-787)"]
-    C --> D["Sırrı sil<br/>(CWE-226)"]
-    D --> E["Serbest bırak<br/>bir kez (CWE-415)"]
-    E --> F["İşaretçiyi unut<br/>(CWE-416)"]
-```
+![Belleğin altı adımı ve her adımın CWE karşılığı](assets/h01-09-bellek-omru.svg)
 
 ### Hata sınıfları
 
@@ -2227,21 +2109,7 @@ küçült.**
 ayrılmışsa, sızma testi ve kod incelemesi bu 2.000 satıra yoğunlaşabilir. Gizleme ve bütünlük denetimi yalnız bu
 modüle uygulanır; performans maliyeti de yalnız burada ödenir (bkz. "Korumanın maliyeti").
 
-```mermaid
-flowchart LR
-    subgraph Genel["Genel bölge — büyük, hızlı değişir"]
-      UI["Arayüz"]
-      IS["İş mantığı"]
-    end
-    subgraph Hassas["Korunan çekirdek — küçük, seyrek değişir"]
-      API["Dar arayüz<br/>(tutamaçlar)"]
-      KR["Kripto ve<br/>anahtar yönetimi"]
-      BT["Bütünlük ve<br/>RASP denetimleri"]
-    end
-    UI --> IS -- "yalnız tutamaç<br/>ve şifreli veri" --> API
-    API --> KR
-    API --> BT
-```
+![Genel bölge ile korunan çekirdeğin ayrılması](assets/h01-10-bolumleme.svg)
 
 ### Bölümleme seçenekleri
 
@@ -2479,12 +2347,7 @@ if (argc > 1 && strcmp(argv[1], "--surum") == 0) {
 Olgun bir geliştirme ekibinde hiçbir değişiklik "doğrudan ana dala" gitmez. BT hizmet yönetiminden uyarlanan tipik
 süreç yedi adımdır:
 
-```mermaid
-flowchart LR
-    A["1. Temel çizgi<br/>(onaylı sürüm)"] --> B["2. Değişiklik<br/>talebi"] --> C["3. Sınıflandırma<br/>(öncelik, kategori)"]
-    C --> D["4. Onay ve<br/>planlama"] --> E["5. Geliştirme<br/>ve test"] --> F["6. Yayın"] --> G["7. Doğrulama ve<br/>gözden geçirme"]
-    G -. "yeni temel çizgi" .-> A
-```
+![Değişiklik yönetiminin yedi adımı ve yeni temel çizgi döngüsü](assets/h01-11-degisiklik-yonetimi.svg)
 
 Güvenlik açısından en önemli adım **3 ve 4** arasında yapılan **güvenlik etki analizidir**: "Bu değişiklik hangi
 varlığa, hangi arayüze, hangi tehdide ve hangi önleme dokunuyor?" Cevap "hiçbirine" ise değişiklik hızlı

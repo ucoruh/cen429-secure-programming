@@ -239,27 +239,7 @@ Bakım maliyeti **okunur kaynakta** kalır; dağıtılan kaynak gizli.
 
 # Kaynaktan kaynağa hat (S15)
 
-<svg viewBox="0 0 960 240" style="width:96%;height:auto;display:block;margin:6px auto" font-family="sans-serif">
-  <g font-size="14">
-   <rect x="10" y="70" width="120" height="60" rx="8" fill="#e8f6f7" stroke="#0a9396"/><text x="70" y="98" text-anchor="middle" font-weight="bold">temiz.c</text><text x="70" y="118" text-anchor="middle" font-size="12">okunur kaynak</text>
-   <rect x="175" y="70" width="140" height="60" rx="8" fill="#006d77"/><text x="245" y="95" text-anchor="middle" fill="#fff" font-weight="bold">TIGRESS</text><text x="245" y="114" text-anchor="middle" fill="#cdeff1" font-size="12">+ tohum · dönüşüm</text>
-   <rect x="360" y="70" width="120" height="60" rx="8" fill="#e8f6f7" stroke="#0a9396"/><text x="420" y="98" text-anchor="middle" font-weight="bold">gizli.c</text><text x="420" y="118" text-anchor="middle" font-size="12">gizlenmiş kaynak</text>
-   <rect x="525" y="70" width="110" height="60" rx="8" fill="#eaf4ea" stroke="#2e7d32"/><text x="580" y="98" text-anchor="middle" font-weight="bold">derle</text><text x="580" y="118" text-anchor="middle" font-size="12">+ SBOM</text>
-   <rect x="680" y="70" width="110" height="60" rx="8" fill="#fdf1e7" stroke="#b5651d"/><text x="735" y="98" text-anchor="middle" font-weight="bold">İMZALA</text><text x="735" y="118" text-anchor="middle" font-size="12">son ikili</text>
-   <rect x="835" y="70" width="110" height="60" rx="8" fill="#eef2ff" stroke="#4054b2"/><text x="890" y="98" text-anchor="middle" font-weight="bold">dağıt</text>
-  </g>
-  <g stroke="#333" stroke-width="3">
-   <line x1="130" y1="100" x2="175" y2="100" marker-end="url(#a14)"/>
-   <line x1="315" y1="100" x2="360" y2="100" marker-end="url(#a14)"/>
-   <line x1="480" y1="100" x2="525" y2="100" marker-end="url(#a14)"/>
-   <line x1="635" y1="100" x2="680" y2="100" marker-end="url(#a14)"/>
-   <line x1="790" y1="100" x2="835" y2="100" marker-end="url(#a14)"/>
-  </g>
-  <text x="245" y="165" text-anchor="middle" font-size="13" fill="#c0392b">farklı tohum → farklı ikili (aynı davranış)</text>
-  <text x="735" y="165" text-anchor="middle" font-size="13" fill="#b5651d">imza EN SON: önce gizle, sonra imzala</text>
-  <text x="480" y="205" text-anchor="middle" font-size="15" fill="#2e7d32" font-weight="bold">Her hattan sonra: 1) davranışı test et · 2) maliyeti ölç (boyut/hız)</text>
-  <defs><marker id="a14" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
-</svg>
+![w:1000](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
 ---
 

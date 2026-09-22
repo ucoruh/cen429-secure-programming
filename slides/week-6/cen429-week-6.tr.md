@@ -217,24 +217,7 @@ Terimler:
 
 # RASP döngüsü — algıla → savun → caydır
 
-<svg viewBox="0 0 960 250" style="width:96%;height:auto;display:block;margin:4px auto" font-family="sans-serif">
-  <rect x="20" y="60" width="270" height="120" rx="12" fill="#e8f6f7" stroke="#0a9396" stroke-width="2"/>
-  <text x="155" y="95" text-anchor="middle" font-size="22" fill="#005f66" font-weight="bold">ALGILA</text>
-  <text x="155" y="126" text-anchor="middle" font-size="15" fill="#333">self-hashing · anti-debug</text>
-  <text x="155" y="150" text-anchor="middle" font-size="15" fill="#333">emülatör · hook · kök</text>
-  <rect x="345" y="60" width="270" height="120" rx="12" fill="#eaf4ea" stroke="#2e7d32" stroke-width="2"/>
-  <text x="480" y="95" text-anchor="middle" font-size="22" fill="#1b5e20" font-weight="bold">SAVUN</text>
-  <text x="480" y="126" text-anchor="middle" font-size="15" fill="#333">anahtar/veri koruma</text>
-  <text x="480" y="150" text-anchor="middle" font-size="15" fill="#333">işlevi kısıtla · bütünlük</text>
-  <rect x="670" y="60" width="270" height="120" rx="12" fill="#fdf1e7" stroke="#b5651d" stroke-width="2"/>
-  <text x="805" y="95" text-anchor="middle" font-size="22" fill="#8a4b12" font-weight="bold">CAYDIR</text>
-  <text x="805" y="126" text-anchor="middle" font-size="15" fill="#333">gecikmeli/sessiz tepki</text>
-  <text x="805" y="150" text-anchor="middle" font-size="15" fill="#333">kapan · boz · bildir</text>
-  <line x1="290" y1="120" x2="345" y2="120" stroke="#555" stroke-width="3" marker-end="url(#a6)"/>
-  <line x1="615" y1="120" x2="670" y2="120" stroke="#555" stroke-width="3" marker-end="url(#a6)"/>
-  <text x="480" y="222" text-anchor="middle" font-size="15" fill="#555">Tek denetim değil, birbirini kontrol eden örtüşen ağ → tek yama yetmez.</text>
-  <defs><marker id="a6" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#555"/></marker></defs>
-</svg>
+![w:1000](assets/h06-01-rasp-dongusu.svg)
 
 ---
 

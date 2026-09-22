@@ -219,30 +219,7 @@ Konuşma notu: Öğrencilere sorun: telefonundaki bankacılık uygulamasında bi
 
 # Üç hâl — tek bakışta
 
-<svg viewBox="0 0 960 300" style="width:97%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <!-- Aktarımda -->
-  <rect x="20" y="60" width="290" height="180" rx="12" fill="#e8f6f7" stroke="#0a9396" stroke-width="2"/>
-  <text x="165" y="92" text-anchor="middle" font-size="21" fill="#005f66" font-weight="bold">AKTARIMDA</text>
-  <text x="165" y="120" text-anchor="middle" font-size="15" fill="#333">ağ üzerinde giderken</text>
-  <text x="165" y="152" text-anchor="middle" font-size="15" fill="#c0392b">tehdit: dinleme / MITM</text>
-  <text x="165" y="184" text-anchor="middle" font-size="17" fill="#006d77" font-weight="bold">savunma: TLS 1.3</text>
-  <text x="165" y="210" text-anchor="middle" font-size="14" fill="#333">+ pinning · hostname</text>
-  <!-- Beklemede -->
-  <rect x="335" y="60" width="290" height="180" rx="12" fill="#eaf4ea" stroke="#2e7d32" stroke-width="2"/>
-  <text x="480" y="92" text-anchor="middle" font-size="21" fill="#1b5e20" font-weight="bold">BEKLEMEDE</text>
-  <text x="480" y="120" text-anchor="middle" font-size="15" fill="#333">diskte / veritabanında</text>
-  <text x="480" y="152" text-anchor="middle" font-size="15" fill="#c0392b">tehdit: hırsızlık / kopya</text>
-  <text x="480" y="184" text-anchor="middle" font-size="17" fill="#2e7d32" font-weight="bold">savunma: AEAD</text>
-  <text x="480" y="210" text-anchor="middle" font-size="14" fill="#333">AES-GCM · KDF · anahtar hiy.</text>
-  <!-- Kullanımda -->
-  <rect x="650" y="60" width="290" height="180" rx="12" fill="#fdf1e7" stroke="#b5651d" stroke-width="2"/>
-  <text x="795" y="92" text-anchor="middle" font-size="21" fill="#8a4b12" font-weight="bold">KULLANIMDA</text>
-  <text x="795" y="120" text-anchor="middle" font-size="15" fill="#333">RAM'de / işlenirken</text>
-  <text x="795" y="152" text-anchor="middle" font-size="15" fill="#c0392b">tehdit: bellek dökümü</text>
-  <text x="795" y="184" text-anchor="middle" font-size="17" fill="#b5651d" font-weight="bold">savunma: kısa ömür</text>
-  <text x="795" y="210" text-anchor="middle" font-size="14" fill="#333">kullan → hemen sil</text>
-  <text x="480" y="285" text-anchor="middle" font-size="15" fill="#555">Bir sır aynı anda üç hâlde de olabilir → her hâlin kendi kabuğu olmalı.</text>
-</svg>
+![w:1000](assets/h03-01-verinin-uc-hali.svg)
 
 ---
 

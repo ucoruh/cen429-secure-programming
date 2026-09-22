@@ -241,16 +241,7 @@ Konuşma notu: Öğrencilere kendi örneklerini sorun: "Instagram hesabınız i�
 
 # CIA üçlüsü — şema
 
-<svg viewBox="0 0 900 340" style="width:70%;height:auto;display:block;margin:4px auto" font-family="sans-serif">
-  <polygon points="450,30 110,300 790,300" fill="#eef6f7" stroke="#006d77" stroke-width="3"/>
-  <text x="450" y="22" text-anchor="middle" font-size="24" fill="#006d77" font-weight="bold">Gizlilik (C)</text>
-  <text x="450" y="66" text-anchor="middle" font-size="15" fill="#5b6770">yalnız yetkili görür</text>
-  <text x="95" y="326" text-anchor="middle" font-size="24" fill="#006d77" font-weight="bold">Bütünlük (I)</text>
-  <text x="95" y="290" text-anchor="middle" font-size="15" fill="#5b6770">izinsiz değişmez</text>
-  <text x="805" y="326" text-anchor="middle" font-size="24" fill="#006d77" font-weight="bold">Erişilebilirlik (A)</text>
-  <text x="805" y="290" text-anchor="middle" font-size="15" fill="#5b6770">gerektiğinde çalışır</text>
-  <text x="450" y="205" text-anchor="middle" font-size="19" fill="#22333b">Güvenlik = üçünü <tspan font-weight="bold">birden</tspan> korumak</text>
-</svg>
+![w:1000](assets/h01-12-cia-uclusu.svg)
 
 **Sorunun cevabı:** bakiye şifresiz → **C**; IBAN yolda değişiyor → **I**; bayram gecesi çöküyor → **A**.
 
@@ -351,26 +342,7 @@ Konuşma notu: Mobil ödeme, DRM, oyun hileleri, lisans denetimi örnekleri. "An
 
 # Yedi katman — şema (içten dışa)
 
-<svg viewBox="0 0 980 150" style="width:100%;height:auto;display:block;margin:6px auto" font-family="sans-serif">
-  <defs><marker id="ka" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#0a9396"/></marker></defs>
-  <!-- 7 kutu: koyudan açığa (içten dışa) -->
-  <g font-size="26" fill="#fff" text-anchor="middle" font-weight="bold">
-    <rect x="6"   y="16" width="120" height="58" rx="9" fill="#004c54"/><text x="66"  y="53">1</text>
-    <rect x="142" y="16" width="120" height="58" rx="9" fill="#006d77"/><text x="202" y="53">2</text>
-    <rect x="278" y="16" width="120" height="58" rx="9" fill="#0a7f88"/><text x="338" y="53">3</text>
-    <rect x="414" y="16" width="120" height="58" rx="9" fill="#0a9396"/><text x="474" y="53">4</text>
-    <rect x="550" y="16" width="120" height="58" rx="9" fill="#3aa8ab"/><text x="610" y="53">5</text>
-    <rect x="686" y="16" width="120" height="58" rx="9" fill="#6cc0c2"/><text x="746" y="53" fill="#083a3e">6</text>
-    <rect x="822" y="16" width="150" height="58" rx="9" fill="#9ed6d7"/><text x="897" y="53" fill="#083a3e">7</text>
-  </g>
-  <g font-size="14" fill="#22333b" text-anchor="middle">
-    <text x="66"  y="98">Tasarım</text><text x="202" y="98">Kodlama</text><text x="338" y="98">Derleyici/OS</text>
-    <text x="474" y="98">Gizleme</text><text x="610" y="98">RASP</text><text x="746" y="98">Kripto</text><text x="897" y="98">Güvence</text>
-  </g>
-  <line x1="6" y1="128" x2="972" y2="128" stroke="#0a9396" stroke-width="2" marker-end="url(#ka)"/>
-  <text x="6" y="146" font-size="13" fill="#5b6770">içeride: "doğru yaz"</text>
-  <text x="972" y="146" font-size="13" fill="#5b6770" text-anchor="end">dışarıda: "kod saldırganın elindeyken"</text>
-</svg>
+![w:1000](assets/h01-03-yedi-katman.svg)
 
 Bir hata dış katmanları geçse bile **bir sonraki** katman durdurmayı dener (derinlemesine savunma).
 

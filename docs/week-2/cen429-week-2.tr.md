@@ -250,21 +250,7 @@ Bu hafta o dilin üç sütununu dolduruyoruz:
   ciddiyetini ölçebilmeliyiz. Bunun için **CWE** (açık türü), **CVE** (belirli açık), **CVSS** (ciddiyet puanı)
   ve **OWASP/MASVS** (öncelik listeleri) vardır.
 
-```mermaid
-flowchart LR
-    subgraph Tehdit["Tehdit tarafı"]
-      M["Zararlı yazılım<br/>türleri ve gizlenmesi"]
-    end
-    subgraph Savunma["Savunma tarafı"]
-      G["Güvenlik modelleri<br/>erişim denetimi"]
-    end
-    subgraph Dil["Ortak dil"]
-      S["CWE · CVE · CVSS<br/>OWASP · MASVS"]
-    end
-    M -- "neye karşı<br/>savunuyoruz?" --> G
-    G -- "kalan açıkları<br/>nasıl adlandırırız?" --> S
-    S -- "hangi tehdide<br/>öncelik?" --> M
-```
+![Tehdit, savunma ve ortak dil: haftanın üç parçası](assets/h02-01-haftanin-resmi.svg)
 
 Bu üçü birbirine bağlıdır: zararlı yazılımı tanımadan ona karşı model kuramaz, modeli kurmadan kalan açıkları
 göremez, açıkları ortak bir dille adlandırmadan da hangi tehdide öncelik vereceğinizi bilemezsiniz.
@@ -340,14 +326,7 @@ Her üç parça da bulunmak zorunda değildir: yükü olmayan, yalnız yayılan 
 tüketir ve bir zafiyettir). Tetikleyici koşulu bekleyen ve sonra patlayan koda **mantık bombası** (logic bomb)
 denir.
 
-```mermaid
-flowchart LR
-    T["Taşıyıcı program<br/>(temiz)"] --> B["Bulaştırıcı<br/>kendini ekler"]
-    B --> C["Virüslü program"]
-    C --> K{"Tetikleyici<br/>koşul sağlandı mı?"}
-    K -- "hayır" --> Y["Yalnız yayıl<br/>(başka dosyalara)"]
-    K -- "evet" --> P["Yük çalışır<br/>(zarar)"]
-```
+![Virüsün üç parçası: bulaştırıcı, tetikleyici, yük](assets/h02-02-virus-uc-parca.svg)
 
 ### Türleri: yayılma biçimine göre
 
@@ -421,12 +400,7 @@ i(t + dt) = i(t) + beta * i(t) * (1 - i(t) / N) * dt
 Sonuç, S biçimli bir eğridir: uzun ve sessiz bir açılış evresi, ardından ani bir patlama, sonra doygunluk.
 Açılış evresi savunmacının tek fırsat penceresidir; patlama başladığında insan hızında tepki artık yetişmez.
 
-```mermaid
-flowchart LR
-    A["Açılış<br/>birkaç makine<br/>sessiz"] --> B["Patlama<br/>ikiye katlanma<br/>saniyeler–dakikalar"]
-    B --> C["Doygunluk<br/>savunmasız<br/>makine kalmadı"]
-    style B fill:#ffdddd,stroke:#cc0000
-```
+![Solucan salgınının üç evresi: açılış, patlama, doygunluk](assets/h02-03-salgin-modeli.svg)
 
 ### Gerçek sayılar
 
@@ -517,15 +491,7 @@ imza tabanlı tespiti biraz daha zorlaştırır:
 Polimorfik virüste değişen çözücü de sonunda gövdeyi çözmek zorundadır; savunma tam bu noktaya —
 **emülasyona** — dayanır.
 
-```mermaid
-flowchart TB
-    subgraph Sifreli["Şifreli / polimorfik virüs"]
-      D["Çözücü kod<br/>(polimorfikte her kopyada farklı)"] --> C["Çöz"]
-      C --> G["Şifreli gövde<br/>(her kopyada farklı baytlar)"]
-      G --> A["Açık gövde<br/>(HER ZAMAN AYNI)"]
-    end
-    A -.->|"emülasyon çözünce<br/>burada yakalanır"| YK["İmza eşleşmesi"]
-```
+![Polimorfik virüste çözücü ve gövde değişir, açık gövde aynı kalır](assets/h02-04-polimorfik.svg)
 
 ### Demo 01 — İmza, polimorfizm, sezgisel analiz, emülasyon
 
@@ -1199,19 +1165,7 @@ okuyabilen bir program, o bilgiyi herkese açık bir dosyaya yazabilir — DAC b
 
 Yani Biba **"read up, write down"** der ve **bütünlüğü** korur: kirli veri, temiz veriyi bozamaz.
 
-```mermaid
-flowchart TB
-    subgraph BLP["Bell–LaPadula (gizlilik)"]
-      direction TB
-      B2["Çok Gizli"] -->|"oku"| B1["Gizli"] -->|"oku"| B0["Genel"]
-      B0 -->|"yaz"| B1 -->|"yaz"| B2
-    end
-    subgraph BIBA["Biba (bütünlük)"]
-      direction TB
-      I2["Çekirdek"] -->|"yaz"| I1["Uygulama"] -->|"yaz"| I0["Dış"]
-      I0 -->|"oku"| I1 -->|"oku"| I2
-    end
-```
+![Bell-LaPadula ve Biba modellerinin ters okuma/yazma kuralları](assets/h02-05-blp-biba.svg)
 
 !!! note "İki model, ters yön"
     BLP "gizli bilgi aşağı sızmasın" der (yukarı okumayı, aşağı yazmayı yasaklar). Biba "kirli bilgi yukarı
@@ -1637,7 +1591,7 @@ standartlarına** çevirir.
 ## 15. CVE ve CVSS: hangi açık, ne kadar ciddi?
 
 - **CVE** (Common Vulnerabilities and Exposures): **Belirli bir üründeki belirli bir açığın** benzersiz kimliği,
-  ör. `CVE-2014-0160` (Heartbleed). CVE bir **isim**dir, ciddiyet değil. Bir CVE, bir ya da birden çok CWE
+  ör. `CVE-2014-0160` (Heartbleed). CVE bir **isimdir**, ciddiyet değil. Bir CVE, bir ya da birden çok CWE
   türüne aittir.
 - **CVSS** (Common Vulnerability Scoring System): Bir açığın **ciddiyetini** 0.0–10.0 arasında bir sayıya çeviren
   sistem. FIRST tarafından yürütülür. Üç grup metrik vardır: **Temel** (açığın kendi özellikleri, değişmez),
@@ -1707,7 +1661,7 @@ daha yüksek puan alır; kapsam değişince 10.0'a çıkar. Puanları ciddiyet b
     sorar: saldırgan bunu ağdan mı yoksa yalnız cihaz elindeyken mi kullanabiliyor (AV)? Önceden bir yetki ya da
     kullanıcı etkileşimi gerekiyor mu (PR, UI)? Etki, açığın olduğu bileşende mi kalıyor yoksa dışına mı taşıyor
     (S)? Bu dersin bağlamında (program saldırganın cihazında çalışıyor) çoğu bulgu **yerel** (AV:L) çıkar; bu
-    yüzden CVSS puanı düşse bile risk azalmaz — değerlendirici puanın yanına **saldırı potansiyeli**ni (harcanan
+    yüzden CVSS puanı düşse bile risk azalmaz — değerlendirici puanın yanına **saldırı potansiyelini** (harcanan
     süre, uzmanlık, ekipman) da yazar. Sizin projenizde her bulguyu böyle CWE + CVSS + kısa gerekçeyle
     kaydedeceksiniz (S4, S16).
 
@@ -1718,15 +1672,7 @@ daha yüksek puan alır; kapsam değişince 10.0'a çıkar. Puanları ciddiyet b
 Bir açık keşfedildiği andan kamuya açıldığı ana kadar bir **yaşam döngüsünden** geçer. Bu döngünün nasıl
 yönetildiği, kullanıcıların risk altında kaldığı süreyi belirler.
 
-```mermaid
-flowchart LR
-    A["Keşif<br/>(araştırmacı/saldırgan)"] --> B["Özel ifşa<br/>(satıcıya bildirim)"]
-    B --> C["Düzeltme<br/>(yama geliştirilir)"]
-    C --> D["Yama yayını"]
-    D --> E["Kamuya açıklama<br/>(CVE + ayrıntı)"]
-    E --> F["Yama uygulanması<br/>(kullanıcılar günceller)"]
-    A -. "kötüye giderse" .-> Z["Zero-day sömürü<br/>(yama yokken saldırı)"]
-```
+![Zafiyet yaşam döngüsü: keşiften yama uygulanmasına](assets/h02-06-zafiyet-yasam-dongusu.svg)
 
 Anahtar kavramlar:
 
@@ -1998,27 +1944,7 @@ Vektörlerin tamamı `CVSS:3.1/` önekiyle okunur; puanlar Demo 05 ile hesaplanm
 Kök hedef: **"Başkasının hesabından ödeme yap."** Yaprak maliyetleri örnek gün-adam eforudur. Parantez içindeki
 T numaraları, yaprağın tehdit tablosundaki satırıdır.
 
-```mermaid
-flowchart TB
-    K["VEYA: Başkasının hesabından<br/>ödeme yap (3)"]
-    A["VE: Çalıntı cihazla<br/>ödeme (11)"]
-    B["VE: Oturum anahtarını<br/>kopyala ve taşı (10)"]
-    C["VE: Ağda araya<br/>gir (6)"]
-    D["VE: Sunucu API'sini<br/>kötüye kullan (3)"]
-    K --> A & B & C & D
-    A --> A1["Ekran kilidini aş · 6"]
-    A --> A2["Uygulama PIN'ini aş · 5"]
-    B --> B0["VEYA: Anahtarı elde et (4)"]
-    B --> B4["Cihaz bağlamayı aş · 6"]
-    B0 --> B1["Root + hata ayıklayıcı (T1) · 4"]
-    B0 --> B2["Yerel DB'yi kopyala, çöz · 8"]
-    B0 --> B3["Zararlı bağlantıyla kod (T9) · 9"]
-    C --> C1["Sahte erişim noktası · 1"]
-    C --> C2["Sertifika doğrulamasını aş (T3) · 2"]
-    C --> C3["Belirteci yeniden oynat · 3"]
-    D --> D1["Kendi hesabıyla giriş · 1"]
-    D --> D2["İşlem numarasını değiştir (T7) · 2"]
-```
+![Başkasının hesabından ödeme saldırı ağacı ve maliyetleri](assets/h02-07-saldiri-agaci.svg)
 
 Aynı ağaç Demo 04'ün girdi biçimiyle (`agac-s4.txt`):
 

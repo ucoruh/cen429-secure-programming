@@ -302,23 +302,7 @@ Savunmalar:
 
 ### HMAC nasıl çalışır?
 
-```mermaid
-flowchart LR
-    subgraph GONDER["Gönderen"]
-    M["açık metin m"] --> E["1· ŞİFRELE<br/>c = ENC(k1, m)"]
-    E --> T["2· MAC'LE<br/>t = MAC(k2, c)"]
-    end
-    T --> W["gönder: c || t"]
-    subgraph ALICI["Alıcı"]
-    W --> V{"3· ÖNCE MAC doğrula"}
-    V -- "geçmedi" --> R["ÇÖZMEDEN REDDET"]
-    V -- "geçti" --> C["4· Çöz → m"]
-    end
-    classDef kotu fill:#fdeaea,stroke:#c0392b,color:#a01f1f;
-    classDef iyi fill:#eaf4ea,stroke:#2e7d32,color:#1b5e20;
-    class R kotu;
-    class C iyi;
-```
+![Encrypt-then-MAC sırası ve doğrulamadan önce çözmeme kuralı](assets/h10-01-encrypt-then-mac.svg)
 
 **Encrypt-then-MAC**: alıcı geçersiz metni hiç çözmediği için dolgu kâhini (padding oracle) için gereken
 "hata sızıntısı" oluşmaz. AES-GCM bu iki adımı tek işlemde yapar.
@@ -495,19 +479,7 @@ ortak sırrı hesaplayamaz. Bugün kullanılan biçimi eliptik eğri üzerindeki
 
 DH **kimin** ile anlaşıldığını söylemez. Kanalın ortasındaki bir saldırgan, iki tarafla **ayrı ayrı** DH yapar:
 
-```mermaid
-sequenceDiagram
-    participant A as İstemci
-    participant M as Araya giren
-    participant B as Sunucu
-    A->>M: A'nın açık değeri
-    M->>B: M'nin açık değeri (A gibi davranır)
-    B->>M: B'nin açık değeri
-    M->>A: M'nin açık değeri (B gibi davranır)
-    Note over A,M: A ile M arasında sır 1
-    Note over M,B: M ile B arasında sır 2
-    Note over M: Her mesajı çözer, okur, yeniden şifreler
-```
+![Kimliksiz Diffie-Hellman'da araya girme saldırısı](assets/h10-02-dh-mitm.svg)
 
 İki taraf da "güvenli bir kanalım var" sanır; aslında her mesaj saldırganın elinden geçer.
 
@@ -549,13 +521,7 @@ güvenilen üçüncü taraflar aracılığıyla cevap veren kurallar, roller ve 
 | **Güven deposu** (trust store) | Güvenilen kök sertifikaların listesi | İşletim sistemi deposu, uygulamaya gömülü depo |
 | **İptal hizmetleri** | İptal edilmiş sertifikaları bildirir | CRL dağıtım noktası, OCSP yanıtlayıcı |
 
-```mermaid
-flowchart TB
-    K["Kök CA<br/>(çevrimdışı, 20+ yıl)"] -->|imzalar| A["Ara CA<br/>(çevrimiçi, 5-10 yıl)"]
-    A -->|imzalar| U1["Uç sertifika<br/>sunucu.ornek"]
-    A -->|imzalar| U2["Uç sertifika<br/>istemci / cihaz"]
-    T["Güven deposu"] -. "kökü içerir" .-> K
-```
+![PKI güven zinciri: kök CA, ara CA ve uç sertifikalar](assets/h10-03-pki.svg)
 
 Neden ara CA? Kök CA'nın özel anahtarı ele geçirilirse **bütün** zincir güvenilmez olur ve kökü dünyadaki bütün güven
 depolarından çıkarmak yıllar sürer. Bu yüzden kök anahtar bir HSM'de, çevrimdışı ve fiziksel olarak korunan bir yerde
@@ -659,20 +625,7 @@ Her adımda `openssl verify` çıktısını not edin:
 Bir sertifikanın özel anahtarı çalınırsa ya da sertifika hatalı çıkarılmışsa, geçerlilik süresi dolmadan **iptal**
 edilmesi gerekir. İstemcinin bunu öğrenmesinin üç yolu vardır:
 
-```mermaid
-flowchart TD
-    I["Sertifika iptal edildi mi?"] --> C["CRL<br/>uzun iptal listesi indir"]
-    I --> O["OCSP<br/>tek sertifikayı sor"]
-    I --> S["OCSP Stapling<br/>sunucu taze yanıtı kendisi sunar"]
-    C --> P1["büyük, gecikmeli"]
-    O --> P2["gizlilik sızdırır,<br/>erişilemezse ne olacak?"]
-    S --> P3["hızlı + gizlilik dostu<br/>(tercih)"]
-    P2 --> F["FAIL-OPEN tuzağı:<br/>erişilemedi = geçti sayma!"]
-    classDef kotu fill:#fdeaea,stroke:#c0392b,color:#a01f1f;
-    classDef iyi fill:#eaf4ea,stroke:#2e7d32,color:#1b5e20;
-    class F kotu;
-    class P3 iyi;
-```
+![Sertifika iptali: CRL, OCSP ve zımbalama karşılaştırması](assets/h10-04-sertifika-iptali.svg)
 
 | Yöntem | Nasıl? | Artı | Eksi |
 | --- | --- | --- | --- |

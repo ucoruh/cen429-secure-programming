@@ -266,28 +266,9 @@ Aşağıdaki akış, bir yazılım bileşeninin (ör. bir mobil ödeme kütüpha
 değerlendirilmesinin genelleştirilmiş halidir. Ürün, kurum ve şema adları çıkarılmıştır; adımlar birçok şemada
 benzerdir.
 
-```mermaid
-flowchart LR
-    H["HAZIRLIK<br/>TOE·kapsam·gereksinim·plan<br/>(adım 1-4)"] --> D["DEĞERLENDİRME<br/>kod inceleme→SAST→DAST→<br/>fuzzing→sızma testi<br/>+ derecelendirme"]
-    D --> S["SÜREKLİLİK<br/>karar/sertifika<br/>etki analizi + delta"]
-    classDef vurgu fill:#e8f6f7,stroke:#0a9396,color:#005f66;
-    class H,D,S vurgu;
-```
+![Değerlendirmenin üç aşaması ve 13 adımı](assets/h12-01-degerlendirme-sureci.svg)
 
-```mermaid
-flowchart TB
-    subgraph Hazirlik["Hazırlık"]
-      A1["1. Değerlendirme hedefi (TOE)"] --> A2["2. Belgelerin teslimi"] --> A3["3. Gereksinim şablonu"] --> A4["4. Atölye"]
-    end
-    subgraph Degerlendirme["Değerlendirme"]
-      B1["5. Kaynak kod incelemesi"] --> B2["6. Zafiyet analizi"] --> B3["7. Sızma testi"] --> B4["8. İşlevsel uygunluk"]
-    end
-    subgraph Sonuc["Sonuç ve süreklilik"]
-      C1["9. Bulgular ve düzeltmeler"] --> C2["10. Güvenlik etki analizi"] --> C3["11. Delta değerlendirme"]
-      C3 --> C4["12. Ödünleşim ve kalan risk"] --> C5["13. Değişiklik yönetimi"]
-    end
-    Hazirlik --> Degerlendirme --> Sonuc
-```
+![Hazırlık aşamasının dört adımı](assets/h12-02-hazirlik-adimlari.svg)
 
 | Adım | Ne yapılır? | Çıktı | Projenizde |
 | --- | --- | --- | --- |

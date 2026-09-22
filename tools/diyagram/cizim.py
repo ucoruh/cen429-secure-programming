@@ -216,3 +216,173 @@ def zaman(baslik_metin, olaylar, alt_metin=None, dip=None, g=12.0, y=4.8):
     if dip:
         serit(ax, 10, dip)
     return fig, ax
+
+
+def ic_ice(baslik_metin, katmanlar, alt_metin=None, dip=None, g=11.5, y=7.2):
+    """İç içe (eş merkezli) katmanlar: en dıştaki ilk. [(metin, renk_anahtarı), ...]
+    En içteki çekirdek en son gelir."""
+    renk_sira = [COKACIK, "#d3eef0", "#b9e3e5", ACIK, "#7cc9cc", "#4cb5ac", ANA, KOYU]
+    n = len(katmanlar)
+    fig, ax = tuval(g, y)
+    baslik(ax, baslik_metin, alt_metin)
+    ust, alt_s = 86, 8
+    sol0, sag0 = 3, 97
+    # Dikey adım, etiketlerin çakışmaması için en az 6 birim olmalı.
+    dikey = max(6.0, (ust - alt_s) / (2.0 * max(n, 1)))
+    yatay = min(6.5, 46.0 / max(n, 1))
+    for i, (metin, _rk) in enumerate(katmanlar):
+        x0 = sol0 + i * yatay
+        x1 = sag0 - i * yatay
+        y1 = ust - i * dikey
+        y0 = alt_s + i * dikey
+        dolgu = renk_sira[min(i, len(renk_sira) - 1)]
+        koyu_mu = dolgu in (ANA, KOYU, "#4cb5ac")
+        ax.add_patch(FancyBboxPatch((x0, y0), x1 - x0, y1 - y0,
+                                    boxstyle="round,pad=0,rounding_size=1.8",
+                                    linewidth=1.5, edgecolor=ANA if not koyu_mu else "white",
+                                    facecolor=dolgu, zorder=1 + i))
+        son = (i == n - 1)
+        ty = (y0 + y1) / 2 if son else y1 - dikey / 2
+        ax.text((x0 + x1) / 2, ty, metin, ha="center", va="center",
+                fontsize=9.6 if n > 6 else (10.6 if n > 4 else 11.4),
+                color="white" if koyu_mu else YAZI, fontweight="bold", zorder=2 + i)
+    if dip:
+        serit(ax, 5, dip)
+    return fig, ax
+
+
+def agac(baslik_metin, hedef, dallar, alt_metin=None, dip=None, g=12.5, y=5.8):
+    """Saldırı ağacı. dallar = [(dal_metni, kapi 'VEYA'/'VE', [alt_adımlar]), ...]"""
+    n = len(dallar)
+    fig, ax = tuval(g, y)
+    baslik(ax, baslik_metin, alt_metin)
+    kutu(ax, 50, 77, 62, 10, hedef, dolgu=KOYU, kenar=KOYU, bas_renk="white", bas_boyut=13)
+    etiket(ax, 50, 68, "VEYA", boyut=10.5, renk=KOTU, kalin=True)
+    gen = (94 - (n - 1) * 3.0) / n
+    for i, (dal, kapi, adimlar) in enumerate(dallar):
+        x = 3 + gen / 2 + i * (gen + 3.0)
+        ok(ax, 50, 72, x, 63.5, renk=SOLUK, kalinlik=1.6)
+        kutu(ax, x, 57, gen, 13, dal, dolgu=UYARIBG, kenar=UYARI, bas_boyut=11.2)
+        etiket(ax, x, 47.5, kapi, boyut=10, renk=KOTU if kapi == "VEYA" else IYI, kalin=True)
+        m = len(adimlar)
+        for j, ad in enumerate(adimlar):
+            yj = 40 - j * 10.5
+            kutu(ax, x, yj, gen, 8.6, ad, dolgu=COKACIK, kenar=ANA, bas_boyut=10.0, kalin=False)
+            ok(ax, x, (50.5 if j == 0 else yj + 10.5 - 4.3), x, yj + 4.3, renk=SOLUK, kalinlik=1.3)
+    if dip:
+        serit(ax, 5, dip)
+    return fig, ax
+
+
+def iliski(baslik_metin, dugumler, baglar, alt_metin=None, dip=None, g=12.0, y=5.2):
+    """Serbest ilişki grafiği. dugumler = {ad: (x, y, metin, renk_anahtarı, genişlik, yükseklik)}
+    baglar = [(a, b, etiket, kesik_mi, renk_anahtarı), ...]"""
+    renkler = {"ana": (COKACIK, ANA, YAZI), "iyi": (IYIBG, IYI, YAZI), "kotu": (KOTUBG, KOTU, YAZI),
+               "uyari": (UYARIBG, UYARI, YAZI), "mor": (MORBG, MOR, YAZI), "koyu": (KOYU, KOYU, "white")}
+    ok_renk = {"iyi": IYI, "kotu": KOTU, "uyari": UYARI, "ana": SOLUK, "mor": MOR}
+    fig, ax = tuval(g, y)
+    baslik(ax, baslik_metin, alt_metin)
+    yer = {}
+    for ad, (x, yy, metin, rk, gw, gh) in dugumler.items():
+        dolgu, kenar, yz = renkler.get(rk, renkler["ana"])
+        satirlar = metin.split("|")
+        kutu(ax, x, yy, gw, gh, satirlar[0], satirlar[1:], dolgu=dolgu, kenar=kenar,
+             bas_renk=yz, bas_boyut=12, satir_boyut=10)
+        yer[ad] = (x, yy, gw, gh)
+    for a, b, et, kesik, rk in baglar:
+        ax1, ay1, aw, ah = yer[a]
+        bx1, by1, bw, bh = yer[b]
+        dx, dy = bx1 - ax1, by1 - ay1
+        if abs(dx) > abs(dy):
+            x1 = ax1 + (aw / 2) * (1 if dx > 0 else -1); y1 = ay1
+            x2 = bx1 - (bw / 2) * (1 if dx > 0 else -1); y2 = by1
+        else:
+            x1 = ax1; y1 = ay1 + (ah / 2) * (1 if dy > 0 else -1)
+            x2 = bx1; y2 = by1 - (bh / 2) * (1 if dy > 0 else -1)
+        ok(ax, x1, y1, x2, y2, renk=ok_renk.get(rk, SOLUK), kesik=kesik, etiket=et, etiket_boyut=9.8)
+    if dip:
+        serit(ax, 6, dip)
+    return fig, ax
+
+
+def adimlar(baslik_metin, ogeler, alt_metin=None, dip=None, dip_renk=None,
+            satir_basina=4, g=12.0, y=5.6, dongu=None):
+    """Numaralı süreç adımları; satır başına en çok `satir_basina` kutu, sonra alt satıra kayar.
+    ogeler = [(başlık, [satırlar], renk_anahtarı), ...]  dongu: alttan başa dönüş etiketi."""
+    renkler = {"ana": (COKACIK, ANA, YAZI), "iyi": (IYIBG, IYI, YAZI), "kotu": (KOTUBG, KOTU, YAZI),
+               "uyari": (UYARIBG, UYARI, YAZI), "mor": (MORBG, MOR, YAZI), "koyu": (KOYU, KOYU, "white")}
+    n = len(ogeler)
+    satir_sayisi = (n + satir_basina - 1) // satir_basina
+    fig, ax = tuval(g, y)
+    baslik(ax, baslik_metin, alt_metin)
+    ust = 74
+    satir_yuk = min(26, (ust - 22) / satir_sayisi)
+    bosluk = 3.0
+    merkezler = []
+    for r in range(satir_sayisi):
+        parca = ogeler[r * satir_basina:(r + 1) * satir_basina]
+        m = len(parca)
+        gen = (94 - (m - 1) * bosluk) / m
+        yc = ust - satir_yuk / 2 - r * (satir_yuk + 4)
+        for i, (bas, satirlar, rk) in enumerate(parca):
+            dolgu, kenar, yz = renkler.get(rk, renkler["ana"])
+            x = 3 + gen / 2 + i * (gen + bosluk)
+            kutu(ax, x, yc, gen, satir_yuk - 3, bas, satirlar, dolgu=dolgu, kenar=kenar,
+                 bas_renk=yz, bas_boyut=11.4 if m > 3 else 12.4, satir_boyut=9.5 if m > 3 else 10.2)
+            merkezler.append((x, yc, gen, satir_yuk - 3))
+            if i < m - 1:
+                ok(ax, x + gen / 2 + 0.3, yc, x + gen / 2 + bosluk - 0.3, yc, renk=SOLUK, kalinlik=1.8)
+        if r < satir_sayisi - 1:
+            # satır sonu -> sonraki satır başı bağlantısı
+            sx, sy, sg, sh = merkezler[-1]
+            ax.plot([sx + sg / 2 + 1.2, 97, 97], [sy, sy, sy - satir_yuk / 2 - 2],
+                    color=SOLUK, linewidth=1.6, zorder=1)
+            ax.plot([97, 3, 3], [sy - satir_yuk / 2 - 2, sy - satir_yuk / 2 - 2,
+                                 sy - satir_yuk - 4], color=SOLUK, linewidth=1.6, zorder=1)
+            ok(ax, 3, sy - satir_yuk - 4, 3 + 0.1, sy - satir_yuk - 4 - 0.1, renk=SOLUK, kalinlik=1.6)
+    if dongu and merkezler:
+        sx, sy, sg, sh = merkezler[-1]
+        bx, by, bg, bh = merkezler[0]
+        alt_y = min(m2[1] - m2[3] / 2 for m2 in merkezler) - 5
+        ax.plot([sx, sx, bx, bx], [sy - sh / 2, alt_y, alt_y, by - bh / 2],
+                color=IYI, linewidth=1.8, linestyle=(0, (5, 3)), zorder=1)
+        ax.text((sx + bx) / 2, alt_y - 2.4, dongu, ha="center", va="top", fontsize=10, color=IYI)
+    if dip:
+        serit(ax, 8, dip, renk=dip_renk or KOYU,
+              dolgu=KOTUBG if dip_renk == KOTU else COKACIK)
+    return fig, ax
+
+
+def dizi(baslik_metin, aktorler, mesajlar, alt_metin=None, dip=None, g=12.0, y=6.0):
+    """Dizi (sequence) diyagramı.
+    aktorler = ["İstemci", "Sunucu", ...]
+    mesajlar = [(kaynak_idx, hedef_idx, metin, 'ileri'|'geri'|'not'), ...]
+    'not' türünde kaynak_idx kutunun ortalanacağı sütundur (hedef yok sayılır)."""
+    na = len(aktorler)
+    fig, ax = tuval(g, y)
+    baslik(ax, baslik_metin, alt_metin)
+    ust = 80
+    alt_s = 16 if dip else 8
+    xs = [(100.0 / (na + 1)) * (i + 1) for i in range(na)]
+    for i, ad in enumerate(aktorler):
+        kutu(ax, xs[i], ust, min(30, 80.0 / na), 9, ad, dolgu=KOYU, kenar=KOYU,
+             bas_renk="white", bas_boyut=11.5)
+        ax.plot([xs[i], xs[i]], [ust - 5.5, alt_s], color=CIZGI, linewidth=1.6,
+                linestyle=(0, (4, 4)), zorder=1)
+    n = len(mesajlar)
+    adim = (ust - 10 - alt_s) / max(n, 1)
+    for j, (a, b, metin, tur) in enumerate(mesajlar):
+        yy = ust - 10 - j * adim
+        if tur == "not":
+            g2 = min(62, 92.0)
+            ax.add_patch(FancyBboxPatch((xs[a] - g2 / 2, yy - 3.2), g2, 6.4,
+                                        boxstyle="round,pad=0,rounding_size=1.4",
+                                        linewidth=1.2, edgecolor=UYARI, facecolor=UYARIBG, zorder=3))
+            ax.text(xs[a], yy, metin, ha="center", va="center", fontsize=9.6, color=UYARI, zorder=4)
+        else:
+            renk = ANA if tur == "ileri" else IYI
+            ok(ax, xs[a], yy, xs[b], yy, renk=renk, kalinlik=1.8,
+               kesik=(tur == "geri"), etiket=metin, etiket_boyut=9.4, etiket_kay=1.4)
+    if dip:
+        serit(ax, 7, dip)
+    return fig, ax

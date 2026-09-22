@@ -34,6 +34,17 @@
     Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
 
 
+!!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
+    Bu demo **Tigress** ister (kaynaktan kaynağa C gizleyici). **`code`** klasöründen:
+
+    ```sh
+    # WSL / Linux (Windows'ta WSL kullanın)
+    cd week-14/01-kaynaktan-kaynaga
+    sh tigress-hatti.sh
+    ```
+
+    **Beklenen çıktı:** Tigress kuruluysa `erisim_ver` fonksiyonu kaynaktan kaynağa gizlenir: **dönüşüm hattı → davranış doğrulama** (çıktı değişmedi) → `objdump` ile **maliyet ölçümü** → **iki tohumla** farklı ikili (çeşitlendirme). Tigress yoksa betik **temiz bir türevle** aynı akışı gösterir. Kurulum: <https://tigress.wtf> (akademik kullanım ücretsiz).
+
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. **Kaynaktan kaynağa** (source-to-source) gizlemenin ne olduğunu ve 9. haftadaki el ile kuralların **otomatik**
        karşılığını (Tigress) açıklamak.
@@ -74,6 +85,13 @@ Dokuzuncu haftada gizleme kurallarını **el ile** uyguladık: opak yüklem, dü
 gizleme öğreticidir ama üç sorunu vardır: (1) **hataya açıktır** — el ile yazılan gizleme kodu davranışı bozabilir;
 (2) **bakımı zordur** — kaynak okunamaz hale gelir; (3) **çeşitlendirilemez** — her kopyayı el ile farklılaştıramazsınız.
 Çözüm, gizlemeyi bir **araca** yaptırmaktır.
+
+!!! note "Kısa tarihçe: kaynaktan kaynağa gizleme ve çeşitlendirme"
+    - **1993** — Cohen, "program evolution" ile **çeşitlendirme** fikrini ortaya atar: aynı işlev, farklı ikili.
+    - **1997** — Collberg vd. gizleme taksonomisi (9. hafta'nın temeli).
+    - **2013** — **Obfuscator-LLVM (O-LLVM)**: derleyici tabanlı gizleme.
+    - **2010'lar** — **Tigress** (Christian Collberg): C için **kaynaktan kaynağa** gizleyici + sanallaştırma + çeşitlendirme; araştırmada dayanıklılık ölçümünün fiili standardı.
+    - **2016–2017** — Banescu vd. Tigress + KLEE ile dönüşüm **dayanıklılığını ölçer** → "**dayanıklılık ↔ maliyet**" kuralı.
 
 **Kaynaktan kaynağa** (source-to-source) gizleme, bir aracın **C kaynağını girdi alıp yine C kaynağı** üretmesidir;
 üretilen kaynak, davranışça özdeş ama okunması çok daha zordur ve normal derleyicinizle derlenir. Bu yaklaşımın en
@@ -171,6 +189,21 @@ farklar olabilir):
 
 Dokuzuncu haftanın en önemli kuralı "tek teknik değil, birlikte" idi. Tigress'te bu, dönüşümleri **sırayla** (bir hat olarak)
 uygulamak demektir. Her `--Transform` bir öncekinin çıktısına uygulanır; sıra önemlidir.
+
+```mermaid
+flowchart LR
+    A["temiz.c<br/>okunur kaynak"] --> B["Tigress<br/>+ tohum · dönüşüm"]
+    B --> C["gizli.c<br/>gizlenmiş kaynak"]
+    C --> D["derle<br/>+ SBOM"]
+    D --> E["İMZALA<br/>son ikili"]
+    E --> F["dağıt"]
+    classDef t fill:#006d77,color:#fff,stroke:#004d55;
+    classDef s fill:#fdf1e7,stroke:#b5651d,color:#8a4b12;
+    class B t;
+    class E s;
+```
+
+İmza **en son** gelir (önce gizle, sonra imzala); her hattan sonra **davranışı test et** ve **maliyeti ölç**.
 
 ```bash title="Kavramsal hat (birden çok dönüşüm sırayla)"
 tigress \

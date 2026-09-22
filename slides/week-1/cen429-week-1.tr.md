@@ -176,6 +176,20 @@ Konuşma notu: Demoları önceden bir kez derleyin (Windows: code içinde .\buil
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — güvenli programlama fikri
+
+- **1975** — Saltzer & Schroeder: güvenli tasarımın **8 ilkesi** (en az ayrıcalık, derinlemesine savunma…)
+- **1970–80'ler** — **CIA üçlüsü** ortak dil hâline gelir
+- **1998–99** — Microsoft'ta **STRIDE**; Schneier **saldırı ağaçlarını** tanıtır
+- **2001–03** — *Building Secure Software* ve **Secure Programming Cookbook** (dersin ana kaynağı)
+
+> Bugünkü araçlar (CIA · saldırgan modeli · STRIDE · saldırı ağacı) bu çizginin ürünüdür.
+
+---
+
+
 # Ders nasıl yürüyor?
 
 - **Tek dönem projesi:** C/C++ uygulaması + "sertifikasyondan geçecekmiş gibi" bir **güvenlik kılavuzu**

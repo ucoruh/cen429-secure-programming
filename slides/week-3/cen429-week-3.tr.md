@@ -168,6 +168,20 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — veriyi korumanın araçları
+
+- **1976** Diffie–Hellman (açık anahtar) · **1977** **RSA** ve **DES**
+- **2001** — **AES** (Rijndael) DES'in yerini alır
+- **2007** — **GCM** standart olur: **AEAD** çağı (gizlilik + bütünlük birlikte)
+- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
+
+> Kural buradan çıkar: kendi kriptonu yazma, **AEAD** kullan, **anahtarı** doğru yönet.
+
+---
+
+
 # Demolar nasıl çalışıyor?
 
 - Tek kaynak, iki platform: **Windows (Visual Studio 2022)** ve **WSL/Linux (GCC)**

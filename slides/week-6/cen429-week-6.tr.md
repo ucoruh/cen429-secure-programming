@@ -39,6 +39,20 @@ Konuşma notu: Bu hafta odak "programı sağlamlaştırma"dan "program çalış�
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — uygulama kendini korur
+
+- **1980'ler** — crack/anti-crack kültürü: **anti-debug** ve self-check kökeni
+- **2000'ler** — DRM ve mobil bankacılık korumayı uygulamanın **içine** taşır
+- **2012** — Gartner **RASP** terimini ortaya atar
+- **bugün** — **OWASP MASVS-RESILIENCE** bunu denetlenebilir gereksinime çevirir
+
+> RASP yeni bir fikir değil: **MATE saldırganına** verilen kurumsal cevabın adı.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **4–5. hafta:** kodu **statik** sağlamlaştırdık (derleme, gizleme).

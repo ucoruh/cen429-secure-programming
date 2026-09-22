@@ -49,6 +49,20 @@ Konuşma notu: Bu hafta yönetilen dillere geçiyoruz: bellek güvenliği bedava
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — yönetilen diller ve kalan açıklar
+
+- **1995** — **Java/JVM**: bellek hatalarının çoğu **dil düzeyinde** biter
+- **1998** — SQL enjeksiyonu belgelenir · **2003** **OWASP Top 10**
+- **2002** — **ProGuard** (sonra **R8**): bayt kod kolay geri çevrildiği için
+- **2015** deserialization · **2020–21** SolarWinds ve **Log4Shell** → **SBOM** çağı
+
+> Dil **bellek hatasını** çözer; **enjeksiyonu ve bağımlılık riskini çözmez**.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **4. hafta:** C/C++ sağlamlaştırma (bellek hataları).

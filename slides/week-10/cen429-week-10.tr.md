@@ -39,6 +39,20 @@ Konuşma notu: Bu hafta kriptografinin yapı taşlarını ve PKI'yi uçtan uca k
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — anahtarlar, sertifikalar, PKI
+
+- **1976–77** — Diffie–Hellman ve **RSA**: tanımadığınla güvenli konuşma
+- **1988** — **X.509** sertifika biçimi; kimliği bir **CA imzası** taşır
+- **1995** — ticari CA'lar ve **PKI**; ardından **CRL** ve **OCSP** (iptal)
+- **2014** Heartbleed · **2015** Let's Encrypt · **2018** TLS 1.3 · **2022–24** **PQC** (Kyber/Dilithium)
+
+> Bugünkü kurallar (doğru kip/dolgu, zincir doğrulama, iptal) bu acı derslerden çıktı.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **3. hafta:** kriptoya giriş (gizlilik, bütünlük).

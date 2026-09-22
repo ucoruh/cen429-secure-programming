@@ -41,6 +41,20 @@ Konuşma notu: Bu hafta ileri kod gizleme kurallarını işliyoruz. Çerçeve: g
 
 <!-- _class: yogun -->
 
+# Kısa tarihçe — kod gizleme nereden geldi?
+
+- **1976** — Diffie & Hellman: "anlaşılmaz ama çalışır" fikri (**çaba-yoluyla** koruma)
+- **1997** — Collberg vd. **taksonomi** + *güç–dayanıklılık–gizlilik–maliyet* (bu dersin beş ailesi)
+- **2001** — Barak vd.: kusursuz gizleme **imkânsızdır** → "kırılamazlık" değil **maliyet**
+- **2002** — Chow vd. **whitebox AES** (11. hafta) · **2010'lar** **Tigress**, O-LLVM (14. hafta)
+
+> Gizleme, bir **imkânsızlık teoreminin** üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
+
+---
+
+
+<!-- _class: yogun -->
+
 # Nereden geldik, nereye gidiyoruz?
 
 - **4. hafta:** sembol/dize gizleme, düzleştirmeye giriş (tanışma)

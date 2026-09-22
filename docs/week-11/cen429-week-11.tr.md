@@ -35,6 +35,27 @@
     Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
 
 
+!!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
+    İlk derleme `code/README.md`'de anlatılır. **`code`** klasöründen:
+
+    ```powershell
+    # Windows (PowerShell)
+    .\build.ps1
+    cd week-11\01-oyuncak-tablo
+    .\bin\windows\oyuncak_wb.exe
+    cd ..\02-gomulu-anahtar
+    .\bin\windows\gomulu.exe --tara
+    ```
+
+    ```sh
+    # WSL / Linux
+    ./build.sh
+    cd week-11/01-oyuncak-tablo && ./bin/linux/oyuncak_wb
+    cd ../02-gomulu-anahtar && ./bin/linux/gomulu --tara
+    ```
+
+    **Beklenen çıktı:** Naif tablo `T[x]=S[x⊕k]` gizli anahtarı (`0x3C`) **sızdırır**; kodlanmış tablo **sızdırmaz** (aynı şifreleme, farklı iç yapı). İkinci demo kendi ikilisine gömülü anahtarı **entropi taramasıyla** bulur → "diziye anahtar gömmek koruma değildir".
+
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. **Kara kutu**, **gri kutu** ve **beyaz kutu** saldırgan modellerini ayırmak; whitebox kriptografinin (WBC)
        çözmeye çalıştığı problemi — "anahtar ve kod aynı anda saldırganın elindeyken" — tanımlamak.
@@ -74,6 +95,23 @@
 Kriptografiyi 3. ve 10. haftalarda **kara kutu** varsayımıyla ele aldık: saldırgan yalnız girdiyi ve çıktıyı görür,
 anahtarı ve algoritmanın iç durumunu göremez. AES, RSA, HMAC gibi standart algoritmaların güvenlik kanıtları bu
 varsayıma dayanır. Ama bu varsayım, kodu kullanıcıya teslim ettiğimizde çöker.
+
+!!! note "Kısa tarihçe: whitebox kriptografi nereden geldi?"
+    - **1883** — Kerckhoffs ilkesi: güvenlik **anahtarda** olmalı, sistemin gizliliğinde değil. Beyaz kutu düşüncesinin kökü budur.
+    - **2002** — Chow, Eisen, Johnson, van Oorschot ilk **whitebox AES** ve **whitebox DES**'i (DRM için) yayımlar. WBC'nin doğuşu.
+    - **2004** — Billet–Gilbert–Ech-Chatbi (**BGE saldırısı**) ilk WB-AES'i kırar → "hepsi kırılır" kuralının başlangıcı.
+    - **2016** — Bos vd. **DCA** (Differential Computation Analysis): donanımdaki DPA'yı yazılıma taşır, birçok WBC'yi **otomatik** kırar.
+    - **2017–2024** — **WhibOx** yarışmalarında yayımlanan tüm saf-yazılım WB-AES adayları kırıldı → bugünkü kural: WBC bir **geciktirme katmanıdır**; mümkünse donanım (TEE/SE/HSM) tercih edilir.
+
+```mermaid
+flowchart LR
+    K["KARA KUTU<br/>yalnız giriş/çıkış<br/>(AES kanıtı bunu varsayar)"] --> G["GRİ KUTU<br/>+ yan kanal<br/>güç/zaman (DPA)"]
+    G --> B["BEYAZ KUTU<br/>bellek + kod + ara değerler<br/>MATE — WBC burada savaşır"]
+    classDef beyaz fill:#eef7f7,stroke:#c0392b,stroke-width:2px,color:#a01f1f;
+    class B beyaz;
+```
+
+Görünürlük soldan sağa artar; WBC en zor (beyaz kutu) modelde anahtar çıkarmayı **geciktirmeye** çalışır.
 
 | Model | Saldırgan neyi görür/yapar? | Tipik ortam |
 | --- | --- | --- |

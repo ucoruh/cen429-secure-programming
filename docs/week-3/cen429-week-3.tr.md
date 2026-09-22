@@ -120,6 +120,14 @@ Geçen iki hafta "hata → saldırı → düzeltme" ile programın **kendisini**
 Bir sır — parola, ödeme anahtarı, kişisel bilgi — yaşam döngüsü boyunca **üç ayrı hâlde** bulunur ve her hâlin tehdidi
 de savunması da farklıdır:
 
+!!! note "Kısa tarihçe: veriyi korumanın araçları"
+    - **1976** — Diffie & Hellman **açık anahtarlı** kriptografiyi başlatır; **1977** **RSA** ve **DES** standardı gelir.
+    - **2001** — **AES** (Rijndael) DES'in yerini alır; bugün simetrik şifrelemenin omurgasıdır.
+    - **2007** — **GCM** NIST standardı olur: gizlilik **ve** bütünlüğü birlikte veren **AEAD** çağı başlar (bu haftanın ana aracı).
+    - **1994 → 2018** — SSL (1994–96) → TLS 1.0 (1999) → **TLS 1.3 (2018)**: aktarımdaki verinin standardı.
+
+    Dersin kuralı buradan çıkar: "kendi kriptonu yazma, **AEAD** kullan, anahtarı doğru yönet".
+
 | Hâl | Nerede? | Tehdit | Tipik savunma |
 | --- | --- | --- | --- |
 | **Aktarımda** (in transit) | Ağ üzerinde, iki uç arasında | Dinleme, araya girme (MITM), yeniden oynatma | TLS 1.3, sertifika doğrulama + sabitleme, mesaj düzeyi AEAD |

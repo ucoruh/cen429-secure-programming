@@ -172,6 +172,20 @@ Konuşma notu: Demoları önceden bir kez derleyin (code/ içinde build.ps1 ya d
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — zararlı yazılım ve güvenlik modelleri
+
+- **1949** — von Neumann: **kendini çoğaltan** otomata (virüsün matematiksel kökü)
+- **1971** Creeper · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** interneti durdurur
+- **1973–77** — **Bell–LaPadula** (gizlilik), **Biba** (bütünlük); **1987** Clark–Wilson
+- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
+
+> İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
+
+---
+
+
 # Öğrenme çıktısı ve kapsam
 
 - **ÖÇ.1:** Yaygın yazılım güvenlik açıklarını **tanımlar ve sınıflandırır.**

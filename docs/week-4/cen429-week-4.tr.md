@@ -91,6 +91,14 @@
 
 Birinci haftada uygulama korumasının yedi katmanını gördük. Bu hafta bunlardan üçünü, C ve C++ kodu özelinde açıyoruz:
 
+!!! note "Kısa tarihçe: bellek hataları ve savunmaların yarışı"
+    - **1988** — **Morris Worm** tampon taşmasını dünyaya duyurur; saldırı sınıfı "akademik" olmaktan çıkar.
+    - **1996** — Aleph One'ın *"Smashing the Stack for Fun and Profit"* yazısı sömürüyü herkese öğretir.
+    - **1998 → 2004** — savunmalar sırayla gelir: **StackGuard/kanarya** (1998), **PaX/ASLR** (2001), **DEP/NX** (2004), FORTIFY.
+    - **2012 → 2013** — **AddressSanitizer** ve **fuzzing** (AFL) hataları **otomatik** yakalamaya başlar.
+
+    Ders bu yarışı sırayla izler: önce hatayı yaz, sonra aracın yakalamasını gör, sonra derleyici/OS korumasını ekle.
+
 | Katman | Soru | Bu haftaki araçlar |
 | --- | --- | --- |
 | **2 · Güvenli kodlama** | Kodumda hata var mı? | SEI CERT kuralları, sınır ve dönüş değeri denetimi, sanitizer'lar, fuzzing |

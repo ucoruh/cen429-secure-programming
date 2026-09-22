@@ -40,6 +40,21 @@ Konuşma notu: Bu hafta 9. haftadaki gizleme kurallarının otomatik karşılı�
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — kaynaktan kaynağa gizleme ve çeşitlendirme
+
+- **1993** — Cohen: **çeşitlendirme** fikri (aynı işlev, farklı ikili)
+- **1997** — Collberg vd. gizleme taksonomisi (9. haftanın temeli)
+- **2013** — **Obfuscator-LLVM**: derleyici tabanlı gizleme
+- **2010'lar** — **Tigress**: C için kaynaktan kaynağa + sanallaştırma + çeşitlendirme
+- **2016–17** — Banescu vd. Tigress+KLEE ile **dayanıklılığı ölçer**
+
+> Ana kural: **dayanıklılık ↔ maliyet**; koruma varlığın değeriyle orantılı seçilir.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **9. hafta:** gizleme kurallarını **el ile** öğrendik

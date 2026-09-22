@@ -115,6 +115,14 @@ Bir bankanın kasasını düşünün. Kasanın içindeki para **varlıktır**. P
 Kasanın kilidinin arızalı olması bir **zafiyettir**. Hırsızın o arızalı kilidi kullanması bir **saldırıdır**.
 **Risk** ise "bu olay ne kadar olası ve olursa ne kadar zarar verir?" sorusunun cevabıdır.
 
+!!! note "Kısa tarihçe: güvenli programlama fikri nereden geldi?"
+    - **1975** — Saltzer & Schroeder, güvenli tasarımın **sekiz ilkesini** yayımlar (en az ayrıcalık, derinlemesine savunma, açık tasarım…). Bugün hâlâ temeldir.
+    - **1970'ler–80'ler** — **CIA üçlüsü** (gizlilik · bütünlük · erişilebilirlik) askerî/devlet bilgi güvenliğinden doğar ve ortak dil olur.
+    - **1998–99** — Microsoft'ta **STRIDE** tehdit sınıflandırması (Kohnfelder & Garg) geliştirilir; aynı yıllarda Bruce Schneier **saldırı ağaçlarını** tanıtır.
+    - **2001–2003** — Viega & McGraw *Building Secure Software* ve Viega & Messier ***Secure Programming Cookbook for C and C++*** (bu dersin ana kaynağı) "güvenliği sonradan ekleme, baştan kur" kültürünü yerleştirir.
+
+    Bu haftanın bütün araçları (CIA, saldırgan modeli, STRIDE, saldırı ağacı) işte bu çizginin ürünüdür.
+
 Yazılımda da aynı zincir vardır; yalnız kasanın yerinde program, paranın yerinde veri durur.
 
 | Kavram | Tanım | Kasa örneği | Yazılım örneği |

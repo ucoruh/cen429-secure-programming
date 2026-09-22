@@ -106,6 +106,14 @@ tags:
 Geçen hafta güvenliğin dilini kurduk: varlık, tehdit, zafiyet, risk; saldırgan modeli; STRIDE ve saldırı ağacı.
 Bu hafta o dilin üç sütununu dolduruyoruz:
 
+!!! note "Kısa tarihçe: zararlı yazılım ve güvenlik modelleri"
+    - **1949** — von Neumann **kendini çoğaltan** otomata teorisini kurar: virüs fikrinin matematiksel kökü.
+    - **1971** — Creeper (ilk deneysel solucan) · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** internetin büyük kısmını durdurur ve güvenliği gündeme oturtur.
+    - **1973–1977** — **Bell–LaPadula** (gizlilik) ve **Biba** (bütünlük) erişim modelleri; **1987** Clark–Wilson (ticari bütünlük).
+    - **1999 → 2006** — ortak sınıflandırma dili: **CVE** (somut açık), **CWE** (zayıflık türü), **CVSS** (ciddiyet puanı).
+
+    Yani "zararlıyı tanıma" ve "erişimi modelleme" iki ayrı koldur; bu hafta ikisini birden görüyoruz.
+
 - **Tehdit tarafı — zararlı yazılım:** Saldırganın en görünür aracı olan kötü yazılımı türlere ayıracağız
   (virüs, solucan, truva atı, fidye yazılımı) ve **nasıl gizlendiğini** göreceğiz. Çünkü bir savunmayı
   tasarlarken "bize karşı ne var?" sorusunun cevabının bir kısmı budur.

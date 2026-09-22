@@ -44,6 +44,20 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — bellek hataları ve savunmaların yarışı
+
+- **1988** — **Morris Worm** tampon taşmasını dünyaya duyurur
+- **1996** — *Smashing the Stack for Fun and Profit* sömürüyü herkese öğretir
+- **1998 → 2004** — **kanarya** (StackGuard) · **ASLR** (PaX) · **DEP/NX** · FORTIFY
+- **2012–13** — **AddressSanitizer** ve **fuzzing** (AFL) hataları otomatik yakalar
+
+> Ders bu yarışı izler: hatayı yaz → araç yakalasın → derleyici/OS korusun.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **1–3. hafta:** güvenlik ilkeleri, tehdit modeli, kripto.

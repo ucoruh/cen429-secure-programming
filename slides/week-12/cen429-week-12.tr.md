@@ -39,6 +39,21 @@ Konuşma notu: Bu hafta bir ürünün bağımsız bir laboratuvarda nasıl değe
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — değerlendirme ve sertifikasyon
+
+- **1985** — **TCSEC** ("Orange Book"): ilk resmi değerlendirme ölçütleri
+- **1991–93** — Avrupa **ITSEC**, Kanada **CTCPEC**
+- **1999** — **Ortak Kriterler (ISO/IEC 15408)**; **EAL** ölçeği buradan
+- **2001** **OWASP** · **PTES/NIST SP 800-115** · **2005→2023** **CVSS** (v2→v4.0)
+- **2010'lar** — **MASVS/MASTG** (mobil), **ETSI EN 303 645** (IoT)
+
+> Tek cümle: **üretici kendi ürününü onaylayamaz** — bağımsız, **kanıta dayalı** değerlendirme.
+
+---
+
+
 # Bu hafta nereye oturuyor?
 
 - **4–11. haftalar:** korumaları öğrendik (bellek, kripto, gizleme, whitebox…)

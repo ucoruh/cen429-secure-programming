@@ -303,7 +303,7 @@ hepsi için kullanılır; oysa virüs yalnızca **bir türdür**. Ayrımı görm
     ve önemli bir teorik sonuç gösterdi: **"Bu program bir virüs mü?" sorusunu her durumda doğru cevaplayan
     genel bir algoritma yazmak imkânsızdır** (durma probleminden indirgenir). Pratik sonucu şudur: hiçbir
     antivirüs %100 tespit edemez; her yöntemin yanlış pozitifleri (temizi yakalama) ve yanlış negatifleri
-    (zararlıyı kaçırma) vardır. Bu hafta bunu [Demo 01](#4-yayilma-ve-gizlenme-nasil-fark-edilmez)'de kendi
+    (zararlıyı kaçırma) vardır. Bu hafta bunu [Demo 01](#demo-01-imza-polimorfizm-sezgisel-analiz-emulasyon)'de kendi
     gözümüzle göreceğiz.
 
 !!! info "Terim: 'in the wild' (doğada)"
@@ -316,7 +316,7 @@ hepsi için kullanılır; oysa virüs yalnızca **bir türdür**. Ayrımı görm
     protokolündeki bir taşma açığını (EternalBlue) kullanarak, kullanıcı hiçbir şey yapmadan, **solucan** gibi
     yayıldı — yani bu hafta göreceğimiz taşma sınıfı (Hafta 1) doğrudan bir solucanın motoru oldu. (2) **Yük:**
     ulaştığı makinelerde dosyaları **şifreleyerek** fidye istedi; işte bu yükün bıraktığı iz, [Demo
-    2](#5-karsi-onlemler-nasil-yakalariz)'de göreceğimiz **entropi sıçramasıdır**. (3) **Yama boşluğu:** Kullanılan
+    2](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)'de göreceğimiz **entropi sıçramasıdır**. (3) **Yama boşluğu:** Kullanılan
     açığın yaması saldırıdan **haftalar önce** yayımlanmıştı; buna rağmen güncellememiş yüz binlerce makine
     (hastaneler, fabrikalar dahil) etkilendi. Programcı için üç ders: taşma açıkları teoride kalmaz, savunma
     davranışa da bakmalı, ve yama yayımlamak yeterli değildir — uygulanması gerekir. Bu üç iş parçacığı bu haftanın
@@ -377,7 +377,7 @@ Zararlı yazılımları en yararlı biçimde **nasıl yayıldıklarına ve ne ya
 
 === "Fidye yazılımı (ransomware)"
     Kullanıcının dosyalarını **şifreleyip** çözme anahtarı için para isteyen yük türüdür. Solucan gibi yayılan
-    (WannaCry) ya da truva atı gibi bulaşan türleri vardır. [Demo 02](#5-karsi-onlemler-nasil-yakalariz)'de
+    (WannaCry) ya da truva atı gibi bulaşan türleri vardır. [Demo 02](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)'de
     fidye yazılımının bıraktığı **entropi izini** güvenle göreceğiz — hiçbir dosyayı gerçekten şifrelemeden.
 
 === "Diğerleri"
@@ -513,7 +513,7 @@ imza tabanlı tespiti biraz daha zorlaştırır:
 | **Metamorfizm** | **Şifreleme yok**; kodun **tamamı** her kopyada yeniden yazılır (kayıt değişimi, çöp kod, komut değiştirme) | Davranışa bakar; çok zor |
 
 Önemli fikir şudur: **şifreli gövde her kopyada bambaşka görünür ama çözüldüğünde hep aynıdır.** İşte bu yüzden
-şifreli/paketli içeriğin bir belirtisi vardır: **yüksek entropi** (bkz. [Demo 02](#5-karsi-onlemler-nasil-yakalariz)).
+şifreli/paketli içeriğin bir belirtisi vardır: **yüksek entropi** (bkz. [Demo 02](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)).
 Polimorfik virüste değişen çözücü de sonunda gövdeyi çözmek zorundadır; savunma tam bu noktaya —
 **emülasyona** — dayanır.
 
@@ -1314,7 +1314,7 @@ olsun **root yetkisiyle** çalışır — güçlü ama tehlikeli; geçen haftaki
 !!! danger "TOCTOU: Unix erişim denetiminin klasik tuzağı"
     Bir program "bu dosyaya yazmam güvenli mi?" diye **önce denetleyip sonra açarsa**, iki işlem arasında
     saldırgan dosyayı bir sembolik bağla değiştirebilir. Buna **TOCTOU** (Time-Of-Check, Time-Of-Use;
-    **CWE-367**) denir. Kitabın Tarif 2.3'ü tam bu yarışı anlatır. [Demo 06](#demo-6-toctou-yaris-durumu)'da
+    **CWE-367**) denir. Kitabın Tarif 2.3'ü tam bu yarışı anlatır. [Demo 06](#demo-06-toctou-yaris-durumu)'da
     bunu güvenle göreceğiz.
 
 ### Windows modeli (Tarif 2.2)

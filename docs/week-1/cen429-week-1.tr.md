@@ -308,6 +308,8 @@ Güvenlik duvarları, antivirüsler, ağ izleme… Bunların hepsi önemlidir; a
 kurtaramazlar**. Saldırgan izin verilen kapıdan — yani programın kendisinden — içeri girer. Güvenli programlama,
 güvenliği sonradan eklenen bir katman olarak değil, **kodu yazarken verilen kararlar** olarak ele alır:
 
+![Güvenli programlamanın beş kararı](assets/h01-17-bes-karar.svg)
+
 - Girdiye güvenme; **her girdiyi doğrula** (uzunluk, tür, aralık, izin verilen karakterler).
 - Sırları **mümkün olan en kısa süre** bellekte tut, işin bitince **güvenle sil**.
 - Programın çalıştığı ortama (ortam değişkenleri, dosya izinleri, çağırdığı programlar) **güvenme**.
@@ -345,6 +347,8 @@ başka birine karşı işe yaramaz olabilir. Bu yüzden her projede önce **sald
 
 1975'te Saltzer ve Schroeder'in yazdığı ilkeler bugün de güvenli tasarımın omurgasıdır. Her birini tek cümlelik bir
 örnekle aklınızda tutun:
+
+![Saltzer ve Schroeder'in sekiz ilkesi](assets/h01-18-saltzer-schroeder.svg)
 
 | İlke | Anlamı | Örnek |
 | --- | --- | --- |
@@ -639,6 +643,8 @@ karşı özel önlemler (bu hafta Demo 2, 6. hafta çalışma zamanı koruması,
 
 Önceki bölümde STRIDE'ı ve saldırı ağacını tanıdık. Bu bölümde yöntemi bir mühendis gibi **adım adım** uygulamayı
 öğreneceğiz: diyagramı nasıl çizeriz, her öğeye hangi harfleri sorarız, çıkan onlarca tehdidi nasıl sıralarız?
+
+![Veri akış diyagramının öğeleri ve güven sınırı](assets/h01-19-veri-akis-diyagrami.svg)
 
 ### Veri akış diyagramının (VAD) dört öğesi ve güven sınırı
 
@@ -980,6 +986,8 @@ Demo 1, programın devraldığı tek bir ortam değişkeninin (`PATH`) bütün g
 fonksiyonunun **ilk satırlarında** yapması gerekenleri sıralar. Bu bölümde o listeyi bugünün sistemlerine göre
 güncelleyip adım adım işleyeceğiz.
 
+![Program başlarken ebeveyninden devraldıkları](assets/h01-20-devralinan-durum.svg)
+
 ### Program başladığında elinde ne var?
 
 Bir süreç `exec` ile başlatıldığında (Windows'ta `CreateProcess`) şu durumu **ebeveyninden** devralır:
@@ -1200,6 +1208,8 @@ Sıralama rastgele değildir: tanıtıcılar ve ortam, programın **başka hiçb
 Bir parolayı kullandıktan sonra ne olur? Değişken kapsam dışına çıkar ama **bellek silinmez**; o baytlar üzerine
 başka bir şey yazılana kadar orada durur. Bir saldırgan o belleği görebilirse sırrı okur. Belleğin görülebildiği
 durumlar sandığınızdan çoktur:
+
+![Sırrın bellekten sızabileceği dört yol](assets/h01-21-bellekten-sizma-yollari.svg)
 
 - Program çöktüğünde oluşan **çökme dökümü** (core dump) dosyası,
 - İşletim sisteminin belleği diske yazdığı **takas alanı** (swap) ve uyku (hibernation) dosyası,
@@ -1667,6 +1677,8 @@ C'de `int` **işaretli**, `size_t` ise **işaretsiz** bir tamsayıdır. Bilgisay
 (two's complement) biçiminde saklar: `-1`'in 64 bitlik gösterimi `0xFFFFFFFFFFFFFFFF`'tir. Aynı bit dizisi işaretsiz
 okunursa **18.446.744.073.709.551.615** olur. `memcpy`, `malloc`, `read` gibi fonksiyonların boyut parametresi
 `size_t`'dir; bu yüzden negatif bir `int` onlara geçtiği anda dev bir sayıya dönüşür.
+
+![İşaretli uzunluk hatası: aynı bitler, iki sayı](assets/h01-22-isaretli-donusum.svg)
 
 ### Demo 4 — İşaretli uzunluk hatası
 
@@ -2351,6 +2363,8 @@ sürenin yarım saniyenin altında kalması gibi somut bir hedef, hangi koruman�
 
 ## 20. Bu haftanın araç kutusu
 
+
+![Haftanın araç kutusu: hangi araç neyi yakalar](assets/h01-23-arac-kutusu.svg)
 | Araç / bayrak | Ne işe yarar? | Bu hafta nerede gördük? |
 | --- | --- | --- |
 | `-Wall -Wextra -Wsign-conversion` | Şüpheli kod için derleme uyarıları | Demo 4 |

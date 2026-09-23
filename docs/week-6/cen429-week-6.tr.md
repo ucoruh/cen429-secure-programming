@@ -200,6 +200,33 @@ Terimler:
 
 Şimdi: RASP nedir, ne yapar?
 
+### Kavramlar birbirine nasıl bağlanır?
+
+Yukarıdaki terimler rastgele bir liste değildir; her biri bir öncekinin üstüne oturur. Bir terimi ilerideki
+bölümlerde unutursanız, aşağıdaki tablonun "önkoşul" sütununa dönüp önce onu tazeleyin.
+
+| Terim | Önkoşulu | Hangi bölümde derinleşir? |
+| --- | --- | --- |
+| RASP (algıla/savun/caydır) | çalışma anı, MATE modeli | Bölüm 1 |
+| RASP mimarisi (ne zaman/nerede/nasıl) | RASP'in üç işlevi | Bölüm 2 |
+| Bütünlük / self-hashing | özet (hash), Hafta 3 HMAC | Bölüm 3 |
+| Hata ayıklayıcı (debugger) algılama | çalışma anı | Bölüm 4 |
+| Emülatör/VM algılama | debugger algılamanın "sinyal, kanıt değil" dersi | Bölüm 5 |
+| Kanca (hook) / LD_PRELOAD algılama | debugger ve emülatör algılamanın atlatılabilirliği | Bölüm 6 |
+| Dinamik bellek koruması | Hafta 1 bellek düzeni, debugger/kanca algılama | Bölüm 7 |
+| Kök (root) göstergesi | ayrıcalık (yetki) kavramı | Bölüm 8.1 |
+| Bileşen/paket imza doğrulaması | Hafta 3 HMAC/dijital imza | Bölüm 8.2 |
+| Kontrol akışı sayacı | bütünlük denetiminin "tek nokta" zaafı | Bölüm 9 |
+| Tepki politikası | bütün algılama sinyalleri | Bölüm 10 |
+| Cihaz bağlama | Hafta 3 HKDF, tepki politikası | Bölüm 10 |
+
+!!! tip "Bu haftayı nasıl okumalı?"
+    Bölümler art arda inşa edilir: 3 → 4 → 5 → 6 (dört bağımsız algılama ailesi: bütünlük, hata ayıklayıcı, ortam,
+    kanca), 7 (bunların bellek üzerindeki karşılığı), 8 (kök ve bileşen imzası — iki ayrı ama benzer denetim), 9
+    (tek tek denetimleri **atlanamaz** kılma), 10 (hepsini bir tepki politikasında birleştirme). Bir bölümü
+    atlarsanız, sonraki bölümdeki "Demo 2'deki gibi" ya da "Bölüm 3'teki fikirle aynı" cümleleri havada kalır;
+    zor gelen bir bölümü ikinci kez okuyup ilerleyin.
+
 ## 1. RASP nedir? Algılama → savunma → caydırma
 
 İlk beş hafta boyunca uygulamayı **statik** olarak sağlamlaştırdık: girdiyi doğruladık (Hafta 1, 4), veriyi şifreledik
@@ -250,6 +277,19 @@ noktanın sahibidir**. Sunucuya karşı saldırgan dışarıdadır (ve TLS, kiml
 saldırgan **her şeyi görür**: belleği okuyabilir, kodu değiştirebilir, hata ayıklayıcıyla adım adım izleyebilir. Bu,
 Hafta 11'deki **beyaz kutu** modeliyle aynı varsayımdır.
 
+MATE saldırganını, Hafta 1'de gördüğümüz diğer saldırgan tiplerinden ayıran şey **konumdur**, yetenek değil:
+
+| Saldırgan tipi | Nerede durur | Neyi görebilir | Klasik savunma |
+| --- | --- | --- | --- |
+| Ağ saldırganı | İstemci ile sunucu **arasında** | Yalnız şifreli trafik (TLS varsa) | TLS, kimlik doğrulama |
+| Sunucu saldırganı | Sunucunun **dışında** | Yalnız gönderdiği istekler ve aldığı yanıtlar | Girdi doğrulama, yetkilendirme, hız sınırlama |
+| **MATE (uçtaki saldırgan)** | Uygulamanın çalıştığı cihazın **içinde**, sahibi | Belleği, ikili dosyayı, çalışma anındaki her adımı | RASP: bütünlük, anti-debug, kanca algılama, cihaz bağlama |
+
+Bu tablo neden önemli? Çünkü bir MATE saldırganına karşı **ağ saldırganı savunmaları** (TLS, sunucu tarafı
+girdi doğrulama) hiç işe yaramaz — TLS bağlantının **içeriğini** korur, ama saldırgan bağlantıyı açan
+uygulamanın **kendisidir**; şifreyi çözdüğü anda veriyi kendi belleğinde açık olarak görür. Bu yüzden RASP,
+önceki haftaların savunmalarının **yerine değil, üstüne** eklenir.
+
 !!! danger "RASP'in acı gerçeği"
     Cihazın sahibi saldırgansa, **hiçbir istemci tarafı koruma nihai olarak kırılmaz değildir.** Yeterli zaman ve
     beceriyle her kontrol atlatılabilir. O hâlde RASP neden var? Çünkü amaç **kırılmazlık değil**, saldırıyı **ölçeklenemez
@@ -268,6 +308,26 @@ cihaz kimliği ya da ürün adı kullanılmaz.
 Ana fikir tek cümlede: **tek bir kontrole güvenme.** Her algılama sinyali tek başına atlatılabilir; güç, **birden çok
 bağımsız sinyalin**, bir **tepki politikasının** ve **cihaz bağlamanın** birlikte çalışmasından gelir. Bu, Hafta 3'teki
 **güvenlik kabuğunun** çalışma zamanındaki karşılığıdır.
+
+### 1.3 İşlenmiş örnek: aynı olayı üç farklı şekilde ele almak
+
+Algılama, savunma ve caydırmanın neden **ayrı** kavramlar olduğunu somutlaştıralım. Senaryo: kripto kütüphanesi,
+ödeme anahtarını açmadan hemen önce bir hata ayıklayıcının bağlı olduğunu fark ediyor (Bölüm 4'teki TracerPid
+sinyali > 0). Üç uygulamacı bunu üç farklı şekilde ele alıyor:
+
+1. **Yalnız algılama, tepki yok:** Kod `supheli` değişkenini artırır ama hiçbir yere bakmaz; fonksiyon normal
+   akışına devam eder. Sonuç: hata ayıklayıcı bağlı bir saldırgan anahtarı **doğrudan okur**. Algılama boşa
+   gitmiştir — çünkü bir savunmaya bağlanmamıştır.
+2. **Algılama + kaba savunma:** Kod `if (supheli) exit(1);` yazar. Sonuç: saldırgan anahtarı okuyamaz, ama
+   programın **tam olarak hangi satırda** durduğunu görür; birkaç deneme ile o `if`'i yamalar (Bölüm 3'teki
+   "checker'ın kendisi de yamalanır" dersiyle aynı zaaf).
+3. **Algılama + savunma + caydırma:** Kod, sinyali doğrudan `exit()`'e değil, anahtar türetme işlemine **veri
+   olarak** karıştırır (Bölüm 9'daki kontrol akışı sayacının küçük hâli) ve tetiklenirse **decoy** bir sonuç
+   üretir (Bölüm 10). Sonuç: saldırgan bir hata mesajı görmez; "başarılı" görünen ama işe yaramaz bir sonuç alır
+   ve hangi kontrolün tetiklendiğini bilemez.
+
+Bu üç seçenek aynı **algılama** koduna sahiptir; farkları yalnız **savunma** ve **caydırma** katmanındadır. Bu
+haftanın demoları ilerledikçe hep üçüncü yaklaşıma yaklaşacağız (bkz. Bölüm 10.2'deki tam karşılaştırma).
 
 ---
 
@@ -323,6 +383,14 @@ karışır:
 - Denetim sonuçları opak değerlerle taşınır (4. hafta): tek bir baytı değiştirerek "geçti"ye çevrilemez.
 - Tepki, tetikleyiciden **zaman ve kod olarak uzak** bir yerde verilir (tepki politikası bölümü).
 
+**"Veri bağımlılığı" ne demek, somut olarak?** Zayıf tasarımda `if (kontrol_gecti) anahtari_kullan();` yazılır —
+`anahtar` zaten bellekte hazırdır, `if` yalnız onu **kullanıp kullanmayacağına** karar verir; saldırgan bu `if`'i
+yamalarsa anahtar **zaten oradadır** ve kullanılır. Güçlü tasarımda ise anahtarın kendisi **henüz yoktur**;
+kontrol sonucundan **hesaplanarak üretilir**: `anahtar = HMAC(kontrol_sonucu, sabit_tuz)`. Kontrol başarısızsa
+`kontrol_sonucu` farklı bir değerdir, `anahtar` da farklı (ve işe yaramaz) çıkar — saldırganın atlayacağı bir
+`if` **yoktur**, çünkü ortada atlanacak bir karar değil, hesaplanacak bir değer vardır. Bölüm 9.1'deki `acc`
+zinciri ve Bölüm 10.1'deki cihaz anahtarı, bu fikrin iki somut uygulamasıdır.
+
 ### Katmanlar birbirini korur
 
 ![Hassas işlemi saran RASP katmanları](assets/h06-02-katmanlar.svg)
@@ -331,6 +399,26 @@ Her katman bir öncekinin zayıflığını kapatır: gizleme denetimleri saklar,
 **değiştirilmesini** fark eder, kontrol akışı sayacı bütünlük denetiminin **atlanmasını** fark eder, cihaz bağlama
 bütün bunlar aşılsa bile verinin başka bir yerde **kullanılmasını** engeller; sunucu doğrulaması ise istemci tamamen
 ele geçirilse bile son sözü söyler (tepki politikasındaki telemetri ve sunucu tarafı risk motoru).
+
+### 2.1 İşlenmiş örnek: tek bir fonksiyonu üç noktada korumak
+
+"Çok noktalılık" soyut kalmasın. Örnek mimarideki `anahtar_coz()` fonksiyonunu (ödeme anahtarını açan native
+fonksiyon) ele alalım ve üç tetikleme anını sırayla uygulayalım:
+
+1. **Yükleme anı:** Kütüphane belleğe yüklendiğinde (native kütüphanenin başlatma fonksiyonunda) bir kez
+   bütünlük denetimi (Bölüm 3) çalışır. Ortam en baştan bozuksa, `anahtar_coz` hiçbir zaman çağrılamaz hale
+   getirilir (bir global bayrak sıfırlanır).
+2. **Hassas işlem öncesi:** `anahtar_coz()`'un kendi girişinde, ayrıca bir anti-debug denetimi (Bölüm 4) ve bir
+   kanca denetimi (Bölüm 6) çalışır — çünkü saldırgan hata ayıklayıcıyı **yükleme anından sonra** bağlamış
+   olabilir.
+3. **Arka planda, düzensiz aralıklarla:** Ayrı bir iş parçacığı, rastgele aralıklarla (ör. 2–7 saniye) ortam
+   denetimini (Bölüm 5) tekrar çalıştırır; bir sonraki `anahtar_coz()` çağrısı bu iş parçacığının bulduğu sonucu
+   okur.
+
+Sonuç: `anahtar_coz()`'u atlatmak isteyen saldırganın **üç ayrı zaman noktasındaki üç ayrı denetimi** aynı anda
+yenmesi gerekir. Yalnız 2. noktayı (fonksiyonun kendi girişini) yamalamak, 1. ve 3. noktadaki denetimleri
+etkilemez — saldırgan işini bitirdiğini sanır ama arka plan iş parçacığı birkaç saniye içinde tutarsızlığı
+yakalar ve tepki politikası devreye girer (Bölüm 10).
 
 !!! note "Sahada nasıl uygulanır?"
     Kart şemalarının uygulama koruma gereksinimleri tam bu katmanları sayar: yetkisiz değişikliğe karşı koruma,
@@ -400,6 +488,43 @@ Yama yokken özet altın değerle **birebir** aynı çıktı. Tek bir baytı de�
 yama yakalandı. Karşılaştırma **sabit zamanlı** yapılır (`memcmp` değil), çünkü Hafta 3'te gördüğümüz gibi düz `memcmp`
 ilk farklı baytta durup zamanlama sızdırır.
 
+### 3.1 İşlenmiş örnek: HMAC hangi baytları özetliyor, yama onu nasıl bozuyor?
+
+**Hangi baytlar özetleniyor?** `hedef_hmac()` fonksiyonuna bakınca cevap nettir: `dosya_oku()` hedefin (kendi
+ikili dosyanın) **tamamını** belleğe okur (`fread` ile ofset 0'dan dosya sonuna kadar) ve `kripto_hmac_sha256`
+bu **bütün bayt dizisini** tek seferde özetler — belirli bir fonksiyon ya da bölüm değil, dosyanın **her baytı**.
+`demo.sh`'ın gerçek çıktısında `ofset 21268` değiştiriliyordu; bu, dosyanın **ortasına** (`BOY / 2`) denk gelir —
+demek ki o çalıştırmada ikili dosyanın toplam boyutu yaklaşık `21268 × 2 ≈ 42536` bayttı. Saldırgan dosyanın
+hangi baytını değiştirirse değiştirsin (başı, ortası, sonu fark etmez), o bayt hesaba dahildir ve özet değişir.
+
+**Yama onu nasıl bozuyor — küçük bir örnekte adım adım.** Aynı çığ etkisini, koca bir ikili dosya yerine
+**tek bir karakterlik** bir metinde görelim; mantık birebir aynıdır. `"MERHABA"` dizesini sabit bir anahtarla
+HMAC-SHA-256'layalım, sonra son karakteri `A`'dan `B`'ye çevirip tekrar hesaplayalım:
+
+```bash title="Tek karakterlik degisikligin HMAC'e etkisi (gercek openssl ciktisi)"
+printf 'MERHABA' | openssl dgst -sha256 -hmac "ornek-anahtar"
+printf 'MERHABB' | openssl dgst -sha256 -hmac "ornek-anahtar"
+```
+
+```text
+SHA2-256(stdin)= 4d45a6382deee7f75c75b3cf5a6a81a2776d317e1db9ec9b0125b69e09492615
+SHA2-256(stdin)= 4fbdf8768822083c3fc3797c5f1d278dd1ea58ab0bfde31a8ebf85e260fbcbd7
+```
+
+Girdinin **7 baytından yalnız 1 tanesi** (son karakter, `A`=0x41 → `B`=0x42; bu iki değer yalnız **iki bitte** ayrılır) değişti; ama
+çıktının **32 baytının tamamı** farklı. Bu, kriptografik özet fonksiyonlarının **çığ etkisi**dir: girdide tek bir
+bit değişirse, çıktının ortalama **yarısı** değişir. Demo 1'in gerçek çıktısında gördüğünüz
+`bae498a6...ee4d01e6` → `05fb4274...131c6705` dönüşümü de aynı özelliğin, koca bir ikili dosya üzerindeki
+hâlidir: `XOR 0xFF` tek bir baytın **her bitini** ters çevirir, bu da HMAC-SHA-256'nın iç işleyişi (SHA-256'nın
+sıkıştırma fonksiyonunun her turu) yoluyla bütün 256 bit çıktıya yayılır.
+
+!!! note "Neden bu, denetimin işe yaraması için gerekli?"
+    Çığ etkisi olmasaydı (ör. CRC32'de olduğu gibi zayıf bir özet fonksiyonunda), saldırgan yamaladığı baytın
+    yanına **telafi edici** birkaç bayt daha ekleyerek özeti eski değerine geri getirebilirdi (checksum'ı
+    "düzeltme" saldırısı). HMAC-SHA-256 gibi kriptografik bir özette bu, anahtarı bilmeden **pratik olarak
+    imkânsızdır** — bu yüzden Bölüm 3'ün başındaki "Kitap tarifi ve güncelleme" notunda CRC32'nin neden HMAC'e
+    yükseltildiğini görmüştük.
+
 !!! danger "Bütünlük denetimi tek başına neden yeterli değil?"
     HMAC anahtarı **ikili dosyanın içindedir**. Yeterince kararlı bir saldırgan:
     1. Denetleyici (checker) fonksiyonun **kendisini** yamalayarak "her zaman TAMAM döndür" yapabilir.
@@ -427,6 +552,24 @@ ilk farklı baytta durup zamanlama sızdırır.
     - [ ] Tek bir denetleyici mi var, yoksa **örtüşen** denetleyiciler mi?
     - [ ] Sonuç bir davranışa (veri bağımlılığı) mı bağlı, yoksa yalnız bir `if` mi?
     - [ ] Sunucu tarafı bir **attestation** var mı (yalnız istemciye güvenmeme)?
+
+**"Periyodik" ne sıklıkta olmalı? Bir maliyet-gecikme dengesi.** Bölüm 2'deki "arka planda, düzensiz
+aralıklarla" ilkesini bir sayıyla somutlaştıralım. Denetim aralığı ne kadar **kısa** olursa, bir yamanın
+fark edilmesi o kadar **hızlı** olur ama CPU/batarya maliyeti de o kadar **artar**; aralık ne kadar **uzun**
+olursa saldırgana o kadar fazla "fark edilmeden çalışma" penceresi kalır:
+
+| Denetim aralığı | Bir yamanın fark edilme gecikmesi (üst sınır) | Tipik ek CPU yükü |
+| --- | --- | --- |
+| Yalnız açılışta (1 kez) | Sınırsız (hiç fark edilmeyebilir) | En düşük |
+| Her 30 saniyede bir | ~30 saniye | Düşük |
+| Her 2–7 saniyede bir (rastgele) | ~7 saniye, **tahmin edilemez** anda | Orta |
+| Her kritik işlemden hemen önce (Bölüm 2'deki 2. nokta) | Neredeyse anlık | Yalnız kritik işlemlerde |
+
+Sahada tercih edilen, bu dört seçeneğin **hiçbiri tek başına değil, birlikte** kullanılmasıdır: açılışta bir kez
+(ucuz, geniş kapsamlı), kritik işlem öncesi her seferinde (ucuz, dar kapsamlı ama en kritik an), ve arka planda
+rastgele aralıklarla (ucuz değil ama saldırganın "denetim ne zaman çalışıyor" diye tahmin etmesini engeller).
+Sabit bir aralık (ör. tam olarak her 30 saniyede bir) saldırgana bir **tahmin edilebilirlik** sunar; rastgele
+aralık bunu engeller — bu yüzden tablodaki üçüncü satır "rastgele" olarak işaretlidir.
 
 ---
 
@@ -477,6 +620,70 @@ SONUC: Hata ayiklayici/izleme ARACI algilandi (2 sinyal).
 
 Hata ayıklayıcı yokken TracerPid **0**, gdb altında **>0** çıktı; program iki durumu ayırt etti. Windows'ta Visual
 Studio ile **F5** (hata ayıklayıcıda) çalıştırırsanız `IsDebuggerPresent` **EVET** döndürür ve sonuç "algılandı" olur.
+
+### 4.1 İşlenmiş örnek: TracerPid'in 0'dan sıfır olmayana geçişini adım adım izlemek
+
+Demo 2'nin çıktısında TracerPid'in `0`'dan `2909`'a geçtiğini gördük; şimdi bu geçişin **neden** olduğunu adım
+adım açalım. `/proc/self/status`, çekirdeğin her süreç için tuttuğu, o sürecin kendisi tarafından da okunabilen
+bir metin dosyasıdır (Hafta 1'de `/proc` dosya sistemini "çekirdeğin sürece açtığı bir pencere" olarak tanımlamıştık).
+İçindeki `TracerPid:` satırı, o süreci `ptrace()` sistem çağrısıyla izleyen sürecin **PID**'ini (Process ID —
+süreç kimliği) tutar; kimse izlemiyorsa değer **0**'dır.
+
+**Adım 1 — hata ayıklayıcı yokken.** `antidebug` programı doğrudan kabuktan çalıştırılır ve kendi
+`/proc/self/status` dosyasını okur (temsilî, kısaltılmış içerik):
+
+```text title="/proc/self/status (hata ayiklayici YOK, temsili)"
+Name:      antidebug
+Pid:       4821
+PPid:      4820          <- calistiran kabuk (sh)
+TracerPid: 0             <- kimse ptrace ile izlemiyor
+```
+
+Program bu satırı okur, sayısal değeri `0` bulur; `tp > 0` koşulu **yanlış** olduğu için `supheli` değişkenini
+artırmaz. Demo çıktısındaki "SONUC: Temiz" satırı buradan gelir.
+
+**Adım 2 — `gdb` altında çalıştırılınca.** `demo.sh` ikinci geçişte programı `gdb` içinden başlatır. `gdb`,
+hedef süreci başlatırken ya da ona bağlanırken çekirdeğe "bu süreci ben izliyorum" der; bu,
+`ptrace(PTRACE_TRACEME, ...)` ya da `ptrace(PTRACE_ATTACH, ...)` çağrısıyla olur. Çekirdek bunu **kaydeder** ve
+izlenen sürecin `/proc/self/status` dosyasındaki `TracerPid` alanını, izleyen `gdb` sürecinin **kendi PID'iyle**
+doldurur:
+
+```text title="/proc/self/status (gdb ALTINDA, temsili)"
+Name:      antidebug
+Pid:       4821
+PPid:      2909          <- artik ana surec gdb
+TracerPid: 2909          <- gdb bizi ptrace ile izliyor
+```
+
+Bu, tam olarak demo çıktısında görülen `2909` değeridir. Programın kendisi hiçbir şey **yapmamıştır** — yalnız
+çekirdeğin zaten tuttuğu bir alanı **okumuştur**; bu yüzden teknik "yalnız okuma" (read-only) olarak
+sınıflandırılır ve hiçbir yan etkisi yoktur (demonun `README`'sindeki güvenlik sözü tam bu nedenle tutulabilir).
+
+**Adım 3 — karar.** `tp > 0` olduğu için `supheli` sayacı 1 artar; ana sürecin adı da `gdb` olduğu için ikinci
+bağımsız bir sinyal (`ana_surec_adi` denetimi) daha eklenir; demo çıktısındaki "algilandi (2 sinyal)" ifadesi bu
+ikisinin toplamıdır. Tek bir alanın okunması yeterli olmasa da, çekirdek düzeyinde tutulan bu bilgi
+**sahtelemesi zor** bir sinyaldir: `TracerPid`'i doğrudan sıfırlamak sürecin kendi belleğinden değil çekirdek
+veri yapısından okunduğu için mümkün değildir — saldırganın bunu gizlemesi ancak `/proc/self/status`'u okuyan
+**kütüphane fonksiyonunu** kancalamasıyla mümkündür, ki bu da tam olarak Bölüm 6'nın konusudur.
+
+### 4.2 Windows karşılığı: `NtGlobalFlag`'teki bitleri okumak
+
+Windows'ta doğrudan bir `/proc` dosyası yoktur, ama aynı fikrin (çekirdeğin zaten tuttuğu bir bilgiyi okumak)
+bir karşılığı vardır: **PEB** (Process Environment Block — her sürecin çekirdek tarafından tutulan, sürecin
+kendisinin de okuyabildiği bir bellek yapısı). PEB'in `NtGlobalFlag` alanı, süreç bir hata ayıklayıcı altında
+**başlatıldıysa** (yalnız sonradan bağlanmadıysa) üç özel bayrak biti taşır:
+
+| Bit (onaltılık) | Anlamı |
+| --- | --- |
+| `0x10` | `FLG_HEAP_ENABLE_TAIL_CHECK` — yığın sonu denetimi |
+| `0x20` | `FLG_HEAP_ENABLE_FREE_CHECK` — serbest bırakılan yığın denetimi |
+| `0x40` | `FLG_HEAP_VALIDATE_PARAMETERS` — yığın parametre doğrulama |
+
+Bu üç bit **birlikte** `0x70`'i oluşturur (`0x10 | 0x20 | 0x40 = 0x70`); Windows yükleyicisi, süreci bir hata
+ayıklayıcı altında başlatırken yığın ayırıcısını daha sıkı denetimli bir moda **otomatik olarak** geçirir ve bu
+üç biti işaretler. Demo 2'nin Windows kodundaki `(ntglobal & 0x70) != 0` satırı tam bunu okur: `NtGlobalFlag`
+değerinin bu üç bitten **en az birini** taşıyıp taşımadığına bakar. Tıpkı `TracerPid` gibi, bu da yalnız **okuma**
+işlemidir; program hiçbir şeyi değiştirmez, çekirdeğin/yükleyicinin zaten yazdığı bir alanı okur.
 
 !!! quote "Tespit–karşı-tespit yarışı"
     Anti-debug klasik bir **silah yarışıdır**. Her tespit tekniğinin bir karşı-tekniği vardır: saldırgan `ptrace`'i
@@ -538,6 +745,52 @@ bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
     Mobil dünyada karşılığı **emülatör algılamadır** (QEMU/Android emülatörü ipuçları: `ro.kernel.qemu`, sahte sensörler,
     tipik IMEI/seri değerleri). Yine aynı ilke: sinyal, kanıt değil; kombinasyon ve sunucu tarafı denetim.
 
+### 5.1 İşlenmiş örnek: risk skoru ve eşik nasıl kurulur?
+
+Bölüm 1.2'nin "tek kontrole güvenme" ilkesini burada sayılarla somutlaştıralım. Ortam algılamanın her sinyaline
+bir **ağırlık** (0–100 arası bir katkı puanı) verilir; bütün ağırlıklar toplanır ve bir **risk skoru** çıkar.
+Karar, tek bir `if (hipervizor_var)` değil, bu skorun bir **eşiğin** üstünde olup olmadığıdır.
+
+| Sinyal | Kaynak | Tek başına ne kadar güvenilir? | Örnek ağırlık |
+| --- | --- | --- | --- |
+| Hipervizör biti (CPUID) | Demo 3 | Düşük — WSL2/Hyper-V/VBS'te de set olur | 15 |
+| Bilinen hipervizör satıcı imzası | Demo 3 | Orta — sanallaştırılmış ortamı daha kesin gösterir | 25 |
+| Zamanlama anomalisi | Demo 3 | Orta — yük altındaki gerçek makinede de olabilir | 20 |
+| Bilinen emülatör dosya izi (mobilde) | `ro.kernel.qemu` benzeri | Yüksek — gerçek cihazda neredeyse hiç olmaz | 40 |
+| Hata ayıklayıcı bağlı | Demo 2 (TracerPid) | Yüksek — meşru kullanıcı çalışırken nadiren olur | 35 |
+
+**Örnek 1 — WSL2'de çalışan bir geliştirici (meşru kullanıcı).** Demo 3'ün gerçek çıktısında gördüğümüz gibi
+hipervizör biti **VAR** ama satıcı imzası **gizli/boş**, zamanlama normal, emülatör izi yok, hata ayıklayıcı
+bağlı değil. Toplam skor: yalnız **15** (yalnız hipervizör biti). Skor düşük; kullanıcı engellenmez.
+
+**Örnek 2 — analiz ortamında çalışan bir saldırgan.** Hipervizör biti VAR (15) + satıcı imzası görünür (25) +
+zamanlama anomalisi (20) + hata ayıklayıcı bağlı (35) = toplam **95**. Skor yüksek; işlem reddedilir ya da decoy
+döner (Bölüm 10).
+
+Aradaki fark **tek bir bitin varlığı değil, kaç bağımsız sinyalin birlikte** göründüğüdür. Eşik nereye
+konulmalı? Bu, üründen ürüne değişen bir **risk iştahı (risk appetite)** kararıdır — "kaç meşru kullanıcıyı
+engellemeye razıyım, karşılığında kaç saldırıyı önlerim" dengesi:
+
+| Ürün | Yanlış pozitifin maliyeti | Yanlış negatifin maliyeti | Örnek eşik |
+| --- | --- | --- | --- |
+| Bankacılık / ödeme uygulaması | Kullanıcı işlemini tamamlayamaz, çağrı merkezine yük biner | Sahte işlem, doğrudan para kaybı | Düşük (ör. 30) — şüphede reddet |
+| Sadakat puanı / kupon uygulaması | Kullanıcı kızar ama kayıp küçük | Bir kupon fazladan kullanılır | Yüksek (ör. 70) — nadiren reddet |
+| DRM korumalı içerik oynatıcı | Meşru kullanıcı içeriği izleyemez, mağaza puanı düşer | İçerik kopyalanır | Orta (ör. 50) |
+
+!!! danger "Yanlış pozitifin gerçek maliyeti"
+    Eşiği çok düşük tutmak (ör. bankacılık eşiğini 70 yerine 10 yapmak), her WSL2/Hyper-V kullanan geliştiriciyi,
+    her sanal makinede test eden BT departmanını ve bazı erişilebilirlik/güvenlik araçlarını kullanan sıradan
+    kullanıcıyı **meşru olduğu hâlde** engeller. Bunun bedeli soyut değildir: çağrı merkezi yükü, mağaza
+    puanı/olumsuz yorumlar, kullanıcı kaybı. RASP tasarımında "kaç saldırgan yakaladık" kadar "kaç meşru
+    kullanıcıyı engelledik" de ölçülmelidir — mümkünse aşamalı devreye alma (önce yalnız kaydet, sonra reddet)
+    ile.
+
+!!! success "Kural"
+    Ortam/root/debugger sinyallerini **tek bir ikili karar** değil, **ağırlıklı bir risk skoru** olarak toplayın.
+    Eşiği varlığın değerine ve ürünün risk iştahına göre **bilinçli** seçin; sabit, herkese uyan bir "endüstri
+    standardı eşik" yoktur. Skoru ve eşiği zamanla (sunucudaki telemetriye bakarak) **ayarlanabilir** tutun;
+    ikili dosyaya sabit kodlamayın.
+
 ---
 
 ## 6. Kanca ve enstrümantasyon algılama (LD_PRELOAD, Frida)
@@ -545,6 +798,20 @@ bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
 Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyon kancalama (hooking)** ve **dinamik enstrümantasyon**. Saldırgan
 programı durdurmadan, çağırdığı fonksiyonları (kendi anti-debug/anti-root kontrollerimiz dâhil) **kendi sürümüyle
 değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek şekilde yalancıya çıkarabilir.
+
+!!! note "Kısa tarihçe: statik yamadan dinamik enstrümantasyona"
+    - **1990'lar** — kanca teknikleri IAT (Import Address Table) ve PLT/GOT üzerinde çalışan **elle yazılmış**,
+      hedefe özel araçlardı; her hedef için yeniden yazılması gerekiyordu.
+    - **2000'ler** — `LD_PRELOAD` (Linux) ve DLL enjeksiyonu (Windows), genel amaçlı ama **statik** (önceden
+      derlenmiş) kancalama yöntemleri olarak yaygınlaştı.
+    - **2009** — **Frida** projesinin temelleri atıldı; asıl fark, kanca kodunun **JavaScript ile çalışma
+      zamanında** yazılıp enjekte edilebilmesiydi — derleme gerektirmiyordu.
+    - **2010'lar–bugün** — Frida, mobil güvenlik testinin standart aracı hâline geldi; RASP'in "kanca algılama"
+      bölümünün var olma nedeninin büyük kısmı budur.
+
+    Bu tarihçenin dersi: kanca teknikleri **statikten dinamiğe** doğru evrildi; bu yüzden algılamanın da
+    (Bölüm 6.1'deki `dladdr` tekniği gibi) belirli bir aracın imzasına değil, **davranışın kendisine** (fonksiyon
+    nereden çalışıyor?) bakması gerekir.
 
 ![Kanca algılama: prolog baytlarının denetimi](assets/h06-10-hook.svg)
 
@@ -596,6 +863,43 @@ Temiz koşuda `time`, çekirdeğin **vDSO**'sundan çözüldü (bu meşrudur, ka
 kancayı yakaladı. Dikkat: temiz koşuda `linux-vdso`'yu **yanlış pozitif** saymamak için algılama libc, vDSO ve dinamik
 yükleyiciyi meşru kaynaklar olarak kabul eder — bu, "algılama yazmak, algılamayı doğru yazmaktan kolaydır" dersidir.
 
+### 6.1 İşlenmiş örnek: `dlsym` + `dladdr` ile fonksiyonun kaynağını adım adım bulmak
+
+Demo 4'ün çekirdeği iki fonksiyon çağrısıdır: `dlsym` ve `dladdr`. İkisinin birlikte ne yaptığını adım adım
+açalım.
+
+**Adım 1 — `dlsym(RTLD_DEFAULT, "time")` ne yapar?** `dlsym`, çalışan sürecin **sembol tablosunda** aranan
+isimde (`"time"`) bir sembol arar ve onun **bellek adresini** döndürür. `RTLD_DEFAULT`, "programın normal sembol
+arama sırasını (kendi ikili, sonra yüklenen kütüphaneler, `LD_PRELOAD`'lı kütüphaneler dâhil) kullan" anlamına
+gelen özel bir tanıtıcıdır. Bu adımın çıktısı yalnız bir **sayı** (bir bellek adresi); hangi dosyadan geldiğine
+dair bir bilgi taşımaz.
+
+**Adım 2 — bu adresi kim sağladı?** İşte `dladdr`'nin işi budur: verilen bir adresi alır, çalışan sürecin
+belleğe yüklenmiş **paylaşımlı nesnelerinin (`.so` dosyalarının)** haritasında arar ve adresin **hangi**
+`.so`'nun bellek aralığına düştüğünü bulur. Sonucu bir `Dl_info` yapısına yazar; bizim kullandığımız alan
+`dli_fname` — o `.so`'nun **dosya yolu**.
+
+**Adım 3 — temiz koşuda.** `LD_PRELOAD` boşken, `time` sembolü normal arama sırasıyla çözülür ve çekirdeğin
+sağladığı **vDSO** (virtual Dynamic Shared Object — çekirdeğin süreç belleğine kendiliğinden eklediği, sistem
+çağrısı yapmadan hızlı okuma sağlayan özel bir sanal `.so`) içinden gelir. Demo çıktısı: `time -> linux-vdso.so.1`.
+`mesru_mi()` fonksiyonu bu ismi tanır (`linux-vdso` alt dizesini arar) ve **kanca değil** der.
+
+**Adım 4 — `LD_PRELOAD` ile kanca yüklenince.** `demo.sh`, `LD_PRELOAD=./libsahtekanca.so` ortam değişkeniyle
+programı başlatır. Dinamik bağlayıcı (`ld-linux.so`), normal arama sırasının **en başına** bu kütüphaneyi sokar;
+kütüphane kendi `time()` fonksiyonunu tanımladığı için, `dlsym(RTLD_DEFAULT, "time")` artık **vDSO'daki gerçek
+`time`'ı değil, `libsahtekanca.so`'daki sahte `time`'ı** bulur. `dladdr` bu adresin `libsahtekanca.so`'nun
+bellek aralığına düştüğünü görür; `dli_fname` = `"bin/linux/libsahtekanca.so"` döner. `mesru_mi()` bu ismi
+tanımadığı (libc/vDSO/ld değil) için **KANCA** der — tam demo çıktısındaki `time -> bin/linux/libsahtekanca.so
+(KANCA!)` satırı.
+
+**Adım 5 — bu, neden `getenv(LD_PRELOAD)` denetiminden daha güçlü?** `getenv` denetimi ortam değişkeninin
+**kendisine** bakar — ama ortam değişkeni yalnız programın **başlatılma anında** kütüphaneyi yüklemek için
+kullanılır; bir kez yüklendikten sonra saldırgan onu **silebilir** (`unsetenv`) ya da kendi sahte kütüphanesinde
+`getenv`'i de kancalayıp boş döndürebilir (tam olarak Etkinlik 1'in denediği şey). `dladdr` denetimi ise ortam
+değişkenine hiç bakmaz; doğrudan "bu fonksiyon şu an **fiilen nereden** çalışıyor?" sorusunu sorar — kanca zaten
+yüklenmiş olduğu için bu sorunun cevabı, ortam değişkeninden değil çalışan **kodun kendisinden** gelir ve bu
+yüzden `getenv` sahteciliğine dayanmaz.
+
 !!! success "Kural"
     Kanca algılamada `getenv(LD_PRELOAD)` gibi **manipüle edilebilir** kaynaklara güvenmeyin; kritik fonksiyonların
     **kaynağını** (hangi modülden geldiğini) doğrulayın. Birden çok fonksiyonu kontrol edin; `/proc/self/maps` gibi ek
@@ -614,6 +918,8 @@ yükleyiciyi meşru kaynaklar olarak kabul eder — bu, "algılama yazmak, algı
 verinin okunmasına ve değiştirilmesine karşı alınan önlemler. 1. haftada sırları bellekten silmeyi ve takasa düşmesini
 önlemeyi, 3. haftada "kullanımda veri" katmanlarını gördük. Bu bölüm aynı soruyu çalışma anı saldırganı açısından
 yeniden sorar: saldırgan belleği **izliyor** ya da **değiştiriyorsa** ne yapabiliriz?
+
+![Dinamik bellek korumasının katmanları](assets/h06-13-bellek-koruma-katmanlari.svg)
 
 ### Saldırgan bellekle ne yapar?
 
@@ -652,6 +958,20 @@ En etkili bellek koruması, bellekte **okunacak bir şey bırakmamaktır**:
 Bu önlemler yönetici (root) yetkisine sahip bir saldırganı durdurmaz; ama saldırganı **daha güçlü** bir konuma çıkmaya
 zorlar ve bu da root algılamanın devreye girdiği yerdir.
 
+**Somut bir örnek: `PR_SET_DUMPABLE` neyi değiştirir?** Linux'ta her süreç varsayılan olarak "dump edilebilir"dir
+— çekirdek çökme anında bir çekirdek dökümü (core dump) üretebilir **ve** aynı kullanıcıya ait başka bir süreç
+`ptrace(PTRACE_ATTACH, pid, ...)` ile ona bağlanabilir. `prctl(PR_SET_DUMPABLE, 0)` çağrısı bu bayrağı kapatır:
+
+| Durum | `ptrace` ile dışarıdan bağlanma | Çökme anında bellek dökümü | `/proc/<pid>/mem` okuma |
+| --- | --- | --- | --- |
+| `PR_SET_DUMPABLE = 1` (varsayılan) | Aynı kullanıcının başka bir süreci **bağlanabilir** | Üretilir (diskte kalır) | Okunabilir |
+| `PR_SET_DUMPABLE = 0` | Aynı kullanıcının süreci bile **bağlanamaz** ("Operation not permitted") | Üretilmez | Reddedilir |
+
+Bu, Bölüm 4'teki `TracerPid` denetimiyle **tamamlayıcı** çalışır: `TracerPid` "şu an biri izliyor mu?" diye
+**algılar**; `PR_SET_DUMPABLE = 0` ise "aynı kullanıcıya ait sıradan bir araç izleyemesin" diye **önler**. Kök
+yetkisine sahip bir saldırgan bu bayrağı yine de aşabilir (`ptrace_scope` ayarına ve yetkisine bağlı) — bu yüzden
+Bölüm 8'deki kök göstergesiyle birlikte değerlendirilmelidir.
+
 ### Önlem 3: Değiştirilen veriyi fark et
 
 Bellekteki kritik bir yapının (bir sayaç, bir yetki bayrağı, bir yapılandırma tablosu) sessizce değiştirilmesini fark
@@ -678,6 +998,28 @@ Saldırgan bellekte yalnız `deger` alanını değiştirirse gölge kopya ve öz
 değiştirmek için maskeyi ve özet anahtarını da bulması gerekir; bu da işin maliyetini artırır. Aynı fikir, 5. haftadaki
 cihaz parmak izinin **iki farklı özetle iki farklı yerde** saklanmasında ve 2. haftadaki kurcalamaya dayanıklı günlükte
 de vardır.
+
+### 7.1 İşlenmiş örnek: `KorunanSayac` bir saldırıyı nasıl yakalar?
+
+Yukarıdaki yapıyı sayılarla izleyelim. `calisma_maskesi`, çalışma başında rastgele üretilmiş sabit bir değer
+olsun: `0xA5A5A5A5`. Bir ödeme denemesi sayacı `deger = 3` (üçüncü deneme) olduğunda yapı şöyle doldurulur:
+
+| Alan | Değer | Nasıl hesaplandı |
+| --- | --- | --- |
+| `deger` | `0x00000003` | asıl sayaç |
+| `golge` | `0xA5A5A5A6` | `deger XOR calisma_maskesi` = `0x00000003 XOR 0xA5A5A5A5` |
+| `ozet` | (örnek) `0x7F2C1B90` | `kisa_mac(deger, golge)` |
+
+`sayac_oku()` her okumada `golge XOR calisma_maskesi`'nin `deger`'e eşit olup olmadığına bakar:
+`0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — `deger` ile eşit, tutarlı; fonksiyon `0` döner.
+
+Şimdi saldırganın bir bellek düzenleyicisiyle yalnız `deger` alanını `0x00000063` (99) yaptığını düşünelim
+(bir deneme sayacını ya da bir puanı sıfırlamaya/artırmaya çalışıyor). `golge` ve `ozet` alanları **değişmedi**.
+Bir sonraki `sayac_oku()` çağrısı: `golge XOR calisma_maskesi = 0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — ama
+`deger` artık `0x00000063`. İkisi **eşleşmiyor**; fonksiyon `-1` döner, tutarsızlık yakalanır. Saldırganın bunu
+atlatabilmesi için `golge`'yi de doğru maskeyle yeniden hesaplaması **ve** `ozet`'i de tutarlı üretmesi gerekir —
+ki `kisa_mac`'in anahtarını bilmediği sürece bu, Bölüm 3.1'deki HMAC altın değerini yeniden üretmekle aynı
+zorluktadır.
 
 !!! warning "Tutarlılık denetimi de bir denetimdir"
     `sayac_oku`'nun `-1` dönüşünü "hiçbir şey olmamış gibi" yok sayan bir çağıran, bütün korumayı boşa çıkarır; ayrıca
@@ -707,12 +1049,23 @@ Bu sinyallerin hiçbiri tek başına kesin değildir; hepsi tepki politikasında
 
 ## 8. Kök/ayrıcalıklı ortam ve bileşen imza doğrulaması
 
+
+![Kök göstergesinden derecelendirilmiş tepkiye](assets/h06-14-kok-gosterge-karar.svg)
 ### 8.1 Kök (root) / ayrıcalıklı ortam göstergesi
 
 Root'lu (ya da jailbreak'li) bir cihazda uygulamanın güvenlik varsayımları çöker: her süreç belleği okuyabilir, dosya
 sistemi korumaları aşılır. RASP root göstergelerine bakar (Katalog K4/K5): `su` ikilisinin varlığı, tehlikeli paketler,
 yazılabilir sistem yolları, root gizleme çerçeveleri. Masaüstündeki taşınabilir karşılığı: uygulama **yükseltilmiş
 yetkiyle** mi çalışıyor (Linux `geteuid()==0`, Windows yükseltilmiş token)?
+
+**Mobil "root" ile masaüstü "yükseltilmiş yetki" arasındaki fark yalnız isimdir, fikir aynıdır.** Android'de bir
+uygulamanın `su` ikilisini bulması, root erişiminin **kurulu olduğunu** gösterir; Linux/masaüstünde bir sürecin
+`geteuid()`'i `0` döndürmesi, sürecin **fiilen** `root` kullanıcısı olarak çalıştığını gösterir. İkisi arasındaki
+küçük ama önemli fark: mobilde root **kurulu olabilir ama o an kullanılmıyor olabilir** (gösterge, göstergedir);
+masaüstünde `geteuid()==0` ise **o anki gerçek durumu** bildirir (çekirdeğin kendisi bu bilgiyi tutar, tıpkı
+Bölüm 4.1'deki `TracerPid` gibi sahtelemesi zordur). Bu yüzden masaüstü/sunucu tarafındaki "ayrıcalıklı süreç"
+denetimi, mobildeki "root göstergesi" taramasından biraz daha **güvenilir** bir sinyaldir — yine de tek başına
+karar vermek yerine Bölüm 8.1.1'deki risk skoruna eklenmelidir.
 
 ### Demo 7 — Root/ayrıcalıklı ortam göstergesi (yalnız okuma)
 
@@ -735,6 +1088,30 @@ SONUC: Ayricalikli/riskli ortam GOSTERGESI var (1 sinyal).
     (yanlış pozitif / kullanıcı deneyimi dengesi). Modern yaklaşım: cihazın bütünlüğünü **işletim sistemi/platform
     attestation** servisiyle (nonce'lu, sunucu tarafı doğrulanan) ölçmek — istemcinin kendi "root değilim" iddiasına
     güvenmemek.
+
+### 8.1.1 Kök göstergesini de bir risk skoruna bağlamak
+
+Bölüm 5.1'deki risk skoru fikri kök/ayrıcalık göstergesi için de geçerlidir; hatta sahada tek bir gösterge yerine
+bir **liste** önerilir, çünkü her gösterge tek başına hem **kaçırılabilir** (saldırgan gizler) hem **yanlış
+pozitif üretebilir** (meşru kullanıcı cihazını gerçekten root'lamıştır).
+
+| Gösterge | Tek başına anlamı | Örnek ağırlık |
+| --- | --- | --- |
+| `su` ikilisi/işareti bulundu | Root erişimi kurulu olabilir | 20 |
+| Bilinen root yönetim paketi yüklü | Root aktif olarak yönetiliyor | 25 |
+| Sistem bölümü yazılabilir | Salt-okunur olması gereken alan değiştirilebilir | 30 |
+| `geteuid() == 0` (masaüstü/sunucu karşılığı) | Süreç fiilen yükseltilmiş yetkiyle çalışıyor | 40 |
+
+Demo 7'nin gerçek çıktısındaki tek sinyal (`cikti/sahte_su` bulundu → 1 sinyal) düşük bir skora karşılık gelir;
+tek başına bir bankacılık uygulamasını durdurmaya **yetmemelidir**. Skorun yüksek çıkması için birden çok
+göstergenin **birlikte** görünmesi beklenir — tıpkı Bölüm 5.1'deki ortam örneğinde olduğu gibi.
+
+!!! warning "Sık hata: root görünce anında `exit()`"
+    Kök göstergesi tek başına görülür görülmez uygulamayı kapatmak, hem gerçek saldırganı yakalamaz (ipuçlarını
+    zaten gizlemiştir, bu denetim onu hiç görmez) hem de cihazını meşru amaçla (özelleştirme, geliştirme)
+    root'lamış sıradan bir kullanıcıyı cezalandırır. Kural: göstergeyi skora ekle, kararı **eşiğe** bırak
+    (Bölüm 5.1); fail-closed yerine önce **azaltılmış işlevsellik** (ör. yüksek tutarlı işlemleri reddet, düşük
+    tutarlıları kabul et) düşün.
 
 ### 8.2 Bileşen/paket imza ve özet doğrulaması (APK imza doğrulamasının genel hâli)
 
@@ -762,6 +1139,28 @@ Yukleme REDDEDILDI.   (cikis kodu 3)
     anahtarına değil, yalnız **açık anahtara** ihtiyacı olur. Bu demoda öğretim için **paylaşılan anahtarlı HMAC**
     kullanıyoruz (basit ve `cen429_kripto.h`'da hazır); asimetrik imza (Ed25519 / RSA-PSS) ve sertifika zincirlerini
     **Hafta 10**'da işleyeceğiz. İlke aynı: yüklemeden önce **bütünlük + kaynak** doğrulaması.
+
+### 8.2.1 İşlenmiş örnek: repackaging bir bayt eklemekle nasıl yakalanır?
+
+Demo 6'nın gerçek çıktısındaki "modül YENIDEN PAKETLENIR (tek bayt eklenir)" adımını Bölüm 3.1'deki mantıkla
+birleştirelim. Modülün doğrulaması da tıpkı Demo 1 gibi **dosyanın tamamı** üzerinden hesaplanan bir
+HMAC-SHA-256'dır; fark, hedefin bu kez programın kendisi değil, **ayrı bir dosya** (eklenti modülü) olmasıdır.
+
+**Adım 1 — orijinal modül.** Modül dosyası `N` bayttır; yükleyici onu okur, `HMAC(anahtar, modul[0..N))`
+hesaplar ve önceden kaydedilmiş imzayla karşılaştırır. Eşleşir → "TUTAR" → güvenle yüklenir.
+
+**Adım 2 — saldırgan modülü açar, bir özellik ekler, yeniden paketler.** Bu işlem dosyanın **sonuna bir bayt
+ekler** (`N+1` bayt oldu) — modülün amaçlanan işlevine hiç dokunmasa bile. Yükleyici bu kez `HMAC(anahtar,
+modul[0..N+1))` hesaplar. Girdinin **uzunluğu bile değiştiği** için (Bölüm 3.1'deki tek bayt **değeri**
+değişikliğinden daha köklü bir fark), HMAC'in dahili blok işleme mekanizması en baştan farklı bloklar görür ve
+sonuç **tümüyle** farklı çıkar — tıpkı Demo 1'de gördüğümüz gibi.
+
+**Adım 3 — karşılaştırma başarısız.** Yeni HMAC, kaydedilmiş imzayla eşleşmez → "TUTMADI" → "YENIDEN
+PAKETLENMIS/degistirilmis" → yükleme reddedilir (çıkış kodu 3). Saldırgan tek bir bayt bile eklese, imzayı
+**yeniden üretebilmesi** için imzalama anahtarına ihtiyacı vardır; bu anahtar (öğretim amaçlı HMAC'te)
+yükleyicinin içindedir, ama gerçek APK imzasında (asimetrik) yalnız orijinal geliştiricide bulunan **özel
+anahtardır** — bu da Bölüm 8.2'nin "Önemli fark" notundaki ayrımın can alıcı noktasıdır: HMAC'i doğrulayan
+herkes aynı zamanda **üretebilir** de; asimetrik imzada doğrulayan yalnız **doğrular**, üretemez.
 
 !!! success "Kural"
     Dinamik yüklenen her bileşeni (modül, eklenti, native kütüphane, güncelleme paketi) yüklemeden **önce** kriptografik
@@ -810,6 +1209,72 @@ geçildiğinde ya da yanlış sırada geçildiğinde zincir farklı çıktı; kr
 (decoy) döndü. Program ayrıca bir **çift sayaç** (sayac + iz biti) tutar (K17); bu, anahtar zinciriyle birlikte üçlü bir
 tutarlılık kontrolü sağlar.
 
+**"Çift sayaç" neden gerekli, `acc` zinciri yetmiyor mu?** `acc` zinciri **hangi aşamaların hangi sırayla**
+çalıştığını dolaylı olarak kanıtlar (yanlış aşama/sıra → yanlış anahtar), ama demo çıktısındaki uyarı satırında
+gördüğümüz gibi (`uyari: sayac=0 iz=0x0 beklenen=3/0x7`) program ayrıca iki **basit** sayaç daha tutar:
+`sayac` (kaç kontrol noktasının çalıştığını sayan düz bir tam sayı) ve `iz` (her kontrol noktasının kendi bit
+konumunu `1` yaptığı bir bit kümesi, ör. 0., 1. ve 2. kontrol geçtiyse `iz = 0b111 = 0x7`). Bunların amacı
+`acc`'ten **farklıdır**: `acc` kriptografik olarak güçlüdür ama tek başına "kaç kontrol geçti, hangileri" gibi
+**okunabilir bir teşhis bilgisi** vermez (HMAC çıktısından geriye "üç kontrol de geçti" diye çıkarım yapılamaz).
+`sayac` ve `iz`, geliştiriciye ve günlüğe (log) okunabilir bir özet sağlarken, gerçek **yetkilendirme kararı**
+yine yalnız `acc`'ten türeyen anahtara dayanır — `sayac` ve `iz` alanlarının kendisi yamalanıp `3` ve `0x7`
+yapılsa bile, `acc` zinciri yanlış olduğu için anahtar yine yanlış çıkar. Üç değer (acc, sayac, iz) böylece
+birbirini **çapraz doğrular**: biri tutarsızsa günlükte fark edilir, hiçbiri tek başına yetkilendirme kararını
+değiştiremez.
+
+### 9.1 İşlenmiş örnek: anahtar zincirini elle hesaplamak
+
+`acc = HMAC(acc, "asama-i")` cümlesini soyut bırakmayalım; gerçek `openssl` komutlarıyla elle hesaplayalım.
+Başlangıç değeri `acc0`, 32 sıfır bayttan oluşan sabit bir anahtarla **boş** veriyi HMAC'leyerek üretilsin
+(gerçek sistemde bu, oturum başına rastgele üretilir):
+
+```bash title="Kontrol akisi zincirini elle izlemek (gercek openssl ciktisi) - baslangic"
+A0=$(printf '' | openssl dgst -sha256 -mac HMAC \
+     -macopt hexkey:0000000000000000000000000000000000000000000000000000000000000000 \
+     -binary | xxd -p -c 256)
+echo "acc0 = $A0"
+```
+
+```text
+acc0 = b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
+```
+
+**Doğru sıra — kontrol noktası 0, sonra 1, sonra 2 sırayla geçilir.** Her aşamada bir önceki `acc` anahtar,
+aşama etiketi veri olarak HMAC'lenir ve sonuç yeni `acc` olur:
+
+```bash title="Sirali gecis: acc1 -> acc2 -> acc3"
+A1=$(printf 'asama-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+A2=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
+A3=$(printf 'asama-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
+echo "acc3 (DOGRU zincir) = $A3"
+```
+
+```text
+acc3 (DOGRU zincir) = fc5c2a86e948b190dbe61619375a77bee2aa79911feec3d37f5d7d20615cada8
+```
+
+Kritik işlem (ör. ödeme onayı), yalnız `acc3` **tam olarak bu değere eşitse** doğru anahtarı türetir ve gerçek
+sonucu üretir — Demo 5'in SENARYO 1'i.
+
+**Saldırı — kontrol noktaları atlanır, yalnız birinci aşama çalışır.** Saldırgan 0 ve 2 numaralı kontrol
+fonksiyonlarına giden çağrıları bir yamayla es geçer (Bölüm 3'teki `je → jmp` yamasıyla aynı fikir); yalnız
+`asama-1` etiketi işlenir:
+
+```bash title="Atlanmis gecis: yalniz asama-1"
+B1=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+echo "acc (ATLANMIS zincir) = $B1"
+```
+
+```text
+acc (ATLANMIS zincir) = bffc11620959254cef65b0e97fc8b54a1fe42cd6afe161b66aca5a758c1e17ff
+```
+
+`fc5c2a86...` ile `bffc1162...` **tamamen farklı** iki değerdir. Kritik işlem bu yanlış `acc`'ten türettiği
+anahtarla gerçek sırrı **açamaz**; Demo 5'in SENARYO 2 ve 4'ünde gördüğümüz "ODEME REDDEDILDI ... decoy doner"
+sonucu tam olarak budur. Saldırganın `jmp` yaması **hangi kontrolü atladığını değiştirmiyor bile** — atlanan
+her kombinasyon farklı ama hep **yanlış** bir `acc` üretir, çünkü HMAC zinciri girdisindeki her değişikliği çığ
+etkisiyle yayar (Bölüm 3.1'deki aynı özellik, burada zincirlenmiş hâliyle).
+
 !!! success "Kural"
     Kritik kararları **tek bir boolean**'a bağlamayın (yamalanır). Güvenlik kontrollerini bir **kontrol akışı sayacına**
     ve mümkünse bir **veri bağımlılığına** (kritik işlemin ürettiği sonucun anahtarına) bağlayın. Çift/örtüşen sayaçlar
@@ -846,6 +1311,57 @@ politikası saldırganı **yavaşlatır ve yanıltır**:
 sürüm dizesinden **HKDF** ile türetilen bir anahtarla sarılır. Telefon klonlansa, dosyalar başka cihaza kopyalansa bile
 anahtar farklı çıkar ve sır **açılamaz**.
 
+### 10.1 İşlenmiş örnek: cihaz parmak izinden anahtar türetmek (adım adım HKDF)
+
+Demo 8'in "cihaz/sürüm bağlama" adımını **gerçek değerlerle** elle izleyelim. `kripto_hkdf_sha256`, Hafta 3'te
+gördüğümüz **RFC 5869 HKDF**'in iki adımını (Extract, Expand) uygular; burada `ikm` (girdi anahtar malzemesi)
+cihaz parmak izi, `tuz` (salt) sürüm dizesi, `info` ise sabit bir bağlam etiketidir:
+
+| Parametre | Değer (Demo 8'in `normal` senaryosu) |
+| --- | --- |
+| `ikm` (cihaz parmak izi) | `cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO` |
+| `tuz` (sürüm) | `surum=1.0.0` |
+| `info` (bağlam etiketi) | `rasp-veri-anahtari` |
+
+**Adım 1 — Extract.** Bu adım, uzunluğu ve rastgeleliği belirsiz olan `ikm`'i (cihaz parmak izi düz bir metindir,
+kriptografik olarak "iyi dağılmış" olmayabilir) sabit uzunlukta, güvenli bir ara anahtara sıkıştırır; bu ara
+anahtarın standart adı **PRK**'dir (Pseudo-Random Key — sözde rastgele anahtar): `PRK = HMAC-SHA256(anahtar =
+tuz, veri = ikm)`. `openssl` ile aynı hesabı yapalım:
+
+```bash title="HKDF Adim 1 - Extract (gercek openssl ciktisi)"
+printf '%s' 'cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO' \
+  | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'surum=1.0.0' | xxd -p -c 256) -binary \
+  | xxd -p -c 256
+```
+
+```text
+PRK (gercek cihaz) = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99562ce
+```
+
+**Adım 2 — Expand.** İhtiyacımız 32 bayt (tek blok) olduğu için tek bir HMAC yeter:
+`T1 = HMAC-SHA256(anahtar = PRK, veri = info || 0x01)` (`0x01`, RFC 5869'daki blok sayacıdır). Bu `T1`, doğrudan
+32 baytlık **veri anahtarı** olur:
+
+```text
+anahtar (gercek cihaz) = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc5be175d10
+```
+
+**Adım 3 — aynı hesabı "başka cihaz" parmak iziyle tekrarlamak.** Yalnız seri numarasını `SN-0001`'den
+`SN-9999`'a değiştirip (tıpkı bir saldırganın veri dosyasını başka bir telefona kopyalaması gibi) aynı iki adımı
+tekrarlayalım:
+
+```text
+PRK (baska cihaz)      = b6b88f3dce3ea3099c4ff0673d356c040689ebd72be4cc98fb158bfa4c0ac039
+anahtar (baska cihaz)  = b87e4dee6c5579a1456b977ce8cbf8d14f3363aa4e1c7c1a7198342c7689e220
+```
+
+**Sonuç.** İki anahtar (`a19f06fd...` ve `b87e4dee...`) **hiçbir ortak baytları olmayacak kadar** farklıdır — tek
+bir karakterlik seri numarası farkı, HKDF'in HMAC çekirdeği yüzünden (Bölüm 3.1'deki çığ etkisi) baştan sona
+farklı bir anahtar üretir. Demo 8'in SENARYO 3'ünde ("başka cihaz") gördüğümüz "cihaz/surum baglama tutmadi"
+sonucu tam olarak budur: paketin şifrelendiği anahtar (`a19f06fd...`) ile çözmeye çalışılan anahtar
+(`b87e4dee...`) **aynı olmadığı için** `AES-GCM`'in kimlik doğrulama etiketi tutmaz ve `kripto_gcm_coz` başarısız
+döner — sır **hiçbir zaman açığa çıkmaz**, dosyalar başka cihaza kopyalansa bile.
+
 ### Demo 8 — RASP motoru: algılama + tepki + cihaz/sürüm bağlama (capstone)
 
 !!! info "Demo 8 · `code/week-06/08-tamper-yanit` · haftanın capstone'u (K15/K16, L1/L2)"
@@ -873,6 +1389,30 @@ Normal akışta kontroller geçti, cihaz doğruydu, sır açıldı, kullanıldı
 anahtar tutmadı ve sır açılamadı. Bu, Hafta 3'teki **güvenlik kabuğunun** en iç katmanının (cihaz bağlama) RASP ile
 birleşmiş hâlidir.
 
+### 10.2 İşlenmiş örnek: aynı olaya üç farklı tepki, üç farklı sonuç
+
+Bölüm 1.3'te aynı algılama sinyaline üç farklı tepkiyi kısaca karşılaştırmıştık; şimdi bunu Demo 8'in tamper
+senaryosu üzerinden **sonuç sonuç** karşılaştıralım. Olay: bir anti-debug kontrolü başarısız oldu (Demo 8
+SENARYO 2).
+
+| Tepki | Saldırgana görünen | Sır ne olur? | Meşru kullanıcıya etkisi | Değerlendirme |
+| --- | --- | --- | --- | --- |
+| **(a) Hemen çök** (`exit(1)` / segfault) | "Program çöktü" — hangi kontrolün tetiklendiğini, her kontrolü tek tek devre dışı bırakıp yeniden deneyerek birkaç turda bulur | Bellekte kalmışsa okunabilir | Nadir tetiklenirse fark etmez; sık tetiklenirse güvenilmez uygulama izlenimi verir | Saldırgana en çok bilgi veren, en kötü seçenek |
+| **(b) Gecikmeli sessiz** (birkaç saniye/işlem sonra, sessizce oturumu sonlandır) | "Bir şey ters gitti ama ne zaman/nerede belli değil" — tetikleyici ile sonuç arasında zaman ve kod mesafesi var | Silinir (fail-closed) | Nadir görülen bir "oturum zaman aşımı" mesajı | Saldırganı yavaşlatır; makul bir orta seçenek |
+| **(c) Decoy (sahte sonuç)** — Demo 8'in yaptığı | "İşlem başarılı görünüyor" — ama üretilen `decoy` sonucunun gerçek sırla hiçbir ilişkisi yok; saldırgan başarılı sandığı bir sonuçla vaktini boşa harcayabilir | Silinir, yerine rastgele veri döner | Hiç fark etmez (sır zaten meşru kullanıcı için doğru cihazda açılıyordu) | Saldırgana en az bilgi veren, en caydırıcı seçenek |
+
+Üçü de **aynı algılama koduna** (Bölüm 1.3) dayanır; farkları yalnız **ne zaman ve ne** döndürdükleridir. Demo
+8'in gerçek çıktısında (c) seçeneği uygulanır: "Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...". Bu sayı
+her çalıştırmada **farklıdır** (Alıştırma 7); sabit bir "HATA-0x1234" değeri olsaydı, saldırgan bu sabiti tanır
+ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da engeller.
+
+!!! warning "Sık hata: tepkiyi test ortamında hiç değiştirmemek"
+    Geliştirme sırasında hızlı geri bildirim almak için genelde (a) seçeneği (hemen çök, konsola hata yaz)
+    kullanılır — doğaldır, hata ayıklamak kolaylaşır. Sık yapılan hata, bu davranışı **üretime aynen taşımaktır**.
+    Kural: tepki politikasını derleme **yapılandırmasına** bağlayın (hata ayıklama derlemesinde ayrıntılı hata
+    mesajı, üretim derlemesinde sessiz/decoy); üretim ikili dosyasında hiçbir tespit mesajı **stdout/stderr'e**
+    yazılmamalıdır — saldırgana ücretsiz bir hata ayıklama günlüğü vermeyin.
+
 ![RASP motorunun her kritik işlemdeki karar akışı](assets/h06-05-rasp-motoru.svg)
 
 !!! success "Kural"
@@ -890,6 +1430,8 @@ birleşmiş hâlidir.
 
 ## 11. RASP'in sınırları ve etik
 
+
+![RASP ne vaat eder, ne etmez](assets/h06-15-rasp-sinirlari.svg)
 !!! failure "'RASP koydum, uygulamam kırılmaz.'"
     Cihazın sahibi saldırgansa (MATE), yeterli zamanla **her** istemci tarafı koruma atlatılabilir. RASP kırılmazlık
     sağlamaz; saldırıyı **pahalı, ölçeklenemez ve gürültülü** kılar. Nihai güvence her zaman **sunucu tarafındadır**
@@ -911,6 +1453,12 @@ birleşmiş hâlidir.
     RASP bir **maliyet** getirir (CPU, batarya, karmaşıklık, yanlış pozitif). Korumayı **varlığın değerine** göre
     ölçekleyin: her fonksiyona değil, kritik işlemlere (ödeme, anahtar kullanımı) koyun. Bu, Hafta 1'deki "korumayı
     varlığa göre planla" ilkesidir.
+
+!!! failure "'Risk skoru eşiğini bir kere ayarlayıp unuturum.'"
+    Cihazlar, işletim sistemi sürümleri ve saldırı araçları zamanla değişir; bugün "kesin saldırgan" sayılan bir
+    skor, altı ay sonra yaygınlaşan meşru bir yapılandırmayı (yeni bir sanallaştırma özelliği, yaygınlaşan bir
+    geliştirici aracı) yanlışlıkla yakalayabilir. Eşiği ve ağırlıkları **telemetriyle** (Bölüm 10.2'deki sunucu
+    bildirimi) düzenli gözden geçirin (Bölüm 5.1).
 
 ---
 
@@ -1006,6 +1554,22 @@ ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğin
         kullanır. Düzeltme: fonksiyonun **kaynağını** doğrula (`dlsym`+`dladdr`), `/proc/self/maps` tara, birden çok
         sinyal kullan (Demo 4).
 
+!!! question "Okuma 4 — Bu ortam algılama kararı neden riskli?"
+    ```c
+    unsigned int ecx;
+    __cpuid_ecx(1, &ecx);
+    if (ecx & (1u << 31)) {
+        /* hipervizor biti set */
+        exit(1);           /* "analiz ortami, calismayi reddet" */
+    }
+    ```
+    ??? success "Cevap"
+        Hipervizör biti tek başına **kanıt değildir** (Bölüm 5, Demo 3): WSL2, Hyper-V ve sanallaştırma tabanlı
+        güvenlik (VBS) yüzünden birçok **meşru** Windows makinesi de bu biti set eder. Bu kod, sırf bir
+        hipervizör gördüğü için milyonlarca gerçek kullanıcıyı engelleyebilir — klasik bir yanlış pozitif.
+        Düzeltme: bu sinyali tek başına karar vermek yerine Bölüm 5.1'deki gibi bir **risk skoruna** ekleyin ve
+        kararı diğer sinyallerle (satıcı imzası, zamanlama, hata ayıklayıcı) birlikte, bir **eşiğe** göre verin.
+
 ---
 
 ## 15. Kendi başına çalış
@@ -1050,6 +1614,16 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 ??? question "Alıştırma 10 — Orta: RASP'i varlığa göre ölçekleyin"
     Projenizde hangi işlemler RASP'i hak ediyor (ödeme, anahtar kullanımı) ve hangileri gereksiz (yerel ayar okuma)?
     Neden her fonksiyona RASP koymak kötü bir fikirdir?
+
+??? question "Alıştırma 11 — Orta: Kendi risk skorunuzu kurun (Bölüm 5.1)"
+    Demo 3, Demo 2 ve Demo 7'nin ürettiği sinyalleri (hipervizör biti, TracerPid, root göstergesi) bir araya
+    getirip Bölüm 5.1'deki gibi bir ağırlıklı toplam yazın. Kendi bilgisayarınızda (temiz) skor kaç çıkıyor?
+    `gdb` altında çalıştırırsanız kaça çıkıyor? Bankacılık uygulaması için önerdiğiniz eşik kaç olurdu, neden?
+
+??? question "Alıştırma 12 — Zor: HKDF'i elle tekrar hesaplayın (Bölüm 10.1)"
+    Bölüm 10.1'deki `openssl` komutlarını kendi makinenizde çalıştırın; aynı `PRK` ve anahtar değerlerini elde
+    ediyor musunuz? Şimdi `SURUM` dizesini (`surum=1.0.0` yerine `surum=1.0.1`) değiştirip anahtarı tekrar
+    hesaplayın. Bu, bir sürüm yükseltmesinin eski verideki sırları neden "kilitlediğini" nasıl açıklar?
 
 ---
 
@@ -1118,6 +1692,53 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     Maliyet (CPU, batarya, yanlış pozitif, karmaşıklık) getirir. Korumayı varlığın değerine göre ölçekleyin: kritik
     işlemlere (ödeme, anahtar) koyun.
 
+??? question "17. Ortam algılamada risk skoru yaklaşımı nedir, neden ikili karardan daha iyidir?"
+    Her sinyale bir ağırlık verilir, ağırlıklar toplanır ve bir eşikle karşılaştırılır (Bölüm 5.1). İkili karar
+    (tek sinyalle çalış/çalışma) tek bir zayıf sinyalle (ör. hipervizör biti) meşru kullanıcıları engeller; risk
+    skoru birden çok bağımsız sinyalin birlikte görünmesini ister.
+
+??? question "18. TracerPid alanı nereden okunur ve neyi temsil eder?"
+    Linux'ta `/proc/self/status` dosyasındaki bir satırdır; süreci `ptrace()` ile izleyen sürecin PID'ini tutar.
+    `0` ise izleyen yok; `>0` ise o PID süreci izliyor demektir (Bölüm 4.1).
+
+??? question "19. `dlsym` ve `dladdr` RASP'te birlikte nasıl kullanılır?"
+    `dlsym(RTLD_DEFAULT, ad)` bir sembolün çalışan süreçteki **adresini** bulur; `dladdr` o adresi hangi `.so`
+    dosyasının sağladığını söyler. Beklenen kütüphane (libc/vDSO/ld) yerine yabancı bir `.so` çıkarsa kanca
+    vardır (Bölüm 6.1).
+
+??? question "20. HKDF'in Extract ve Expand adımları cihaz bağlamada nasıl kullanılır?"
+    Extract: `PRK = HMAC(anahtar=sürüm/tuz, veri=cihaz parmak izi)`. Expand: `anahtar = HMAC(PRK, info || sayaç)`.
+    Farklı bir cihaz parmak izi tamamen farklı bir `PRK` ve dolayısıyla farklı bir anahtar üretir; sır başka
+    cihazda açılamaz (Bölüm 10.1).
+
+??? question "21. Aynı tamper olayına üç farklı tepki (hemen çök, gecikmeli sessiz, decoy) arasındaki temel fark nedir?"
+    Saldırgana verdikleri bilgi miktarı ve zamanlaması: hemen çökmek en çok bilgi verir (hangi kontrolün
+    tetiklendiğini gösterir), gecikmeli sessiz tepki bunu zaman/mesafe olarak bulanıklaştırır, decoy ise
+    saldırgana "başarılı" görünen ama işe yaramaz bir sonuç vererek en az bilgi verir (Bölüm 10.2).
+
+??? question "22. `KorunanSayac` yapısındaki gölge kopya ve özet alanları neden ayrı tutulur?"
+    Saldırgan yalnız `deger` alanını bellekte değiştirirse, `golge` (maskelenmiş kopya) ve `ozet` (kısa MAC) eski
+    değerlerle tutarsız kalır; okuma fonksiyonu bu tutarsızlığı yakalar (Bölüm 7.1).
+
+??? question "23. Kontrol akışı sayacındaki `acc` zincirinin çığ etkisiyle ilişkisi nedir?"
+    Her aşamada `acc`, bir önceki `acc`'yi anahtar olarak kullanan bir HMAC ile güncellenir. Bir aşama atlanır ya
+    da sırası değişirse, HMAC'in çığ etkisi yüzünden sonuç **tamamen farklı** bir `acc`/anahtar üretir; tek bir
+    `jmp` yaması hangi kombinasyonu denerse denesin gerçek sonuca ulaşamaz (Bölüm 9.1).
+
+??? question "24. Bir ürünün risk iştahı (risk appetite) tepki eşiğini nasıl belirler?"
+    Yanlış pozitifin maliyeti yüksekse (bankacılık — işlem tamamlanamaz, para kaybı riski) eşik düşük tutulur:
+    şüphede reddet. Yanlış negatifin maliyeti düşükse (sadakat uygulaması) eşik yüksek tutulur: nadiren reddet
+    (Bölüm 5.1).
+
+??? question "25. Root göstergesini tek bir `if` ile "reddet" yapmanın sakıncası nedir?"
+    Gerçek saldırganı yakalamaz (ipuçlarını zaten gizlemiştir) ama meşru biçimde root'lamış sıradan kullanıcıyı
+    cezalandırır. Kural: göstergeyi bir risk skoruna ekleyin, kararı eşiğe bırakın (Bölüm 8.1.1).
+
+??? question "26. Üretim ikili dosyasında tespit mesajlarının `stdout`/`stderr`'e yazılmaması neden önemlidir?"
+    Yazılırsa saldırgana ücretsiz bir hata ayıklama günlüğü/ipucu verilmiş olur — hangi kontrolün ne zaman
+    tetiklendiğini doğrudan gösterir. Tepki politikası derleme yapılandırmasına bağlanmalı, üretimde sessiz
+    kalmalıdır (Bölüm 10.2).
+
 ---
 
 ## 17. Quiz-1 tarzı örnek sorular
@@ -1133,6 +1754,14 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
        sayacı** bunu neden engeller? → Tek `jmp` yaması; sayaç/anahtar zinciri sonucu veri bağımlılığı yapar.
     5. (Eşleştirme) TracerPid ↔ anti-debug · dladdr ↔ kanca algılama · HKDF(cihaz) ↔ cihaz bağlama · decoy ↔ tamper
        tepkisi · APK imzası ↔ repackaging.
+    6. (Kısa cevap) Bir ortam algılama denetimi "hipervizör VAR" derse, uygulama işlemi doğrudan reddetmelidir/
+       reddetmemelidir? Neden? → Reddetmemeli; bu tek başına zayıf bir sinyaldir (WSL2/VBS), bir **risk skoruna**
+       katkı olarak kullanılmalıdır (Bölüm 5.1).
+    7. (Doğru/Yanlış) "HMAC ile bütünlük denetimi tek başına, checker'ın kendisinin yamalanmasına karşı korur." →
+       **Yanlış**; bu yüzden örtüşen denetleyiciler ve sonucu veri bağımlılığı yapmak gerekir (Bölüm 3).
+    8. (Kısa cevap) Cihaz bağlamada `SURUM` (sürüm) dizesi neden HKDF'e `tuz` (salt) olarak veriliyor? → Sürüm
+       değişince türetilen anahtar da değişsin diye; bu, eski sürümdeki bir zafiyetle üretilmiş veriyi yeni
+       sürümde otomatik olarak "kilitler" (Bölüm 10.1, Alıştırma 12).
 
 ---
 
@@ -1173,3 +1802,11 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | Decoy | Sahte çıktı | Çökmek yerine döndürülen, gerçekten ayırt edilemez sahte sonuç |
     | Device / version binding | Cihaz / sürüm bağlama | Anahtarı belirli cihaza/sürüme bağlayıp başka yerde açılamaz kılma |
     | Fail-closed | Kapalı kalma | Şüphede işlemi reddetme (güven deposuna düşmeme) |
+    | Risk skoru / eşik | Risk puanı / sınır değer | Birden çok zayıf sinyalin ağırlıklı toplamı; karar bu toplamın bir eşiği geçip geçmediğine bakar |
+    | Risk iştahı (risk appetite) | Risk toleransı | Ürünün yanlış pozitif ile yanlış negatif arasında kabul ettiği denge |
+    | `dlsym` / `dladdr` | Sembol çözme / adres bilgisi | Bir fonksiyon adının bellek adresini bulma / bir adresin hangi `.so`'dan geldiğini bulma |
+    | vDSO | Sanal dinamik paylaşımlı nesne | Çekirdeğin süreç belleğine kendiliğinden eklediği, sistem çağrısı yapmadan hızlı okuma sağlayan sanal `.so` |
+    | PRK | Sözde rastgele anahtar | HKDF'in Extract adımından çıkan, Expand adımına girdi olan ara anahtar |
+    | HKDF Extract / Expand | Sıkıştırma / genişletme | HKDF'in iki adımı: düzensiz girdiyi PRK'ya sıkıştırma, PRK'dan istenen uzunlukta anahtar türetme |
+    | Çığ etkisi (avalanche effect) | Çığ etkisi | Girdide tek bir bit değişince çıktının ortalama yarısının değişmesi; kriptografik özet/MAC'in temel özelliği |
+    | `PR_SET_DUMPABLE` | Dökülebilirlik bayrağı | Linux'ta bir sürecin başka bir süreç tarafından `ptrace` ile izlenip izlenemeyeceğini ve çekirdek dökümü üretip üretmeyeceğini kontrol eden bayrak |

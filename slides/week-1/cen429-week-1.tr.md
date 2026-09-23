@@ -195,6 +195,12 @@ Konuşma notu: Demoları önceden bir kez derleyin (Windows: code içinde .\buil
 
 ---
 
+# Güvenli programlamanın beş kararı — şema
+
+![w:900](assets/h01-17-bes-karar.svg)
+
+---
+
 
 # Ders nasıl yürüyor?
 
@@ -253,6 +259,18 @@ Konuşma notu: Öğrencilere kendi örneklerini sorun: "Instagram hesabınız i�
 
 ---
 
+# CIA üçlüsü — tipik önlemler ve komşu kavramlar
+
+| Hedef | Tipik önlem |
+| --- | --- |
+| **Gizlilik** | Şifreleme, erişim denetimi |
+| **Bütünlük** | Özet (hash), MAC, dijital imza |
+| **Erişilebilirlik** | Yedeklilik, kaynak sınırlama |
+
+\+ **Kimlik doğrulama:** sen gerçekten o musun? · **Yetkilendirme:** bunu yapmaya iznin var mı? · **İnkâr edilemezlik:** bunu kim yaptı, sonradan inkâr edebilir mi?
+
+---
+
 # Hata ≠ zafiyet, ama…
 
 > Güvenlik açıklarının çok büyük kısmı **sıradan yazılım hatalarıdır.**
@@ -292,6 +310,19 @@ Konuşma notu: Mobil ödeme, DRM, oyun hileleri, lisans denetimi örnekleri. "An
 
 ---
 
+# Saldırganlar — gerçek hayattan örnek
+
+| Saldırgan | Örnek |
+| --- | --- |
+| Uzaktaki | Web sunucusuna saldıran biri |
+| Yerel kullanıcı | Paylaşılan sunucudaki başka bir öğrenci |
+| İçeriden kişi | Görevini kötüye kullanan çalışan |
+| **Cihazın sahibi (beyaz kutu)** | **Mobil ödeme uygulamasını kendi telefonunda kırmaya çalışan biri** |
+
+Her satırı kendi projenize uygulayın: sizin saldırganınız hangisi?
+
+---
+
 <!-- _class: yogun -->
 
 # Güvenli tasarım ilkeleri (Saltzer & Schroeder, 1975)
@@ -308,6 +339,42 @@ Konuşma notu: Mobil ödeme, DRM, oyun hileleri, lisans denetimi örnekleri. "An
 | Kabul edilebilirlik | Kullanılamayan güvenlik atlatılır |
 
 \+ **Derinlemesine savunma:** tek önleme güvenme, **katman** kur.
+
+---
+
+# Saltzer ve Schroeder ilkeleri — şema
+
+![w:900](assets/h01-18-saltzer-schroeder.svg)
+
+---
+
+<!-- _class: yogun -->
+
+# Güvenli tasarım ilkeleri — örnekler (1/2)
+
+| İlke | Örnek |
+| --- | --- |
+| En az ayrıcalık | Rapor programı yönetici değil, sıradan kullanıcıyla çalışır |
+| Güvenli varsayılan | Yeni kullanıcının `yonetici` alanı 0 ile başlar |
+| Tam aracılık | Yetki bir kez bakılıp önbelleğe yazılmaz |
+| Açık tasarım | Kendi şifreleme algoritmanızı yazmazsınız |
+
+Her ilke soyut değil; kodda somut bir kararla karşılık bulur.
+
+---
+
+<!-- _class: yogun -->
+
+# Güvenli tasarım ilkeleri — örnekler (2/2)
+
+| İlke | Örnek |
+| --- | --- |
+| Mekanizma ekonomisi | 20 satırlık açık denetim, 500 satırlık "akıllı" denetimden iyidir |
+| Ayrıcalıkların ayrılması | Para transferi için hem parola hem SMS kodu |
+| En az ortak mekanizma | Her oturumun kendi geçici dosyası olur |
+| Psikolojik kabul edilebilirlik | Her 5 dakikada parola sormak, parolanın kâğıda yazılmasına yol açar |
+
+Kullanılamayan güvenlik, **atlatılan** güvenliktir.
 
 ---
 
@@ -360,6 +427,22 @@ Bir hata dış katmanları geçse bile **bir sonraki** katman durdurmayı dener 
 
 ---
 
+<!-- _class: yogun -->
+
+# Yedi katman — tipik teknikler ve durdurduğu saldırgan
+
+| # | Katman | Tipik teknikler | Durduğu saldırgan |
+| --- | --- | --- | --- |
+| 1 | Tasarım | Tehdit modeli, varlık/arayüz tabloları, en az ayrıcalık | Tasarım hatası arayan herkes |
+| 2 | Kodlama | Girdi doğrulama, sınır denetimi, SEI CERT kuralları | Uzaktan girdi gönderen saldırgan |
+| 3 | Derleyici/OS | Kanarya, ASLR, DEP/NX, CFI, `_FORTIFY_SOURCE` | Bellek hatasını kullanan saldırgan |
+| 4 | Gizleme | Kontrol akışı düzleştirme, opak yüklem, sanallaştırma | Tersine mühendislik yapan analist |
+| 5 | RASP | Hata ayıklayıcı/kanca/root algılama, bütünlük denetimi | Programı çalışırken inceleyen saldırgan |
+| 6 | Kriptografi | Kimlik doğrulamalı şifreleme, anahtar hiyerarşisi, whitebox | Veriyi ele geçiren saldırgan |
+| 7 | Güvence | Kod incelemesi, fuzzing, sızma testi, sertifikasyon | Denetçi ve değerlendirici |
+
+---
+
 # Güvenlik kabuğu: katmanların birleştiği yer
 
 Hassas bir anahtar **aynı anda** birkaç katmanın içinde taşınır:
@@ -398,6 +481,34 @@ Hassas bir anahtar **aynı anda** birkaç katmanın içinde taşınır:
 > **Sunucu, istemciye asla güvenmez.** Gizlenmiş istemci bile sunucuya tutarsız veri gönderebilir.
 
 <!-- Konuşma notu: Oyun hilesi örneği: istemci gizlenmiş, ama sunucu "bir saniyede 100 metre" hareketi kabul ediyor. -->
+
+---
+
+<!-- _class: yogun -->
+
+# Beyaz kutu saldırganın altı yolu (1/2)
+
+İstemci tarafında çalışan hassas bir kütüphane için altı satırlık bir **saldırı tablosu**:
+
+| # | Saldırganın yolu | Örnek | Cevap veren katman |
+| --- | --- | --- | --- |
+| 1 | Platform denetimlerini aşmak | Root'lu cihaz, emülatör, değiştirilmiş OS | 5 (RASP) |
+| 2 | Kodu tersine mühendislikle çözmek | Tersine derleyiciyle mantık/anahtar okumak | 4 (gizleme), 6 |
+| 3 | Kodu değiştirmek | Bir `if` denetimini ters çevirip yeniden paketlemek | 5 (bütünlük), 4 |
+
+---
+
+<!-- _class: yogun -->
+
+# Beyaz kutu saldırganın altı yolu (2/2)
+
+| # | Saldırganın yolu | Örnek | Cevap veren katman |
+| --- | --- | --- | --- |
+| 4 | Arayüzleri kötüye kullanmak | Kütüphaneyi kendi programından çağırmak | 1 (tasarım), 5, 6 |
+| 5 | Çalışma anında varlık çıkarmak | Bellek dökümü, hata ayıklayıcı, kanca | 2 (silme), 5, 6 (whitebox) |
+| 6 | Çalışma anında akışı değiştirmek | Bir dalı atlamak, dönüş değerini değiştirmek | 5 (akış sayacı), 4 |
+
+Bu tablo, koruma planındaki **tehdit** bölümünün başlangıç noktasıdır.
 
 ---
 
@@ -468,6 +579,76 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 
 ---
 
+# Adım 1 detay: Kapsam
+
+**Soru:** Neyi değerlendiriyoruz?
+
+- Yalnız **"sürüm 2.1"** demek yetmez
+- Hangi **ikili dosya**, hangi **kaynak kod**, hangi **özet (hash)** değeri?
+- Sertifikasyonda buna **değerlendirme hedefi** denir
+
+---
+
+# Adım 2 detay: Mimari ve arayüzler
+
+**Soru:** Bileşenler neler, nasıl konuşuyor?
+
+- Bileşenler **nelerdir**?
+- Birbirleriyle **hangi kanaldan** konuşuyorlar?
+- Her kanalda kimlik **nasıl doğrulanıyor**?
+
+---
+
+# Adım 3 detay: Varlıklar
+
+**Soru:** Korunacak veri nerede, ne zaman?
+
+- Korunacak her veri **tek tek** listelenir
+- **Nerede** durur, **ne zaman** oluşur, **ne zaman** silinir?
+- **Gizlilik (C)** mi, **bütünlük (I)** mü gerekir?
+
+---
+
+# Adım 4 detay: Tehditler
+
+**Soru:** Saldırgan kim, nasıl ulaşır?
+
+- Saldırgan **kim**? (bkz. saldırgan modelleri)
+- Her varlığa **hangi yoldan** ulaşabilir?
+- STRIDE ve saldırı ağacı burada devreye girer
+
+---
+
+# Adım 5 detay: Karşı önlemler
+
+**Soru:** Hangi önlem, hangi katmanda?
+
+- Her tehdit için **bir önlem** seçilir
+- Önlem, yedi katmandan **hangisine** ait?
+- Gerekçesiz önlem = **yanlış yerde** ya da **gereksiz**
+
+---
+
+# Adım 6 detay: Doğrulama
+
+**Soru:** Çalıştığı nasıl kanıtlanıyor?
+
+- Her önlem için bir **test** yazılır
+- Birim testi mi, **atlatma denemesi** mi?
+- Testi olmayan önlem, değerlendirici gözünde **yoktur**
+
+---
+
+# Adım 7 detay: Kalan risk
+
+**Soru:** Neyi bilerek kabul ettik?
+
+- Kapatılamayan ya da bilerek **kabul edilen** riskler
+- Her biri için **neden** (ör. performans, kullanılabilirlik)
+- Plan **bitmez**: ürün değiştikçe adım 1'e dönülür ve **güncellenir**
+
+---
+
 # Koruma planı — şema
 
 ![w:950](assets/h01-04-koruma-plani.svg)
@@ -508,6 +689,34 @@ Konuşma notu: Bu mimari yalnız yöntemi göstermek için. Arayüz ve varlık t
 
 ---
 
+<!-- _class: yogun -->
+
+# Arayüz tablosu — tam liste (mobil ödeme)
+
+| Arayüz | Uçlar | Kimlik doğrulama | Gizlilik / bütünlük |
+| --- | --- | --- | --- |
+| A | Uygulama – Kütüphane (Java) | Çağıranın imzası doğrulanır | Aynı süreç içi; hassas veri geçmez |
+| B | Kütüphane (Java) – native | Karşılıklı bütünlük denetimi | Şifreli ve örtülü geçer |
+| C | native – yerel veritabanı | — | Şifreleme + MAC, anahtar cihaza bağlı |
+| D | Kütüphane – arka uç sunucu | Sertifika sabitleme + sunucu doğrulama | **TLS + ayrıca mesaj düzeyi şifreleme** |
+| E | Kütüphane – ödeme terminali | Ödeme protokolü | Tek kullanımlık ödeme anahtarı |
+
+---
+
+<!-- _class: yogun -->
+
+# Varlık tablosu — tam liste (mobil ödeme)
+
+| Varlık | Nerede | Oluşma → silinme | Koruma |
+| --- | --- | --- | --- |
+| Tek kullanımlık ödeme anahtarı | DB (şifreli), bellek | Sunucudan iner → kullanılır → silinir | C, I |
+| Cihaz parmak izi | Bellek, iki ayrı parça | Açılışta hesaplanır | I |
+| Oturum anahtarı | Yalnız bellek | Türetilir → oturum sonunda silinir | C, I |
+| İşlem sayacı | Veritabanı | Her ödemede artar | I |
+| Sunucu açık anahtarı | Uygulamaya gömülü | Derleme anında | I |
+
+---
+
 # STRIDE
 
 | | Tehdit | Bozduğu | Örnek |
@@ -533,6 +742,46 @@ Veri akış diyagramını çiz → **güven sınırını geçen her ok** için a
 
 ---
 
+# Saldırı ağacı — "Veritabanını çöz" dalı
+
+**VE düğümü** (hepsi gerekir):
+
+1. Root yetkisi al
+2. **VE** veritabanı anahtarını bul
+
+İkisi birden gerektiği için bu yol **pahalı**dır.
+
+Bu, derinlemesine savunmanın **çalıştığının** kanıtıdır.
+
+---
+
+# Saldırı ağacı — "Bellekten oku" dalı
+
+**VEYA düğümü** (biri yeter): üç alternatif
+
+1. Hata ayıklayıcı bağla
+2. **VEYA** bellek dökümü al
+3. **VEYA** fonksiyona kanca at
+
+Üç alternatif = **en zayıf nokta**: bellekteki anahtar.
+
+→ Bu hafta Demo 2 · 6. hafta çalışma zamanı koruması · 11. hafta whitebox
+
+---
+
+# Saldırı ağacı — "Trafiği dinle" dalı
+
+**VE düğümü** (hepsi gerekir):
+
+1. TLS'i kır
+2. **VE** mesaj düzeyi şifrelemeyi kır
+
+İki katmanı **birden** kırmak gerekir → pahalı yol.
+
+**Savunmacının hedefi:** saldırganı mümkün olduğunca çok **VE** düğümüne zorlamak.
+
+---
+
 # Saldırı ağacından çıkan sonuçlar
 
 - "Trafiği dinle" yolu **iki katmanı birden** kırmayı gerektirir → pahalı → **derinlemesine savunma** çalışıyor
@@ -555,6 +804,12 @@ Veri akış diyagramını çiz → **güven sınırını geçen her ok** için a
 | ┄ Kesikli çizgi | **Güven sınırı** | İnternet ↔ sunucu, uygulama ↔ OS |
 
 ➡️ Güven sınırını geçen her oku **kırmızıya** boyayın: incelemeye oradan başlayın
+
+---
+
+# Veri akış diyagramı ve güven sınırı — şema
+
+![w:900](assets/h01-19-veri-akis-diyagrami.svg)
 
 ---
 
@@ -696,6 +951,21 @@ Koruma sınıfları: **C** gizlilik · **I** bütünlük · **I+** bütünlük +
 
 <!-- _class: yogun -->
 
+# Adım 3-4 (devam): eksik kalan varlık ve tehditler
+
+| # | Varlık/Tehdit | Ayrıntı | Değer |
+| --- | --- | --- | --- |
+| V7 | Yedekleme belirteci | Disk (OS anahtar deposu); bağlanınca oluşur → iptalde silinir | C |
+| T4 | C / V4, **T** | Kasa dosyası değiştirilir; bozuk kayıt fark edilmeden kullanılır | Risk 4 |
+| T7 | E, **S** | Sahte yedekleme sunucusu belirteci çalar | Risk 4 |
+| T9 | A, **S** | Ana parola ekrandan görülür (omuz sörfü) | Risk 3 |
+
+Dokuz tehdidin **hepsi** tabloda olmalı; atlanan tehdit kapatılmamış demektir.
+
+---
+
+<!-- _class: yogun -->
+
 # Adım 5: Karşı önlemler
 
 | Tehdit | Önlem | Katman |
@@ -706,6 +976,17 @@ Koruma sınıfları: **C** gizlilik · **I** bütünlük · **I+** bütünlük +
 | T4-5 | Kimlik doğrulamalı şifreleme; başlık = **AAD**; en düşük yineleme kodda sabit | 6, 2 |
 | T6 | İmzayı doğrulamadan **asla** çalıştırma; geri almayı reddet | 6 |
 | T8 | Uzunluk doğrulama + fuzzing + derleyici korumaları | 2, 3, 7 |
+
+---
+
+# Adım 5 (devam): T7 ve T9 önlemleri
+
+| Tehdit | Önlem | Katman |
+| --- | --- | --- |
+| T7 | Sertifika doğrulama + ana makine adı denetimi, isteğe bağlı sertifika sabitleme | 6 |
+| T9 | **Kabul et:** ekranda parolayı gizle; fiziksel gözetim kapsam dışı | — |
+
+T9 örneği önemli: her tehdide önlem **eklemek** gerekmez, bazen **kabul etmek** doğru karardır.
 
 ---
 
@@ -721,6 +1002,29 @@ Koruma sınıfları: **C** gizlilik · **I** bütünlük · **I+** bütünlük +
 **Kalan risk:** kasa açıkken aynı kullanıcıyla çalışan zararlı · omuz sörfü · çok zayıf parola
 
 ⚠️ Testi olmayan önlem değerlendirici gözünde **yoktur**
+
+---
+
+<!-- _class: yogun -->
+
+# Adım 6 (devam): T5 ve T8 testleri
+
+| Önlem | Test | Beklenen |
+| --- | --- | --- |
+| T5 parametre | Başlıktaki yineleme sayısı 1 yapılır | Uygulama dosyayı reddeder |
+| T8 ayrıştırıcı | 24 saat fuzzing (4. hafta) | Çökme yok; sanitizer bulgusu yok |
+
+---
+
+<!-- _class: yogun -->
+
+# Adım 7 (devam): kalan risk — tam tablo
+
+| Risk | Neden kabul edildi? | Yeniden değerlendirme |
+| --- | --- | --- |
+| Kasa açıkken bilgisayarda zararlı çalışıyorsa bellek okunabilir | Aynı kullanıcı yetkisiyle çalışan zararlıya karşı tam koruma mümkün değil; kilitleme süresi kısa tutuldu | Her sürüm |
+| Omuz sörfü (T9) | Fiziksel ortam kapsam dışı | — |
+| Çok zayıf ana parola | Kullanıcı uyarılıyor ama zorla engellenmiyor | Kullanıcı geri bildirimine göre |
 
 ---
 
@@ -752,6 +1056,12 @@ Konuşma notu: 3-4 kişilik gruplar. 10 dakika çalışma, 5 dakika iki gruba su
 <!-- _class: bolum -->
 
 # 5. Program başlarken ve bellekte kalan sırlar
+
+---
+
+# Sır bellekten nasıl sızar — şema
+
+![w:900](assets/h01-21-bellekten-sizma-yollari.svg)
 
 ---
 
@@ -827,6 +1137,24 @@ En iyisi: başka programa hiç gerek bırakma → `strftime()`, `GetComputerName
 | Kimlik ve yetkiler | setuid: gereğinden fazla yetki | 1.3 |
 
 **Kural:** kendi kurmadığın hiçbir şeye güvenme
+
+---
+
+# Programın devraldığı durum — şema
+
+![w:900](assets/h01-20-devralinan-durum.svg)
+
+---
+
+<!-- _class: yogun -->
+
+# Devralınan diğer riskler: çalışma dizini, sinyal, dlopen
+
+- **Çalışma dizini:** Göreli yollar (`./ayar.ini`) saldırganın seçtiği bir klasöre işaret edebilir
+- **Sinyal ayarları:** Ebeveynin yok saydığı sinyaller **çocukta da** yok sayılır
+- **`dlopen("lib.so")`:** `LD_LIBRARY_PATH` ve arama yollarından etkilenir → tam yol kullanın; `LD_*` Adım 1'de temizlenmiş olmalı
+
+Kural aynı: **programın kendisinin kurmadığı hiçbir şeye güvenme.**
 
 ---
 
@@ -1260,6 +1588,12 @@ ADIM 5  kopya_guvenli -1 / 12abc -> Reddedildi
 
 ---
 
+# İşaretli uzunluk hatası — şema
+
+![w:900](assets/h01-22-isaretli-donusum.svg)
+
+---
+
 <!-- _class: bolum -->
 
 # 7. Bellek yönetimi, bölümleme ve güvenli süreç
@@ -1278,6 +1612,21 @@ ADIM 5  kopya_guvenli -1 / 12abc -> Reddedildi
 | Bir kez bırak | Çift serbest bırakma | 415 |
 | İşaretçiyi unut | Serbest bırakıldıktan sonra kullanma (UAF) | 416 |
 | Hiç bırakmamak | Sızıntı → hizmet engelleme | 401 |
+
+---
+
+<!-- _class: yogun -->
+
+# Belleğin dört ömrü
+
+| Ömür | Nasıl oluşur? | Ne zaman biter? | Tipik hata |
+| --- | --- | --- | --- |
+| **Statik** | Genel değişken, `static` yerel | Program bitince | Aynı anda birden fazla iş parçacığının yazması |
+| **Otomatik** | Fonksiyon içi yerel değişken | Fonksiyon dönünce | Yerel değişkenin adresini döndürmek |
+| **Dinamik** | `malloc`/`calloc`/`new` | `free`/`delete` çağrılınca | Sızıntı, çift serbest bırakma, UAF |
+| **İş parçacığı** | `_Thread_local` / `thread_local` | İş parçacığı bitince | — |
+
+Bu haftanın taşma ve UAF örnekleri hep **dinamik** ömürle ilgili; sırf onu bilmek yetmez.
 
 ---
 
@@ -1462,6 +1811,25 @@ Kötü: [aç] ██████████████████████
 
 ---
 
+# Bellekte örtme — kod örneği
+
+```c
+typedef struct {
+    uint8_t maske[32];    /* açılışta rastgele üretilir */
+    uint8_t ortulu[32];   /* anahtar XOR maske */
+} OrtuluAnahtar;
+
+static void anahtari_ac(const OrtuluAnahtar *o, uint8_t gecici[32])
+{
+    for (size_t i = 0; i < 32; i++)
+        gecici[i] = o->ortulu[i] ^ o->maske[i];
+}
+```
+
+Bellekte **anahtarın kendisi değil**, iki anlamsız parça durur; birleştirme yalnız kullanım anında.
+
+---
+
 # Açıklık penceresi — şema
 
 ![w:950](assets/h01-16-aciklik-penceresi.svg)
@@ -1549,6 +1917,12 @@ Yazılmamış ödünleşim = değerlendiricinin gözünde **hata**
 | Makine kodu | `objdump -d` | VS Ayrıştırılmış Kod |
 | Kaldırılamayan silme | `explicit_bzero` | `SecureZeroMemory` |
 | Güvenle program çalıştırma | `posix_spawn` + mutlak yol | `CreateProcessW` + tam yol |
+
+---
+
+# Haftanın araç kutusu — şema
+
+![w:900](assets/h01-23-arac-kutusu.svg)
 
 ---
 
@@ -1772,6 +2146,11 @@ Saldırganın nihai amacı. Şimdi yolları bölelim.
 
 # Dallar · nasıl?
 
+Kökten sonra sorulacak soru: **"Bu hedefe hangi yollardan ulaşılır?"**
+
+- Her dal, hedefe ulaşmanın **bir yolu**
+- **VE**: dalın hepsi gerekir · **VEYA**: biri yeter
+- Sonraki adım: en olası dalı **alt dallara** bölmek
 
 ---
 

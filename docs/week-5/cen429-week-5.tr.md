@@ -181,6 +181,36 @@ yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · 
 
 Şimdi: yönetilen diller neyi çözer, neyi çözmez?
 
+### Kavramlar birbirine nasıl bağlanır?
+
+Yukarıdaki terimler rastgele bir liste değildir; her biri bir öncekinin üstüne oturur. Aşağıdaki tablo "bunu
+anlamak için önce şunu bilmem gerekir" ilişkisini gösterir — bir terimi unutursanız tablodaki "önkoşul" sütununa
+geri dönün.
+
+| Terim | Önkoşulu | Hangi bölümde derinleşir? |
+| --- | --- | --- |
+| Enjeksiyon | Yorumlayıcı, veri/komut ayrımı | Bölüm 3 |
+| SQL enjeksiyonu / parametreli sorgu | Enjeksiyon, SQL sözdizimi | Bölüm 4 |
+| Komut enjeksiyonu | Enjeksiyon, kabuk kavramı | Bölüm 5 |
+| Yol geçişi | Enjeksiyon, dosya sistemi yolu | Bölüm 6 |
+| Seri durumdan çıkarma | Nesne, sınıf, bayt dizisi | Bölüm 7 |
+| XXE / XSS / şablon enjeksiyonu | Enjeksiyon, XML/HTML | Bölüm 8 |
+| ReDoS | Düzenli ifade, geri izleme | Bölüm 9 |
+| Bayt kodu | JVM | Bölüm 10 |
+| ProGuard/R8, `-keep` | Bayt kodu, reflection | Bölüm 11–13 |
+| SBOM | Bağımlılık | Bölüm 14 |
+
+Bu tablonun okunuş yönü önemlidir: **satır başındaki terimi anlamak için önce "önkoşulu" sütunundaki terimi
+bilmelisiniz.** Örneğin "parametreli sorgu" bölümünü okumadan önce "enjeksiyon" kavramının ("veri, komutla aynı
+kanaldan geçerse komut sanılır") oturmuş olması gerekir; aksi hâlde "neden `?` işareti güvenli de dize birleştirme
+değil?" sorusu havada kalır.
+
+!!! tip "Bu haftayı nasıl okumalı?"
+    Bölümler **sırayla** birbirinin üstüne inşa edilir: 3 (enjeksiyonun ortak kökü) → 4–8 (her enjeksiyon türü aynı
+    kökten türer) → 9 (aynı kök, farklı diller) → 10–13 (bayt kodu ve gizleme, ayrı bir konu: koda gömülü sırlar) →
+    14 (bağımlılık güvenliği, üçüncü bir konu). Bölüm 3'ü atlayıp Bölüm 4'e geçerseniz, "aynı hatanın farklı yüzü"
+    cümleleri anlamsız kalır; zor gelen bir bölümü ikinci kez okuyup ilerleyin.
+
 ## 1. Yönetilen diller neyi çözer, neyi çözmez?
 
 İlk dört hafta C ve C++ ile geçti: arabellek taşması, serbest bırakılmış bellek, tamsayı taşması, tanımsız davranış.
@@ -217,6 +247,45 @@ bağımsızdır ve web uygulamalarından mobil uygulamalara kadar en çok buluna
 | **Zafiyetli bağımlılıklar** | Uygulamanın büyük kısmı başkasının kodudur | Demo 6 |
 | **Mantık ve yetkilendirme hataları** | Dilin bilemeyeceği iş kurallarıdır | 2. hafta |
 
+### İşlenmiş örnek: bir dizi taşması Java'da neden çöker de C'de çökmez
+
+Dördüncü haftada `buf[10]` gibi 10 elemanlı bir diziye 10. indeksle (11. eleman) yazmanın C'de **tanımsız davranış**
+olduğunu, çoğu zaman hiçbir hata vermeden bitişik belleği bozduğunu görmüştük. Aynı hatayı Java'da adım adım izleyelim.
+
+```java title="DiziTasmasi.java"
+public class DiziTasmasi {
+    public static void main(String[] args) {
+        int[] dizi = new int[10];      // 10 elemanlik dizi: indeks 0..9 gecerli
+        dizi[9] = 42;                   // gecerli: son eleman
+        System.out.println("dizi[9] = " + dizi[9]);
+        dizi[10] = 99;                  // GECERSIZ: 11. eleman yok
+    }
+}
+```
+
+```text title="javac DiziTasmasi.java && java DiziTasmasi"
+dizi[9] = 42
+Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException:
+    Index 10 out of bounds for length 10
+        at DiziTasmasi.main(DiziTasmasi.java:6)
+```
+
+Adım adım ne oldu:
+
+1. JVM her dizi erişiminde (`dizi[10]`) **önce** indeksin `0 ≤ i < uzunluk` sınırında olup olmadığını denetler; bu
+   denetim derleyicinin ürettiği bayt kodunun **her `aload`/`iastore` öncesinde** çalışan bir parçasıdır.
+2. `10`, dizinin uzunluğu olan `10`'a eşit ya da büyük olduğu için denetim başarısız olur.
+3. JVM bitişik belleğe **yazmaz**; bunun yerine `ArrayIndexOutOfBoundsException` fırlatır ve programı (ya da
+   `try`/`catch` varsa yalnız o bloğu) kontrollü biçimde durdurur.
+4. Hangi satırda, hangi indeksle olduğu **hata iletisinde** görünür — dördüncü haftadaki C örneğinde ise sessiz bir
+   bellek bozulması ya da rastgele bir çökme olurdu, hatanın kaynağını bulmak saatler sürebilirdi.
+
+!!! success "Kural"
+    Java'da bir dizi taşması **her zaman** bir istisna olarak yakalanır; programın çökmesi ya da hatalı davranması
+    değil, **kontrollü** durması beklenir. Bu, "yönetilen dil bellek güvenliğini garanti eder" cümlesinin somut
+    karşılığıdır — ama bu garantinin enjeksiyon, seri durumdan çıkarma ya da mantık hataları için **geçerli
+    olmadığını** unutmayın; onlar bu haftanın geri kalanının konusu.
+
 !!! note "Yönetilen dil içinde native kod"
     Bir Java uygulaması bellek güvenliğini ancak **tamamen** Java'da kaldığı sürece kazanır. Performans ya da güvenlik
     için JNI ile çağrılan C/C++ kodu (1. haftadaki mobil ödeme mimarisindeki native katman gibi), ilk dört haftanın
@@ -230,6 +299,8 @@ bağımsızdır ve web uygulamalarından mobil uygulamalara kadar en çok buluna
 Dördüncü haftada tanıdığımız SEI CERT'in Java standardı da aynı yapıdadır: kimlik, başlık, hatalı örnek, uyumlu çözüm, risk.
 Kimlikler `-J` sonekiyle biter.
 
+![SEI CERT Oracle Java kuralının yapısı](assets/h05-11-cert-java.svg)
+
 | Kısaltma | Kategori | Bu haftaya dokunan kural |
 | --- | --- | --- |
 | `IDS` | Girdi doğrulama ve veri temizleme | IDS00-J: güvenilmeyen verinin SQL enjeksiyonunu önle · IDS07-J: güvenilmeyen veriyi `Runtime.exec()`'e verme · IDS16-J: XML enjeksiyonunu önle · IDS17-J: XML dış varlık saldırılarını önle |
@@ -240,6 +311,15 @@ Kimlikler `-J` sonekiyle biter.
 | `FIO` | Günlük | FIO13-J: hassas bilgiyi güven sınırının dışına günlüğe yazma |
 | `OBJ` | Nesne yönelimi | OBJ01-J: alanların erişilebilirliğini sınırla |
 | `SEC` | Platform güvenliği | SEC00-J: ayrıcalıklı blokların hassas bilgiyi sızdırmasına izin verme |
+
+### Neden CERT kuralları hâlâ gerekli, Java bellek hatalarını çözdüyse?
+
+Dördüncü haftada C için gördüğümüz SEI CERT C kuralları (`ARR`, `STR`, `MEM`…) büyük ölçüde bellek yönetimi
+hatalarını hedefliyordu; JVM bu sınıfı otomatik olarak kapattığı için Java standardında `MEM` kategorisi neredeyse
+boştur. Ama tablodaki `IDS`, `SER`, `FIO`, `MSC`, `ERR` kategorileri **dilin çözmediği** hatalardır: girdi
+doğrulama, seri durumdan çıkarma, hassas bilginin sızması gibi konular bellekle değil **tasarım kararlarıyla**
+ilgilidir. Bu yüzden CERT, dilden dile "hangi kategori büyür, hangisi küçülür" ilkesiyle çalışır: C standardında
+`MEM` ve `ARR` kalın, Java standardında `IDS` ve `SER` kalın basılıdır.
 
 !!! tip "OWASP ile birlikte okumak"
     Web uygulamaları için **OWASP Top 10** (2. hafta) ve ASVS, mobil uygulamalar için **OWASP MASVS** (özellikle
@@ -269,6 +349,35 @@ tanesini unutmak yeter.
 | XML | Dize birleştirerek XML kurmak | DOM / StAX API'si ile öğe ve öznitelik oluşturmak |
 | HTML | `"<p>" + yorum + "</p>"` | Şablon motorunun otomatik kaçışı, bağlama göre kodlama |
 | `printf` | `printf(girdi)` | `printf("%s", girdi)` |
+
+### Yorumlayıcı girdiyi neden "kod" sanır? Adım adım
+
+Öğrencilerin en çok kaçırdığı halka budur: **yorumlayıcı, kendisine gelen dizgenin hangi karakterlerinin
+"programcının yazdığı sabit kod", hangilerinin "kullanıcının girdiği veri" olduğunu bilmez.** Elindeki tek şey,
+art arda gelen karakterlerdir. Bunu somutlaştıralım; `"SELECT ... WHERE ad = '" + ad + "'"` ifadesinin çalışma
+zamanında oluşturduğu dizgeyi bir SQL motorunun nasıl okuduğunu karakter karakter izleyelim (`ad` değişkeninin
+içinde `x' OR '1'='1` girdisi olduğunu varsayalım):
+
+1. Java önce dize birleştirmeyi yapar; sonuçta ortaya **tek bir düz metin** çıkar:
+   `SELECT ... WHERE ad = 'x' OR '1'='1'`. Bu noktadan itibaren "bu parça geliştiricinin yazdığı", "bu parça
+   kullanıcının girdiği" bilgisi **kaybolmuştur** — elde yalnız karakterler vardır.
+2. Bu düz metin SQL motoruna **tek bir komut** olarak gönderilir. Motorun ayrıştırıcısı (lexer/parser) dizgeyi
+   soldan sağa, karakter karakter tarar ve her karaktere göre bir **duruma** girer.
+3. `WHERE ad =` okunduktan sonra bir boşluk, sonra bir `'` karakteriyle karşılaşır → ayrıştırıcı "dize sabiti başladı" durumuna
+   geçer. Bundan sonraki her karakteri (harf, boşluk, `O`, `R`…) bu dize sabitinin **içeriği** sayar, bir sonraki
+   `'` karakterine kadar.
+4. Girdideki ilk `'` (kullanıcının yazdığı) tam olarak bu bekleneni sağlar: ayrıştırıcı "dize sabiti bitti" der ve
+   **normal SQL söz dizimine geri döner**.
+5. Geri dönülen noktada ayrıştırıcının önünde artık ``OR '1'='1'`` metni durur; bu metin **SQL anahtar sözcükleri
+   ve operatörleri** olarak okunur (`OR`, `=`), çünkü ayrıştırıcı "dize sabiti" durumundan çıkmıştır.
+6. Sonuç: motor tek bir sorgu ayrıştırmıştır, ama bu sorgunun **mantıksal yapısı** (`... AND ...` yerine
+   `... OR her_zaman_dogru`) kullanıcının girdiği karakterler tarafından belirlenmiştir.
+
+Kritik nokta şudur: ayrıştırıcı **hata yapmıyor**; tam olarak SQL söz dizimi kurallarına göre davranıyor. Hata,
+yorumlayıcıya "kodun bir parçası mısın, veri misin?" bilgisini taşıyan **ayrı bir kanal olmamasıdır**. Aynı adım
+dizisi (bir yorumlayıcı → karakter karakter tarama → özel karakterde durum değişikliği) kabuk için `;`, dosya
+sistemi için `../`, XML için `<`/`&` ile birebir tekrarlanır; yalnız "özel karakter" ve "durum makinesi" değişir.
+Bölüm 4–8, bu adımların her yorumlayıcıdaki somut karşılığını gösterecek.
 
 !!! info "Kitaptaki karşılığı"
     Viega ve Messier, Tarif 3.11'de SQL enjeksiyonunu, 3.10'da siteler arası betiği (XSS), 3.7'de dosya adı ve yol
@@ -318,6 +427,41 @@ Sorgunun **metni** sabittir ve veritabanına önce gönderilip derlenir; değerl
 içerirse içersin (`'`, `--`, `;`), yalnız bir **değer** olarak karşılaştırılır; sorgunun yapısına dokunamaz. Bu,
 önceki bölümdeki "iki kanal" ilkesinin tam karşılığıdır (IDS00-J).
 
+### Parametreli sorgu mekanik olarak neden çalışır?
+
+Bölüm 3'te ayrıştırıcının karakter karakter çalıştığını gördük. `PreparedStatement` bu mekanizmayı **iki aşamaya**
+böler; sihir burada gizlidir:
+
+1. **Hazırlama (prepare) aşaması:** `baglanti.prepareStatement(sql)` çağrıldığında, veritabanı sunucusuna yalnız
+   `SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?` metni gönderilir — kullanıcının girdisi
+   **henüz ortada yoktur**. Sunucu bu metni ayrıştırır (Bölüm 3'teki durum makinesiyle), bir **sorgu planı**
+   (query plan) üretir ve bu planı bellekte tutar. `?` işaretleri plan içinde "buraya bir değer gelecek" diye
+   işaretlenmiş **yer tutuculardır**.
+2. **Bağlama (bind) aşaması:** `ps.setString(1, ad)` çağrıldığında, `ad` değişkeninin içeriği **hiçbir zaman SQL
+   metniyle birleştirilmez**. Sürücü, değeri ayrı bir ikili protokol mesajıyla (JDBC/veritabanı arasındaki tel
+   protokolü) "1 numaralı yer tutucunun değeri şu bayt dizisidir" diye gönderir.
+3. `ps.executeQuery()` çalıştığında veritabanı, **zaten ayrıştırılmış olan** plana, gelen değerleri doğrudan
+   yerleştirir. Değerin içinde `'` ya da `--` olsa bile, bu karakterler **hiçbir zaman ayrıştırıcıdan geçmez** —
+   ayrıştırma çoktan bitmiştir. Karakterler yalnız "bu sütunla karşılaştırılacak bayt dizisi" olarak kopyalanır.
+
+Bunu Bölüm 3'teki `printf("%s", girdi)` örneğiyle karşılaştırmak öğretici: `%s`'in yerine konan dize, biçim
+dizesindeki bir `%n` gibi **yeniden yorumlanmaz**; olduğu gibi yazdırılır. Parametreli sorguda da `?`'nin yerine
+konan değer, sorgu metni gibi **yeniden ayrıştırılmaz**; olduğu gibi karşılaştırılır. İki mekanizma da aynı
+ilkeye dayanır: **yapıyı belirleyen ayrıştırma bir kez, veri bağlama ayrı ve sonra.**
+
+!!! danger "Sık yapılan hata: yalnız tek tırnağı kaçışlamak"
+    Bazı geliştiriciler `ad.replace("'", "''")` gibi bir satırla "SQL enjeksiyonunu çözdüm" sanır. Sonuç: sayısal
+    bir alanda (`WHERE yas = " + yas`) tek tırnak hiç yoktur, kaçışlama hiçbir şey yapmaz; `LIKE` deseninde `%`
+    farklı bir özel karakterdir; MySQL, PostgreSQL, Oracle'ın kaçış kuralları birbirinden farklıdır; bazı
+    sürücüler Unicode ya da çok baytlı kodlamalarda kaçışlamayı atlatan diziler kabul eder. Tek bir unutulan
+    karakter sınıfı, bütün savunmayı geçersiz kılar.
+
+!!! success "Kural"
+    Kaçışlama SQL enjeksiyonu için **birincil** savunma değildir; en fazla ek bir güvenlik katmanıdır. Birincil
+    savunma her zaman parametreli sorgu (ya da ORM'in parametre bağlama arayüzü) olmalıdır — çünkü kaçışlama
+    "özel karakterleri tanıyıp temizlemeye" dayanırken, parametreli sorgu özel karakterlerin **hiç ayrıştırıcıya
+    uğramamasını** sağlar.
+
 ### Parametreli sorgunun yetmediği yerler
 
 | Durum | Neden? | Çözüm |
@@ -335,6 +479,65 @@ içerirse içersin (`'`, `--`, `;`), yalnız bir **değer** olarak karşılaşt�
   sızdırır (ERR01-J). Kullanıcıya genel bir ileti, ayrıntı güvenli günlüğe.
 - **Girdi doğrulama:** Beklenen biçim bilinen alanlarda (kimlik numarası, tarih, e-posta) beyaz liste doğrulaması
   saldırı yüzeyini daraltır; ama parametreli sorgunun **yerine geçmez**.
+
+### İşlenmiş örnek: Demo 1'in çıktısını satır satır okumak
+
+Demo 1'in Python bölümü (`sqli.py`) üç sentetik kullanıcı (`ayse`, `mehmet`, yönetici `admin`) içeren bir SQLite
+veritabanı kurar ve aynı giriş sorgusunu iki yolla çalıştırır. Kodu okuyup çalıştırdığınızda göreceğiniz çıktıyı
+adım adım izleyelim; her adımda **neden** o sonucun çıktığını Bölüm 3–4'teki mekanizmaya bağlıyoruz.
+
+```text title="ADIM 1 — Dürüst giriş: ad='ayse' parola='parola123'"
+[KOTU YOL]
+   Uretilen SQL:
+   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = 'parola123'
+   -> 1 satir dondu. GIRIS BASARILI:
+      id=1 ad=ayse rol=kullanici
+[IYI YOL]
+   Uretilen SQL (sablon):
+   SELECT id, ad, rol FROM kullanici WHERE ad = ? AND parola = ?   [degerler ayrica gonderilir]
+   -> 1 satir dondu. GIRIS BASARILI:
+      id=1 ad=ayse rol=kullanici
+```
+
+Beklendiği gibi: girdi zararsız olduğunda hatalı kod da doğru kod da aynı sonucu üretir. Bu yüzden hatalı kod
+geliştirme sırasında **fark edilmez** — testler dürüst girdiyle yapılır.
+
+```text title="ADIM 2 — SALDIRI: parola alanina  ' OR '1'='1  yaziliyor"
+[KOTU YOL]
+   Uretilen SQL:
+   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = '' OR '1'='1'
+   -> 3 satir dondu. GIRIS BASARILI:
+      id=1 ad=ayse rol=kullanici
+      id=2 ad=mehmet rol=kullanici
+      id=3 ad=admin rol=yonetici
+   ^ Parola bilinmeden giris yapildi: sorgu yapisi degisti.
+[IYI YOL]
+   -> Sonuc yok. GIRIS REDDEDILDI.
+   ^ Girdi bir DEGER olarak arandi; oyle bir parola yok: RED.
+```
+
+Bölüm 3'teki adımları burada takip edin: `parola = '` yazıldıktan sonra saldırganın ilk `'` karakteri dize
+sabitini kapatır; ardından gelen ``OR '1'='1'`` metni SQL operatörü olarak okunur. `'1'='1'` her zaman **doğru**
+olduğu için `AND` bağlacının sağ tarafı her satır için doğrudur; sorgu fiilen `WHERE ad='ayse' OR doğru` olur ve
+**bütün tablo** döner. İyi yolda ise saldırganın yazdığı bütün dizge (tırnak, `OR`, eşitlikler dahil) veritabanına
+tek bir metin **değeri** olarak gider; böyle bir parolaya sahip kimse olmadığı için sonuç boştur.
+
+```text title="ADIM 3 — SALDIRI: ad alanindan yonetici satirini cekme,  ad = ' OR rol='yonetici' --"
+[KOTU YOL]
+   Uretilen SQL:
+   SELECT id, ad, rol FROM kullanici WHERE ad = '' OR rol='yonetici' --' AND parola = 'farketmez'
+   -> 1 satir dondu. GIRIS BASARILI:
+      id=3 ad=admin rol=yonetici
+   ^ Baska kullanicinin (yonetici) satiri sizdirildi.
+[IYI YOL]
+   -> Sonuc yok. GIRIS REDDEDILDI.
+   ^ Boyle bir ad yok: sizinti yok.
+```
+
+Burada saldırgan hem sorgu yapısını `OR` ile değiştirdi **hem de** `--` ile sorgunun geri kalanını (parola
+denetimini) SQL yorumuna çevirip devre dışı bıraktı; parola alanına ne yazıldığının artık **hiçbir önemi yok**.
+Parametreli sorguda bu dizge (`'`, `OR`, `--` dahil) tek bir metin değeri olarak `ad` sütunuyla karşılaştırılır;
+böyle bir kullanıcı adı olmadığı için sonuç boştur.
 
 ### Demo 1 — SQL enjeksiyonu: dize birleştirme ve parametreli sorgu
 
@@ -391,6 +594,23 @@ Windows'ta aynı durum `cmd /c` ile ve `&` karakteriyle oluşur. Java'nın tek d
 biçimi ayrıca dizgeyi boşluklardan kendi kurallarıyla böler; tırnaklarla oynayarak argümanları kaydırmak mümkündür
 (IDS07-J).
 
+### Kabuk girdiyi adım adım nasıl ayrıştırır?
+
+Bölüm 3'teki genel ilkeyi kabuğa (`sh`, `bash`, `cmd`) uygulayalım. `kullanici` değişkeninin içeriği
+`"ayse; echo SIZDI"` olsun; Java bu dizgeyi birleştirip kabuğa şu **tek metni** verir:
+`echo Merhaba ayse; echo SIZDI`. Kabuk bunu şöyle işler:
+
+1. Kabuk, aldığı metni **komut ayırıcı** karakterlere göre (`;`, `&&`, `||`, satır sonu) önce **komutlara böler**.
+   Bu, tıpkı SQL ayrıştırıcısının `'` karakterinde durum değiştirmesi gibi, kabuğun kendi söz dizimi kuralıdır.
+2. `;` karakterine kadar olan kısım (`echo Merhaba ayse`) **birinci komut** olarak ayrılır.
+3. `;`'den sonraki kısım (`echo SIZDI`) **ikinci, bağımsız bir komut** olarak ayrılır.
+4. Kabuk, iki komutu da **sırayla çalıştırır** — sanki kullanıcı terminale iki ayrı satır yazmış gibi.
+5. Uygulamanın kendisi tek bir `exec` çağrısı yaptığını sanır; ama kabuk açısından ortada **iki** komut vardır,
+   çünkü kabuk metni kendi kurallarıyla yeniden ayrıştırmıştır.
+
+Kritik nokta yine aynıdır: kabuk **hata yapmıyor**, `;` karakterini tam olarak söz dizimi kuralına göre okuyor.
+Java'nın "bu bir kullanıcı adıydı" bilgisi, dizge kabuğa ulaştığı anda kaybolmuştur.
+
 ### Doğrusu: kabuksuz, argüman listesiyle
 
 ```java title="Doğru: ProcessBuilder + izin listesi"
@@ -414,6 +634,51 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
     Kabuk olmasa bile, çağrılan program kendi argümanlarını yorumlar. `-` ile başlayan bir kullanıcı girdisi, programa
     **seçenek** olarak geçebilir (argüman enjeksiyonu): ör. bir dosya adı yerine `--output=/baska/yer`. Çoğu program
     `--` ile "bundan sonrası seçenek değil" denmesini destekler; izin listesi de `-` ile başlayan girdileri reddetmelidir.
+
+!!! danger "Sık yapılan hata: yalnız tehlikeli görünen karakterleri süzmek"
+    Bazı geliştiriciler girdiden yalnız `;` ve `&`'yi kaldırıp "temizledim" sanır. Kabuğun komut ayırıcıları bu
+    ikisiyle sınırlı değildir: `|`, `` ` ``, `$( )`, satır sonu karakteri (`\n`), hatta `>` ve `<` (dosyaya
+    yönlendirme) de kabuk için özeldir. Kara liste yaklaşımı (belirli karakterleri yasakla) her zaman bir sonraki
+    unutulan karaktere açıktır.
+
+!!! success "Kural"
+    Komut enjeksiyonunun birincil savunması **kabuğu hiç çağırmamaktır** (`ProcessBuilder`, `subprocess` argüman
+    listesi). Kara liste değil, izin listesi (beklenen karakter kümesiyle eşleşme) ikincil bir katmandır.
+
+### İşlenmiş örnek: Demo 2'nin çıktısını satır satır okumak
+
+Demo 2'nin Python bölümü (`komut.py`) bir "selamlama aracı"nı önce kabuk üzerinden (`shell=True`), sonra argüman
+listesiyle (`shell=False`) çalıştırır. WSL/Linux'ta gerçek çıktı şöyledir:
+
+```text title="ADIM 1 — Durust girdi: ad = 'Ayse'"
+[KOTU YOL]
+   Kabuga giden komut:
+   echo "ARAC CIKTISI: Merhaba" Ayse
+   | ARAC CIKTISI: Merhaba Ayse
+[IYI YOL]
+   Arguman listesi:
+   [python, -c, ...] ... 'Ayse'
+   | ARAC CIKTISI: Merhaba Ayse
+```
+
+```text title="ADIM 2 — SALDIRI: ad = 'Ayse; echo SIZDI-KOMUT-ENJEKSIYONU'"
+[KOTU YOL]
+   Kabuga giden komut:
+   echo "ARAC CIKTISI: Merhaba" Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
+   | ARAC CIKTISI: Merhaba Ayse
+   | SIZDI-KOMUT-ENJEKSIYONU
+   ^ 'SIZDI...' satiri = enjekte edilen komut kostu.
+[IYI YOL]
+   Izin listesi REDDETTI (^[A-Za-z0-9_]+$):
+   girdi = Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
+   -> Program hic calistirilmadi.
+   ^ Izin listesi bosluk/;/& gordu ve reddetti.
+```
+
+Kötü yolda kabuk, yukarıdaki beş adımı izleyerek dizgeyi `;` üzerinden ikiye böldü ve **iki ayrı komut**
+çalıştırdı; ikinci satır (`SIZDI-...`) enjekte edilen komutun **gerçekten çalıştığının** kanıtıdır (demo zararsız
+bir `echo` kullanır). İyi yolda `ProcessBuilder`/`subprocess` hiçbir kabuk çağırmaz; girdi tek bir argümandır ve
+izin listesi (`^[A-Za-z0-9_]+$`) boşluk ile `;` içeren bu girdiyi çalıştırmadan **önce** reddeder.
 
 ### Demo 2 — Komut enjeksiyonu
 
@@ -452,6 +717,26 @@ Path dosya = kok.resolve(istek);                  // istek = "../../etc/passwd"
 return Files.readAllBytes(dosya);                 // kökün dışındaki dosya okunur
 ```
 
+### Yol normalleştirme adım adım: `../` neden köke geri çıkarır?
+
+`resolve()`/`normalize()` bir yolu tek bir **yığın** (stack) algoritmasıyla işler. `kok = "/srv/veri"` ve
+`istek = "../../etc/passwd"` olsun. Dosya sistemi bu isteği aşağıdaki gibi, segment segment işler:
+
+| Adım | Okunan segment | Yığının durumu | Açıklama |
+| --- | --- | --- | --- |
+| 0 | (başlangıç) | `[srv, veri]` | Kök yoldan başlanır |
+| 1 | `..` | `[srv]` | Bir üst segment (`veri`) yığından **çıkarılır** (pop) |
+| 2 | `..` | `[]` | Bir üst segment daha (`srv`) yığından **çıkarılır** |
+| 3 | `etc` | `[etc]` | Normal segment yığına **eklenir** (push) |
+| 4 | `passwd` | `[etc, passwd]` | Normal segment eklenir |
+
+Sonuç: `/etc/passwd` — kökün (`/srv/veri`) tamamen dışında bir yol. `..` karakterleri, ayrıştırıcı için "bir üst
+klasöre çık" komutudur; SQL'deki `'` nasıl "dize sabitini kapat" komutuysa, dosya sisteminde de `..` aynı rolü
+oynar. Bu yüzden ham dizgede yalnız `".."` arayan bir denetim (`istek.contains("..")`) yeterli değildir: `..%2f`
+(URL kodlanmış), `....//` (iç içe yazım) gibi biçimler bu aramayı atlatırken, **aynı yığın algoritmasıyla**
+işlendiğinde yine kökün dışına çıkabilir. Doğru sıra bu yüzden önce **normalleştir** (yığın algoritmasını
+tamamen çalıştır), sonra **sonucu** denetlemektir — ara adımları değil, nihai yığın içeriğini kontrol ederiz.
+
 ### Doğrusu: önce kanonikleştir, sonra kökün içinde mi diye bak
 
 ```java title="Doğru: kanonik yol + kök denetimi (FIO16-J)"
@@ -473,6 +758,46 @@ kök içinde olduğunun doğrulanması en sağlamıdır.
     Bir ZIP ya da TAR arşivini açarken, arşivdeki dosya adları da güvenilmez girdidir. `../../x` adlı bir girdi,
     arşivi açan programın hedef klasörünün dışına yazılabilir. Arşiv açan her kod, her girdinin hedef yolunu yukarıdaki
     gibi kanonikleştirip kök içinde olduğunu denetlemelidir.
+
+!!! danger "Sık yapılan hata: yalnız `..` dizgesini aramak"
+    `if (istek.contains(".."))` satırı öğrencilerin en sık yazdığı "düzeltmedir". Ama `..%2f` (URL kodlanmış nokta
+    ve eğik çizgi, sunucuya ulaşmadan önce kod çözülürse `../`'ye döner), Windows'ta `..\`, sürücü harfli mutlak
+    yollar (`C:\...`) ve kök klasörün **içindeki** bir sembolik bağlantının kök dışını göstermesi, bu tek satırlık
+    denetimin hiçbirini yakalamaz. `contains("..")` ayrıca meşru bir dosya adında (`rapor..v2.txt`) yanlış pozitif
+    üretebilir.
+
+!!! success "Kural"
+    Yol geçişine karşı tek geçerli desen: **önce normalleştir (kanonikleştir), sonra sonucun kök içinde kaldığını
+    denetle, gerekiyorsa dosya açıldıktan sonra tekrar denetle.** Ham dizgede desen aramak hiçbir zaman yeterli
+    değildir.
+
+### İşlenmiş örnek: Demo 3'ün çıktısını satır satır okumak
+
+Demo 3'ün Python bölümü (`yol.py`) `cikti/veri/` klasörünü **kök** kabul eder; kök dışında (`cikti/gizli.txt`)
+sentetik bir "yönetici notu" bulunur. Gerçek çıktı:
+
+```text title="ADIM 1 — Mesru istek: 'rapor.txt'"
+[KOTU YOL]
+   Cozulen yol: .../cikti/veri/rapor.txt
+   OKUNDU -> Herkese acik rapor (sentetik).
+[IYI YOL]
+   Cozulen yol: .../cikti/veri/rapor.txt
+   OKUNDU -> Herkese acik rapor (sentetik).
+```
+
+```text title="ADIM 2 — SALDIRI: '../gizli.txt' (kok disi)"
+[KOTU YOL]
+   Cozulen yol: .../cikti/gizli.txt
+   OKUNDU -> GIZLI: sentetik yonetici notu (kok disinda).
+   ^ Kok disindaki gizli dosya sizdirildi.
+[IYI YOL]
+   REDDEDILDI: kok disina cikiyor -> .../cikti/gizli.txt
+   ^ resolve() + kok denetimi engelledi.
+```
+
+Kötü yolda `KOK / "../gizli.txt"` ifadesi, yukarıdaki yığın algoritmasıyla `veri` segmentini pop'lar ve doğrudan
+`cikti/gizli.txt`'ye ulaşır — kökün **bir üst klasörüne** çıkmıştır. İyi yolda aynı normalleştirme yapılır, ama
+sonuç kök (`cikti/veri`) ile başlamadığı için istek çalıştırılmadan **reddedilir**.
 
 ### Demo 3 — Yol geçişi
 
@@ -519,6 +844,40 @@ bütünlüğü hataları" kategorisinin parçasıdır.
     bayt akışını filtresiz seri durumdan çıkarmak, saldırgana sınıf seçme yetkisi vermektir.** Savunma bu tek cümleye
     dayanır.
 
+### Bayt akışı nasıl bir sınıf adı taşır? Mekanizma adım adım
+
+Saldırı zincirinin **kendisini** yazmıyoruz ama saldırganın elindeki yetkinin **nereden** geldiğini anlamak
+savunmayı da anlamlı kılar. `ObjectOutputStream`'in ürettiği bayt akışının başı sabit bir biçime sahiptir:
+
+1. İlk iki bayt her zaman `AC ED` — "stream magic" (bu akışın bir Java nesne akışı olduğunu belirten imza).
+2. Sonraki iki bayt `00 05` — akış biçiminin sürümü.
+3. Ardından bir **nesne bloğu** gelir; bu blok önce bir **sınıf tanımlayıcısı** (class descriptor) içerir: sınıfın
+   **tam adı** (`com.ornek.Ayar` gibi), uzunluk öneki ile birlikte **düz metin** olarak akışta durur.
+4. `ObjectInputStream.readObject()` çalıştığında, önce bu ismi okur, sonra `Class.forName(isim)` benzeri bir
+   çağrıyla sınıfı sınıf yolunda (classpath) **arayıp yükler** — henüz hiçbir tür denetimi yapılmamıştır, çünkü
+   beklenen türün ne olduğunu akışın kendisi söylemektedir.
+5. Sınıf yüklendikten sonra JVM bu sınıftan bir nesne **ayırır** (adi bir kurucu çağrısı olmadan, seri durumdan
+   çıkarmaya özgü bir mekanizmayla) ve akıştaki alan değerlerini bu nesneye yazar; sınıfın tanımladığı
+   `readObject`/`readResolve` gibi özel metotlar varsa bunlar da bu sırada **çalıştırılır**.
+
+Adım 3–4'ün sonucu şudur: **hangi sınıfın yükleneceğine akışı gönderen karar verir**, uygulama değil. Akış
+güvenilmez bir kaynaktan geliyorsa, sınıf yolundaki *herhangi bir* sınıf adı yazılabilir; o sınıfın
+`readObject`/`readResolve` metotları çalışırken yaptığı her şey (dosya açmak, başka bir nesne oluşturmak, bir
+metot çağırmak) saldırganın kontrolündedir. Bir dizi böyle sınıfın birbirini **zincirleme** tetiklemesi (gerçek
+olaylardaki "gadget zinciri"), sonunda keyfi kod çalıştırmaya kadar gidebilir — zincirin nasıl kurulduğunu
+**yazmıyoruz**, ama "neden mümkün olduğunu" Adım 3–4 tam olarak açıklar.
+
+!!! danger "Sık yapılan hata: 'kendi sınıflarım seri durumdan çıkıyor, güvenliyim' sanmak"
+    Filtre olmadan `ObjectInputStream`, akışta adı yazan **her** `Serializable` sınıfı kabul eder — yalnız sizin
+    yazdığınız sınıfları değil, sınıf yolundaki **bütün** bağımlılıklarınızın (ve onların bağımlılıklarının)
+    sınıflarını da. Uygulamanız hiç tehlikeli bir `readObject` yazmasa bile, kullandığınız bir kütüphanede böyle
+    bir sınıf varsa, akışa onun tam adını yazmak yeterlidir.
+
+!!! success "Kural"
+    Güvenilmeyen bir bayt akışını `ObjectInputStream.readObject()` ile açmadan önce mutlaka bir
+    `ObjectInputFilter` takın ve deseni **her zaman** `!*` ile bitirin. Mümkünse Java serileştirmesini hiç
+    kullanmayın; JSON/Protobuf gibi biçimler sınıf adını akışa hiç yazmaz, yalnız veri alanlarını taşır.
+
 ### Savunma katmanları
 
 | Sıra | Önlem | Açıklama |
@@ -540,6 +899,29 @@ try (ObjectInputStream in = new ObjectInputStream(akis)) {
 
 Desen soldan sağa okunur: `com.ornek.Ayar` ve `java.base` modülündeki sınıflara izin ver, sınırları uygula, **geri
 kalan her şeyi reddet** (`!*`). Son öğe varsayılan-reddet ilkesidir; unutulursa filtre bir kara listeye dönüşür.
+
+### İşlenmiş örnek: Demo 7'nin çıktısını satır satır okumak
+
+Demo 7'nin Java kodu (`SeriDemo.java`), iki zararsız sınıf tanımlar: **beklenen** `Ayar` (ad + değer taşır) ve
+**beklenmeyen** `BaskaSinif` (gerçek bir saldırıda bir "gadget" olurdu; burada yalnızca bir dize taşır). Her ikisi
+de serileştirilip, önce filtresiz, sonra filtreli çözülür. Gerçek çıktı:
+
+```text title="ADIM 1 — FILTRESIZ cozme: her sinif kabul edilir"
+   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)  (Ayar)
+   [beklenmeyen BaskaSinif] KABUL -> BaskaSinif(yuk=beklenmeyen-sinif)  (BaskaSinif)
+   ^ Filtre olmadan gelen HER sinif olusturulur;
+     gercekte bu bir gadget zinciri olabilirdi.
+```
+
+```text title="ADIM 2 — ObjectInputFilter ile: allow-list"
+   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)
+   [beklenmeyen BaskaSinif] REDDEDILDI (filtre): beklenmeyen sinif engellendi.
+```
+
+Filtre `"SeriDemo$Ayar;java.base/*;!*"` yalnız `Ayar` sınıfına ve Java'nın kendi çekirdek sınıflarına izin verir.
+Adım 1'deki mekanizmayı hatırlayın: filtre, sınıf **yüklenmeden önce** akıştan okunan adı denetler; `BaskaSinif`
+listede olmadığı için `readObject` çağrısı `InvalidClassException` ile durur — sınıf hiç örneklenmez, hiçbir
+metodu çalışmaz.
 
 ### Demo 7 — Güvenli seri durumdan çıkarma
 
@@ -582,6 +964,43 @@ Aynı "veri ile komutun karışması" hatası her yorumlayıcıda karşımıza �
 | **Şablon enjeksiyonu** | Kullanıcı verisi şablonun **kendisi** olarak işlenir | Kullanıcı verisini yalnız şablon **değişkeni** olarak vermek | 1336 |
 | **LDAP / XPath enjeksiyonu** | Dizin ya da XML sorgusu dize birleştirmeyle kurulur | Parametreli arayüzler, özel karakterlerin kaçışı | 90, 643 |
 
+### XXE mekanizması adım adım (yük yazmadan)
+
+!!! note "Bu derste çalışır bir XXE yükü yazmıyoruz"
+    Deserialization bölümünde olduğu gibi, burada da gerçek bir saldırı belgesi vermiyoruz. Bilmemiz gereken,
+    XML ayrıştırıcısının **hangi adımı** kötüye kullanılabilir hale getirdiğidir; savunma (aşağıdaki kod) bu
+    adımı kapatmaktan ibarettir.
+
+XML standardı, bir belgenin başında bir **DTD** (Document Type Definition) tanımlamasına ve bu DTD içinde özel
+kısaltmalar (**varlık**, entity) tanımlanmasına izin verir — tıpkı bir metin editöründeki "ara-değiştir" kısayolu
+gibi: belge içinde `&kisaltma;` yazılan her yere, DTD'de tanımlanan **gerçek içerik** yerleştirilir. Sorun, bu
+"gerçek içeriğin" **dış bir kaynaktan** (`SYSTEM` anahtar sözcüğüyle işaretli bir dosya yolu ya da ağ adresi)
+gelebilmesidir:
+
+1. Ayrıştırıcı belgeyi okurken önce **DTD bloğunu** işler; DTD içindeki her `<!ENTITY ad SYSTEM "kaynak">`
+   tanımını bir **kısaltma tablosuna** kaydeder (`ad` → `kaynak`).
+2. Ayrıştırıcı belgenin gövdesini işlerken `&ad;` biçiminde bir referansla karşılaşırsa, kısaltma tablosundaki
+   `kaynak`'ı **açar** (dosyayı okur ya da ağ isteği yapar) ve içeriğini `&ad;`'nin yerine **yerleştirir**.
+3. Bu yerleştirme, uygulamanın kendi mantığı devreye girmeden, **ayrıştırma sırasında** olur; uygulama XML'i
+   "okumayı bitirdiğinde" varlık zaten genişletilmiş, dosya içeriği belge metnine karışmıştır.
+4. Eğer uygulama bu genişletilmiş metni herhangi bir biçimde kullanıcıya geri gösteriyorsa (bir hata iletisinde,
+   bir yanıt alanında), dosyanın içeriği **sızdırılmış** olur; kaynak bir ağ adresiyse bu aynı zamanda sunucunun
+   iç ağa istek göndermesi (SSRF, 3. hafta) anlamına gelir.
+
+Kritik nokta yine aynı: ayrıştırıcı hata yapmıyor, DTD standardını **tam olarak** uyguluyor. Aşağıdaki
+sağlamlaştırma, bu dört adımın **birinci adımını** (DTD'nin hiç işlenmesini) ve **ikinci adımını** (dış
+kaynaklı varlıkların açılmasını) baştan kapatır; böylece 3–4. adımlara hiç sıra gelmez.
+
+!!! danger "Sık yapılan hata: yalnız kullanıcı girdisini doğrulayıp XML ayrıştırıcısını olduğu gibi bırakmak"
+    Girdi doğrulama (beyaz liste, uzunluk sınırı) XML'in **içeriğine** bakar; ama XXE, belgenin **yapısal**
+    bir özelliğini (DTD/varlık tanımı) kötüye kullanır. "İçerik güvenli görünüyordu" demek yeterli değildir —
+    varlık genişletme, ayrıştırıcı düzeyinde, uygulamanın hiçbir girdi denetimine uğramadan gerçekleşir.
+
+!!! success "Kural"
+    Uygulamanız DTD ya da dış varlık kullanmıyorsa (çoğu web servisi kullanmaz), ayrıştırıcıda bunları **her
+    zaman** kapatın (`disallow-doctype-decl`, dış varlıkları reddetme). Bu, "ihtiyacınız olmayanı kapatın"
+    ilkesinin (Bölüm 8'in girişindeki kural) en doğrudan uygulamasıdır.
+
 ```java title="XXE'ye karşı ayrıştırıcıyı sağlamlaştırmak (IDS17-J)"
 DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
 f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);   // DTD yok
@@ -596,6 +1015,19 @@ komut kanalından geçirme.** Kitabın Tarif 3.10'daki XSS önerileri (çıktıy
 doğrulamak) bugünkü web çerçevelerinin varsayılan davranışı haline gelmiştir; ama bir şablonda "ham HTML" seçeneğini
 açmak ya da bir sayfayı dize birleştirerek üretmek aynı hatayı geri getirir.
 
+### XSS'te aynı mekanizma: tarayıcı HTML'i nasıl ayrıştırır?
+
+XXE'deki "ayrıştırıcı, dış kaynaklı içeriği genişletir" fikrinin tam karşılığı, XSS'te **tarayıcının** HTML
+ayrıştırıcısıdır. `"<p>" + yorum + "</p>"` gibi bir dize birleştirmede, `yorum` değişkeni bir HTML **etiket
+açma karakteri** (`<`) içeriyorsa, tarayıcı bu karakteri gördüğü anda "metin durumundan" "etiket durumuna"
+geçer — SQL ayrıştırıcısının `'` karakterinde durum değiştirmesiyle birebir aynı mekanizma. Sonuç: kullanıcının
+yazdığı metnin bir kısmı, sayfanın **yapısının** (yeni bir etiket, dolayısıyla çalıştırılabilir bir betik
+etiketi) bir parçası olur ve bu HTML'i görüntüleyen **her kullanıcının** tarayıcısında çalışır — SQL
+enjeksiyonundan farkı, kurbanın veritabanı değil, sayfayı açan **başka bir kullanıcı** olmasıdır. Şablon
+motorlarının "otomatik kaçışı" tam olarak Bölüm 4'teki parametreli sorguyla aynı işi yapar: kullanıcı verisini
+HTML **söz dizimi** olarak değil, salt **metin içeriği** olarak kodlar (`<` yerine `&lt;` yazar), böylece
+ayrıştırıcı hiçbir zaman "etiket durumuna" geçmez.
+
 ---
 
 ## 9. Yorumlanan diller: Python ve JavaScript'te aynı hatalar
@@ -603,6 +1035,8 @@ açmak ya da bir sayfayı dize birleştirerek üretmek aynı hatayı geri getiri
 İzlence bu haftayı "Java ve yorumlanan diller" diye adlandırır. Python, JavaScript (Node.js), Ruby, PHP gibi dillerde
 de bellek güvenliği bedavadır; ama bu diller **çalışma anında kod üretip çalıştırmayı** Java'dan çok daha kolay hale
 getirir. Aynı hata sınıfları burada farklı adlarla karşımıza çıkar:
+
+![Yorumlanan dillerde aynı hataların karşılıkları](assets/h05-12-yorumlanan-diller.svg)
 
 | Hata | Java | Python | JavaScript / Node.js |
 | --- | --- | --- | --- |
@@ -629,6 +1063,17 @@ deger = int(girdi)                  # En iyisi: beklenen türü doğrudan ayrı�
 
 Kural basittir: **kullanıcı verisi `eval`, `exec`, `new Function` ya da bir betik motoruna asla ulaşmamalı.** Bir hesap
 makinesi ya da kural motoru gerekiyorsa, yalnız izin verilen işlemleri tanıyan küçük bir ayrıştırıcı yazılır.
+
+!!! danger "Sık yapılan hata: 'girdiyi süzdüm, sonra eval ettim' demek"
+    Tehlikeli sözcükleri (`import`, `os`, `__`) aramak ve bulunmazsa `eval` etmek yaygın ama kırılgan bir
+    savunmadır: Python'da aynı işlevi başka adlarla çağırmanın (dolaylı erişimlerle) yolları vardır ve bu liste
+    hiçbir zaman tam olmaz. `eval`'in kendisi kod kanalıdır; kanalın önüne süzgeç koymak, kanalı **kapatmaktan**
+    daha zayıftır.
+
+!!! success "Kural"
+    Kullanıcı girdisini bir dilin tam yorumlayıcısına hiç vermeyin. Yalnız sabitleri kabul eden bir ayrıştırıcı
+    (`ast.literal_eval`) ya da beklenen türü doğrudan ayrıştıran bir fonksiyon (`int`, `float`) kullanın; bu
+    ikisi kod **çalıştırmaz**, yalnız veri **okur**.
 
 ### Seri durumdan çıkarma: `pickle` ve YAML
 
@@ -661,6 +1106,60 @@ Tek bir istek, sunucunun bir işlemcisini saniyelerce ya da dakikalarca meşgul 
 2. Girdinin uzunluğunu düzenli ifadeden **önce** sınırlayın (4. haftadaki "önce uzunluk" ilkesi).
 3. Mümkünse doğrusal zamanlı bir motor kullanın (RE2 ve türevleri).
 4. Statik analiz araçlarının ReDoS kurallarını açın.
+
+### İşlenmiş örnek: geri izleme neden üstel büyür? Elle sayalım
+
+Yukarıdaki "milyonlarca yol dener" cümlesini soyut bırakmayalım; küçük bir girdi üzerinde **gerçekten** kaç yol
+denendiğini sayalım. Desen `^(a+)+$` iki iç içe tekrardan oluşur: iç `(a+)` "bir ya da daha çok `a`" demektir,
+dış `(...)"+"` bu grubu "bir ya da daha çok kez" tekrarlar. Motor bir `a` dizisini, iç grubu **kaç parçaya
+böleceğine** dair bütün olasılıkları dener — buna bir sayının **kompozisyonları** (compositions) denir.
+
+Girdi olarak yalnız 4 tane `a` alalım (`"aaaa"`) ve motorun iç grubu bu 4 `a`'yı kaç farklı biçimde
+bölümleyebileceğini elle çıkaralım (her bölüm en az 1 `a` içermeli, çünkü `a+` boş olamaz):
+
+| # | Bölümleme (dış grubun kaç kez çalıştığı) | Parçalar |
+| --- | --- | --- |
+| 1 | 1 kez | `aaaa` |
+| 2 | 2 kez | `aaa` + `a` |
+| 3 | 2 kez | `aa` + `aa` |
+| 4 | 2 kez | `a` + `aaa` |
+| 5 | 3 kez | `aa` + `a` + `a` |
+| 6 | 3 kez | `a` + `aa` + `a` |
+| 7 | 3 kez | `a` + `a` + `aa` |
+| 8 | 4 kez | `a` + `a` + `a` + `a` |
+
+Tam **8** farklı bölümleme var. Genel kural: `n` tane `a`'nın kompozisyon sayısı `2^(n-1)`'dir (`n=4` için
+`2³=8`, tablo bunu doğruluyor). Girdi `"aaaa"` tek başına **eşleşir** (desen `$` ile biter, tam eşleşme başarılı
+olur), bu yüzden motor ilk denemede durabilir. Ama girdinin sonuna eşleşmeyi **bozan** tek bir karakter
+eklersek (`"aaaa!"`), `$` hiçbir zaman sağlanamaz; motor **8 bölümlemenin hepsini** dener, hepsi başarısız olur,
+sonunda "eşleşme yok" der — ama bu sonuca varmadan önce bütün yolları tüketmiştir.
+
+`n` büyüdükçe deneme sayısı `2^(n-1)` ile **üstel** büyür:
+
+| `n` (kaç `a`) | Deneme sayısı `2^(n-1)` | Yorum |
+| --- | --- | --- |
+| 4 | 8 | Elle sayılabilir |
+| 10 | 512 | Göz açıp kapayıncaya kadar |
+| 20 | 524.288 | Hâlâ hızlı |
+| 30 | ≈ 536 milyon | Fark edilir gecikme |
+| 40 | ≈ 549 milyar | Saniyeler–dakikalar |
+| 50 | ≈ 562 trilyon | Pratikte "asla bitmez" |
+
+Saldırganın yapması gereken tek şey, `n`'i yeterince büyütüp (ör. 40-50 karakter, hiç uzun değil) sonuna
+eşleşmeyi bozan **bir** karakter eklemektir; girdi kilobayt mertebesinde bile değildir, ama sunucunun tek bir
+işlem çekirdeğini dakikalarca kilitleyebilir. Bu, dördüncü haftadaki "küçük girdi, orantısız etki" fikrinin
+düzenli ifade karşılığıdır.
+
+!!! danger "Sık yapılan hata: 'düzenli ifade zaten hızlıdır' varsayımı"
+    Basit desenler (`^[0-9]+$` gibi) gerçekten doğrusal zamanda çalışır; sorun yalnız **iç içe tekrarlarda**
+    (bir tekrarın içinde başka bir tekrar, ya da birbirinin alt kümesi olan iki alternatif) ortaya çıkar. Bir
+    deseni test ederken yalnız "geçerli" girdilerle denemek bu hatayı **saklar**; ReDoS test edilmediği sürece
+    üretimde ilk kez bir saldırganla karşılaşılır.
+
+!!! success "Kural"
+    Bir düzenli ifadeyi kabul etmeden önce iki soru sorun: (1) aynı karakteri iki farklı grup **aynı anda**
+    eşleştirebilir mi (belirsizlik = geri izleme riski)? (2) girdi uzunluğu düzenli ifadeden **önce** sınırlı
+    mı? İkisine de "hayır" ise desen ReDoS'a açıktır.
 
 ### Prototip kirlenmesi (JavaScript)
 
@@ -706,9 +1205,36 @@ public boolean pinDogru(java.lang.String);
      6: ireturn
 ```
 
+### Bayt kodu satır satır: JVM bir yığın makinesidir
+
+Yukarıdaki dört satırı hiç bayt kodu görmemiş biri için de okunur hale getirelim. JVM bir **yığın makinesidir**:
+her komut, küçük bir yığına (stack) değer **iter** (push) ya da yığından değer **çeker** (pop):
+
+| Satır | Komut | Ne yapar? | Yığının durumu (işlemden sonra) |
+| --- | --- | --- | --- |
+| `0` | `aload_1` | 1 numaralı yerel değişkeni (metodun ilk parametresi, girilen PIN) yığına **it** | `[girilenPin]` |
+| `1` | `ldc #7` | Sabit havuzundaki 7 numaralı girişi (dizge `"4729"`) yığına **it** | `[girilenPin, "4729"]` |
+| `3` | `invokevirtual #9` | Yığından iki değeri **çek**, `String.equals(...)` metodunu çağır, sonucu (true/false) yığına **it** | `[sonuc]` |
+| `6` | `ireturn` | Yığındaki tamsayı/boole değeri metodun **dönüş değeri** olarak ver | `[]` |
+
+Bu dört satır, kaynaktaki `return girilenPin.equals("4729");` ifadesinin **birebir** karşılığıdır — hiçbir bilgi
+kaybolmamıştır. `// String 4729` yorumu, `javap`'ın sabit havuzundaki 7 numaralı girişi okuyup göstermesidir;
+geri derleyiciler (jadx, CFR) bu dört satırı görüp doğrudan `return girilenPin.equals("4729");` **kaynak
+kodunu** üretir. C'de `strip` sonrası eşdeğer makine kodunda ne sabitin değeri ne de `equals` çağrısının hangi
+tür üzerinde olduğu bu kadar açık kalırdı (dördüncü haftadaki makine kodu örnekleriyle karşılaştırın).
+
 Kaynak kod olmadan bile üç şey açıkça görünür: sabit (`4729`), anlamlı adlar (`GECERLI_PIN`, `pinDogru`) ve mantık
 ("girdiyi şu sabitle karşılaştır"). Koda gömülü bir parola, API anahtarı ya da sunucu adresi, uygulamayı indiren herkese
 verilmiş demektir (MSC03-J, CWE-798).
+
+!!! danger "Sık yapılan hata: 'kaynak kodu vermiyorum, güvendeyim' sanmak"
+    Bir `.jar` ya da `.apk` dosyası dağıtmak, kaynak kodu vermemek anlamına gelmez: yukarıdaki tabloya göre bayt
+    kodu neredeyse kaynak kodun kendisidir. "Kapalı kaynak" ile "tersine çevrilemez" birbirinden farklı şeylerdir.
+
+!!! success "Kural"
+    İstemci tarafındaki bir Java/Kotlin uygulamasına giden her sabiti (anahtar, PIN, sunucu adresi, iş kuralı)
+    "bunu gören biri kaynak kodu okuyormuş gibi düşünsün" varsayımıyla yazın. Bölüm 11–12, bu görünürlüğü
+    **zorlaştıran** (ortadan kaldırmayan) araçları gösterecek.
 
 !!! warning "İstemcide sır yoktur"
     Gizleme bu bölümde anlatılanları **zorlaştırır**, ama bir sırrı istemci uygulamasında gerçekten saklamanın yolu
@@ -788,6 +1314,37 @@ korunması gerekir; aksi halde uygulama çalışma anında `ClassNotFoundExcepti
 Kural yazmanın altın ilkesi **en dar kuralı** yazmaktır. `-keep class com.ornek.** { *; }` gibi geniş bir kural
 gizlemeyi fiilen kapatır; bu, sahada en sık görülen "gizleme var ama işe yaramıyor" durumudur.
 
+### İşlenmiş örnek: eksik `-keep` neden uygulamayı çökertir
+
+Bir sınıfın adı yansımayla (`Class.forName("com.ornek.Odeme")`) çağrılıyorsa ama `proguard-rules.pro` içinde bu
+sınıf için `-keep` yoksa, adım adım şu olur:
+
+1. Derleme sırasında ProGuard/R8, `com.ornek.Odeme` sınıfına **hiçbir statik çağrı görmez** — çünkü çağrı
+   `Class.forName` içindeki bir **dizge** olarak yazılıdır; gizleyici dizgeleri sınıf grafiğinin parçası saymaz.
+2. Gizleyici bu sınıfı "kullanılmıyor" sanıp **küçültme** aşamasında kaldırır ya da adını `a.b.c`'ye değiştirir.
+3. Uygulama çalışırken `Class.forName("com.ornek.Odeme")` çağrılır; ama sürümdeki sınıfın adı artık farklıdır
+   (ya da sınıf hiç yoktur).
+4. Çalışma anında `ClassNotFoundException` (sınıf silinmişse) ya da `NoSuchMethodException` (metot adı
+   değişmişse) fırlatılır — bu, **yalnızca sürüm (release) derlemesinde** görülür, çünkü hata ayıklama
+   derlemesinde gizleme kapalıdır (Bölüm 13); geliştirici sorunu genelde ancak mağaza testinde fark eder.
+
+```text title="Eksik -keep'in tipik çökme izi (illüstratif)"
+java.lang.ClassNotFoundException: com.ornek.Odeme
+    at java.lang.Class.forName(Class.java:...)
+    at com.ornek.a.b.baslat(Unknown Source:1)
+```
+
+!!! danger "Sık yapılan hata: yansımayla çağrılan sınıfı unutmak"
+    Statik çağrılar derleyici tarafından görülür ve otomatik olarak korunur; **yansıma, JNI ve serileştirme
+    alanları görülmez**, çünkü bunlar sınıf grafiğinde değil, çalışma anında çözülen dizgelerde yaşar. Bir
+    kütüphane eklendiğinde (ör. JSON çözücü, bağımlılık enjeksiyonu) onun **hangi sınıfları adla çağırdığını**
+    bilmeden gizleme açmak, üretimde rastgele çökmelere yol açar.
+
+!!! success "Kural"
+    Yeni bir kütüphane eklediğinizde önce onun resmi ProGuard/R8 kurallarını (çoğu kütüphane kendi
+    `consumer-rules.pro` dosyasını taşır) ekleyin; sonra sürüm derlemesini **gerçekten çalıştırıp test edin**.
+    "Derlendi" ile "çalışıyor" ProGuard/R8 açıkken aynı şey değildir.
+
 ### Gelişmiş kurallar: sahadan bir yapılandırma
 
 Sertifikasyondan geçmiş bir mobil ödeme kütüphanesinin gizleme yapılandırmasında şu kurallar ve gerekçeleri yer alır
@@ -823,6 +1380,8 @@ yöntemleri gerekir (sonraki bölüm).
 Demo 4'teki sızıntının iki kaynağı vardı: **düz metin sabitler** ve **doğrudan çağrılar**. İki basit yöntem bunları
 azaltır.
 
+![Dize gizleme ve dinamik yöntem çağrısı](assets/h05-13-dize-gizleme.svg)
+
 ### Statik dize gizleme
 
 Hassas dizge kaynakta düz metin olarak değil, **şifrelenmiş ya da karıştırılmış bir bayt dizisi** olarak durur ve
@@ -835,6 +1394,49 @@ kullanım anında çözülür. Sabit havuzunda dizgenin kendisi yerine anlamsız
   bitince bellekten silinir. Böylece Java tarafında ne dizgenin kendisi ne de çözme anahtarı bulunur.
 - Çözülen dizge kullanım anında bellekte açıktır; bu yüzden dize gizleme, çalışma anı korumasıyla (RASP, 6. hafta)
   birlikte anlam kazanır.
+
+### İşlenmiş örnek: XOR gizlemeyi elle çözmek
+
+Demo 5'in `GizliSabit.java` dosyası, `"sunucu-anahtari-9F3A"` sentetik dizgesini XOR anahtarı `0x5A` (ondalık 90)
+ile karıştırıp bayt dizisi olarak saklar. Kaynaktaki dizinin ilk üç baytını (`41, 47, 52`) elle çözelim; XOR'un
+tanımı gereği aynı anahtarla **iki kez** XOR'lamak orijinal değeri geri verir (`x ⊕ k ⊕ k = x`) — bu yüzden
+şifreleme ve çözme **aynı** işlemdir:
+
+```text title="1. bayt: 41 ⊕ 90 = 's' (0x73)"
+  41 = 0010 1001
+  90 = 0101 1010
+  ----------------  (bit bit XOR: aynıysa 0, farklıysa 1)
+ 115 = 0111 0011  =  0x73  =  's'
+```
+
+```text title="2. bayt: 47 ⊕ 90 = 'u' (0x75)"
+  47 = 0010 1111
+  90 = 0101 1010
+  ----------------
+ 117 = 0111 0101  =  0x75  =  'u'
+```
+
+```text title="3. bayt: 52 ⊕ 90 = 'n' (0x6E)"
+  52 = 0011 0100
+  90 = 0101 1010
+  ----------------
+ 110 = 0110 1110  =  0x6E  =  'n'
+```
+
+Kalan 17 bayt aynı işlemle çözülür ve sırasıyla `u, c, u, -, a, n, a, h, t, a, r, i, -, 9, F, 3, A` karakterlerini
+verir; birleştirince tam olarak kaynaktaki `"sunucu-anahtari-9F3A"` dizgesi ortaya çıkar. `javap -c -p` bu dizgeyi
+**değil**, yalnızca 20 anlamsız bayt değeri ve `ANAHTAR` sabitini gösterir; `strings` taraması da düz metni
+bulamaz. Ama anahtar (`0x5A`) ve çözme döngüsü **aynı sınıfın içindedir** — bu yüzden aşağıdaki uyarı geçerlidir.
+
+!!! danger "Sık yapılan hata: XOR gizlemeyi 'şifreleme' sanmak"
+    Tek baytlık bir XOR anahtarı, yalnız 256 olasılıktan biridir; anahtar ve çözme kodu aynı `.class` dosyasında
+    bulunduğu için bir geri derleyici ikisini de görüp aynı hesabı **otomatik** yapabilir. Bu, kriptografik bir
+    şifreleme değil, `javap`/`strings` gibi **düz metin tarayan** araçları yavaşlatan bir engeldir.
+
+!!! success "Kural"
+    Dize gizleme "sırrı saklar" demek değildir; "sabit havuzunda düz metin bırakmaz" demektir. Gerçekten hassas
+    bir değer (üretim sunucusunun adresi, gerçek bir API anahtarı) hiçbir zaman istemci koduna gömülmemeli;
+    sunucudan çalışma anında alınmalı ya da 11. haftadaki whitebox kriptografi gibi özel yöntemlerle korunmalıdır.
 
 ### Dinamik yöntem çağrısı (yansıma)
 
@@ -897,6 +1499,8 @@ yazılır). Yansıma ayrıca yavaştır ve derleme anındaki tip denetimini kayb
 
 ## 13. Android'de R8, gizlemenin etkisini ölçmek ve Java için statik analiz
 
+
+![R8 ile gizleme ve etkisini ölçme adımları](assets/h05-14-r8-olcme.svg)
 ### Android derleme hattında R8
 
 Android uygulamalarında R8, Gradle yapılandırmasındaki birkaç satırla açılır. Sürüm derlemesinde açık olması, mobil
@@ -952,6 +1556,31 @@ numaralarını pakete koyar; bu da bir ödünleşimdir ve kayda geçirilir.
 
 Bu tabloyu gizleme öncesi ve sonrası için doldurup güvenlik kılavuzuna koymak, "gizleme yapıldı" iddiasını kanıta
 dönüştürür.
+
+### İşlenmiş örnek: ölçümü Demo 5 üzerinde adım adım yapmak
+
+Bu tablonun ilk iki satırını Demo 5'in ürettiği jar dosyaları üzerinde gerçekten çalıştıralım (demo `hazirla`
+betiğiyle ProGuard'ı indirdiyseniz):
+
+```bash title="1) Gizleme oncesi: anlamli ad sayisini say"
+cd code/week-05/05-gizleme/cikti
+javap -p -classpath oncesi.jar 'GizliSabit' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
+# Cikti: kaynaktaki adlarin hepsi (sinif, alan, metot) birebir gorunur
+```
+
+```bash title="2) Gizleme sonrasi: ayni arama"
+javap -p -classpath sonrasi.jar 'a' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
+# Beklenen: 0 (ya da yalnizca -keep ile korunan giris noktasinin adi)
+```
+
+```bash title="3) Paket boyutu"
+ls -la oncesi.jar sonrasi.jar
+# Kucultme sinif sayisina bagli olarak boyutu azaltir; tek basina gizleme boyutu pek degistirmez
+```
+
+Bu üç komut, "gizleme çalıştı" iddiasını **ölçülebilir bir sayıya** dönüştürür: birinci komutun çıktısı
+sıfırdan büyükse (anlamlı ad hâlâ bulunuyorsa), ya `-keep` kuralı fazla geniş yazılmıştır ya da gizleme aşaması
+hiç çalışmamıştır — ikisi de Bölüm 11'deki "sahada en sık görülen hata" ile aynı belirtidir.
 
 ### Java için statik analiz
 
@@ -1053,6 +1682,53 @@ tarafından okunabilir biçimde yayımlamak için **VEX** (Vulnerability Exploit
       herkese açık depoda sahte bir paketle ele geçirilmesi) saldırılarına karşı paket kaynağını sabitle.
 - [ ] **Derleme bütünlüğü:** 2. haftadaki tedarik zinciri olayları ve SLSA çerçevesi: derlemenin kendisi de kanıtlanabilir
       olmalı.
+
+!!! danger "Sık yapılan hata: SBOM'u bir kere üretip unutmak"
+    SBOM, üretildiği **andaki** bağımlılık listesidir. Bir sürüm sonra yeni bir kütüphane eklenir ya da bir
+    sürüm yükseltilirse, eski SBOM artık **yanlış** bilgi verir — üstelik yanlış olduğu hiçbir yerde yazmaz,
+    sadece güncel değildir. Log4Shell'de asıl zaman kaybı, "SBOM'umuz vardı ama üç ay önceki sürüme aitti"
+    durumundan kaynaklandı.
+
+!!! success "Kural"
+    SBOM, derleme hattının (CI) her çalışmasında **otomatik** üretilmeli ve bir SCA aracına gönderilmelidir; elle
+    bir kez hazırlanıp belgeye eklenen bir SBOM, üretildiği gün doğrudur, bir sonraki bağımlılık güncellemesinde
+    değil.
+
+### İşlenmiş örnek: Demo 6'nın çıktısını satır satır okumak
+
+Demo 6 (`sbom.py`), dört sentetik kütüphaneden küçük jar dosyaları üretir, her biri için CycloneDX bileşeni
+yazar ve küçük bir "bilinen zafiyetli sürümler" sözlüğüyle eşleştirir. Gerçek çıktı (bileşen adları ve sürümleri
+kaynak koddaki sabit listeden):
+
+```text title="ADIM 1 — SBOM uretildi (4 bilesen)"
+ad                     surum    SHA-256 (ilk 16)
+gunluk-cekirdek        2.14.0   <jar baytlarindan hesaplanir>...
+json-arac              2.5.1    <jar baytlarindan hesaplanir>...
+kayit-kutuphanesi      1.2.0    <jar baytlarindan hesaplanir>...
+sifreleme-yardimci     3.0.4    <jar baytlarindan hesaplanir>...
+```
+
+```text title="ADIM 2 — purl ornekleri"
+pkg:maven/ornek.grup/gunluk-cekirdek@2.14.0
+pkg:maven/ornek.grup/json-arac@2.5.1
+pkg:maven/ornek.grup/kayit-kutuphanesi@1.2.0
+pkg:maven/ornek.grup/sifreleme-yardimci@3.0.4
+```
+
+```text title="ADIM 3 — Bilinen (sentetik) zafiyetli surumlerle eslestirme"
+[UYARI] gunluk-cekirdek 2.14.0  (CEN429-2026-0001)
+        Bicimli mesajda uzaktan kod calistirma (sentetik ornek).
+        Cozum: >= 2.17.1 surumune yukselt.
+[UYARI] json-arac 2.5.1  (CEN429-2026-0002)
+        Guvensiz seri durumdan cikarma (sentetik ornek).
+        Cozum: >= 2.6.0 surumune yukselt.
+```
+
+SHA-256 değerleri her çalıştırmada **farklı** çıkar (üretilen jar'ın ZIP meta verisi zaman damgası içerir); bu
+kasıtlıdır ve iyi bir tedarik zinciri dersidir — özet, dosyanın **tam olarak hangi bayt dizisi** olduğunu
+doğrular, yalnız "ad ve sürüm aynı" demek yeterli değildir. `kayit-kutuphanesi` ve `sifreleme-yardimci`, sentetik
+zafiyet listesinde bulunmadığı için **uyarı almaz** — bir SBOM'un boş kalan kısmı da bilgidir: "bu bileşenler
+bilinen listede yok" demektir, "güvenli" demek değildir.
 
 ### Demo 6 — SBOM üretmek ve zafiyetle eşleştirmek
 
@@ -1181,6 +1857,70 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
 ??? question "12. SBOM'da purl ve özet değeri neden bulunur? VEX ne işe yarar?"
     purl bileşeni ekosistemden bağımsız tek biçimde tanımlar; özet dosyanın gerçekten o bileşen olduğunu doğrular. VEX,
     bir bileşendeki zafiyetin ürünü gerçekten etkileyip etkilemediğini bildirir.
+
+??? question "13. SQL ayrıştırıcısı, girdideki bir `'` karakteriyle karşılaştığında hangi duruma geçer? Bu durum neden sorgunun yapısını değiştirir?"
+    "Dize sabiti başladı/bitti" durumuna geçer. Girdideki `'`, açık olan bir dize sabitini erken kapatır; ondan
+    sonraki metin artık dize içeriği değil, normal SQL söz dizimi (anahtar sözcük, operatör) olarak okunur.
+
+??? question "14. Parametreli sorguda `hazırlama` (prepare) ve `bağlama` (bind) aşamaları neden ayrıdır? Bu ayrım enjeksiyonu nasıl engeller?"
+    Hazırlama aşamasında yalnız sabit sorgu metni ayrıştırılıp bir plana dönüştürülür; kullanıcı verisi henüz
+    yoktur. Bağlama aşamasında değerler ayrı bir kanaldan, zaten ayrıştırılmış plana yerleştirilir ve bir daha
+    hiç ayrıştırıcıdan geçmez; bu yüzden içeriği ne olursa olsun sorgunun yapısını değiştiremez.
+
+??? question "15. Kabuk, `echo Merhaba ayse; echo SIZDI` dizgesini kaç komut olarak çalıştırır? Neden?"
+    İki komut. Kabuk, aldığı metni önce `;` gibi komut ayırıcılara göre ayrı komutlara böler; bu, kabuğun kendi
+    söz dizimi kuralıdır ve Java'nın "bu tek bir kullanıcı adıydı" bilgisiyle ilgisi yoktur.
+
+??? question "16. `KOK.resolve("../../etc/passwd")` ifadesini yığın (stack) algoritmasıyla adım adım çözün: sonuç nedir?"
+    Her `..` segmenti yığından bir önceki segmenti pop'lar, her normal segment yığına push'lanır. İki `..`,
+    kökün son iki segmentini (`srv`, `veri`) çıkarır; kalan `etc` ve `passwd` push'lanır. Sonuç `/etc/passwd` —
+    kökün tamamen dışında.
+
+??? question "17. `ObjectInputStream`, akıştaki hangi bilgiyi okuyarak hangi sınıfın oluşturulacağına karar verir? Bu bilgi kim tarafından belirlenir?"
+    Akıştaki sınıf tanımlayıcısı bloğunda düz metin olarak yazılan **tam sınıf adını** okur ve bu adı
+    `Class.forName` benzeri bir çağrıyla yükler. Bu adı akışı **gönderen taraf** belirler; akış güvenilmezse
+    saldırgan belirler.
+
+??? question "18. XXE'de bir `SYSTEM` varlığının içeriği ne zaman "genişletilir"? Uygulamanın girdi doğrulaması bunu neden yakalayamaz?"
+    Ayrıştırma sırasında, belge gövdesi işlenirken; uygulamanın kendi mantığı devreye girmeden önce. Girdi
+    doğrulama içeriğe bakar, ama varlık genişletme belgenin **yapısal** bir özelliğidir; uygulamanın hiçbir
+    denetiminden geçmeden ayrıştırıcı düzeyinde gerçekleşir.
+
+??? question "19. `^(a+)+$` deseninde girdi 4 tane `a` içeriyorsa, motorun iç grubu bölümleme sayısı kaçtır? Genel formül nedir?"
+    8 (`2^(4-1) = 2^3 = 8`). Genel formül: `n` tane `a` için `2^(n-1)` farklı bölümleme (kompozisyon) vardır.
+
+??? question "20. `^(a+)+$` deseninde girdinin sonuna eşleşmeyi bozan tek bir karakter eklemek (`"aaaa!"` gibi) neden ReDoS'u tetikler?"
+    Girdi hâlâ kısa olsa da (`n` küçük), eşleşme `$` ile asla sağlanamadığı için motor mümkün olan **bütün**
+    `2^(n-1)` bölümlemeyi dener ve hepsi başarısız olduktan sonra "eşleşme yok" sonucuna varır; `n` büyüdükçe bu
+    sayı üstel büyür.
+
+??? question "21. Java bayt kodunda `ldc` ve `invokevirtual` komutları JVM yığınında ne yapar?"
+    `ldc`, sabit havuzundaki bir değeri (sayı, dizge) yığına iter. `invokevirtual`, yığından gerekli işlenenleri
+    (nesne ve argümanlar) çeker, ilgili metodu çağırır ve varsa dönüş değerini yığına geri iter.
+
+??? question "22. Bir sınıf yalnız yansımayla (`Class.forName`) çağrılıyorsa ve `-keep` kuralı yoksa, ProGuard/R8 bu sınıfı neden "kullanılmıyor" sanabilir?"
+    Yansımalı çağrı bir dizge (çalışma anında değerlendirilen metin) olarak yazılıdır; gizleyici yalnız statik
+    çağrı grafiğini izler, dizge içeriğini sınıf kullanımı saymaz. Bu yüzden sınıf küçültmede kaldırılabilir ya
+    da adı değiştirilebilir, çalışma anında `ClassNotFoundException`/`NoSuchMethodException` oluşur.
+
+??? question "23. XOR ile gizlenmiş bir dizgeyi geri çözmek için saldırgana ne gerekir? Bu neden XOR gizlemeyi zayıf bir savunma yapar?"
+    Anahtar ve çözme döngüsü, gizlenen dizgeyle **aynı sınıfın içindedir**; bir geri derleyici ikisini görüp
+    aynı XOR işlemini otomatik tekrarlayabilir. Bu yüzden XOR gizleme kriptografik bir kilit değil, yalnız düz
+    metin tarayan araçları (strings, javap) yavaşlatan bir engeldir.
+
+??? question "24. SBOM'daki bir bileşenin bilinen bir CVE ile eşleşmesi neden otomatik olarak "etkilendik" anlamına gelmez? Bu farkı hangi belge türü bildirir?"
+    Zafiyetli kod eşleşse bile, o fonksiyon uygulama tarafından hiç çağrılmıyor olabilir. VEX (Vulnerability
+    Exploitability eXchange) belgeleri, bir bileşendeki bilinen zafiyetin ürünü gerçekten etkileyip
+    etkilemediğini makine tarafından okunabilir biçimde bildirir.
+
+??? question "25. Demo 1'in kötü yolunda `ad = ' OR rol='yonetici' --` girdisiyle parola alanına ne yazılırsa yazılsın giriş neden başarılı olur?"
+    `--`, SQL'de satır sonuna kadar yorum başlatır; ayrıştırıcı bu karakterden sonraki `AND parola_ozeti = '...'`
+    kısmını sorgunun bir parçası olarak hiç okumaz. Parola denetimi fiilen sorgudan silinmiş olur.
+
+??? question "26. Bir SBOM neden yalnızca üretildiği anda doğrudur? CI hattına neden otomatik olarak eklenmelidir?"
+    Bağımlılıklar her sürümde değişebilir (ekleme, kaldırma, sürüm yükseltme); elle üretilen bir SBOM bir
+    sonraki değişiklikle güncelliğini yitirir ama bunu hiçbir yerde belirtmez. CI'da her derlemede otomatik
+    üretilip bir SCA/izleme aracına gönderilirse, envanter her zaman **o anki** gerçek durumu yansıtır.
 
 ---
 

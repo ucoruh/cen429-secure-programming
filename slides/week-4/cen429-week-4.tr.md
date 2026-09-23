@@ -219,6 +219,12 @@ Kod sağlamlaştırma üç katmandır. Sıra önemli:
 
 ---
 
+# İki saldırgan modeli — şema
+
+![w:900](assets/h04-17-iki-saldirgan-modeli.svg)
+
+---
+
 # CI (sürekli entegrasyon)
 
 - **CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
@@ -239,6 +245,12 @@ yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · 
 <!-- _class: bolum -->
 
 # 1. Katmanlar ve SEI CERT
+
+---
+
+# CERT kuralının anatomisi — şema
+
+![w:900](assets/h04-15-cert-kural-anatomisi.svg)
 
 ---
 
@@ -1398,6 +1410,12 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 
 ---
 
+# Sembol ve dize gizleme — şema
+
+![w:900](assets/h04-18-sembol-dize-gizleme.svg)
+
+---
+
 # Kontrol akışı düzleştirme
 
 ```c
@@ -1412,6 +1430,12 @@ for (;;) switch (durum) {
 ```
 
 Blokların doğal komşuluğu kaybolur; sıra yalnız **durum değişkeninde**.
+
+---
+
+# Düzleştirme: önce/sonra — şema
+
+![w:900](assets/h04-19-duzlestirme-giris.svg)
 
 ---
 

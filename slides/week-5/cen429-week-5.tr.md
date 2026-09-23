@@ -99,6 +99,16 @@ Bugün bu ortak kökü ve dile özgü korumaları göreceğiz.
 
 ---
 
+# Neden bu bölüm var?
+
+Bu bölüm **hiçbir ön bilgi varsaymaz**.
+
+- Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz.
+- Bir terimi bilmiyorsanız önce **burayı** okuyun.
+- Sonraki bölümler bu terimlerin **üzerine** kurulur.
+
+---
+
 # Yönetilen dil nedir?
 
 - **Yönetilen dil:** belleği **otomatik** yöneten dil (Java, C#, Python, JS).
@@ -260,6 +270,28 @@ yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · 
 
 ---
 
+# CERT Oracle Java — şema
+
+![w:900](assets/h05-11-cert-java.svg)
+
+---
+
+<!-- _class: yogun -->
+
+# SEI CERT · bu haftaya dokunan kurallar
+
+| Kısaltma | Kategori | Kural (örnek) |
+| --- | --- | --- |
+| `IDS` | Girdi doğrulama | IDS00-J SQL · IDS07-J `Runtime.exec` · IDS16/17-J XML |
+| `FIO` | Girdi/çıktı | FIO16-J: yol adını kanonikleştir |
+| `SER` | Serileştirme | SER12-J: güvenilmeyen veriyi seri durumdan çıkarma |
+| `MSC` | Çeşitli | MSC03-J: koda gömülü hassas bilgi kullanma |
+| `ERR` | Hata işleme | ERR01-J: istisnada hassas bilgi sızdırma |
+
+Kimlikler `-J` sonekiyle biter.
+
+---
+
 # Java'da hassas veri
 
 - Java `String` **değişmezdir** (immutable) → bellekten silinemez.
@@ -294,6 +326,21 @@ Her enjeksiyon türünde aynı ilke:
 
 ---
 
+<!-- _class: yogun -->
+
+# Tek kanal mı, iki kanal mı? — tablo
+
+| Yorumlayıcı | Tek kanal (hatalı) | İki kanal (doğru) |
+| --- | --- | --- |
+| SQL motoru | `"...WHERE ad='" + ad + "'"` | `PreparedStatement` + `?` |
+| Kabuk | `exec("sh -c '...' " + host)` | `ProcessBuilder(...)` — kabuk yok |
+| Dosya sistemi | `new File(kok, istek)` | Kanonikleştir + kök denetimi |
+| XML | Dize birleştirerek XML kurmak | DOM/StAX API'siyle öğe oluşturmak |
+
+Aynı ilke, dört farklı yorumlayıcı.
+
+---
+
 # Enjeksiyon aileleri (bugün)
 
 - SQL enjeksiyonu
@@ -303,6 +350,16 @@ Her enjeksiyon türünde aynı ilke:
 - XML/XXE, şablon, XSS
 
 Hepsinin kökü ve çözümü **aynı mantık**.
+
+---
+
+# Bu bölümün kuralı
+
+> Yönetilen dil **bellek** hatasını çözer; **enjeksiyonu** çözmez.
+
+- Enjeksiyonun kökü hep aynı: veri = komut.
+- Çözüm hep aynı: veriyi koddan **ayır**.
+- Bu ilkeyi şimdi tek tek enjeksiyon türlerinde göreceğiz.
 
 ---
 
@@ -411,6 +468,15 @@ ps.executeQuery();
 
 ---
 
+# SQL enjeksiyonu · bu bölümün kuralı
+
+- Sorguyu **asla** string birleştirmeyle kurma.
+- **Her zaman** parametreli sorgu (`PreparedStatement`, `?`).
+- Ad/sütun gibi tanımlayıcılar için **beyaz liste**.
+- Kaçış (escaping) yalnız son çare.
+
+---
+
 <!-- _class: bolum -->
 
 # 3. Komut enjeksiyonu
@@ -474,6 +540,14 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 
 ---
 
+# Komut enjeksiyonu · bu bölümün kuralı
+
+- Mümkünse dış komut **hiç** çalıştırma.
+- Çalıştıracaksan: kabuksuz **argüman dizisi** (`ProcessBuilder`).
+- Sabit yol + beyaz liste; `-` ile başlayan girdiye dikkat (argüman enjeksiyonu).
+
+---
+
 <!-- _class: bolum -->
 
 # 4. Yol geçişi
@@ -508,6 +582,14 @@ Sonuç: `yuklenen/../../etc/passwd` → izin verilen klasörün **dışı**.
 
 ---
 
+# Neden oldu?
+
+- `adi`, dosya yoluna **doğrudan** eklendi.
+- `../` dizisi, yorumlayıcı (dosya sistemi) tarafından "üst klasöre çık" olarak okundu.
+- Denetim yoktu: hangi klasörün **dışına** çıkıldığı hiç sorulmadı.
+
+---
+
 # Doğru · kanonikleştir + kök denetimi
 
 ```java
@@ -520,11 +602,27 @@ Kanonik yol **kökün altında** mı? Değilse reddet.
 
 ---
 
+# Neden çalışır?
+
+- Önce yol **kanonik** (tek, kesin) hale getirilir.
+- Sonra kanonik yolun kök **içinde** olup olmadığı denetlenir.
+- `../`, kodlanmış biçim (`..%2f`) ya da sembolik bağlantı — hepsi kanonikleştirmeden **sonra** aynı gerçek yola iner; hiçbiri denetimden kaçamaz.
+
+---
+
 # Yol geçişi · ek
 
 - Dosya adını **beyaz listeyle** sınırla (`[a-zA-Z0-9_.-]`).
 - Sembolik bağlantılar (`symlink`) kanonikleştirmeyle çözülür.
 - Kullanıcı adını **doğrudan** dosya adı yapma.
+
+---
+
+# Yol geçişi · bu bölümün kuralı
+
+- Ham dizgeye **asla** güvenme (`contains("..")` yetmez).
+- Önce **kanonikleştir**, sonra **kök içinde mi** diye denetle.
+- Sembolik bağlantıları da çöz (`toRealPath()`); denetimi dosya açıldıktan sonra da tekrarla.
 
 ---
 
@@ -562,6 +660,16 @@ Kök aynı: **veriyi koddan/komuttan ayır**.
 <!-- _class: bolum -->
 
 # 5. Güvensiz seri durumdan çıkarma
+
+---
+
+# Hatalı kod
+
+```java
+Object o = new ObjectInputStream(giris).readObject();  // TEHLİKELİ
+```
+
+`giris` güvenilmeyen bir kaynaktan geliyorsa?
 
 ---
 
@@ -605,6 +713,14 @@ ois.setObjectInputFilter(f);
 
 - **Beyaz liste**: yalnız beklenen sınıflar.
 - Derinlik/boyut sınırı da koyun (DoS'a karşı).
+
+---
+
+# Deserialization · bu bölümün kuralı
+
+- Güvenilmeyen bayt akışını çıkarmak, saldırgana **sınıf seçme** yetkisi vermektir.
+- En iyisi: **hiç yapma** (JSON + katı şema).
+- Zorundaysan: **izin listesi filtresi**, derinlik/boyut sınırı.
 
 ---
 
@@ -656,9 +772,24 @@ dbf.setFeature(
 
 ---
 
+# XML/şablon/XSS · bu bölümün kuralı
+
+- Yorumlayıcının **hangi özelliği açık**, bil ve gereksizini kapat.
+- XML: dış varlık + DOCTYPE kapalı.
+- Şablon: kullanıcı verisi yalnız **değişken**, asla şablonun kendisi.
+- HTML: çıktıyı **bağlama uygun** kodla.
+
+---
+
 <!-- _class: bolum -->
 
 # 7. Python ve JavaScript'te aynı hatalar
+
+---
+
+# Yorumlanan dillerde aynı hatalar — şema
+
+![w:900](assets/h05-12-yorumlanan-diller.svg)
 
 ---
 
@@ -677,11 +808,37 @@ dbf.setFeature(
 
 ---
 
+# Python · `eval` örneği (kod)
+
+```python
+deger = eval(girdi)                 # HATALI: herhangi bir Python ifadesi
+
+import ast
+deger = ast.literal_eval(girdi)     # Daha iyi: yalnız sabitler
+deger = int(girdi)                  # En iyisi: beklenen türü ayrıştır
+```
+
+Kural: kullanıcı verisi `eval`'e **asla** ulaşmamalı.
+
+---
+
 # ReDoS (düzenli ifade DoS)
 
 - Kötü bir **regex**, belirli girdilerde **üstel** zaman harcayabilir.
 - Saldırgan bununla CPU'yu kilitler.
 - Çözüm: güvenli regex, girdi uzunluğu sınırı, zaman aşımı.
+
+---
+
+# ReDoS · somut örnek
+
+```text
+Desen:  ^(a+)+$
+Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
+```
+
+- Motor, eşleşmeyi kanıtlamak için **milyonlarca** yol dener.
+- Tek istek, işlemciyi saniyelerce/dakikalarca kilitler (CWE-1333).
 
 ---
 
@@ -750,6 +907,24 @@ javap -c -p Uygulama.class    # bayt kodunu sök
 
 ---
 
+<!-- _class: kucuk -->
+
+# `javap` çıktısı — ne görünüyor?
+
+```text
+private static final java.lang.String GECERLI_PIN;
+public boolean pinDogru(java.lang.String);
+  Code:
+     0: aload_1
+     1: ldc           #7    // String 4729
+     3: invokevirtual #9    // String.equals
+     6: ireturn
+```
+
+Kaynak kod yok, ama **sabit** (`4729`), **ad** (`GECERLI_PIN`, `pinDogru`) ve **mantık** ("girdiyi bu sabitle karşılaştır") açıkça görünüyor.
+
+---
+
 # Neden C'den daha kolay?
 
 - Bayt kodu **yüksek seviyeli** ve tür bilgisi taşır.
@@ -758,9 +933,23 @@ javap -c -p Uygulama.class    # bayt kodunu sök
 
 ---
 
+# ⚠️ İstemcide sır yoktur
+
+- Gizleme bunu **zorlaştırır**, ama sırrı gerçekten **saklamaz**.
+- İstemcide durmak zorunda olmayan anahtar/parola → **sunucuda** tutulur.
+- İstemcide durmak **zorunda** olan sır → whitebox kriptografi ister (11. hafta).
+
+---
+
 <!-- _class: bolum -->
 
 # 9. ProGuard ve R8
+
+---
+
+# R8 ve ölçme adımları — şema
+
+![w:900](assets/h05-14-r8-olcme.svg)
 
 ---
 
@@ -771,6 +960,19 @@ javap -c -p Uygulama.class    # bayt kodunu sök
 - **Küçültme (shrink):** kullanılmayan kodu atar.
 - **İyileştirme (optimize):** kodu sadeleştirir.
 - **Gizleme (obfuscate):** adları anlamsızlaştırır (`a`, `b`, `c`).
+
+---
+
+<!-- _class: yogun -->
+
+# ProGuard/R8 · dört aşama — tablo
+
+| Aşama | Ne yapar? | Güvenlik katkısı |
+| --- | --- | --- |
+| Küçültme | Kullanılmayan kodu atar | Saldırı yüzeyi azalır |
+| İyileştirme | Satır içi alma, sabit katlama | Yapı kaynaktan uzaklaşır |
+| Gizleme | Adları `a`, `b`, `c` yapar | Anlamlı adlar kaybolur |
+| Ön doğrulama | Eski JVM için doğrulama bilgisi | — |
 
 ---
 
@@ -819,9 +1021,37 @@ LisansDenetleyici.dogrula()  →  a.b()
 
 ---
 
+<!-- _class: kucuk -->
+
+# Eşleme dosyası · örnek (`mapping.txt`)
+
+```text
+com.ornek.odeme.KartYoneticisi -> com.ornek.a:
+    android.content.Context baglam -> a
+    boolean varsayilanKartiAyarla(java.lang.String) -> b
+```
+
+Eski ad → yeni ad. Bu dosya, gizlemeyi **tamamen** geri alır.
+
+---
+
+# ProGuard/R8 · bu bölümün kuralı
+
+- Küçült + iyileştir + gizle; **dizgeleri gizlemez**.
+- `-keep` yalnız **gerçekten** reflection/JNI ile çağrılana.
+- `mapping.txt` bir **sır**: sakla, dağıtma.
+
+---
+
 <!-- _class: bolum -->
 
 # 10. Dize gizleme ve reflection
+
+---
+
+# Dize gizleme ve dinamik çağrı — şema
+
+![w:900](assets/h05-13-dize-gizleme.svg)
 
 ---
 
@@ -862,6 +1092,23 @@ LisansDenetleyici.dogrula()  →  a.b()
 
 ---
 
+<!-- _class: kucuk -->
+
+# Sürüm derlemesinde R8 açmak
+
+```gradle
+android { buildTypes { release {
+    minifyEnabled true
+    shrinkResources true
+    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                  'proguard-rules.pro'
+}}}
+```
+
+Hata ayıklama (debug) derlemesi **gizlenmez**; dağıtılan sürümün **release** olduğunu doğrulayın.
+
+---
+
 # Gizlemenin etkisini ölçmek
 
 - Gizleme öncesi/sonrası:
@@ -869,6 +1116,21 @@ LisansDenetleyici.dogrula()  →  a.b()
   - düz metin hassas dize sayısı
   - APK boyutu
 - Ölç ve S9'a yaz (9. haftadaki ölçme mantığı).
+
+---
+
+<!-- _class: yogun -->
+
+# Ölçüm tablosu — genişletilmiş
+
+| Ölçüt | Beklenen değişim |
+| --- | --- |
+| Sınıf/metot sayısı | Küçültmeyle azalır |
+| Anlamlı ad oranı | Gizlemeyle çok düşer |
+| Düz metin hassas dizge | Dize gizlemeyle sıfıra iner |
+| Paket boyutu | Küçültmeyle azalır |
+| Günlük çağrısı sayısı | Sürümde sıfır |
+| Denetimi bulma süresi | Artar (insan deneyi) |
 
 ---
 
@@ -921,6 +1183,14 @@ LisansDenetleyici.dogrula()  →  a.b()
 
 ---
 
+# Log4Shell · somut örnek (Aralık 2021)
+
+- Log4j 2'de günlüğe yazılan özel bir ifade, **uzaktaki** bir adresten sınıf yükletip çalıştırıyordu.
+- CVE-2021-44228, CVSS **10.0** (en yüksek skor).
+- Asıl kriz yamayı uygulamak değildi: **hangi sistemde hangi sürüm var** sorusuydu.
+
+---
+
 # SBOM nedir? (hatırlatma)
 
 - Yazılımın **malzeme listesi**: hangi bileşen, hangi sürüm, hangi lisans.
@@ -933,6 +1203,24 @@ LisansDenetleyici.dogrula()  →  a.b()
 - **CycloneDX** (OWASP) — güvenlik odaklı, yaygın.
 - **SPDX** (Linux Foundation) — lisans odaklı da güçlü.
 - Araçlarla otomatik üretilir (derleme adımında).
+
+---
+
+<!-- _class: kucuk -->
+
+# CycloneDX örneği (JSON, sentetik)
+
+```json
+{
+  "bomFormat": "CycloneDX",
+  "components": [{
+    "type": "library", "name": "ornek-json", "version": "1.2.0",
+    "purl": "pkg:maven/com.ornek/ornek-json@1.2.0"
+  }]
+}
+```
+
+Her bileşen: ad, sürüm, **purl** (ekosistemden bağımsız tekil kimlik), özet değeri.
 
 ---
 
@@ -965,6 +1253,14 @@ Her sürümün SBOM'u sürüm kimliğiyle saklanır.
 - **S13:** güvenli geliştirme süreci + SBOM.
 - Her sürüm için güncel SBOM ve bağımlılık taraması.
 - Devredilen gereksinimler: "güvenli güncelleme" üst uygulamaya (13. hafta).
+
+---
+
+# SBOM · bu bölümün kuralı
+
+- Kendi kodun kusursuz olsa da **bağımlılığın açığı seni etkiler**.
+- SBOM = malzeme listesi; VEX = "gerçekten etkilendim mi?" cevabı.
+- Sürümü **sabitle**, sürekli **tara**, kritik yamayı hızlı uygula.
 
 ---
 

@@ -178,6 +178,25 @@ Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanaca�
 - Dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
 - Gizleme bölümünde (bugün sonunda) buna döneceğiz.
 
+### Yığın çerçevesi, dönüş adresi ve ofset
+
+Bu haftanın "bellek düzeyinde adım adım" örneklerinde (biçim dizisi, use-after-free, kanarya) sürekli
+kullanacağımız üç terim daha var; şimdiden tanımlayalım ki örnekler geldiğinde durup sözlüğe bakmayalım:
+
+- **Yığın çerçevesi (stack frame):** bir fonksiyon çağrıldığında yığında ona ayrılan bölüm. Fonksiyonun yerel
+  değişkenlerini, kaydedilmiş çerçeve işaretçisini ve dönüş adresini tutar. Fonksiyon her çağrıldığında yeni bir
+  çerçeve açılır; fonksiyon bitince çerçeve **söner** (yığın işaretçisi geri alınır), içindeki baytlar silinmez,
+  yalnız "artık kullanılmıyor" işaretlenir — bir sonraki çağrı aynı baytları üzerine yazana kadar eski değerler
+  orada **durmaya devam eder**. (Bu, ileride göreceğimiz bazı bellek hatalarının neden "çalışıyormuş gibi"
+  görünebildiğinin bir nedenidir.)
+- **Dönüş adresi (return address):** bir fonksiyon çağrıldığında, işlemci "bu fonksiyon bitince hangi komuta geri
+  döneceğimi" yığına otomatik olarak yazar. Fonksiyonun sonunda bu adres okunur ve program oraya atlar. Dönüş
+  adresini değiştirebilen bir saldırgan, programın **nereye devam edeceğini** seçebilir — bu yüzden dönüş adresi
+  yığındaki en kıymetli hedeflerden biridir.
+- **Ofset (offset):** bir başlangıç noktasına göre uzaklık, bayt cinsinden. "Tampondan 8 bayt sonra", "dosyanın
+  16. baytından itibaren" gibi ifadeler ofset anlatır. Bir taşmanın "kaç bayt fazladan yazarsa dönüş adresine
+  ulaşır" sorusunun cevabı bir ofsettir.
+
 ### CI (sürekli entegrasyon)
 
 - **CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
@@ -222,6 +241,25 @@ tekrarlayalım: **gizleme, hatayı düzeltmez.** Gizlenmiş bir taşma hâlâ bi
     mühendisliğe karşı korunmalı". Sertifikasyondan geçmiş bir kütüphanenin kılavuzunda yalnız native (C/C++) taraf
     için on sekiz ayrı sağlamlaştırma önlemi listelenir. Bu haftanın sonunda bu önlemlerin çoğunu tanıyor olacaksınız.
 
+### Neden bu sırada? Katlamayı ters çevirirsek ne olur?
+
+Sıralamanın (önce 2, sonra 3, en son 4) keyfi olmadığını görmek için tersini deneyelim:
+
+- **Önce gizleme, hatayı düzeltmeden:** Kontrol akışı düzleştirilmiş, dizgeleri şifrelenmiş bir programda hâlâ bir
+  tampon taşması varsa, taşma **hâlâ çalışır**. Saldırgan taşmayı bulmak için tersine mühendislik yapmak zorunda bile
+  değildir; dışarıdan fuzzing yeterlidir (bu hafta Bölüm 11). Gizleme, hatayı görünmez kılmaz, yalnız **kodu okumayı**
+  zorlaştırır — ama çalışan bir saldırı kodu okumadan da bulunabilir.
+- **Önce korumalar, kodu düzeltmeden:** Yığın koruyucusu açık bir programda taşma hâlâ vardır; program artık
+  sessizce bozulmak yerine **çöker** (`*** stack smashing detected ***`). Bu bir kazanımdır (denetim ele geçirilemez)
+  ama bir **hizmet reddi**dir hâlâ — saldırgan programı defalarca çökertip servisi kullanılamaz hale getirebilir.
+  Kanarya hatayı düzeltmez, yalnız sonucunu değiştirir.
+- **Önce güvenli kodlama:** Hata baştan yoksa, ne gizlemenin ne korumanın devreye girmesi gerekir. Bu yüzden 2.
+  katman her zaman önce gelir; 3. katman bir hata **kaçarsa** diye bir güvenlik ağıdır; 4. katman ise saldırganın işini
+  **pahalılaştıran** son bir eklemedir.
+
+Bu üçü **birbirinin yerine geçmez**. 1. haftadaki savunma derinliği (defense in depth) ilkesinin C/C++ koduna
+uygulanmış hâli budur: her katman, bir öncekinin atladığı durumu yakalamak için vardır.
+
 ---
 
 ## 2. SEI CERT C/C++: güvenli kodlamanın kural kitabı
@@ -229,6 +267,8 @@ tekrarlayalım: **gizleme, hatayı düzeltmez.** Gizlenmiş bir taşma hâlâ bi
 Carnegie Mellon Üniversitesi'ndeki Yazılım Mühendisliği Enstitüsü'nün (SEI) CERT birimi, C, C++ ve Java için
 **güvenli kodlama standartları** yayımlar. Bu standartlar, gerçek zafiyetlerden çıkarılmış yüzlerce kuralı tek bir
 biçimde toplar ve sertifikasyon laboratuvarlarının kaynak kod incelemesinde başvurduğu temel belgelerden biridir.
+
+![Bir SEI CERT kuralının dört parçası](assets/h04-15-cert-kural-anatomisi.svg)
 
 ### Bir kuralın anatomisi
 
@@ -285,6 +325,48 @@ sonlandırma).
 | INT32-C | İşaretli tamsayı taşmasına izin verme | Bu hafta Demo 3 |
 | ERR33-C | Kütüphane hatalarını algıla | Bu hafta 8. bölüm |
 | SIG30-C | Sinyal işleyicide yalnız güvenli fonksiyonlar | Bu hafta 8. bölüm |
+
+### İşlenmiş örnek: bir bulguyu kural kimliğiyle sayısallaştırmak
+
+Bir kuralı "iyi bir öneri" olarak değil, **ölçülebilir bir risk** olarak okumayı öğrenelim. MEM31-C ("dinamik belleği
+işi bitince serbest bırak") ihlal eden şu döngüyü ele alalım:
+
+```c title="MEM31-C ihlali: her istekte bir blok sızar"
+void istek_isle(const char *veri)
+{
+    char *tampon = malloc(64);          /* her çağrıda YENİ bir blok */
+    if (!tampon) return;
+    snprintf(tampon, 64, "%s", veri);
+    isle(tampon);
+    /* free(tampon) EKSİK: fonksiyon dönünce işaretçi kaybolur, blok asla serbest kalmaz */
+}
+```
+
+Bunu soyut bırakmayalım, **sayalım**:
+
+```text title="Sızıntıyı sayısallaştırmak"
+Her çağrı sızdırdığı bellek : 64 bayt
+Sunucu saniyede istek sayısı : 200 istek/sn   (örnek yük)
+Sızıntı hızı                 : 200 * 64 bayt = 12.800 bayt/sn ≈ 12,5 KB/sn
+1 saatte birikim              : 12.800 * 3600 ≈ 46.080.000 bayt ≈ 43,9 MB/saat
+24 saatte birikim             : 43,9 MB * 24 ≈ 1.053,6 MB ≈ 1,03 GB/gün
+```
+
+64 bayt tek başına önemsiz görünür; ama **sürekli çalışan bir sunucuda** birikir ve günler içinde belleği
+tüketip programı çökertir (CWE-401, kaynak sızıntısı). Bu hesap, bir kod incelemesi raporunda "MEM31-C ihlali,
+`istek_isle()`, ~44 MB/saat sızıntı, düzeltme: fonksiyon sonuna `free(tampon)` eklenmeli" gibi somut, önceliklendirilebilir
+bir cümleye dönüşür — "bence bellek yönetimi eksik" demekten çok daha güçlüdür.
+
+!!! danger "Sık yapılan hata: küçük sızıntıyı önemsememek"
+    "64 bayt neyse ki" diye düşünüp sızıntıyı ertelemek, uzun süre çalışan servislerde (sunucular, arka plan
+    süreçleri, gömülü cihazlar) birikimli bir hizmet reddine dönüşür. Kısa ömürlü bir komut satırı aracında aynı
+    sızıntı zararsız olabilir (işletim sistemi süreç bitince belleği geri alır); **ömür**, sızıntının ciddiyetini
+    belirleyen asıl etkendir.
+
+!!! success "Kural"
+    Her `malloc`/`new` için kodda **tek bir** karşılık gelen `free`/`delete` bulunmalı ve bu ikisinin arasındaki her
+    yol (erken `return`, `goto`, atılan istisna) bu eşleşmeyi bozmamalıdır (MEM31-C, MEM12-CPP). Şüpheniz varsa
+    fonksiyonu ASan ile çalıştırın — sızıntıları `LeakSanitizer` doğrudan sayar (Bölüm 10).
 
 !!! tip "Kuralları otomatik denetlemek"
     CERT kurallarının bir kısmı derleyici uyarıları ve statik analiz araçlarıyla otomatik denetlenebilir: GCC/Clang
@@ -390,6 +472,71 @@ int kayit_oku(const uint8_t *tampon, size_t kalan, Kayit *k)
 mı?), diğeri **hedefi** (bu kadar bayt tampona sığar mı?) korur. `kalan - 3` ifadesi, önceki `kalan < 3` denetimi
 sayesinde sarmaz; denetimlerin **sırası** da önemlidir.
 
+### İşlenmiş örnek: `kayit_oku`'yu bayt bayt izlemek
+
+Yukarıdaki fonksiyonu soyut bırakmayalım; gerçek baytlarla, satır satır izleyelim. Ağdan `kalan = 8` bayt geldiğini ve
+içeriğin şu olduğunu varsayalım (onaltılık, sonra karşılığı):
+
+| Ofset | Bayt (onaltılık) | Anlamı |
+| --- | --- | --- |
+| 0 | `01` | `tur` alanı = 1 |
+| 1 | `00` | uzunluğun yüksek baytı |
+| 2 | `05` | uzunluğun düşük baytı |
+| 3–7 | `48 45 4C 4C 4F` | `"HELLO"` (5 bayt veri) |
+
+Fonksiyon şu adımları **sırayla** işler:
+
+```text title="Adım adım yürütme (kalan = 8, iyi huylu girdi)"
+1) kalan < 3 mi?               8 < 3  → HAYIR, devam.
+2) k->tur = tampon[0]           = 0x01
+3) uzunluk = tampon[1]<<8 | tampon[2]
+            = (0x00 << 8) | 0x05
+            = 0x0000 | 0x0005
+            = 5
+4) uzunluk > kalan - 3 mi?      kalan - 3 = 8 - 3 = 5;  5 > 5  → HAYIR, devam.
+5) uzunluk > sizeof(k->veri) mi?  (k->veri 64 bayt ise) 5 > 64 → HAYIR, devam.
+6) memcpy(k->veri, tampon+3, 5)   → k->veri = "HELLO"
+7) return 3 + uzunluk = 3 + 5 = 8   (tüketilen bayt; kalan'ın TAMAMI, tutarlı)
+```
+
+Şimdi saldırganın **yalnızca uzunluk alanını** değiştirdiği, verinin geri kalanına dokunmadığı bir girdiyi izleyelim
+(`kalan` yine 8, ama bildirilen uzunluk artık gerçek veriden çok daha büyük):
+
+| Ofset | Bayt | Anlamı |
+| --- | --- | --- |
+| 0 | `01` | `tur` = 1 |
+| 1 | `FF` | uzunluğun yüksek baytı |
+| 2 | `FF` | uzunluğun düşük baytı |
+| 3–7 | `48 45 4C 4C 4F` | yine 5 bayt gerçek veri |
+
+```text title="Adım adım yürütme (kalan = 8, saldırgan girdisi)"
+1) kalan < 3 mi?               8 < 3 → HAYIR, devam.
+2) k->tur = tampon[0]           = 0x01
+3) uzunluk = tampon[1]<<8 | tampon[2]
+            = (0xFF << 8) | 0xFF
+            = 0xFF00 | 0x00FF
+            = 0xFFFF = 65.535
+4) uzunluk > kalan - 3 mi?      65.535 > 5  → EVET → REDDET, fonksiyon -1 döner.
+   (memcpy'a HİÇ ulaşılmaz)
+```
+
+Denetim tam bu noktada devreye girer: `tampon`'da gerçekten yalnız 5 bayt veri **vardır**, ama alan "65.535 bayt
+geleceğim" **diyor**. Denetim olmasaydı 4. adım atlanır, `memcpy(k->veri, tampon+3, 65535)` çağrılır ve `tampon`
+dizisinin sınırlarının **çok ötesinden** okuma yapılır — bu, CWE-125 (sınır dışı okuma) ve bu haftanın Demo 4'ünün
+fuzzing ile bulduğu tam hatadır. `uzunluk`'un `uint16_t` olması bile tek başına yetmez: 16 bitlik bir alan en fazla
+65.535 değerini taşıyabilir, ama bu hâlâ gerçek veri miktarından (`kalan - 3`) çok daha büyük olabilir; asıl güvenlik
+**alan genişliğinden değil, karşılaştırmadan** gelir.
+
+!!! danger "Sık yapılan hata: uzunluk alanını `uint16_t`/`uint32_t` yapıp 'sığar' sanmak"
+    Bir alanın veri türü, o alanın **yazabileceği en büyük değeri** sınırlar; **gelen veride gerçekten o kadar bayt
+    olduğunu** garanti etmez. `uint16_t uzunluk` en fazla 65.535 tutar ama tamponda hâlâ yalnız birkaç bayt veri
+    olabilir. Tür seçimi bir dinlenme değil; asıl doğrulama karşılaştırmadır (4. adım).
+
+!!! success "Kural"
+    Bildirilen bir uzunluk alanını her zaman **gerçekten gelen bayt sayısıyla** (`kalan`) ve **hedef tamponun
+    boyutuyla** (`sizeof k->veri`) karşılaştırın; ikisinden biri eksikse veri **reddedilir**, kesilmiş ya da
+    varsayılan bir değerle "düzeltilmeye" çalışılmaz (5. ilke, yukarıda).
+
 !!! note "Sahada nasıl uygulanır?"
     Ödeme kütüphanelerinin savunmacı programlama gereksinimlerinin ilk maddesi "uygulamanın her girdisi ve çıktısı
     denetlenmelidir"dir. Bir kütüphane kendisini çağıran uygulamaya da güvenmez: JNI arayüzünden gelen her dizge ve
@@ -403,6 +550,8 @@ sayesinde sarmaz; denetimlerin **sırası** da önemlidir.
 CERT standardının en öğretici yanı, her kural için verdiği **hatalı / uyumlu** kod çiftleridir. Aşağıda bu haftanın
 konularına dokunan beş kuralı kendi örneklerimizle işliyoruz. Her çiftte önce hatayı bulmaya çalışın, sonra
 açıklamayı okuyun.
+
+![Bu haftanın CERT kural çiftleri ve demoları](assets/h04-16-cert-kural-ciftleri.svg)
 
 ### STR31-C: dizge ve sonlandırıcı için yeterli yer
 
@@ -422,6 +571,23 @@ if (n < 0 || (size_t)n >= sizeof kopya) {
 `snprintf`'in dönüş değeri, yer olsaydı yazılacak karakter sayısıdır; tampon boyutuna eşit ya da büyükse çıktı
 **kesilmiştir**. Kesilmiş bir dosya yolu ya da komut, farklı bir anlama gelebilir.
 
+**Sayısal doğrulama:** `ad = "Mehmet Ali Kaya Demir"` dizgesinin uzunluğu **21 karakterdir** (boşluklar dahil, `\0`
+hariç). `char kopya[16]` yalnız 15 karakter + sonlandırıcı `\0` alabilir (16 bayt = 15 + 1). `snprintf(kopya, 16,
+"%s", ad)` çağrıldığında:
+
+```text title="snprintf'in kesme davranışı, sayılarla"
+Yazılacak gerçek uzunluk (n)     : 21
+Tampon boyutu (sizeof kopya)     : 16
+n >= sizeof kopya ?              : 21 >= 16 → EVET → KESİLDİ
+kopya içinde gerçekte duran      : "Mehmet Ali Kaya" (ilk 15 karakter) + '\0'
+```
+
+`strcpy` kullanılsaydı denetim hiç olmazdı ve 21 karakterlik dizge, 16 baytlık tampona sınır denetimi yapılmadan
+kopyalanır, **5 bayt** (21 − 16) komşu belleğe taşardı. `snprintf` taşmayı önler; ama **sessizce kesme** de kendi
+başına bir hatadır — "Mehmet Ali Kaya Demir" adlı bir kullanıcı, sistemde "Mehmet Ali Kaya" olarak kaydedilirse, iki
+farklı kullanıcı aynı kesilmiş ada sahip olabilir. Bu yüzden uyumlu çözümdeki `if (n < 0 || (size_t)n >= sizeof
+kopya)` denetimi **zorunludur**: kesilme fark edilip ya reddedilmeli ya da daha büyük bir tampon ayrılmalıdır.
+
 ### INT30-C: işaretsiz işlemler sarmamalı
 
 ```c title="Hatalı"
@@ -436,6 +602,25 @@ size_t kalan = toplam - okunan;
 
 İşaretsiz çıkarma sıfırın altına inemez, **sarar**: `3 - 5` sonucu `SIZE_MAX - 1`'dir. Çıkarmadan önce sıralama
 denetlenir.
+
+**Sayısal doğrulama (64-bit sistemde, `size_t` 8 bayt):** İşaretsiz aritmetik **modüler** çalışır; sonuç `2⁶⁴`'e göre
+alınır (`mod` = kalan, yani "2⁶⁴'e böldüğünde kalan").
+
+```text title="3 - 5 işlemi size_t (64-bit) olarak"
+Matematikteki gerçek sonuç : -2
+Modüler karşılığı          : -2 + 2^64 = 2^64 - 2
+2^64                        : 18.446.744.073.709.551.616
+2^64 - 2                    : 18.446.744.073.709.551.614   ← "kalan" bu devasa sayı olur
+SIZE_MAX (2^64 - 1)         : 18.446.744.073.709.551.615
+Karşılaştırma               : 2^64 - 2 = SIZE_MAX - 1  ✓ (metindeki iddiayla birebir örtüşür)
+```
+
+`memcpy(hedef, kaynak + okunan, kalan)` çağrısına bu `kalan` değeri verilirse, fonksiyondan **18,4 katrilyon
+gigabaytlık** bir kopyalama istenmiş olur — bellek bu kadar büyük olamayacağı için işlemci, `kaynak` işaretçisinin
+gösterdiği bölgenin çok ötesindeki, haritalanmamış bir sayfaya ulaşana kadar okumaya çalışır ve **segmentation
+fault** ile çöker (ya da haritalı ama yabancı bir bölgeye ulaşırsa bilgi sızıntısına yol açar). **32-bit** bir
+sistemde (`size_t` 4 bayt) aynı hesap `2³² − 2 = 4.294.967.294` verir — daha küçük ama yine de tamponun gerçek
+boyutundan katbekat büyük bir sayıdır; sonuç aynıdır.
 
 ### MEM30-C: serbest bırakılmış belleğe erişme
 
@@ -526,6 +711,89 @@ yığında duran bir anahtar, bir adres (ASLR'yi zayıflatır) ya da bir kanarya
 `fprintf`, `snprintf`, `err`/`warn` ve bir biçim dizgesi alan her fonksiyonda ortaya çıkar; 2. haftada denetim
 kaydının `syslog(LOG_INFO, kullanici_girdisi)` hatasını görmüştük.
 
+### İşlenmiş örnek: `%x` yığından ne okur? Adım adım
+
+`printf`'in nasıl çalıştığını hatırlayalım: `printf(bicim, arg1, arg2, ...)` çağrıldığında, `bicim` dizgesinin
+içinde kaç tane `%` belirteci varsa, fonksiyon **o kadar** argüman **beklediğini** varsayar. Argümanları nereden
+okuduğu ise derleyicinin ürettiği **çağrı kuralına (ABI)** bağlıdır. Öğretici olması için önce klasik ve basit
+modeli (bütün argümanlar yığında) izleyelim, sonra bugünün 64-bit sistemlerindeki farkı ekleyelim.
+
+**1) Basitleştirilmiş model — bütün argümanlar yığında art arda durur**
+
+`sizinti.c`'de çağrı şudur: `printf(tampon)` — yalnız **1** gerçek argüman (biçim dizgesinin kendisi) verilmiştir,
+başka hiçbir değer verilmemiştir. Kullanıcı `tampon`'un içine `"%x.%x.%x.%x.%x.%x"` yazarsa, `printf` biçim
+dizgesinde **6 tane** `%x` görür ve "6 argüman daha gelecek" varsayımıyla ilerler. Ama gerçekte hiçbiri
+**gönderilmemiştir**. `printf`'in yapacağı tek şey bellidir: her `%x` için, "bir sonraki argümanın durması gereken"
+konuma bakıp oradaki baytları **sayı sanıp** onaltılık yazmaktır. Bu basit modelde o konumlar, çağrının hemen
+üzerindeki yığın hücreleridir — yani `sizinti()` fonksiyonunun **kendi yerel değişkenlerinin bulunduğu bölge**:
+
+```text title="sizinti.c'deki bildirim sırası (yığın çerçevesi, kavramsal)"
+volatile unsigned gizli_deger = 0x5ECE7u;   /* fonksiyonun yerel değişkeni #1 */
+char tampon[64];                            /* fonksiyonun yerel değişkeni #2, kullanıcı girdisini tutar */
+```
+
+Bu iki değişken **aynı yığın çerçevesinde**, birbirine **komşu** durur (derleyici ve bayraklara göre tam sıralama ve
+aradaki boşluk değişebilir; önemli olan ikisinin de aynı çerçevede, birbirine yakın olmasıdır). `printf(tampon)`
+çağrıldığında, biçim dizgesinin kendisi de zaten bu `tampon`'un içindedir — yani **okunan yer** ile **okuyan
+biçim dizgesi** aynı bellek bölgesindedir. Yeterli sayıda `%x` verilirse, tarama er ya da geç `gizli_deger`'in
+durduğu 4 baytlık hücreye ulaşır:
+
+```text title="'%x' taramasının adımları (basitleştirilmiş, kavramsal argüman sırası)"
+1. %x  → argüman konumu #1'deki değer  (örn. önceki bir çağrıdan kalan rastgele bayt)
+2. %x  → argüman konumu #2'deki değer  (rastgele)
+3. %x  → argüman konumu #3'teki değer  (rastgele)
+   ...
+N. %x  → argüman konumu #N tam olarak gizli_deger'in bulunduğu hücreye denk geliyor
+         → printf bu 4 baytı bir unsigned int gibi okuyup onaltılık yazar
+         → EKRANDA GÖRÜLEN: "5ece7"
+```
+
+Demo programı bunu bağımsız biçimde doğrular: kod, `gizli_deger`'i `printf("...0x%05x...", gizli_deger)` ile önce
+**kasıtlı olarak** ekrana yazar (kontrol amaçlı); sonra `sizinti '%x.%x.%x...'` çalıştırıldığında, `%x` taramasının
+çıktısında **aynı `5ece7` değerinin** tekrar göründüğü izlenir. İki çıktının birbirini tutması, sızan değerin
+gerçekten `gizli_deger` olduğunun kanıtıdır — rastgele bir sayı değil, programın **kendi belleğinden** okunmuş bir
+değerdir.
+
+**2) 64-bit farkı — ilk birkaç `%x` neden farklı davranır**
+
+Yukarıdaki "hepsi yığında" modeli, x86 **32-bit** çağrı kuralı (cdecl) için tam doğrudur ve format-string
+saldırılarının klasik öğretim modelidir. Bugünün 64-bit Linux/Windows derlemelerinde ise x86-64 System V ABI, ilk
+**6** tamsayı/işaretçi argümanını **yığın yerine işlemci yazmaçlarında** (`RSI`, `RDX`, `RCX`, `R8`, `R9` — `RDI`
+biçim dizgesinin kendisi için ayrılmıştır) taşır; yalnız 6'dan fazlası yığına konur. Sonuç: `printf(tampon)`
+çağrısında ilk birkaç `%x`, yığındaki bir hücreyi değil, o an bu yazmaçlarda **tesadüfen** duran (önceki
+çağrılardan — ör. `snprintf`, kendi `printf` hazırlığı — kalan) değerleri okur; yalnız 6. `%x`'ten **sonrakiler**
+yığına, dolayısıyla `gizli_deger`'in de bulunduğu bölgeye ulaşır. Demo betiğinin `%x` sayısını kademeli
+artırmasının (adım 2) nedeni tam olarak budur: kaç `%x` gerektiği derleyiciye, optimizasyon düzeyine ve platforma
+göre değişir; öğrencinin görmesi gereken **mekanizma** budur, belirli bir sabit sayı değil.
+
+**3) `%n` neden daha tehlikelidir**
+
+`%x` yalnız **okur**; `%n` ise "şimdiye kadar kaç karakter yazıldığını, kendisine verilen **işaretçinin gösterdiği
+yere** yaz" der — yani bir **yazma** işlemidir. Yukarıdaki modelde `%n` de tıpkı `%x` gibi "bir sonraki argüman
+konumunu" bir değer olarak okur; ama bu kez o değeri bir **sayı** değil bir **adres** (işaretçi) sanır ve o
+adrese yazar. Argüman hiç verilmediği için bu "adres" de yine yığında/yazmaçta o an ne duruyorsa **odur** —
+genellikle geçersiz bir adrestir ve program çöker. Ama saldırgan biçim dizgesini **kendisi** yazdığı için, dizgenin
+içine kendi seçtiği bayt dizilerini de yerleştirebilir; `%x` ile hangi konumun hangi veriye karşılık geldiğini
+önce **haritalayıp**, sonra `%n`'in tam o konuma denk gelmesini sağlayarak, "adres" olarak okunacak hücreyi
+**kendi verdiği bir değerle** doldurabilir. Bu, `%n`'i yalnızca bir çökme kaynağı olmaktan çıkarıp bellekte
+**seçilmiş bir konuma seçilmiş bir değer yazma** aracına çevirir (CWE-134). Bu derste bunun ötesine, çalışan bir
+sömürü adımına **girmiyoruz** — mekanizmayı anlamak, savunmayı (biçim dizgesini sabitlemek) anlamak için yeterlidir.
+
+!!! danger "Sık yapılan hata: 'girdi hiç `%` içermiyor, sorun yok' varsayımı"
+    Bir kod incelemesinde "bu girdi zaten kullanıcı adı, kimse `%n` yazmaz" diye düşünüp `printf(girdi)` çağrısını
+    onaylamak, en sık görülen atlamadır. Doğrulama **girdinin içeriğine değil, çağrının biçimine** bakmalıdır:
+    değişken bir dizge asla biçim parametresi konumuna konmaz — girdinin ne içerdiği önemsizdir.
+
+!!! success "Kural"
+    Kural tek cümledir ve istisnasızdır: **biçim dizgesi her zaman sabit bir metin sabiti olmalı, kullanıcı verisi
+    yalnız `%s` gibi bir belirtecin argümanı olarak geçmelidir.** `printf("%s", girdi)` — asla `printf(girdi)`.
+
+Bu mekanizma, 1. haftada gördüğümüz "bellek okuma/yazma sınırlarının ihlali" hata ailesinin somut bir örneğidir:
+`%x` bir **sınır dışı okuma**, `%n` bir **sınır dışı yazma** yapar — farkı, sınırı aşan tarafın bir dizi indeksi
+değil, biçim dizgesindeki belirteç sayısı olmasıdır. 5. haftada göreceğimiz enjeksiyon saldırılarıyla da aynı
+kökten gelir: **veri, komut yerine geçmiştir** — SQL enjeksiyonunda veri bir sorgu parçası, burada veri bir
+biçim komutu olarak yorumlanmıştır.
+
 ### Demo 1 — Biçim dizisi açığı
 
 !!! info "Demo 1 · `code/week-04/01-format-string` · CWE-134 · Tarif 3.2"
@@ -605,6 +873,74 @@ programda izliyoruz ve C++'ın bu hataların çoğunu nasıl **tasarımla** orta
 Nesnenin içinde bir **fonksiyon işaretçisi** varsa (C'de "sanal fonksiyon" benzetimi, C++'ta sanal tablo işaretçisi),
 tehlike büyür: program, başka amaçla yazılmış baytları "çağrılacak fonksiyonun adresi" diye yorumlayabilir. Tarayıcı ve
 işletim sistemi güncellemelerinde "bellek bozulması düzeltildi" notlarının önemli bir kısmı bu sınıftandır.
+
+### İşlenmiş örnek: aynı bloğun yeniden tahsisi, adım adım
+
+Demo 2'deki `struct oturum`'u bayt bayt izleyelim:
+
+```c
+struct oturum {
+    void (*eylem)(void);   /* 64-bit sistemde bir fonksiyon işaretçisi: 8 bayt */
+    char  rol[16];         /* 16 bayt */
+};
+```
+
+**Boyut hesabı:** 64-bit bir sistemde bir işaretçi 8 bayttır. `8 (eylem) + 16 (rol) = 24 bayt`; 24 zaten 8'in katı
+olduğu için derleyicinin araya doldurma (padding) bayt eklemesine gerek yoktur — `sizeof(struct oturum) == 24`.
+Bellekteki yerleşim, ofset cinsinden:
+
+| Ofset (bayt) | Alan | Boyut |
+| --- | --- | --- |
+| 0–7 | `eylem` (fonksiyon işaretçisi) | 8 bayt |
+| 8–23 | `rol` (dizge) | 16 bayt |
+
+Şimdi `kip_uaf()` fonksiyonunu adım adım izleyelim:
+
+```text title="Adım adım: aynı 24 baytlık bloğun yeniden kullanılması"
+1) o = malloc(24)
+   Bellek yöneticisi 24 baytlık boş bir blok bulur, diyelim ki A adresinde verir.
+   o → A
+
+2) o->eylem = normal_panel     → A+0..7  = normal_panel'in adresi
+   strcpy(o->rol, "user")      → A+8..12 = 'u','s','e','r','\0'  (A+13..23 eski/rastgele baytlar)
+
+3) free(o)
+   Bellek yöneticisi A adresindeki bloğu "boş" olarak işaretler. Birçok bellek yöneticisi
+   (ör. glibc'nin tcache'i), boş bloğu bir SONRAKİ aynı boyuttaki isteğe hemen verebilmek için
+   BOŞ BLOĞUN KENDİ İÇİNE bir "sıradaki boş blok" işaretçisi yazar — yani serbest bırakılan
+   bellek SESSİZCE değişir. `o` değişkeni hâlâ A'yı gösterir (derleyici sıfırlamaz) → ASKIDA İŞARETÇİ.
+
+4) sahte = malloc(24)
+   Bellek yöneticisinden yine 24 bayt istenir. Az önce serbest kalan A boyutta TAM UYUŞTUĞU için,
+   çoğu ayırıcı (LIFO / "son giren ilk çıkar" serbest liste ilkesiyle) AYNI A ADRESİNİ geri verir.
+   sahte → A     (o hâlâ → A: İKİSİ DE AYNI BLOĞU GÖSTERİYOR)
+
+5) sahte->eylem = yonetici_panel   → A+0..7  = yonetici_panel'in adresi  (eski değerin ÜZERİNE yazıldı)
+   strcpy(sahte->rol, "admin")     → A+8..13 = 'a','d','m','i','n','\0'
+
+6) printf("%s", o->rol)
+   o hâlâ A'yı gösteriyor; A+8'den okunan bayt dizisi artık "admin"dir (5. adımda sahte tarafından
+   yazıldı). o'nun kendi verisi hiç değişmedi görünüyor ama fiziksel bellek DEĞİŞTİ → "user" değil "admin" okunur.
+
+7) o->eylem()
+   A+0..7'den okunan işaretçi artık yonetici_panel'in adresidir (5. adımda üzerine yazıldı).
+   Program normal_panel()'i DEĞİL, yonetici_panel()'i çağırır.
+```
+
+Sonuç: `o` işaretçisi bir kez bile değiştirilmedi (hâlâ aynı `A` adresini tutuyor); ama onun **gösterdiği bellek**
+başka bir nesne tarafından yeniden kullanıldığı için `o` üzerinden okunan her şey artık o yeni nesnenin verisidir.
+Bu, "sahiplik" kuramının (1. hafta) somut bir ihlalidir: `o` ve `sahte` aynı bloğun **iki farklı sahibi** gibi
+davranmıştır, oysa bir blok **her an tek bir sahibe** ait olmalıdır (MEM30-C).
+
+!!! danger "Sık yapılan hata: `free(p)` sonrası `p`'yi sıfırlamamak"
+    `free(o)` çağrısı yalnız bellek yöneticisine "bu bloğu geri alabilirsin" der; `o` değişkeninin **kendisini**
+    değiştirmez — `o` hâlâ eski adresi tutar. Bir sonraki satırda yanlışlıkla `o->...` yazan kod, artık **kimin**
+    belleğine dokunduğunu bilemez.
+
+!!! success "Kural"
+    `free(p)` çağrısından hemen sonra `p = NULL;` yazın (ya da C++'ta akıllı işaretçi kullanıp bu adımı derleyiciye
+    bırakın). Sıfırlanmış bir işaretçi üzerinden erişim, sessizce yanlış veriye ulaşmak yerine **hemen** çöker —
+    hata erken ve gürültülü biçimde ortaya çıkar, tespiti kolaylaşır.
 
 ### Demo 2 — Serbest bırakılmış bellek ve çift serbest bırakma
 
@@ -717,6 +1053,91 @@ for (uint32_t i = 0; i < adet; i++)
     dizi[i] = oku();                          /* öbek taşması */
 ```
 
+**Sayısal doğrulama:** `0x40000001` onaltılık, ondalık olarak **1.073.741.825**'tir. `sizeof(uint32_t)` her zaman
+4'tür (`uint32_t` = 32 bit = 4 bayt, tanım gereği).
+
+```text title="Çarpımın 32-bit'te sarması, adım adım"
+Gerçek çarpım (32-bit sınırı yokmuş gibi) : 1.073.741.825 * 4 = 4.294.967.300
+uint32_t'nin sığdırabildiği en büyük değer : 2^32 - 1 = 4.294.967.295
+4.294.967.300 sığar mı?                     : HAYIR (5 bayt taşar: 4.294.967.300 - 4.294.967.295 = 5)
+32-bit'e sarma (mod 2^32)                   : 4.294.967.300 mod 4.294.967.296 = 4
+→ boyut değişkeninde SAKLANAN değer         : 4  (bayt!)
+```
+
+`malloc(4)` çağrısı yalnız **4 baytlık** (bir `uint32_t`'lik) bir blok ayırır. Ama döngü, `adet` (1.073.741.825)
+kez `dizi[i] = oku();` çalıştırır — her biri 4 bayt yazarak toplam `1.073.741.825 * 4 = 4.294.967.300` bayt (≈ 4
+GB) yazmaya çalışır, oysa ayrılan blok yalnız 4 bayttır. İlk atamadan (`dizi[1]`) itibaren **öbek taşması**
+başlar ve komşu bellek yapıları (ayırıcının kendi muhasebe bilgisi, başka nesneler) bozulur.
+
+### İşlenmiş örnek: `(int)-1` bir `size_t`'ye dönüşünce
+
+Bu, INT31-C'nin en sık karşılaşılan ve en tehlikeli biçimidir: bir fonksiyon hata durumunda **işaretli** bir `-1`
+döndürür, çağıran taraf bunu farkında olmadan **işaretsiz** bir değişkende saklar.
+
+```c title="Klasik hata: -1'in size_t'ye sessizce dönüşmesi"
+int uzunluk_hesapla(const char *s) { /* hata olursa -1 döner */ return calisti_mi(s) ? (int)strlen(s) : -1; }
+
+int n = uzunluk_hesapla(girdi);
+size_t boyut = n;                 /* n == -1 ise: DÖNÜŞÜM, DENETİMSİZ */
+memcpy(hedef, kaynak, boyut);     /* boyut artık dev bir sayı */
+```
+
+Dönüşüm iki kavramsal adımda gerçekleşir (C standardının işaretliden işaretsize dönüşüm kuralı):
+
+```text title="(int)-1 → size_t dönüşümü, bit bit"
+Adım 1 — -1'in 32-bit int olarak bit deseni (ikinin tümleyeni gösterimi):
+    -1  (int, 32 bit)  =  0xFFFFFFFF   (bütün 32 bit '1')
+
+Adım 2 — size_t'ye (64-bit sistemde 8 bayt = 64 bit) atanırken, değer matematiksel olarak
+         "hedef türün sığdırabildiği aralığa girene kadar 2^N eklenir" kuralıyla yorumlanır:
+    -1 + 2^64 = 2^64 - 1
+
+Adım 3 — 2^64 - 1 sayısal olarak:
+    2^64        = 18.446.744.073.709.551.616
+    2^64 - 1    = 18.446.744.073.709.551.615   = SIZE_MAX (64-bit sistemde)
+
+Sonuç: boyut = 18.446.744.073.709.551.615   (yaklaşık 18,4 KATRİLYON gigabayt)
+```
+
+`memcpy(hedef, kaynak, boyut)` bu değerle çağrılırsa, işlemci `kaynak` adresinden başlayarak bu kadar bayt okumaya
+çalışır; gerçek fiziksel/sanal bellek bu kadar büyük olmadığı için okuma neredeyse anında haritalanmamış bir sayfaya
+çarpar ve program **segmentation fault** ile çöker — sıklıkla "rastgele bir yerde çöktü" diye yanlış teşhis edilen,
+aslında kaynağı tamamen **belirlenebilir** bir hatadır. **32-bit** bir sistemde (`size_t` 4 bayt) aynı hesap `2^32 −
+1 = 4.294.967.295` (≈4,3 milyar) verir; daha küçük ama yine de gerçek bir tamponun boyutunu katbekat aşan bir
+sayıdır.
+
+!!! danger "Sık yapılan hata: 'hata kodu -1' ile 'boyut' aynı değişken ailesinde tutulmak"
+    Bir fonksiyonun "hata olursa -1, yoksa uzunluk döner" sözleşmesi, dönüş değeri doğrudan `size_t`/`unsigned` bir
+    değişkene atanırsa **sessizce** bir dev sayıya dönüşür. `-Wsign-conversion` (GCC/Clang) ya da `/w44365` (MSVC)
+    tam bu satırda uyarır; bu uyarıyı `-Werror` ile hataya çevirmek (Bölüm 0, "Uyarı vs hata") bu sınıfın tamamını
+    derleme anında yakalar.
+
+!!! success "Kural"
+    Hata kodu her zaman **kendi işaretli türünde** kontrol edilmeli, **işaretsiz bir değişkene atanmadan önce**
+    denetlenmelidir: `int n = uzunluk_hesapla(s); if (n < 0) { /* hata */ } size_t boyut = (size_t)n;` — dönüşüm
+    yalnız `n`'in negatif olmadığı **kanıtlandıktan sonra** yapılır.
+
+### Sınır değerleri: bir bakışta
+
+Bu haftanın örneklerinde sürekli geçen sınır değerlerini tek tabloda toplayalım; her satır bu bölümdeki bir
+hesaplamanın **doğrudan girdisidir**:
+
+| Tür | En küçük değer | En büyük değer |
+| --- | --- | --- |
+| `int8_t` | −128 | 127 |
+| `uint8_t` | 0 | 255 |
+| `int16_t` | −32.768 | 32.767 |
+| `uint16_t` | 0 | 65.535 |
+| `int32_t` (`int`, tipik) | −2.147.483.648 | 2.147.483.647 (`INT_MAX`) |
+| `uint32_t` | 0 | 4.294.967.295 |
+| `int64_t` | −9.223.372.036.854.775.808 | 9.223.372.036.854.775.807 |
+| `uint64_t` / `size_t` (64-bit) | 0 | 18.446.744.073.709.551.615 (`SIZE_MAX`) |
+
+Kuralı ezberlemeyin, **hesaplayın**: `n` bitlik işaretsiz bir tür `0` ile `2ⁿ − 1` arasını, `n` bitlik işaretli bir
+tür (ikinin tümleyeni) `−2ⁿ⁻¹` ile `2ⁿ⁻¹ − 1` arasını kapsar. `INT_MAX + 1` neden `INT_MIN`'e sıçrar? Çünkü ikisi de
+aynı 32 bitlik "tekerleğin" karşı komşu noktalarıdır — `2³¹ − 1`'in bir fazlası, bit deseni olarak tam `−2³¹`'e karşılık
+gelir (aşağıdaki kutuda gösteriliyor).
+
 ### Tanımsız davranış nedir?
 
 C standardı bazı işlemler için "bu durumda ne olacağını tanımlamıyorum" der: işaretli tamsayı taşması, sınır dışı
@@ -735,6 +1156,28 @@ int ekle_ve_denetle(int x)
 Programcı taşmayı yakalamak istemiştir; ama işaretli taşma tanımsız olduğu için derleyici "`x + 100 < x` hiçbir zaman
 doğru olamaz" diye akıl yürütüp denetimi tamamen kaldırabilir. Aynı kod `-O0`'da "çalışır", `-O2`'de denetim
 kaybolur. 1. haftadaki Demo 2'de gördüğümüz "derleyici güvenlik kodunu sildi" durumunun başka bir biçimidir.
+
+**`INT_MAX + 1` neden `INT_MIN`'e sıçrar? Bit deseni ile kanıt:**
+
+```text title="INT_MAX + 1 işleminin bit düzeyinde izlenmesi (32-bit, ikinin tümleyeni)"
+INT_MAX (ondalık)         = 2.147.483.647
+INT_MAX (bit deseni)      = 0111 1111 1111 1111 1111 1111 1111 1111   (0x7FFFFFFF)
+
+  + 1'i son bite eklemek:  0111 1111 1111 1111 1111 1111 1111 1111
+                         +                                        1
+                         --------------------------------------------
+  Taşan toplam (33 bit)  = 1000 0000 0000 0000 0000 0000 0000 0000   (0x100000000 — 33. bit taşar ve ATILIR)
+  Kalan 32 bit            = 1000 0000 0000 0000 0000 0000 0000 0000   (0x80000000)
+
+Bu bit deseni (0x80000000), işaretsiz okunursa 2.147.483.648'dir; ama işaretli (ikinin tümleyeni) olarak
+okunduğunda en üst bit (işaret biti) 1 olduğu için NEGATİF bir sayıdır ve tam olarak:
+  0x80000000 (işaretli, 32-bit) = -2.147.483.648 = INT_MIN
+```
+
+Donanım açısından bakıldığında hiçbir "hata" yoktur: işlemci 33. biti atıp 32 biti aynen sakladı; bu, toplama
+donanımının **her zaman** yaptığı şeydir. Sorun, C standardının bu durumu (işaretli tamsayı taşması) "tanımsız"
+ilan etmesi ve derleyicinin bu yüzden "asla olmaz" varsayımıyla optimizasyon yapmasıdır — donanım sessizce
+`INT_MIN`'e sarsa bile, derleyici taşmanın **hiç gerçekleşmediğini** varsayıp ona dayanan bir denetimi silebilir.
 
 ### Doğru denetim: işlemden **önce** ya da taşma bildiren yerleşiklerle
 
@@ -983,6 +1426,58 @@ UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 ./program_test
 ASAN_OPTIONS=detect_leaks=1 ./program_test
 ```
 
+### Bir UBSan raporunu satır satır okumak
+
+Demo 3'teki `tasma(1)` çağrısı (`INT_MAX + 1`), UBSan ile derlenmiş bir sürümde çalıştırıldığında şuna benzer bir
+rapor üretir. Her satırı tek tek okuyalım:
+
+```text title="UBSan raporu, satır satır açıklamalı"
+ub.c:24:15: runtime error: signed integer overflow:
+            2147483647 + 1 cannot be represented in type 'int'
+```
+
+- `ub.c:24:15` → hata **hangi dosyada, hangi satırda, hangi sütunda** oluştu (`ub.c` dosyasının 24. satırı,
+  15. karakteri — tam olarak `x + ekle` ifadesinin bulunduğu yer).
+- `runtime error:` → bu bir **derleme** hatası değil, programın **çalışırken** yakaladığı bir sorundur.
+- `signed integer overflow:` → hatanın **türü**: işaretli tamsayı taşması (INT32-C).
+- `2147483647 + 1 cannot be represented in type 'int'` → hatanın **gerçekleştiği andaki değerler**: sol taraf
+  (`2147483647` = `INT_MAX`), sağ taraf (`1`), ve hangi türe (`int`) sığmadığı. UBSan bu değerleri size **hesaplamanız
+  gerekmeden** verir; Bölüm 7'deki bit deseni hesabını doğrulamak için bu satırı kullanabilirsiniz.
+
+Aynı rapor biçimi diğer UB türleri için de geçerlidir; yalnız orta satır değişir:
+
+```text title="Aynı formatın diğer UB türlerindeki hâli"
+ub.c:33:15: runtime error: shift exponent 31 is too large for 32-bit type 'int'
+ub.c:43:14: runtime error: load of misaligned address 0x... for type 'int', which requires 4 byte alignment
+```
+
+Bir ASan raporunun **hangi satırının ne söylediğini** de aynı disiplinle okuyalım (Demo 5'in `giris_sert` hedefinde
+bir tampon taşması yakalandığında):
+
+```text title="ASan tampon taşması raporu, satır satır"
+==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffee...
+WRITE of size 1 at 0x7ffee... thread T0
+    #0 in strcpy
+    #1 in kopyala tasma.c:24          <- HANGİ SATIR: yazma işlemi burada oldu
+    #2 in main tasma.c:35
+```
+
+- `==12345==` → işletim sistemindeki süreç kimliği (PID); birden fazla süreç aynı anda çalışıyorsa raporları
+  ayırt etmeye yarar.
+- `ERROR: AddressSanitizer: stack-buffer-overflow` → hatanın **sınıfı**: bu bir **yığın** tamponu taşması (öbek
+  değil) — `heap-buffer-overflow` ya da `heap-use-after-free` gibi başka sınıflar da aynı biçimde raporlanır.
+- `WRITE of size 1` → işlem bir **yazma**ydı (okuma olsaydı `READ` yazardı) ve **1 bayt** genişliğindeydi (`strcpy`
+  her seferinde 1 karakter kopyalar).
+- `#0`, `#1`, `#2` → **çağrı yığını** (call stack): hata `strcpy`'nin içinde oluştu (`#0`), `strcpy` `kopyala`
+  fonksiyonundan (`#1`, `tasma.c:24`) çağrılmıştı, `kopyala` da `main`'den (`#2`, `tasma.c:35`). Kod incelemesinde
+  **hangi satıra bakılacağı** neredeyse her zaman `#1` konumundadır — `#0` çoğu zaman kütüphane kodudur (`strcpy`),
+  asıl hata çağıran taraftadır.
+
+!!! success "Kural"
+    Bir sanitizer raporunu okurken önce **hata sınıfını** (üst satır), sonra **çağıran kodun satırını** (genellikle
+    `#1`), en son da varsa **değerleri** (UBSan'da alt satırda) bulun. Bu üçü, hatayı düzeltmek için gereken bütün
+    bilgiyi verir — üstelik hatayı **kendiniz** yeniden üretmeye çalışmanıza bile gerek kalmaz.
+
 !!! warning "Sanitizer'lı derleme sürüme gitmez"
     Sanitizer'lar yavaştır, bellek tüketir ve hata ayıklamaya yönelik arayüzler açar. Sürüm derlemesinde **kapalı**
     olmalıdır. Doğru kullanım: sürekli entegrasyonda (CI) her birleştirmede testleri ve kısa bir fuzzing oturumunu
@@ -1074,6 +1569,17 @@ yine ASan'lı yeniden oynatıcıyla gösterir. Windows'ta libFuzzer, Visual Stud
     şu kadar kod kapsamına ulaşıldı, şu hatalar bulunup düzeltildi" satırını eklemek, değerlendirici için güçlü bir
     kanıttır.
 
+!!! danger "Sık yapılan hata: fuzzer'ı sanitizer'sız çalıştırmak"
+    Fuzzer yalnız **çökmeyi** arar; sanitizer olmadan derlenmiş bir hedefte, Bölüm 3'teki `kayit_oku` gibi bir sınır
+    dışı okuma çoğu zaman **çökmeden** geçer (okunan bayt tesadüfen haritalı bir sayfadaysa). Fuzzing'in değeri,
+    ASan/UBSan ile **birlikte** derlenmiş bir hedefte katlanır: sanitizer, çökmeyen ama belleği bozan girdiyi de
+    yakalar.
+
+!!! success "Kural"
+    Fuzz hedeflerinizi her zaman `-fsanitize=fuzzer,address,undefined` ile birlikte derleyin (Bölüm 10'daki
+    sanitizer'ları fuzzer'la aynı ikilide birleştirin); yalnız `-fsanitize=fuzzer` ile derlenmiş bir hedef, hataların
+    önemli bir kısmını gözden kaçırır.
+
 ---
 
 ## 12. Derleyici ve işletim sistemi korumaları
@@ -1113,6 +1619,120 @@ Tablonun son sütunu önemlidir: her koruma bir **saldırı tekniğini** zorlaş
 Korumalar birbirini tamamlar; örneğin ASLR bir bilgi sızıntısıyla zayıflar, bu yüzden biçim dizisi açığı gibi
 "yalnız okuyan" hatalar da ciddiye alınır. Ve hiçbir koruma, mantık hatasını (1. hafta Demo 3'teki yetki bayrağının
 bozulması gibi) durdurmaz.
+
+### Her korumayı tek tek açalım
+
+Yukarıdaki tablo özet niyetinedir; altı korumanın her biri farklı bir **fiziksel mekanizmayla** çalışır ve farklı
+bir saldırı sınıfını hedefler. Birini diğerinin yerine koymak (ör. "ASLR açık, kanaryaya gerek yok" demek) yanlıştır
+— aşağıda her biri ayrı ayrı açılıyor.
+
+**Yığın kanaryası (stack canary) — bellek düzeyinde ne olur?**
+
+Demo 5'teki `tasma.c`'yi ele alalım: `char tampon[64]; strcpy(tampon, girdi);`. Koruma **açık** (`giris_sert`)
+derlendiğinde, derleyici yığın çerçevesine şu sırayla (adresler yüksekten düşüğe doğru, yığının büyüme yönünde)
+ek bir alan **kendiliğinden** ekler:
+
+```text title="Korumalı bir yığın çerçevesinin düzeni (kavramsal, yüksek adresten düşüğe)"
+[ dönüş adresi          ]  ← fonksiyon bitince buraya dönülür (8 bayt, 64-bit'te)
+[ kaydedilmiş çerçeve    ]  ← çağıranın çerçeve işaretçisi (8 bayt)
+[ K A N A R Y A          ]  ← fonksiyon GİRİŞİNDE yazılan, fonksiyon ÇIKIŞINDA denetlenen değer (8 bayt, 64-bit'te)
+[ tampon[64]             ]  ← strcpy'nin yazdığı yer; TAŞMA BURADAN YUKARI DOĞRU BÜYÜR
+```
+
+Fonksiyona girerken derleyicinin eklediği kod, işletim sisteminin süreç başlatırken bir kere ürettiği **rastgele**
+bir değeri (glibc'de `__stack_chk_guard`, genellikle `/dev/urandom`'dan) kanarya hücresine kopyalar. Fonksiyon
+dönmeden hemen önce, derleyicinin eklediği **ikinci** bir kod parçası bu hücredeki değeri tekrar okur ve
+başlangıçtaki değerle **karşılaştırır**:
+
+```text title="strcpy(tampon, girdi) 80 karakterlik bir girdiyle çağrılırsa"
+tampon'un kapasitesi        : 64 bayt
+girdi'nin uzunluğu          : 80 bayt (+ sonlandırıcı)
+Taşan miktar                : 80 - 64 = 16 bayt
+İlk 64 bayt                 : tampon'u doldurur (amaçlanan)
+Sonraki 8 bayt (65-72)      : KANARYA hücresinin üzerine yazılır → kanarya BOZULUR
+Kalan bayt(lar)             : kaydedilmiş çerçeveye/dönüş adresine doğru ilerler
+
+Fonksiyon dönerken denetim: okunan_kanarya == baslangictaki_kanarya ?
+   HAYIR → __stack_chk_fail() çağrılır → "*** stack smashing detected ***" → abort()
+```
+
+Koruma **kapalıyken** (`giris_zayif`) bu ek alan ve karşılaştırma hiç yoktur; aynı 80 baytlık girdi doğrudan
+kaydedilmiş çerçevenin ve dönüş adresinin üzerine yazılır — program ya rastgele bir adrese "döner" (çoğunlukla
+geçersiz, çöker) ya da bellek sessizce bozulmuş halde çalışmaya devam eder.
+
+**Neden tek başına yetmez? Üç somut sınır:**
+
+1. **Kanaryadan önceki değişkenler korunmaz.** Derleyici tamponları kanaryaya **yakın** yerleştirmeye çalışır ama
+   aynı çerçevede kanaryanın **uzağında**, tampondan **önce** duran bir yerel değişken varsa (`-fstack-protector`
+   her zaman tüm değişkenleri yeniden sıralamaz), o değişken taşmadan etkilenebilir ve kanarya hiç bozulmadan
+   fonksiyon "normal" döner.
+2. **Öbek (heap) hiç korunmaz.** Kanarya yalnız **yığın** çerçevelerinde vardır; Demo 2'deki `malloc`'lu `struct
+   oturum` gibi öbek nesnelerinin böyle bir koruması yoktur.
+3. **Kanaryanın kendisi sızdırılabilirse koruma anlamsızlaşır.** Bu, bu hafta içindeki en önemli bağlantılardan
+   biridir: Bölüm 5'teki biçim dizisi açığı, `%x` ile yığındaki **herhangi bir** 8 baytı okuyabilir — kanarya da bu
+   sekiz baytlardan biridir. Saldırgan önce sızıntıyla kanaryanın **gerçek değerini öğrenir**, sonra taşmayı o
+   öğrendiği değeri **aynen** yazacak şekilde kurgular; karşılaştırma `==` çıkar ve koruma hiç tetiklenmez. Kanarya
+   ile biçim dizisi açığı arasındaki bu bağ, neden "bir koruma tek başına yeterli değildir" ilkesinin (1. hafta
+   savunma derinliği) somut bir örneğidir.
+
+**ASLR (Address Space Layout Randomization) — ne rastgeleleştirir, ne rastgeleleştirmez?**
+
+ASLR, programın kod bölgesinin, yığınının, öbeğinin ve paylaşılan kütüphanelerin **başlangıç adreslerini** her
+çalıştırmada değiştirir (işletim sistemi tarafından, süreç başlatılırken). **Engellediği:** saldırganın "dönüş
+adresini şu sabit adrese yazayım" gibi **sabit adres varsayımına dayanan** bir saldırı kurgulamasını — adres her
+çalıştırmada farklı olduğu için sabit bir değer bir sonraki çalıştırmada işe yaramaz. **Engellemediği:** (a) bir
+bilgi sızıntısı (ör. biçim dizisi açığı, bir işaretçinin ekrana yanlışlıkla yazdırılması) **gerçek** bir adresi
+açığa çıkarırsa, o adresten geri kalan adresler **hesaplanabilir** hale gelir (kütüphaneler genelde birbirine göre
+sabit ofsetlerde yüklenir); (b) 32-bit sistemlerde adres uzayı küçük olduğu için rastgelelik "entropi" azdır ve
+kaba kuvvetle denenebilir; (c) mantık hatalarını hiç etkilemez.
+
+**DEP / NX (veri yürütme engeli) — ne engeller, ne engellemez?**
+
+İşlemcinin bellek yönetim birimi, her bellek sayfasını "çalıştırılabilir" ya da "çalıştırılamaz" diye
+işaretleyebilir. DEP/NX, yığın ve öbek gibi **veri** sayfalarını çalıştırılamaz yapar. **Engellediği:** saldırganın
+tampona kendi makine kodunu (kabuk kodu) yazıp doğrudan oraya atlamasını — böyle bir atlama artık işlemci tarafından
+**reddedilir**. **Engellemediği:** saldırgan kendi kodunu yazmak yerine, programın **zaten çalıştırılabilir** olan
+kendi kod bölgesindeki mevcut parçaları (fonksiyonları, komut dizilerini) art arda **zincirleyerek** çağırırsa
+(ROP/JOP olarak bilinen teknik ailesi), hiçbir yeni "veri sayfasında kod çalıştırma" olmadığı için DEP/NX bunu
+göremez — bu yüzden CFI/CFG gibi ek bir katman gerekir.
+
+**RELRO (Relocation Read-Only) — ne engeller, ne engellemez?**
+
+Dinamik bağlanan bir program, dışarıdan çağırdığı fonksiyonların (ör. `printf`, `malloc`) gerçek adreslerini bir
+tabloda (GOT — Global Offset Table) tutar; bu tablo normalde **yazılabilirdir** çünkü bazı adresler ilk çağrıya
+kadar "tembel" doldurulur. Tam RELRO (`-z relro -z now`), programın bütün dış fonksiyon adreslerini **başlangıçta**
+çözer ve ardından bu tabloyu **salt okunur** yapar. **Engellediği:** bir bellek yazma hatasından yararlanıp GOT
+tablosundaki bir girdiyi (ör. `free`'nin adresini) saldırganın seçtiği bir adrese **değiştirmeyi**. **Engellemediği:**
+programın **kendi** yığın/öbek değişkenlerindeki bozulmaları; GOT dışındaki hiçbir yapıyı korumaz.
+
+**PIE (Position-Independent Executable) — ASLR'nin ön koşulu**
+
+PIE, programın **kendi kodunun** da (yalnız paylaşılan kütüphanelerin değil) her adreste çalışabilecek şekilde
+derlenmesidir. **Engellediği/sağladığı:** PIE olmadan derlenmiş bir programın **kendi** kod bölgesi her zaman
+**aynı sabit adrestedir** — ASLR kütüphaneleri rastgeleleştirse bile, programın kendi kodu hâlâ tahmin edilebilir
+kalır. PIE bu boşluğu kapatır. **Engellemediği:** PIE tek başına bir bellek hatasını önlemez; yalnız ASLR'nin
+**kapsamını** programın kendi koduna genişletir — PIE'siz bir ASLR, "yarım" bir korumadır.
+
+**CFI / CFG (Control-Flow Integrity / Guard) — ne engeller, ne engellemez?**
+
+Bir fonksiyon işaretçisi ya da C++ sanal fonksiyon çağrısı gibi **dolaylı** bir çağrı yapıldığında, CFI/CFG çalışma
+anında "bu hedef, derleme anında belirlenmiş **geçerli hedefler kümesinin** içinde mi?" diye denetler. **Engellediği:**
+tam olarak Bölüm 6'daki UAF örneğindeki gibi, bozulmuş bir fonksiyon işaretçisinin **tamamen** rastgele/saldırgan
+seçimli bir adrese atlamasını — geçerli hedef kümesi dışına atlama tespit edilip program durdurulur. **Engellemediği:**
+saldırganın, **geçerli hedefler arasından** yanlış ama izinli birini seçmesini (ör. programın kendi içindeki başka
+bir fonksiyona atlamak, o da CFI kümesindeyse durdurulmaz); ayrıca fonksiyon işaretçisi **dışındaki** veri
+bozulmalarını (ör. bir yetki bayrağının değiştirilmesi, 1. hafta Demo 3) hiç görmez.
+
+!!! danger "Sık yapılan hata: 'ASLR açık, güvendeyiz' demek"
+    Bir koruma tablosunda tek bir korumanın "açık" olması, sistemin güvenli olduğu anlamına gelmez. Sahada bir ikili
+    dosya incelemesi **hepsini birlikte** ister: kanarya + FORTIFY + PIE/ASLR + NX + RELRO + CFI. Bunlardan biri
+    eksikse, diğerleri o eksik halkanın açtığı yoldan **dolaylı** olarak atlatılabilir (ör. RELRO yoksa, ASLR açık
+    olsa bile GOT üzerinden dolaylı çağrı ele geçirilebilir).
+
+!!! success "Kural"
+    Koruma tablosunu okurken her satırı "ne engelliyor" **ve** "ne engellemiyor" diye iki sütunlu okuyun (yukarıdaki
+    tablo gibi). "Bu koruma açık, dolayısıyla güvenliyiz" cümlesi yanlıştır; doğru cümle "bu koruma **şu** saldırı
+    tekniğini zorlaştırıyor, **şu** hata sınıfını hâlâ durdurmuyor"dur.
 
 ### Demo 5 — Korumaları açıp kapatmak
 
@@ -1237,6 +1857,8 @@ okuyabilir, fonksiyonlarını adlarıyla bulabilir. Kodunuzda bir lisans denetim
 denetimi varsa, bunları okumak onu atlatmanın ilk adımıdır. **Kod gizleme** (obfuscation), programın davranışını
 değiştirmeden **anlaşılmasını zorlaştıran** dönüşümlerin genel adıdır.
 
+![Uzak saldırgan ile cihazın sahibi arasındaki fark](assets/h04-17-iki-saldirgan-modeli.svg)
+
 ### Gizleme ne verir, ne vermez?
 
 Kitap, yazılım korumasını anlatırken açık konuşur (Tarif 12.1): yeterli zamanı ve becerisi olan bir saldırgan her
@@ -1279,6 +1901,8 @@ hassas bölümlere uygulanır.
 Tersine mühendisliğin ilk adımı genellikle en basit olanıdır: ikili dosyadaki **okunabilir metinlere** ve **fonksiyon
 adlarına** bakmak. `lisans_dogrula` adlı bir fonksiyon ya da `"Lisans geçersiz"` dizgesi, saldırgana nereye bakacağını
 doğrudan söyler. Bu yüzden ilk ve en ucuz gizleme katmanı bu bilgileri ikili dosyadan çıkarmaktır.
+
+![Sembol, dize ve günlük gizleme](assets/h04-18-sembol-dize-gizleme.svg)
 
 ### Üç basit önlem
 
@@ -1344,6 +1968,8 @@ Derlenmiş bir fonksiyonun kontrol akışı grafiği (CFG), algoritmanın iskele
 yapıldığı, hangi dalın başarıya gittiği. **Kontrol akışı düzleştirme** (control-flow flattening), fonksiyonun bütün
 temel bloklarını tek bir döngünün içindeki bir `switch` dağıtıcısına taşır. Bloklar arasındaki doğal komşuluk kaybolur;
 hangi bloğun hangisinden sonra geldiği yalnız bir **durum değişkeninin** değerinden anlaşılır.
+
+![Düzleştirme öncesi ve sonrası kontrol akışı](assets/h04-19-duzlestirme-giris.svg)
 
 ```c title="Düzleştirme şablonu"
 int durum = 1;
@@ -1533,6 +2159,76 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
 ??? question "12. Kontrol akışı düzleştirme tek başına neden zayıftır? Onu güçlendiren üç teknik sayın."
     Şablon tanınabilir ve durum değişkeni izlenerek akış geri çıkarılabilir. Durum değerlerinin gizlenmesi, sahte/ölü
     bloklar, rastgele çıkış noktası, opak değerler.
+
+??? question "13. `printf(tampon)` çağrısında `%x` her zaman yığından mı okur? 64-bit sistemde fark nedir?"
+    Basitleştirilmiş öğretim modelinde (32-bit cdecl) evet, bütün argümanlar yığında art arda durur. 64-bit x86-64
+    System V ABI'de ise ilk 6 tamsayı/işaretçi argümanı yazmaçlarda (`RSI, RDX, RCX, R8, R9`) taşınır; ilk birkaç
+    `%x` bu yazmaçlardaki rastgele kalıntı değerleri okur, yalnız 6'dan sonraki `%x`'ler yığına ulaşır.
+
+??? question "14. `%n` neden `%x`'ten daha tehlikelidir?"
+    `%x` yalnız okur; `%n` ise "şimdiye kadar yazılan karakter sayısını" kendisine verilen "argümanın" gösterdiği
+    adrese **yazar**. Argüman verilmediği için bu adres de yığından/yazmaçtan okunan rastgele bir değerdir; saldırgan
+    biçim dizgesini kendisi yazdığından bu "adres" konumuna kendi seçtiği bir bayt dizisi yerleştirebilir.
+
+??? question "15. Demo 2'de `sahte = malloc(24)` neden `o` ile aynı adresi alır?"
+    `free(o)` ile serbest kalan blok tam olarak 24 bayttır (`sizeof(struct oturum) = 8 + 16`). Bellek yöneticileri
+    (ör. glibc tcache) aynı boyut sınıfındaki bir sonraki isteği, LIFO (son giren ilk çıkar) serbest liste ilkesiyle
+    az önce serbest kalan bloktan karşılar; bu yüzden `sahte` çoğunlukla `o` ile aynı adresi alır.
+
+??? question "16. `free(p)` sonrası neden hemen `p = NULL;` yazılmalı?"
+    `free(p)` yalnız bellek yöneticisine bloğu geri verir; `p` değişkenini değiştirmez, `p` hâlâ eski adresi tutar
+    (askıdaki işaretçi). `p`'yi sıfırlamak, bir sonraki yanlışlıkla yapılan `p->...` erişiminin sessizce yanlış
+    veriye ulaşmak yerine hemen ve gürültülü biçimde çökmesini sağlar.
+
+??? question "17. `(int)-1` bir 64-bit `size_t`'ye atanırsa hangi değeri alır? Sonucu nereden hesaplarsınız?"
+    `-1 + 2^64 = 2^64 - 1 = 18.446.744.073.709.551.615` (`SIZE_MAX`, 64-bit sistemde). -1'in 32-bit bit deseni
+    (`0xFFFFFFFF`) işaretsiz bir 64-bit türe atanırken matematiksel olarak `2^64` eklenerek aralığa sokulur.
+
+??? question "18. `INT_MAX + 1` neden bit deseni olarak `INT_MIN`'e eşittir?"
+    `INT_MAX` = `0x7FFFFFFF`; buna 1 eklenince 33. bit taşıp atılır ve kalan 32 bit `0x80000000` olur. Bu bit
+    deseni işaretsiz okunursa 2.147.483.648, işaretli (ikinin tümleyeni) okunursa en üst bit (işaret biti) 1
+    olduğu için `-2.147.483.648` = `INT_MIN`'dir.
+
+??? question "19. `0x40000001 * sizeof(uint32_t)` işleminin `uint32_t`'ye sarma sonucu kaç bayt olur?"
+    Gerçek çarpım `4.294.967.300`'dür; `uint32_t`'nin sığdırabildiği en büyük değer `4.294.967.295`'tir (`2^32-1`).
+    `4.294.967.300 mod 2^32 = 4` olduğu için `boyut` değişkeninde yalnız **4 bayt** kalır; `malloc(4)` çağrılır ama
+    döngü milyarlarca bayt yazmaya çalışır.
+
+??? question "20. Yığın kanaryası tam olarak nerede durur ve neyi korur?"
+    Kanarya, tamponla (ör. `tampon[64]`) kaydedilmiş çerçeve/dönüş adresi arasına, fonksiyon girişinde rastgele bir
+    değerle yazılır. Yalnız **kendisinden sonraki** (yığında ondan yukarıdaki) dönüş adresine ulaşan **ardışık**
+    taşmaları, fonksiyon dönerken yaptığı karşılaştırmayla yakalar.
+
+??? question "21. Kanarya neden bu haftanın biçim dizisi açığıyla birlikte düşünülmelidir?"
+    Kanarya da yığında duran 8 baytlık bir değerdir; bir biçim dizisi açığı `%x` ile bu baytları da okuyabilir.
+    Saldırgan sızıntıyla kanaryanın gerçek değerini öğrenirse, taşmayı bu değeri aynen yazacak şekilde kurgulayabilir
+    ve karşılaştırma hiç tetiklenmez — bir koruma (kanarya) başka bir hatayla (bilgi sızıntısı) atlatılmış olur.
+
+??? question "22. ASLR neyi rastgeleleştirir? PIE olmadan ASLR neden eksik kalır?"
+    ASLR, kod, yığın, öbek ve paylaşılan kütüphanelerin başlangıç adreslerini her çalıştırmada değiştirir. PIE
+    olmadan derlenmiş bir programın **kendi** kod bölgesi her zaman aynı sabit adrestedir; ASLR yalnız kütüphaneleri
+    rastgeleleştirse bile programın kendi kodu tahmin edilebilir kalır — PIE bu boşluğu kapatır.
+
+??? question "23. DEP/NX açıkken saldırgan hâlâ nasıl kod çalıştırabilir (kavramsal olarak)?"
+    DEP/NX yalnız veri sayfalarına (yığın, öbek) **yeni** kod yazıp çalıştırmayı engeller. Saldırgan kendi kodunu
+    yazmak yerine, programın zaten çalıştırılabilir olan kendi kod bölgesindeki mevcut parçaları art arda
+    zincirleyerek (ROP/JOP tekniği ailesi) kullanabilir; bu, hiçbir veri sayfasında kod çalıştırmadığı için DEP/NX
+    tarafından görülmez.
+
+??? question "24. RELRO tam olarak neyi salt okunur yapar ve bu neyi engeller?"
+    RELRO, dinamik bağlanan fonksiyon adreslerinin tutulduğu GOT (Global Offset Table) tablosunu, program
+    başlangıcında bütün adresler çözüldükten sonra salt okunur yapar. Bu, bir bellek yazma hatasından yararlanıp
+    GOT'taki bir fonksiyon adresini saldırganın seçtiği bir adrese değiştirmeyi engeller.
+
+??? question "25. CFI/CFG hangi çağrıları denetler, hangilerini denetlemez?"
+    Dolaylı çağrıların (fonksiyon işaretçisi, sanal fonksiyon) yalnız derleme anında belirlenmiş geçerli hedefler
+    kümesine gitmesini denetler; bu kümenin **dışına** atlamayı engeller. Kümenin **içindeki** yanlış ama izinli bir
+    hedefe atlamayı ya da fonksiyon işaretçisi dışındaki veri bozulmalarını (ör. bir yetki bayrağı) görmez.
+
+??? question "26. Bir ASan/UBSan raporunu okurken hangi sıraya bakılır?"
+    Önce üst satırdaki hata sınıfına (`stack-buffer-overflow`, `signed integer overflow` ...), sonra çağrı yığınında
+    genellikle `#1` konumundaki (kendi kodunuzun olduğu) satıra, en son UBSan'da varsa değerlere bakılır. `#0`
+    çoğunlukla kütüphane kodudur (`strcpy`, `malloc`); asıl düzeltilecek satır bir sonrakidir.
 
 ---
 

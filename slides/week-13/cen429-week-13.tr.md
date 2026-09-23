@@ -182,6 +182,31 @@ Bugün bu zinciri kurmayı öğreneceğiz.
 
 ---
 
+<!-- _class: yogun -->
+
+# Gereksinim vs önlem · "karşılanmadı" vs "uygulanmaz"
+
+- **Sık hata:** "Gereksinim: AES-256-GCM kullanılmalıdır." → bu bir **önlem**, gereksinim değil. Doğrusu: "...AEAD ile korunmalıdır" (gereksinim) + "AES-256-GCM, S7.2" (önlem).
+- **Karşılanmadı:** gereksinim uygulanıyor ama henüz sağlanmıyor — bir **eksikliktir**, kalan riske yazılır.
+- **Uygulanmaz:** gereksinim ürüne hiç uygulanmıyor (ör. ağ kullanmıyorsa "aktarımda veri" gereksinimleri) — her zaman **gerekçesiyle** yazılmalı.
+
+---
+
+<!-- _class: yogun -->
+
+# Durum ve karar kelimeleri — özet
+
+| Kelime | Ne zaman kullanılır | Yanında ne yazılmalı |
+| --- | --- | --- |
+| Karşılandı | Ürün gereksinimi kendisi sağlıyor | Önlem + doğrulama + kanıt |
+| Devredildi | Başka bir taraf sağlıyor | Kime + neden + nasıl |
+| Karşılanmadı | Uygulanır ama henüz sağlanmıyor | Kalan risk + planlanan düzeltme |
+| Uygulanmaz | Ürüne hiç uygulanmıyor | Gerekçe |
+| -malıdır (MUST) | Zorunlu | Karşılanmazsa doğrudan bulgu |
+| -malı (SHOULD) | Güçlü öneri | Karşılanmazsa yazılı gerekçe |
+
+---
+
 # Şimdi hazırız
 
 Terimler:
@@ -256,6 +281,96 @@ Tekil, doğrulanabilir maddeler.
 
 ---
 
+# İşlenmiş örnek · kötü gereksinimi iyileştirmek
+
+Başlangıç cümlesi (gerçek bir taslaktan):
+
+> "Uygulama, kullanıcı verilerini korumalıdır."
+
+Bu cümleyi altı adımda iyi bir gereksinime dönüştüreceğiz; her adımda **önce/sonra** ve **neden değişti**.
+
+---
+
+# Adım 1 — Belirsiz kelimeleri işaretleyin
+
+- **Önce:** "Uygulama, kullanıcı verilerini korumalıdır."
+- Belirsiz kelimeler: "kullanıcı verileri" (hangi veri?), "korumalıdır" (neye karşı, hangi düzeyde?).
+- **Neden değişti:** değerlendirici bu cümleyi okuyunca test edecek hiçbir şey bulamaz.
+
+---
+
+# Adım 2 — Varlık tablosuna bağlayın
+
+- **Sonra:** "Yerel veritabanındaki **C sınıfı** alanlar korunmalıdır."
+- **Neden değişti:** "kullanıcı verileri" tek şey değil; varlık tablosunda (1. hafta) ayrı satırlardır — oturum belirteci, profil, ödeme jetonu... her biri farklı sınıfta.
+- Hâlâ "korunmalı" ölçülemez → sıradaki adım.
+
+---
+
+# Adım 3 — Koruma hedefini netleştirin
+
+- **Sonra:** "...C sınıfı alanların **gizliliği ve bütünlüğü** korunmalıdır."
+- **Neden değişti:** tehdit modeli hem "dosyayı okuma" (gizlilik) hem "dosyayı değiştirme" (bütünlük) riskini gösteriyor; ikisi de aynı anda gerekli.
+
+---
+
+# Adım 4 — Ölçülebilir teknik kriter ekleyin
+
+- **Sonra:** "...kimlik doğrulamalı şifrelemeyle (**AEAD**) korunmalıdır."
+- **Neden değişti:** 9. hafta kuralı — gizlilik ve bütünlük **aynı anda** isteniyorsa doğru araç sınıfı AEAD'dir; hâlâ belirli bir kütüphane adı verilmiyor.
+
+---
+
+# Adım 5 — Durum ve zorunluluk sözcüğünü ekleyin
+
+- **Sonra:** "**Beklemedeki** C sınıfı hassas veri, kimlik doğrulamalı şifrelemeyle (AEAD) korunmalıdır." (**MUST**)
+- **Neden değişti:** veri burada beklemede (disk üzerinde); "-malıdır" seçildi çünkü tehdide karşı vazgeçilmez bir koşul — "-abilir" olsaydı isteğe bağlı sayılırdı.
+
+---
+
+# Adım 6 — Kimlik verin ve tehdide bağlayın
+
+- **Sonra (son hâl):** `CEN429-DR-01` — "Beklemedeki C sınıfı hassas veri, kimlik doğrulamalı şifrelemeyle (AEAD) korunmalıdır." *(Tehdit: T-03, "cihazı ele geçiren saldırgan veritabanı dosyasını okur/değiştirir".)*
+- **Neden değişti:** kimliksiz bir gereksinim izlenebilirlik zincirine hiç girmez.
+
+---
+
+<!-- _class: yogun -->
+
+# Altı adım · hangi belirsizliği giderdi?
+
+| Adım | Giderdiği belirsizlik |
+| --- | --- |
+| 1 | Belirsiz kelimeyi işaretlemek |
+| 2 | Hangi veri (varlık tablosu) |
+| 3 | Hangi hedef (gizlilik/bütünlük) |
+| 4 | Hangi araç sınıfı (AEAD) |
+| 5 | Hangi durum, hangi zorunluluk |
+| 6 | Kimlik ve tehdit bağı |
+
+Biri eksik kalırsa gereksinim yine tartışmaya açık kalır; değerlendirici geri gönderir.
+
+---
+
+<!-- _class: yogun -->
+
+# İkinci ve üçüncü örnekler
+
+- **İkinci örnek (hız testi):** "Hızlı ve güvenli olmalıdır" → iki ayrı gereksinim tek cümlede. Aynı altı adımdan geçirilince: `CEN429-ID-04` — "Her oturum açma denemesi sunucu tarafında doğrulanmalıdır; istemci tarafı kontrolü tek başına yeterli kabul edilmemelidir."
+- **Üçüncü örnek (süreç):** "Kod incelemesi yapılmalıdır." → Hangi değişiklik? Kim inceleyecek? Ne zaman? İyi hâli: "Her değişiklik, ana dala birleştirilmeden önce, yazan geliştirici dışında en az bir kişi tarafından incelenmeli ve onay sürüm kontrol sisteminde kayıt altına alınmalıdır."
+
+---
+
+<!-- _class: yogun -->
+
+# Bölüm 1'in kuralı ve zorunluluk sözcükleri
+
+- Gereksinim sütununa **ne** istendiğini yazın; **nasıl** karşıladığınızı ayrı bir önlem cümlesine yazın.
+- Gereksinim metninde **araç sınıfını** (AEAD, CSPRNG, TLS 1.2+) yazın; belirli kütüphane/sürüm adını önleme koyun.
+- **-malıdır (MUST):** zorunlu, karşılanmazsa doğrudan bulgu. **-malı (SHOULD):** güçlü öneri, gerekçe gerekir. **-abilir (MAY):** isteğe bağlı, bulgu değil.
+
+---
+
 <!-- _class: bolum -->
 
 # 2. Gereksinimden kanıta: izlenebilirlik
@@ -301,6 +416,103 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 - Matriste "karşılandı" ama kanıt yoksa...
 - Değerlendirici gözünde **karşılanmamış** sayılır.
 - İlk bulgulardan biri olur.
+
+---
+
+# İşlenmiş örnek · uçtan uca zincir
+
+Zincirin nasıl kurulduğunu tek bir varlık üzerinden başından sonuna dolduralım: kullanıcının **oturum belirteci**.
+
+Altı halka: varlık → tehdit → gereksinim → önlem → doğrulama → kanıt.
+
+---
+
+# 1. Varlık
+
+| Alan | Değer |
+| --- | --- |
+| Varlık | Kullanıcının oturum belirteci (session token) |
+| Konum | İstemci belleği; her istekte HTTP başlığında taşınır |
+| Sınıf | **C** (gizlilik) |
+| Yaşam döngüsü | Açılışta üretilir → her istekte kullanılır → çıkışta/zaman aşımında geçersiz kılınır |
+
+---
+
+# 2. Tehdit
+
+- Ağ üzerinde konumlanan bir saldırgan (ör. aynı halka açık Wi-Fi), şifrelenmemiş bağlantıdan belirteci dinleyip yakalayabilir.
+- Yakaladığı belirteçle kendi isteklerinde kullanarak kullanıcı **gibi davranabilir**.
+- STRIDE: **Spoofing** + **Information Disclosure** (1. hafta terminolojisi).
+
+---
+
+# 3. Gereksinim
+
+Varlık → tehdit → hedef (gizlilik+kimlik) → araç sınıfı → durum → zorunluluk zinciri kısaca tekrar uygulanır:
+
+> `CEN429-DT-01` — "Oturum belirteci yalnız TLS 1.2 ve üzeri, sunucu sertifikası doğrulanmış bir kanaldan taşınmalıdır."
+
+---
+
+# 4. Önlem
+
+Kılavuzun **S10.3 "Aktarım güvenliği"** bölümü:
+
+> "İstemci, sunucuya her bağlantıda TLS 1.2+ el sıkışması yapar; sertifika zinciri ve ana bilgisayar adı doğrulanır (bkz. Hafta 10). Kanal kurulmadan hiçbir istek gönderilmez."
+
+---
+
+# 5. Doğrulama
+
+Güvenlik testi ekibi bir MITM (ortadaki adam) aracıyla bağlantıya araya girmeye çalışır:
+
+- Geçersiz/kendinden imzalı sertifika sunulunca bağlantının **reddedildiğini** doğrular.
+- Düz metin (TLS'siz) bağlantı denemesinin **reddedildiğini** doğrular.
+
+---
+
+# 6. Kanıt
+
+- Test aracının günlük çıktısı: `mitm_test_2026-11-03.log`
+- CI çalıştırma kaydı: **#617**
+- TLS handshake paket dökümü: `handshake.pcapng`
+- `evidence/week13/` klasöründe saklanır, matriste bu dosya adlarıyla referans verilir.
+
+---
+
+<!-- _class: yogun -->
+
+# Zincirin dolu satırı
+
+| Kimlik | Gereksinim | Durum | Önlem | Doğrulama | Kanıt |
+| --- | --- | --- | --- | --- | --- |
+| CEN429-DT-01 | Oturum belirteci TLS 1.2+, sertifika doğrulanarak taşınmalı | Karşılandı | S10.3 | MITM testi: geçersiz sertifika/düz metin reddedilir | `mitm_test_2026-11-03.log`, CI #617, `handshake.pcapng` |
+
+Bir halka eksik olsaydı: varlık yoksa "hangi veri" belirsiz kalır, tehdit yoksa gereksinim keyfi görünür, önlem yoksa iddia desteksiz kalır, doğrulama yoksa "nasıl test edildi" cevapsız kalır, kanıt yoksa satır **ilk bulgu** olur.
+
+---
+
+<!-- _class: yogun -->
+
+# "Karşılanmadı" durumunun tam zinciri
+
+| Halka | Karşılandı (DT-01) | Karşılanmadı (DT-04) |
+| --- | --- | --- |
+| Gereksinim | Oturum belirteci TLS ile taşınır | Sunucu sertifikası sabitlenmeli |
+| Durum | Karşılandı | **Karşılanmadı** |
+| Önlem | S10.3 | — (henüz yok) |
+| Doğrulama | MITM testi geçti | — |
+| Kanıt | Test günlüğü | **Kalan risk:** S16.4'e yazılır |
+
+"Karşılanmadı"da önlem/doğrulama boş kalabilir ama **kanıt** (kalan riskin nerede belgelendiği) boş kalamaz.
+
+---
+
+# Bölüm 2'nin kuralı
+
+- Her "karşılandı" satırının kanıt sütununda **bulunabilir, adlandırılmış** bir referans olmalı: dosya adı, CI numarası, test raporu bölümü.
+- "Var", "test edildi" kanıt değil, kanıt **vaadidir**.
+- Değerlendiricinin en sık yazdığı bulgu: **kanıtsız "karşılandı"**.
 
 ---
 
@@ -416,6 +628,55 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+# İşlenmiş örnek · bloğu doldurmak (Karşılandı)
+
+Bu, 2. bölümdeki `CEN429-DR-01` zincirinin **kılavuza yazılmış** hâlidir:
+
+> [CEN429-DR] CEN429-DR-01 — KARŞILANDI
+> Gereksinim: Beklemedeki C sınıfı hassas veri, kimlik doğrulamalı şifrelemeyle (AEAD) korunmalıdır.
+> Karşılama: Yerel kasa dosyası AES-256-GCM ile şifrelenir (S7.2); anahtar cihazın güvenli depolama biriminden türetilir. Doğrulama: birim testi, tek bayt değişince çözmenin reddedildiğini kontrol eder. Kanıt: CI #482, `evidence/week13/test_butunluk_ci482.log`.
+
+---
+
+# Aynı kalıp · Devredildi
+
+> [CEN429-AP] CEN429-AP-07 — DEVREDİLDİ (üst uygulamaya)
+> Gereksinim: Uygulama güvenli biçimde kurulmalı ve güncellenmelidir.
+> Karşılama: Kütüphanenin kendi dağıtım/güncelleme mekanizması yok. Kime: üst uygulama geliştiricisi. Neden: kütüphane ağ/dosya sistemi seviyesinde kuruluma erişmez. Nasıl: mağaza imza doğrulaması ya da Hafta 6'daki imzalama şemasıyla imzalı güncelleme paketleri.
+
+Devredilen blok da **Karşılama** alanına sahiptir — ama "karşı taraf nasıl yapmalı, biz neden yapmıyoruz" sorusunu cevaplar.
+
+---
+
+# Aynı kalıp · Karşılanmadı
+
+> [CEN429-DT] CEN429-DT-04 — KARŞILANMADI
+> Gereksinim: Sunucu sertifikası sabitlenmelidir (certificate pinning).
+> Durum: Şu an yalnız standart TLS zinciri doğrulaması var, sabitleme yok. Kalan risk: güvenilir bir kökten sahte sertifika alınırsa MITM mümkün olabilir (S16.4). Planlanan düzeltme: v1.1 (görev #217).
+
+"Karşılanmadı" bloğu **Karşılama** yerine **Durum** ve **Kalan risk** alanlarını doldurur.
+
+---
+
+# Blok alanlarının görevi
+
+- **Başlık satırı** ([Aile] Kimlik — Durum): değerlendiricinin gözünü hızlıca nereye götüreceğini söyler.
+- **Gereksinim** satırı: standarttan/tehditten gelen "ne"yi tekrarlar, yeniden yorumlanmaz.
+- **Karşılama:** "nasıl"ı somut dosya/bölüm adlarıyla anlatır.
+- **Doğrulama + Kanıt:** izlenebilirlik zincirinin son iki halkası.
+
+---
+
+<!-- _class: yogun -->
+
+# Donanım devretmesi ve Bölüm 3'ün kuralı
+
+- Güvenli eleman/TEE **varsa**: gereksinim donanıma devredilebilir.
+- Güvenli eleman **yoksa**: devredilemez — devredilecek taraf yok; ürün yazılım tabanlı önlem almalı ya da "karşılanmadı" + kalan risk yazmalı. "Donanıma devredildi" yazmak burada **geçersiz devretmedir**.
+- **Kural:** karşılama metni her zaman somut bir referansla bitmeli; devretmeden önce karşı tarafın **gerçekten** karşılayabileceğini doğrulayın.
+
+---
+
 # Bölüm 3 — kısa sınama
 
 1. Gereksinim bloğunun alanları?
@@ -521,6 +782,43 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+# İşlenmiş örnek · ST iskeleti — TOE
+
+Bir mobil ödeme bileşeni için üç adımda dolduralım.
+
+**Adım 1 — TOE'yi tanımlayın:**
+
+> TOE: "CEN429-Pay" kütüphanesi, sürüm 1.0, yalnız Android ARM64 derlemesi.
+> **Kapsam dışı:** üst uygulamanın arayüzü, sunucu tarafı bileşenler, işletim sistemi çekirdeği.
+
+Kapsam dışını yazmak, kapsamı yazmak kadar önemlidir.
+
+---
+
+<!-- _class: yogun -->
+
+# Tehdit → amaç → SFR eşlemesi
+
+| Tehdit | Güvenlik amacı | SFR ailesi | Dersteki gereksinim |
+| --- | --- | --- | --- |
+| T.EAVESDROP | Aktarılan veri gizli/bütünlüklü kalmalı | FCS, FTP | CEN429-DT-01 |
+| T.TAMPER | Uygulama bütünlüğünü denetlemeli | FPT | CEN429-AP-04 |
+| — | Kimlik doğrulanmalı | FIA | CEN429-ID-02 |
+
+Bu tablo ST'nin kalbidir: her satır "neden bu gereksinim var" ile "hangi kanıt istenir" arasındaki köprü.
+
+---
+
+<!-- _class: yogun -->
+
+# Bölüm 4'ün kuralı
+
+- TOE tanımı her zaman **hem içerdiklerini hem dışarıda bıraktıklarını** listeler.
+- SFR'ler katalogdan seçilir, **uydurulmaz**; karşılığı yoksa "genişletilmiş bileşen" olarak gerekçelendirilir.
+- Değerlendirici her tehdidin bir amaca, her amacın bir SFR'ye bağlandığını kontrol eder.
+
+---
+
 <!-- _class: bolum -->
 
 # 5. FIPS 140-3
@@ -565,6 +863,38 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 - **CC:** ürünün bütününü değerlendirir.
 - **FIPS:** kripto modülünü doğrular.
 - Bir ürün CC değerlendirmesinde FIPS'li modül kullanabilir.
+
+---
+
+# İşlenmiş örnek · FIPS düzey 1 denetimi
+
+Proje kripto katmanı: OpenSSL `EVP` arayüzü, AES-256-GCM, anahtarlar `getrandom()`'dan üretiliyor, **hata durumunda sessizce varsayılan bir anahtara düşüyor**.
+
+Düzey 1 beklentilerini tek tek işaretleyelim.
+
+---
+
+<!-- _class: yogun -->
+
+# Düzey 1 · durum tablosu
+
+| Düzey 1 beklentisi | Durum | Neden |
+| --- | --- | --- |
+| Onaylı algoritma, onaylı kipte | Kısmen | CAVP sertifikası yoksa iddia edilemez |
+| Açılış/koşullu öz testler | Karşılanmadı | Proje kendi öz testini çalıştırmıyor |
+| Roller ve hizmetler tanımlı | Karşılanmadı | Kod rol ayrımı yapmıyor |
+| Parametrelerin sıfırlanması | Karşılanmadı | Hata durumunda varsayılan anahtara düşülüyor |
+| Güvenlik politikası belgesi | Karşılanmadı | Böyle bir belge yok |
+
+---
+
+<!-- _class: yogun -->
+
+# En kritik açık ve Bölüm 5'in kuralı
+
+- Hata durumunda "varsayılan anahtara düşmek", **sıfırlama (zeroization) ilkesinin tam tersidir**.
+- 3. haftadaki kural: "rastgele üreteç başarısız olursa **dur**, devam etme" — burada tersi yapılıyor.
+- **Kural:** bir FIPS iddiasının arkasında her zaman bir **CMVP sertifika numarası ve kapsamı** olmalı; yoksa "FIPS onaylı algoritmalar kullanıyoruz (doğrulanmış modül değil)" diye dürüstçe daraltın.
 
 ---
 
@@ -687,6 +1017,44 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+<!-- _class: yogun -->
+
+# Aynı gereksinim, dört standart (1) — beklemede veri
+
+| Standart | Karşılığı |
+| --- | --- |
+| Ortak Kriterler | FCS + FDP bileşenleri |
+| FIPS 140-3 | Düzey 1: onaylı algoritma, öz test, sıfırlama |
+| ETSI EN 303 645 | Madde 5.4 "Hassas parametreleri güvenle sakla" |
+| OWASP MASVS | MASVS-STORAGE |
+| Dersin ailesi | `CEN429-DR-01` |
+
+---
+
+<!-- _class: yogun -->
+
+# Aynı gereksinim, dört standart (2) — zayıf kimlik doğrulama
+
+| Standart | Karşılığı |
+| --- | --- |
+| Ortak Kriterler | FIA bileşenleri |
+| FIPS 140-3 | Düzey 2: rol tabanlı kimlik doğrulama |
+| ETSI EN 303 645 | Madde 5.1 "Evrensel varsayılan parola yok" |
+| OWASP MASVS | MASVS-AUTH |
+| Dersin ailesi | `CEN429-ID-01` / `CEN429-ID-02` |
+
+---
+
+<!-- _class: yogun -->
+
+# Örtüşme ve Bölüm 6'nın kuralı
+
+- Bir standarda uyum kanıtı, başka bir standartta da **kısmen yeniden kullanılabilir** — ama "otomatik karşılanır" demek değildir; her standardın **kendi ek ölçütü** vardır.
+- "FIPS'li modül kullanıyoruz, o yüzden MASVS-CRYPTO'yu da karşılıyoruz" cümlesi **tehlikelidir**.
+- **Kural:** örtüşmeyi kanıt toplamayı hızlandırmak için kullanın, ama her standardı **ayrı ayrı** işaretleyin.
+
+---
+
 # Bölüm 6 — kısa sınama
 
 1. ETSI EN 303 645 kimin için?
@@ -742,9 +1110,43 @@ Her gereksinim bir **varlığa** ve bir **önleme** bağlanır.
 
 ---
 
+# İşlenmiş örnek · CR-03'e altı adımı uygulamak
+
+`CEN429-CR-03` ("anahtarlar iş bitince silinmelidir"):
+
+- **1. Uygulanabilirlik:** oturum ve kasa dosyası anahtarı var → uygulanır.
+- **2. Sorumluluk:** kod projenin kendisi → biz karşılarız.
+- **3. Varlıklara bağlama:** kasa dosyası anahtarının "silinme" sütunu boş — **eksiklik burada fark edilir**.
+
+---
+
+# Aynı örnek · tehditten sürüm planına
+
+- **4. Tehditlere bağlama:** "fiziksel erişimi olan saldırgan bellek dökümü alır" tehdidine bağlanır.
+- **5. Önlem/doğrulama:** `sifreleme_bellek_sil()` çağrısı; doğrulama: bellek dökümünde anahtar baytlarının **bulunmadığını** göstermek.
+- **6. Sürüm planı:** oturum anahtarı v0.9'da karşılandı; kasa dosyası anahtarı v1.0'a planlandı, o güne kadar **karşılanmadı** + kalan risk yazılır.
+
+---
+
+<!-- _class: yogun -->
+
+# Bölüm 7'nin kuralı
+
+- Her "uygulanmaz" kararı, gerekçesini destekleyen bir **kanıtla** (kod taraması, mimari diyagram) birlikte yazılmalı.
+- Gerekçesiz "uygulanmaz", gerekçesiz "karşılandı" kadar güvenilmezdir.
+- Altı adımdan 3. ve 4.'ü (varlık/tehdit bağlama) atlamak en sık yapılan hatadır.
+
+---
+
 <!-- _class: bolum -->
 
 # 8. Dersin gereksinim aileleri
+
+---
+
+# Gereksinim aileleri — şema
+
+![w:900](assets/h13-11-gereksinim-aileleri.svg)
 
 ---
 
@@ -831,6 +1233,54 @@ Değerlendirici gözüyle kontrol:
 
 ---
 
+<!-- _class: yogun -->
+
+# İşlenmiş örnek · ilk taslak (yetersiz)
+
+Bir takımın `CEN429-AP-04` için matris satırı, **ilk taslakta**:
+
+| Kimlik | Gereksinim | Durum | Önlem | Doğrulama | Kanıt |
+| --- | --- | --- | --- | --- | --- |
+| CEN429-AP-04 | Uygulama çalışma anında bütünlüğünü denetlemeli | Karşılandı | Bütünlük kontrolü var | Test edildi | — |
+
+Üç sorun: (1) önlem, gereksinimin **tekrarı**. (2) "Test edildi" doğrulama **yöntemi değil**. (3) Kanıt **boş**.
+
+---
+
+# Taslağı düzeltme · adım adım
+
+1. Önlemi somutlaştır: açılışta kod bölümünün özeti (hash) hesaplanır, derleme zamanında gömülü beklenen özetle karşılaştırılır; uyuşmazsa çalışma durur (S12.3).
+2. Doğrulama yöntemini netleştir: ikili dosyanın bir baytı değiştirilir, uygulamanın **başlamayı reddettiği** doğrulanır.
+3. Kanıt ekle: CI işi `ci-integrity-check`, çalıştırma **#391**, `integrity_test.log`.
+
+---
+
+<!-- _class: yogun -->
+
+# Düzeltilmiş satır
+
+| Kimlik | Durum | Önlem | Doğrulama | Kanıt |
+| --- | --- | --- | --- | --- |
+| CEN429-AP-04 | Karşılandı | S12.3: açılış özeti hesaplanır, gömülü özetle karşılaştırılır | Bayt değişince başlamanın reddedildiği test edilir | CI `ci-integrity-check` #391, `integrity_test.log` |
+
+---
+
+# Fark neyde?
+
+- Fark satırın **uzunluğunda** değil, her hücrenin **somutluğunda**.
+- İlk taslak da "dolu" görünüyordu ama hiçbir hücresi **bağımsız olarak doğrulanamazdı**.
+- Değerlendirici için önemli olan: her hücreyi okuyunca "bunu nereden biliyoruz?" sorusuna cevap bulabilmek.
+
+---
+
+# Bölüm 8'in kuralı
+
+- Her satırın kanıtı **o satıra özgü** olmalı: belirli test adı, belirli CI numarası, belirli günlük dosyası.
+- Tek bir genel raporu bütün satırlara kopyalamak, matrisin **tamamını** şüpheli hâle getirir.
+- Genel bir rapora referans veriliyorsa, raporun **hangi bölümü/sayfası** olduğu da belirtilmeli.
+
+---
+
 # Bölüm 7–8 — kısa sınama
 
 1. Gereksinim hangi iki şeye bağlanır?
@@ -869,6 +1319,35 @@ Değerlendirici gözüyle kontrol:
 - Kanıtsız "karşılandı" = karşılanmamış.
 - Devredilenler açık ve gerekçeli mi?
 - Gereksinimler doğrulanabilir mi?
+
+---
+
+<!-- _class: yogun -->
+
+# 45 dakikada nasıl hazırlanır + kanıt klasörü
+
+1. Aile tablosundan uygulanan gereksinimleri işaretleyin; uygulanmayanları "uygulanmaz, gerekçe: ..." bırakın.
+2. Altı sütunu (kimlik, gereksinim, durum, önlem, doğrulama, kanıt) doldurun; kanıtsız "karşılandı" yazmayın.
+3. "Devredildi" satırlarını S14'e, kime/neden/nasıl ile taşıyın.
+4. Varlık tablonuzu (S5) her gereksinime bağlayın; S1'e dayandığınız standartları yazın.
+
+```text
+evidence/week13/  <- test/log/pcap dosyaları
+  README.md       <- her dosya hangi gereksinimin kanıtı, bir satırla
+```
+
+---
+
+<!-- _class: yogun -->
+
+# Zaman kısıtlıysa · öncelik sırası
+
+1. Önce **en az 15 gereksinimlik** bir S17 iskeleti (kimlik+gereksinim+durum) — boş S17'den çok daha iyi.
+2. Elde **gerçek kanıtı olan** "karşılandı" satırlarını tamamlayın; kanıtı olmayanı dürüstçe "karşılanmadı" yapın.
+3. Devredilen satırları S14'e taşıyın.
+4. Son olarak kalan önlem/doğrulama sütunlarını doldurun.
+
+**Kural:** "az ama dürüst" bir matris, "çok ama kanıtsız" olandan her zaman daha iyi puan alır.
 
 ---
 

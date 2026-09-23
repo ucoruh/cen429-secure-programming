@@ -313,6 +313,31 @@ simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · i
 
 ---
 
+# PKCS#7 dolgusu · örnek
+
+13 baytlık `"MERHABA DUNYA"` metnini AES-128-CBC ile şifreleyelim (K, IV yalnız gösterim için sabit):
+
+```bash
+printf 'MERHABA DUNYA' | openssl enc -aes-128-cbc -K "$K" -iv "$IV" -out cikti.bin
+xxd -p cikti.bin
+```
+
+Çıktı **16 bayt** (32 hex karakter) — girdi 13 bayttı, demek ki **3 bayt dolgu** eklendi.
+
+---
+
+# PKCS#7 dolgusu · çıktı
+
+`-nopad` ile dolgunun içeriğini görelim (yalnız öğretici amaçla):
+
+```text
+4d45 5248 4142 4120 4455 4e59 4103 0303  MERHABA DUNYA...
+```
+
+Son üç bayt **`03 03 03`**: eksik bayt sayısı (16 − 13 = 3) kadar, o sayı değerinde bayt eklenmiş — tam olarak PKCS#7 kuralı. Normal `openssl enc -d` bu baytları otomatik okuyup atar.
+
+---
+
 # GCM · modern tercih (AEAD)
 
 - **AES-GCM:** gizlilik **+** bütünlük birlikte.
@@ -429,6 +454,58 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 
 ---
 
+# HMAC-SHA-256 · gerçek çıktı
+
+Bir ödeme talimatının HMAC'ini hesaplayalım (32 baytlık anahtar, yalnız gösterim için sabit):
+
+```bash
+printf 'tutar=100;alici=TR00' | \
+  openssl dgst -sha256 -mac HMAC -macopt hexkey:$ANAHTAR
+```
+
+```text
+SHA2-256(stdin)= a08fb115...c5f9a1
+```
+
+---
+
+# HMAC-SHA-256 · çığ etkisi
+
+Aynı anahtarla, yalnız tutarı değiştirelim (`100` → `900`):
+
+```text
+SHA2-256(stdin)= 8a786eac...91a46be
+```
+
+Tek karakterlik değişiklik (`1`→`9`), etiketin **tamamen farklı** çıkmasına yol açtı —
+buna **çığ etkisi** (avalanche effect) denir. Saldırgan anahtarı bilmeden geçerli bir
+yeni etiket üretemez; alıcı uyuşmazlığı yakalar.
+
+---
+
+# Sabit zamanlı karşılaştırma
+
+```c
+/* YANLIS: ilk farkta durur, sure farki sizdirir */
+if (memcmp(hesaplanan, gelen, 32) == 0) { /* kabul */ }
+
+/* DOGRU: her zaman 32 baytin tamamini gezer */
+if (CRYPTO_memcmp(hesaplanan, gelen, 32) == 0) { /* kabul */ }
+```
+
+**Kural:** MAC/imza/parola özeti gibi gizli değerleri **her zaman** sabit zamanlı
+karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bırakır.
+
+---
+
+# Bu bölümün kuralı · MAC/HMAC
+
+- Bütünlüğü **HMAC** ile sağlayın; düz `H(K‖m)` değil (uzunluk uzatma riski).
+- Şifreleme + MAC birleşiminde sıra **şifrele-sonra-MAC**'tir.
+- Etiket/imza karşılaştırması **sabit zamanlı** olmalı; erken çıkışlı fonksiyon kullanmayın.
+
+---
+
 # Doğru sıra · encrypt-then-MAC
 
 ```text
@@ -503,6 +580,33 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 
 ---
 
+# OAEP'in rastgeleliği · komut
+
+Aynı mesajı iki kez OAEP ile şifreleyelim:
+
+```bash
+openssl pkeyutl -encrypt -pubin -inkey rsa_acik.pem -in kisa.txt -out c1.bin \
+    -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+openssl pkeyutl -encrypt -pubin -inkey rsa_acik.pem -in kisa.txt -out c2.bin \
+    -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+cmp c1.bin c2.bin && echo AYNI || echo FARKLI
+```
+
+---
+
+# OAEP'in rastgeleliği · sonuç
+
+```text
+c1.bin c2.bin differ: char 1, line 1
+FARKLI
+```
+
+Aynı anahtar, aynı düz metin, ama **farklı** şifreli metin — OAEP her şifrelemede yeni
+bir rastgele değer karıştırır. **Ham RSA** (dolgusuz) deterministiktir (`c = m^e mod n`);
+bu yüzden hiçbir zaman doğrudan şifreleme için kullanılmaz.
+
+---
+
 # ECC · neden?
 
 - Aynı güvenlik, **daha küçük** anahtar (256-bit ≈ RSA-3072).
@@ -516,6 +620,29 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 - **Ed25519:** modern **imza** algoritması.
 - **X25519:** modern **anahtar anlaşması** (DH).
 - Karıştırma: Ed25519 imza, X25519 anahtar.
+
+---
+
+# RSA-3072 ile Ed25519 · ölçüm
+
+Her ikisi de ~128 bit güvenlik düzeyinde (bkz. Bölüm 1 tablosu):
+
+```bash
+wc -c rsa_acik.pem ed_acik.pem
+wc -c belge.rsa.sig belge.ed.sig
+```
+
+---
+
+# RSA-3072 ile Ed25519 · sonuç
+
+| Dosya | RSA-3072 | Ed25519 |
+| --- | --- | --- |
+| Açık anahtar (PEM) | 636 bayt | 116 bayt |
+| İmza | 384 bayt | 64 bayt |
+
+Açık anahtar **~5,5 kat**, imza **6 kat** küçük. IoT/mobil el sıkışmalarında,
+gömülü flash'ta ya da blok zincirinde bu fark birikerek büyür.
 
 ---
 
@@ -639,6 +766,34 @@ Ortak sır: A^b = B^a = g^(ab)
 ```
 
 Dinleyen `g^a`, `g^b` görür ama `g^(ab)`'yi hesaplayamaz.
+
+---
+
+# X25519 · iki tarafın aynı sırra ulaşması
+
+```bash
+openssl genpkey -algorithm X25519 -out alice.key
+openssl genpkey -algorithm X25519 -out bob.key
+openssl pkey -in alice.key -pubout -out alice.pub
+openssl pkey -in bob.key -pubout -out bob.pub
+
+openssl pkeyutl -derive -inkey alice.key -peerkey bob.pub -out alice_sir.bin
+openssl pkeyutl -derive -inkey bob.key -peerkey alice.pub -out bob_sir.bin
+```
+
+---
+
+# X25519 · sonuç
+
+```text
+8c53744a000c1a6f...bbc1376
+8c53744a000c1a6f...bbc1376
+AYNI
+```
+
+Alice ve Bob, birbirinin **hiç görmediği** özel anahtarını bilmeden, ağdan yalnız açık
+anahtarları geçirerek **aynı** 32 baytlık sırra ulaştı. Bu ham sır doğrudan AES anahtarı
+olarak kullanılmaz; önce bir **KDF**'den (HKDF) geçirilip oturum anahtarları türetilir.
 
 ---
 
@@ -773,6 +928,42 @@ Her seviye bir alttakini **imzalar**.
 
 ---
 
+<!-- _class: yogun -->
+
+# Gerçek sertifika · üst alanlar
+
+```text
+Version: 3 (0x2)
+Serial Number: 35:e2:f6:8d:...:76:e7
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN=CEN429 Lab Ara CA
+Validity: Sep 23 2026 – Dec 22 2026
+Subject: CN=localhost
+Subject Public Key Info: 256 bit, NIST CURVE: P-256
+```
+
+Gerçek `openssl x509 -text` çıktısı; her alan "dört soru"dan (bir sonraki bölüm) birinin cevabını taşır.
+
+---
+
+<!-- _class: yogun -->
+
+# Gerçek sertifika · uzantılar
+
+```text
+X509v3 Basic Constraints: CA:FALSE
+X509v3 Key Usage: critical, Digital Signature
+X509v3 Extended Key Usage: TLS Web Server Authentication
+X509v3 Subject Alternative Name:
+    DNS:localhost, IP Address:127.0.0.1
+X509v3 Authority Key Identifier: F5:BA:39:86:...
+```
+
+`Authority Key Identifier`, sertifikayı imzalayan CA'nın **parmak izidir**; zinciri
+kurarken "aynı isimli ama farklı anahtarlı sahte ara CA" karışıklığını bununla önler.
+
+---
+
 <!-- _class: bolum -->
 
 # 9. Zincir doğrulama
@@ -789,6 +980,69 @@ Bir sertifika zinciri doğrularken:
 4. **Ad** eşleşiyor mu (SAN)?
 
 Dördü de **evet** olmalı.
+
+---
+
+# Soru 1 · zincir (issuer/subject)
+
+```bash
+openssl x509 -in sunucu.crt -noout -issuer -subject
+openssl x509 -in ara.crt    -noout -issuer -subject
+openssl x509 -in kok.crt    -noout -issuer -subject
+```
+
+```text
+issuer=CN=...Ara CA   subject=CN=localhost
+issuer=CN=...Kok CA   subject=CN=...Ara CA
+issuer=CN=...Kok CA   subject=CN=...Kok CA
+```
+
+Zincir okunur: `sunucu`'nun issuer'ı = `ara`'nın subject'i; kök **kendi kendini** imzalar.
+
+---
+
+# Soru 2 · geçerlilik
+
+```bash
+openssl x509 -in sunucu.crt -noout -dates
+openssl x509 -in sunucu.crt -noout -checkend 0
+```
+
+```text
+notBefore=Sep 23 2026 GMT
+notAfter=Dec 22 2026 GMT
+Certificate will not expire
+```
+
+`-checkend 0`: "şu an itibarıyla süresi doldu mu?" TLS istemcileri bunu her bağlantıda otomatik sorar.
+
+---
+
+# Soru 3 · kullanım (CA:TRUE/FALSE)
+
+```bash
+openssl x509 -in sunucu.crt -noout -ext basicConstraints,keyUsage
+openssl x509 -in ara.crt    -noout -ext basicConstraints,keyUsage
+```
+
+```text
+sunucu.crt:  CA:FALSE            (baska sertifika imzalayamaz)
+ara.crt:     CA:TRUE, pathlen:0  (yalniz uc sertifika imzalayabilir)
+```
+
+---
+
+# Soru 4 · ad (SAN)
+
+```text
+X509v3 Subject Alternative Name:
+    DNS:localhost, IP Address:127.0.0.1
+```
+
+İstemci bağlandığı adı bu listeyle karşılaştırır — `Subject`'teki `CN`'e **değil**.
+
+Bir istemci kütüphanesi bu dört soruyu **sizin yerinize** sorar; `verify`'ı kapatmak ya
+da hataları yutmak, dört sorunun hiç sorulmaması anlamına gelir.
 
 ---
 
@@ -817,6 +1071,14 @@ openssl verify -CAfile kok.crt \
 - Uygulama, beklenen sunucu anahtarının **özetini** gömer.
 - Sahte ama "geçerli" sertifika bile kabul edilmez.
 - **Yedek pin** şart (anahtar değişince kilitlenmemek için).
+
+---
+
+# Bu bölümün kuralı · zincir doğrulama
+
+- Zincir doğrulamanın **dört sorusundan** (imza, süre, kullanım, ad) hiçbirini atlamayın.
+- `verify` ad denetlemez — **SAN** denetimi ayrıca yapılmalı.
+- Sunucu **ara sertifikayı** göndermezse, kriptografik olarak doğru zincir bile bağlanamaz.
 
 ---
 
@@ -857,6 +1119,40 @@ openssl verify -CAfile kok.crt \
 
 - Sunucu, OCSP yanıtını **kendisi** getirip sertifikayla sunar.
 - Gizlilik + hız kazanır.
+
+---
+
+# CRL iş akışı · iptal et ve üret
+
+```bash
+openssl ca -config ara.cnf -revoke sunucu.crt
+openssl ca -config ara.cnf -gencrl -out ara.crl
+```
+
+```text
+Revoking Certificate 35E2F68D...76E7.
+Database updated
+```
+
+Sertifika dosyası **değişmez**; yalnız CA'nın defterine (`index.txt`) bir iptal kaydı
+eklenir. `-gencrl`, bu kaydı CA'nın kendi anahtarıyla **imzalı** bir listeye dönüştürür.
+
+---
+
+# CRL ile doğrulama · sonuç
+
+```bash
+openssl verify -crl_check -CAfile kok.crt \
+    -untrusted ara.crt -CRLfile ara.crl sunucu.crt
+```
+
+```text
+error 23 at 0 depth lookup: certificate revoked
+error sunucu.crt: verification failed
+```
+
+Sertifikanın **süresi hâlâ dolmamış** olsa bile CRL'de listelendiği için reddedildi —
+iptal denetimi, süre denetiminden **bağımsız** çalışır.
 
 ---
 
@@ -911,6 +1207,12 @@ openssl verify -CAfile kok.crt \
 
 ---
 
+# PKCS#11 ile imzalama — şema
+
+![w:900](assets/h10-14-pkcs11-imzalama.svg)
+
+---
+
 # SoftHSM
 
 - HSM'in **yazılım benzetimi**; aynı PKCS#11 arayüzü.
@@ -940,9 +1242,23 @@ openssl verify -CAfile kok.crt \
 
 ---
 
+# Bu bölümün kuralı · anahtar saklama
+
+- Değerli bir anahtar üretilirken `CKA_EXTRACTABLE=false` **açıkça** ayarlanmalı; varsayılana güvenmeyin.
+- HSM'de anahtar hiç çıkmaz; uygulama yalnız bir **tutamaç** (handle) üzerinden "imzala" der.
+- SoftHSM test içindir; üretimde gerçek HSM/donanım koruması gerekir.
+
+---
+
 <!-- _class: bolum -->
 
 # 12. Kuantum sonrası kripto
+
+---
+
+# Kuantum sonrası — şema
+
+![w:900](assets/h10-15-kuantum-sonrasi.svg)
 
 ---
 
@@ -958,6 +1274,35 @@ openssl verify -CAfile kok.crt \
 - Kuantuma dayanıklı algoritmalar (ör. ML-KEM anahtar kapsülleme).
 - Standartlaşma sürüyor.
 - **Kripto-çeviklik:** algoritmayı kolay değiştirebilecek tasarım.
+
+---
+
+# PQC boyutları · komut
+
+OpenSSL 3.5, standartlaşan PQC algoritmalarını **bugün** üretebilir:
+
+```bash
+openssl genpkey -algorithm ML-KEM-768 -out mlkem.pem
+openssl genpkey -algorithm ML-DSA-65  -out mldsa.pem
+openssl pkeyutl -sign -inkey mldsa.pem -rawin -in belge.txt -out belge.mldsa.sig
+wc -c mlkem_pub.pem mldsa_pub.pem belge.mldsa.sig
+```
+
+---
+
+<!-- _class: yogun -->
+
+# PQC boyutları · sonuç
+
+| Algoritma | Açık anahtar | İmza |
+| --- | --- | --- |
+| Ed25519 (klasik) | 116 bayt | 64 bayt |
+| RSA-3072 (klasik) | 636 bayt | 384 bayt |
+| ML-KEM-768 (PQC) | 1.714 bayt | — |
+| ML-DSA-65 (PQC) | 2.770 bayt | 3.309 bayt |
+
+ML-DSA-65: açık anahtar Ed25519'dan **~24 kat**, imza **~52 kat** büyük. TLS'te
+**karma** (klasik + PQC) yaklaşım bu geçiş maliyetini yönetmek içindir.
 
 ---
 

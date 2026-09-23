@@ -340,6 +340,12 @@ sembol gizleme · ad anlamsızlaştırma · aritmetik dönüşüm · dize kodlam
 
 ---
 
+# Gizleme ne verir, ne vermez — şema
+
+![w:900](assets/h09-14-ne-verir-ne-vermez.svg)
+
+---
+
 # ⚠️ En sık hata
 
 Gizlemeyi **anahtar saklama** sanmak.
@@ -1016,6 +1022,12 @@ Kendi karşılaştırmanı yazarken **sabit zamanlı** olsun (3. hafta).
 
 ---
 
+# Veri gizleme kuralları K-07–K-09 — şema
+
+![w:900](assets/h09-15-veri-gizleme-kurallari.svg)
+
+---
+
 # Kontrol akışı ≠ veri
 
 - **Kontrol akışı** (bölüm 3): algoritmanın **yapısını** gizler
@@ -1472,6 +1484,12 @@ Banescu vd. (Tigress + KLEE): hangi dönüşüm sembolik yürütmeye ne kadar da
 <!-- _class: bolum -->
 
 # 6. Katmanlı savunma, proje, kapanış
+
+---
+
+# Katmanlı savunmada gizleme — şema
+
+![w:900](assets/h09-16-katmanli-savunmada-yer.svg)
 
 ---
 

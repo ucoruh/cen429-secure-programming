@@ -251,6 +251,16 @@ edilmelerinin nedeni budur.
     bir algoritma seçin ve onu yüksek düzeyli, hata yapmaya dirençli bir API ile kullanın** (Tarif 5.16). Değişen yalnız
     algoritmaların kendisidir.
 
+
+#### En zayıf halka kuralı
+
+Bir sistem birden çok kriptografik katman kullanır: anahtar değişimi bir algoritmayla, veri şifreleme başka biriyle
+yapılır. Sistemin güvenlik düzeyi bu katmanların **en düşüğüne** eşittir — en güçlüsüne değil. RSA-2048 ile anahtar
+taşıyıp veriyi AES-256 ile şifrelerseniz, saldırgan 256 bitlik AES'i kırmaya çalışmaz; ≈112 bitlik RSA katmanını hedef
+alır. Bu yüzden katmanları tek tek değil, **birlikte** ve en düşük seviyeye göre değerlendirin.
+
+![En zayıf halka kuralı](assets/h10-13-en-zayif-halka.svg)
+
 ### Bir kural: kendi kriptonuzu yazmayın, kendi protokolünüzü de
 
 Algoritmaların hepsi doğru olsa bile, onları birleştirmek (hangi sırayla şifreleyip MAC'leyeceğinizi, nonce'u nereden

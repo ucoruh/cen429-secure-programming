@@ -26,6 +26,12 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
+# Final ve başarı notu — şema
+
+![w:950](assets/h16-02-final-hesabi.svg)
+
+---
+
 # Quiz-2: ne, ne zaman?
 
 - Kapsam: **9–14. haftalar** · finalin **%30**'u
@@ -49,6 +55,12 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
+# Quiz-2 kapsamı — şema
+
+![w:950](assets/h16-01-kapsam.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Sık karıştırılanlar
@@ -64,6 +76,12 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 | EAL | Saldırı potansiyeli | Derinlik · saldırganın kaynağı |
 | Karşılandı | Devredildi | Ürün karşılar · başka taraf (kime, neden, nasıl) |
 | Etki analizi | Delta değerlendirme | Belgeler · yalnız değişeni değerlendirir |
+
+---
+
+# Cevap kalıbı — şema
+
+![w:950](assets/h16-03-cevap-kalibi.svg)
 
 ---
 
@@ -102,6 +120,12 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 - Cevapları 16. hafta sayfasında
 - Kılavuzunuz bir **portfolyo** öğesidir (gizli bilgi içermediğinden emin olun)
+
+---
+
+# Dönemin tek cümlesi — şema
+
+![w:950](assets/h16-04-donem-ozeti.svg)
 
 ---
 

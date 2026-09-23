@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T04:31:56.965016</dc:date>
+    <dc:date>2026-09-23T06:14:33.452389</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 33.192 181.878912 33.192 185.60448
 L 33.192 194.9184 
 Q 33.192 198.643968 43.0128 198.643968 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #e8f6f7"/>
+" clip-path="url(#p28553b8492)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
     <path d="M 55.5957 128.673144 
@@ -53,7 +53,7 @@ Q 42.0921 86.760504 42.0921 91.88316
 L 42.0921 123.550488 
 Q 42.0921 128.673144 55.5957 128.673144 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p28553b8492)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_4">
     <path d="M 294.9777 128.673144 
@@ -66,7 +66,7 @@ Q 281.4741 86.760504 281.4741 91.88316
 L 281.4741 123.550488 
 Q 281.4741 128.673144 294.9777 128.673144 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p28553b8492)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_5">
     <path d="M 503.6697 128.673144 
@@ -79,7 +79,7 @@ Q 490.1661 86.760504 490.1661 91.88316
 L 490.1661 123.550488 
 Q 490.1661 128.673144 503.6697 128.673144 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p28553b8492)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_6">
     <path d="M 52.8336 127.39248 
@@ -92,7 +92,7 @@ Q 39.33 85.47984 39.33 90.602496
 L 39.33 122.269824 
 Q 39.33 127.39248 52.8336 127.39248 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p28553b8492)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 292.2156 127.39248 
@@ -105,7 +105,7 @@ Q 278.712 85.47984 278.712 90.602496
 L 278.712 122.269824 
 Q 278.712 127.39248 292.2156 127.39248 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #fdf1e7; stroke: #b5651d; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p28553b8492)" style="fill: #fdf1e7; stroke: #b5651d; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 500.9076 127.39248 
@@ -118,7 +118,7 @@ Q 487.404 85.47984 487.404 90.602496
 L 487.404 122.269824 
 Q 487.404 127.39248 500.9076 127.39248 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #006d77; stroke: #006d77; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p28553b8492)" style="fill: #006d77; stroke: #006d77; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Vize notu nasıl hesaplanır? -->
@@ -718,7 +718,7 @@ Q 290.988 58.003776 290.988 58.70232
 L 290.988 58.70232 
 Q 290.988 59.400864 292.8294 59.400864 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #9ed6d7"/>
+" clip-path="url(#p28553b8492)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- RAP1 -->
@@ -1784,12 +1784,12 @@ z
    <g id="patch_10">
     <path d="M 432.162 106.43616 
 Q 453.645 106.43616 472.668325 106.43616 
-" clip-path="url(#p6a60df3c2e)" style="fill: none; stroke: #6b7280; stroke-width: 2.2; stroke-linecap: round"/>
+" clip-path="url(#p28553b8492)" style="fill: none; stroke: #6b7280; stroke-width: 2.2; stroke-linecap: round"/>
     <path d="M 466.268325 103.23616 
 L 472.668325 106.43616 
 L 466.268325 109.63616 
 z
-" clip-path="url(#p6a60df3c2e)" style="fill: #6b7280; stroke: #6b7280; stroke-width: 2.2; stroke-linecap: round"/>
+" clip-path="url(#p28553b8492)" style="fill: #6b7280; stroke: #6b7280; stroke-width: 2.2; stroke-linecap: round"/>
    </g>
    <g id="text_10">
     <!-- × 0,7 -->
@@ -1928,7 +1928,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p6a60df3c2e">
+  <clipPath id="p28553b8492">
    <rect x="8.64" y="8.64" width="613.8" height="232.848"/>
   </clipPath>
  </defs>

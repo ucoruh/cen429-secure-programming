@@ -57,12 +57,6 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 ---
 
-# Güvenli derleme hattı — şema
-
-![w:950](assets/h04-03-ci-hatti.svg)
-
----
-
 
 # Bu hafta nereye oturuyor?
 
@@ -206,12 +200,6 @@ Kod sağlamlaştırma üç katmandır. Sıra önemli:
 - **Fuzzing:** programa **rastgele/beklenmeyen** girdiler verip çökme aramak.
 - İnsanın düşünmediği girdileri bulur.
 - Sanitizer'la birlikte çok güçlü.
-
----
-
-# Fuzzing döngüsü — şema
-
-![w:950](assets/h04-01-fuzzing-dongusu.svg)
 
 ---
 
@@ -943,11 +931,7 @@ Dezavantaj: **yanlış alarm** üretir.
 
 # Kirli veri: kaynak → hedef
 
-```text
-kaynak: recv(sock, buf, ...)
-        len = buf[1]<<8 | buf[2]     (doğrulama yok)
-hedef:  memcpy(out, buf+3, len)  → BULGU: CWE-787
-```
+![w:900](assets/h04-14-kirli-veri.svg)
 
 Araç, **doğrulanmamış** verinin tehlikeli bir yere aktığını görür.
 
@@ -1021,12 +1005,7 @@ gcc -g -O1 -fno-omit-frame-pointer \
 
 # Fuzzing nedir? · kapsam güdümlü
 
-```text
-tohum girdiler → değiştir (bit çevir, sil, ekle)
-      ▲                │
-      │                ▼
- yeni yol? ← çalıştır (sanitizer açık) → çökme? → kaydet
-```
+![w:900](assets/h04-01-fuzzing-dongusu.svg)
 
 Yeni kod yolu açan girdi **saklanır** ve üzerinde çalışılır.
 
@@ -1248,11 +1227,7 @@ readelf -s p | grep __stack_chk   # kanarya
 
 # Güvenli derleme hattı (CI)
 
-```text
-PR → derle (-Werror) → statik analiz → test (ASan+UBSan)
-   → kısa fuzzing → sürüm (korumalar açık)
-   → ikili denetimi (checksec, strings) → birleştir
-```
+![w:900](assets/h04-03-ci-hatti.svg)
 
 Her hatalı adım birleştirmeyi **durdurur**.
 

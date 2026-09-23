@@ -264,9 +264,7 @@ Tekil, doğrulanabilir maddeler.
 
 # Zincir
 
-```text
-gereksinim → önlem → doğrulama → kanıt
-```
+![w:900](assets/h13-01-izlenebilirlik.svg)
 
 Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 
@@ -286,12 +284,6 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 | --- | --- | --- | --- |
 | Veri AEAD ile | AES-GCM | Birim testi | Test çıktısı |
 | Sürüm korumaları | Bayraklar | checksec | Koruma tablosu |
-
----
-
-# İzlenebilirlik zinciri — iki yön
-
-![w:1000](assets/h13-01-izlenebilirlik.svg)
 
 ---
 
@@ -365,12 +357,6 @@ Karşılama: AES-256-GCM, anahtar TEE'de
 Doğrulama: T-05 birim testi
 Kanıt: test çıktısı, S16
 ```
-
----
-
-# Gereksinim bloğu — şema
-
-![w:950](assets/h13-05-gereksinim-blogu.svg)
 
 ---
 
@@ -734,9 +720,7 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 # Gereksinim → varlık → önlem
 
-```text
-gereksinim → hangi varlığı korur → hangi önlemle → nasıl doğrulanır
-```
+![w:900](assets/h13-05-gereksinim-blogu.svg)
 
 Her gereksinim bir **varlığa** ve bir **önleme** bağlanır.
 
@@ -809,12 +793,6 @@ Projeniz bu ailelerden bir **alt küme** seçer.
 <!-- _class: bolum -->
 
 # Uyum matrisi etkinliği
-
----
-
-# Uyum matrisi — şema
-
-![w:950](assets/h13-10-uyum-matrisi.svg)
 
 ---
 
@@ -1137,12 +1115,7 @@ Azaltma: kısa ömürlü anahtar + sunucu denetimi
 
 Bir gereksinim birden çok standarda bağlanabilir:
 
-```text
-"Hassas veri şifreli saklanır"
-  ETSI 303 645 → hassas parametreleri güvenle sakla
-  MASVS → MSTG-STORAGE
-  CC → SFR (kripto)
-```
+![w:900](assets/h13-10-uyum-matrisi.svg)
 
 ---
 

@@ -152,12 +152,6 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
-# Zafiyet yaşam döngüsü — şema
-
-![w:950](assets/h02-06-zafiyet-yasam-dongusu.svg)
-
----
-
 # Şimdi hazırız
 
 Terimler:
@@ -392,27 +386,9 @@ Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
 
 # Şifreli / polimorfik virüsün yapısı
 
-```text
-  +------------------+     +-------------------+
-  |  Çözücü kod      | --> |  Şifreli gövde    |
-  | (poli: her kopya |     | (her kopyada      |
-  |  farklı)         |     |  farklı baytlar)  |
-  +------------------+     +---------+---------+
-                                     | çöz
-                                     v
-                           +-------------------+
-                           |  Açık gövde       |
-                           |  (HER ZAMAN AYNI) | --> imza burada tutar
-                           +-------------------+
-```
+![w:900](assets/h02-04-polimorfik.svg)
 
 **Emülasyon** tam da bu son kutuyu görmek için çözücüyü çalıştırır.
-
----
-
-# Polimorfik virüs — şema
-
-![w:950](assets/h02-04-polimorfik.svg)
 
 ---
 
@@ -631,24 +607,13 @@ Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük 
 
 ---
 
-# Saldırı ağacı — şema
-
-![w:950](assets/h02-07-saldiri-agaci.svg)
-
----
-
 # Saldırı ağacı = niceliksel tehdit
 
 - Kök: saldırganın **hedefi** · Dallar: ona ulaşma yolları.
 - **VEYA:** en ucuz çocuk yeter · **VE:** çocukların toplamı gerekir.
 - Yapraklara **maliyet** yazarsak en ucuz saldırıyı buluruz.
 
-```text
-HEDEF (VEYA)
- ├─ Veritabanini coz        (VE:  3 + 6 = 9)
- ├─ Bellekten oku           (VEYA: min 2)   <- en ucuz
- └─ Trafigi dinle           (VE:  7 + 8 = 15)
-```
+![w:900](assets/h02-07-saldiri-agaci.svg)
 
 ---
 
@@ -867,6 +832,12 @@ Kitap: Tarif 2.1
 
 ---
 
+# Unix izin bitleri — şema
+
+![w:950](assets/h02-08-unix-izinleri.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Windows erişim modeli
@@ -1041,10 +1012,7 @@ AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  Yuksek
 
 # Zafiyet yaşam döngüsü
 
-```text
-Kesif -> Ozel ifsa -> Yama -> Yama yayini -> Kamuya acilma -> Guncelleme
-   \.................. zero-day (yama yokken saldiri) ................/
-```
+![w:900](assets/h02-06-zafiyet-yasam-dongusu.svg)
 
 - **Zero-day:** satıcının bilmediği/yamasının olmadığı açık.
 - **Sorumlu ifşa:** önce satıcıya bildir, ~90 gün bekle, sonra açıkla.

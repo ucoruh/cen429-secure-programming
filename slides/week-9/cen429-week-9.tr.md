@@ -206,12 +206,6 @@ Biz de öyle yazacağız: *neyi korur · nasıl · maliyet · sınır*.
 
 ---
 
-# Koruma kuralı şablonu — şema
-
-![w:950](assets/h09-10-koruma-kurali.svg)
-
----
-
 # Gizleme neyi gizler?
 
 Collberg'in sınıflandırması: gizlemeyi **neyi gizlediğine** göre ayırırız.
@@ -441,10 +435,7 @@ Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 - **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
 - **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
 
-```text
-kaynak.c  --(derleyici)-->  program (ikili)
-insan okur              makine çalıştırır
-```
+![w:900](assets/h09-13-derleme-zinciri.svg)
 
 ---
 
@@ -554,10 +545,7 @@ Program = temel blokların birbirine bağlanması.
 - **CFG** (Control Flow Graph): temel blokları **düğüm**, geçişleri **kenar** yapan şema.
 - Programın "yol haritası"dır.
 
-```text
-[giriş] → [koşul] → [evet bloğu] → [çıkış]
-                 ↘ [hayır bloğu] → [çıkış]
-```
+![w:900](assets/h09-12-cfg.svg)
 
 ---
 
@@ -817,12 +805,6 @@ Analist bu bloğu "gerçek" sanıp inceler; zaman kaybeder.
 <!-- _class: bolum -->
 
 # K-04 · Kontrol akışı düzleştirme
-
----
-
-# Düzleştirme: önce/sonra — şema
-
-![w:950](assets/h09-04-duzlestirme.svg)
 
 ---
 
@@ -1428,11 +1410,7 @@ Ayırt edilirse saldırgan nereye bakacağını bilir.
 
 # Karar kuralı (S9'a yazılır)
 
-```text
-Varlık değeri DÜŞÜK  → hafif, ucuz (K-01, K-02, K-07)
-Varlık değeri YÜKSEK → katmanlı (K-04 + K-05 + K-08 + çeşitlendirme)
-Her katman: kazanç (güç/dayanıklılık) vs. maliyet (boyut/hız) → ölç ve yaz
-```
+![w:900](assets/h09-10-koruma-kurali.svg)
 
 ---
 
@@ -1822,10 +1800,7 @@ Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz.
 
 # Düzleştirme öncesi (kavram)
 
-```text
-[giris] → [kontrol] → [basari] → [cikis]
-                   ↘ [hata] → [cikis]
-```
+![w:900](assets/h09-04-duzlestirme.svg)
 
 Az düğüm, okunur akış.
 
@@ -1833,9 +1808,6 @@ Az düğüm, okunur akış.
 
 # Düzleştirme sonrası (kavram)
 
-```text
-[giris]→[switch]⇄{case1,case2,...,caseN, sahte1..k}
-```
 
 Çok düğüm, tek merkez; "sonra hangi blok" okunmaz.
 

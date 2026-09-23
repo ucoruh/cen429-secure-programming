@@ -478,17 +478,7 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 
 # Örnek mimari: mobil ödeme uygulaması
 
-```text
- TELEFON (güvenilmez)                    SUNUCU (güvenilir)
- ─────────────────────                   ──────────────────
- Mobil uygulama
-       │ A
- Kütüphane – Java  ──── D: TLS + mesaj şifreleme ───>  Arka uç + HSM
-       │ B (JNI)
- Kütüphane – native C/C++ ── E: NFC ──>  Ödeme terminali
-       │ C
- Yerel veritabanı (şifreli)
-```
+![w:900](assets/h01-05-mimari-arayuzler.svg)
 
 - Telefon **saldırganın elinde** olabilir: root, hata ayıklayıcı, bellek dökümü
 - En hassas işler **native C/C++** katmanında
@@ -496,12 +486,6 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 <!--
 Konuşma notu: Bu mimari yalnız yöntemi göstermek için. Arayüz ve varlık tablosu yöntemini dönem boyunca kullanacağız; tablodaki varlıkları koruyan yöntemleri sonraki haftalarda tek tek açacağız (3: güvenlik kabukları, 4 ve 9: native sağlamlaştırma, 6: RASP, 10: anahtar hiyerarşisi, 11: whitebox).
 -->
-
----
-
-# Mobil ödeme mimarisi — şema
-
-![w:950](assets/h01-05-mimari-arayuzler.svg)
 
 ---
 
@@ -546,12 +530,6 @@ Veri akış diyagramını çiz → **güven sınırını geçen her ok** için a
 1. **Veritabanını çöz** — *VE* (hepsi gerekir): root yetkisi al **+** veritabanı anahtarını bul
 2. **Bellekten oku** — *VEYA*: hata ayıklayıcı bağla **|** bellek dökümü al **|** fonksiyona kanca at
 3. **Trafiği dinle** — *VE*: TLS'i kır **+** mesaj düzeyi şifrelemeyi kır
-
----
-
-# Saldırı ağacı — şema
-
-![w:950](assets/h01-06-saldiri-agaci.svg)
 
 ---
 
@@ -996,19 +974,7 @@ Derleyicinin düşüncesi:
 
 # Süreç belleği
 
-```text
- yüksek adres
- ┌──────────────────────┐
- │ Yığın (stack)   ↓    │  yerel değişkenler, dönüş adresleri
- │                      │
- │ Öbek (heap)     ↑    │  malloc
- ├──────────────────────┤
- │ .data / .bss         │  küresel değişkenler
- ├──────────────────────┤
- │ .text                │  makine kodu
- └──────────────────────┘
- düşük adres
-```
+![w:900](assets/h01-13-surec-bellegi.svg)
 
 **C dizinin sonunu denetlemez.** `ad[16]`'ya 17. bayt → arkadaki değişkenin üzerine.
 
@@ -1030,6 +996,12 @@ struct oturum { char ad[16]; int yonetici; };
 ```
 
 Küçük uçlu (little-endian): en düşük bayt en düşük adreste.
+
+---
+
+# Bellekteki yapı ve taşma — şema
+
+![w:950](assets/h01-14-yapi-bellekte.svg)
 
 ---
 
@@ -1068,6 +1040,12 @@ void selamla(const char *ad) {
 ```
 
 <!-- Konuşma notu: Gerçek yerleşim derleyiciye göre değişir. Bu derste sömürü tekniğine değil, hatanın nasıl oluştuğuna, nasıl bulunduğuna ve nasıl önlendiğine odaklanıyoruz. -->
+
+---
+
+# Yığında taşma adım adım — şema
+
+![w:950](assets/h01-15-yiginda-tasma.svg)
 
 ---
 
@@ -1409,16 +1387,7 @@ Kilitleme **sayfa** düzeyinde, miktar sınırlı → yalnız küçük anahtar b
 - 200.000 satırlık uygulama, 2.000 satırlık **korunan çekirdek**
 - İnceleme, gizleme, bütünlük denetimi yalnız çekirdeğe → maliyet de yalnız orada
 
-```text
- [ Arayüz ] → [ İş mantığı ] ──yalnız tutamaç + şifreli veri──▶ [ Korunan çekirdek ]
-                                                                  kripto · anahtar · RASP
-```
-
----
-
-# Bölümleme — şema
-
-![w:950](assets/h01-10-bolumleme.svg)
+![w:900](assets/h01-10-bolumleme.svg)
 
 ---
 
@@ -1490,6 +1459,12 @@ Kötü: [aç] ██████████████████████
 5. **Whitebox:** anahtar hiç açılmaz (11. hafta)
 
 <!-- Konuşma notu: Sahada tek statik anahtar yarım bayt düzeyinde parçalanıp onlarca fonksiyona dağıtılır; parmak izi iki farklı özetle iki farklı yerde saklanıp karşılaştırılır. Örtme tek başına kale değil; diğer katmanlarla değer kazanır. -->
+
+---
+
+# Açıklık penceresi — şema
+
+![w:950](assets/h01-16-aciklik-penceresi.svg)
 
 ---
 
@@ -1789,9 +1764,7 @@ Her STRIDE harfini bu sisteme uygulayalım.
 
 # Kök · hedef
 
-```text
-HEDEF: Ödeme anahtarını ele geçir
-```
+![w:900](assets/h01-06-saldiri-agaci.svg)
 
 Saldırganın nihai amacı. Şimdi yolları bölelim.
 
@@ -1799,23 +1772,16 @@ Saldırganın nihai amacı. Şimdi yolları bölelim.
 
 # Dallar · nasıl?
 
-```text
-Ödeme anahtarını ele geçir
-├─ Bellekten oku (çalışırken)
-├─ İkiliden çıkar (statik)
-└─ Sunucudan sız (ağ)
-```
 
 ---
 
 # Alt dallar · bellekten oku
 
-```text
-Bellekten oku
-├─ Debugger bağla
-├─ Bellek dökümü al
-└─ Hook ile yakala
-```
+**Bellekten oku** — üç yol:
+
+- Debugger bağla
+- Bellek dökümü al
+- Hook ile yakala
 
 Her yaprak bir saldırı adımı.
 

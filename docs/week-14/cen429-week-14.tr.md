@@ -105,9 +105,7 @@ Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terim
 - Girdi: C kaynağı. Çıktı: **yine C kaynağı** — ama gizlenmiş.
 - Sonra normal derleyicinizle derlenir.
 
-```text
-temiz.c → [araç] → gizli.c → derleyici → ikili
-```
+![Kaynaktan kaynağa gizleme hattı](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
 ### Dönüşüm (transform) nedir?
 
@@ -146,6 +144,8 @@ temiz.c → [araç] → gizli.c → derleyici → ikili
 - **CFG (Control Flow Graph):** temel blokları düğüm, geçişleri kenar yapan şema.
 - Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz (9. hafta).
 
+![Kontrol akışı: düzleştirmeden önce ve sonra](assets/h14-10-cfg-once-sonra.svg)
+
 ### Sembolik yürütme (kısaca)
 
 - **Sembolik yürütme:** program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE).
@@ -166,8 +166,6 @@ gizleme öğreticidir ama üç sorunu vardır: (1) **hataya açıktır** — el 
 (2) **bakımı zordur** — kaynak okunamaz hale gelir; (3) **çeşitlendirilemez** — her kopyayı el ile farklılaştıramazsınız.
 Çözüm, gizlemeyi bir **araca** yaptırmaktır.
 
-![El ile gizleme ile araçla gizlemenin karşılaştırması](assets/h14-02-el-ile-vs-arac.svg)
-
 !!! note "Kısa tarihçe: kaynaktan kaynağa gizleme ve çeşitlendirme"
     - **1993** — Cohen, "program evolution" ile **çeşitlendirme** fikrini ortaya atar: aynı işlev, farklı ikili.
     - **1997** — Collberg vd. gizleme taksonomisi (9. hafta'nın temeli).
@@ -179,10 +177,7 @@ gizleme öğreticidir ama üç sorunu vardır: (1) **hataya açıktır** — el 
 üretilen kaynak, davranışça özdeş ama okunması çok daha zordur ve normal derleyicinizle derlenir. Bu yaklaşımın en
 bilinen aracı **Tigress**'tir.
 
-```text
-Sizin kaynağınız (okunur)  ──►  [ Tigress: dönüşümleri uygula ]  ──►  Gizlenmiş kaynak (C)  ──►  derleyici  ──►  ikili
-        ^ bakımı siz yaparsınız                                              ^ bu dağıtılır
-```
+![Kaynak sizde kalır, gizlenmiş sürüm dağıtılır](assets/h14-02-el-ile-vs-arac.svg)
 
 Önemli fark: siz **okunur** kaynağı korur ve bakımını yaparsınız; gizleme, **derleme hattında** otomatik bir adım
 olarak çalışır. Bu, 9. haftadaki "her gizleme bakım maliyeti getirir" sorununu büyük ölçüde çözer: bakım maliyeti
@@ -220,6 +215,18 @@ Tigress, Arizona Üniversitesi'nden Christian Collberg ve ekibinin geliştirdiğ
     bilinen bir aracın ürettiği kalıplar zamanla tanınabilir; bu yüzden **çeşitlendirme** (bölüm 3) ve **katmanlı
     savunma** (RASP, sunucu denetimi) yine şarttır. Tigress'in kendisi de dönüşümlerin sembolik yürütmeye ne kadar
     dayandığını ölçen araştırmaların (bölüm 4) baş öznesidir.
+
+
+#### Hangi koda ne kadar gizleme? (karar akışı)
+
+Her fonksiyonu gizlemek hem gereksiz hem pahalıdır: boyut ve çalışma süresi artar, hata ayıklama zorlaşır. Karar iki
+soruyla verilir. Önce **hassas mı** — lisans denetimi, anahtar işleme, ödeme mantığı gibi saldırganın ilgilendiği bir
+kod mu? Değilse gizlemeye gerek yoktur. Hassassa **değeri ne kadar** — orta değerli kod için sabit gizleme, aritmetik
+dönüşüm, düzleştirme ve opak yüklem yeterlidir; yüksek değerli ve **küçük** bir çekirdek için bunlara sanallaştırma da
+eklenir (sanallaştırma yavaştır, bu yüzden yalnız küçük bölümlere uygulanır). Her durumda sonuç **çeşitlendirilir**,
+**ölçülür**, **testten geçirilir** ve kararın gerekçesi S9/S15 kayıtlarına yazılır.
+
+![Hangi koda ne kadar gizleme: karar akışı](assets/h14-09-karar-akisi.svg)
 
 ## 2. Temel akış: bir programı adım adım gizlemek
 
@@ -277,8 +284,6 @@ Dokuzuncu haftanın en önemli kuralı "tek teknik değil, birlikte" idi. Tigres
 uygulamak demektir. Her `--Transform` bir öncekinin çıktısına uygulanır; sıra önemlidir.
 
 ![Dönüşüm hattında sıranın önemi](assets/h14-04-donusum-hatti.svg)
-
-![Kaynaktan kaynağa gizleme ve imzalama hattı](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
 İmza **en son** gelir (önce gizle, sonra imzala); her hattan sonra **davranışı test et** ve **maliyeti ölç**.
 
@@ -423,11 +428,6 @@ Gizleme, "en sonda elle yapılan bir iş" değil, **derleme hattının** bir ad�
 bölümü tam olarak bunu belgeler:
 
 ![S15 derleme ve dağıtım hattı](assets/h14-07-s15-hatti.svg)
-
-```text
-kaynak → (Tigress dönüşüm hattı) → gizli kaynak → derleyici → ikili
-       → imzalama (sürüm imzası) → sürüm kimliği + özet → dağıtım
-```
 
 - **Yalnız hassas fonksiyonlar** gizlenir (`--Functions`); gerekçesi yazılır.
 - Her sürüm bir **tohumla** çeşitlendirilir; tohum ve sürüm kimliği kaydedilir.

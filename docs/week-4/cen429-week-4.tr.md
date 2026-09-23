@@ -924,11 +924,7 @@ En değerli statik analiz türü, **kirli veri** (taint) izlemesidir: güvenilme
 gelen bir değerin, doğrulanmadan tehlikeli bir **hedefe** (memcpy uzunluğu, biçim dizgesi, `system`, dizi indeksi)
 ulaşıp ulaşmadığı sorulur. CodeQL ve Semgrep bu soruyu kod tabanının tamamında sorabilir:
 
-```text
-kaynak: recv(sock, buf, ...)           ─┐
-        len = buf[1] << 8 | buf[2]      │   doğrulama yok
-hedef:  memcpy(out, buf + 3, len)      ◀┘   → BULGU: CWE-787
-```
+![Kirli veri takibi: kaynaktan hedefe, doğrulama olmadan](assets/h04-14-kirli-veri.svg)
 
 ### Yanlış alarmlarla yaşamak
 

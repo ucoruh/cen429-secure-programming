@@ -118,23 +118,11 @@ Her hâl farklı koruma ister.
 
 ---
 
-# HKDF — şema
-
-![w:950](assets/h03-03-hkdf.svg)
-
----
-
 # Anahtar hiyerarşisi
 
 - Tek anahtar her işte kullanılmaz.
 - Ana anahtar → türev anahtarlar (veri, oturum).
 - **Kripto-periyot:** her anahtarın ömrü.
-
----
-
-# Anahtar hiyerarşisi — şema
-
-![w:950](assets/h03-05-anahtar-hiyerarsisi.svg)
 
 ---
 
@@ -213,12 +201,6 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 
 ---
 
-# Güvenlik kabukları — şema
-
-![w:950](assets/h03-08-guvenlik-kabuklari.svg)
-
----
-
 # Bir sırrın üç hâli
 
 | Hâl | Nerede | Tehdit | Savunma |
@@ -246,21 +228,7 @@ Konuşma notu: Öğrencilere sorun: telefonundaki bankacılık uygulamasında bi
 
 # Ana fikir: güvenlik kabuğu
 
-```text
-  +----------------------------------------------+
-  |  Kabuk 4: Kanal (TLS 1.3 + pinning)          |
-  |  +----------------------------------------+  |
-  |  |  Kabuk 3: Oturum (mesaj AEAD + MAC)    |  |
-  |  |  +----------------------------------+  |  |
-  |  |  |  Kabuk 2: Depolama (AES-GCM)     |  |  |
-  |  |  |  +----------------------------+  |  |  |
-  |  |  |  | Kabuk 1: Cihaz baglama     |  |  |  |
-  |  |  |  |        [ SIR ]             |  |  |  |
-  |  |  |  +----------------------------+  |  |  |
-  |  |  +----------------------------------+  |  |
-  |  +----------------------------------------+  |
-  +----------------------------------------------+
-```
+![w:900](assets/h03-08-guvenlik-kabuklari.svg)
 
 Saldırgan sırra ulaşmak için **hepsini sırayla** kırmalı = derinlemesine savunma.
 
@@ -335,16 +303,6 @@ ChaCha20 zaten akış şifresi; + Poly1305 = AEAD.
 
 # AEAD: tek çağrıda gizlilik + bütünlük
 
-```text
-  Anahtar (32) ----+
-  Nonce (12) ------+---> [ AES-256-GCM ] ---> Sifreli metin
-  Duz metin -------+                     ---> Etiket (16 bayt)
-  AAD (dogrulanir,
-      sifrelenmez) -+
-
-  Cozerken: etiket DOGRULANIR.
-  Tek bit degistiyse -> cozme REDDEDILIR.
-```
 
 <!--
 Konuşma notu: AAD'yi vurgulayın: sürüm no, kayıt kimliği gibi bağlanması gereken ama şifrelenmeyecek veriler oraya konur.
@@ -463,22 +421,11 @@ uint32_t aralikta_rastgele(uint32_t ust) {        /* Tarif 11.11 */
 
 # AEAD: dört girdi, iki çıktı
 
-```text
- anahtar (32 B, gizli) ────┐
- nonce   (12 B, benzersiz) ┤
- AAD     (açık ama korunan)┼──▶ [ AES-256-GCM ] ──▶ şifreli metin
- açık metin ───────────────┘                    └─▶ etiket (16 B)
-```
+![w:900](assets/h03-02-aead.svg)
 
 **AAD:** şifrelenmez ama değiştirilirse etiket tutmaz — dosya başlığı, sürüm, kayıt kimliği
 
 1\. haftadaki "Kasa": türetme parametreleri AAD → yineleme sayısı değiştirilemez
-
----
-
-# AEAD girdi/çıktı — şema
-
-![w:950](assets/h03-02-aead.svg)
 
 ---
 
@@ -662,15 +609,7 @@ Konuşma notu: 200 ms kullanıcıya kabul edilebilir; saldırgana milyar deneme 
 
 # HKDF: ana sırdan türev anahtarlar
 
-```text
-  Ana sir --> [Extract (+tuz)] --> PRK
-                                    |
-       +----------------+----------+----------+
-       v                v                     v
-  info="sifreleme"  info="MAC"        info="oturum-42"
-       |                |                     |
-  Sifreleme K.      MAC K.            Oturum-42 K.
-```
+![w:900](assets/h03-03-hkdf.svg)
 
 Farklı `info` → farklı anahtar. Bir amacın anahtarı başka amaca kullanılmaz.
 
@@ -680,10 +619,7 @@ Farklı `info` → farklı anahtar. Bir amacın anahtarı başka amaca kullanıl
 
 Tek yönlü zincir: `K0 = ana sır`, `Kᵢ = HKDF(Kᵢ₋₁)`, her adımda eskisini **sil**.
 
-```text
-  K1 -> K2 -> K3 -> K4   (elde yalniz K4 var)
-  K4'ten K3, K2, K1 GERI HESAPLANAMAZ (tek yonlu)
-```
+![w:900](assets/h03-11-ileri-gizlilik.svg)
 
 > Bugünkü anahtar sızsa bile **eski oturumlar** güvende. TLS 1.3'te varsayılan.
 
@@ -738,14 +674,7 @@ ILERI GIZLILIK zinciri:
 
 # Anahtar hiyerarşisi
 
-```text
- Kök / ana anahtar (HSM, neredeyse hiç kullanılmaz)
-   ├── KEK (müşteri/cihaz başına)
-   │     ├── DEK (dosya/kayıt başına)
-   │     └── Oturum anahtarı (dakikalar)
-   │            └── Tek kullanımlık anahtar (işlem başına)
-   └── İmza anahtarı (güncelleme paketleri)
-```
+![w:900](assets/h03-05-anahtar-hiyerarsisi.svg)
 
 - **Anahtar ayrımı:** her amaca ayrı anahtar (HKDF `info`)
 - **Zarar sınırlama:** tek kullanımlık anahtar çalınırsa kaybedilen = **tek işlem**
@@ -768,17 +697,16 @@ EMV tarzı zincir:
 
 # Zarflama ve anahtar sürümü
 
-```text
- veri ──AES-GCM(DEK)──▶ şifreli veri
- DEK  ──sar(KEK)──────▶ sarılmış DEK   (başlıkta)
- KEK yenilenince: yalnız sarılmış DEK'ler yeniden sarılır
-
- | biçim | anahtar_sürüm | nonce | şifreli metin | etiket |
-   └──────────── AAD ─────────────┘
-```
+![w:900](assets/h03-09-zarflama.svg)
 
 - Okuyucu sürüme bakar → doğru anahtarı bulur
 - Sürüm alanı AAD → saldırgan eski/zayıf anahtara **yönlendiremez**
+
+---
+
+# Kayıt biçimi ve AAD — şema
+
+![w:950](assets/h03-10-kayit-bicimi.svg)
 
 ---
 
@@ -840,25 +768,11 @@ Gruplar: dinamik cihaz anahtarları (whitebox) · dinamik ödeme anahtarları ·
 
 ---
 
-# TLS 1.3 el sıkışması — şema
-
-![w:950](assets/h03-06-tls13.svg)
-
----
-
 <!-- _class: sema -->
 
 # TLS 1.3 el sıkışması
 
-```text
-  Istemci                                   Sunucu
-    |  --- ClientHello + anahtar payi --->    |
-    |  <-- ServerHello + anahtar payi -----   |
-    |  <-- {Sertifika}+{Imza}+{Finished} --   |
-    |  [ DOGRULA: zincir + sure + ad + pin ]  |
-    |  --- {Finished} ------------------->    |
-    |  === Uygulama verisi (AEAD) =========   |
-```
+![w:900](assets/h03-06-tls13.svg)
 
 Tek gidiş-dönüş · her zaman geçici ECDHE → **ileri gizlilik varsayılan**.
 
@@ -1123,21 +1037,12 @@ void pan_maskele(const char *pan, char *cikti, size_t boyut) {
 
 # Tokenizasyon
 
-```text
- Uygulama ──kart no──▶ [ Belirteç kasası ] ──belirteç──▶ Uygulama ──▶ Veritabanı
-                         (küçük, çok iyi korunan)                    (yalnız belirteç)
-```
+![w:900](assets/h03-07-tokenizasyon.svg)
 
 - Veritabanı, raporlar, günlükler çalınsa bile **kart numarası yok**
 - PCI DSS kapsamı küçülür = 1. haftadaki "**aktar**" yanıtı
 - Mobil ödemede telefona inen = cihaza özgü **belirteç numarası**
 - Biçim korunabilir: FF1 (NIST SP 800-38G)
-
----
-
-# Tokenizasyon — şema
-
-![w:950](assets/h03-07-tokenizasyon.svg)
 
 ---
 

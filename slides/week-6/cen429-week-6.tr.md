@@ -189,12 +189,6 @@ Algıla → savun → caydır. Ama tek denetim değil, **katman**.
 
 ---
 
-# RASP motoru — şema
-
-![w:950](assets/h06-05-rasp-motoru.svg)
-
----
-
 # Cihaz bağlama ve caydırma
 
 - **Cihaz bağlama:** verilerin/anahtarların yalnız **belirli cihazda** anlamlı olması.
@@ -321,12 +315,7 @@ Tek bir "root mu?" denetimi kolayca atlanır; onlarca farklı denetim birlikte z
 
 # Mimari · özet şema
 
-```text
-[başlangıç] → ortam denetimi
-[kritik işlem] → bütünlük + anti-debug + hook denetimi
-[periyodik/rastgele] → tekrar denetim
-   ↳ hepsi gizli, opak sonuç, çapraz denetim
-```
+![w:900](assets/h06-05-rasp-motoru.svg)
 
 ---
 
@@ -434,20 +423,9 @@ Tek bir "root mu?" denetimi kolayca atlanır; onlarca farklı denetim birlikte z
 
 # Zamanlama tabanlı sezme
 
-```text
-t0 = şimdi
-   ... küçük bir iş ...
-t1 = şimdi
-if (t1 - t0 > eşik) → biri durdurup inceliyor olabilir
-```
+![w:900](assets/h06-08-zamanlama.svg)
 
 Debugger adımlaması işi **yavaşlatır**.
-
----
-
-# Zamanlama sezme — şema
-
-![w:950](assets/h06-08-zamanlama.svg)
 
 ---
 
@@ -463,12 +441,6 @@ Debugger adımlaması işi **yavaşlatır**.
 
 - Hemen çökme her zaman iyi değil (saldırgana "burada denetim var" der).
 - Daha iyi: **gecikmeli**, **dolaylı** tepki (birazdan bölüm 10).
-
----
-
-# Tepki politikası — şema
-
-![w:950](assets/h06-11-tepki.svg)
 
 ---
 
@@ -1263,12 +1235,7 @@ Katmanlı savunma bu yüzden gereklidir.
 
 # Tepki akışı · tek bakış
 
-```text
-Gösterge güvenilir mi?
-  evet -> reddet + sunucuya bildir (gecikmeli, dolaylı)
-  belirsiz -> devam + risk skoru artır
-Her durumda: yanlış pozitifi düşün, kaynağı gizle
-```
+![w:900](assets/h06-11-tepki.svg)
 
 ---
 

@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T04:31:57.598518</dc:date>
+    <dc:date>2026-09-23T06:14:34.585018</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 27.891 100.44864 27.891 107.633664
 L 27.891 372.681216 
 Q 27.891 379.86624 39.4416 379.86624 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 44.5752 402.219648 
@@ -53,7 +53,7 @@ Q 34.308 373.479552 34.308 379.86624
 L 34.308 395.83296 
 Q 34.308 402.219648 44.5752 402.219648 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #e8f6f7"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #e8f6f7"/>
    </g>
    <g id="text_1">
     <!-- S0–S1 · Kapak, kapsam, kaynaklar -->
@@ -408,7 +408,7 @@ Q 69.6015 128.3904 69.6015 135.575424
 L 69.6015 344.739456 
 Q 69.6015 351.92448 81.1521 351.92448 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
     <!-- Güvenlik kılavuzu S0–S17 -->
@@ -1230,7 +1230,7 @@ Q 303.822 93.263616 303.822 94.46112
 L 303.822 94.46112 
 Q 303.822 95.658624 305.7471 95.658624 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #9ed6d7"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_4">
     <!-- S2–S5 · Ürün, arayüz, tehdit, varlık -->
@@ -1431,7 +1431,7 @@ Q 111.312 156.33216 111.312 163.517184
 L 111.312 316.797696 
 Q 111.312 323.98272 122.8626 323.98272 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_5">
     <!-- Kılavuz, sertifikasyon belgesinin küçültülmüş modelidir. -->
@@ -1852,7 +1852,7 @@ Q 153.0225 184.27392 153.0225 191.458944
 L 153.0225 288.855936 
 Q 153.0225 296.04096 164.5731 296.04096 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <!-- S13–S15 · Süreç, devredilen, derleme hattı -->
@@ -1983,7 +1983,7 @@ Q 194.733 212.21568 194.733 219.400704
 L 194.733 260.914176 
 Q 194.733 268.0992 206.2836 268.0992 
 z
-" clip-path="url(#pe0182c939d)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p6fc1632eb2)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_8">
     <!-- S16–S17 · Test sonuçları ve uyum matrisi -->
@@ -2046,7 +2046,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pe0182c939d">
+  <clipPath id="p6fc1632eb2">
    <rect x="8.64" y="8.64" width="641.7" height="399.168"/>
   </clipPath>
  </defs>

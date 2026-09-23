@@ -176,6 +176,10 @@ aynı bağ bir adım daha uzar: her önlem bir **gereksinime** bağlanır. Gerek
 söyler; nasıl yapacağını söylemez. Tasarım ve kod "nasıl"ı cevaplar; değerlendirici ise "gereksinim karşılanmış mı, kanıtı
 nerede?" diye sorar.
 
+![Kötü gereksinimden iyi gereksinime](assets/h13-04-kotu-iyi.svg)
+
+![İyi gereksinimin ölçütleri](assets/h13-03-iyi-gereksinim.svg)
+
 !!! note "Kısa tarihçe: güvenlik gereksinimleri nasıl standartlaştı?"
     - **1985** — **TCSEC** ("Orange Book") güvenlik **gereksinim düzeylerini** ilk kez resmîleştirir.
     - **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**, 2019).
@@ -238,6 +242,10 @@ yönü okur: karşılanmış denen ama kanıtı olmayan bir satır, ilk bulgudur
 
 ### Kılavuzda gereksinim bloğu
 
+![Devrederken yanıtlanacak üç soru](assets/h13-06-devretme.svg)
+
+![Gereksinim bloğunun alanları](assets/h13-05-gereksinim-blogu.svg)
+
 Sertifikasyondan geçen güvenlik kılavuzlarında her bölüm, o bölüme düşen gereksinimlerle açılır. Her gereksinim şu
 kalıpta yazılır:
 
@@ -289,6 +297,8 @@ yazmak, değerlendiricinin kapsamı doğru anlamasını sağlar ve "bu tehdit ne
 Değerlendirme yöntemi ayrı bir belgede (CEM, ISO/IEC 18045) tanımlanır. Ortak Kriterleri Tanıma Anlaşması (CCRA) sayesinde
 bir ülkede verilen sertifika, anlaşmaya taraf diğer ülkelerde de tanınır.
 
+![Ortak Kriterler kavramları: PP, ST, SFR, SAR, EAL](assets/h13-07-ortak-kriterler.svg)
+
 ### Temel kavramlar
 
 | Kavram | Anlamı | Dersteki karşılığı |
@@ -335,6 +345,8 @@ dayanır. Doğrulama, NIST ile Kanada'nın ortak yürüttüğü **Kriptografik M
 akredite laboratuvarlarca yapılır. Kitabın Tarif 11.18'de andığı FIPS 140-1/140-2'nin yerini almıştır; FIPS 140-2
 sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 
+![FIPS 140-3 güvence düzeyleri](assets/h13-08-fips.svg)
+
 ### Güvenlik düzeyleri
 
 | Düzey | Öne çıkan gereksinim | Tipik modül |
@@ -366,6 +378,8 @@ sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 ## 6. ETSI, GSMA, EMVCo, PCI ve OWASP: sektöre özgü gereksinim setleri
 
 ### ETSI EN 303 645: tüketici nesnelerin interneti
+
+![Sektöre özgü gereksinim setleri](assets/h13-09-sektor.svg)
 
 Avrupa Telekomünikasyon Standartları Enstitüsü'nün (ETSI) bu standardı, internete bağlanan tüketici cihazları için temel
 bir güvenlik çizgisi tanımlar ve Avrupa'daki düzenlemelerin dayanağı olmuştur. On üç başlığı, dönem boyunca gördüğümüz
@@ -419,6 +433,8 @@ haftaların konularını kapsar.
 ## 7. Gereksinimleri yazılım planına ve varlık yönetimine aktarmak
 
 Bir gereksinim setini okumak işin kolay kısmıdır. Asıl iş, onu ürünün planına **dönüştürmektir**. Adımlar:
+
+![Uyum matrisinin yapısı](assets/h13-10-uyum-matrisi.svg)
 
 1. **Uygulanabilirlik:** Setteki her gereksinim için "bu ürüne uygulanır mı?" sorusu sorulur. Uygulanmayanlar gerekçesiyle
    işaretlenir (ör. "ürün ağ bağlantısı kullanmaz, aktarımda veri gereksinimleri uygulanmaz").

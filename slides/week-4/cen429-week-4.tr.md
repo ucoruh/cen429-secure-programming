@@ -57,6 +57,12 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 ---
 
+# Güvenli derleme hattı — şema
+
+![w:950](assets/h04-03-ci-hatti.svg)
+
+---
+
 
 # Bu hafta nereye oturuyor?
 
@@ -203,6 +209,12 @@ Kod sağlamlaştırma üç katmandır. Sıra önemli:
 
 ---
 
+# Fuzzing döngüsü — şema
+
+![w:950](assets/h04-01-fuzzing-dongusu.svg)
+
+---
+
 # ASLR, NX/DEP, kanarya
 
 - **ASLR:** bellek adreslerini **rastgeleleştirir** (saldırgan adresi tahmin edemesin).
@@ -239,6 +251,12 @@ yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · 
 <!-- _class: bolum -->
 
 # 1. Katmanlar ve SEI CERT
+
+---
+
+# Üç katman — şema
+
+![w:950](assets/h04-05-uc-katman.svg)
 
 ---
 
@@ -348,6 +366,12 @@ C++: MEM50-CPP, CTR50-CPP, STR50-CPP, EXP53-CPP, ERR50-CPP.
 <!-- _class: bolum -->
 
 # Girdi doğrulama
+
+---
+
+# Girdi doğrulama — şema
+
+![w:950](assets/h04-06-girdi-dogrulama.svg)
 
 ---
 
@@ -524,6 +548,12 @@ Böylece bulgu **nesnel** ve **aranabilir** olur.
 
 ---
 
+# Biçim dizisi açığı — şema
+
+![w:950](assets/h04-07-bicim-dizisi.svg)
+
+---
+
 # Sorun · `printf(girdi)`
 
 ```c
@@ -610,6 +640,18 @@ void gunluk_yaz(int duzey, const char *bicim, ...)
 <!-- _class: bolum -->
 
 # 3. Bellek: use-after-free
+
+---
+
+# Yığın ve öbek — şema
+
+![w:950](assets/h04-13-yigin-obek.svg)
+
+---
+
+# Use-after-free — şema
+
+![w:950](assets/h04-08-uaf.svg)
 
 ---
 
@@ -707,6 +749,12 @@ if (auto o = onbellek.lock()) kullan(*o);  // yoksa eski belleğe erişilmez
 
 ---
 
+# Tamsayı taşması — şema
+
+![w:950](assets/h04-09-tamsayi.svg)
+
+---
+
 # Dört tamsayı hatası
 
 | Hata | Örnek | Sonuç |
@@ -773,6 +821,12 @@ Taşmayı **olmadan önce** yakala.
 <!-- _class: bolum -->
 
 # Hata işleme ve sinyaller
+
+---
+
+# Sinyal işleyici — şema
+
+![w:950](assets/h04-12-sinyal.svg)
 
 ---
 
@@ -849,6 +903,18 @@ static void isleyici(int s){ (void)s; durdur = 1; }  /* YALNIZ bayrak */
 <!-- _class: bolum -->
 
 # 4. Statik analiz, sanitizer, fuzzing
+
+---
+
+# ASan redzone — şema
+
+![w:950](assets/h04-11-asan.svg)
+
+---
+
+# Statik ↔ dinamik — şema
+
+![w:950](assets/h04-10-statik-dinamik.svg)
 
 ---
 
@@ -1043,6 +1109,12 @@ Dört özellik:
 # 5. Derleyici ve OS korumaları
 
 <!-- Konuşma notu: Bunlar "hata kaçarsa zararı sınırla" katmanı. Hiçbiri hatayı kaldırmaz; istismarı zorlaştırır. -->
+
+---
+
+# Derleyici/OS korumaları — şema
+
+![w:950](assets/h04-02-derleyici-os-korumalari.svg)
 
 ---
 

@@ -9,18 +9,18 @@ def h09_01_bes_aile(klasor):
     fig, ax = tuval(12, 6.4)
     baslik(ax, "Gizlemenin beş ailesi", "aşağıdan yukarı: güç ↑ · maliyet ↑")
     aileler = [
-        ("1 · Düzen / Ad", "isim · biçim · dize", ACIK, 30),
-        ("2 · Veri", "aritmetik · sabit gizleme", "#6ec6c8", 42),
-        ("3 · Kontrol akışı", "düzleştirme · opak yüklem", "#33a7ab", 54),
-        ("4 · Önleyici", "anti-debug · anti-analiz", ANA, 66),
-        ("5 · Sanallaştırma", "bytecode + yorumlayıcı", KOYU, 78),
+        ("1 · Düzen / Ad", "isim · biçim · dize", ACIK, 24),
+        ("2 · Veri", "aritmetik · sabit", "#6ec6c8", 33),
+        ("3 · Kontrol akışı", "düzleştirme · opak yüklem", "#33a7ab", 42),
+        ("4 · Önleyici", "anti-debug · anti-analiz", ANA, 51),
+        ("5 · Sanallaştırma", "bytecode + VM", KOYU, 60),
     ]
     for i, (ad, alt, renk, gen) in enumerate(aileler):
         y = 66 - i * 11.5
         koyu_mu = renk in (ANA, KOYU)
         kutu(ax, 8 + gen / 2, y, gen, 9.4, ad, dolgu=renk, kenar=renk,
              bas_renk="white" if koyu_mu else YAZI, bas_boyut=12.5)
-        ax.text(8 + gen + 2.5, y, alt, ha="left", va="center", fontsize=10.5, color=SOLUK)
+        ax.text(8 + gen + 2.5, y, alt, ha="left", va="center", fontsize=9.8, color=SOLUK)
     ok(ax, 4.5, 14, 4.5, 72, renk=SOLUK, kalinlik=2.0)
     ax.text(1.6, 43, "güç ve maliyet", rotation=90, ha="center", va="center",
             fontsize=11, color=SOLUK)

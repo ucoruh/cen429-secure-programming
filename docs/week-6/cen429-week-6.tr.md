@@ -207,6 +207,8 @@ Terimler:
 Bu hafta o varsayımı bırakıyoruz. Uygulama, **çalışırken** düşman bir ortamda olabilir: kullanıcı cihazın sahibidir,
 root almış, hata ayıklayıcı bağlamış, kod parçalarını yamalamış, fonksiyonları kancalamış olabilir.
 
+![WAF ile RASP farkı](assets/h06-06-waf-rasp.svg)
+
 !!! note "Kısa tarihçe: uygulamanın kendini koruması"
     - **1980'ler** — crack / anti-crack kültürü: **anti-debug** ve kendini denetleyen kodun kökeni buraya dayanır.
     - **2000'ler** — DRM, mobil bankacılık ve ödeme uygulamaları korumayı **uygulamanın içine** taşımak zorunda kalır (cihaz artık güvenilir değildir).
@@ -434,6 +436,10 @@ Saldırganın en güçlü aracı bir **hata ayıklayıcıdır** (gdb, lldb, x64d
 adım izler, belleği ve anahtarları okur, dalları değiştirir. RASP, bir hata ayıklayıcının **bağlı olup olmadığını**
 anlamaya çalışır.
 
+![Zamanlama tabanlı debugger sezme](assets/h06-08-zamanlama.svg)
+
+![Hata ayıklayıcı algılama yolları](assets/h06-07-antidebug.svg)
+
 | Ortam | Gösterge | Kitap |
 | --- | --- | --- |
 | **Linux / WSL** | `/proc/self/status` → `TracerPid` (>0 ise bir süreç bizi `ptrace` ile izliyor); ana sürecin adı gdb/strace/ltrace mı | Tarif 12.13 |
@@ -496,6 +502,8 @@ Studio ile **F5** (hata ayıklayıcıda) çalıştırırsanız `IsDebuggerPresen
 Saldırgan uygulamayı çoğu zaman kontrollü bir **analiz ortamında** — bir sanal makine, emülatör ya da kum havuzunda
 (sandbox) — çalıştırır. RASP bunu ortam ipuçlarından sezmeye çalışır.
 
+![Emülatör algılamada yanlış pozitif riski](assets/h06-09-emulator.svg)
+
 | Teknik | Nasıl | Not |
 | --- | --- | --- |
 | **CPUID hipervizör biti** | `CPUID.1:ECX[31]` — "hypervisor present" | Bare-metal'de 0 |
@@ -537,6 +545,8 @@ bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
 Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyon kancalama (hooking)** ve **dinamik enstrümantasyon**. Saldırgan
 programı durdurmadan, çağırdığı fonksiyonları (kendi anti-debug/anti-root kontrollerimiz dâhil) **kendi sürümüyle
 değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek şekilde yalancıya çıkarabilir.
+
+![Kanca algılama: prolog baytlarının denetimi](assets/h06-10-hook.svg)
 
 | Teknik | Nasıl | Platform |
 | --- | --- | --- |
@@ -818,6 +828,10 @@ tutarlılık kontrolü sağlar.
 Algılama tek başına işe yaramaz; asıl önemli olan **tepkidir**. Kötü bir tepki (ör. tespit anında `exit(1)`), saldırgana
 **tam olarak hangi kontrolün tetiklendiğini** söyler ve onu doğrudan o kontrolün yamasına yönlendirir. İyi bir tepki
 politikası saldırganı **yavaşlatır ve yanıltır**:
+
+![Cihaz bağlama ile kopyalamanın engellenmesi](assets/h06-12-cihaz-baglama.svg)
+
+![Tepki politikası seçenekleri](assets/h06-11-tepki.svg)
 
 | Strateji | Ne yapar | Katalog |
 | --- | --- | --- |

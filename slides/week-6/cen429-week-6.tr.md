@@ -143,6 +143,12 @@ Algıla → savun → caydır. Ama tek denetim değil, **katman**.
 
 ---
 
+# Self-hashing — şema
+
+![w:950](assets/h06-03-self-hashing.svg)
+
+---
+
 # Özet (checksum/hash)
 
 - **Özet:** bir veriden hesaplanan sabit boyutlu **parmak izi** (SHA-256).
@@ -183,6 +189,12 @@ Algıla → savun → caydır. Ama tek denetim değil, **katman**.
 
 ---
 
+# RASP motoru — şema
+
+![w:950](assets/h06-05-rasp-motoru.svg)
+
+---
+
 # Cihaz bağlama ve caydırma
 
 - **Cihaz bağlama:** verilerin/anahtarların yalnız **belirli cihazda** anlamlı olması.
@@ -204,6 +216,12 @@ Terimler:
 <!-- _class: bolum -->
 
 # 1. RASP nedir?
+
+---
+
+# WAF ↔ RASP — şema
+
+![w:950](assets/h06-06-waf-rasp.svg)
 
 ---
 
@@ -292,6 +310,12 @@ Tek bir "root mu?" denetimi kolayca atlanır; onlarca farklı denetim birlikte z
 - Tek denetim değil, **onlarca** farklı denetim.
 - Birbirini denetleyen **ağ** (checker network).
 - Birini atlamak diğerini tetikler.
+
+---
+
+# Katmanlar birbirini korur — şema
+
+![w:950](assets/h06-02-katmanlar.svg)
 
 ---
 
@@ -386,6 +410,12 @@ Tek bir "root mu?" denetimi kolayca atlanır; onlarca farklı denetim birlikte z
 
 ---
 
+# Anti-debug yolları — şema
+
+![w:950](assets/h06-07-antidebug.svg)
+
+---
+
 # Neden debugger tehlikeli?
 
 - Saldırgan programı **durdurup** belleği okur, değer değiştirir.
@@ -415,6 +445,12 @@ Debugger adımlaması işi **yavaşlatır**.
 
 ---
 
+# Zamanlama sezme — şema
+
+![w:950](assets/h06-08-zamanlama.svg)
+
+---
+
 # ⚠️ Anti-debug atlanabilir
 
 - Her tek yöntem bilinir ve atlanabilir.
@@ -427,6 +463,12 @@ Debugger adımlaması işi **yavaşlatır**.
 
 - Hemen çökme her zaman iyi değil (saldırgana "burada denetim var" der).
 - Daha iyi: **gecikmeli**, **dolaylı** tepki (birazdan bölüm 10).
+
+---
+
+# Tepki politikası — şema
+
+![w:950](assets/h06-11-tepki.svg)
 
 ---
 
@@ -452,6 +494,12 @@ Debugger adımlaması işi **yavaşlatır**.
 <!-- _class: bolum -->
 
 # 5. Ortam algılama: emülatör/VM
+
+---
+
+# Emülatör yanlış pozitif — şema
+
+![w:950](assets/h06-09-emulator.svg)
 
 ---
 
@@ -482,6 +530,12 @@ Debugger adımlaması işi **yavaşlatır**.
 <!-- _class: bolum -->
 
 # 6. Kanca ve enstrümantasyon algılama
+
+---
+
+# Kanca algılama — şema
+
+![w:950](assets/h06-10-hook.svg)
 
 ---
 
@@ -661,6 +715,12 @@ if (imza_gecerli()) devam();   /* tek nokta */
 
 ---
 
+# Kontrol akışı sayacı — şema
+
+![w:950](assets/h06-04-akis-sayaci.svg)
+
+---
+
 # Çift sayaç
 
 - İki bağımsız sayaç (biri artan, biri azalan).
@@ -674,6 +734,12 @@ if (imza_gecerli()) devam();   /* tek nokta */
 - Denetim sonucu düz bir `if` değil.
 - Sonuç, bir sonraki adımın **hesabına** girer (ör. bir anahtar türetmesine).
 - Atlanırsa program **yanlış** çalışır (sessizce bozulur).
+
+---
+
+# Cihaz bağlama — şema
+
+![w:950](assets/h06-12-cihaz-baglama.svg)
 
 ---
 

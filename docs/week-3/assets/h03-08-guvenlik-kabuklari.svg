@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T02:14:21.100275</dc:date>
+    <dc:date>2026-09-23T03:02:26.521177</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 27.891 64.52352 27.891 71.708544
 L 27.891 368.689536 
 Q 27.891 375.87456 39.4416 375.87456 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1311d242dc)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 44.5752 402.219648 
@@ -53,7 +53,7 @@ Q 34.308 373.479552 34.308 379.86624
 L 34.308 395.83296 
 Q 34.308 402.219648 44.5752 402.219648 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #e8f6f7"/>
+" clip-path="url(#p1311d242dc)" style="fill: #e8f6f7"/>
    </g>
    <g id="text_1">
     <!-- Kabuk 4 — Kanal: TLS 1.3 + sertifika sabitleme -->
@@ -584,7 +584,7 @@ Q 69.6015 95.658624 69.6015 102.843648
 L 69.6015 337.554432 
 Q 69.6015 344.739456 81.1521 344.739456 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1311d242dc)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
     <!-- Güvenlik kabukları: derinlemesine savunma -->
@@ -739,7 +739,7 @@ z
    </g>
    <g id="text_3">
     <!-- sırra ulaşmak için dört kabuğu da kırmak gerekir -->
-    <g style="fill: #6b7280" transform="translate(177.368906 64.358773) scale(0.125 -0.125)">
+    <g style="fill: #6b7280" transform="translate(183.45375 68.357043) scale(0.12 -0.12)">
      <defs>
       <path id="DejaVuSans-56" d="M 2834 3397 
 L 2834 2853 
@@ -1467,7 +1467,7 @@ Q 111.312 126.793728 111.312 133.978752
 L 111.312 306.419328 
 Q 111.312 313.604352 122.8626 313.604352 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1311d242dc)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_5">
     <!-- Bir kabuk delinse bile sır hâlâ diğerlerinin altındadır. -->
@@ -1791,7 +1791,7 @@ Q 153.0225 157.928832 153.0225 165.113856
 L 153.0225 275.284224 
 Q 153.0225 282.469248 164.5731 282.469248 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1311d242dc)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <!-- Kabuk 1 — Cihaz bağlama: HKDF + AEAD -->
@@ -1956,7 +1956,7 @@ Q 194.733 189.063936 194.733 196.24896
 L 194.733 244.14912 
 Q 194.733 251.334144 206.2836 251.334144 
 z
-" clip-path="url(#p56e941da1d)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1311d242dc)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_8">
     <!-- SIR -->
@@ -2006,7 +2006,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p56e941da1d">
+  <clipPath id="p1311d242dc">
    <rect x="8.64" y="8.64" width="641.7" height="399.168"/>
   </clipPath>
  </defs>

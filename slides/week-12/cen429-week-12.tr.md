@@ -247,6 +247,12 @@ değerlendirme · sertifikasyon · laboratuvar · standart · zafiyet · bulgu �
 
 ---
 
+# Bağımsız değerlendirme — şema
+
+![w:950](assets/h12-04-bagimsiz-degerlendirme.svg)
+
+---
+
 # "Benim kodum güvenli" yetmez
 
 - Geliştirici kendi koduna **kör** olabilir.
@@ -293,6 +299,12 @@ Bu, 9 ve 11. haftadaki "katmanlı savunma" fikrinin değerlendirmedeki karşıl�
 <!-- _class: bolum -->
 
 # Standartlar manzarası
+
+---
+
+# Standartlar haritası — şema
+
+![w:950](assets/h12-05-standartlar.svg)
 
 ---
 
@@ -406,6 +418,12 @@ Bir kurum 27001'li olabilir ama ürünü değerlendirilmemiş olabilir; tersi de
 
 ---
 
+# Değerlendirme süreci — şema
+
+![w:950](assets/h12-01-degerlendirme-sureci.svg)
+
+---
+
 # Üç aşama
 
 Süreç üç aşamaya ayrılır:
@@ -424,12 +442,24 @@ Süreç üç aşamaya ayrılır:
 
 ---
 
+# Hazırlık adımları — şema
+
+![w:950](assets/h12-02-hazirlik-adimlari.svg)
+
+---
+
 # Adım 1 · Değerlendirme hedefi (TOE)
 
 - Değerlendirilecek şey **benzersiz** tanımlanır.
 - Sürüm numarası **yetmez**: ikili + kaynak + özet değeri/etiket.
 - Kapsam dışı bileşenler yazılır.
 - **Projede:** S0, S1 (sürüm kimliği, 1. hafta).
+
+---
+
+# TOE kimliği — şema
+
+![w:950](assets/h12-06-toe.svg)
 
 ---
 
@@ -508,6 +538,12 @@ Süreç üç aşamaya ayrılır:
 
 ---
 
+# Sızma testi planı — şema
+
+![w:950](assets/h12-11-pentest-plani.svg)
+
+---
+
 # Adım 8 · İşlevsel uygunluk
 
 - Ürünün standart işlevleri (ör. ödeme akışları) şemanın **test paketiyle** sınanır.
@@ -530,6 +566,12 @@ Süreç üç aşamaya ayrılır:
 
 ---
 
+# Bulgu döngüsü — şema
+
+![w:950](assets/h12-09-bulgu-dongusu.svg)
+
+---
+
 # Adım 10 · Güvenlik etki analizi
 
 - Düzeltmeler yeni sürüm doğurunca:
@@ -537,6 +579,12 @@ Süreç üç aşamaya ayrılır:
   - etkilenen dosyalar
   - güvenlik etkisi
 - **Projede:** S13, değişiklik yönetimi.
+
+---
+
+# Etki analizi ↔ delta — şema
+
+![w:950](assets/h12-10-etki-delta.svg)
 
 ---
 
@@ -607,6 +655,12 @@ Temel çizgi → talep → sınıflandırma → onay → geliştirme ve test →
 # 3. Zafiyet değerlendirmesi yöntemleri
 
 <!-- Konuşma notu: Bunları savunmacı gözüyle, "kendi ürünümü teslim etmeden nasıl sınarım?" diye ele alıyoruz. -->
+
+---
+
+# Değerlendirme yöntemleri — şema
+
+![w:950](assets/h12-07-yontemler.svg)
 
 ---
 
@@ -894,6 +948,12 @@ Mantık 9. haftadaki dört ölçütle aynı.
 <!-- _class: bolum -->
 
 # CVSS
+
+---
+
+# Saldırı potansiyeli ↔ CVSS — şema
+
+![w:950](assets/h12-08-potansiyel-cvss.svg)
 
 ---
 

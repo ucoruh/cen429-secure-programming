@@ -109,6 +109,12 @@ Buna **beyaz kutu** da denir (1. hafta).
 
 ---
 
+# MATE saldırgan modeli — şema
+
+![w:950](assets/h09-03-mate.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Kara kutu ≠ beyaz kutu
@@ -200,6 +206,12 @@ Biz de öyle yazacağız: *neyi korur · nasıl · maliyet · sınır*.
 
 ---
 
+# Koruma kuralı şablonu — şema
+
+![w:950](assets/h09-10-koruma-kurali.svg)
+
+---
+
 # Gizleme neyi gizler?
 
 Collberg'in sınıflandırması: gizlemeyi **neyi gizlediğine** göre ayırırız.
@@ -274,6 +286,12 @@ Beş aile var. Sırayla görelim.
 - Fonksiyonu özel bir VM'in bayt koduna çevirmek
 
 → Kavram bu hafta (K-10), araçla 14. hafta (Tigress `Virtualize`).
+
+---
+
+# Sanallaştırma — şema
+
+![w:950](assets/h09-06-sanallastirma.svg)
 
 ---
 
@@ -362,6 +380,12 @@ Gizleme "var/yok" değildir.
 - Ölçümsüz koruma = **iddia**, kanıt değil
 
 > Projede S9'u bu şablonla yazacaksınız.
+
+---
+
+# Dört ölçüt — şema
+
+![w:950](assets/h09-08-dort-olcut.svg)
 
 ---
 
@@ -605,6 +629,12 @@ Tüm örnekler **sentetik**, tek denetim: `erisim_ver`.
 
 ---
 
+# Opak yüklem — şema
+
+![w:950](assets/h09-02-opak-yuklem.svg)
+
+---
+
 # K-01 · Neyi korur?
 
 - Bir dalın **hangi koşulda** alındığını
@@ -723,6 +753,12 @@ static uint8_t esik(void) {
 
 ---
 
+# Sahte işlem ≠ ölü dal — şema
+
+![w:950](assets/h09-05-sahte-olu.svg)
+
+---
+
 # K-03 · İkisi farklıdır!
 
 Kılavuz bunları **ayrı** kurallar yapar. Fark kritik:
@@ -781,6 +817,12 @@ Analist bu bloğu "gerçek" sanıp inceler; zaman kaybeder.
 <!-- _class: bolum -->
 
 # K-04 · Kontrol akışı düzleştirme
+
+---
+
+# Düzleştirme: önce/sonra — şema
+
+![w:950](assets/h09-04-duzlestirme.svg)
 
 ---
 
@@ -1269,6 +1311,12 @@ Uygulamada çok seçici, küçük bölümlerde kullanılır.
 
 ---
 
+# Çeşitlendirme — şema
+
+![w:950](assets/h09-07-cesitlendirme.svg)
+
+---
+
 # Çeşitlendirme: Kural 2'yi hatırla
 
 > Bir kopyada işe yarayan saldırı, bütün kopyalarda işe yaramasın.
@@ -1399,6 +1447,12 @@ Her katman: kazanç (güç/dayanıklılık) vs. maliyet (boyut/hız) → ölç v
 Dayanıklılığı doğru ölçmek için.
 
 Bunları **savunmayı sınamak** için öğreniriz — saldırı için değil.
+
+---
+
+# Karşı tarafın araçları — şema
+
+![w:950](assets/h09-09-deobfuscation.svg)
 
 ---
 

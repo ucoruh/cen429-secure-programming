@@ -118,11 +118,23 @@ Her hâl farklı koruma ister.
 
 ---
 
+# HKDF — şema
+
+![w:950](assets/h03-03-hkdf.svg)
+
+---
+
 # Anahtar hiyerarşisi
 
 - Tek anahtar her işte kullanılmaz.
 - Ana anahtar → türev anahtarlar (veri, oturum).
 - **Kripto-periyot:** her anahtarın ömrü.
+
+---
+
+# Anahtar hiyerarşisi — şema
+
+![w:950](assets/h03-05-anahtar-hiyerarsisi.svg)
 
 ---
 
@@ -198,6 +210,12 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 <!-- _class: bolum -->
 
 # 1. Verinin üç hâli ve güvenlik kabuğu
+
+---
+
+# Güvenlik kabukları — şema
+
+![w:950](assets/h03-08-guvenlik-kabuklari.svg)
 
 ---
 
@@ -458,6 +476,12 @@ uint32_t aralikta_rastgele(uint32_t ust) {        /* Tarif 11.11 */
 
 ---
 
+# AEAD girdi/çıktı — şema
+
+![w:950](assets/h03-02-aead.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # OpenSSL EVP: şifreleme yedi adım
@@ -706,6 +730,12 @@ ILERI GIZLILIK zinciri:
 
 ---
 
+# Anahtarın hayatı — şema
+
+![w:950](assets/h03-04-anahtar-yasam-dongusu.svg)
+
+---
+
 # Anahtar hiyerarşisi
 
 ```text
@@ -807,6 +837,12 @@ Gruplar: dinamik cihaz anahtarları (whitebox) · dinamik ödeme anahtarları ·
 <!-- _class: bolum -->
 
 # 8. Aktarımda veri: TLS 1.3
+
+---
+
+# TLS 1.3 el sıkışması — şema
+
+![w:950](assets/h03-06-tls13.svg)
 
 ---
 
@@ -1096,6 +1132,12 @@ void pan_maskele(const char *pan, char *cikti, size_t boyut) {
 - PCI DSS kapsamı küçülür = 1. haftadaki "**aktar**" yanıtı
 - Mobil ödemede telefona inen = cihaza özgü **belirteç numarası**
 - Biçim korunabilir: FF1 (NIST SP 800-38G)
+
+---
+
+# Tokenizasyon — şema
+
+![w:950](assets/h03-07-tokenizasyon.svg)
 
 ---
 

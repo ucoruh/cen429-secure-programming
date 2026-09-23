@@ -166,6 +166,8 @@ gizleme öğreticidir ama üç sorunu vardır: (1) **hataya açıktır** — el 
 (2) **bakımı zordur** — kaynak okunamaz hale gelir; (3) **çeşitlendirilemez** — her kopyayı el ile farklılaştıramazsınız.
 Çözüm, gizlemeyi bir **araca** yaptırmaktır.
 
+![El ile gizleme ile araçla gizlemenin karşılaştırması](assets/h14-02-el-ile-vs-arac.svg)
+
 !!! note "Kısa tarihçe: kaynaktan kaynağa gizleme ve çeşitlendirme"
     - **1993** — Cohen, "program evolution" ile **çeşitlendirme** fikrini ortaya atar: aynı işlev, farklı ikili.
     - **1997** — Collberg vd. gizleme taksonomisi (9. hafta'nın temeli).
@@ -225,6 +227,8 @@ Tigress komut satırından çalışır: hangi dönüşümlerin, hangi fonksiyonl
 söylersiniz; çıktı gizlenmiş bir C dosyasıdır. Kavramsal akış (sözdizimi sürümle değişebilir, resmî belgeden
 doğrulayın):
 
+![Dayanıklılık ile maliyet arasındaki ödünleşim](assets/h14-08-dayaniklilik-maliyet.svg)
+
 ```bash title="Kavramsal akış (tek dönüşüm)"
 # girdi: temiz.c  → çıktı: gizli.c  (sonra normal derlenir)
 tigress --Transform=Flatten --Functions=erisim_ver \
@@ -246,6 +250,8 @@ Buradaki üç fikir, bütün Tigress kullanımının temelidir:
 Tigress dönüşümleri, 9. haftada gördüğümüz gizleme ailelerine karşılık gelir. Aşağıdaki tablo, en çok kullanılan
 dönüşümleri ve dersteki karşılıklarını verir (dönüşüm adları resmî belgeden doğrulanmalıdır; sürümle küçük
 farklar olabilir):
+
+![Tigress dönüşümlerinin 9. hafta kurallarıyla eşlenmesi](assets/h14-03-donusum-esleme.svg)
 
 | Tigress dönüşümü | Ne yapar? | 9. hafta karşılığı |
 | --- | --- | --- |
@@ -269,6 +275,8 @@ farklar olabilir):
 
 Dokuzuncu haftanın en önemli kuralı "tek teknik değil, birlikte" idi. Tigress'te bu, dönüşümleri **sırayla** (bir hat olarak)
 uygulamak demektir. Her `--Transform` bir öncekinin çıktısına uygulanır; sıra önemlidir.
+
+![Dönüşüm hattında sıranın önemi](assets/h14-04-donusum-hatti.svg)
 
 ![Kaynaktan kaynağa gizleme ve imzalama hattı](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
@@ -325,6 +333,8 @@ kopyalara dağıtabiliyorsa, bir kırık her yeri açar. **Çeşitlendirme** (di
 özdeş ama yapıca farklı** ikili dosyalar üretmektir. Tigress bunu bir **tohum** (seed) ile yapar: aynı dönüşümleri
 farklı tohumlarla çalıştırırsanız, opak yüklemler, sahte dallar ve düzleştirme durumları kopyadan kopyaya değişir.
 
+![Uzayda ve zamanda çeşitlendirme](assets/h14-05-cesitlendirme-turleri.svg)
+
 ```bash title="Kavramsal: iki tohum, iki farklı ikili"
 tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque \
         --Functions=erisim_ver --out=gizli_a.c temiz.c
@@ -349,6 +359,8 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 
 Dokuzuncu haftada gizlemeyi dört boyutta (güç, dayanıklılık, gizlilik, maliyet) ölçmeyi öğrendik. Tigress'in en büyük
 öğretim değeri, bu ölçümleri **somut** yapabilmenizdir: aynı programı gizleyip önce/sonra ölçersiniz.
+
+![Her hattan sonra test ve ölçüm](assets/h14-06-test-ve-olcum.svg)
 
 ### Maliyet ölçümü (kolay ve zorunlu)
 
@@ -409,6 +421,8 @@ siteden kendisi indirir). Akış tümüyle savunma amaçlıdır: kendi kodunuzu 
 
 Gizleme, "en sonda elle yapılan bir iş" değil, **derleme hattının** bir adımı olmalıdır. Vize sonrası projenizin S15
 bölümü tam olarak bunu belgeler:
+
+![S15 derleme ve dağıtım hattı](assets/h14-07-s15-hatti.svg)
 
 ```text
 kaynak → (Tigress dönüşüm hattı) → gizli kaynak → derleyici → ikili

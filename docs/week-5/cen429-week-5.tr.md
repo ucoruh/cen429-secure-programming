@@ -187,6 +187,8 @@ yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · 
 Java, Kotlin, C#, Python, JavaScript gibi **yönetilen** (managed) dillerde bu hataların büyük kısmı **dil düzeyinde**
 ortadan kalkar:
 
+![Yönetilen dillerin çözdüğü ve çözmediği hata sınıfları](assets/h05-02-yonetilen-dil.svg)
+
 !!! note "Kısa tarihçe: yönetilen diller ve kalan açıklar"
     - **1995** — **Java** ve JVM: çöp toplayıcı ve sınır denetimi **bellek hatalarının** çoğunu dil düzeyinde kaldırır.
     - **1998** — SQL enjeksiyonu ilk kez belgelenir (Rain Forest Puppy); **2003** **OWASP Top 10** yayımlanır — bellek değil **mantık/enjeksiyon** hataları öne çıkar.
@@ -278,6 +280,8 @@ tanesini unutmak yeter.
 ## 4. SQL enjeksiyonu
 
 Bir giriş formunun arkasında şöyle bir kod olduğunu düşünün:
+
+![SQL enjeksiyonunun adım adım oluşumu](assets/h05-03-sql-enjeksiyon.svg)
 
 ```java title="Hatalı: sorgu dize birleştirmeyle kuruluyor"
 String sql = "SELECT id, rol FROM kullanicilar WHERE ad = '" + ad +
@@ -375,6 +379,8 @@ Uygulamalar bazen bir işi dış bir programa yaptırır: bir resmi dönüştür
 sınamak. Komut tek bir **dize** olarak bir **kabuğa** verilirse, dizgedeki kabuk karakterleri (`;`, `&&`, `|`,
 `` ` ``, `$( )`) yeni komutlar başlatır:
 
+![Kabuklu çalıştırma ile ProcessBuilder karşılaştırması](assets/h05-04-komut-enjeksiyon.svg)
+
 ```java title="Hatalı: kabuk üzerinden dize"
 String kullanici = istek.getParameter("ad");
 Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Merhaba " + kullanici});
@@ -438,6 +444,8 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
 Bir dosya sunucusu yalnız belirli bir klasörün altındaki dosyaları vermelidir. İstenen dosya adı doğrudan bu klasörün
 yoluna eklenirse, `../` dizileri kökün **dışına** çıkar:
 
+![Yol geçişini kapatan kanonikleştirme ve izin listesi adımları](assets/h05-05-yol-gecisi.svg)
+
 ```java title="Hatalı"
 Path kok = Paths.get("/srv/veri");
 Path dosya = kok.resolve(istek);                  // istek = "../../etc/passwd"
@@ -496,6 +504,8 @@ kök içinde olduğunun doğrulanması en sağlamıdır.
 durumdan çıkarma** (deserialization) ise tersidir. Java'nın yerleşik `ObjectInputStream` mekanizması, bayt akışında
 adı yazan **herhangi bir** serileştirilebilir sınıfın nesnesini oluşturur ve bu sırada o sınıfın bazı metotlarını
 (`readObject`, `readResolve` gibi) çalıştırır.
+
+![Güvensiz seri durumdan çıkarmada gadget zinciri](assets/h05-06-deserialization.svg)
 
 Sorun şudur: bayt akışı güvenilmez bir kaynaktan geliyorsa, **hangi sınıfların oluşturulacağını saldırgan seçer**.
 Uygulamanın sınıf yolunda (classpath) bulunan kütüphanelerdeki masum görünen sınıflar, oluşturulurken birbirini
@@ -562,6 +572,8 @@ kalan her şeyi reddet** (`!*`). Son öğe varsayılan-reddet ilkesidir; unutulu
 ## 8. XML, şablon ve diğer enjeksiyonlar
 
 Aynı "veri ile komutun karışması" hatası her yorumlayıcıda karşımıza çıkar. En sık görülen dördü:
+
+![XXE saldırısı ve dış varlıkları kapatan ayar](assets/h05-07-xxe.svg)
 
 | Tür | Nasıl oluşur? | Savunma | CWE |
 | --- | --- | --- | --- |
@@ -671,6 +683,8 @@ C/C++ derleyicisi kaynak kodu doğrudan makine koduna çevirir; bu sırada deği
 kaybolur. Java derleyicisi ise kaynak kodu **JVM bayt koduna** (`.class`) çevirir; Android'de bu bayt kodu ayrıca
 **DEX** biçimine dönüştürülür. Bayt kodu makine kodundan çok daha **yüksek düzeylidir**:
 
+![Java bayt kodu ile makine kodunun geri çevrilebilirliği](assets/h05-08-bayt-kod.svg)
+
 | Bilgi | Makine kodu (C/C++, `strip` sonrası) | Java bayt kodu / DEX |
 | --- | --- | --- |
 | Sınıf, metot ve alan adları | Kaybolur | **Korunur** (yansıma ve bağlama için gerekir) |
@@ -729,6 +743,8 @@ verilmiş demektir (MSC03-J, CWE-798).
 
 **ProGuard**, Java bayt kodunu işleyen açık kaynak bir araçtır; **R8** ise Google'ın Android için geliştirdiği ve
 Android derleme sisteminde varsayılan olarak gelen, ProGuard kurallarıyla uyumlu halefidir. İkisi de dört iş yapar:
+
+![ProGuard -keep kuralının dengesi](assets/h05-09-keep-dengesi.svg)
 
 | Aşama | Ne yapar? | Güvenlik katkısı |
 | --- | --- | --- |
@@ -964,6 +980,8 @@ birleştirmeyi durdurur.
 Modern bir uygulamanın kodunun büyük kısmı, onu yazan ekibe ait değildir. Tipik bir Java ya da JavaScript
 uygulamasında doğrudan eklenen birkaç düzine kütüphane, onların bağımlılıklarıyla birlikte yüzlerce bileşene ulaşır.
 Bu bileşenlerden birindeki bir zafiyet, uygulamanın zafiyetidir.
+
+![Tedarik zinciri, SBOM ve VEX akışı](assets/h05-10-sbom.svg)
 
 !!! example "Log4Shell (Aralık 2021)"
     Java dünyasının en yaygın günlük kütüphanelerinden Log4j 2'de, günlüğe yazılan bir dizgenin içindeki özel bir

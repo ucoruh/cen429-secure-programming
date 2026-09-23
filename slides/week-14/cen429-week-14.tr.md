@@ -214,6 +214,12 @@ kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · b
 
 ---
 
+# El ile vs araçla — şema
+
+![w:950](assets/h14-02-el-ile-vs-arac.svg)
+
+---
+
 # Çözüm: araca yaptır
 
 - Gizlemeyi bir **araç** yapsın.
@@ -240,6 +246,18 @@ Bakım maliyeti **okunur kaynakta** kalır; dağıtılan kaynak gizli.
 # Kaynaktan kaynağa hat (S15)
 
 ![w:1000](assets/h14-01-kaynaktan-kaynaga-hat.svg)
+
+---
+
+# S15 hattı — şema
+
+![w:950](assets/h14-07-s15-hatti.svg)
+
+---
+
+# Dönüşüm hattı — şema
+
+![w:950](assets/h14-04-donusum-hatti.svg)
 
 ---
 
@@ -366,6 +384,12 @@ Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 
 ---
 
+# Dönüşüm ↔ kural eşlemesi — şema
+
+![w:950](assets/h14-03-donusum-esleme.svg)
+
+---
+
 # Kontrol akışı dönüşümleri
 
 - **Flatten:** kontrol akışını düzleştirir → **K-04**
@@ -400,6 +424,12 @@ Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 - **RandomFuns:** rastgele sahte fonksiyonlar
 - **RndArgs:** sahte parametreler
 - Tohumla birleşince her yapı farklı → çeşitlendirme, **K-06**
+
+---
+
+# Uzayda/zamanda çeşitlendirme — şema
+
+![w:950](assets/h14-05-cesitlendirme-turleri.svg)
 
 ---
 
@@ -565,6 +595,12 @@ projede **S9 koruma tablonuzun** doğrudan karşılığıdır.
 
 ---
 
+# Test ve ölçüm — şema
+
+![w:950](assets/h14-06-test-ve-olcum.svg)
+
+---
+
 # Kural 2'yi hatırla
 
 > Bir kopyada işe yarayan saldırı, bütün kopyalarda işe yaramasın.
@@ -690,6 +726,12 @@ Tigress dönüşümlerinin **sembolik yürütmeye** ne kadar dayandığını öl
 - Tek dönüşüm (yalnız Flatten) → çoğu zaman geri açılır.
 - Dönüşümleri **birleştirmek** + durum uzayını büyütmek → çözücüyü üstel zorlar.
 - Ama **maliyet** de artar.
+
+---
+
+# Dayanıklılık ↔ maliyet — şema
+
+![w:950](assets/h14-08-dayaniklilik-maliyet.svg)
 
 ---
 

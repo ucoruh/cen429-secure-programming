@@ -227,6 +227,8 @@ yolları hiç denemez. Bu yüzden ödeme, kimlik, sağlık ve kamu gibi alanlard
 değerlendirmesinden geçer. Değerlendirmenin sonunda bir sertifika (ya da onay) verilir; sertifika "bu ürün kırılamaz"
 demez, "bu ürün şu standardın şu gereksinimlerini, şu saldırgan modeline karşı, şu tarihte karşılıyordu" der.
 
+![Geliştiricinin sözü ile bağımsız değerlendirme](assets/h12-04-bagimsiz-degerlendirme.svg)
+
 !!! note "Kısa tarihçe: güvenlik değerlendirmesi ve sertifikasyon"
     - **1985** — ABD **TCSEC** ("Orange Book"): ilk resmi güvenlik değerlendirme ölçütleri.
     - **1991–1993** — Avrupa **ITSEC** ve Kanada **CTCPEC**.
@@ -265,6 +267,8 @@ değerlendiricinin gözünden, adım adım işliyoruz.
 Aşağıdaki akış, bir yazılım bileşeninin (ör. bir mobil ödeme kütüphanesi) üçüncü taraf bir laboratuvarda
 değerlendirilmesinin genelleştirilmiş halidir. Ürün, kurum ve şema adları çıkarılmıştır; adımlar birçok şemada
 benzerdir.
+
+![TOE kimliğinin bileşenleri](assets/h12-06-toe.svg)
 
 ![Değerlendirmenin üç aşaması ve 13 adımı](assets/h12-01-degerlendirme-sureci.svg)
 
@@ -307,6 +311,8 @@ Değerlendirme sürecinin 5. ve 6. adımları (kod incelemesi ve zafiyet analizi
 kullanmayı gerektirir. Bunları savunmacı gözüyle, "kendi ürünümü teslim etmeden önce nasıl sınarım?" sorusuyla ele
 alıyoruz. Sıralama önemlidir: ucuz ve geniş kapsamlı yöntemlerle başlanır, pahalı ve derin yöntemlere doğru gidilir.
 
+![Zafiyet değerlendirme yöntemlerinin sırası](assets/h12-07-yontemler.svg)
+
 | Sıra | Yöntem | Ne bulur? | Bu dersteki yeri |
 | --- | --- | --- | --- |
 | 1 | **Kaynak kod incelemesi** (el ile) | Tasarım ve mantık hataları, yanlış kripto kullanımı, sızıntı noktaları | 4. hafta CERT/CWE |
@@ -345,6 +351,8 @@ sonuçlarını (S16) sunmuş olmasıdır: değerlendirici, "bu ürünü daha ön
 Farklı standartlar farklı test türlerini vurgular. Projenizin hangi gereksinim ailesine yakın olduğunu bilmek, hangi
 testleri önceliklendireceğinizi belirler.
 
+![Standartlar: hangisi neyi sertifikalar](assets/h12-05-standartlar.svg)
+
 | Standart / çerçeve | Ağırlıklı beklediği test | Kısa not |
 | --- | --- | --- |
 | **ISO/IEC 27001** | Süreç ve yönetim denetimi | Ürünü değil, **kurumu** sertifikalar; test yerine kontrol kanıtı |
@@ -368,6 +376,10 @@ Bir korumanın "var olması" yetmediğini, "ne kadar kolay aşıldığının" ö
 Kriterler ve ödeme şemaları bu ölçüyü **saldırı potansiyeli** (attack potential) puanlamasıyla yapar. Bir bulgunun
 ciddiyeti, "kırmak için ne gerekti?" sorusuna verilen yanıtla belirlenir. Bu, 9. haftadaki "gizlemenin ölçülmesi"
 (güç, dayanıklılık) çerçevesinin değerlendirmedeki resmî halidir.
+
+![Saldırı potansiyelinin beş faktörü ve düzeyleri](assets/h12-03-saldiri-potansiyeli.svg)
+
+![Saldırı potansiyeli ile CVSS'in farkı](assets/h12-08-potansiyel-cvss.svg)
 
 ### Saldırı potansiyeli faktörleri
 
@@ -470,6 +482,10 @@ etkisi ne kadar büyük?" sorusuna standart bir puan verir. İki ölçü birbiri
 
 Değerlendirme bir "geçti/kaldı" damgası değil, bir **iyileştirme döngüsüdür**. Her bulgu için:
 
+![Etki analizi ile delta değerlendirme farkı](assets/h12-10-etki-delta.svg)
+
+![Bulgu, öneri, aksiyon döngüsü](assets/h12-09-bulgu-dongusu.svg)
+
 1. **Bulgu:** laboratuvar ne buldu (kanıtla, tekrarlanabilir biçimde).
 2. **Öneri:** laboratuvarın önerdiği düzeltme yönü.
 3. **Aksiyon:** geliştiricinin ne yaptığı (ya da neden yapmadığı — gerekçeli kabul de bir aksiyondur).
@@ -499,6 +515,8 @@ Düzeltmeler yeni bir sürüm doğurduğunda, her şeyi baştan değerlendirmek 
 Sızma testi, yukarıdaki yöntemleri saldırgan bakışıyla birleştiren, **planlı** ve **izinli** bir etkinliktir.
 "Planlı" ve "izinli" sözcükleri isteğe bağlı değildir: kapsamı ve kuralları yazılı olmayan bir test, meşru bir
 güvenlik çalışması değildir. Bir plan en az şu dört başlığı içerir.
+
+![Sızma testi planının dört başlığı](assets/h12-11-pentest-plani.svg)
 
 ### 1. Kapsam (scope)
 

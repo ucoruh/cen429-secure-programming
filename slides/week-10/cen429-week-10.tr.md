@@ -130,6 +130,12 @@ Bugün doğru **kullanımı** öğreneceğiz.
 
 ---
 
+# Encrypt-then-MAC — şema
+
+![w:950](assets/h10-01-encrypt-then-mac.svg)
+
+---
+
 # Özet (hash)
 
 - **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
@@ -159,6 +165,12 @@ Bugün doğru **kullanımı** öğreneceğiz.
 - **DH:** iki tarafın, gizli anahtar **paylaşmadan** ortak bir sır türetmesi.
 - Ağ üzerinden anahtar anlaşması.
 - Kimlik doğrulanmazsa **araya girme** (MITM) riski.
+
+---
+
+# Kimliksiz DH ve MITM — şema
+
+![w:950](assets/h10-02-dh-mitm.svg)
 
 ---
 
@@ -266,6 +278,12 @@ RSA-2048 (~112 bit) + AES-256 (256 bit)
 
 ---
 
+# OAEP / PSS — şema
+
+![w:950](assets/h10-09-oaep-pss.svg)
+
+---
+
 # ECB · asla
 
 - **ECB:** her bloğu bağımsız şifreler.
@@ -273,6 +291,12 @@ RSA-2048 (~112 bit) + AES-256 (256 bit)
 - Ünlü "ECB penguen" örneği.
 
 > ECB kullanma.
+
+---
+
+# ECB neden kötü — şema
+
+![w:950](assets/h10-06-ecb.svg)
 
 ---
 
@@ -305,6 +329,12 @@ RSA-2048 (~112 bit) + AES-256 (256 bit)
 - IV/nonce **benzersiz** olmalı.
 - GCM'de nonce tekrarı **felakettir** (anahtar/veri sızabilir).
 - Sayaç ya da rastgele (yeterli uzunlukta) kullan.
+
+---
+
+# Nonce tekrarı — şema
+
+![w:950](assets/h10-07-nonce-tekrari.svg)
 
 ---
 
@@ -380,6 +410,12 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 
 ---
 
+# HMAC neden — şema
+
+![w:950](assets/h10-08-hmac.svg)
+
+---
+
 # Neden MAC?
 
 - Şifreleme gizliliği verir, **bütünlüğü vermez**.
@@ -436,6 +472,12 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 <!-- _class: bolum -->
 
 # 4. Asimetrik: RSA ve ECC
+
+---
+
+# Simetrik ↔ asimetrik — şema
+
+![w:950](assets/h10-05-simetrik-asimetrik.svg)
 
 ---
 
@@ -517,6 +559,12 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 <!-- _class: bolum -->
 
 # 5. Dijital imza ve tuzakları
+
+---
+
+# Dijital imza — şema
+
+![w:950](assets/h10-10-imza.svg)
 
 ---
 
@@ -679,6 +727,12 @@ Her seviye bir alttakini **imzalar**.
 
 ---
 
+# Zincir doğrulama — şema
+
+![w:950](assets/h10-12-zincir-dogrulama.svg)
+
+---
+
 # Sertifika zinciri — kim kimi imzalar?
 
 ![w:1000](assets/h10-03-pki.svg)
@@ -705,6 +759,12 @@ Her seviye bir alttakini **imzalar**.
 <!-- _class: bolum -->
 
 # 8. X.509 sertifikası
+
+---
+
+# X.509 alanları — şema
+
+![w:950](assets/h10-11-x509.svg)
 
 ---
 
@@ -776,6 +836,12 @@ openssl verify -CAfile kok.crt \
 <!-- _class: bolum -->
 
 # 10. Sertifika iptali
+
+---
+
+# Sertifika iptali — şema
+
+![w:950](assets/h10-04-sertifika-iptali.svg)
 
 ---
 

@@ -62,20 +62,20 @@ def d04(k):
 def d05(k):
     fig, ax = tuval(12.5, 5.8)
     baslik(ax, "Mobil ödeme: mimari ve arayüzler", "kırmızı kutu = güvenilmez ortam (saldırgan burada)")
-    ax.add_patch(FancyBboxPatch((3, 26), 46, 54, boxstyle="round,pad=0,rounding_size=2",
+    ax.add_patch(FancyBboxPatch((3, 26), 46, 50, boxstyle="round,pad=0,rounding_size=2",
                                 linewidth=2, edgecolor=KOTU, facecolor="#fff7f7", zorder=1))
-    ax.text(26, 84, "Kullanıcının telefonu — GÜVENİLMEZ", ha="center", va="center",
+    ax.text(26, 81, "Kullanıcının telefonu — GÜVENİLMEZ", ha="center", va="center",
             fontsize=11.5, color=KOTU, fontweight="bold", zorder=3)
-    kutu(ax, 26, 72, 36, 9, "Mobil uygulama", dolgu="white", kenar=ANA, bas_boyut=11)
+    kutu(ax, 26, 69, 36, 9, "Mobil uygulama", dolgu="white", kenar=ANA, bas_boyut=11)
     kutu(ax, 26, 58, 36, 9, "Güvenlik kütüphanesi — Java", dolgu=COKACIK, kenar=ANA, bas_boyut=10.6)
     kutu(ax, 26, 44, 36, 9, "Güvenlik kütüphanesi — native C/C++", dolgu=ACIK, kenar=ANA, bas_boyut=10.2)
     kutu(ax, 26, 32, 36, 8, "Yerel veritabanı (şifreli)", dolgu="white", kenar=SOLUK, bas_boyut=10.4, kalin=False)
-    for y1, y2, et in ((67.5, 62.5, "A"), (53.5, 48.5, "B"), (39.5, 36, "C")):
+    for y1, y2, et in ((64.5, 62.5, "A"), (53.5, 48.5, "B"), (39.5, 36, "C")):
         ok(ax, 26, y1, 26, y2, renk=SOLUK, kalinlik=1.6)
         ax.text(29.5, (y1 + y2) / 2, et, fontsize=9.5, color=SOLUK, va="center")
-    ax.add_patch(FancyBboxPatch((62, 46), 35, 30, boxstyle="round,pad=0,rounding_size=2",
+    ax.add_patch(FancyBboxPatch((62, 46), 35, 28, boxstyle="round,pad=0,rounding_size=2",
                                 linewidth=2, edgecolor=IYI, facecolor=IYIBG, zorder=1))
-    ax.text(79.5, 80, "Hizmet sağlayıcı — GÜVENİLİR", ha="center", va="center",
+    ax.text(79.5, 78, "Hizmet sağlayıcı — GÜVENİLİR", ha="center", va="center",
             fontsize=11.5, color=IYI, fontweight="bold", zorder=3)
     kutu(ax, 79.5, 66, 28, 9, "Arka uç sunucu", dolgu="white", kenar=IYI, bas_boyut=11)
     kutu(ax, 79.5, 53, 28, 9, "HSM (anahtar kasası)", dolgu="white", kenar=IYI, bas_boyut=10.6)
@@ -119,7 +119,7 @@ def d07(k):
     ok(ax, 42, 45, 48, 55, renk=SOLUK, etiket="C: dosya", etiket_boyut=8.6)
     ok(ax, 42, 42, 48, 38, renk=SOLUK, etiket="D: pano", etiket_boyut=8.6, etiket_kay=-4)
     ok(ax, 64, 56, 72, 57, renk=KOTU, etiket="E: TLS", etiket_boyut=8.6)
-    ok(ax, 42, 63, 72, 42, renk=KOTU, etiket="F: TLS + imza", etiket_boyut=8.6)
+    ok(ax, 42, 66, 72, 44, renk=KOTU, etiket="F: TLS + imza", etiket_boyut=8.6, etiket_kay=4.2)
     serit(ax, 14, "Güvenilmez tarafa giden her ok (E, F) kimlik doğrulama ve bütünlük ister.")
     return kaydet(fig, k, "h01-07-kasa-mimari")
 

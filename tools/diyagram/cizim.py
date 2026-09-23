@@ -47,9 +47,12 @@ def tuval(g=12.0, y=6.0):
 
 
 def baslik(ax, metin, alt=None, y=95):
-    ax.text(50, y, metin, ha="center", va="top", fontsize=19, fontweight="bold", color=KOYU)
+    # Uzun başlık alt başlığa değmesin diye yazıyı küçült ve arayı aç.
+    bb = 19 if len(metin) <= 42 else (17 if len(metin) <= 54 else 15.5)
+    ax.text(50, y, metin, ha="center", va="top", fontsize=bb, fontweight="bold", color=KOYU)
     if alt:
-        ax.text(50, y - 6.5, alt, ha="center", va="top", fontsize=12.5, color=SOLUK)
+        ax.text(50, y - (7.6 if bb >= 17 else 6.8), alt, ha="center", va="top",
+                fontsize=12.0, color=SOLUK)
 
 
 def kutu(ax, x, y, g, y_yuk, baslik_metin, satirlar=None, dolgu=COKACIK, kenar=ANA,
@@ -111,6 +114,7 @@ def serit(ax, y, metin, renk=KOYU, dolgu=None, boyut=12):
 def kaydet(fig, klasor, ad, png=True, dpi=200):
     """SVG (ana) ve isteğe bağlı PNG (PPTX/DOCX için) yazar."""
     os.makedirs(klasor, exist_ok=True)
+    denetle(fig, fig.axes[0], ad)          # turlama: kaydetmeden önce tara
     svg = os.path.join(klasor, ad + ".svg")
     fig.savefig(svg, format="svg", bbox_inches="tight", pad_inches=0.12, facecolor="white")
     if png:
@@ -186,9 +190,16 @@ def katman(baslik_metin, katmanlar, alt_metin=None, dip=None, dip_renk=None, g=1
     for i, (ad, aciklama, rk) in enumerate(katmanlar):
         dolgu, kenar, yz = renkler.get(rk, renkler["ana"])
         yc = ust - yuk / 2 - i * (yuk + 2.2)
-        kutu(ax, 32, yc, 56, yuk, ad, dolgu=dolgu, kenar=kenar, bas_renk=yz, bas_boyut=12.5)
+        kutu(ax, 26, yc, 46, yuk, ad, dolgu=dolgu, kenar=kenar, bas_renk=yz, bas_boyut=11.8)
         if aciklama:
-            ax.text(62, yc, aciklama, ha="left", va="center", fontsize=10.4, color=SOLUK)
+            # Açıklama sağa taşmasın: kalan genişliğe göre yazıyı küçült, gerekirse böl.
+            kalan = 98 - 51
+            fs = 10.2 if len(aciklama) <= 46 else (9.2 if len(aciklama) <= 58 else 8.4)
+            if len(aciklama) > 70:
+                kes = aciklama.rfind(" ", 0, 68)
+                aciklama = aciklama[:kes] + chr(10) + aciklama[kes+1:]
+                fs = 8.6
+            ax.text(51, yc, aciklama, ha="left", va="center", fontsize=fs, color=SOLUK)
     if dip:
         serit(ax, 12, dip, renk=dip_renk or KOYU,
               dolgu=KOTUBG if dip_renk == KOTU else COKACIK)
@@ -201,10 +212,11 @@ def zaman(baslik_metin, olaylar, alt_metin=None, dip=None, g=12.0, y=4.8):
     fig, ax = tuval(g, y)
     baslik(ax, baslik_metin, alt_metin)
     y0 = 46
-    ax.plot([6, 94], [y0, y0], color=ACIK, linewidth=4, zorder=1, solid_capstyle="round")
-    adim = 88 / max(n - 1, 1)
+    sol, sag = 13, 87          # uçlardaki yazılar tuval dışına taşmasın
+    ax.plot([sol, sag], [y0, y0], color=ACIK, linewidth=4, zorder=1, solid_capstyle="round")
+    adim = (sag - sol) / max(n - 1, 1)
     for i, (yil, metin) in enumerate(olaylar):
-        x = 6 + i * adim
+        x = sol + i * adim
         ax.plot([x], [y0], marker="o", markersize=11, color=KOYU,
                 markeredgecolor="white", markeredgewidth=1.8, zorder=3)
         ust = (i % 2 == 0)
@@ -386,3 +398,66 @@ def dizi(baslik_metin, aktorler, mesajlar, alt_metin=None, dip=None, g=12.0, y=6
     if dip:
         serit(ax, 7, dip)
     return fig, ax
+
+
+# ============================ OTOMATİK DENETİM ============================
+# Turlama yöntemi: her diyagram kaydedilirken kendini denetler; hatalar
+# elle aranmaz, tarama raporlar. UYARILAR listesinde toplanır.
+
+UYARILAR = []
+
+
+def _veri_kutusu(sanatci, ax, renderer):
+    """Bir çizim öğesinin veri koordinatlarındaki sınırlarını döndürür."""
+    try:
+        kutu = sanatci.get_window_extent(renderer=renderer)
+        ters = ax.transData.inverted()
+        (x0, y0), (x1, y1) = ters.transform([[kutu.x0, kutu.y0], [kutu.x1, kutu.y1]])
+        return min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
+    except Exception:
+        return None
+
+
+def denetle(fig, ax, ad, tasma_payi=0.8):
+    """Tuval dışına taşan ve üst üste binen METİNLERİ bulur."""
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    sorunlar = []
+
+    metinler = []
+    for t in ax.texts:
+        if not t.get_text().strip():
+            continue
+        kb = _veri_kutusu(t, ax, renderer)
+        if kb is None:
+            continue
+        metinler.append((t.get_text().strip()[:34], kb))
+        x0, y0, x1, y1 = kb
+        if x0 < -tasma_payi or x1 > 100 + tasma_payi or y0 < -tasma_payi or y1 > 100 + tasma_payi:
+            sorunlar.append(f"TAŞMA  '{t.get_text().strip()[:34]}'  x[{x0:.1f},{x1:.1f}] y[{y0:.1f},{y1:.1f}]")
+
+    # Metin-metin çakışması (aynı diyagramda iki yazı üst üste binmiş mi?)
+    for i in range(len(metinler)):
+        for j in range(i + 1, len(metinler)):
+            (m1, a), (m2, b) = metinler[i], metinler[j]
+            ax0 = max(a[0], b[0]); ay0 = max(a[1], b[1])
+            ax1 = min(a[2], b[2]); ay1 = min(a[3], b[3])
+            if ax1 - ax0 > 1.2 and ay1 - ay0 > 1.2:      # anlamlı örtüşme
+                sorunlar.append(f"ÇAKIŞMA  '{m1}'  ↔  '{m2}'")
+
+    if sorunlar:
+        UYARILAR.append((ad, sorunlar))
+    return sorunlar
+
+
+def rapor():
+    """Turun sonunda toplu rapor. Dönüş: sorunlu diyagram sayısı."""
+    if not UYARILAR:
+        print("  ✓ denetim temiz — taşma/çakışma yok")
+        return 0
+    print(f"  ! {len(UYARILAR)} diyagramda sorun:")
+    for ad, sorunlar in UYARILAR:
+        print(f"    {ad}")
+        for s in sorunlar[:6]:
+            print(f"      - {s}")
+    return len(UYARILAR)

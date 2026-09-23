@@ -100,6 +100,7 @@ class Oge:
             self.sayfa_tr = self.klasor / 'syllabus.tr.md'
             self.sayfa_en = self.klasor / 'syllabus.en.md'
             self.sunum_md = SLIDES / 'syllabus' / 'cen429-izlence.tr.md'
+            self.sunum_md_en = SLIDES / 'syllabus' / 'cen429-izlence.en.md'
             self.ad = 'cen429-izlence'
             self.baslik_tr, self.baslik_en = 'Ders İzlencesi', 'Syllabus'
         else:
@@ -108,6 +109,7 @@ class Oge:
             self.sayfa_tr = self.klasor / f'cen429-week-{n}.tr.md'
             self.sayfa_en = self.klasor / f'cen429-week-{n}.en.md'
             self.sunum_md = SLIDES / f'week-{n}' / f'cen429-week-{n}.tr.md'
+            self.sunum_md_en = SLIDES / f'week-{n}' / f'cen429-week-{n}.en.md'
             self.ad = f'cen429-week-{n}'
             self.baslik_tr = f'Hafta {n} — {HAFTALAR[n][2]}'
             self.baslik_en = f'Week {n} — {HAFTALAR[n][3]}'
@@ -127,6 +129,14 @@ class Oge:
 
     def baglanti(self, tur):
         return f'{self.ad}{self.TURLER[tur]}'
+
+    def sunum_kaynak(self, dil='tr'):
+        """O dilin sunum kaynağı; İngilizce deste yoksa None döner."""
+        return self.sunum_md if dil == 'tr' else (
+            self.sunum_md_en if self.sunum_md_en.exists() else None)
+
+    def en_sunum_var(self):
+        return self.sunum_md_en.exists()
 
     def en_kopya(self, tur):
         """İngilizce içerik yokken İngilizce sitede de aynı dosya görünsün."""
@@ -209,25 +219,31 @@ Bu haftanın ayrıntılı sunumu ders notuyla birlikte yayımlanacak.
 
 
 # ---------------------------------------------------------------- sunum HTML / PDF
-def sunum_html(oge):
-    if not oge.sunum_md.exists():
-        print('   sunum kaynağı yok:', oge.sunum_md.relative_to(KOK))
+def sunum_html(oge, dil='tr'):
+    kaynak = oge.sunum_kaynak(dil)
+    if kaynak is None or not kaynak.exists():
+        if dil == 'tr':
+            print('   sunum kaynağı yok:', oge.sunum_md.relative_to(KOK))
         return
     marp = shutil.which('marp')
     if not marp:
         sys.exit('marp bulunamadı (npm i -g @marp-team/marp-cli).')
-    hedef = oge.dosya('sunum_html')
-    if calistir([marp, str(oge.sunum_md), '--config-file', str(SLIDES / 'marp.config.yml'),
+    hedef = oge.dosya('sunum_html', dil)
+    if calistir([marp, str(kaynak), '--config-file', str(SLIDES / 'marp.config.yml'),
                  '--theme-set', str(TEMA / 'cen429.css'), '--html', '-o', str(hedef)]):
-        oge.en_kopya('sunum_html')
-        print('   sunum html:', hedef.relative_to(KOK))
+        # İngilizce deste yoksa Türkçesi İngilizce sitede de görünsün.
+        if dil == 'tr' and not oge.en_sunum_var():
+            oge.en_kopya('sunum_html')
+        print(f'   sunum html ({dil}):', hedef.relative_to(KOK))
 
 
-def sunum_pdf(oge):
-    kaynak = oge.dosya('sunum_html')
+def sunum_pdf(oge, dil='tr'):
+    if dil == 'en' and not oge.en_sunum_var():
+        return
+    kaynak = oge.dosya('sunum_html', dil)
     if not kaynak.exists():
         return
-    hedef = oge.dosya('sunum_pdf')
+    hedef = oge.dosya('sunum_pdf', dil)
     chrome = chrome_yolu()
     # Marp kod bloklarını <pre is="marp-pre"> ile JavaScript'le ölçekler; bu öğe Chrome'un PDF baskısında BOŞ
     # çıkar. Baskı, öğenin kaldırıldığı geçici bir kopyadan alınır (kod satırları kısa, ölçeklemeye gerek yok).
@@ -243,19 +259,22 @@ def sunum_pdf(oge):
         if baski.exists():
             baski.unlink()
     if tamam:
-        oge.en_kopya('sunum_pdf')
-        print('   sunum pdf :', hedef.relative_to(KOK))
+        if dil == 'tr' and not oge.en_sunum_var():
+            oge.en_kopya('sunum_pdf')
+        print(f'   sunum pdf ({dil}):', hedef.relative_to(KOK))
 
 
-def sunum_pptx(oge):
-    if not oge.sunum_md.exists():
+def sunum_pptx(oge, dil='tr'):
+    kaynak = oge.sunum_kaynak(dil)
+    if kaynak is None or not kaynak.exists():
         return
     sys.path.insert(0, str(ARAC))
     import marp_pptx
-    hedef = oge.dosya('sunum_pptx')
-    adet = marp_pptx.donustur(str(oge.sunum_md), str(hedef), logo=str(TEMA / 'rteu_logo_kucuk.jpg'))
-    oge.en_kopya('sunum_pptx')
-    print(f'   sunum pptx: {hedef.relative_to(KOK)} ({adet} slayt)')
+    hedef = oge.dosya('sunum_pptx', dil)
+    adet = marp_pptx.donustur(str(kaynak), str(hedef), logo=str(TEMA / 'rteu_logo_kucuk.jpg'))
+    if dil == 'tr' and not oge.en_sunum_var():
+        oge.en_kopya('sunum_pptx')
+    print(f'   sunum pptx ({dil}): {hedef.relative_to(KOK)} ({adet} slayt)')
 
 
 # ---------------------------------------------------------------- sayfa başlık bloğu
@@ -769,10 +788,13 @@ def main():
                 iskelet(oge)
             elif adim == 'sunum':
                 sunum_html(oge)
+                sunum_html(oge, 'en')
             elif adim == 'sunum-pdf':
                 sunum_pdf(oge)
+                sunum_pdf(oge, 'en')
             elif adim == 'pptx':
                 sunum_pptx(oge)
+                sunum_pptx(oge, 'en')
             elif adim == 'not-pdf':
                 not_pdf(oge, site)
             elif adim == 'docx':

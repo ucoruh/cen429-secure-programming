@@ -2365,6 +2365,7 @@ sürenin yarım saniyenin altında kalması gibi somut bir hedef, hangi koruman�
 
 
 ![Haftanın araç kutusu: hangi araç neyi yakalar](assets/h01-23-arac-kutusu.svg)
+
 | Araç / bayrak | Ne işe yarar? | Bu hafta nerede gördük? |
 | --- | --- | --- |
 | `-Wall -Wextra -Wsign-conversion` | Şüpheli kod için derleme uyarıları | Demo 4 |

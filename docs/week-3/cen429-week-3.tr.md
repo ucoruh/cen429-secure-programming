@@ -2071,6 +2071,7 @@ katmanının gerçek dünyadaki hâlidir.
 
 
 ![Dört yaygın yanlış anlama](assets/h03-20-yanlis-anlamalar.svg)
+
 !!! failure "\"Şifreledim, o hâlde güvende.\""
     Şifreleme yalnız **gizlilik** verir. Bütünlük için AEAD (ya da encrypt-then-MAC) gerekir; yoksa saldırgan veriyi
     fark edilmeden değiştirebilir. Ayrıca şifreleme, anahtar kötü yönetiliyorsa (koda gömülü, tuzsuz türetilmiş)

@@ -207,6 +207,8 @@ aynı araçların içine bakıyoruz: hangi algoritma hangi işi yapar, neden baz
 sertifika otoritesi (CA) bu yapıya nasıl oturur. Kitabın 4–8. ve 10–11. bölümleri, 55'ten fazla tarifle bu konuları
 işler; 2003'ten beri algoritmaların çoğu değiştiği için her birini güncel karşılığıyla veriyoruz.
 
+![Simetrik ve asimetrik kriptografinin rolleri](assets/h10-05-simetrik-asimetrik.svg)
+
 !!! note "Kısa tarihçe: anahtarlar, sertifikalar ve PKI"
     - **1976–77** — Diffie–Hellman ve **RSA**: açık anahtar, "tanımadığın biriyle güvenli konuşma" sorununu çözer.
     - **1988** — **X.509** sertifika biçimi standartlaşır; kimliği bir **CA imzası** taşır.
@@ -264,6 +266,10 @@ AES bir **blok şifredir**: tam olarak 16 baytlık bir bloğu, 16 baytlık başk
 şifrelemek için blokları birbirine bağlayan bir **kip** (mode of operation) gerekir. Kip seçimi, algoritma seçimi kadar
 önemlidir; 3. haftadaki ECB penguenini hatırlayın.
 
+![Nonce tekrarının sonuçları](assets/h10-07-nonce-tekrari.svg)
+
+![ECB kipinin desen sızdırması](assets/h10-06-ecb.svg)
+
 | Kip | Nasıl çalışır? | Gizlilik | Bütünlük | Paralel | Dolgu | Değerlendirme |
 | --- | --- | :-: | :-: | :-: | :-: | --- |
 | **ECB** | Her blok bağımsız şifrelenir | ✗ (desen sızar) | ✗ | ✓ | Gerekir | **Kullanmayın** |
@@ -301,6 +307,8 @@ Savunmalar:
 ## 3. MAC, HMAC ve şifreleme ile bütünlüğün birleştirilmesi (Tarif 6.4, 6.10, 6.18, 6.21)
 
 ### HMAC nasıl çalışır?
+
+![HMAC ile H(K||m) karşılaştırması](assets/h10-08-hmac.svg)
 
 ![Encrypt-then-MAC sırası ve doğrulamadan önce çözmeme kuralı](assets/h10-01-encrypt-then-mac.svg)
 
@@ -360,6 +368,8 @@ Simetrik kriptografinin tek zorluğu, iki tarafın aynı anahtarı **önceden** 
 kriptografide her tarafın bir **anahtar çifti** vardır: herkese verilen **açık anahtar** ve yalnız sahibinin bildiği
 **özel anahtar**. Açık anahtarla şifrelenen yalnız özel anahtarla çözülür; özel anahtarla imzalanan herkesçe açık
 anahtarla doğrulanır.
+
+![RSA dolgu şemaları: OAEP ve PSS](assets/h10-09-oaep-pss.svg)
 
 Asimetrik işlemler simetrik olanlardan yüzlerce, binlerce kat yavaştır. Bu yüzden asimetrik kriptografi yalnız iki iş
 için kullanılır (Tarif 7.1): **kısa bir simetrik anahtarı taşımak ya da anlaşmak** ve **imzalamak**. Verinin kendisi
@@ -426,6 +436,8 @@ openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge.txt -sigfile 
 **Dijital imza**, bir mesajın (1) belirli bir özel anahtarın sahibi tarafından oluşturulduğunu ve (2) sonradan
 değiştirilmediğini kanıtlar. MAC'ten farkı, doğrulamanın **açık anahtarla** yapılmasıdır: herkes doğrulayabilir ama
 yalnız özel anahtarın sahibi imzalayabilir. Bu yüzden imza **inkâr edilemezlik** sağlar (STRIDE'daki R), MAC sağlamaz.
+
+![Dijital imza oluşturma ve doğrulama](assets/h10-10-imza.svg)
 
 ### İmza nerelerde kullanılır?
 
@@ -548,6 +560,8 @@ aynı zinciri kendimiz kuruyoruz.
 
 Bir X.509 v3 sertifikası, **imzalanan kısım** (TBSCertificate) ile CA'nın bu kısım üzerindeki **imzasından** oluşur:
 
+![X.509 sertifikasının alanları](assets/h10-11-x509.svg)
+
 | Alan | Anlamı |
 | --- | --- |
 | Sürüm | v3 (uzantılar için gerekli) |
@@ -573,6 +587,8 @@ Sertifikalar ikili **DER** kodlamasıyla ya da onun Base64 ile sarılmış metin
 
 Aşağıdaki adımlar, kendi laboratuvarınızda üç katmanlı bir zincir kurar. Bütün dosyalar çalışma klasöründe oluşur;
 kök sertifikayı **hiçbir güven deposuna eklemeyin**.
+
+![Zincir doğrulamanın dört sorusu](assets/h10-12-zincir-dogrulama.svg)
 
 ```bash title="1. Kök CA (kendi kendini imzalar)"
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out kok.key

@@ -91,6 +91,8 @@
 
 Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
 
+![Yığın ve öbek belleğin karşılaştırması](assets/h04-13-yigin-obek.svg)
+
 ### Bellek: yığın ve öbek
 
 - **Yığın (stack):** fonksiyon çağrılarının yerel değişkenlerini tuttuğu, otomatik yönetilen bellek.
@@ -192,6 +194,8 @@ yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · 
 ## 1. Kod sağlamlaştırma nedir?
 
 Birinci haftada uygulama korumasının yedi katmanını gördük. Bu hafta bunlardan üçünü, C ve C++ kodu özelinde açıyoruz:
+
+![Kod sağlamlaştırmanın üç katmanı](assets/h04-05-uc-katman.svg)
 
 !!! note "Kısa tarihçe: bellek hataları ve savunmaların yarışı"
     - **1988** — **Morris Worm** tampon taşmasını dünyaya duyurur; saldırı sınıfı "akademik" olmaktan çıkar.
@@ -301,6 +305,8 @@ sonlandırma).
 Bu haftanın hatalarının neredeyse hepsi aynı kökten gelir: programa dışarıdan gelen bir değere **güvenilmesi**. Kitabın
 3. bölümü, girdi doğrulamayı bütün diğer önlemlerin temeli olarak ele alır. Tarif 3.1'deki ilkeler bugün de
 geçerlidir; bunları C/C++ programcısının günlük kontrol listesine çevirelim.
+
+![Güven sınırında girdi doğrulama adımları](assets/h04-06-girdi-dogrulama.svg)
 
 ### Girdi nereden gelir?
 
@@ -500,6 +506,8 @@ Kısmen okunmuş bir yapıyı tam okunmuş sanmak, ilklendirilmemiş bellek okum
 **bilmez**; biçim dizgesinde ne yazıyorsa onu yapar. Biçim dizgesi kullanıcıdan geliyorsa, kullanıcı fonksiyona komut
 vermiş olur.
 
+![Biçim dizisi açığı: hatalı ve doğru kullanım](assets/h04-07-bicim-dizisi.svg)
+
 ```c title="Hatalı ve doğru"
 printf(kullanici_girdisi);           /* HATALI: girdi biçim dizgesi olarak yorumlanır */
 printf("%s", kullanici_girdisi);     /* DOĞRU: girdi yalnız veri */
@@ -584,6 +592,8 @@ gunluk_yaz(1, "%s", kullanici);    /* doğru */
 
 Birinci haftada bellek yönetimi hatalarının kuramını ve sahiplik kuralını gördük. Bu bölümde aynı hatayı çalışan bir
 programda izliyoruz ve C++'ın bu hataların çoğunu nasıl **tasarımla** ortadan kaldırdığını görüyoruz.
+
+![Use-after-free zinciri](assets/h04-08-uaf.svg)
 
 ### Hatanın üç adımı
 
@@ -684,6 +694,8 @@ if (auto o = onbellek.lock()) {                // nesne hâlâ yaşıyor mu?
 
 Birinci haftada işaretli bir uzunluğun `size_t`'ye dönüşünce dev bir sayıya dönüştüğünü gördük. Bu bölümde tamsayı
 hatalarının bütün ailesini ve C'nin en şaşırtıcı kavramlarından birini, **tanımsız davranışı** işliyoruz.
+
+![İşaretli -1 değerinin SIZE_MAX'e dönüşmesi](assets/h04-09-tamsayi.svg)
 
 ### Dört tamsayı hatası
 
@@ -790,6 +802,8 @@ ASan'dan düşüktür; birçok proje test derlemelerinde ikisini birlikte açar.
 
 Bellek hataları kadar sık ama daha az konuşulan üç konu, gerçek zafiyetlerin önemli bir kısmının kaynağıdır.
 
+![Sinyal işleyicide güvenli ve güvensiz kullanım](assets/h04-12-sinyal.svg)
+
 ### Hata işleme: dönüş değerini denetlemek ve kapalı kalarak başarısız olmak
 
 C'de hatalar genellikle **dönüş değeriyle** bildirilir ve denetlemek programcıya kalmıştır. Denetlenmeyen bir hata,
@@ -886,6 +900,8 @@ Sanitizer'lar ve fuzzing hatayı programı **çalıştırarak** bulur; statik an
 birbirini tamamlar: statik analiz hiç çalıştırılmayan yolları da görür ama yanlış alarm verebilir; dinamik analiz
 yalnız çalışan yolları görür ama bulduğu hata kesindir.
 
+![Statik ve dinamik analizin karşılaştırması](assets/h04-10-statik-dinamik.svg)
+
 ### Katman katman araçlar
 
 | Düzey | Araç | Ne bulur? | Maliyet |
@@ -938,6 +954,8 @@ Statik analiz yanlış alarm verir; bunları yönetmek de sürecin bir parçası
 da her iş parçacığı erişiminin geçerli olup olmadığını çalışma anında denetler ve ilk hatada ayrıntılı bir rapor
 verir. Statik analizin aksine yanlış alarm neredeyse hiç vermez; ama yalnız **çalıştırılan** kod yolundaki hataları
 bulur. Bu yüzden sanitizer'lar testlerle ve fuzzing'le birlikte kullanılır.
+
+![AddressSanitizer redzone mantığı](assets/h04-11-asan.svg)
 
 | Sanitizer | Bulduğu | Bayrak (GCC/Clang) | MSVC | Yavaşlama |
 | --- | --- | --- | --- | --- |

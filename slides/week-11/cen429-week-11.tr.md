@@ -387,6 +387,12 @@ Amaç yine 9. haftadaki gibi: anahtarı geri çıkarmayı **çok daha pahalı** 
 
 ---
 
+# Anahtar tablodan nasıl sızıyor — şema
+
+![w:950](assets/h11-02-anahtar-sizmasi.svg)
+
+---
+
 # Neden çökenleri öğreniyoruz?
 
 WBC'ye neden ihtiyaç olduğunu görmek için.
@@ -449,6 +455,12 @@ static const uint8_t k_gizli[16] = ...;   /* k ^ maske */
 - Diyelim WBC anahtarı tablolara gömdü.
 - Saldırgan anahtarı **hiç çıkarmadan**, şifreleme yapan kod parçasını (tablolar + yorumlayıcı) **olduğu gibi kopyalar**.
 - Kendi programında kullanır: anahtarı bilmeden işlevini **çalar**.
+
+---
+
+# Code lifting — şema
+
+![w:950](assets/h11-06-code-lifting.svg)
 
 ---
 
@@ -575,6 +587,12 @@ Ama **ara değerler karışık** görünür.
 
 ---
 
+# İç kodlama — şema
+
+![w:950](assets/h11-03-ic-kodlama.svg)
+
+---
+
 # Adım 3 · Neyi engeller?
 
 Bir tabloyu **tek başına** inceleyen saldırganı durdurmayı amaçlar.
@@ -611,6 +629,12 @@ Bir tabloyu **tek başına** inceleyen saldırganı durdurmayı amaçlar.
 Girdi --F⁻¹--> [ kodlanmış tablolar ağı ] --G--> Çıktı
 = G ∘ AES ∘ F⁻¹
 ```
+
+---
+
+# Dış kodlama F/G — şema
+
+![w:950](assets/h11-04-dis-kodlama.svg)
 
 ---
 
@@ -709,6 +733,12 @@ Anahtarı tablolara gömmenin bedeli: **kocaman tablolar**.
 
 ---
 
+# WBC kırılma tarihi — şema
+
+![w:950](assets/h11-08-tarihce.svg)
+
+---
+
 # Neden geçmişe bakıyoruz?
 
 Bir korumaya ne kadar güveneceğinizi, onun **kırılma geçmişi** söyler.
@@ -766,6 +796,12 @@ Her satır, savunmacı için bir **çıkarım**dır.
 - İç kodlamaları çoğu zaman **görmezden gelir**.
 
 **Çıkarım:** klasik yan kanal savunmaları WBC için de gerekli.
+
+---
+
+# DCA saldırısı — şema
+
+![w:950](assets/h11-05-dca.svg)
 
 ---
 
@@ -832,6 +868,12 @@ Hepsi **maliyeti artırır** ve **birlikte** kullanılır. Sırayla:
 - WBC'nin çevresine 9. haftanın **gizleme** kuralları
 - 6. haftanın **RASP**'ı (anti-debug, kurcalama/bütünlük denetimi)
 - Amaç: DCA'nın iz toplamasını, DFA'nın hata enjekte etmesini **zorlaştırmak**
+
+---
+
+# Katmanlı WBC — şema
+
+![w:950](assets/h11-09-katmanli-wbc.svg)
 
 ---
 
@@ -907,6 +949,12 @@ Doğru ifade: "anahtar çıkarmayı şu kadar geciktiriyorum; asıl güvencem an
 WBC tek seçenek değil. Bir anahtarı korumanın yolları var; güç ve maliyet farklı.
 
 Sırayla, en zayıftan en güçlüye.
+
+---
+
+# Anahtar koruma seçenekleri — şema
+
+![w:950](assets/h11-07-anahtar-koruma.svg)
 
 ---
 

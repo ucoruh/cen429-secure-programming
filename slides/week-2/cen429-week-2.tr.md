@@ -75,6 +75,12 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
+# Virüsün üç parçası — şema
+
+![w:950](assets/h02-02-virus-uc-parca.svg)
+
+---
+
 # Gizlenme: polimorfik/metamorfik
 
 - **Polimorfik:** her kopyada kendini **farklı şifreler** (imzadan kaçar).
@@ -143,6 +149,12 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 - **OWASP Top 10 / MASVS:** yaygın açıklar ve mobil gereksinimler.
 - **Sorumlu ifşa:** açığı önce üreticiye bildirme.
 - Açık: keşif → bildirim → yama → yayın.
+
+---
+
+# Zafiyet yaşam döngüsü — şema
+
+![w:950](assets/h02-06-zafiyet-yasam-dongusu.svg)
 
 ---
 
@@ -218,6 +230,12 @@ Konuşma notu: Demoları önceden bir kez derleyin (code/ içinde build.ps1 ya d
 <!--
 Konuşma notu: Öğrencilere sorun: "Telefonunuza bulaşan bir şey duyduğunuzda ona ne dersiniz?" Çoğu "virüs" der. Bu haftadan sonra doğru terimi kullanacaklar.
 -->
+
+---
+
+# Haftanın üç parçası — şema
+
+![w:950](assets/h02-01-haftanin-resmi.svg)
 
 ---
 
@@ -320,6 +338,12 @@ i(t+dt) = i(t) + beta * i(t) * (1 - i(t)/N) * dt
 
 ---
 
+# Salgın modeli — şema
+
+![w:950](assets/h02-03-salgin-modeli.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 09 — Salgın simülasyonu
@@ -383,6 +407,12 @@ Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
 ```
 
 **Emülasyon** tam da bu son kutuyu görmek için çözücüyü çalıştırır.
+
+---
+
+# Polimorfik virüs — şema
+
+![w:950](assets/h02-04-polimorfik.svg)
 
 ---
 
@@ -598,6 +628,12 @@ Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük 
 <!-- _class: bolum -->
 
 # Saldırı ağaçları
+
+---
+
+# Saldırı ağacı — şema
+
+![w:950](assets/h02-07-saldiri-agaci.svg)
 
 ---
 

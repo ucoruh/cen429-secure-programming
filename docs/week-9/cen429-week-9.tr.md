@@ -243,6 +243,8 @@ literatürde **MATE** (Man-At-The-End, "uçtaki insan") ya da **beyaz kutu** den
 derleyicide açabilir, adım adım çalıştırabilir, belleği okuyup değiştirebilir, istediği kadar deneyebilir. Sunucu
 tarafındaki hiçbir güvenlik denetimi burada geçerli değildir; çünkü kod saldırganın makinesinde çalışır.
 
+![Ağ saldırganı ile MATE saldırganının karşılaştırması](assets/h09-03-mate.svg)
+
 !!! note "Kısa tarihçe: kod gizleme nereden geldi?"
     - **1976** — Diffie & Hellman, bir programı "anlaşılmaz ama çalışır" kılma fikrini ilk kez tartışır (gizlilik-yoluyla değil, **çaba-yoluyla** koruma).
     - **1997** — Collberg, Thomborson ve Low ilk **gizleme taksonomisini** (düzen · veri · kontrol akışı · önleyici) ve *güç–dayanıklılık–gizlilik–maliyet* çerçevesini yayımlar. Bu dersteki **beş aile** buradan gelir.
@@ -320,6 +322,8 @@ Bir kuralı doğru uygulamak için sınırını bilmek gerekir. Gizlemenin verdi
 Bu hafta boyunca her tekniği aynı dört soruyla değerlendireceğiz. Kendi projenizin S9 bölümünü de bu şablonla
 yazmanızı bekliyoruz:
 
+![Koruma kuralı şablonunun altı satırı](assets/h09-10-koruma-kurali.svg)
+
 ```text
 KURAL K-xx: <tekniğin adı>
   Neyi korur? : hangi varlık / hangi kod bölümü (ör. lisans denetimi, anahtar türetme)
@@ -342,6 +346,8 @@ Derlenmiş bir fonksiyonun **kontrol akışı grafiği** (CFG) algoritmanın isk
 yapılıyor, hangi dal başarıya gidiyor. Beyaz kutu saldırganın ilk işi bu iskeleti çıkarmaktır. Kontrol akışı gizleme
 kuralları, bu iskeleti okunamaz kılar. 4. haftada düzleştirmeye giriş yaptık; burada onu **güçlendiren** kuralları
 ekliyoruz. Bütün örnekler sentetiktir ve tek bir küçük denetim (`erisim_ver`) üzerinden anlatılır.
+
+![Kontrol akışı düzleştirme öncesi ve sonrası](assets/h09-04-duzlestirme.svg)
 
 ### KURAL K-01 — Opak yüklemler ve opak döngüler
 
@@ -412,6 +418,8 @@ sadeleştirebilir; tek başına zayıftır, kontrol akışı gizlemeyle birlikte
 ### KURAL K-03 — Sahte işlemler ve ölü dallar (ikisi farklıdır)
 
 Kılavuz bu ikisini **ayrı** kurallar olarak yazar ve aradaki fark önemlidir:
+
+![Sahte işlem ile ölü dalın farkı](assets/h09-05-sahte-olu.svg)
 
 | | **Sahte işlem (bogus operation)** | **Ölü dal (bogus death branch)** |
 | --- | --- | --- |
@@ -560,6 +568,8 @@ kalıbından tanınma süresi.
 
 ### KURAL K-10 — Sanallaştırma tabanlı gizleme (kavram)
 
+![Sanallaştırma: bytecode ve yorumlayıcı](assets/h09-06-sanallastirma.svg)
+
 **Neyi korur?** Bir fonksiyonun **makine kodunun kendisini**. **Nasıl?** Fonksiyon, gerçek makine komutları yerine
 **özel bir sanal makinenin (VM) bayt koduna** çevrilir; ikili dosyaya bu bayt kodu ile onu yorumlayan küçük bir
 yorumlayıcı gömülür. Saldırgan artık tanıdık makine kodunu değil, önce çözmesi gereken **özel bir komut kümesini**
@@ -611,6 +621,8 @@ da betiği **bütün kullanıcılara** dağıtabiliyorsa, bir kırık her yeri a
 kaynaktan **farklı ama davranışça eş** ikili dosyalar üretmektir; böylece bir kopyaya karşı geliştirilen otomatik
 saldırı diğerlerinde çalışmaz.
 
+![Aynı kaynaktan farklı tohumlarla farklı ikililer](assets/h09-07-cesitlendirme.svg)
+
 - **Uzayda çeşitlendirme:** her yapı (build) ya da her dağıtım farklı bir **tohumla** gizlenir; opak yüklemler, sahte
   bloklar ve durum değerleri kopyadan kopyaya değişir.
 - **Zamanda çeşitlendirme:** her sürüm yeni bir düzenle gelir; eski sürüme karşı bulunan saldırı yeni sürümde bozulur.
@@ -629,6 +641,8 @@ On dördüncü haftada Tigress'in `RandomFuns`, `--Seed` ve dönüşüm birleşt
 Bir koruma kararını savunmak için onu **ölçmek** gerekir. Collberg'in çerçevesi gizlemeyi dört boyutta değerlendirir;
 bu dört ölçüt aynı zamanda 13. haftadaki **saldırı potansiyeli** puanlamasının ("gereken süre", "gereken uzmanlık")
 temelidir.
+
+![Gizlemeyi ölçen dört boyut](assets/h09-08-dort-olcut.svg)
 
 | Ölçüt | Sorusu | Nasıl ölçülür (kavram) |
 | --- | --- | --- |
@@ -652,6 +666,8 @@ Karar kuralı (S9'a yazılır):
 
 Dayanıklılığı doğru ölçmek için saldırganın otomatik araçlarını kavramsal olarak bilmek gerekir. Bunları **savunmayı
 sınamak** için öğreniriz:
+
+![Deobfuscation araçları ve dayanıklılık](assets/h09-09-deobfuscation.svg)
 
 - **Sembolik / eşzamanlı yürütme (KLEE gibi):** program yolları matematiksel kısıtlar olarak çözülür; opak yüklemler
   ve düzleştirme bu yolla geri açılabilir. **Dayanıklılık kuralı:** çözücüyü zorlamak için opak yüklemleri, çözmesi

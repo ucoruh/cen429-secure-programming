@@ -246,6 +246,12 @@ yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · 
 
 ---
 
+# Yönetilen dil: çözer / çözmez — şema
+
+![w:950](assets/h05-02-yonetilen-dil.svg)
+
+---
+
 # SEI CERT Oracle Java
 
 - Java için ayrı bir **kural kitabı** (CERT Oracle Coding Standard for Java).
@@ -362,6 +368,12 @@ SELECT * FROM kul WHERE ad = '' OR '1'='1'
 
 ---
 
+# SQL enjeksiyonu adım adım — şema
+
+![w:950](assets/h05-03-sql-enjeksiyon.svg)
+
+---
+
 # Doğru · parametreli sorgu
 
 ```java
@@ -402,6 +414,12 @@ ps.executeQuery();
 <!-- _class: bolum -->
 
 # 3. Komut enjeksiyonu
+
+---
+
+# Kabuk var mı yok mu — şema
+
+![w:950](assets/h05-04-komut-enjeksiyon.svg)
 
 ---
 
@@ -459,6 +477,12 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 <!-- _class: bolum -->
 
 # 4. Yol geçişi
+
+---
+
+# Yol geçişini kapatan iki adım — şema
+
+![w:950](assets/h05-05-yol-gecisi.svg)
 
 ---
 
@@ -541,6 +565,12 @@ Kök aynı: **veriyi koddan/komuttan ayır**.
 
 ---
 
+# Deserialization gadget zinciri — şema
+
+![w:950](assets/h05-06-deserialization.svg)
+
+---
+
 # Sorun
 
 - Güvenilmez baytları bir nesneye çevirmek **tehlikelidir**.
@@ -588,6 +618,12 @@ ois.setObjectInputFilter(f);
 
 - XML'de **dış varlık** tanımlanabilir; ayrıştırıcı onu **çözer**.
 - Saldırgan bununla dosya okutabilir ya da sunucudan istek yaptırabilir (SSRF).
+
+---
+
+# XXE — şema
+
+![w:950](assets/h05-07-xxe.svg)
 
 ---
 
@@ -689,6 +725,12 @@ dbf.setFeature(
 
 ---
 
+# Bayt kod vs makine kodu — şema
+
+![w:950](assets/h05-08-bayt-kod.svg)
+
+---
+
 # Java bayt kodu kolay okunur
 
 - `.class`/`.jar` bayt kodu, kaynağa **çok yakın** geri çevrilebilir.
@@ -752,6 +794,12 @@ LisansDenetleyici.dogrula()  →  a.b()
 ```proguard
 -keep class com.uygulama.Api { public *; }
 ```
+
+---
+
+# -keep dengesi — şema
+
+![w:950](assets/h05-09-keep-dengesi.svg)
 
 ---
 
@@ -854,6 +902,12 @@ LisansDenetleyici.dogrula()  →  a.b()
 <!-- _class: bolum -->
 
 # 12. Bağımlılık güvenliği ve SBOM
+
+---
+
+# Tedarik zinciri ve SBOM — şema
+
+![w:950](assets/h05-10-sbom.svg)
 
 ---
 

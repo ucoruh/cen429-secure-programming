@@ -68,6 +68,12 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
+# Tehdit · zafiyet · varlık — şema
+
+![w:950](assets/h01-01-tehdit-zafiyet-varlik.svg)
+
+---
+
 # CIA üçlüsü
 
 Güvenliğin üç temel hedefi:
@@ -280,6 +286,12 @@ Konuşma notu: Mobil ödeme, DRM, oyun hileleri, lisans denetimi örnekleri. "An
 
 ---
 
+# Saldırgan modelleri — şema
+
+![w:950](assets/h01-02-saldirgan-modelleri.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Güvenli tasarım ilkeleri (Saltzer & Schroeder, 1975)
@@ -456,6 +468,12 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 
 ---
 
+# Koruma planı — şema
+
+![w:950](assets/h01-04-koruma-plani.svg)
+
+---
+
 <!-- _class: sema -->
 
 # Örnek mimari: mobil ödeme uygulaması
@@ -478,6 +496,12 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 <!--
 Konuşma notu: Bu mimari yalnız yöntemi göstermek için. Arayüz ve varlık tablosu yöntemini dönem boyunca kullanacağız; tablodaki varlıkları koruyan yöntemleri sonraki haftalarda tek tek açacağız (3: güvenlik kabukları, 4 ve 9: native sağlamlaştırma, 6: RASP, 10: anahtar hiyerarşisi, 11: whitebox).
 -->
+
+---
+
+# Mobil ödeme mimarisi — şema
+
+![w:950](assets/h01-05-mimari-arayuzler.svg)
 
 ---
 
@@ -522,6 +546,12 @@ Veri akış diyagramını çiz → **güven sınırını geçen her ok** için a
 1. **Veritabanını çöz** — *VE* (hepsi gerekir): root yetkisi al **+** veritabanı anahtarını bul
 2. **Bellekten oku** — *VEYA*: hata ayıklayıcı bağla **|** bellek dökümü al **|** fonksiyona kanca at
 3. **Trafiği dinle** — *VE*: TLS'i kır **+** mesaj düzeyi şifrelemeyi kır
+
+---
+
+# Saldırı ağacı — şema
+
+![w:950](assets/h01-06-saldiri-agaci.svg)
 
 ---
 
@@ -645,6 +675,12 @@ Bir taşma = **D** (çöker) + **E** (akış ele geçer) + **I** (bitişik sır 
 | F | Arayüz → Güncelleme | **Paket imzası** | TLS; asıl güvence imza |
 
 <!-- Konuşma notu: Tahtaya diyagramı çizin; E ve F güven sınırını geçen oklar. -->
+
+---
+
+# Kasa mimarisi — şema
+
+![w:950](assets/h01-07-kasa-mimari.svg)
 
 ---
 
@@ -773,6 +809,12 @@ ADIM 3 — ./bin/linux/rapor_guvenli  ->  Rapor tarihi: Sat Sep 19 ...
 <!--
 Konuşma notu: Önce sahte/date (Windows'ta sahte\hostname.bat) dosyasını gösterin: yalnız bir mesaj basıyor. Windows'ta cmd.exe komutu PATH'ten önce çalışma klasöründe de arar. "Gerçek saldırgan burada ne yapardı?" sorusunu sorun.
 -->
+
+---
+
+# PATH ile kandırma — şema
+
+![w:950](assets/h01-08-path-kandirma.svg)
 
 ---
 
@@ -1261,6 +1303,12 @@ ADIM 5  kopya_guvenli -1 / 12abc -> Reddedildi
 
 ---
 
+# Belleğin ömrü ve CWE'ler — şema
+
+![w:950](assets/h01-09-bellek-omru.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # UAF: neden bu kadar tehlikeli?
@@ -1365,6 +1413,12 @@ Kilitleme **sayfa** düzeyinde, miktar sınırlı → yalnız küçük anahtar b
  [ Arayüz ] → [ İş mantığı ] ──yalnız tutamaç + şifreli veri──▶ [ Korunan çekirdek ]
                                                                   kripto · anahtar · RASP
 ```
+
+---
+
+# Bölümleme — şema
+
+![w:950](assets/h01-10-bolumleme.svg)
 
 ---
 
@@ -1481,6 +1535,12 @@ Sahada sürüm, **anahtar türetmeye** de katılır → sürüm geri alma saldı
 - 3 ile 4 arasında **güvenlik etki analizi:** hangi varlık, arayüz, tehdit, önlem?
 - Yalnız değişen kısmın incelenmesi = **delta değerlendirme** (13. hafta)
 - Depo: korumalı dallar · en az bir gözden geçiren · imzalı etiket · MFA
+
+---
+
+# Değişiklik yönetimi — şema
+
+![w:950](assets/h01-11-degisiklik-yonetimi.svg)
 
 ---
 

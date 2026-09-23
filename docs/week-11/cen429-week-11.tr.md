@@ -207,6 +207,8 @@ varsayıma dayanır. Ama bu varsayım, kodu kullanıcıya teslim ettiğimizde ç
     - **2016** — Bos vd. **DCA** (Differential Computation Analysis): donanımdaki DPA'yı yazılıma taşır, birçok WBC'yi **otomatik** kırar.
     - **2017–2024** — **WhibOx** yarışmalarında yayımlanan tüm saf-yazılım WB-AES adayları kırıldı → bugünkü kural: WBC bir **geciktirme katmanıdır**; mümkünse donanım (TEE/SE/HSM) tercih edilir.
 
+![Whitebox kriptografinin kırılma tarihi](assets/h11-08-tarihce.svg)
+
 ![Kara, gri ve beyaz kutu saldırgan modelleri](assets/h11-01-saldirgan-modelleri.svg)
 
 Görünürlük soldan sağa artar; WBC en zor (beyaz kutu) modelde anahtar çıkarmayı **geciktirmeye** çalışır.
@@ -238,6 +240,8 @@ saldırgan da programın gördüğü her şeyi görür. Yani anahtar, bir noktad
 WBC'nin fikri, anahtarı **hiçbir zaman açıkça var olmayacak** biçimde algoritmanın içine "pişirmektir": anahtar,
 önceden hesaplanmış **arama tablolarının** içine gömülür, böylece bellekte "işte anahtar bu" diyebileceğiniz bir
 bayt dizisi bulunmaz.
+
+![Code lifting saldırısı ve önlemi](assets/h11-06-code-lifting.svg)
 
 Bu, gizliliği kriptografiden gizlemeye taşımaz; **matematiksel bir dönüşümle** anahtarı tablolara dağıtmaya çalışır.
 Amaç yine bir **maliyet kuralıdır** (9. haftadaki gibi): anahtarı tablolardan geri çıkarmayı, onu düz saklamaktan
@@ -290,6 +294,8 @@ halidir). O yüzden tablolar **kodlanır**.
 
 Yukarıdaki cümle ("saldırgan `k`'yı geri çıkarabilir") havada kalmasın; **gerçek sayılarla, tek tek** yapalım.
 Elimizde yalnız şunlar var: herkesin bildiği **AES S-box**'ı ve saldırganın ikili dosyadan okuduğu **tablo**.
+
+![Naif tablodan anahtarın üç adımda çıkarılması](assets/h11-02-anahtar-sizmasi.svg)
 
 **Kurulum.** Gizli anahtar baytı `k = 0x3C` olsun (saldırgan bunu **bilmiyor**). Geliştirici Adım 1'i uygulayıp
 şu tabloyu üretmiş: `T[x] = S-box[x XOR k]`.
@@ -345,6 +351,8 @@ Her tablonun çıkışına gizli bir bijeksiyon (birebir-örten eşleme) uygulan
 tersi uygulanır. Ardışık tabloların kodlamaları birbirini götürür; sonuç doğrudur ama **ara değerler karışıktır**.
 Bu, bir tabloyu tek başına inceleyen saldırganı durdurmayı amaçlar.
 
+![İç kodlamanın anahtar sızmasını nasıl engellediği](assets/h11-03-ic-kodlama.svg)
+
 ### Adım 4 — Karıştırıcı bijeksiyonlar (mixing bijections)
 
 İç kodlamalara ek olarak, GF(2) üzerinde doğrusal karıştırıcı matrisler (ör. 8×8 ve 32×32) eklenir; bunlar bilgiyi
@@ -356,6 +364,8 @@ tablolar arasında **yayar**, böylece bir tablodan sızan bilgi tek başına an
 En dış katmanda, tüm şifre iki gizli bijeksiyonla sarılır. Kaynak kılavuzun anlattığı gibi, whitebox AES işlemi
 **F ve G** adlı iki rastgele tekil-olmayan matrisle kapsüllenir (128 rank, "rastgele bijeksiyon"). Yani ağ artık saf
 AES değil, `G ∘ AES ∘ F⁻¹` hesaplar:
+
+![Dış kodlama F ve G ile sarılmış AES](assets/h11-04-dis-kodlama.svg)
 
 ```text
 Girdi --F⁻¹--> [ kodlanmış AES tabloları ağı ] --G--> Çıktı
@@ -391,6 +401,8 @@ Kavramı bir kural olarak bitirelim: WBC'nin maliyeti yüksektir. Chow AES'in ti
 WBC'yi doğru konumlandırmak için en dürüst yol, tarihine bakmaktır. Aşağıdaki kronolojiyi **saldırı öğretmek için
 değil**, "bu korumaya ne kadar güvenebilirim?" sorusunu yanıtlamak için veriyoruz. Her satır, savunmacı için bir
 karşı önlem çıkarımıdır.
+
+![DCA saldırısının adımları](assets/h11-05-dca.svg)
 
 | Yıl | Kilometre taşı | Savunmacı için çıkarım |
 | --- | --- | --- |
@@ -439,6 +451,8 @@ artırır**:
 Bir güvenli programlama kuralı olarak WBC'yi nereye koyacağımızı netleştirelim. Aşağıdaki tablo, bir anahtarı korumak
 için seçeneklerin **güç/maliyet** sırasını verir:
 
+![Anahtar koruma seçeneklerinin güç sıralaması](assets/h11-07-anahtar-koruma.svg)
+
 | Seçenek | Anahtar nerede? | Güç | Ne zaman? |
 | --- | --- | --- | --- |
 | Sabit dizide düz anahtar | Yazılımda, açık | Yok | Asla (naif) |
@@ -462,6 +476,8 @@ donanım koruması sağlamaz. WBC'nin uçtaki (istemci) problemine karşılık, 
 ## 6. Hatalı → saldırı → koruma (özet senaryo)
 
 Bu haftanın kurallarını tek bir hikâyede toplayalım (sentetik, savunma amaçlı):
+
+![WBC'yi tek başına bırakmayan katmanlar](assets/h11-09-katmanli-wbc.svg)
 
 1. **Hatalı tasarım:** İstemci uygulaması bir veri şifreleme anahtarını `static const uint8_t k[16]` olarak gömer.
 2. **Saldırı (kavramsal):** `strings` ve entropi taraması yüksek entropili 16 baytlık bloğu bulur; bir hata

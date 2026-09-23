@@ -198,6 +198,12 @@ gereksinim (işlevsel/güvence/süreç) · izlenebilirlik · uyum matrisi · dur
 
 ---
 
+# İyi gereksinim ölçütleri — şema
+
+![w:950](assets/h13-03-iyi-gereksinim.svg)
+
+---
+
 # Üç tür (hatırlatma)
 
 | Tür | Soru | Örnek |
@@ -223,6 +229,12 @@ gereksinim (işlevsel/güvence/süreç) · izlenebilirlik · uyum matrisi · dur
 - **İyi:** "Sürüm derlemesi yığın koruyucu, PIE ve tam RELRO ile üretilmelidir."
 
 Neden iyi? **Test edilebilir** (checksec).
+
+---
+
+# Kötü → iyi gereksinim — şema
+
+![w:950](assets/h13-04-kotu-iyi.svg)
 
 ---
 
@@ -325,6 +337,12 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 
 ---
 
+# Devretme üç soru — şema
+
+![w:950](assets/h13-06-devretme.svg)
+
+---
+
 # Gereksinim bloğu kalıbı
 
 Her gereksinim bir **blok** olarak yazılır:
@@ -347,6 +365,12 @@ Karşılama: AES-256-GCM, anahtar TEE'de
 Doğrulama: T-05 birim testi
 Kanıt: test çıktısı, S16
 ```
+
+---
+
+# Gereksinim bloğu — şema
+
+![w:950](assets/h13-05-gereksinim-blogu.svg)
 
 ---
 
@@ -431,6 +455,12 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+# Ortak Kriterler — şema
+
+![w:950](assets/h13-07-ortak-kriterler.svg)
+
+---
+
 # CC nedir?
 
 - **Ortak Kriterler:** ürün güvenliğini değerlendirmenin uluslararası standardı.
@@ -511,6 +541,12 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+# FIPS 140-3 düzeyleri — şema
+
+![w:950](assets/h13-08-fips.svg)
+
+---
+
 # FIPS 140-3 nedir?
 
 - **Kriptografik modüllerin** doğrulanması standardı.
@@ -570,6 +606,12 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 <!-- _class: bolum -->
 
 # 6. Sektöre özgü gereksinim setleri
+
+---
+
+# Sektör standartları — şema
+
+![w:950](assets/h13-09-sektor.svg)
 
 ---
 
@@ -684,6 +726,12 @@ Nasıl: MPA imzalı güncelleme + sürüm denetimi sağlar
 
 ---
 
+# Gereksinim aktarma kararı — şema
+
+![w:950](assets/h13-02-gereksinim-karari.svg)
+
+---
+
 # Gereksinim → varlık → önlem
 
 ```text
@@ -761,6 +809,12 @@ Projeniz bu ailelerden bir **alt küme** seçer.
 <!-- _class: bolum -->
 
 # Uyum matrisi etkinliği
+
+---
+
+# Uyum matrisi — şema
+
+![w:950](assets/h13-10-uyum-matrisi.svg)
 
 ---
 

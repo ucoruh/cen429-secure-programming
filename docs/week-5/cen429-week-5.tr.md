@@ -1503,6 +1503,7 @@ yazılır). Yansıma ayrıca yavaştır ve derleme anındaki tip denetimini kayb
 
 
 ![R8 ile gizleme ve etkisini ölçme adımları](assets/h05-14-r8-olcme.svg)
+
 ### Android derleme hattında R8
 
 Android uygulamalarında R8, Gradle yapılandırmasındaki birkaç satırla açılır. Sürüm derlemesinde açık olması, mobil

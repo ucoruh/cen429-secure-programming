@@ -2130,6 +2130,7 @@ the real-world form of the **innermost** layer of the security shell from Sectio
 ## 16. Common misunderstandings
 
 ![Four common misunderstandings](assets/h03-20-yanlis-anlamalar.svg)
+
 !!! failure "\"I encrypted it, so it's secure.\""
     Encryption only provides **confidentiality**. Integrity needs AEAD (or encrypt-then-MAC); otherwise an
     attacker can change the data without being noticed. Also, encryption is useless if the key is poorly managed

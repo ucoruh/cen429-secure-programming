@@ -1051,6 +1051,7 @@ Bu sinyallerin hiçbiri tek başına kesin değildir; hepsi tepki politikasında
 
 
 ![Kök göstergesinden derecelendirilmiş tepkiye](assets/h06-14-kok-gosterge-karar.svg)
+
 ### 8.1 Kök (root) / ayrıcalıklı ortam göstergesi
 
 Root'lu (ya da jailbreak'li) bir cihazda uygulamanın güvenlik varsayımları çöker: her süreç belleği okuyabilir, dosya
@@ -1432,6 +1433,7 @@ ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da 
 
 
 ![RASP ne vaat eder, ne etmez](assets/h06-15-rasp-sinirlari.svg)
+
 !!! failure "'RASP koydum, uygulamam kırılmaz.'"
     Cihazın sahibi saldırgansa (MATE), yeterli zamanla **her** istemci tarafı koruma atlatılabilir. RASP kırılmazlık
     sağlamaz; saldırıyı **pahalı, ölçeklenemez ve gürültülü** kılar. Nihai güvence her zaman **sunucu tarafındadır**

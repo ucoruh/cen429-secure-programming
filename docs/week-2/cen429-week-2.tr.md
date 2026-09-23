@@ -267,6 +267,7 @@ göremez, açıkları ortak bir dille adlandırmadan da hangi tehdide öncelik v
 
 
 ![Zararlı yazılımın kısa tarihi](assets/h02-09-zararli-tarihce.svg)
+
 **Zararlı yazılım** (malware, "malicious software"), sahibinin izni ve bilgisi dışında zarar vermek, veri
 çalmak, kaynak kullanmak ya da kontrolü ele geçirmek için yazılmış her programdır. "Virüs" günlük dilde bunların
 hepsi için kullanılır; oysa virüs yalnızca **bir türdür**. Ayrımı görmek için önce birkaç dönüm noktasına bakalım.
@@ -1127,7 +1128,7 @@ Gerçek sistemler bunları **birlikte** kullanır: DAC sahibin isteğini, MAC si
 yönetim kolaylığını sağlar. Etkin karar genellikle **hepsinin kesişimidir** ("hem sahip izin vermeli hem sistem
 politikası izin vermeli").
 
-### Demo 03 — Erişim matrisi ve model simülatörü (bölüm 8 ile birlikte)
+### Demo 03 — Erişim matrisi ve model simülatörü (bölüm 11 ile birlikte)
 
 Bu demoyu bir sonraki bölümde biçimsel modellerle birlikte çalıştıracağız; ama ilk adımı **salt DAC matrisidir**:
 
@@ -1599,6 +1600,7 @@ standartlarına** çevirir.
 
 
 ![CWE, CVE ve CVSS: üç ayrı soru](assets/h02-15-cwe-cve-cvss.svg)
+
 - **CVE** (Common Vulnerabilities and Exposures): **Belirli bir üründeki belirli bir açığın** benzersiz kimliği,
   ör. `CVE-2014-0160` (Heartbleed). CVE bir **isimdir**, ciddiyet değil. Bir CVE, bir ya da birden çok CWE
   türüne aittir.
@@ -1858,7 +1860,7 @@ cümlelerinizle** anlatabiliyorsanız o konuyu öğrenmişsiniz demektir.
       sayabiliyorum.
     - [ ] Bir bulguya CVSS v3.1 vektörü kurup puanı elle ya da Demo 05 ile hesaplayabiliyorum; v4.0 farklarını
       söyleyebiliyorum.
-    - [ ] CVSS, EPSS, KEV ve SSVC'yi birlikte kullanarak bir yama sırası önerebiliyorum (Demo 16).
+    - [ ] CVSS, EPSS, KEV ve SSVC'yi birlikte kullanarak bir yama sırası önerebiliyorum (Demo 05).
     - [ ] Zafiyet yaşam döngüsünü, sıfırıncı gün, n-gün ve yama boşluğu kavramlarını ve eşgüdümlü ifşayı
       anlatabiliyorum.
 
@@ -2123,7 +2125,7 @@ kendi çalışmasına bırakılır.
 
     **Öğretim üyesi notu:** Olası CWE'ler: B1 CWE-787 (ya da CWE-120), B2 CWE-352, B3 CWE-532, B4 CWE-614, B5
     CWE-269 ya da sürücüdeki kök nedene göre daha somut bir girdi. Tartışmayı "puan bir başlangıçtır, karar
-    bağlamla verilir" cümlesine bağlayın (Demo 16).
+    bağlamla verilir" cümlesine bağlayın (Demo 05).
 
 !!! example "Etkinlik 5 — Denetim kaydını kurcala (10 dk · ikili)"
     **Amaç:** HMAC zincirinin neyi yakaladığını ve neyi yakalayamadığını deneyerek görmek (Tarif 13.11).

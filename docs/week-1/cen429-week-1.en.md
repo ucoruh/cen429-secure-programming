@@ -5,7 +5,8 @@
 | **Date** | 18.09.2026 (make-up: 30.09.2026) |
 | **Learning outcomes** | LO.1, LO.5 |
 | **Duration** | 3 hours |
-| **Labs** | [`code/week-01`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-01) — 4 demos, each runs with `make demo` |
+| **Prerequisites** | Functions, arrays and pointers in C; `cd` and `ls` in PowerShell or a Linux terminal |
+| **Labs** | [`code/week-01`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-01) — 4 demos; on Windows `.\demo.ps1`, on WSL / Linux `sh demo.sh`; also opens in Visual Studio 2022 Community |
 
 <!-- materyal:basla -->
 

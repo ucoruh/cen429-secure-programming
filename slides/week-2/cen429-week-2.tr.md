@@ -1289,27 +1289,11 @@ Seviyeler: Dış < Uygulama < Çekirdek (güvenilirlik)
 
 # BLP ve Biba: ters yönler
 
-```text
-        BELL-LaPADULA (gizlilik)      BIBA (butunluk)
-        Cok Gizli  ^  oku             Cekirdek  ^  yaz
-            |       |  yaz gonderme        |     |  oku gonderme
-        Gizli      |                   Uygulama  |
-            |      v                       |     v
-        Genel                           Dis
-
-  BLP: yukari OKUMA yok, asagi YAZMA yok
-  Biba: asagi OKUMA yok, yukari YAZMA yok
-```
-
-Bir veri hem gizli hem güvenilir olmalıysa → yalnız **kendi seviyesinde** işlenir.
-
----
-
-# BLP ↔ Biba — şema
-
-![w:1000](assets/h02-05-blp-biba.svg)
+![w:900](assets/h02-05-blp-biba.svg)
 
 **Ters yönler:** BLP gizliliği (yukarı okuma + aşağı yazma yok), Biba bütünlüğü (aşağı okuma + yukarı yazma yok) korur.
+
+Bir veri hem gizli hem güvenilir olmalıysa → yalnız **kendi seviyesinde** işlenir.
 
 ---
 

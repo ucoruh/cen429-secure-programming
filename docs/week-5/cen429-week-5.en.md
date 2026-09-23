@@ -5,6 +5,8 @@
 | **Date** | 16.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Basic programming in Java or Python; CWE/CVE and vulnerability classification from Week 2; input validation and secure coding rules from Week 4; simple `SELECT` in SQL |
+| **Labs** | [`code/week-05`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-05) — 7 demos; requires Python 3 and JDK 17+; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
 

@@ -5,6 +5,8 @@
 | **Date** | 20.11.2026 |
 | **Learning outcomes** | LO.2, 4 |
 | **Duration** | 3 hours |
+| **Prerequisites** | AES-GCM, HMAC, key derivation and what TLS does, from Week 3; being able to run the `openssl` command in a terminal |
+| **Labs** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demos; requires OpenSSL 3; `sh demo.sh` in each demo folder |
 
 <!-- materyal:basla -->
 

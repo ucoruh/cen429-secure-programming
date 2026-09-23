@@ -5,6 +5,8 @@
 | **Date** | 02.10.2026 |
 | **Learning outcomes** | LO.2, 4 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from Week 1; `cd` and building in a Linux/WSL terminal |
+| **Labs** | [`code/week-03`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-03) — 9 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
 
@@ -849,7 +851,7 @@ correctly (textbook **Recipe 4.9**):
 ### 5.1 Why is nonce reuse a disaster?
 
 GCM and CTR produce a **keystream** from the key and the nonce and XOR it with the plaintext:
-`C = P ⊕ AA(anahtar, nonce)`. If two messages are encrypted with the **same key and the same nonce**, the
+`C = P ⊕ KS(key, nonce)`. If two messages are encrypted with the **same key and the same nonce**, the
 **same** keystream is used for both:
 
 ```text

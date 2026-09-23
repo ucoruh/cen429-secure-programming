@@ -1360,20 +1360,9 @@ void selamla(const char *ad) {
 }
 ```
 
-```text
- düşük adres  | tampon[0..15]      |  <- yazma buradan başlar
-              | yetkili            |  <- biraz fazlası: MANTIK bozulur
-              | kaydedilmiş çerçeve|
- yüksek adres | dönüş adresi       |  <- çok fazlası: ÇÖKME / akış ele geçer
-```
+![w:900](assets/h01-15-yiginda-tasma.svg)
 
 <!-- Speaker note: The real layout varies by compiler. In this course we focus on how the bug happens, is found, and is prevented — not on the exploitation technique. -->
-
----
-
-# A stack overflow step by step — diagram
-
-![w:950](assets/h01-15-yiginda-tasma.svg)
 
 ---
 

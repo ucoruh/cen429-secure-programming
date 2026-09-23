@@ -5,6 +5,8 @@
 | **Date** | 04.12.2026 |
 | **Learning outcomes** | LO.5, 6, 7 |
 | **Duration** | 3 hours |
+| **Prerequisites** | CVSS and vulnerability classification from Week 2; the cost/benefit framework of the obfuscation rules from Week 9; the idea of a unit test |
+| **Labs** | [`code/week-12`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-12) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
 

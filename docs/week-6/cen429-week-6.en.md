@@ -5,6 +5,8 @@
 | **Date** | 23.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from Week 1; AES-GCM/HMAC/HKDF and the security shell from Week 3; patching and reverse engineering concepts from Week 4 |
+| **Labs** | [`code/week-06`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-06) — 8 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
 

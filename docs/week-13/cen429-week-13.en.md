@@ -5,6 +5,8 @@
 | **Date** | 11.12.2026 |
 | **Learning outcomes** | LO.5, 7 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Asset, threat and countermeasure from Week 1; evaluation and evidence concepts from Week 12; what the S sections of the term project are for |
+| **Labs** | [`code/week-13`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-13) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
 

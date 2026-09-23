@@ -180,7 +180,7 @@ inside a binary has grown. Let's define it from scratch:
 
 The measurement function in the demo script does exactly this (`tigress-hatti.sh`, the `olc()` function):
 
-```sh title="Ölçüm mantığı (tigress-hatti.sh içinden, kısaltılmış)"
+```sh title="Measurement logic (from tigress-hatti.sh, abbreviated)"
 objdump -d "$f" | awk '/<erisim_ver>:/{a=1;next} /^$/{a=0} a{n++; if($0 ~ /\t(j|call)/)b++} END{printf "%d komut, %d dal/cagri", n, b}'
 ```
 
@@ -395,19 +395,19 @@ In week 9, when we applied rule K-07 (string encoding) **by hand**, the source c
 constant string, we wrote XOR'd bytes and a decode loop. Let's now do the same idea with a **source-to-source**
 tool — the input and output are still both C, but you **don't write** the output, the tool produces it.
 
-```c title="ÖNCE — temiz.c (K-07 uygulanmadan, elle yazılmış hâliyle aynı başlangıç noktası)"
+```c title="BEFORE — temiz.c (before K-07 is applied, the same starting point as the hand-written version)"
 int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;   /* tek dal, tek dönüş: kolay hedef */
+    if (jeton_gecerli(jeton)) return IZIN;   /* a single branch, a single return: an easy target */
     return RED;
 }
 ```
 
-```c title="SONRA — kavramsal gösterim: EncodeLiterals uygulanmış gibi (gerçek çıktı sürüme göre değişir)"
+```c title="AFTER — conceptual representation: as if EncodeLiterals had been applied (real output varies by version)"
 int erisim_ver(const char *jeton) {
-    /* IZIN ve RED artık düz sabit değil; çalışma anında bir kod-çözme adımından geçer.
-       Fikir 9. haftadaki K-07 ile birebir aynıdır (bkz. 0x41 XOR 0x5A örneği); farkı
-       çözme kodunu SİZİN değil, ARACIN üretmiş olmasıdır. */
-    if (jeton_gecerli(jeton)) return _cozul_sabit_0x9F2A();  /* == IZIN, ama kaynakta IZIN yazmıyor */
+    /* IZIN and RED are no longer plain constants; they pass through a decode step at runtime.
+       The idea is identical to K-07 from week 9 (see the 0x41 XOR 0x5A example); the difference
+       is that the decode code was produced by the TOOL, not by YOU. */
+    if (jeton_gecerli(jeton)) return _cozul_sabit_0x9F2A();  /* == IZIN, but IZIN doesn't appear in the source */
     return _cozul_sabit_0x117C();                            /* == RED */
 }
 ```
@@ -475,8 +475,8 @@ official documentation):
 
 ![The trade-off between resilience and cost](assets/h14-08-dayaniklilik-maliyet.svg)
 
-```bash title="Kavramsal akış (tek dönüşüm)"
-# girdi: temiz.c  → çıktı: gizli.c  (sonra normal derlenir)
+```bash title="Conceptual flow (a single transform)"
+# input: temiz.c  → output: gizli.c  (then compiled normally)
 tigress --Transform=Flatten --Functions=erisim_ver \
         --out=gizli.c temiz.c
 cc -o program gizli.c
@@ -530,7 +530,7 @@ This line compiles `ornek.c` (the actual file containing the `erisim_ver` functi
 no obfuscation applied**, and runs it twice: once with the correct token (`CEN429-OK`), once with the wrong token
 (`yanlis`). Expected output:
 
-```text title="Beklenen çıktı — ADIM 1"
+```text title="Expected output — STEP 1"
 erisim_ver("CEN429-OK") = IZIN
 erisim_ver("yanlis") = RED
 ```
@@ -543,7 +543,7 @@ with `command -v tigress`. **There are two paths:**
 
 === "If Tigress is installed"
 
-    ```sh title="Betiğin çalıştırdığı gerçek komut (tigress-hatti.sh içinden)"
+    ```sh title="The real command the script runs (from tigress-hatti.sh)"
     tigress --Environment=x86_64:Linux:Gcc:11 \
             --Transform=EncodeLiterals --Functions=erisim_ver \
             --Transform=EncodeArithmetic --Functions=erisim_ver \
@@ -569,7 +569,7 @@ with `command -v tigress`. **There are two paths:**
     The script does not raise a real error; instead it prints installation/license instructions and points the
     student to week 9's **manual** working demo:
 
-    ```text title="Beklenen çıktı — Tigress yoksa (tigress-hatti.sh'nin gerçek metni)"
+    ```text title="Expected output — if Tigress isn't installed (tigress-hatti.sh's real text)"
     ADIM 2 - Tigress KURULU DEGIL.
       Tigress'i resmi siteden indirin: https://tigress.wtf
       Lisans: kar amaci gutmeyen (akademik) kullanim UCRETSIZ; ticari icin Arizona Univ. lisansi.
@@ -609,7 +609,7 @@ Tigress uses a default name (verify against the official documentation). All the
 have focused on a **single** function (`erisim_ver`); but `--Functions` can take a **list**. Say your project has,
 alongside `erisim_ver`, a function called `anahtar_turet`, and both are sensitive:
 
-```bash title="Kavramsal: aynı dönüşümü iki fonksiyona birden uygulamak"
+```bash title="Conceptual: applying the same transform to two functions at once"
 tigress --Transform=Flatten --Functions=erisim_ver,anahtar_turet \
         --Transform=AddOpaque --Functions=erisim_ver,anahtar_turet \
         --out=gizli.c proje.c
@@ -707,21 +707,21 @@ way to verify it.**
 After K-01 and K-07, let's make the table's most powerful control-flow transform — `Flatten` — concrete at the code
 level. Let's take section 2's `erisim_ver` as our base:
 
-```c title="ÖNCE — erisim_ver (düzleştirilmemiş)"
+```c title="BEFORE — erisim_ver (not flattened)"
 int erisim_ver(const char *jeton) {
     if (jeton_gecerli(jeton)) return IZIN;
     return RED;
 }
 ```
 
-```c title="SONRA — kavramsal gösterim: Flatten uygulanmış gibi (gerçek çıktı sürüme/derleyiciye göre değişir)"
+```c title="AFTER — conceptual representation: as if Flatten had been applied (real output varies by version/compiler)"
 int erisim_ver(const char *jeton) {
-    int _durum = 7341;          /* dağınık, öngörülemez başlangıç durumu */
+    int _durum = 7341;          /* scattered, unpredictable initial state */
     int _sonuc;
     while (1) {
         switch (_durum) {
             case 7341:
-                _durum = jeton_gecerli(jeton) ? 2098 : 5560;   /* karar burada gizlendi */
+                _durum = jeton_gecerli(jeton) ? 2098 : 5560;   /* the decision is hidden here */
                 break;
             case 2098:
                 _sonuc = IZIN;
@@ -827,20 +827,20 @@ parameters to existing functions. Both, when **combined with a seed**, different
 Let's make `EncodeData`, the automatic counterpart of K-09 (week 9: variable splitting/merging), concrete. Say
 there is an "attempt counter" variable inside `erisim_ver`:
 
-```c title="ÖNCE — tek parça, doğrudan okunabilir bir değişken"
+```c title="BEFORE — a single, directly readable variable"
 int deneme_sayaci = 0;
 ...
 deneme_sayaci++;
 if (deneme_sayaci > 3) return KILITLI;
 ```
 
-```c title="SONRA — kavramsal gösterim: EncodeData uygulanmış gibi (gerçek çıktı sürüme göre değişir)"
+```c title="AFTER — conceptual representation: as if EncodeData had been applied (real output varies by version)"
 struct { unsigned char alt; unsigned char ust; } _sayac_parcalari = {0, 0};
 ...
-/* deneme_sayaci++ karşılığı: alt baytı artır, taşarsa üst baytı güncelle */
+/* the counterpart of deneme_sayaci++: increment the low byte, update the high byte on overflow */
 _sayac_parcalari.alt++;
 if (_sayac_parcalari.alt == 0) _sayac_parcalari.ust++;
-/* deneme_sayaci > 3 karşılığı: iki parçayı birleştirip karşılaştır */
+/* the counterpart of deneme_sayaci > 3: merge the two pieces and compare */
 if (((_sayac_parcalari.ust << 8) | _sayac_parcalari.alt) > 3) return KILITLI;
 ```
 
@@ -860,7 +860,7 @@ matches exactly section 0's goal that "the value should not appear directly in a
 Let's make the `Split` transform concrete too. Say `erisim_ver` performs two logical steps back to back: a length
 check and a content comparison (exactly what the real `erisim_ver` in `ornek.c` does — the code in section 0).
 
-```c title="ÖNCE — tek fonksiyon, iki adım art arda"
+```c title="BEFORE — a single function, two steps back to back"
 int erisim_ver(const char *jeton) {
     if (strlen(jeton) != strlen(GECERLI)) return 0;
     unsigned fark = 0;
@@ -870,11 +870,11 @@ int erisim_ver(const char *jeton) {
 }
 ```
 
-```c title="SONRA — kavramsal gösterim: Split uygulanmış gibi (gerçek çıktı sürüme göre değişir)"
-static int _adim_a(const char *jeton) {          /* yalnız uzunluk kontrolü */
+```c title="AFTER — conceptual representation: as if Split had been applied (real output varies by version)"
+static int _adim_a(const char *jeton) {          /* length check only */
     return strlen(jeton) == strlen(GECERLI);
 }
-static unsigned _adim_b(const char *jeton) {      /* yalnız fark hesabı */
+static unsigned _adim_b(const char *jeton) {      /* difference computation only */
     unsigned fark = 0;
     for (unsigned i = 0; i < sizeof GECERLI - 1; i++)
         fark |= (unsigned)((unsigned char)jeton[i] ^ (unsigned char)GECERLI[i]);
@@ -908,7 +908,7 @@ Week 9's most important rule was "not a single technique, but together." In Tigr
 Signing comes **last** (obfuscate first, sign after); after every pipeline, **test the behaviour** and **measure
 the cost**.
 
-```bash title="Kavramsal hat (birden çok dönüşüm sırayla)"
+```bash title="Conceptual pipeline (multiple transforms in sequence)"
 tigress \
   --Transform=EncodeLiterals --Functions=erisim_ver \
   --Transform=EncodeArithmetic --Functions=erisim_ver \
@@ -1011,9 +1011,9 @@ Let's take a single synthetic access check and reinforce it layer by layer. The 
 
 ![Reinforcing a check step by step](assets/h14-11-adim-adim-guclendirme.svg)
 
-```c title="Başlangıç: temiz.c (okunur, korumasız)"
+```c title="Starting point: temiz.c (readable, unprotected)"
 int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;   /* tek dal, tek dönüş: kolay hedef */
+    if (jeton_gecerli(jeton)) return IZIN;   /* a single branch, a single return: an easy target */
     return RED;
 }
 ```
@@ -1104,12 +1104,12 @@ copy.
 
 ![Diversification in space and time](assets/h14-05-cesitlendirme-turleri.svg)
 
-```bash title="Kavramsal: iki tohum, iki farklı ikili"
+```bash title="Conceptual: two seeds, two different binaries"
 tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque \
         --Functions=erisim_ver --out=gizli_a.c temiz.c
 tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
         --Functions=erisim_ver --out=gizli_b.c temiz.c
-# gizli_a.c ve gizli_b.c aynı işi yapar; makine kodları farklıdır
+# gizli_a.c and gizli_b.c do the same job; their machine code differs
 ```
 
 Two kinds of diversification (from week 9):
@@ -1153,7 +1153,7 @@ flattened + opaque-predicate version of `erisim_ver` takes up **160 bytes** in b
 byte, we measured that **96 bytes** came out different:
 
 ```text
-fark_orani = degisen_bayt / toplam_bayt × 100
+diff_ratio = changed_bytes / total_bytes × 100
            = 96 / 160 × 100
            = %60
 ```
@@ -1183,11 +1183,11 @@ Let's apply the correct method the "common mistake" box above recommends. `cmp -
 to see whether the target (`erisim_ver`) itself is different, we apply section 0's `objdump` method **to both
 binaries** and compare only that function's section:
 
-```sh title="Kavramsal: yalnız hedef fonksiyonun bölümünü ayıklayıp karşılaştırma"
-# Her iki ikiliden yalnız <erisim_ver>: etiketinin altını çıkar
+```sh title="Conceptual: extracting and comparing only the target function's section"
+# Extract only what's under the <erisim_ver>: label from both binaries
 objdump -d A | awk '/<erisim_ver>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_A.asm
 objdump -d B | awk '/<erisim_ver>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_B.asm
-diff erisim_A.asm erisim_B.asm | wc -l    # 0 ise hedef fonksiyon AYNI kalmış demektir
+diff erisim_A.asm erisim_B.asm | wc -l    # if 0, the target function stayed the SAME
 ```
 
 If `diff`'s output is **empty** (line count 0), this means the two seeds produced **no difference at all** in
@@ -1266,9 +1266,9 @@ Measure the following for every transform pipeline and write them into S9/S15:
 | Running time | Run an operation many times and average it | Flatten/Virtualise slow it down |
 | Source/CFG complexity | Basic block count in a decompiler (e.g., Ghidra) | An increase before/after |
 
-```bash title="Basit maliyet ölçümü (kavram)"
-size ./program_temiz ./program_gizli        # boyut farkı
-# süre: aynı girdiyle N kez çalıştır, ortalamayı karşılaştır
+```bash title="Simple cost measurement (concept)"
+size ./program_temiz ./program_gizli        # size difference
+# time: run N times with the same input, compare the average
 ```
 
 ### Resilience measurement (advanced, conceptual)
@@ -1298,9 +1298,9 @@ and **time**.
 **Potency, using week 9's cyclomatic complexity formula (`branch_count + 1`):**
 
 ```text
-Adım 0 (temiz)  : 2 dal + 1 = 3
-Adım 4 (tam hat): 7 dal + 1 = 8
-Artış           : (8 − 3) / 3 × 100 ≈ %166,7
+Step 0 (clean)        : 2 branches + 1 = 3
+Step 4 (full pipeline): 7 branches + 1 = 8
+Increase              : (8 − 3) / 3 × 100 ≈ %166,7
 ```
 
 **Cost, the instruction-count increase from section 5:** we already computed it, **359.1%** (cumulative, four
@@ -1323,10 +1323,10 @@ transforms together).
 operating system's timer resolution (usually sub-millisecond); to see a meaningful time difference, you need to
 call the function **a large number of times** (e.g., a million) in a loop and measure the total time:
 
-```bash title="Kavramsal: süre ölçümü (çok sayıda çağrıyla anlamlı hâle getirme)"
-# Sözde kod: gerçek ölçüm aracı platforma göre değişir (ör. `time`, bir kıyaslama döngüsü)
-for i in $(seq 1 1000000); do ./ornek_temiz CEN429-OK >/dev/null; done   # zaman ölçülür
-for i in $(seq 1 1000000); do ./ornek_gizli CEN429-OK >/dev/null; done  # zaman ölçülür, karşılaştırılır
+```bash title="Conceptual: time measurement (making it meaningful with a large number of calls)"
+# Pseudocode: the real measurement tool varies by platform (e.g. `time`, a benchmarking loop)
+for i in $(seq 1 1000000); do ./ornek_temiz CEN429-OK >/dev/null; done   # time is measured
+for i in $(seq 1 1000000); do ./ornek_gizli CEN429-OK >/dev/null; done  # time is measured and compared
 ```
 
 Note: the loop above actually also measures the cost of **starting a new process** each time (`fork`/`exec`),
@@ -1564,29 +1564,29 @@ list — each step is the **input** to the next, just like in section 4's transf
 Let's write these six steps as a CI script's **conceptual** skeleton (not the syntax of a specific CI product, but
 pseudocode showing the order of the steps):
 
-```text title="Kavramsal CI iskeleti (belirli bir araca özgü sözdizimi değil)"
-asama derle_temiz:
-    cc -O2 -o cikti/temiz temiz.c
-    calistir_birim_testleri cikti/temiz
+```text title="Conceptual CI skeleton (not the syntax of any specific tool)"
+stage derle_temiz:
+    cc -O2 -o out/temiz temiz.c
+    run_unit_tests out/temiz
 
-asama gizle:
-    tohum = yeni_rastgele_tohum()
-    tigress --Seed=$tohum --Transform=... --Functions=... --out=gizli.c temiz.c
-    kaydet tohum -> gunluk/surum-$SURUM.txt
+stage gizle:
+    seed = new_random_seed()
+    tigress --Seed=$seed --Transform=... --Functions=... --out=gizli.c temiz.c
+    save seed -> log/release-$RELEASE.txt
 
-asama derle_gizli:
-    cc -O2 -o cikti/gizli gizli.c
-    calistir_birim_testleri cikti/gizli   # basarisizsa CI DURUR
+stage derle_gizli:
+    cc -O2 -o out/gizli gizli.c
+    run_unit_tests out/gizli   # CI STOPS if it fails
 
-asama olc:
-    objdump -d cikti/gizli | olc_komut_dal erisim_ver >> gunluk/surum-$SURUM.txt
+stage olc:
+    objdump -d out/gizli | olc_komut_dal erisim_ver >> log/release-$RELEASE.txt
 
-asama imzala:
-    imzala cikti/gizli -> cikti/gizli.imzali
+stage imzala:
+    sign out/gizli -> out/gizli.signed
 
-asama kaydet_surum:
-    ozet = sha256(cikti/gizli.imzali)
-    kaydet SURUM, tohum, ozet, donusum_hatti -> TOE-kayit-$SURUM.txt
+stage kaydet_surum:
+    digest = sha256(out/gizli.signed)
+    save RELEASE, seed, digest, transform_pipeline -> TOE-record-$RELEASE.txt
 ```
 
 Every line of this skeleton corresponds to a section from this week: `derle_temiz` → section 2, STEP 1; `gizle` →
@@ -1645,15 +1645,15 @@ changed from v1.1 to v1.2, without having to compare the source code line by lin
 Week 9's section 4 taught writing every protection decision with the template "What it protects / How / Cost /
 Limit." Let's fill in the same template for this week's Tigress pipeline:
 
-```text title="KURAL K-04+K-01+K-07-Tigress-uygulama: erisim_ver fonksiyonuna otomatik dönüşüm hattı"
-Neyi korur?       : Sentetik erişim denetiminin mantığını (hangi jetonun geçerli sayıldığı)
-                     tersine mühendisliğe karşı geciktirir.
-Nasıl?            : Tigress --Transform=EncodeLiterals,EncodeArithmetic,Flatten,InitOpaque,AddOpaque
-                     (bölüm 2 ADIM 2'deki tam komut), --Seed her sürümde yeni üretilir (bölüm 6).
-Maliyet           : ~%359,1 komut artışı, ~%166,7 karmaşıklık (güç) artışı (bölüm 7, varsayımsal
-                     demo sayılarıyla; gerçek sayılar `tigress-hatti.sh` ile ölçülür).
-Sınır             : Dayanıklılık ve gizlilik bu demoda ölçülmedi (bölüm 7); tek başına Virtualize
-                     olmadan whitebox düzeyinde bir koruma iddia edilmez (11. hafta ile karşılaştırın).
+```text title="RULE K-04+K-01+K-07-Tigress-applied: automatic transform pipeline applied to the erisim_ver function"
+What does it protect? : The logic of the synthetic access check (which token counts as valid);
+                         delays it against reverse engineering.
+How?                   : Tigress --Transform=EncodeLiterals,EncodeArithmetic,Flatten,InitOpaque,AddOpaque
+                         (the full command in section 2, STEP 2); a new --Seed is generated every release (section 6).
+Cost                   : ~%359,1 instruction increase, ~%166,7 complexity (potency) increase (section 7,
+                         hypothetical demo numbers; real numbers are measured with `tigress-hatti.sh`).
+Limit                  : Resilience and stealth were not measured in this demo (section 7); a whitebox-level
+                         protection is not claimed without Virtualize on its own (compare with week 11).
 ```
 
 Repeat this filled-in example in your own project, with **your own function and your own measured numbers**; none
@@ -1666,18 +1666,18 @@ example report. The text below is a starting point you can carry **directly** in
 replacing the numbers with your own measurements (all numbers are consistent with this week's hypothetical
 examples):
 
-```text title="Örnek S9/S15 girişi (varsayımsal sayılarla; kendi ölçümünüzle değiştirin)"
-Fonksiyon         : erisim_ver
-Neden hassas?     : Sentetik jeton denetimi (bölüm 1'deki karar akışı: hassas + orta değerli)
-Dönüşüm hattı     : EncodeLiterals -> EncodeArithmetic -> Flatten -> InitOpaque(main) -> AddOpaque
-Tohum (surum 1.0) : 1001
-Davranış kanıtı   : Temiz ve gizli sürüm CEN429-OK / yanlis girdileriyle aynı çıktıyı verdi (ADIM 3: ayni cikti)
-Maliyet           : Komut 22->101 (%359,1), dal 2->7, karmaşıklık (güç) 3->8 (%166,7)
-Çeşitlendirme     : Seed=1001 ve Seed=2002 ile üretilen ikililer %60 bayt farkı gösterdi (cmp: farklı)
-Dayanıklılık      : Ölçülmedi bu turda; bir sonraki iterasyonda KLEE ile sınanacak (bölüm 7)
-Gizlilik          : Ölçülmedi bu turda; dal yoğunluğu haritası çıkarılacak (bölüm 7)
-S15 durumu        : CI'de gizle->test->ölç->imzala->kaydet adımları tanımlı; sürüm kaydı TOE-kayit-1.0.txt
-Sınır             : Tek başına whitebox düzeyinde koruma iddia edilmiyor (11. hafta ile karşılaştırın)
+```text title="Example S9/S15 entry (with hypothetical numbers; replace with your own measurements)"
+Function          : erisim_ver
+Why sensitive?    : Synthetic token check (the decision flow in section 1: sensitive + medium value)
+Transform pipeline: EncodeLiterals -> EncodeArithmetic -> Flatten -> InitOpaque(main) -> AddOpaque
+Seed (release 1.0): 1001
+Behaviour proof   : The clean and obfuscated versions gave the same output for the CEN429-OK / yanlis inputs (ADIM 3: ayni cikti)
+Cost              : Instructions 22->101 (%359,1), branches 2->7, complexity (potency) 3->8 (%166,7)
+Diversification   : Binaries produced with Seed=1001 and Seed=2002 showed a %60 byte difference (cmp: different)
+Resilience        : Not measured this round; will be tested with KLEE in the next iteration (section 7)
+Stealth           : Not measured this round; a branch-density map will be produced (section 7)
+S15 status        : In CI, the obfuscate->test->measure->sign->record steps are defined; release record TOE-record-1.0.txt
+Limit             : No whitebox-level protection is claimed on its own (compare with week 11)
 ```
 
 Every line of this template corresponds to a section from this week (read it together with the "A filled-in

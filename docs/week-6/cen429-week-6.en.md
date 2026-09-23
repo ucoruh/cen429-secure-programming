@@ -368,7 +368,7 @@ The weakest design is this:
 
 ```c title="Weak: a single decision point"
 if (hata_ayiklayici_var() || root_var() || butunluk_bozuk())
-    return HATA;                     /* bu tek satırı değiştiren her şeyi atlatır */
+    return HATA;                     /* changing this single line bypasses everything */
 anahtari_coz();
 ```
 
@@ -457,13 +457,13 @@ caught.
 
 The core of the code (reads the file and computes the HMAC; `kripto_hmac_sha256` from `cen429_kripto.h`):
 
-```c title="butunluk.c (özet)"
-/* Kendi yolunu bul: Linux /proc/self/exe, Windows GetModuleFileNameA */
+```c title="butunluk.c (summary)"
+/* Find your own path: Linux /proc/self/exe, Windows GetModuleFileNameA */
 oz_yol(yol, sizeof(yol));
 dosya_oku(yol, &veri, &boy);
 kripto_hmac_sha256(RASP_ANAHTAR, 32, veri, boy, ozet);   /* HMAC over the file */
 
-/* dogrula: sabit zamanli karsilastirma (zamanlama sizintisini onler) */
+/* verify: constant-time comparison (prevents a timing leak) */
 unsigned char fark = 0;
 for (int i = 0; i < 32; i++) fark |= beklenen[i] ^ ozet[i];
 if (fark == 0) { /* BUTUNLUK TAMAM */ } else { /* YAMA ALGILANDI */ }
@@ -471,7 +471,7 @@ if (fark == 0) { /* BUTUNLUK TAMAM */ } else { /* YAMA ALGILANDI */ }
 
 **Actual output** captured on WSL (shortened):
 
-```text title="sh demo.sh — çıktı"
+```text title="sh demo.sh — output"
 ADIM 2 - Normal calisma: butunluk dogrulanir (yama yok)
 Beklenen   : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
 Hesaplanan : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
@@ -503,7 +503,7 @@ the computation and the digest changes.
 binary, but in a **single character** of text; the logic is identical. Let's HMAC-SHA-256 the string `"MERHABA"`
 ("HELLO") with a fixed key, then flip the last character from `A` to `B` and hash again:
 
-```bash title="Tek karakterlik degisikligin HMAC'e etkisi (gercek openssl ciktisi)"
+```bash title="The effect of a one-character change on the HMAC (real openssl output)"
 printf 'MERHABA' | openssl dgst -sha256 -hmac "ornek-anahtar"
 printf 'MERHABB' | openssl dgst -sha256 -hmac "ornek-anahtar"
 ```
@@ -605,13 +605,13 @@ debugger is **attached**.
     The program looks at several independent signals and **changes nothing** (it doesn't even watch itself with
     `ptrace`; it only reads `/proc` and PEB fields). `demo.sh` runs the program first normally, then under `gdb`.
 
-```c title="antidebug.c (Linux özeti)"
-/* /proc/self/status icinden TracerPid oku; >0 ise izleniyoruz */
+```c title="antidebug.c (Linux summary)"
+/* Read TracerPid from /proc/self/status; if >0 we're being watched */
 long tp = tracer_pid();
-if (tp > 0) supheli++;      /* bir surec bizi ptrace ile izliyor */
+if (tp > 0) supheli++;      /* a process is watching us via ptrace */
 ```
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
+```text title="sh demo.sh — real output (WSL)"
 ADIM 1 - Normal calisma (hata ayiklayici YOK): temiz beklenir
 1) /proc/self/status TracerPid           : 0 (izleyen yok)
 2) Ana surec (parent) adi                : sh
@@ -637,11 +637,11 @@ the value is **0**.
 **Step 1 — without a debugger.** The `antidebug` program is run directly from the shell and reads its own
 `/proc/self/status` file (representative, shortened content):
 
-```text title="/proc/self/status (hata ayiklayici YOK, temsili)"
+```text title="/proc/self/status (NO debugger, representative)"
 Name:      antidebug
 Pid:       4821
-PPid:      4820          <- calistiran kabuk (sh)
-TracerPid: 0             <- kimse ptrace ile izlemiyor
+PPid:      4820          <- the shell that launched it (sh)
+TracerPid: 0             <- nobody is tracing with ptrace
 ```
 
 The program reads this line, finds the numeric value `0`; since `tp > 0` is **false**, it doesn't increment the
@@ -652,11 +652,11 @@ starts or attaches to the target process, it tells the kernel "I'm watching this
 `ptrace(PTRACE_TRACEME, ...)` or `ptrace(PTRACE_ATTACH, ...)` call. The kernel **records** this and fills the
 watched process's `/proc/self/status` `TracerPid` field with the watching `gdb` process's **own PID**:
 
-```text title="/proc/self/status (gdb ALTINDA, temsili)"
+```text title="/proc/self/status (UNDER gdb, representative)"
 Name:      antidebug
 Pid:       4821
-PPid:      2909          <- artik ana surec gdb
-TracerPid: 2909          <- gdb bizi ptrace ile izliyor
+PPid:      2909          <- the parent process is now gdb
+TracerPid: 2909          <- gdb is tracing us with ptrace
 ```
 
 This is exactly the `2909` value seen in the demo output. The program itself **did nothing** — it only **read** a
@@ -728,7 +728,7 @@ emulator, or a sandbox. RASP tries to sense this from environmental clues.
 
 !!! info "Demo 3 · `code/week-06/03-ortam-zamanlama` · only reads a CPU instruction and the clock"
 
-```text title="sh demo.sh — gerçek çıktı (WSL2)"
+```text title="sh demo.sh — real output (WSL2)"
 (A) CPUID.1:ECX[31] hipervizor biti : VAR
     Hipervizor satici imzasi        : (satici imzasi gizli/bos)
 (B) 2.000.000 islem suresi          : 0.806 ms
@@ -849,14 +849,14 @@ Detection ideas (Catalogue K7/K8/K18):
     hook by looking at which `.so` the function comes from. On Windows, `demo.ps1` explains how this is run under
     WSL (the Windows counterpart is IAT/inline-hook detection).
 
-```c title="kanca_ana.c (özet)"
-void *p = dlsym(RTLD_DEFAULT, "time");   /* onyuklu kanca varsa onu doner */
+```c title="kanca_ana.c (summary)"
+void *p = dlsym(RTLD_DEFAULT, "time");   /* returns a preloaded hook if one exists */
 Dl_info info;
-dladdr(p, &info);                        /* fonksiyonu saglayan .so */
-int kanca = !mesru_mi(info.dli_fname);   /* libc/vdso/ld disi = KANCA */
+dladdr(p, &info);                        /* the .so that provides the function */
+int kanca = !mesru_mi(info.dli_fname);   /* anything other than libc/vdso/ld = HOOK */
 ```
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
+```text title="sh demo.sh — real output (WSL)"
 ADIM 1 - Normal calisma (LD_PRELOAD yok): temiz beklenir
    time     -> linux-vdso.so.1
    getenv   -> /lib/x86_64-linux-gnu/libc.so.6
@@ -992,14 +992,14 @@ their privilege) — which is why it should be considered together with the root
 The way to notice a critical structure in memory (a counter, a permission flag, a configuration table) being
 silently modified is to never leave that data **alone**:
 
-```c title="Kritik bir değeri korumalı tutmak: değer + gölge kopya + özet"
+```c title="Keeping a critical value protected: value + shadow copy + digest"
 typedef struct {
-    uint32_t deger;        /* asıl değer                          */
-    uint32_t golge;        /* deger XOR çalışma anı maskesi        */
-    uint32_t ozet;         /* deger ve golge üzerinden kısa bir MAC */
+    uint32_t deger;        /* the actual value                      */
+    uint32_t golge;        /* deger XOR the runtime mask             */
+    uint32_t ozet;         /* a short MAC over deger and golge       */
 } KorunanSayac;
 
-/* Okurken üçünün tutarlılığı denetlenir; tutmuyorsa değer bellekte değiştirilmiştir. */
+/* On read, the consistency of all three is checked; if it doesn't hold, the value has been changed in memory. */
 int sayac_oku(const KorunanSayac *s, uint32_t *cikti)
 {
     if ((s->golge ^ calisma_maskesi) != s->deger) return -1;
@@ -1091,7 +1091,7 @@ scan — still, it should be added to the risk score in Section 8.1.1 rather tha
     paths purely by **reading**. To make the demo deterministic, a fake marker (`cikti/sahte_su`) is passed on the
     command line.
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
+```text title="sh demo.sh — real output (abridged)"
 ADIM 2 - Isaretli durum: sahte bir 'su' isaret dosyasi olusturuluyor
 1) Ayricalik seviyesi : normal kullanici
 2) Tehlikeli gosterge taramasi:
@@ -1143,7 +1143,7 @@ the expected, unmodified version?" (Catalogue K2/K3/K6).
     A "plugin module" file is verified with a detached signature (HMAC-SHA-256) **before** it's loaded. If the
     module changes by even a single byte, the signature won't match and loading is refused.
 
-```text title="sh demo.sh — gerçek çıktı"
+```text title="sh demo.sh — real output"
 ADIM 3 - Yukleme oncesi dogrulama (modul degismedi): TUTAR
 Modul imzasi TUTTU -> guvenle yuklenebilir.
 ADIM 4 - Saldiri: modul YENIDEN PAKETLENIR (tek bayt eklenir)
@@ -1212,7 +1212,7 @@ is **rejected** — the real result can't be produced. So a single `jmp` patch i
 
 !!! info "Demo 5 · `code/week-06/05-akis-sayaci` · control-flow integrity (Catalogue K17)"
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
+```text title="sh demo.sh — real output (abridged)"
 SENARYO 1 - Normal: butun kontrol noktalari sirayla calisir
    [gecildi] kontrol noktasi 0, 1, 2
 SONUC: ODEME ONAYLANDI -> "ODEME-ONAYI-TOKEN-4242"
@@ -1250,7 +1250,7 @@ Let's not leave `acc = HMAC(acc, "asama-i")` abstract; let's compute it by hand 
 the starting value `acc0` be produced by HMACing **empty** data with a fixed key of 32 zero bytes (in a real
 system this is randomly generated per session):
 
-```bash title="Kontrol akisi zincirini elle izlemek (gercek openssl ciktisi) - baslangic"
+```bash title="Tracing the control-flow chain by hand (real openssl output) - start"
 A0=$(printf '' | openssl dgst -sha256 -mac HMAC \
      -macopt hexkey:0000000000000000000000000000000000000000000000000000000000000000 \
      -binary | xxd -p -c 256)
@@ -1264,7 +1264,7 @@ acc0 = b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 **Correct order — checkpoint 0, then 1, then 2, in order.** At each stage, the previous `acc` is used as the key,
 and the stage label is HMACed as the data; the result becomes the new `acc`:
 
-```bash title="Sirali gecis: acc1 -> acc2 -> acc3"
+```bash title="In-order pass: acc1 -> acc2 -> acc3"
 A1=$(printf 'asama-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
 A2=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
 A3=$(printf 'asama-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
@@ -1282,7 +1282,7 @@ The critical operation (e.g., payment approval) only derives the correct key and
 checkpoint functions 0 and 2 (the same idea as the `je → jmp` patch in Section 3); only the `asama-1` label is
 processed:
 
-```bash title="Atlanmis gecis: yalniz asama-1"
+```bash title="Skipped pass: only asama-1"
 B1=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
 echo "acc (ATLANMIS zincir) = $B1"
 ```
@@ -1351,21 +1351,21 @@ cryptographically "well distributed"), whose length and randomness are uncertain
 intermediate key; this intermediate key's standard name is **PRK** (Pseudo-Random Key): `PRK =
 HMAC-SHA256(anahtar = tuz, veri = ikm)`. Let's do the same computation with `openssl`:
 
-```bash title="HKDF Adim 1 - Extract (gercek openssl ciktisi)"
+```bash title="HKDF Step 1 - Extract (real openssl output)"
 printf '%s' 'cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO' \
   | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'surum=1.0.0' | xxd -p -c 256) -binary \
   | xxd -p -c 256
 ```
 
 ```text
-PRK (gercek cihaz) = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99562ce
+PRK (real device)    = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99562ce
 ```
 
-**Step 2 — Expand.** Since we need 32 bytes (a single block), one HMAC is enough: `T1 = HMAC-SHA256(anahtar = PRK,
-veri = info || 0x01)` (`0x01` is RFC 5869's block counter). This `T1` directly becomes the 32-byte **data key**:
+**Step 2 — Expand.** Since we need 32 bytes (a single block), one HMAC is enough: `T1 = HMAC-SHA256(key = PRK,
+data = info || 0x01)` (`0x01` is RFC 5869's block counter). This `T1` directly becomes the 32-byte **data key**:
 
 ```text
-anahtar (gercek cihaz) = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc5be175d10
+key (real device)      = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc5be175d10
 ```
 
 **Step 3 — repeating the same computation with "another device's" fingerprint.** Let's just change the serial
@@ -1373,8 +1373,8 @@ number from `SN-0001` to `SN-9999` (exactly like an attacker copying the data fi
 the same two steps:
 
 ```text
-PRK (baska cihaz)      = b6b88f3dce3ea3099c4ff0673d356c040689ebd72be4cc98fb158bfa4c0ac039
-anahtar (baska cihaz)  = b87e4dee6c5579a1456b977ce8cbf8d14f3363aa4e1c7c1a7198342c7689e220
+PRK (another device)   = b6b88f3dce3ea3099c4ff0673d356c040689ebd72be4cc98fb158bfa4c0ac039
+key (another device)   = b87e4dee6c5579a1456b977ce8cbf8d14f3363aa4e1c7c1a7198342c7689e220
 ```
 
 **Result.** The two keys (`a19f06fd...` and `b87e4dee...`) differ **so much they share no common bytes** — a
@@ -1392,7 +1392,7 @@ exposed**, even if the files are copied to another device.
     wrapped with a device-bound key (HKDF + AES-GCM); when tampering is detected, the engine **erases** the
     secret, raises a tamper flag, and returns a **decoy** instead of crashing.
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
+```text title="sh demo.sh — real output (abridged)"
 SENARYO 1 - Normal: kontroller gecer, cihaz dogru -> sir acilir
 SONUC: TEMIZ. Sir acildi ve islem yapiliyor -> "ODEME-ANAHTARI-7C4A"
 (sir kullanildiktan sonra bellekten guvenle silindi)
@@ -1502,20 +1502,20 @@ Application Protections (15p → LO.3)** in the final rubric.
       whether it's fail-closed, whether it's a decoy, whether there is device/version binding, whether there is a
       server notification.
 
-```markdown title="S10 RASP envanteri sablonu"
-| Kontrol            | Neyi algilar        | Nasil atlatilir      | Guclendirme        |
-| ------------------ | -------------------- | --------------------- | -------------------- |
-| Butunluk (HMAC)    | Ikili yama          | Checker yamalanir    | Ortusen denetleyici|
-| Anti-debug         | Hata ayiklayici     | ptrace no-op / yama  | Coklu sinyal+sayac |
-| Kanca algilama     | LD_PRELOAD/Frida    | maps gizleme         | dladdr + maps      |
-| Cihaz baglama      | Klonlama            | (cihaza bagli)       | HKDF + AES-GCM     |
+```markdown title="S10 RASP inventory template"
+| Control            | What it detects      | How it's bypassed     | Hardening           |
+| ------------------ | --------------------- | ---------------------- | -------------------- |
+| Integrity (HMAC)   | Binary patch          | Checker gets patched  | Overlapping checker|
+| Anti-debug         | Debugger               | ptrace no-op / patch  | Multiple signals+counter |
+| Hook detection     | LD_PRELOAD/Frida       | Hiding from maps      | dladdr + maps      |
+| Device binding     | Cloning                | (bound to the device) | HKDF + AES-GCM     |
 ```
 
-```markdown title="S10 tepki politikasi sablonu"
-| Tetikleyici        | Tepki                          | Bildirim         |
-| ------------------ | ------------------------------ | ---------------- |
-| butunluk basarisiz | sirri sil + decoy + fail-close | sunucuya olay    |
-| cihaz tutmaz       | ac-ma, decoy                   | sunucuya olay    |
+```markdown title="S10 response policy template"
+| Trigger             | Response                         | Notification     |
+| ------------------- | --------------------------------- | ----------------- |
+| integrity failed    | erase secret + decoy + fail-close | event to server   |
+| device mismatch     | don't open, decoy                 | event to server   |
 ```
 
 !!! tip "Course requirement families"

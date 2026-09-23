@@ -346,25 +346,25 @@ range), `STR50-CPP` (sufficient space for a string), `EXP53-CPP` (do not read un
 Let's learn to read a rule not as "good advice" but as a **measurable risk**. Take the following loop, which
 violates MEM31-C ("free dynamic memory once you are done with it"):
 
-```c title="MEM31-C ihlali: her istekte bir blok sızar"
+```c title="MEM31-C violation: a block leaks on every request"
 void istek_isle(const char *veri)
 {
-    char *tampon = malloc(64);          /* her çağrıda YENİ bir blok */
+    char *tampon = malloc(64);          /* a NEW block on every call */
     if (!tampon) return;
     snprintf(tampon, 64, "%s", veri);
     isle(tampon);
-    /* free(tampon) EKSİK: fonksiyon dönünce işaretçi kaybolur, blok asla serbest kalmaz */
+    /* free(tampon) MISSING: the pointer is lost when the function returns, the block is never freed */
 }
 ```
 
 Let's not leave this abstract — let's **count**:
 
-```text title="Sızıntıyı sayısallaştırmak"
-Her çağrı sızdırdığı bellek : 64 bayt
-Sunucu saniyede istek sayısı : 200 istek/sn   (örnek yük)
-Sızıntı hızı                 : 200 * 64 bayt = 12.800 bayt/sn ≈ 12,5 KB/sn
-1 saatte birikim              : 12.800 * 3600 ≈ 46.080.000 bayt ≈ 43,9 MB/saat
-24 saatte birikim             : 43,9 MB * 24 ≈ 1.053,6 MB ≈ 1,03 GB/gün
+```text title="Quantifying the leak"
+Memory leaked per call        : 64 bytes
+Server requests per second    : 200 req/s   (example load)
+Leak rate                     : 200 * 64 bytes = 12,800 bytes/s ≈ 12.5 KB/s
+Accumulation in 1 hour        : 12,800 * 3600 ≈ 46,080,000 bytes ≈ 43.9 MB/hour
+Accumulation in 24 hours      : 43.9 MB * 24 ≈ 1,053.6 MB ≈ 1.03 GB/day
 ```
 
 64 bytes alone looks harmless; but it accumulates on a **long-running server** and, over days, exhausts memory and
@@ -439,25 +439,25 @@ principles in Recipe 3.1 still hold today; let's turn them into a daily checklis
 
 The smallest but most frequently mishandled example of input validation is reading a number:
 
-```c title="Hatalı: atoi hatayı bildiremez"
-int adet = atoi(argv[1]);    /* "abc" → 0, "99999999999" → tanımsız, "12abc" → 12 */
+```c title="Wrong: atoi cannot report an error"
+int adet = atoi(argv[1]);    /* "abc" → 0, "99999999999" → undefined, "12abc" → 12 */
 ```
 
-```c title="Doğru: strtol + tam denetim"
+```c title="Correct: strtol + full validation"
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
 
-/* Başarıda 0; geçersiz ya da aralık dışıysa -1 */
+/* 0 on success; -1 if invalid or out of range */
 int sayi_oku(const char *s, long en_az, long en_cok, long *sonuc)
 {
     char *son;
     errno = 0;
     long v = strtol(s, &son, 10);
-    if (son == s)            return -1;   /* hiç rakam yok */
-    if (*son != '\0')        return -1;   /* sonda fazladan karakter: "12abc" */
-    if (errno == ERANGE)     return -1;   /* long'a sığmadı */
-    if (v < en_az || v > en_cok) return -1;  /* iş kuralı aralığı */
+    if (son == s)            return -1;   /* no digits at all */
+    if (*son != '\0')        return -1;   /* trailing junk character: "12abc" */
+    if (errno == ERANGE)     return -1;   /* did not fit in a long */
+    if (v < en_az || v > en_cok) return -1;  /* business-rule range */
     *sonuc = v;
     return 0;
 }
@@ -472,18 +472,18 @@ converting a string to a number").
 In network protocols and file formats, data is usually laid out as `[type][length][data]`. From Heartbleed all
 the way to this week's fuzzing demo, the source of many bugs is **trusting the length field**:
 
-```c title="Uzunluk önekli kaydı güvenle okumak"
-/* tampon: gelen veri, kalan: tamponda kalan bayt sayısı */
+```c title="Safely reading a length-prefixed record"
+/* tampon: incoming data, kalan: bytes remaining in the buffer */
 int kayit_oku(const uint8_t *tampon, size_t kalan, Kayit *k)
 {
-    if (kalan < 3) return -1;                         /* başlık bile yok */
+    if (kalan < 3) return -1;                         /* not even a header */
     k->tur = tampon[0];
     uint16_t uzunluk = (uint16_t)(tampon[1] << 8 | tampon[2]);
-    if (uzunluk > kalan - 3) return -1;               /* bildirilen > gelen: REDDET */
-    if (uzunluk > sizeof k->veri) return -1;          /* hedefe sığmıyor: REDDET */
+    if (uzunluk > kalan - 3) return -1;               /* declared > received: REJECT */
+    if (uzunluk > sizeof k->veri) return -1;          /* doesn't fit the destination: REJECT */
     memcpy(k->veri, tampon + 3, uzunluk);
     k->uzunluk = uzunluk;
-    return 3 + uzunluk;                               /* tüketilen bayt */
+    return 3 + uzunluk;                               /* bytes consumed */
 }
 ```
 
@@ -506,17 +506,17 @@ bytes arrive from the network and the contents are as follows (hex, then meaning
 
 The function processes the following steps **in order**:
 
-```text title="Adım adım yürütme (kalan = 8, iyi huylu girdi)"
-1) kalan < 3 mi?               8 < 3  → HAYIR, devam.
+```text title="Step-by-step execution (kalan = 8, well-behaved input)"
+1) is kalan < 3?                8 < 3  → NO, continue.
 2) k->tur = tampon[0]           = 0x01
 3) uzunluk = tampon[1]<<8 | tampon[2]
             = (0x00 << 8) | 0x05
             = 0x0000 | 0x0005
             = 5
-4) uzunluk > kalan - 3 mi?      kalan - 3 = 8 - 3 = 5;  5 > 5  → HAYIR, devam.
-5) uzunluk > sizeof(k->veri) mi?  (k->veri 64 bayt ise) 5 > 64 → HAYIR, devam.
+4) is uzunluk > kalan - 3?      kalan - 3 = 8 - 3 = 5;  5 > 5  → NO, continue.
+5) is uzunluk > sizeof(k->veri)?  (if k->veri is 64 bytes) 5 > 64 → NO, continue.
 6) memcpy(k->veri, tampon+3, 5)   → k->veri = "HELLO"
-7) return 3 + uzunluk = 3 + 5 = 8   (tüketilen bayt; kalan'ın TAMAMI, tutarlı)
+7) return 3 + uzunluk = 3 + 5 = 8   (bytes consumed; the WHOLE of kalan, consistent)
 ```
 
 Now let's trace an input where the attacker has changed **only the length field**, leaving the rest of the data
@@ -529,15 +529,15 @@ untouched (`kalan` is still 8, but the declared length is now much larger than t
 | 2 | `FF` | low byte of the length |
 | 3–7 | `48 45 4C 4C 4F` | still 5 bytes of real data |
 
-```text title="Adım adım yürütme (kalan = 8, saldırgan girdisi)"
-1) kalan < 3 mi?               8 < 3 → HAYIR, devam.
+```text title="Step-by-step execution (kalan = 8, attacker input)"
+1) is kalan < 3?                8 < 3 → NO, continue.
 2) k->tur = tampon[0]           = 0x01
 3) uzunluk = tampon[1]<<8 | tampon[2]
             = (0xFF << 8) | 0xFF
             = 0xFF00 | 0x00FF
-            = 0xFFFF = 65.535
-4) uzunluk > kalan - 3 mi?      65.535 > 5  → EVET → REDDET, fonksiyon -1 döner.
-   (memcpy'a HİÇ ulaşılmaz)
+            = 0xFFFF = 65,535
+4) is uzunluk > kalan - 3?      65,535 > 5  → YES → REJECT, the function returns -1.
+   (memcpy is NEVER reached)
 ```
 
 The check kicks in at exactly this point: `tampon` really **has** only 5 bytes of data, but the field **says** "65,535
@@ -576,16 +576,16 @@ to spot the bug first, then read the explanation.
 
 ### STR31-C: sufficient space for a string and its terminator
 
-```c title="Hatalı"
+```c title="Wrong"
 char kopya[16];
-strcpy(kopya, ad);                       /* ad 15 karakterden uzunsa taşar */
+strcpy(kopya, ad);                       /* overflows if ad is longer than 15 characters */
 ```
 
-```c title="Uyumlu"
+```c title="Compliant"
 char kopya[16];
 int n = snprintf(kopya, sizeof kopya, "%s", ad);
 if (n < 0 || (size_t)n >= sizeof kopya) {
-    /* kesildi: kullanma ya da hata dön */
+    /* truncated: don't use it, or return an error */
 }
 ```
 
@@ -597,11 +597,11 @@ something different.
 excluding the `\0`). `char kopya[16]` can hold only 15 characters plus the `\0` terminator (16 bytes = 15 + 1).
 When `snprintf(kopya, 16, "%s", ad)` is called:
 
-```text title="snprintf'in kesme davranışı, sayılarla"
-Yazılacak gerçek uzunluk (n)     : 21
-Tampon boyutu (sizeof kopya)     : 16
-n >= sizeof kopya ?              : 21 >= 16 → EVET → KESİLDİ
-kopya içinde gerçekte duran      : "Mehmet Ali Kaya" (ilk 15 karakter) + '\0'
+```text title="snprintf's truncation behaviour, in numbers"
+Actual length to write (n)       : 21
+Buffer size (sizeof kopya)       : 16
+n >= sizeof kopya ?               : 21 >= 16 → YES → TRUNCATED
+What actually ends up in kopya   : "Mehmet Ali Kaya" (first 15 characters) + '\0'
 ```
 
 Had `strcpy` been used, there would have been no check at all, and the 21-character string would be copied into
@@ -613,12 +613,12 @@ name. This is why the check in the compliant solution, `if (n < 0 || (size_t)n >
 
 ### INT30-C: unsigned operations must not wrap
 
-```c title="Hatalı"
-size_t kalan = toplam - okunan;          /* okunan > toplam ise dev bir sayı */
+```c title="Wrong"
+size_t kalan = toplam - okunan;          /* a gigantic number if okunan > toplam */
 memcpy(hedef, kaynak + okunan, kalan);
 ```
 
-```c title="Uyumlu"
+```c title="Compliant"
 if (okunan > toplam) return HATA;
 size_t kalan = toplam - okunan;
 ```
@@ -629,13 +629,13 @@ before the subtraction.
 **Numerical check (on a 64-bit system, where `size_t` is 8 bytes):** unsigned arithmetic works **modulo** `2⁶⁴`
 (the result is taken "mod," i.e., the remainder after dividing by `2⁶⁴`).
 
-```text title="3 - 5 işlemi size_t (64-bit) olarak"
-Matematikteki gerçek sonuç : -2
-Modüler karşılığı          : -2 + 2^64 = 2^64 - 2
-2^64                        : 18.446.744.073.709.551.616
-2^64 - 2                    : 18.446.744.073.709.551.614   ← "kalan" bu devasa sayı olur
-SIZE_MAX (2^64 - 1)         : 18.446.744.073.709.551.615
-Karşılaştırma               : 2^64 - 2 = SIZE_MAX - 1  ✓ (metindeki iddiayla birebir örtüşür)
+```text title="3 - 5 as a size_t (64-bit) operation"
+The real mathematical result : -2
+Its modular equivalent       : -2 + 2^64 = 2^64 - 2
+2^64                          : 18,446,744,073,709,551,616
+2^64 - 2                      : 18,446,744,073,709,551,614   ← "kalan" becomes this gigantic number
+SIZE_MAX (2^64 - 1)           : 18,446,744,073,709,551,615
+Comparison                    : 2^64 - 2 = SIZE_MAX - 1  ✓ (matches the claim in the text exactly)
 ```
 
 If this `kalan` value is passed to `memcpy(hedef, kaynak + okunan, kalan)`, the function is asked to copy about
@@ -647,15 +647,15 @@ than the buffer's real size; the outcome is the same.
 
 ### MEM30-C: do not access freed memory
 
-```c title="Hatalı: döngüde serbest bırakırken sonraki düğüme erişim"
+```c title="Wrong: accessing the next node while freeing in the loop"
 for (Dugum *d = bas; d != NULL; d = d->sonraki)
-    free(d);                              /* d->sonraki, free'den SONRA okunuyor */
+    free(d);                              /* d->sonraki is read AFTER the free */
 ```
 
-```c title="Uyumlu"
+```c title="Compliant"
 Dugum *d = bas;
 while (d != NULL) {
-    Dugum *sonraki = d->sonraki;          /* önce oku */
+    Dugum *sonraki = d->sonraki;          /* read it first */
     free(d);
     d = sonraki;
 }
@@ -666,14 +666,14 @@ expression reads the field of a node that has already been freed inside the loop
 
 ### EXP33-C: do not read uninitialized memory
 
-```c title="Hatalı"
+```c title="Wrong"
 int sonuc;
 if (kosul) sonuc = hesapla();
-return sonuc;                             /* kosul yanlışsa rastgele değer */
+return sonuc;                             /* a random value if kosul is false */
 ```
 
-```c title="Uyumlu"
-int sonuc = HATA_KODU;                    /* güvenli varsayılan */
+```c title="Compliant"
+int sonuc = HATA_KODU;                    /* safe default */
 if (kosul) sonuc = hesapla();
 return sonuc;
 ```
@@ -684,12 +684,12 @@ permission" or "error" (Week 1's secure-default principle).
 
 ### ERR33-C: detect library errors
 
-```c title="Hatalı"
+```c title="Wrong"
 FILE *f = fopen(yol, "rb");
-fread(tampon, 1, sizeof tampon, f);       /* fopen başarısızsa f == NULL */
+fread(tampon, 1, sizeof tampon, f);       /* f == NULL if fopen fails */
 ```
 
-```c title="Uyumlu"
+```c title="Compliant"
 FILE *f = fopen(yol, "rb");
 if (f == NULL) return HATA;
 size_t n = fread(tampon, 1, sizeof tampon, f);
@@ -716,9 +716,9 @@ comes from the user, the user has effectively given the function a command.
 
 ![Format string vulnerability: incorrect and correct usage](assets/h04-07-bicim-dizisi.svg)
 
-```c title="Hatalı ve doğru"
-printf(kullanici_girdisi);           /* HATALI: girdi biçim dizgesi olarak yorumlanır */
-printf("%s", kullanici_girdisi);     /* DOĞRU: girdi yalnız veri */
+```c title="Wrong and correct"
+printf(kullanici_girdisi);           /* WRONG: the input is interpreted as the format string */
+printf("%s", kullanici_girdisi);     /* CORRECT: the input is only data */
 ```
 
 ### Why is it dangerous?
@@ -751,9 +751,9 @@ should be" and print the bytes found there **as if they were a number**, in hexa
 those positions are the stack cells directly above the call — that is, the region holding `sizinti()`'s **own
 local variables**:
 
-```text title="sizinti.c'deki bildirim sırası (yığın çerçevesi, kavramsal)"
-volatile unsigned gizli_deger = 0x5ECE7u;   /* fonksiyonun yerel değişkeni #1 */
-char tampon[64];                            /* fonksiyonun yerel değişkeni #2, kullanıcı girdisini tutar */
+```text title="Declaration order in sizinti.c (stack frame, conceptual)"
+volatile unsigned gizli_deger = 0x5ECE7u;   /* the function's local variable #1 */
+char tampon[64];                            /* the function's local variable #2, holds the user's input */
 ```
 
 These two variables sit **next to each other** in the **same stack frame** (the exact order and any gap between
@@ -762,14 +762,14 @@ them can vary with the compiler and flags; what matters is that both are in the 
 and the **format string doing the reading** are in the same memory region. If enough `%x` markers are supplied,
 the scan sooner or later reaches the 4-byte cell where `gizli_deger` sits:
 
-```text title="'%x' taramasının adımları (basitleştirilmiş, kavramsal argüman sırası)"
-1. %x  → argüman konumu #1'deki değer  (örn. önceki bir çağrıdan kalan rastgele bayt)
-2. %x  → argüman konumu #2'deki değer  (rastgele)
-3. %x  → argüman konumu #3'teki değer  (rastgele)
+```text title="The steps of the '%x' scan (simplified, conceptual argument order)"
+1. %x  → the value at argument position #1  (e.g. a random byte left over from an earlier call)
+2. %x  → the value at argument position #2  (random)
+3. %x  → the value at argument position #3  (random)
    ...
-N. %x  → argüman konumu #N tam olarak gizli_deger'in bulunduğu hücreye denk geliyor
-         → printf bu 4 baytı bir unsigned int gibi okuyup onaltılık yazar
-         → EKRANDA GÖRÜLEN: "5ece7"
+N. %x  → argument position #N lands exactly on the cell holding gizli_deger
+         → printf reads these 4 bytes as an unsigned int and prints it in hex
+         → WHAT APPEARS ON SCREEN: "5ece7"
 ```
 
 The demo program verifies this independently: the code first prints `gizli_deger` to the screen **deliberately**,
@@ -865,7 +865,7 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 4. **Validate the number of variadic arguments** (Recipe 13.4): if you write your own variadic function, take the
    argument count or type from an explicit parameter, not from the format string.
 
-```c title="Kendi günlük fonksiyonunuzu derleyiciye denetletin"
+```c title="Have the compiler check your own logging function"
 #if defined(__GNUC__)
 #  define BICIM_DENETLE(a, b) __attribute__((format(printf, a, b)))
 #else
@@ -874,8 +874,8 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 
 void gunluk_yaz(int duzey, const char *bicim, ...) BICIM_DENETLE(2, 3);
 
-gunluk_yaz(1, kullanici);          /* derleyici artık burada uyarır */
-gunluk_yaz(1, "%s", kullanici);    /* doğru */
+gunluk_yaz(1, kullanici);          /* the compiler now warns here */
+gunluk_yaz(1, "%s", kullanici);    /* correct */
 ```
 
 !!! question "How does an evaluator test this?"
@@ -911,8 +911,8 @@ Let's trace Demo 2's `struct oturum` byte by byte:
 
 ```c
 struct oturum {
-    void (*eylem)(void);   /* 64-bit sistemde bir fonksiyon işaretçisi: 8 bayt */
-    char  rol[16];         /* 16 bayt */
+    void (*eylem)(void);   /* a function pointer on a 64-bit system: 8 bytes */
+    char  rol[16];         /* 16 bytes */
 };
 ```
 
@@ -927,35 +927,35 @@ already a multiple of 8, the compiler does not need to add any padding bytes —
 
 Now let's trace the `kip_uaf()` function step by step:
 
-```text title="Adım adım: aynı 24 baytlık bloğun yeniden kullanılması"
+```text title="Step by step: reusing the same 24-byte block"
 1) o = malloc(24)
-   Bellek yöneticisi 24 baytlık boş bir blok bulur, diyelim ki A adresinde verir.
+   The memory manager finds a free 24-byte block and hands it back, say, at address A.
    o → A
 
-2) o->eylem = normal_panel     → A+0..7  = normal_panel'in adresi
-   strcpy(o->rol, "user")      → A+8..12 = 'u','s','e','r','\0'  (A+13..23 eski/rastgele baytlar)
+2) o->eylem = normal_panel     → A+0..7  = the address of normal_panel
+   strcpy(o->rol, "user")      → A+8..12 = 'u','s','e','r','\0'  (A+13..23 old/random bytes)
 
 3) free(o)
-   Bellek yöneticisi A adresindeki bloğu "boş" olarak işaretler. Birçok bellek yöneticisi
-   (ör. glibc'nin tcache'i), boş bloğu bir SONRAKİ aynı boyuttaki isteğe hemen verebilmek için
-   BOŞ BLOĞUN KENDİ İÇİNE bir "sıradaki boş blok" işaretçisi yazar — yani serbest bırakılan
-   bellek SESSİZCE değişir. `o` değişkeni hâlâ A'yı gösterir (derleyici sıfırlamaz) → ASKIDA İŞARETÇİ.
+   The memory manager marks the block at address A as "free." Many memory managers (e.g.
+   glibc's tcache) write a "next free block" pointer INSIDE THE FREE BLOCK ITSELF so they can
+   hand it straight back to the NEXT request of the same size — the freed memory changes
+   SILENTLY. The `o` variable still points to A (the compiler never resets it) → DANGLING POINTER.
 
 4) sahte = malloc(24)
-   Bellek yöneticisinden yine 24 bayt istenir. Az önce serbest kalan A boyutta TAM UYUŞTUĞU için,
-   çoğu ayırıcı (LIFO / "son giren ilk çıkar" serbest liste ilkesiyle) AYNI A ADRESİNİ geri verir.
-   sahte → A     (o hâlâ → A: İKİSİ DE AYNI BLOĞU GÖSTERİYOR)
+   24 bytes are requested from the memory manager again. Because the block just freed at A is an EXACT SIZE
+   MATCH, most allocators (LIFO / "last in, first out" free-list order) hand back that SAME ADDRESS A.
+   sahte → A     (o still → A: BOTH NOW POINT AT THE SAME BLOCK)
 
-5) sahte->eylem = yonetici_panel   → A+0..7  = yonetici_panel'in adresi  (eski değerin ÜZERİNE yazıldı)
+5) sahte->eylem = yonetici_panel   → A+0..7  = the address of yonetici_panel  (OVERWRITES the old value)
    strcpy(sahte->rol, "admin")     → A+8..13 = 'a','d','m','i','n','\0'
 
 6) printf("%s", o->rol)
-   o hâlâ A'yı gösteriyor; A+8'den okunan bayt dizisi artık "admin"dir (5. adımda sahte tarafından
-   yazıldı). o'nun kendi verisi hiç değişmedi görünüyor ama fiziksel bellek DEĞİŞTİ → "user" değil "admin" okunur.
+   o still points to A; the byte sequence read at A+8 is now "admin" (written by sahte in step 5).
+   o's own data looks unchanged, but the physical memory HAS CHANGED → "admin" is read, not "user".
 
 7) o->eylem()
-   A+0..7'den okunan işaretçi artık yonetici_panel'in adresidir (5. adımda üzerine yazıldı).
-   Program normal_panel()'i DEĞİL, yonetici_panel()'i çağırır.
+   The pointer read from A+0..7 is now the address of yonetici_panel (overwritten in step 5).
+   The program calls yonetici_panel(), NOT normal_panel().
 ```
 
 Result: the `o` pointer was never modified even once (it still holds the same `A` address); but because the
@@ -1011,13 +1011,13 @@ In a UAF report, ASan gives **three** locations; all three are needed to fix the
 ```text
 ERROR: AddressSanitizer: heap-use-after-free on address 0x6020000000f0
 READ of size 8 ...
-    #0 in oturum_kullan  uaf.c:48        <- 1. KULLANIM: hatanın görüldüğü yer
+    #0 in oturum_kullan  uaf.c:48        <- 1. USE: where the bug was observed
 freed by thread T0 here:
     #0 in free
-    #1 in oturum_kapat   uaf.c:31        <- 2. SERBEST BIRAKMA: sahiplik burada bitti
+    #1 in oturum_kapat   uaf.c:31        <- 2. FREE: ownership ended here
 previously allocated by thread T0 here:
     #0 in malloc
-    #1 in oturum_ac      uaf.c:22        <- 3. AYIRMA: nesnenin doğduğu yer
+    #1 in oturum_ac      uaf.c:22        <- 3. ALLOCATION: where the object was born
 ```
 
 The fix is most often at **location 2**: the code that frees the object made an ownership decision that the other
@@ -1035,20 +1035,20 @@ In C, ownership is a **contract**; in C++ it can be made **part of the type**:
 | Observation without ownership | Raw pointer | `std::weak_ptr<T>`: if the object is gone, `lock()` returns empty, never dangling |
 | Array | `malloc` + size | `std::vector<T>`, `std::array<T,N>` |
 
-```cpp title="Askıda kalan işaretçi yerine weak_ptr"
+```cpp title="weak_ptr instead of a dangling pointer"
 #include <memory>
 
 struct Oturum { std::string rol; };
 
 std::shared_ptr<Oturum> aktif = std::make_shared<Oturum>(Oturum{"user"});
-std::weak_ptr<Oturum>   onbellek = aktif;      // sahip DEĞİL, yalnız gözlemci
+std::weak_ptr<Oturum>   onbellek = aktif;      // NOT an owner, only an observer
 
-aktif.reset();                                 // oturum kapandı, nesne yok edildi
+aktif.reset();                                 // the session ended, the object was destroyed
 
-if (auto o = onbellek.lock()) {                // nesne hâlâ yaşıyor mu?
+if (auto o = onbellek.lock()) {                // is the object still alive?
     kullan(*o);
 } else {
-    /* nesne yok: askıdaki işaretçiyle ESKİ belleğe erişilmez */
+    /* the object is gone: a dangling pointer never reaches OLD memory */
 }
 ```
 
@@ -1078,23 +1078,23 @@ whole family of integer bugs and one of C's most surprising concepts: **undefine
 Integer bugs often look harmless on their own; their danger shows up when they get mixed into a **size
 calculation**:
 
-```c title="Hatalı: çarpım taşar, küçük blok ayrılır"
-uint32_t adet = girdi_oku();                 /* saldırgan: 0x40000001 */
-uint32_t boyut = adet * sizeof(uint32_t);    /* 0x40000001 * 4 = 4 (sardı!) */
-uint32_t *dizi = malloc(boyut);              /* 4 baytlık blok */
+```c title="Wrong: the multiplication wraps, a small block is allocated"
+uint32_t adet = girdi_oku();                 /* attacker: 0x40000001 */
+uint32_t boyut = adet * sizeof(uint32_t);    /* 0x40000001 * 4 = 4 (wrapped!) */
+uint32_t *dizi = malloc(boyut);              /* a 4-byte block */
 for (uint32_t i = 0; i < adet; i++)
-    dizi[i] = oku();                          /* öbek taşması */
+    dizi[i] = oku();                          /* heap overflow */
 ```
 
 **Numerical check:** `0x40000001` in hexadecimal is **1,073,741,825** in decimal. `sizeof(uint32_t)` is always 4
 (`uint32_t` = 32 bits = 4 bytes, by definition).
 
-```text title="Çarpımın 32-bit'te sarması, adım adım"
-Gerçek çarpım (32-bit sınırı yokmuş gibi) : 1.073.741.825 * 4 = 4.294.967.300
-uint32_t'nin sığdırabildiği en büyük değer : 2^32 - 1 = 4.294.967.295
-4.294.967.300 sığar mı?                     : HAYIR (5 bayt taşar: 4.294.967.300 - 4.294.967.295 = 5)
-32-bit'e sarma (mod 2^32)                   : 4.294.967.300 mod 4.294.967.296 = 4
-→ boyut değişkeninde SAKLANAN değer         : 4  (bayt!)
+```text title="How the multiplication wraps in 32 bits, step by step"
+Real product (as if there were no 32-bit limit) : 1,073,741,825 * 4 = 4,294,967,300
+Largest value a uint32_t can hold               : 2^32 - 1 = 4,294,967,295
+Does 4,294,967,300 fit?                          : NO (overflows by 5 bytes: 4,294,967,300 - 4,294,967,295 = 5)
+Wrapping to 32 bits (mod 2^32)                   : 4,294,967,300 mod 4,294,967,296 = 4
+→ value STORED in the boyut variable             : 4  (bytes!)
 ```
 
 The `malloc(4)` call allocates only a **4-byte** block (one `uint32_t`). But the loop runs
@@ -1108,29 +1108,29 @@ with the very first assignment (`dizi[1]`), a **heap overflow** begins, corrupti
 This is the most common and most dangerous form of INT31-C: a function returns a **signed** `-1` on error, and the
 caller unknowingly stores it in an **unsigned** variable.
 
-```c title="Klasik hata: -1'in size_t'ye sessizce dönüşmesi"
-int uzunluk_hesapla(const char *s) { /* hata olursa -1 döner */ return calisti_mi(s) ? (int)strlen(s) : -1; }
+```c title="A classic mistake: -1 silently converted to a size_t"
+int uzunluk_hesapla(const char *s) { /* returns -1 on error */ return calisti_mi(s) ? (int)strlen(s) : -1; }
 
 int n = uzunluk_hesapla(girdi);
-size_t boyut = n;                 /* n == -1 ise: DÖNÜŞÜM, DENETİMSİZ */
-memcpy(hedef, kaynak, boyut);     /* boyut artık dev bir sayı */
+size_t boyut = n;                 /* if n == -1: CONVERTED, UNCHECKED */
+memcpy(hedef, kaynak, boyut);     /* boyut is now a gigantic number */
 ```
 
 The conversion happens in two conceptual steps (the C standard's rule for converting signed to unsigned):
 
-```text title="(int)-1 → size_t dönüşümü, bit bit"
-Adım 1 — -1'in 32-bit int olarak bit deseni (ikinin tümleyeni gösterimi):
-    -1  (int, 32 bit)  =  0xFFFFFFFF   (bütün 32 bit '1')
+```text title="(int)-1 converted to a size_t, bit by bit"
+Step 1 — the bit pattern of -1 as a 32-bit int (two's complement representation):
+    -1  (int, 32 bit)  =  0xFFFFFFFF   (all 32 bits '1')
 
-Adım 2 — size_t'ye (64-bit sistemde 8 bayt = 64 bit) atanırken, değer matematiksel olarak
-         "hedef türün sığdırabildiği aralığa girene kadar 2^N eklenir" kuralıyla yorumlanır:
+Step 2 — when assigned to a size_t (8 bytes = 64 bits on a 64-bit system), the value is
+         interpreted mathematically by the rule "add 2^N until it falls inside the target type's range":
     -1 + 2^64 = 2^64 - 1
 
-Adım 3 — 2^64 - 1 sayısal olarak:
-    2^64        = 18.446.744.073.709.551.616
-    2^64 - 1    = 18.446.744.073.709.551.615   = SIZE_MAX (64-bit sistemde)
+Step 3 — 2^64 - 1 numerically:
+    2^64        = 18,446,744,073,709,551,616
+    2^64 - 1    = 18,446,744,073,709,551,615   = SIZE_MAX (on a 64-bit system)
 
-Sonuç: boyut = 18.446.744.073.709.551.615   (yaklaşık 18,4 KATRİLYON gigabayt)
+Result: boyut = 18,446,744,073,709,551,615   (approximately 18.4 QUADRILLION gigabytes)
 ```
 
 If `memcpy(hedef, kaynak, boyut)` is called with this value, the processor tries to read this many bytes starting
@@ -1179,11 +1179,11 @@ overflow, out-of-bounds array access, dereferencing a NULL pointer, reading an u
 access, and the like. This does not mean "the program crashes" — it means **the compiler is allowed to assume this
 situation never happens**, and optimizes the code accordingly.
 
-```c title="Derleyici denetimi silebilir"
+```c title="The compiler can delete the check"
 int ekle_ve_denetle(int x)
 {
-    if (x + 100 < x)          /* "taşma olursa sonuç küçülür" diye düşünülmüş */
-        return -1;            /* ama işaretli taşma UB: derleyici bu dalı SİLEBİLİR */
+    if (x + 100 < x)          /* intended as "if it overflows, the result gets smaller" */
+        return -1;            /* but signed overflow is UB: the compiler MAY DELETE this branch */
     return x + 100;
 }
 ```
@@ -1195,19 +1195,19 @@ saw in Week 1's Demo 2.
 
 **Why does `INT_MAX + 1` jump, bit for bit, to `INT_MIN`? The proof, bit by bit:**
 
-```text title="INT_MAX + 1 işleminin bit düzeyinde izlenmesi (32-bit, ikinin tümleyeni)"
-INT_MAX (ondalık)         = 2.147.483.647
-INT_MAX (bit deseni)      = 0111 1111 1111 1111 1111 1111 1111 1111   (0x7FFFFFFF)
+```text title="Tracing INT_MAX + 1 at the bit level (32-bit, two's complement)"
+INT_MAX (decimal)         = 2,147,483,647
+INT_MAX (bit pattern)     = 0111 1111 1111 1111 1111 1111 1111 1111   (0x7FFFFFFF)
 
-  + 1'i son bite eklemek:  0111 1111 1111 1111 1111 1111 1111 1111
+  Adding 1 to the last bit: 0111 1111 1111 1111 1111 1111 1111 1111
                          +                                        1
                          --------------------------------------------
-  Taşan toplam (33 bit)  = 1000 0000 0000 0000 0000 0000 0000 0000   (0x100000000 — 33. bit taşar ve ATILIR)
-  Kalan 32 bit            = 1000 0000 0000 0000 0000 0000 0000 0000   (0x80000000)
+  Overflowed sum (33 bit) = 1000 0000 0000 0000 0000 0000 0000 0000   (0x100000000 — bit 33 overflows and is DROPPED)
+  Remaining 32 bits        = 1000 0000 0000 0000 0000 0000 0000 0000   (0x80000000)
 
-Bu bit deseni (0x80000000), işaretsiz okunursa 2.147.483.648'dir; ama işaretli (ikinin tümleyeni) olarak
-okunduğunda en üst bit (işaret biti) 1 olduğu için NEGATİF bir sayıdır ve tam olarak:
-  0x80000000 (işaretli, 32-bit) = -2.147.483.648 = INT_MIN
+Read as unsigned, this bit pattern (0x80000000) is 2,147,483,648; but read as signed (two's
+complement), it is a NEGATIVE number because the top bit (the sign bit) is 1, and it is exactly:
+  0x80000000 (signed, 32-bit) = -2,147,483,648 = INT_MIN
 ```
 
 From the hardware's point of view nothing is "wrong": the processor dropped the 33rd bit and kept the 32 bits
@@ -1218,11 +1218,11 @@ overflow **never occurred** and delete a check that relies on it.
 
 ### The correct check: **before** the operation, or with overflow-reporting builtins
 
-```c title="Taşmayı güvenle denetlemek"
+```c title="Safely checking for overflow"
 #include <limits.h>
 #include <stdbool.h>
 
-/* 1) İşlemden önce sınırla karşılaştır (taşınabilir) */
+/* 1) Compare against the bound before the operation (portable) */
 bool guvenli_topla(int a, int b, int *sonuc)
 {
     if ((b > 0 && a > INT_MAX - b) || (b < 0 && a < INT_MIN - b))
@@ -1231,7 +1231,7 @@ bool guvenli_topla(int a, int b, int *sonuc)
     return true;
 }
 
-/* 2) GCC/Clang yerleşikleri: taşma olursa true döner */
+/* 2) GCC/Clang builtins: return true if it overflows */
 bool guvenli_carp(size_t a, size_t b, size_t *sonuc)
 {
     return !__builtin_mul_overflow(a, b, sonuc);
@@ -1327,8 +1327,8 @@ arguments don't match, the result is undefined:
 
 ```c
 long long buyuk = 5000000000LL;
-printf("%d\n", buyuk);          /* tür uyuşmazlığı: %lld olmalı */
-printf("%s\n");                 /* argüman yok: yığından rastgele değer okunur */
+printf("%d\n", buyuk);          /* type mismatch: should be %lld */
+printf("%s\n");                 /* no argument: a random value is read from the stack */
 ```
 
 If you need to write your own variadic function: take the argument count through an explicit parameter, or
@@ -1344,7 +1344,7 @@ a `malloc` call. The handler interrupts whatever code was running at that moment
 data structures get corrupted. This is also the root cause of a real SSH server vulnerability (2024,
 "regreSSHion," CVE-2024-6387): a timeout signal's handler called a logging function that was not async-signal-safe.
 
-```c title="Doğru kalıp: işleyici yalnız bayrak kurar"
+```c title="Correct pattern: the handler only sets a flag"
 #include <signal.h>
 
 static volatile sig_atomic_t durdur = 0;
@@ -1352,7 +1352,7 @@ static volatile sig_atomic_t durdur = 0;
 static void isleyici(int sig)
 {
     (void)sig;
-    durdur = 1;                 /* yalnız bu: eşzamansız güvenli */
+    durdur = 1;                 /* only this: async-signal-safe */
 }
 
 int main(void)
@@ -1363,7 +1363,7 @@ int main(void)
     sigaction(SIGTERM, &sa, NULL);
 
     while (!durdur) {
-        /* asıl iş; temizlik ve günlük yazımı döngü dışında, normal akışta */
+        /* the real work; cleanup and logging happen outside the loop, in normal flow */
     }
     temizle_ve_cik();
 }
@@ -1400,7 +1400,7 @@ false alarms; dynamic analysis only sees the paths that actually run, but whatev
 | Semantic query | CodeQL, Semgrep | Source-to-sink data flow: "does a value from argv reach an unvalidated memcpy?" | Medium |
 | Commercial | Coverity, Klocwork, Polyspace | Deep analysis and reporting on large codebases | High |
 
-```bash title="Bir C dosyasını birkaç araçla taramak"
+```bash title="Scanning a C file with several tools"
 gcc -fanalyzer -Wall -Wextra -c ayristir.c
 clang-tidy ayristir.c -checks='-*,cert-*,bugprone-*,clang-analyzer-security*' -- -I.
 cppcheck --enable=warning,portability --addon=cert ayristir.c
@@ -1464,10 +1464,10 @@ between them.
 ### Practical use
 
 ```bash
-# Test derlemesi: hata ayıklama bilgisi + çerçeve işaretçisi + iki sanitizer
+# Test build: debug info + frame pointer + two sanitizers
 gcc -g -O1 -fno-omit-frame-pointer -fsanitize=address,undefined program.c -o program_test
 
-# İlk UBSan hatasında durmak ve ayrıntılı yığın izi almak için
+# To stop at the first UBSan error and get a detailed stack trace
 UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 ./program_test
 ASAN_OPTIONS=detect_leaks=1 ./program_test
 ```
@@ -1477,7 +1477,7 @@ ASAN_OPTIONS=detect_leaks=1 ./program_test
 When Demo 3's `tasma(1)` call (`INT_MAX + 1`) is run in a build compiled with UBSan, it produces a report similar
 to the one below. Let's read it line by line:
 
-```text title="UBSan raporu, satır satır açıklamalı"
+```text title="UBSan report, explained line by line"
 ub.c:24:15: runtime error: signed integer overflow:
             2147483647 + 1 cannot be represented in type 'int'
 ```
@@ -1493,7 +1493,7 @@ ub.c:24:15: runtime error: signed integer overflow:
 
 The same report format applies to other kinds of UB; only the middle line changes:
 
-```text title="Aynı formatın diğer UB türlerindeki hâli"
+```text title="The same format for other kinds of UB"
 ub.c:33:15: runtime error: shift exponent 31 is too large for 32-bit type 'int'
 ub.c:43:14: runtime error: load of misaligned address 0x... for type 'int', which requires 4 byte alignment
 ```
@@ -1501,11 +1501,11 @@ ub.c:43:14: runtime error: load of misaligned address 0x... for type 'int', whic
 Let's read an ASan report the same way — **what each line says** (when a buffer overflow is caught in Demo 5's
 `giris_sert` target):
 
-```text title="ASan tampon taşması raporu, satır satır"
+```text title="ASan buffer overflow report, line by line"
 ==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffee...
 WRITE of size 1 at 0x7ffee... thread T0
     #0 in strcpy
-    #1 in kopyala tasma.c:24          <- HANGİ SATIR: yazma işlemi burada oldu
+    #1 in kopyala tasma.c:24          <- WHICH LINE: the write happened here
     #2 in main tasma.c:35
 ```
 
@@ -1557,22 +1557,22 @@ crash but does corrupt memory.
 In libFuzzer, you write a single function that calls the code under test. The fuzzer calls this function thousands
 of times a second, with a different byte sequence each time:
 
-```c title="fuzz.c — libFuzzer hedefi"
+```c title="fuzz.c — the libFuzzer target"
 #include <stddef.h>
 #include <stdint.h>
 #include "ayristir.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *veri, size_t boyut)
 {
-    ayristir(veri, boyut);      /* test edilen fonksiyon; dönüş değeri önemsiz */
-    return 0;                   /* 0 dışında bir değer döndürme */
+    ayristir(veri, boyut);      /* the function under test; the return value doesn't matter */
+    return 0;                   /* never return anything other than 0 */
 }
 ```
 
 ```bash
 clang -g -O1 -fsanitize=fuzzer,address fuzz.c ayristir.c -o fuzz_ayristir
 mkdir -p corpus && cp tohum/*.bin corpus/
-./fuzz_ayristir corpus/ -max_total_time=10     # 10 saniye sınırlı oturum
+./fuzz_ayristir corpus/ -max_total_time=10     # a session capped at 10 seconds
 ```
 
 The properties of a good target: it is **fast** (no network, disk, or `sleep`), **deterministic** (the same input
@@ -1682,11 +1682,11 @@ Take Demo 5's `tasma.c`: `char tampon[64]; strcpy(tampon, girdi);`. When the pro
 (`giris_sert`), the compiler **automatically** adds an extra region to the stack frame in the following order
 (addresses from high to low, in the direction the stack grows):
 
-```text title="Korumalı bir yığın çerçevesinin düzeni (kavramsal, yüksek adresten düşüğe)"
-[ dönüş adresi          ]  ← fonksiyon bitince buraya dönülür (8 bayt, 64-bit'te)
-[ kaydedilmiş çerçeve    ]  ← çağıranın çerçeve işaretçisi (8 bayt)
-[ K A N A R Y A          ]  ← fonksiyon GİRİŞİNDE yazılan, fonksiyon ÇIKIŞINDA denetlenen değer (8 bayt, 64-bit'te)
-[ tampon[64]             ]  ← strcpy'nin yazdığı yer; TAŞMA BURADAN YUKARI DOĞRU BÜYÜR
+```text title="Layout of a protected stack frame (conceptual, high address to low)"
+[ return address         ]  ← execution returns here once the function ends (8 bytes, on 64-bit)
+[ saved frame pointer    ]  ← the caller's frame pointer (8 bytes)
+[ C A N A R Y            ]  ← written on function ENTRY, checked on function EXIT (8 bytes, on 64-bit)
+[ tampon[64]             ]  ← where strcpy writes; the OVERFLOW GROWS UPWARD FROM HERE
 ```
 
 The code the compiler adds when entering the function copies a **random** value — generated once by the operating
@@ -1694,16 +1694,16 @@ system at process startup (glibc's `__stack_chk_guard`, usually from `/dev/urand
 before the function returns, a **second** piece of compiler-added code reads this cell's value again and
 **compares** it against the starting value:
 
-```text title="strcpy(tampon, girdi) 80 karakterlik bir girdiyle çağrılırsa"
-tampon'un kapasitesi        : 64 bayt
-girdi'nin uzunluğu          : 80 bayt (+ sonlandırıcı)
-Taşan miktar                : 80 - 64 = 16 bayt
-İlk 64 bayt                 : tampon'u doldurur (amaçlanan)
-Sonraki 8 bayt (65-72)      : KANARYA hücresinin üzerine yazılır → kanarya BOZULUR
-Kalan bayt(lar)             : kaydedilmiş çerçeveye/dönüş adresine doğru ilerler
+```text title="If strcpy(tampon, girdi) is called with an 80-character input"
+Capacity of tampon           : 64 bytes
+Length of girdi              : 80 bytes (+ terminator)
+Overflow amount              : 80 - 64 = 16 bytes
+First 64 bytes               : fill tampon (as intended)
+Next 8 bytes (65-72)         : overwrite the CANARY cell → the canary is CORRUPTED
+Remaining byte(s)            : advance toward the saved frame/return address
 
-Fonksiyon dönerken denetim: okunan_kanarya == baslangictaki_kanarya ?
-   HAYIR → __stack_chk_fail() çağrılır → "*** stack smashing detected ***" → abort()
+Check on function return: read_canary == starting_canary ?
+   NO → __stack_chk_fail() is called → "*** stack smashing detected ***" → abort()
 ```
 
 When the protection is **off** (`giris_zayif`), this extra region and comparison don't exist at all; the same
@@ -1818,11 +1818,11 @@ program has crashed; but control flow was never hijacked.
 === "Linux"
 
     ```bash
-    readelf -h prog | grep Type                 # DYN = PIE, EXEC = PIE değil
-    readelf -l prog | grep -A1 GNU_STACK        # RW = NX açık, RWE = kapalı
-    readelf -l prog | grep GNU_RELRO            # RELRO var mı
-    readelf -d prog | grep BIND_NOW             # tam RELRO
-    readelf -s prog | grep __stack_chk_fail     # kanarya kullanılıyor
+    readelf -h prog | grep Type                 # DYN = PIE, EXEC = not PIE
+    readelf -l prog | grep -A1 GNU_STACK        # RW = NX on, RWE = off
+    readelf -l prog | grep GNU_RELRO            # is RELRO present?
+    readelf -d prog | grep BIND_NOW             # full RELRO
+    readelf -s prog | grep __stack_chk_fail     # canary in use
     ```
 
     The `checksec` script (`checksec --file=prog`) shows all of these in a single table.
@@ -1971,14 +1971,14 @@ information out of the binary.
 | **Remove logging in the release** | Compile logging macros **completely** out of the build with a build flag | Error messages and internal state information do not stay in the binary |
 | **Hide sensitive strings** | Encrypt or scramble at compile time, decrypt at the point of use, and **immediately wipe** it (Recipe 12.11) | A `strings` scan cannot find the sensitive constants |
 
-```c title="Günlük makrosu: sürümde hiç kod üretmez"
+```c title="Logging macro: generates no code at all in the release build"
 #ifdef GUNLUK_ACIK
 #  define GUNLUK(...) fprintf(stderr, __VA_ARGS__)
 #else
-#  define GUNLUK(...) ((void)0)       /* dizge de, çağrı da ikili dosyaya girmez */
+#  define GUNLUK(...) ((void)0)       /* neither the string nor the call end up in the binary */
 #endif
 
-GUNLUK("[LOG] lisans denetimi: %s\n", sonuc ? "gecti" : "kaldi");
+GUNLUK("[LOG] license check: %s\n", sonuc ? "passed" : "failed");
 ```
 
 Silencing logging with a **runtime** flag (`if (hata_ayiklama) printf(...)`) is not enough: the string stays in
@@ -2031,14 +2031,14 @@ only be read off from the value of a **state variable**.
 
 ![Control flow before and after flattening](assets/h04-19-duzlestirme-giris.svg)
 
-```c title="Düzleştirme şablonu"
+```c title="Flattening template"
 int durum = 1;
 for (;;) {
     switch (durum) {
-    case 1: /* 1. adım */  durum = 2; break;
-    case 2: /* 2. adım */  durum = (kosul ? 3 : 4); break;
-    case 3: /* başarı yolu */ durum = 5; break;
-    case 4: /* hata yolu */   return BASARISIZ;
+    case 1: /* step 1 */  durum = 2; break;
+    case 2: /* step 2 */  durum = (kosul ? 3 : 4); break;
+    case 3: /* success path */ durum = 5; break;
+    case 4: /* failure path */ return BASARISIZ;
     case 5: return BASARILI;
     }
 }
@@ -2130,12 +2130,12 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
 - [ ] Show that logging is removed from the release build and that sensitive strings do not appear in `strings`
       output.
 
-```markdown title="S9 önlem kartı şablonu (her önlem için)"
-### KS-01 Sürümde günlüğün kaldırılması
-**Açıklama:** Neden gerekli? (hangi varlık, hangi tehdit)
-**Uygulama:** Nasıl yapıldı? (dosya, makro, derleme bayrağı)
-**Doğrulama:** Nasıl test edildi? (komut + beklenen çıktı)
-**Kalan risk / ödünleşim:** Varsa
+```markdown title="S9 countermeasure card template (for each measure)"
+### KS-01 Removing logging in the release build
+**Description:** Why is it needed? (which asset, which threat)
+**Implementation:** How was it done? (file, macro, build flag)
+**Verification:** How was it tested? (command + expected output)
+**Residual risk / trade-off:** If any
 ```
 
 ---

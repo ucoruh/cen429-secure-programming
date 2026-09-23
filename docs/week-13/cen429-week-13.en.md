@@ -624,8 +624,8 @@ meets CEN429-DR-01" above a critical function lets the next developer reading th
 later) instantly answer "why is this line here?" This is a small, code-side reflection of the requirement block
 from Section 3:
 
-```c title="Kod içinde izlenebilirlik yorumu (örnek)"
-/* CEN429-DR-01: beklemedeki kasa dosyası AEAD ile şifrelenir. */
+```c title="Traceability comment in code (example)"
+/* CEN429-DR-01: the vault file at rest is encrypted with AEAD. */
 int kasa_dosyasi_sifrele(const unsigned char *anahtar, ...) {
     ...
 }
@@ -649,9 +649,9 @@ In security guides that pass certification, every section opens with the require
 requirement is written in this pattern:
 
 ```text
-[Standart/şema] Gereksinim kimliği — DURUM
-Gereksinimin metni (standarttan).
-Ürünün bu gereksinimi nasıl karşıladığının açıklaması; ilgili önlem kartlarına ve bölümlere başvuru.
+[Standard/scheme] Requirement id — STATUS
+The requirement's text (from the standard).
+A description of how the product meets this requirement; reference to the relevant control cards and sections.
 ```
 
 In the field, in a mobile payment library's guide, every section — "data at rest," "data in use," "data in
@@ -695,13 +695,13 @@ Let's fill in the pattern with a real example; this is the **written-up-in-the-g
 `CEN429-DR-01` chain from Section 2:
 
 ```text
-[CEN429-DR] CEN429-DR-01 — KARŞILANDI
-Gereksinim: Beklemedeki C sınıfı hassas veri, kimlik doğrulamalı şifrelemeyle (AEAD) korunmalıdır.
-Karşılama: Yerel kasa dosyası AES-256-GCM ile şifrelenir (bkz. S7.2 "Kasa dosyası şifreleme"). Şifreleme
-anahtarı, cihazın güvenli depolama biriminden (Android Keystore / iOS Keychain) türetilir ve bellek dışında
-düz metin olarak hiç saklanmaz. Doğrulama: birim testi (test_butunluk.c), şifreli dosyanın tek baytını
-değiştirip çözmenin reddedildiğini kontrol eder. Kanıt: CI çalıştırma kaydı #482, test çıktısı
-evidence/week13/test_butunluk_ci482.log.
+[CEN429-DR] CEN429-DR-01 — Met
+Requirement: Class-C sensitive data at rest must be protected with authenticated encryption (AEAD).
+Compliance: The local vault file is encrypted with AES-256-GCM (see S7.2 "Vault file encryption").
+The encryption key is derived from the device's secure storage unit (Android Keystore / iOS
+Keychain) and is never stored as plaintext outside memory. Verification: a unit test
+(test_butunluk.c) checks that changing a single byte of the encrypted file and then decrypting it is
+rejected. Evidence: CI run record #482, test output evidence/week13/test_butunluk_ci482.log.
 ```
 
 Every line in the block serves a purpose: the **header line** (`[Family] Id — Status`) tells the evaluator's eye
@@ -713,14 +713,14 @@ Now let's fill in the same pattern for a **deferred** requirement — this time 
 not the product itself:
 
 ```text
-[CEN429-AP] CEN429-AP-07 — DEVREDİLDİ (üst uygulamaya)
-Gereksinim: Uygulama güvenli biçimde kurulmalı ve güncellenmelidir.
-Karşılama: Kütüphane kendi başına bir dağıtım/güncelleme mekanizmasına sahip değildir; bu, kütüphaneyi
-paketleyen üst uygulamanın sorumluluğundadır. Üst uygulama geliştiricisine önerilen yöntem: (1) resmî
-uygulama mağazasının imza doğrulamasını kullanmak, (2) kendi güncelleme kanalı kullanılıyorsa güncelleme
-paketlerini Hafta 6'da anlatılan imzalama şemasıyla imzalamak. Kime: üst uygulama geliştiricisi. Neden:
-kütüphane ağ/dosya sistemi seviyesinde kurulum işlemine erişmez, yalnız API olarak çağrılır. Nasıl:
-yukarıdaki iki yöntemden biri, kılavuzun "Dış bileşenlerden beklenen güvenlik" bölümünde ayrıntılandırılır.
+[CEN429-AP] CEN429-AP-07 — Deferred (to the parent application)
+Requirement: The application must be installed and updated securely.
+Compliance: The library does not have its own distribution/update mechanism; this is the
+responsibility of the parent application that packages the library. The recommended method for the
+parent application's developer: (1) use the official app store's signature verification, (2) if a
+custom update channel is used, sign update packages with the signing scheme described in Week 6.
+To whom: the parent application's developer. Why: the library does not access installation at the
+network/file-system level, it is only called as an API. How: one of the two methods above, detailed in the guide's "Security expected from external components" section.
 ```
 
 Notice that the "deferred" block also has a **Compliance** field — but this field answers "how must the other
@@ -767,12 +767,12 @@ Some requirements are neither met nor deferred yet — the project has conscious
 block's form in this state:
 
 ```text
-[CEN429-DT] CEN429-DT-04 — KARŞILANMADI
-Gereksinim: Sunucu sertifikası sabitlenmelidir (certificate pinning).
-Durum: Şu anda uygulanmıyor; yalnız standart TLS sertifika zinciri doğrulaması yapılıyor (CEN429-DT-01
-karşılanıyor, ama sabitleme yok). Kalan risk: bir saldırganın, güvenilir bir kök sertifika yetkilisinden
-sahte bir sertifika alabilmesi durumunda MITM mümkün olabilir (bkz. S16.4). Planlanan düzeltme: v1.1
-sürümünde sabitleme eklenecek (bkz. proje planı, görev #217).
+[CEN429-DT] CEN429-DT-04 — Not met
+Requirement: The server certificate must be pinned (certificate pinning).
+Status: Not currently implemented; only standard TLS certificate chain validation is performed
+(CEN429-DT-01 is met, but pinning is absent). Residual risk: if an attacker manages to obtain a
+fraudulent certificate from a trusted root certificate authority, MITM may become possible (see
+S16.4). Planned fix: pinning will be added in v1.1 (see project plan, task #217).
 ```
 
 The "not met" block fills in the **Status** and **Residual risk** fields instead of **Compliance**; this
@@ -1573,7 +1573,7 @@ evidence/
     mitm_test_2026-11-03.log
     handshake.pcapng
     integrity_test.log
-  README.md   <- her dosyanın hangi gereksinimin kanıtı olduğunu bir satırla listeler
+  README.md   <- lists, in one line each, which requirement every file is evidence for
 ```
 
 The `README.md` file is the **mirror** of the evidence column in the compliance matrix: every row in the matrix
@@ -1852,7 +1852,7 @@ genuinely accessible.
 ### How you format sources in S1 (example)
 
 ```text
-S1 — Kaynaklar (örnek biçim)
+S1 — Sources (example format)
 [1] ETSI EN 303 645 V2.1.1, "Cyber Security for Consumer Internet of Things: Baseline Requirements."
 [2] ISO/IEC 15408-1:2022, Common Criteria for Information Technology Security Evaluation.
 [3] OWASP Mobile Application Security Verification Standard (MASVS) v2.0.

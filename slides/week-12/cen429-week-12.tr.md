@@ -1195,6 +1195,12 @@ Bu kart, projenizin **S16** iskeletidir. Şimdi alanları görelim.
 
 ---
 
+# Raporun dört bölümü — şema
+
+![w:900](assets/h12-12-raporlama.svg)
+
+---
+
 # İyi rapor = karar verilebilir belge
 
 Bir "kaldınız" listesi değil.

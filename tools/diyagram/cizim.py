@@ -421,11 +421,13 @@ def dizi(baslik_metin, aktorler, mesajlar, alt_metin=None, dip=None, g=12.0, y=6
     na = len(aktorler)
     fig, ax = tuval(g, y)
     baslik(ax, baslik_metin, alt_metin)
-    ust = 80
+    # Alt başlık varsa vurgu çizgisi y=78'e iner; aktör kutuları onun altında kalmalı.
+    ust = 71 if alt_metin else 78
     alt_s = 16 if dip else 8
     xs = [(100.0 / (na + 1)) * (i + 1) for i in range(na)]
     for i, ad in enumerate(aktorler):
-        kutu(ax, xs[i], ust, min(30, 80.0 / na), 9, ad, dolgu=KOYU, kenar=KOYU,
+        # Kutular bitişmesin: merkez aralığından biraz dar tutulur.
+        kutu(ax, xs[i], ust, min(30, 100.0 / (na + 1) - 3), 9, ad, dolgu=KOYU, kenar=KOYU,
              bas_renk="white", bas_boyut=11.5)
         ax.plot([xs[i], xs[i]], [ust - 5.5, alt_s], color=CIZGI, linewidth=1.6,
                 linestyle=(0, (4, 4)), zorder=1)
@@ -434,11 +436,13 @@ def dizi(baslik_metin, aktorler, mesajlar, alt_metin=None, dip=None, g=12.0, y=6
     for j, (a, b, metin, tur) in enumerate(mesajlar):
         yy = ust - 10 - j * adim
         if tur == "not":
-            g2 = min(62, 92.0)
-            ax.add_patch(FancyBboxPatch((xs[a] - g2 / 2, yy - 3.2), g2, 6.4,
+            g2 = 62.0
+            # Not kutusu tuvalin dışına taşmasın diye merkez kırpılır.
+            cx = min(max(xs[a], 3 + g2 / 2), 97 - g2 / 2)
+            ax.add_patch(FancyBboxPatch((cx - g2 / 2, yy - 3.2), g2, 6.4,
                                         boxstyle="round,pad=0,rounding_size=1.4",
                                         linewidth=1.2, edgecolor=UYARI, facecolor=UYARIBG, zorder=3))
-            ax.text(xs[a], yy, metin, ha="center", va="center", fontsize=9.6, color=UYARI, zorder=4)
+            ax.text(cx, yy, metin, ha="center", va="center", fontsize=9.6, color=UYARI, zorder=4)
         else:
             renk = ANA if tur == "ileri" else IYI
             ok(ax, xs[a], yy, xs[b], yy, renk=renk, kalinlik=1.8,

@@ -201,6 +201,17 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 
 ---
 
+# Neden veriye odaklanıyoruz?
+
+- İlk iki hafta "hata → saldırı → düzeltme" ile **programın kendisini** koruduk.
+- Bu hafta odak **veriye** kayıyor: parola, ödeme anahtarı, kişisel bilgi.
+- Bir sır, yaşam döngüsü boyunca **üç ayrı hâlde** bulunur.
+- Her hâlin tehdidi de savunması da **farklıdır**.
+
+<!-- Konuşma notu: Hafta 1-2 programı korudu; bu hafta odak veride. Aynı derinlemesine savunma fikri burada da geçerli. -->
+
+---
+
 # Bir sırrın üç hâli
 
 | Hâl | Nerede | Tehdit | Savunma |
@@ -234,9 +245,35 @@ Saldırgan sırra ulaşmak için **hepsini sırayla** kırmalı = derinlemesine 
 
 ---
 
+# Örnek mimari: telefon ↔ sunucu
+
+- **Telefon:** güvenilmez ortam — kullanıcı (yani olası saldırgan) cihazın sahibi; root/hata ayıklayıcı olabilir.
+- **Sunucu:** güvenilir taraf.
+- Her arayüzde sorulur: hangi veri, hangi hâlde, kimlik nasıl doğrulanıyor, gizlilik mi bütünlük mü?
+
+<!-- Konuşma notu: Bu üç soru bugünün demolarının tam olarak cevapladığı sorulardır. -->
+
+---
+
 <!-- _class: bolum -->
 
 # 2. Şifreleme temelleri
+
+---
+
+# Kriptografinin dört ailesi — şema
+
+![w:900](assets/h03-12-kripto-aileleri.svg)
+
+---
+
+# Kriptografi tek şey değildir
+
+- Farklı hedefler için **farklı araçlar** vardır.
+- En sık karıştırılan dört aile: şifreleme, özet, MAC, imza.
+- Hangisi **gizlilik**, hangisi **bütünlük**, hangisi **ikisi birden** verir?
+
+<!-- Konuşma notu: Öğrenciler genelde "şifreledim = güvende" sanır. Bu bölüm bu yanılgıyı baştan kırar. -->
 
 ---
 
@@ -257,17 +294,64 @@ Saldırgan sırra ulaşmak için **hepsini sırayla** kırmalı = derinlemesine 
 
 ---
 
-# Simetrik + Asimetrik = Hibrit
+# En sık yapılan iki hata
 
-- **Simetrik (AES):** hızlı, ama iki taraf aynı gizli anahtarı bilmeli
-- **Asimetrik (RSA/EC):** anahtar dağıtımını çözer, ama yavaş
-- **Hibrit:** asimetrik ile küçük bir **simetrik anahtar** taşınır; veri onunla AEAD'le şifrelenir
+1. **Yalnız şifrelemek, bütünlüğü unutmak.** Şifreli metin (ör. AES-CTR) saldırganın **fark edilmeden** bit değiştirmesini engellemez.
+2. **Kendi şifreni/kipini yazmak.** Kerckhoffs ilkesi: güvenlik algoritmanın değil **anahtarın** gizliliğine dayanır.
+
+> Standart, denenmiş yapıları kullanın; ev yapımı kripto neredeyse her zaman kırılır.
+
+---
+
+# Simetrik neden tek başına yetmez?
+
+- **Simetrik (AES):** çok hızlı.
+- Ama iki tarafın **aynı gizli anahtarı** bilmesi gerekir.
+- Bu anahtarı güvensiz bir ağdan **nasıl** paylaşırsınız?
+
+Cevap bir sonraki slaytta.
+
+---
+
+# Asimetrik neyi çözer, neye mal olur?
+
+- **Asimetrik (RSA/EC):** herkesin bir **açık** (dağıtılır) ve bir **özel** (gizli) anahtarı var.
+- Anahtar dağıtımı sorununu çözer.
+- Ama işlemler **yavaştır**; büyük veriye uygun değil (100–1000× yavaş).
+
+---
+
+# Hibrit: ikisi birlikte
+
+- **Hibrit:** asimetrik ile küçük bir **simetrik anahtar** taşınır; veri onunla AEAD'le şifrelenir.
+- Gerçek sistemler hep böyle çalışır.
 
 > TLS tam olarak budur: ECDHE ile oturum anahtarı → trafik AES-GCM ile.
 
 <!--
 Konuşma notu: RSA ile 1 GB dosya şifrelenmez. Asimetrik yalnız anahtarı taşır. Bu ayrımı netleştirin.
 -->
+
+---
+
+<!-- _class: yogun -->
+
+# Simetrik vs Asimetrik — karşılaştırma
+
+| Özellik | Simetrik (AES) | Asimetrik (RSA/EC) |
+| --- | --- | --- |
+| Hız | Çok hızlı | Yavaş (100–1000×) |
+| Anahtar | Tek, paylaşılan gizli | Açık/özel çift |
+| Kullanım | Büyük veri şifreleme | Anahtar taşıma, imza |
+| Bu haftada | Dosya/DB/oturum | TLS anahtar kurulumu (H10) |
+
+---
+
+# Blok şifre nedir?
+
+- **Blok şifre:** veriyi sabit boyutlu **bloklar** halinde şifreleyen algoritma.
+- **AES:** tek seferde **16 baytlık** bir bloğu şifreler.
+- Bloktan **uzun** veri için bir **kip** (mode of operation) gerekir.
 
 ---
 
@@ -282,7 +366,42 @@ AES bir **blok** şifresidir (16 bayt). Uzun veri için **kip** gerekir:
 | **CTR** | akışa çevirir, nonce tekrarına çok hassas (Demo 2) |
 | **GCM** | ✅ CTR + MAC = **AEAD** |
 
-ChaCha20 zaten akış şifresi; + Poly1305 = AEAD.
+---
+
+# ChaCha20: akış şifre
+
+- **Akış şifresi:** blok kavramı yok; veriyle aynı uzunlukta bir **anahtar akışı** üretip XOR'lar.
+- ChaCha20 zaten akış şifresidir.
+- **+ Poly1305 MAC** = AEAD (ChaCha20-Poly1305, RFC 8439).
+
+Sonuç aynı: **gizlilik + bütünlük tek pakette.**
+
+---
+
+# Özet (hash): tek yönlü parmak izi
+
+- **Anahtarsızdır.** Yalnız verinin **değişip değişmediğini** gösterir.
+- Saldırgan veriyi değiştirip **özeti de yeniden hesaplayabilir**.
+- Bu yüzden özet tek başına bütünlük **kanıtı değildir**.
+- Eski MD5/SHA-1 çakışmaya açık; **SHA-256/SHA-3** kullanın.
+
+---
+
+# MAC: paylaşılan anahtarla bütünlük
+
+- **MAC** (ör. HMAC-SHA-256): **paylaşılan gizli anahtar** ister.
+- "Bu mesajı, anahtarı bilen biri gönderdi ve değişmedi" der.
+- İki taraf da anahtarı bildiği için MAC **inkâr edilemezlik sağlamaz**.
+- MAC karşılaştırması **sabit zamanlı** olmalı (`CRYPTO_memcmp`), düz `memcmp` değil.
+
+---
+
+# İmza: inkâr edilemezlik
+
+- **Dijital imza** (Ed25519, RSA-PSS): **açık/özel** anahtar çiftiyle çalışır.
+- Yalnız özel anahtar sahibi imza üretebilir; herkes açık anahtarla doğrular.
+- Bu yüzden **inkâr edilemezlik** sağlar.
+- Sertifikalar ve sürüm imzalama (Hafta 10) bununla çalışır.
 
 ---
 
@@ -299,6 +418,14 @@ ChaCha20 zaten akış şifresi; + Poly1305 = AEAD.
 
 ---
 
+# AEAD çoğu zaman doğru cevaptır
+
+- Ayrı ayrı "şifrele + MAC ekle" kurmak yerine **AEAD** kullanın.
+- İki işi **tek çağrıda**, doğru sırada (encrypt-then-MAC) ve daha az hatayla yapar.
+- Ayrı MAC yalnız şifrelenmeyecek ama bütünlüğü gereken veriler için (ya da AEAD'nin AAD alanıyla) gerekir.
+
+---
+
 <!-- _class: sema -->
 
 # AEAD: tek çağrıda gizlilik + bütünlük
@@ -310,7 +437,16 @@ Konuşma notu: AAD'yi vurgulayın: sürüm no, kayıt kimliği gibi bağlanması
 
 ---
 
-# Demo 1 — AES-256-GCM ile dosya şifreleme
+# Demo 1 nedir?
+
+- **Demo 1 · `code/week-03/01-aes-gcm-dosya`** — AEAD, NIST SP 800-38D.
+- Bir dosyayı AES-256-GCM ile şifreler.
+- Çıktı biçimi: `[12 bayt nonce][şifreli metin][16 bayt etiket]`.
+- Sonra şifreli metnin ve yalnız etiketin bir baytını bozup çözmenin **reddedildiğini** görüyoruz.
+
+---
+
+# Demo 1 — kod
 
 ```c
 kripto_rastgele(nonce, 12);              // her mesaja YENI nonce
@@ -320,11 +456,37 @@ int ok = kripto_gcm_coz(...);            // etiket dogrulanir
 if (!ok) { /* REDDET */ }
 ```
 
+---
+
+# Demo 1 — gerçek çıktı
+
 ```text
 ADIM 3  Cozuldu ve DOGRULANDI (53 bayt)
 ADIM 4  1 bayt degistir -> DOGRULAMA BASARISIZ, REDDEDILDI
 ADIM 5  yalniz etiketi degistir -> yine REDDEDILDI
 ```
+
+---
+
+# Demo 1 — ADIM 2 ve 3: nonce, doğru çözme
+
+- **ADIM 2:** Rastgele 12 baytlık bir nonce üretildi, dosyanın başına yazıldı.
+- Nonce **gizli değildir** (dosyada açık durur); yalnız **benzersiz** olması gerekir.
+- **ADIM 3:** Aynı anahtar ve nonce ile çözüldü, etiket tuttu, düz metin geri geldi.
+
+---
+
+# Tuz, IV, nonce — şema
+
+![w:900](assets/h03-14-tuz-iv-nonce.svg)
+
+---
+
+# Demo 1 — ADIM 4 ve 5: kurcalama → red
+
+- **ADIM 4:** Şifreli metnin 20. baytı XOR ile değiştirildi. GCM etiketi bütün şifreli metin üzerinde hesaplandığı için **tek bayt bile** etiketi bozar → çözme reddedildi.
+- **ADIM 5:** Bu kez yalnız **etikete** dokunuldu; yine reddedildi.
+- Etiket, veriyle **ve** anahtarla birlikte hesaplanır; saldırgan onu anahtarsız üretemez.
 
 ---
 
@@ -341,9 +503,37 @@ Konuşma notu: "Değerlendirici bir baytı değiştirip uygulamanın sessizce ya
 
 ---
 
+<!-- _class: yogun -->
+
+# Demo 1 — sık hatalar kontrol listesi
+
+- [ ] Nonce her mesajda benzersiz mi? (Sabit nonce = felaket)
+- [ ] Etiket saklanıyor ve çözerken doğrulanıyor mu?
+- [ ] Doğrulama başarısızsa çıktı üretmeden mi çıkılıyor?
+- [ ] Anahtar koda gömülü değil, güvenli bir kaynaktan mı geliyor?
+- [ ] AES-CBC/CTR tek başına (MAC'siz) kullanılmıyor, değil mi?
+
+<!-- Konuşma notu: Değerlendirici aynı düz metnin iki kez şifrelendiğinde farklı şifreli metin verdiğini (nonce tekrarı yok) de kontrol eder. -->
+
+---
+
 <!-- _class: bolum -->
 
 # 3. Rastgele sayılar ve kripto API'leri
+
+---
+
+# Üç tür rastgelelik — şema
+
+![w:900](assets/h03-13-rastgelelik-turleri.svg)
+
+---
+
+# Neden rastgelelik bu kadar önemli?
+
+- Anahtar, IV, nonce, tuz, oturum kimliği — hepsi tek bir varsayıma dayanır: **tahmin edilemezlik**.
+- Dünyanın en iyi şifreleme algoritması, anahtarı tahmin edilebilir bir üreteçle oluşturulmuşsa **hiçbir şey** korumaz.
+- Bu bölümde önce **yanlış** yollara, sonra **doğru** yola bakacağız.
 
 ---
 
@@ -363,13 +553,55 @@ Konuşma notu: "Değerlendirici bir baytı değiştirip uygulamanın sessizce ya
 
 ---
 
-# Üç klasik hata
+# Hata 1 — zamanla tohumlamak
 
-1. **Zamanla tohumlamak:** `srand(time(NULL))` → bir günde yalnız 86.400 olası tohum
-2. **Entropiyi silmek:** Debian OpenSSL (2008) — tek entropi süreç kimliği, ≤ 32.768 anahtar (CVE-2008-0166)
-3. **Modulo sapması:** `r % 6` → 256 = 42·6 + 4 → 0–3 daha sık
+```c
+srand(time(NULL));
+unsigned char anahtar[16];
+for (int i = 0; i < 16; i++)
+    anahtar[i] = rand() & 0xFF;
+```
 
-➡️ Ders: kripto koda **anlamadan dokunma**; istatistiksel test tahmin edilemezliği kanıtlamaz
+Saldırgan anahtarın hangi gün üretildiğini biliyorsa, olası tohum sayısı bir günde yalnız **86.400**. Bir dizüstü bilgisayar hepsini saniyeler içinde dener.
+
+---
+
+# Hata 2 — entropiyi yanlışlıkla silmek
+
+**Debian OpenSSL felaketi (2008):** bir paketleyici, bir uyarıyı susturmak için OpenSSL'in rastgele sayı havuzuna entropi ekleyen iki satırı kaldırdı.
+
+- İki yıl boyunca tek entropi kaynağı **süreç kimliği** (≤ 32.768 değer) oldu.
+- Saldırganlar bütün olası anahtarları önceden üretip listeledi (**CVE-2008-0166**).
+
+---
+
+# Dört yaygın yanlış anlama — şema
+
+![w:900](assets/h03-20-yanlis-anlamalar.svg)
+
+---
+
+# Hata 2 — çıkarım
+
+➡️ Kriptografik koda **anlamadan dokunmayın.**
+
+➡️ Rastgele üretecin çıktısını **istatistiksel olarak test etmek**, tahmin edilemezliğini **kanıtlamaz**.
+
+<!-- Konuşma notu: Debian olayı derste en çok hatırlanan örneklerden biridir; "iki satır sildim, iki yıl boyunca kırık anahtar üretildi" anlatısı etkili. -->
+
+---
+
+# Hata 3 — aralığa indirgerken sapma
+
+`r % 6` masum görünür. `r` 0–255 tekdüze ise:
+
+```text
+256 = 42*6 + 4
+```
+
+- 0–3 değerleri **43'er** kez, 4–5 değerleri **42'şer** kez çıkar.
+- Zar için önemsiz; parola/OTP üretirken tahmin edilebilirliği artırır.
+- Doğru yöntem: **reddetme** (rejection sampling) — sonraki slaytta.
 
 ---
 
@@ -396,9 +628,18 @@ if (RAND_bytes(buf, n) != 1) { /* ASLA devam etme */ }
 
 ---
 
-<!-- _class: yogun -->
+# Dönüş değerini neden denetlemeli?
 
-# Sapmasız aralık ve kullanım listesi
+- Rastgele üreteç **başarısız olabilir**.
+- Denetlenmezse tampon **ilklendirilmemiş** (ya da sıfır) kalır.
+- Program "rastgele" sandığı **sabit** bir anahtarla çalışmaya devam eder.
+- Hata durumunda tek doğru davranış: **işlemi durdurmak**.
+
+<!-- Konuşma notu: Debian olayının bir başka versiyonu budur; kontrolsüz dönüş değeri de benzer bir felakete yol açabilir. -->
+
+---
+
+# Reddetme yöntemiyle sapmasız aralık
 
 ```c
 uint32_t aralikta_rastgele(uint32_t ust) {        /* Tarif 11.11 */
@@ -407,6 +648,14 @@ uint32_t aralikta_rastgele(uint32_t ust) {        /* Tarif 11.11 */
     return r % ust;
 }
 ```
+
+Fikir: 2³² değerin, `ust`'e **tam bölünen** en büyük kısmını kullan, kalanı at.
+
+---
+
+<!-- _class: yogun -->
+
+# Rastgele değerler — kullanım listesi
 
 | Değer | Gizli? | Benzersiz? |
 | --- | --- | --- |
@@ -429,9 +678,94 @@ uint32_t aralikta_rastgele(uint32_t ust) {        /* Tarif 11.11 */
 
 ---
 
+# Şimdi kripto API'sinin içini açıyoruz
+
+- Demo 1'de işi hazır yardımcı fonksiyonlara bıraktık.
+- Şimdi OpenSSL'in **EVP** arayüzünü satır satır yazıyoruz.
+- Amaç: kütüphaneyi kullanırken nerede hata yapılabileceğini görmek.
+- Kural hâlâ geçerli: **kendi algoritmanı yazmazsın**, ama hazır algoritmayı **doğru çağırmak** da bir beceridir.
+
+---
+
+# EVP şifreleme — Adım 1: algoritmayı seç
+
+```c
+EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
+```
+
+- Algoritmayı seç (**AES-256-GCM**).
+- Anahtarı ve nonce'u **henüz verme** — sıradaki adımda.
+
+---
+
+# EVP şifreleme — Adım 2: nonce boyu
+
+```c
+EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL);
+```
+
+- Nonce (IV) uzunluğunu ayarla.
+- GCM için önerilen **12 bayt**; varsayılan da budur ama açık yazmak iyi bir alışkanlıktır.
+
+---
+
+# EVP şifreleme — Adım 3: anahtar + nonce
+
+```c
+EVP_EncryptInit_ex(ctx, NULL, NULL, anahtar, nonce);
+```
+
+- Anahtarı ve nonce'u **şimdi** ver.
+- İlk `Init` çağrısında `NULL` bırakılan yerler burada doldu.
+
+---
+
+# EVP şifreleme — Adım 4: AAD
+
+```c
+EVP_EncryptUpdate(ctx, NULL, &n, aad, aad_n);
+```
+
+- AAD'yi ver: çıktı tamponu **`NULL`**.
+- AAD **şifrelenmez**, yalnız etikete katılır (dosya başlığı, sürüm, kayıt kimliği).
+
+---
+
+# EVP şifreleme — Adım 5: veriyi şifrele
+
+```c
+EVP_EncryptUpdate(ctx, sifreli, &n, acik, acik_n);
+```
+
+- Açık metni şifrele.
+- Büyük veride bu adım **parça parça** tekrarlanabilir.
+
+---
+
+# EVP şifreleme — Adım 6: bitir (ZORUNLU)
+
+```c
+EVP_EncryptFinal_ex(ctx, sifreli + n, &n);
+```
+
+- GCM akış kipinde çalıştığı için **dolgu yoktur**; bu çağrı genelde 0 bayt yazar.
+- Ama çağrılması **zorunludur**: etiket burada hesaplanır.
+
+---
+
+# EVP şifreleme — Adım 7: etiketi al
+
+```c
+EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, etiket);
+```
+
+- Etiketi al ve şifreli metinle birlikte sakla.
+
+---
+
 <!-- _class: yogun -->
 
-# OpenSSL EVP: şifreleme yedi adım
+# Yedi adım — bir arada
 
 ```c
 EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);   /* 1 algoritma */
@@ -447,14 +781,24 @@ Her çağrının dönüşü denetlenir · tek çıkış noktası (`goto son`) ·
 
 ---
 
-<!-- _class: yogun -->
-
-# Çözme: Final başarılı olmadan açık metin YOK
+# Çözme — adım 1-2: aç, etiketi ayarla
 
 ```c
 EVP_DecryptUpdate(ctx, acik, &n, sifreli, sifreli_n);  /* açık metni YAZAR... */
 EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, etiket);  /* Final'dan ÖNCE */
-if (EVP_DecryptFinal_ex(ctx, acik + n, &n) != 1) {     /* ...etiket BURADA doğrulanır */
+```
+
+- `DecryptUpdate` açık metni **hemen** tampona yazar — henüz doğrulanmadı!
+- Beklenen etiket `Final`'dan **önce** verilir.
+
+---
+
+<!-- _class: yogun -->
+
+# Çözme — adım 3: Final ZORUNLU kontrolü
+
+```c
+if (EVP_DecryptFinal_ex(ctx, acik + n, &n) != 1) {     /* etiket BURADA doğrulanır */
     OPENSSL_cleanse(acik, sifreli_n);                   /* yarı çözülmüş veriyi sil */
     return -1;
 }
@@ -466,15 +810,21 @@ if (EVP_DecryptFinal_ex(ctx, acik + n, &n) != 1) {     /* ...etiket BURADA doğr
 
 ---
 
-<!-- _class: yogun -->
-
-# Sabit zamanlı karşılaştırma ve kontrol listesi
+# Sabit zamanlı karşılaştırma
 
 ```c
 unsigned char fark = 0;
 for (size_t i = 0; i < n; i++) fark |= a[i] ^ b[i];   /* her baytı dolaş */
 return fark == 0;                                     /* ≈ CRYPTO_memcmp */
 ```
+
+`memcmp` ilk farklı baytta durur; süre kaç baytın doğru olduğunu **sızdırır**. Hazır karşılıklar: `CRYPTO_memcmp`, `sodium_memcmp`.
+
+---
+
+<!-- _class: yogun -->
+
+# Kripto kütüphanesi kullanırken kontrol listesi
 
 - [ ] Her dönüş değeri denetleniyor, hata = **dur**
 - [ ] Nonce her seferinde yeni · etiket kullanımdan **önce** doğrulanıyor
@@ -483,6 +833,23 @@ return fark == 0;                                     /* ≈ CRYPTO_memcmp */
 - [ ] DES/3DES, RC4, MD5, SHA-1 (imza), ECB yok
 
 <!-- Konuşma notu: Sahada kılavuzlarda algoritma envanteri tablosu bulunur. Birkaç yıl önceki envanterlerde SHA-1 ve CBC + ayrı MAC görülür; bugün SHA-256 ve AEAD. -->
+
+---
+
+# Sahada: algoritma envanteri
+
+- Gerçek ürün kılavuzlarında bir **algoritma envanteri** bulunur: her algoritma, hangi amaçla, hangi anahtar boyuyla.
+- İyi bir eleştirel okuma malzemesi: eski envanterlerde **SHA-1** ya da **ayrı MAC'li CBC** görülür.
+- Bugün yazılan bir envanterde yerini **SHA-256** ve **AEAD** almalı.
+
+---
+
+# Değerlendirici nasıl test eder?
+
+- Algoritma envanterini kaynak kodla **karşılaştırır**.
+- Nonce üretimini ve tekrarını inceler.
+- Şifreli veriyi bir bit değiştirerek geri verir; uygulamanın **reddettiğini** ve ayrıntılı hata vermediğini doğrular.
+- MAC karşılaştırmasında `memcmp` arar.
 
 ---
 
@@ -539,6 +906,14 @@ IYI (farkli nonce):
 
 ---
 
+# Demo 2 — kural (devamı)
+
+- Rastgele nonce **pratiktir**; ama aynı anahtarla çok mesaj varsa (NIST önerisi: ≤ 2³²) doğum günü olasılığı devreye girer.
+- Alternatif: nonce'u **sayaç** yap — ama sayaç **kalıcı** saklanmalı (cihaz yeniden başlayınca sıfırlanmamalı).
+- Gerçek olaylar: **WEP** kısa IV, **Sony PS3** ECDSA'da tekrar eden rastgele değer (özel anahtar çıkarıldı).
+
+---
+
 # Demo 3 — ECB deseni sızdırır ("penguen")
 
 ```text
@@ -558,15 +933,45 @@ Konuşma notu: Ünlü "ECB penguen" örneğinin ASCII hâli. Kod incelemesinde '
 
 ---
 
+# ECB — kural
+
+✅ **ECB kullanmayın.** Şifreleme için AEAD (GCM, ChaCha20-Poly1305); disk için XTS-AES.
+
+Kod incelemesinde `ecb` geçen her yer bir **bulgudur**. Değerlendirici aynı düz metnin tekrar eden 16 baytlık bloklarını arayarak ECB'yi otomatik yakalayabilir.
+
+---
+
+# Bu bölümün kuralı
+
+- **Tuz, IV, nonce**: hiçbiri gizli değil, ama **her biri farklı bir tekrarsızlık** ister.
+- Nonce **asla** aynı anahtarla tekrar etmesin.
+- **ECB yasak.** Kip seçimi = güvenlik kararı.
+
+<!-- Konuşma notu: Bu üç kavram sınavda en çok karıştırılanlardan; "gizli mi, benzersiz mi" ayrımını pekiştirin. -->
+
+---
+
 <!-- _class: bolum -->
 
 # 5. Paroladan anahtar türetme
 
 ---
 
-# Parola doğrudan anahtar olamaz
+# Paroladan anahtar türetme — şema
 
-KDF iki iş yapar:
+![w:900](assets/h03-15-kdf-iki-ek.svg)
+
+---
+
+# Parola neden doğrudan anahtar olamaz?
+
+- Parola **kısa, düşük entropili ve tahmin edilebilir**.
+- Doğrudan anahtar yapılırsa kaba kuvvet ucuzlaşır.
+- Çözüm: paroladan anahtar türetme fonksiyonu (**KDF**).
+
+---
+
+# KDF iki iş yapar
 
 1. **Tuz:** rastgele → rainbow tablo işe yaramaz, aynı parola fark edilmez
 2. **Yavaşlık:** yüzbinlerce tur → her deneme pahalı, kaba kuvvet yavaşlar
@@ -591,17 +996,81 @@ KDF iki iş yapar:
    tur =2000000  ->  628.42 ms
 ```
 
+---
+
+# Demo 4 — tuzun etkisi
+
+- Aynı parola + **aynı** tuz → her seferinde **aynı** anahtar.
+- Tuz sabitse saldırgan bir kez tablo kurup herkesi arayabilir.
+- Aynı parola + **farklı** tuz → tamamen **farklı** anahtar.
+
+➡️ Tuz her kayıt için **rastgele ve benzersiz** olmalı.
+
+---
+
+# Demo 4 — maliyetin etkisi
+
+- Tur sayısı 1.000 → 2.000.000 olunca süre ~0,4 ms → ~628 ms'ye çıktı.
+- Bu **doğrudan çarpandır**: saldırganın her denemesi de o kadar pahalılaşır.
+- "Kullanıcı girişinde 200 ms" kabul edilebilir; saldırgana **milyarlarca** deneme yerine **binlerce** deneme demektir.
+
+<!-- Konuşma notu: Argon2id ek olarak bellek de ister; GPU/ASIC ile paralel kaba kuvveti PBKDF2'den daha çok zorlaştırır. -->
+
+---
+
+# Demo 4 — kural
+
 ✅ Rastgele tuz + Argon2id (ya da yüksek turlu PBKDF2). ❌ Düz/tuzsuz SHA-256.
 
 <!--
-Konuşma notu: 200 ms kullanıcıya kabul edilebilir; saldırgana milyar deneme yerine bin deneme demektir. İleri: pepper (gizli, DB'de tutulmaz).
+Konuşma notu: 200 ms kullanıcıya kabul edilebilir; saldırgana milyar deneme yerine bin deneme demektir.
 -->
+
+---
+
+# İleri: biber (pepper)
+
+- Tuza ek olarak, veritabanında **saklanmayan**, yapılandırmada ya da HSM'de tutulan gizli bir **biber** eklenebilir.
+- DB çalınırsa (biber sızmadıkça) özetler bir kat daha korunur.
+- **Tuz gizli değildir; biber gizlidir.**
+
+---
+
+# Bu bölümün kuralı
+
+- Parolayı **asla** doğrudan anahtar yapma.
+- Rastgele **tuz** + yeterli maliyetli bir **KDF** (Argon2id öncelikli).
+- Maliyeti donanıma göre ayarla, yıllar içinde **artır**.
 
 ---
 
 <!-- _class: bolum -->
 
 # 6. HKDF, oturum anahtarları, ileri gizlilik
+
+---
+
+# Neden ana sırdan direkt kullanmıyoruz?
+
+- Uzun ömürlü bir "ana sır" **doğrudan** kullanılmaz.
+- Ondan, her amaç ve her oturum için **ayrı** anahtarlar türetilir.
+- Araç: **HKDF** (RFC 5869) — iki aşamalı bir KDF.
+
+---
+
+# HKDF Adım 1: Extract
+
+- Girdi: **ana sır** + **tuz**.
+- Çıktı: tekdüze bir **ara anahtar (PRK)**.
+- Amaç: ham sırdaki düzensizliği tek biçim bir anahtara sıkıştırmak.
+
+---
+
+# HKDF Adım 2: Expand
+
+- Girdi: **PRK** + **`info`** etiketi.
+- Çıktı: istenen boyda **anahtar**.
+- **Farklı `info` → farklı anahtar.** Aynı PRK'dan şifreleme anahtarı, MAC anahtarı, oturum anahtarı ayrı ayrı çıkar.
 
 ---
 
@@ -615,13 +1084,19 @@ Farklı `info` → farklı anahtar. Bir amacın anahtarı başka amaca kullanıl
 
 ---
 
-# İleri gizlilik (forward secrecy)
+# İleri gizlilik (forward secrecy) nedir?
 
-Tek yönlü zincir: `K0 = ana sır`, `Kᵢ = HKDF(Kᵢ₋₁)`, her adımda eskisini **sil**.
+- **İleri gizlilik:** bugünkü anahtar sızsa bile **eski oturumlar** çözülemez.
+- Tek yönlü zincir: `K0 = ana sır`, `Kᵢ = HKDF(Kᵢ₋₁)`.
+- Her adımda **eskisini sil**.
+
+---
+
+# İleri gizlilik — şema
 
 ![w:900](assets/h03-11-ileri-gizlilik.svg)
 
-> Bugünkü anahtar sızsa bile **eski oturumlar** güvende. TLS 1.3'te varsayılan.
+> Bugünkü anahtar sızsa bile **eski oturumlar** güvende. TLS 1.3'te varsayılan (geçici ECDHE ile).
 
 ---
 
@@ -637,13 +1112,43 @@ ILERI GIZLILIK zinciri:
   ^ her adimda eski anahtar silindi
 ```
 
+---
+
+# Demo 5 — açıklama
+
+- Aynı ana sırdan farklı `info` ile **farklı** anahtarlar çıktı; bir amacın anahtarı başka amaca kullanılamaz.
+- İleri gizlilik zincirinde her adımda eski anahtar **silindi**.
+- Elde yalnız **K4** var; zincir tek yönlü olduğu için K4'ten **K3, K2, K1 geri hesaplanamaz**.
+
+---
+
+# Demo 5 — kural
+
 ✅ Amaca/oturuma göre ayrı anahtar · her türetmeye benzersiz `info` · kullanınca sil.
+
+---
+
+# Bu bölümün kuralı
+
+- Ana sırdan **amaca ve oturuma göre** ayrı anahtarlar türetin.
+- Her türetmeye **benzersiz** bir `info`/label koyun.
+- Kısa ömürlü oturum anahtarlarını **kullanınca silin**.
+
+<!-- Konuşma notu: "Tek bir anahtarı her işe koşmayın" — bu bölümün tek cümlelik özeti. -->
 
 ---
 
 <!-- _class: bolum -->
 
 # 7. Dinamik anahtar yönetimi
+
+---
+
+# Algoritma mı kırıldı, anahtar mı kötü yönetildi?
+
+- "Algoritma kırıldı" diye haber yapılan olayların çok küçük bir kısmı gerçekten algoritmanın kırılmasıdır.
+- Büyük çoğunluk **anahtar yönetimi** hatasıdır: koda gömülü anahtar, hiç değişmeyen anahtar, tek anahtarla her iş.
+- Bu bölüm bu hataları önlemek için var.
 
 ---
 
@@ -662,13 +1167,27 @@ ILERI GIZLILIK zinciri:
 | Yenileme | Hiç değişmemesi |
 | İmha | Yedekte, günlükte, bellekte kalan kopya |
 
-**Kripto-periyot:** süre dolunca yeni veri şifrelenmez, eski veri çözülüp yeniden şifrelenir
+---
+
+# Kripto-periyot nedir?
+
+- Bir anahtarın **kullanılmasına izin verilen süre**.
+- Süre dolunca anahtar yeni veriyi **şifrelemek** için kullanılmaz.
+- Eski veriyi **çözmek** için bir süre daha tutulabilir.
+- Etkenler: korunan verinin miktarı, gizli kalması gereken süre, anahtarın ne kadar açıkta durduğu.
 
 ---
 
 # Anahtarın hayatı — şema
 
 ![w:950](assets/h03-04-anahtar-yasam-dongusu.svg)
+
+---
+
+# Anahtar hiyerarşisi: iki temel fikir
+
+1. **Anahtar ayrımı:** farklı amaçlar için farklı anahtarlar (HKDF `info` ile).
+2. **Zararın sınırlanması:** alt düzeydeki bir anahtarın ele geçirilmesi yalnız **o dalı** etkiler.
 
 ---
 
@@ -690,6 +1209,24 @@ EMV tarzı zincir:
 - Telefona yalnız en alttaki **sınırlı kullanım** anahtarları iner
 - Tükenince sunucudan yenileri istenir (**replenishment**)
 - Telefon ele geçse bile: birkaç işlemlik anahtar, sunucuda kolayca iptal
+
+---
+
+# Zarflama (envelope encryption) — neden?
+
+Büyük veriyi doğrudan ana anahtarla şifrelemek iki sorun yaratır:
+
+- Ana anahtar **sık kullanılır** → açıkta kalma süresi artar.
+- Anahtar değişince **bütün veri** yeniden şifrelenmelidir.
+
+---
+
+# Zarflama — dört adım
+
+1. Her kayıt için rastgele bir **veri anahtarı (DEK)** üretilir; veri onunla şifrelenir.
+2. DEK, bir **anahtar şifreleme anahtarıyla (KEK)** sarılır.
+3. KEK güvenli bir yerde durur: TPM, HSM, bulut KMS.
+4. KEK yenilendiğinde yalnız küçük **DEK'ler** yeniden sarılır — veri değil.
 
 ---
 
@@ -744,13 +1281,17 @@ Gruplar: dinamik cihaz anahtarları (whitebox) · dinamik ödeme anahtarları ·
 
 <!-- _class: yogun -->
 
-# Oturum anahtarı: sahadan akış ve bugünkü öneri
+# Oturum anahtarı: sahadan akış
 
 1. Sunucu 32 B oturum kimliği → yapılandırma anahtarıyla şifreli → bildirimle gelir
 2. İstemci whitebox AES ile çözer
 3. **Kimlik doğrulama kodu** = SHA-256(oturum kimliği parçası + cüzdan kimliği + parmak izi)
 4. **Oturum anahtarı** = HMAC(yapılandırma anahtarının özeti, oturum kimliği) → 16 B AES
 5. Mesaj: AES-CTR + 256 bit MAC
+
+---
+
+# Oturum anahtarı: bugünkü öneri
 
 | Tasarımda | Bugün |
 | --- | --- |
@@ -759,6 +1300,14 @@ Gruplar: dinamik cihaz anahtarları (whitebox) · dinamik ödeme anahtarları ·
 | SHA-1 | SHA-256 · ileri gizlilik için geçici (EC)DH |
 
 <!-- Konuşma notu: Eleştirel okuma: tasarım dönemindeki gereksinimleri karşıladı; beceri, bugün neyin neden değişmesi gerektiğini gerekçesiyle söylemek. -->
+
+---
+
+# Bu bölümün kuralı
+
+- Anahtarları bir **hiyerarşi** içinde düzenleyin; her anahtarın **tek amacı** ve bir kripto-periyodu olsun.
+- Veriyi **zarflayın**; anahtar sürümünü AAD ile koruyun.
+- İstemci cihazına yalnız **zararı sınırlı, kısa ömürlü** anahtarlar indirin.
 
 ---
 
@@ -832,18 +1381,42 @@ Konuşma notu: SSL_set1_host satırını yoruma alıp yeniden derleyin; hangi sa
 
 <!-- _class: yogun -->
 
-# TLS istemcisi: yedi adım (Tarif 9.1, 10.7, 10.8)
+# TLS istemcisi: adım 1–4 (Tarif 9.1, 10.7, 10.8)
 
 ```c
 SSL_CTX *ctx = SSL_CTX_new(TLS_client_method());          /* 1 */
 SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);      /* 2 sürüm düşürmeye karşı */
 SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);           /* 3 DOĞRULA */
 SSL_CTX_set_default_verify_paths(ctx);                    /* 4 kök deposu */
+```
+
+1. Sürümden bağımsız istemci bağlamı.
+2. En düşük sürümü **TLS 1.2** yapar — atlanırsa sürüm düşürme saldırısına açık.
+3. Karşı tarafın sertifikasını **doğrula** — atlanırsa OpenSSL herhangi bir sertifikayı kabul eder.
+4. İşletim sisteminin güvenilir kök deposunu yükler.
+
+---
+
+# TLS istemcisinin adımları — şema
+
+![w:900](assets/h03-16-tls-istemci-adimlari.svg)
+
+---
+
+<!-- _class: yogun -->
+
+# TLS istemcisi: adım 5–7
+
+```c
 SSL_set_tlsext_host_name(ssl, ana_makine);                /* 5 SNI */
 SSL_set1_host(ssl, ana_makine);                           /* 6 AD denetimi */
 /* bağlan + el sıkış */
 SSL_get_verify_result(ssl) == X509_V_OK;                  /* 7 kemer + askı */
 ```
+
+5. Sunucuya hangi adı istediğini söyler (SNI) — atlanırsa aynı IP'de yanlış sertifika gelebilir.
+6. Sertifikadaki adın **bu** sunucu olduğunu denetler.
+7. Doğrulama sonucunu açıkça sorar — bir yapılandırma hatası sessizce geçmesin (kemer + askı).
 
 Kitap: OpenSSL'in doğrulamayan varsayılanı "**olabilecek en kötü varsayılan**"
 
@@ -967,9 +1540,29 @@ openssl s_client -connect s.ornek:443 -tls1_1      # reddedilmeli
 
 ---
 
+# Bu bölümün kuralı
+
+- İstemcide doğrulamayı **elle açın**: CA deposu + `SSL_VERIFY_PEER` + `SSL_set1_host` + min. TLS 1.2.
+- Yüksek riskte **SPKI sabitleme** ekleyin, her zaman **yedek pin** bulundurun.
+- Hata durumunda **kapalı kalın** (fail-closed): istisnayı yutup güven deposuna düşmeyin.
+
+---
+
 <!-- _class: bolum -->
 
 # 9. Beklemede ve kullanımda veri
+
+---
+
+# Kullanımda veri katmanları — şema
+
+![w:900](assets/h03-18-kullanimda-veri-katmanlari.svg)
+
+---
+
+# Beklemede veri: iki düzey — şema
+
+![w:900](assets/h03-17-beklemede-iki-duzey.svg)
 
 ---
 
@@ -1106,6 +1699,14 @@ cihazda açılamaz (Demo 9).
 
 ---
 
+# Bu bölümün kuralı
+
+- Beklemede: hassas alanları **AEAD** ile şifrele, anahtarı koda gömme.
+- Maskeleme şifrelemenin **yerine geçmez**, tamamlar (log, ekran, test).
+- Kullanımda: sırrı **en son anda** aç, **en kısa süre** tut, kaldırılamaz biçimde **sil**.
+
+---
+
 <!-- _class: bolum -->
 
 # 10. Güvenlik kabukları
@@ -1162,9 +1763,23 @@ Saldiri 2: baska cihaza kopyala -> dis 3 kabuk acilir,
 
 ---
 
+# Bu bölümün kuralı
+
+- Kritik bir varlığı korurken "hangi tek önlem?" değil, "hangi **katmanlar**?" diye sorun.
+- Her aşamaya (taşıma, depolama, kullanım) bir kabuk koyun.
+- Kabukları **birbirinden bağımsız anahtarlarla** kurun; birinin kırılması diğerini vermesin.
+
+---
+
 <!-- _class: bolum -->
 
 # 11. Whitebox kriptografiye giriş
+
+---
+
+# Whitebox'a giden yol — şema
+
+![w:900](assets/h03-19-whitebox-motivasyon.svg)
 
 ---
 

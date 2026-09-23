@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T07:32:47.081738</dc:date>
+    <dc:date>2026-09-23T13:10:53.662663</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 27.891 100.44864 27.891 107.633664
 L 27.891 372.681216 
 Q 27.891 379.86624 39.4416 379.86624 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 44.5752 402.219648 
@@ -53,7 +53,7 @@ Q 34.308 373.479552 34.308 379.86624
 L 34.308 395.83296 
 Q 34.308 402.219648 44.5752 402.219648 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #e8f6f7"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #e8f6f7"/>
    </g>
    <g id="text_1">
     <!-- Güvenlik = katman + ölçüm -->
@@ -434,7 +434,7 @@ Q 69.6015 135.37584 69.6015 142.560864
 L 69.6015 337.754016 
 Q 69.6015 344.93904 81.1521 344.93904 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
     <!-- Dönemin tek cümlesi -->
@@ -824,7 +824,7 @@ Q 303.822 93.263616 303.822 94.46112
 L 303.822 94.46112 
 Q 303.822 95.658624 305.7471 95.658624 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #9ed6d7"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_4">
     <!-- Koruma kırılamazlık değil, GECİKME sağlar -->
@@ -1126,7 +1126,7 @@ Q 111.312 170.30304 111.312 177.488064
 L 111.312 302.826816 
 Q 111.312 310.01184 122.8626 310.01184 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_5">
     <!-- Bu dört cümle, her hafta farklı bir teknikle tekrar edildi. -->
@@ -1608,7 +1608,7 @@ Q 153.0225 205.23024 153.0225 212.415264
 L 153.0225 267.899616 
 Q 153.0225 275.08464 164.5731 275.08464 
 z
-" clip-path="url(#pf44f8d28a8)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p1feacd5a25)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <!-- Kanıtı olmayan koruma, yok sayılır -->
@@ -1671,7 +1671,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pf44f8d28a8">
+  <clipPath id="p1feacd5a25">
    <rect x="8.64" y="8.64" width="641.7" height="399.168"/>
   </clipPath>
  </defs>

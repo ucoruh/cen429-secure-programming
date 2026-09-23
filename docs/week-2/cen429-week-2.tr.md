@@ -265,6 +265,8 @@ göremez, açıkları ortak bir dille adlandırmadan da hangi tehdide öncelik v
 
 ## 2. Zararlı yazılım nedir? Kısa bir tarih
 
+
+![Zararlı yazılımın kısa tarihi](assets/h02-09-zararli-tarihce.svg)
 **Zararlı yazılım** (malware, "malicious software"), sahibinin izni ve bilgisi dışında zarar vermek, veri
 çalmak, kaynak kullanmak ya da kontrolü ele geçirmek için yazılmış her programdır. "Virüs" günlük dilde bunların
 hepsi için kullanılır; oysa virüs yalnızca **bir türdür**. Ayrımı görmek için önce birkaç dönüm noktasına bakalım.
@@ -620,6 +622,8 @@ zararlı bunu anlarsa (anti-emülasyon) gizlenebilir.
 
 Yukarıdaki demoda dört yöntemi gördük. Şimdi bütün karşı önlem ailesini toparlayalım:
 
+![Karşı önlemlerin dört katmanı](assets/h02-10-karsi-onlem-katmanlari.svg)
+
 | Yöntem | Nasıl çalışır? | Güçlü yanı | Zayıf yanı |
 | --- | --- | --- | --- |
 | **İmza tabanlı** | Bilinen zararlının özeti/deseni aranır | Hızlı, düşük yanlış pozitif | Bilinmeyeni ve polimorfiği kaçırır |
@@ -853,6 +857,8 @@ Tarihteki büyük salgınların neredeyse hepsi, bir **programlama ya da yapıla
 kurulmuştur. Aşağıdaki tabloda her olayı zararlının ne yaptığıyla değil, **içeri nasıl girdiğiyle**
 okuyoruz; çünkü bu dersin konusu o giriş kapısını kapatmaktır.
 
+![Olay incelemelerinin ortak iskeleti](assets/h02-11-olay-iskeleti.svg)
+
 | Olay | İçeri giriş yolu | Hata sınıfı | Programcı ne yapmalıydı? |
 | --- | --- | --- | --- |
 | Morris solucanı (2 Kasım 1988) | `fingerd`'de `gets()` ile 512 baytlık tampona sınırsız okuma; `sendmail`'de açık bırakılmış DEBUG kipi; `rsh`/`rexec` güven ilişkileri; parola tahmini | CWE-120 / CWE-242, CWE-489, CWE-287, CWE-521 | Sınır denetimli okuma (`fgets`); hata ayıklama kodunu sürümde bırakmamak; adres tabanlı güvene dayanmamak; parola politikası |
@@ -889,6 +895,8 @@ imzalı güncelleme, bütünlük doğrulaması ve tedarik zinciri güvenliği (3
 Saldırı ağacını geçen hafta çizmiştik; bu hafta **niceliğe** dökeceğiz. Kök, saldırganın hedefidir; dallar ona
 ulaşma yollarıdır. **VEYA** düğümünde bir dal yeter, **VE** düğümünde hepsi gerekir. Her yaprağa bir **maliyet**
 (gün-adam, ekipman, uzmanlık) yazarsak, ağacı aşağıdan yukarı çözerek **en ucuz saldırıyı** bulabiliriz:
+
+![Saldırı ağacı kurmanın altı adımı](assets/h02-12-saldiri-agaci-kurulum.svg)
 
 - VEYA düğümü: çocukların **en ucuzu** (saldırganın işine gelen).
 - VE düğümü: çocukların **toplamı** (hepsi gerektiği için).
@@ -937,6 +945,8 @@ Saldırı ağacı "saldırgan nereden gelir?" sorusunu sorar; **denetim kaydı**
 yaptı?" sorusunu cevaplar. Bir olaydan sonra neyin olduğunu anlamanın, sorumluyu bulmanın ve bir daha
 olmasını önlemenin tek yolu güvenilir kayıttır. Kitap bu konuyu Tarif 13.11'de işler; oradaki öneriler
 bugün de geçerlidir, yalnız araçlar güncellenmiştir.
+
+![Denetim kaydı: ne yazılır, ne yazılmaz, nasıl korunur](assets/h02-13-denetim-kaydi.svg)
 
 ### Ne kaydedilir, ne asla kaydedilmez?
 
@@ -1082,6 +1092,8 @@ anahtarlar artık hiçbir yerde yoktur.
 
 Şimdi savunma tarafına geçiyoruz. Güvenliğin en temel sorularından biri: **"Bu özne, bu nesne üzerinde bu işlemi
 yapabilir mi?"** Bunu üç kavramla düzenleriz:
+
+![İsteğe bağlı ve zorunlu erişim denetimi](assets/h02-14-dac-mac.svg)
 
 - **Özne (subject):** işlemi yapan (kullanıcı, süreç).
 - **Nesne (object):** üzerinde işlem yapılan (dosya, kayıt, bellek).
@@ -1545,6 +1557,8 @@ cevabıdır. Yıllardır ilk sıralarda sınır dışı yazma (CWE-787), XSS (CW
 CWE tüm zayıflıkları kataloglar; **OWASP** ise bunları belirli alanlarda **öncelik listelerine** ve **doğrulama
 standartlarına** çevirir.
 
+![OWASP listeleri ve MASVS'in yeri](assets/h02-16-owasp-masvs.svg)
+
 - **OWASP Top 10:** Web uygulamalarında en kritik on risk kategorisi (ör. erişim denetimi kırılması, kripto
   hataları, enjeksiyon, güvensiz tasarım). Bir **farkındalık** ve **öncelik** belgesidir; her madde birçok
   CWE'yi kapsar.
@@ -1583,6 +1597,8 @@ standartlarına** çevirir.
 
 ## 15. CVE ve CVSS: hangi açık, ne kadar ciddi?
 
+
+![CWE, CVE ve CVSS: üç ayrı soru](assets/h02-15-cwe-cve-cvss.svg)
 - **CVE** (Common Vulnerabilities and Exposures): **Belirli bir üründeki belirli bir açığın** benzersiz kimliği,
   ör. `CVE-2014-0160` (Heartbleed). CVE bir **isimdir**, ciddiyet değil. Bir CVE, bir ya da birden çok CWE
   türüne aittir.
@@ -1664,6 +1680,8 @@ daha yüksek puan alır; kapsam değişince 10.0'a çıkar. Puanları ciddiyet b
 
 Bir açık keşfedildiği andan kamuya açıldığı ana kadar bir **yaşam döngüsünden** geçer. Bu döngünün nasıl
 yönetildiği, kullanıcıların risk altında kaldığı süreyi belirler.
+
+![Bir açığın yaşam çizgisinde kim ne yapar](assets/h02-17-acik-yasam-cizgisi.svg)
 
 ![Zafiyet yaşam döngüsü: keşiften yama uygulanmasına](assets/h02-06-zafiyet-yasam-dongusu.svg)
 

@@ -289,6 +289,8 @@ Bütün örnek değerler **sentetiktir** (uydurma); gerçek anahtar, kart numara
 Kriptografi tek bir şey değildir; **farklı hedefler için farklı araçlar** vardır. En sık karıştırılan dört aileyi
 netleştirelim.
 
+![Kriptografinin dört ailesi](assets/h03-12-kripto-aileleri.svg)
+
 | Araç | Ne sağlar? | Anahtar | Örnek | Bu derste |
 | --- | --- | --- | --- | --- |
 | **Simetrik şifreleme** | Gizlilik | Tek gizli anahtar (her iki taraf) | AES, ChaCha20 | Dosya/DB/oturum şifreleme |
@@ -476,6 +478,8 @@ Satır satır ne oldu:
 **tahmin edilemez**. Dünyanın en iyi şifreleme algoritması, anahtarı tahmin edilebilir bir üreteçle oluşturulmuşsa
 hiçbir şey korumaz. Kitabın 11. bölümü baştan sona bu konuya ayrılmıştır; burada bugün geçerli olan kısmını adım
 adım işleyeceğiz.
+
+![Üç tür rastgelelik ve kullanım yerleri](assets/h03-13-rastgelelik-turleri.svg)
 
 ### Üç tür "rastgele"
 
@@ -828,6 +832,8 @@ Hazır karşılıkları: OpenSSL `CRYPTO_memcmp`, Linux çekirdeğinde `crypto_m
 Üç kavram sürekli karıştırılır. Üçü de **gizli değildir**, ama güvenlik doğru kullanımlarına bağlıdır (kitap **tarif
 4.9**):
 
+![Tuz, IV ve nonce arasındaki fark](assets/h03-14-tuz-iv-nonce.svg)
+
 | Kavram | Nerede? | Kural | Bozulursa |
 | --- | --- | --- | --- |
 | **Tuz (salt)** | Paroladan anahtar türetmede | Her parola/kayıt için **rastgele** | Önhesaplı tablolar (rainbow) işe yarar |
@@ -950,6 +956,8 @@ akışıyla şifrelendiği için çıktı gürültüdür.
 
 Parola doğrudan anahtar olamaz: kısa, düşük entropili ve tahmin edilebilir. Paroladan anahtar türetme fonksiyonu (KDF)
 iki iş yapar:
+
+![Paroladan anahtar türetme: tuz ve maliyet](assets/h03-15-kdf-iki-ek.svg)
 
 1. **Tuz (salt):** Her kullanıcıya/kayda rastgele tuz eklenir. Aynı parola farklı tuzlarla farklı anahtar verir;
    böylece **önhesaplı tablolar (rainbow table)** işe yaramaz ve iki kullanıcının aynı parolası fark edilmez.
@@ -1403,6 +1411,8 @@ gerçek uygulamalarda en sık görülen hataları işliyoruz. Kitap bu konuyu Ta
 tarafın sertifikasını doğrulama), 10.8 (ana makine adı denetimi) ve 10.9 (beyaz listeyle doğrulama) ile anlatır;
 aşağıdaki kod bu tariflerin OpenSSL 1.1.1/3.x'e güncellenmiş halidir.
 
+![TLS istemcisini doğru kurmanın adımları](assets/h03-16-tls-istemci-adimlari.svg)
+
 ### OpenSSL ile doğru bir istemci: yedi adım
 
 ```c title="tls_istemci.c — OpenSSL 1.1.1 / 3.x"
@@ -1640,6 +1650,8 @@ belirleyemiyorsanız, sonuç "reddet"tir.
 Diskteki dosya ya da veritabanı **çalınabilir** (kayıp telefon, çalınan yedek, ele geçirilen sunucu). Beklemede veriyi
 korumanın iki düzeyi vardır:
 
+![Beklemede veri: disk ve alan şifreleme](assets/h03-17-beklemede-iki-duzey.svg)
+
 - **Tüm disk/dosya şifreleme:** İşletim sistemi düzeyinde (LUKS, BitLocker, XTS-AES) ya da uygulama düzeyinde tüm dosyayı
   AEAD ile şifreleme (bkz. Demo 1). Kitap **tarif 5.15** disk şifrelemeyi işler; sabit IV tuzağına dikkat çeker.
 - **Alan/sütun şifreleme:** Yalnız **hassas alanları** (kart no, TC kimlik, sağlık verisi) uygulama katmanında şifreleyip
@@ -1861,6 +1873,8 @@ Bir sır **kullanılmak için** eninde sonunda bellekte açılır. O anda risk a
 takas alanı (swap), aynı belleği sonra kullanan başka kod. Hafta 1'de `explicit_bzero` ile "ölü yazma giderme"yi görmüştük;
 bu hafta **kullanımda veri** için ek katmanları kuruyoruz.
 
+![Kullanımda veriyi koruyan katmanlar](assets/h03-18-kullanimda-veri-katmanlari.svg)
+
 | Katman | Amaç | Linux | Windows |
 | --- | --- | --- | --- |
 | Döküm engelleme | Sır core/crash dosyasına düşmesin | `setrlimit(RLIMIT_CORE, 0)` | `SetErrorMode` |
@@ -2033,6 +2047,8 @@ Bütün bu haftanın gizli varsayımı şudur: **anahtar kullanıldığı an bel
 (Hafta 1, beyaz kutu) senaryosunda saldırgan belleği okuyabilir, hata ayıklayıcı bağlayabilir; o anı yakalayıp anahtarı
 çalabilir. Güvenli silme ve bellek kilitleme bu pencereyi **daraltır** ama kapatmaz.
 
+![Whitebox kriptografiye giden yol](assets/h03-19-whitebox-motivasyon.svg)
+
 **Whitebox kriptografi** bu soruna radikal bir cevaptır: algoritmayı (ör. AES) öyle bir tabloya gömer ki, çalışırken
 bile **ham anahtar hiçbir zaman bellekte açık görünmez**; anahtar tabloların içine "pişirilmiştir". Böylece saldırgan
 belleği tamamen görse bile anahtarı doğrudan okuyamaz. Bu, Bölüm 14'daki güvenlik kabuğunun **en iç**
@@ -2053,6 +2069,8 @@ katmanının gerçek dünyadaki hâlidir.
 
 ## 16. Yaygın yanlış anlamalar
 
+
+![Dört yaygın yanlış anlama](assets/h03-20-yanlis-anlamalar.svg)
 !!! failure "\"Şifreledim, o hâlde güvende.\""
     Şifreleme yalnız **gizlilik** verir. Bütünlük için AEAD (ya da encrypt-then-MAC) gerekir; yoksa saldırgan veriyi
     fark edilmeden değiştirebilir. Ayrıca şifreleme, anahtar kötü yönetiliyorsa (koda gömülü, tuzsuz türetilmiş)

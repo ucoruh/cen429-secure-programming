@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T07:32:47.601709</dc:date>
+    <dc:date>2026-09-23T13:10:54.521046</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 32.076 296.107488 32.076 301.25232
 L 32.076 314.1144 
 Q 32.076 319.259232 41.4504 319.259232 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #e8f6f7"/>
+" clip-path="url(#pdf93040d87)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
     <path d="M 94.47435 135.813816 
@@ -53,7 +53,7 @@ Q 81.58455 103.658616 81.58455 110.73276
 L 81.58455 128.739672 
 Q 81.58455 135.813816 94.47435 135.813816 
 z
-" clip-path="url(#pe08aca292f)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pdf93040d87)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_4">
     <path d="M 94.47435 174.400056 
@@ -66,7 +66,7 @@ Q 81.58455 142.244856 81.58455 149.319
 L 81.58455 167.325912 
 Q 81.58455 174.400056 94.47435 174.400056 
 z
-" clip-path="url(#pe08aca292f)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pdf93040d87)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_5">
     <path d="M 94.47435 212.986296 
@@ -79,7 +79,7 @@ Q 81.58455 180.831096 81.58455 187.90524
 L 81.58455 205.912152 
 Q 81.58455 212.986296 94.47435 212.986296 
 z
-" clip-path="url(#pe08aca292f)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pdf93040d87)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_6">
     <path d="M 94.47435 251.572536 
@@ -92,7 +92,7 @@ Q 81.58455 219.417336 81.58455 226.49148
 L 81.58455 244.498392 
 Q 81.58455 251.572536 94.47435 251.572536 
 z
-" clip-path="url(#pe08aca292f)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pdf93040d87)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_7">
     <path d="M 94.47435 290.158776 
@@ -105,7 +105,7 @@ Q 81.58455 258.003576 81.58455 265.07772
 L 81.58455 283.084632 
 Q 81.58455 290.158776 94.47435 290.158776 
 z
-" clip-path="url(#pe08aca292f)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pdf93040d87)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_8">
     <path d="M 91.8378 134.04528 
@@ -118,7 +118,7 @@ Q 78.948 101.89008 78.948 108.964224
 L 78.948 126.971136 
 Q 78.948 134.04528 91.8378 134.04528 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pdf93040d87)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_9">
     <path d="M 91.8378 172.63152 
@@ -131,7 +131,7 @@ Q 78.948 140.47632 78.948 147.550464
 L 78.948 165.557376 
 Q 78.948 172.63152 91.8378 172.63152 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #ffffff; stroke: #cfd8dc; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pdf93040d87)" style="fill: #ffffff; stroke: #cfd8dc; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_10">
     <path d="M 91.8378 211.21776 
@@ -144,7 +144,7 @@ Q 78.948 179.06256 78.948 186.136704
 L 78.948 204.143616 
 Q 78.948 211.21776 91.8378 211.21776 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pdf93040d87)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_11">
     <path d="M 91.8378 249.804 
@@ -157,7 +157,7 @@ Q 78.948 217.6488 78.948 224.722944
 L 78.948 242.729856 
 Q 78.948 249.804 91.8378 249.804 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pdf93040d87)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_12">
     <path d="M 91.8378 288.39024 
@@ -170,7 +170,7 @@ Q 78.948 256.23504 78.948 263.309184
 L 78.948 281.316096 
 Q 78.948 288.39024 91.8378 288.39024 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #fdf1e7; stroke: #b5651d; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pdf93040d87)" style="fill: #fdf1e7; stroke: #b5651d; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Süreç belleği: verileriniz nerede duruyor? -->
@@ -1134,7 +1134,7 @@ Q 278.154 76.809024 278.154 77.77368
 L 278.154 77.77368 
 Q 278.154 78.738336 279.9117 78.738336 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #9ed6d7"/>
+" clip-path="url(#pdf93040d87)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- Yığın (stack) -->
@@ -2086,17 +2086,17 @@ z
    <g id="patch_14">
     <path d="M 61.371 111.53664 
 Q 61.371 195.14016 61.371 276.954826 
-" clip-path="url(#pe08aca292f)" style="fill: none; stroke: #6b7280; stroke-width: 1.6; stroke-linecap: round"/>
+" clip-path="url(#pdf93040d87)" style="fill: none; stroke: #6b7280; stroke-width: 1.6; stroke-linecap: round"/>
     <path d="M 64.571 270.554826 
 L 61.371 276.954826 
 L 58.171 270.554826 
 z
-" clip-path="url(#pe08aca292f)" style="fill: #6b7280; stroke: #6b7280; stroke-width: 1.6; stroke-linecap: round"/>
+" clip-path="url(#pdf93040d87)" style="fill: #6b7280; stroke: #6b7280; stroke-width: 1.6; stroke-linecap: round"/>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="pe08aca292f">
+  <clipPath id="pdf93040d87">
    <rect x="8.64" y="8.64" width="585.9" height="321.552"/>
   </clipPath>
  </defs>

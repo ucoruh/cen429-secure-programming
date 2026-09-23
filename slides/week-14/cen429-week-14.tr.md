@@ -487,6 +487,12 @@ Bu, 12. haftadaki "S16 sonuçları"na bağlanır.
 
 ---
 
+# Adım adım güçlendirme — şema
+
+![w:900](assets/h14-11-adim-adim-guclendirme.svg)
+
+---
+
 # Başlangıç · temiz.c
 
 ```c
@@ -744,6 +750,12 @@ Bir gizleme kararını ölçüyle savun:
 # 4. Sınıf içi akış (adım adım)
 
 <!-- Konuşma notu: Öğrenci Tigress'i kendi indirir, kendi küçük programına uygular. Tümüyle savunma amaçlı; kendi kodunu korur ve ölçer. -->
+
+---
+
+# Sınıf içi akış — şema
+
+![w:900](assets/h14-12-sinif-ici-akis.svg)
 
 ---
 

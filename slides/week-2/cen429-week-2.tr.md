@@ -112,6 +112,12 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
+# DAC ve MAC — şema
+
+![w:900](assets/h02-14-dac-mac.svg)
+
+---
+
 # DAC / MAC / RBAC
 
 - **DAC:** sahibi izinleri belirler (Unix dosya izinleri).
@@ -136,6 +142,12 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
+# Denetim kaydı — şema
+
+![w:900](assets/h02-13-denetim-kaydi.svg)
+
+---
+
 # CWE, CVE, CVSS
 
 - **CWE:** zayıflık **türü** kataloğu (ör. CWE-416).
@@ -144,11 +156,29 @@ Hiçbirini bilmediğinizi varsayıyoruz.
 
 ---
 
+# CWE, CVE, CVSS — şema
+
+![w:900](assets/h02-15-cwe-cve-cvss.svg)
+
+---
+
 # OWASP ve zafiyet yaşam döngüsü
 
 - **OWASP Top 10 / MASVS:** yaygın açıklar ve mobil gereksinimler.
 - **Sorumlu ifşa:** açığı önce üreticiye bildirme.
 - Açık: keşif → bildirim → yama → yayın.
+
+---
+
+# Açığın yaşam çizgisi — şema
+
+![w:900](assets/h02-17-acik-yasam-cizgisi.svg)
+
+---
+
+# OWASP ve MASVS — şema
+
+![w:900](assets/h02-16-owasp-masvs.svg)
 
 ---
 
@@ -188,6 +218,12 @@ Konuşma notu: Demoları önceden bir kez derleyin (code/ içinde build.ps1 ya d
 - **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
 
 > İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
+
+---
+
+# Zararlı yazılımın kısa tarihi — şema
+
+![w:900](assets/h02-09-zararli-tarihce.svg)
 
 ---
 
@@ -332,6 +368,17 @@ i(t+dt) = i(t) + beta * i(t) * (1 - i(t)/N) * dt
 
 ---
 
+# SI modeli: adım adım
+
+- **S (duyarlı):** henüz bulaşmamış, savunmasız makine.
+- **I (enfekte):** zaten bulaşmış, kendisi de tarayan makine.
+- **N:** toplam savunmasız makine sayısı (S + I).
+- Her enfekte makine birim zamanda **rastgele adres tarar**; adres duyarlıya denk gelirse onu da enfekte eder.
+
+<!-- Konuşma notu: Önce harfleri tahtaya yazın: S, I, N. Sonra "her enfekte makine ne yapar?" diye sorun; cevap bu slaytta. -->
+
+---
+
 # Salgın modeli — şema
 
 ![w:950](assets/h02-03-salgin-modeli.svg)
@@ -358,6 +405,74 @@ Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
 - ✅ Ders: insan hızında tepki yetişmez → **önceden yama, kapalı port, otomatik savunma**
 
 <!-- Konuşma notu: beta değerini yarıya indirip yeniden çalıştırın; doygunluk süresinin nasıl uzadığını gösterin. Asıl nokta: ilk bulaşmayı mümkün kılan tek bir taşma hatası. -->
+
+---
+
+<!-- _class: yogun -->
+
+# Gerçek sayılar: Code Red vs Slammer
+
+| Olay | Giriş yolu | Hız |
+| --- | --- | --- |
+| Code Red (2001) | IIS `.ida` taşması (CVE-2001-0500) | ~359.000 sunucu; ikiye katlanma ~37 dk |
+| SQL Slammer (2003) | SQL Server ayrıştırma hizmeti, tek 404 baytlık UDP paketi (CVE-2002-0649) | ~8,5 sn'de ikiye katlandı; ~10 dk'da %90 |
+
+Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yok), hedefi **olabildiğince hızlı** taradı.
+
+---
+
+# Slammer neden yavaşladı?
+
+- İlk dakikadan sonra yayılma hızı düştü.
+- Neden? **Savunma değil** — ağın **bant genişliği doldu**.
+- Solucan kendi trafiğiyle kendi yayılma kanalını tıkadı.
+- Ders: bazen saldırganın kendi başarısı, kendi sınırını yaratır.
+
+---
+
+# İkiye katlanma süresi
+
+- Enfekte sayısının **iki katına çıkması** için geçen süre, bir salgının hızının en sezgisel ölçüsüdür.
+- Code Red: ikiye katlanma ~**37 dakika**.
+- Slammer: ikiye katlanma ~**8,5 saniye**.
+- Aradaki fark ~260 kat — ikisi de "solucan" olsa da savunma penceresi **tamamen farklıdır**.
+
+---
+
+# Demo 09 çıktısını okurken: açılış evresi
+
+- İlk 54 saniyede yalnız **78 makine** enfekte (%0.1).
+- Grafikte neredeyse hiçbir şey görünmüyor.
+- 1,5 dakika sonra patlama **başlıyor**.
+- "Şimdilik az" demek, üstel büyümede **en pahalı yanılgıdır.**
+
+---
+
+# Demo 09 çıktısını okurken: hız ve hitlist
+
+- **Hız (beta):** tarama hızını artırmak, doygunluğu **saatlerden dakikalara** indirir.
+- Bu yüzden savunma **otomatik** olmalı: güvenlik duvarı kuralı, ağ bölümleme, önceden yama.
+- **Hitlist:** saldırgan hazır hedef listesiyle başlarsa açılış evresi **atlanır**.
+- Savunmacının zaten dar penceresi tamamen **kapanır**.
+
+---
+
+# Programcıya ders (salgın)
+
+- Yayılma hızını programcı belirlemez.
+- Ama **ilk bulaşmayı mümkün kılan hatayı** programcı yapar.
+- Code Red, Slammer, Blaster — hepsi **sınır denetimsiz** bir taşma ile yayıldı.
+- Her dinlenen ağ portu bir **saldırı yüzeyidir**; kullanılmayan hizmeti hiç açmayın.
+
+---
+
+# Kendiniz deneyin: beta yarıya inerse?
+
+`salgin.c` içindeki `beta` değerini yarıya indirip yeniden çalıştırın.
+
+**Soru:** Doygunluk süresi nasıl değişir? Hitlist senaryosunda `i0`'ı 100'e çıkarınca fark ne kadar kalır?
+
+**Cevap:** Beta yarıya inince büyüme yavaşlar, doygunluk süresi **uzar**. Hitlist senaryosunda açılış evresi zaten atlandığı için `i0` artışının etkisi **daha küçüktür** — hitlist'in asıl gücü açılışı atlaması, başlangıç sayısı değil.
 
 ---
 
@@ -523,6 +638,50 @@ Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
 
 ---
 
+# Karşı önlem katmanları — şema
+
+![w:900](assets/h02-10-karsi-onlem-katmanlari.svg)
+
+---
+
+# EDR örneğinde davranış izi
+
+- Süreç, kısa sürede **yüzlerce dosyayı** okuyup yüksek entropili haliyle geri yazıyor.
+- İçeriğe hiç **bakmadan**, yalnız bu davranış neredeyse kesin bir **fidye yazılımı** belirtisidir.
+- Davranış tabanlı koruma dosyanın "ne olduğuna" değil, "ne yaptığına" bakar.
+- Bu ipucu Demo 02'deki entropi sıçramasıyla **aynı fikrin** çalışma zamanı hâlidir.
+
+---
+
+# Aynı alet kutusu: saldırgan ve savunmacı
+
+- Bir zararlının **gizlenmek** için kullandığı teknik ile meşru yazılımın **kendini korumak** için kullandığı teknik çoğu zaman **aynıdır**.
+- Fark **niyet ve bağlamdadır**: biri sizin varlığınızı korur, diğeri imzadan kaçar.
+- Şifreli gövde + çözücü deseni: polimorfik virüste de, korumalı mobil uygulamada da var.
+- Bu simetri dönem boyunca (9., 11. hafta) tekrar karşımıza çıkacak.
+
+---
+
+# Örnek: mobil ödeme neden şifreli sabit tutar?
+
+- Tersine mühendisliği **yavaşlatmak** için hassas dizeler/sabitler şifreli tutulur, kullanım anında çözülür.
+- Bir değerlendirici ikili dosyada **yüksek entropili bölge** görünce sorar:
+  - Çözücü nerede?
+  - Anahtarı nasıl buluyor?
+  - Anahtar bellekte ne kadar açık kalıyor?
+- Aynı entropi ölçümü hem antivirüsün hem değerlendiricinin **ortak aracıdır**.
+
+---
+
+# İtibar / bulut tabanlı tespit
+
+- Dosyanın **yaygınlığı, kaynağı, dijital imzası** bulutta sorgulanır.
+- "Milyonlarca kullanıcıda görülmüş ve temiz" ise güvenilir sayılır; "hiç görülmemiş, imzasız" ise şüphelidir.
+- Güçlü yanı: **hızlı yayılan** tehdide karşı anında güncellenir.
+- Zayıf yanı: **gizlilik** (dosya bilgisi buluta gider) ve internet **bağlantısı** gerektirir.
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 07 — Kural tabanlı tespit
@@ -548,6 +707,37 @@ kural Kelime_Baglam {
 
 ---
 
+# Kara liste vs beyaz liste
+
+- **Kara liste:** "kötü olanı tanı" — bilinen zararlıyı listele, geri kalanına izin ver.
+- **Beyaz liste:** "iyi olanı tanı" — bilinen iyiyi listele, **geri kalan her şeyden şüphelen**.
+- Bütünlük izleme, beyaz listenin **dosya düzeyindeki** biçimidir.
+- Sistem iyiyken her dosyanın özeti bir **manifeste** yazılır, sonra düzenli karşılaştırılır.
+
+<!-- Konuşma notu: Tripwire, AppLocker/WDAC ve kod imzalama denetimleri hep bu fikre dayanır. -->
+
+---
+
+# Soru — hangi tür, hangi katman?
+
+E-posta ekindeki **"fatura.pdf.exe"** açılınca çalışıp adres defterindeki herkese kendini yolluyor.
+
+**Soru:** Bu hangi tür zararlı? İlk yakalayacak katman ne olurdu?
+
+**Cevap:** Solucan/truva karışımı — kullanıcı **açar** (truva atı gibi başlar), sonra **kendi kendine yayılır** (solucan gibi). İlk yakalayacak katman: **imza/desen** (bilinen bir örnekse) ya da **sezgisel** (yeniyse).
+
+---
+
+# Soru — tedarik zinciri saldırısı
+
+Bir yazılımın **resmî güncellemesine**, derleme sırasında arka kapı ekleniyor (SUNBURST benzeri).
+
+**Soru:** İmza tabanlı tespit ve izin listesi (whitelisting) bunu yakalar mı?
+
+**Cevap:** **Hayır, ikisi de başarısız olur.** Dosya **geçerli imzalıdır** ve izin listesinde zaten vardır (güncelleme resmî kaynaktan geliyor). Tedarik zinciri saldırısının korkutucu yanı tam budur: güvendiğiniz kaynağın kendisi ele geçirilmiştir.
+
+---
+
 # Demo 08 — Bütünlük izleme (beyaz liste)
 
 `code/week-02/08-butunluk-izleme` · SHA-256 manifesti + **HMAC mühür**
@@ -566,6 +756,35 @@ MUHUR GECERSIZ -> manifeste GUVENME
 Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük denetimi
 
 <!-- Konuşma notu: Değerlendirici önce dosyayı, sonra beklenen değeri değiştirir. İkinci test geçilemiyorsa denetim yalnız kazaya karşı korur. -->
+
+---
+
+# Değerlendirici: bütünlük denetimini nasıl kırar?
+
+İki adımlı test:
+
+1. Önce izlenen bir **dosyayı** değiştirir → tespit edildi mi?
+2. Sonra **beklenen değerleri** (manifest, gömülü özet) de değiştirmeye çalışır.
+
+İkinci test geçilemiyorsa denetim yalnız **kazaya** karşı korur, **saldırgana** karşı değil.
+
+---
+
+# Sabit zamanlı karşılaştırma
+
+- İki özeti karşılaştırırken **ilk farklı bayta** kadar mı, yoksa **hep aynı sürede** mi bakılıyor?
+- Süre farkı, doğru baytların **sayısını sızdırabilir** (zamanlama yan kanalı).
+- Bütünlük ve HMAC karşılaştırmaları **sabit zamanlı** yapılmalı.
+- Demo 08'in HMAC mührü bu yüzden özel bir karşılaştırma kullanır.
+
+---
+
+# Neden CRC32 yeterli değil?
+
+- **CRC32** hata tespiti için tasarlandı, **saldırgana karşı değil**.
+- Aynı CRC32 değerini veren **farklı içerik** bulmak kolaydır (çakışma ucuz).
+- Saldırgan dosyayı değiştirip CRC'yi **eski değere döndürebilir**.
+- Bu yüzden bütünlük denetiminde **kriptografik özet** (SHA-256) ya da **imza** gerekir.
 
 ---
 
@@ -588,6 +807,12 @@ Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük 
 
 ---
 
+# Olay incelemelerinin iskeleti — şema
+
+![w:900](assets/h02-11-olay-iskeleti.svg)
+
+---
+
 # Olaylardan programcıya dersler
 
 1. **Sınır denetimi:** 1988–2008 salgınlarının çoğu tek bir arabellek taşması (1. ve 4. hafta)
@@ -598,6 +823,163 @@ Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük 
 6. **Güncelleme mekanizması güvenlik özelliğidir:** yama gecikmesi = açık kapı
 
 <!-- Konuşma notu: Tartışma sorusu: Office'in 2022'den beri internetten gelen belgelerde makroları varsayılan engellemesi hangi eski salgınların kapısını kapattı? -->
+
+---
+
+<!-- _class: yogun -->
+
+# Stuxnet (2010): devlet düzeyinde saldırı
+
+- Hedef: endüstriyel denetleyiciler (**PLC**) — bir uranyum zenginleştirme tesisi.
+- Giriş: bir **kısayol (.lnk)** dosyasının görüntülenmesiyle kod yükleme + **dört** sıfırıncı gün açığı.
+- **Çalınmış sürücü imzaları** kullanıldı — imzalı olduğu için güvenilir göründü.
+- Programcıya ders: görüntüleme sırasında kod çalıştırmayın; imza anahtarlarını donanımda (HSM) koruyun.
+
+---
+
+# Eğilim: 1988–2008 vs 2017 sonrası
+
+- **1988–2008:** salgınların çoğu **tek bir arabellek taşmasıyla** yayıldı (Morris → Conficker).
+- **2017 sonrası:** giriş kapısı **güncelleme ve derleme süreçlerine** kaydı (NotPetya, SUNBURST).
+- Saldırgan artık kodu kırmak yerine, kodun **size ulaştığı yolu** ele geçiriyor.
+- İki savunma ucu: sınır denetimi (1., 4. hafta) + imzalı güncelleme/tedarik zinciri (3., 5., 10. hafta).
+
+---
+
+<!-- _class: yogun -->
+
+# WannaCry: üç ders bir olayda
+
+| Konu | WannaCry'da ne oldu? | Bu haftaki bağlantı |
+| --- | --- | --- |
+| **Yayılma** | SMB açığı (EternalBlue) ile kullanıcı hiçbir şey yapmadan solucan gibi yayıldı | Solucan tanımı, salgın modeli |
+| **Yük** | Dosyaları şifreleyip fidye istedi | Entropi sıçraması (Demo 02) |
+| **Yama boşluğu** | Yama saldırıdan **haftalar önce** çıkmıştı | Güncelleme = güvenlik özelliği |
+
+Tek bir olay, bu haftanın üç ana konusunu birleştiriyor.
+
+---
+
+# Yama gecikmesi bir güvenlik açığıdır
+
+- WannaCry'ın açığının yaması, saldırıdan **iki ay önce** yayımlanmıştı.
+- Slammer'ınki de **aylar önceden** vardı.
+- Sonuç: güncelleme mekanizması **güvenlik özelliğinin bir parçasıdır**.
+- Güncellemesi zor/yavaş bir ürün, düzeltilmiş hataları bile **aylarca açık tutar**.
+
+---
+
+# Tartışma: makrolar neden varsayılan kapalı?
+
+**Soru:** Office, 2022'den beri internetten gelen belgelerdeki makroları varsayılan engelliyor. Bu, Melissa ve ILOVEYOU gibi eski salgınların hangi zayıflığını kapatıyor?
+
+**Cevap:** Kullanıcının "makroları etkinleştir" tuzağına düşmesine dayanan yayılma yolunu kapatıyor. **Varsayılan ayar**, kullanıcı eğitiminden daha güçlüdür: eğitim her kullanıcıda işe yaramayabilir, ama güvenli varsayılan **herkesi** aynı anda korur.
+
+---
+
+# Tedarik zinciri: SUNBURST'ten NotPetya'ya
+
+- **NotPetya (2017):** bir muhasebe yazılımının güncelleme sunucusu ele geçirildi, on binlerce makineye yayıldı.
+- **SUNBURST (2020):** bir izleme yazılımının **derleme ortamına** sızılıp imzalı kütüphaneye arka kapı eklendi.
+- Ortak nokta: saldırgan **sizin güvendiğiniz kaynağı** hedef alıyor, sizi değil.
+- Savunma: güncellemeleri imzala + istemcide doğrula, derleme ortamını koru (5. hafta SBOM).
+
+---
+
+<!-- _class: yogun -->
+
+# Olaylardan çıkan tek satırlık dersler
+
+| Olay | Programcı ne yapmalıydı? |
+| --- | --- |
+| Morris | Sınır denetimli okuma, hata ayıklama kodunu sürümde bırakmama |
+| Code Red / Slammer / Blaster | Ağ girdisinin uzunluğunu doğrulama, gereksiz hizmeti kapatma |
+| WannaCry | Ayrıştırıcıda sınır denetimi, eski protokolü kapatma, yamayı geciktirmeme |
+| NotPetya | Güncellemeleri imzalama ve istemcide doğrulama |
+| SUNBURST | Derleme ortamını koruma, tekrarlanabilir derleme |
+
+---
+
+<!-- _class: yogun -->
+
+# Yanılgı: "Her zararlı bir virüstür"
+
+**Yanılgı:** Bulaşan her şeye "virüs" denir.
+
+**Gerçek:** Virüs yalnız **bir türdür** — taşıyıcıya iliştirilir, taşıyıcı çalışınca çalışır. Solucan taşıyıcı gerektirmez; truva atı kendini kopyalamaz.
+
+Türü yanlış koymak, yanlış savunmayı seçtirir: solucana karşı **ağ yaması** gerekirken truva atına karşı **kullanıcı eğitimi** gerekir.
+
+---
+
+# Yanılgı: "İmza veritabanım güncel, güvendeyim"
+
+**Yanılgı:** Güncel imza veritabanı yeterli korumadır.
+
+**Gerçek:** İmza yalnız **bilineni** yakalar. Tek baytlık değişiklik özet imzasını, çözücüsü değişen polimorfik kopya **desen** imzasını atlatır (Demo 01).
+
+İmza, savunmanın **başlangıcıdır**, bitmez.
+
+---
+
+# Yanılgı: "Yüksek entropi = zararlı"
+
+**Yanılgı:** Yüksek entropili her dosya şüphelidir.
+
+**Gerçek:** Şifreli, sıkıştırılmış ve rastgele veri hep **8'e yakındır**; `.zip`, `.png`, şifreli yedek de öyle.
+
+Entropi yalnız **beklenmedik yerde** anlamlı bir ipucudur (Demo 02).
+
+---
+
+# Yanılgı: kum havuzu ve emülasyonun sınırı
+
+**"Kum havuzunda temiz çıktı, o hâlde temiz."** Zararlı sanal ortamı **sezip uyuyabilir**; sonuç "bu koşullarda bir şey yapmadı" demektir, "zararsızdır" değil.
+
+**"Emülasyon metamorfik zararlıyı da çözer."** Emülasyon şifreli gövdenin çözüldüğü anı yakalar; metamorfik kodda **sabit bir gövde yoktur**. Burada davranış tabanlı tespit gerekir.
+
+---
+
+# Yanılgı: "%100 tespit eden ürün alırız"
+
+**Yanılgı:** Doğru ürünü seçersek hiçbir zararlı kaçmaz.
+
+**Gerçek:** Cohen'in (1984) kanıtladığı gibi, "bu program virüs mü?" sorusunu **her durumda doğru** yanıtlayan genel bir algoritma **yoktur**.
+
+Her tespit yöntemi yanlış pozitif ile yanlış negatif arasında bir **denge** kurar.
+
+---
+
+# Yanılgı: "Bütünlük izlemesini düz SHA-256 listesiyle yaptım"
+
+**Yanılgı:** Bir dosya listesi + özetleri yeterli bütünlük denetimidir.
+
+**Gerçek:** Saldırgan dosyayı değiştirdiği gibi **listeyi de** güncelleyebilir.
+
+Beklenen değerler **anahtarlı** (HMAC) ya da **imzalı** olmalı ve saldırganın erişemeyeceği yerde durmalıdır (Demo 08).
+
+---
+
+# Yanılgı: "Yama yayımlandı, iş bitti"
+
+**Yanılgı:** Yama çıktığı an risk biter.
+
+**Gerçek:** WannaCry'ın kullandığı açığın yaması saldırıdan **yaklaşık iki ay önce** çıkmıştı.
+
+Yama **uygulanana kadar** risk sürer; yayımlanan yama saldırgana da **yol gösterir**.
+
+---
+
+<!-- _class: yogun -->
+
+# Kontrol listesi — zararlı yazılım ve tespit
+
+- [ ] Virüs, solucan, truva atı, fidye, rootkit, bot, casus yazılım ve siliciyi **yayılma** ve **amaç** ile ayırabiliyorum.
+- [ ] Bir virüsün bulaştırıcı, tetikleyici, yük parçalarını bir senaryoda gösterebiliyorum.
+- [ ] Şifreli → oligomorfik → polimorfik → metamorfik merdiveninin her basamağını açıklayabiliyorum.
+- [ ] Özet, desen, sezgisel, davranış/EDR, kum havuzu ve emülasyonun **güçlü/zayıf** yanını söyleyebiliyorum.
+- [ ] SI salgın modelinde açılış/patlama/doygunluk evrelerini ve hitlist etkisini gösterebiliyorum.
+- [ ] Morris, Code Red, Slammer, Stuxnet, WannaCry, NotPetya ve SUNBURST'ün **birer dersini** söyleyebiliyorum.
 
 ---
 
@@ -617,6 +999,12 @@ Tarif 12.2: CRC32 → SHA-256/HMAC · 6. haftada çalışma zamanı bütünlük 
 
 ---
 
+# Saldırı ağacı kurma adımları — şema
+
+![w:900](assets/h02-12-saldiri-agaci-kurulum.svg)
+
+---
+
 # Demo 04 — Savunma maliyeti artırır
 
 `code/week-02/04-saldiri-agaci`
@@ -633,6 +1021,41 @@ SONRA:  EN UCUZ SALDIRI = 8  (RASP eklendi)
 <!--
 Konuşma notu: VE dugumleri saldirgani birden cok katmani birlikte kirmaya zorlar; derinlemesine savunmanin niceliksel hali.
 -->
+
+---
+
+# Yanılgı: "VE ile VEYA fark etmez"
+
+**Yanılgı:** Saldırı ağacında düğüm türü önemli değil.
+
+**Gerçek:** **VEYA** düğümünde en ucuz çocuk yeter; **VE** düğümünde çocukların **toplamı** gerekir.
+
+Karıştırmak en ucuz yolu **yanlış buldurur** ve savunma parası **yanlış dala** gider.
+
+---
+
+# Yanılgı: "En pahalı dalı güçlendirelim"
+
+**Yanılgı:** Görünüşte en tehlikeli/karmaşık saldırı yolunu güçlendirmek en iyisidir.
+
+**Gerçek:** Saldırgan her zaman **en ucuz** yolu seçer. Savunma köke giden **en ucuz yolu** pahalılaştırmıyorsa, en ucuz saldırının maliyeti hiç **değişmez** (Demo 04).
+
+---
+
+# Yanılgı: "Önlem eklemek yeter"
+
+**Yanılgı:** Ağaca bir savunma düğümü eklemek riski kapatır.
+
+**Gerçek:** Her önlemin kendisi de **atlatılabilir**. Önlem düğümünün altına onu aşma yollarını (**karşı-karşı önlem**) yazmadan hesap **iyimser** çıkar.
+
+---
+
+# Saldırı ağacı vs denetim kaydı: iki soru
+
+- **Saldırı ağacı:** "Saldırgan **nereden** gelir?" — önceden, planlama sorusu.
+- **Denetim kaydı (audit log):** "**Geldi mi**, ne yaptı?" — sonradan, kanıt sorusu.
+- Bir olaydan sonra ne olduğunu anlamanın, sorumluyu bulmanın tek yolu **güvenilir kayıttır**.
+- Kitap bunu Tarif 13.11'de işler; öneriler bugün de geçerli, yalnız araçlar güncellendi.
 
 ---
 
@@ -671,6 +1094,24 @@ GUVENLI:
 
 ---
 
+# Özet zinciri: basit ama kırılabilir
+
+- Fikir: her kayıt, **bir önceki kaydın özetini** içerir.
+- Ortadan bir kaydı değiştirmek, sonraki **tüm zinciri** bozar.
+- Sorun: saldırgan **anahtarsız** — bütün zinciri baştan yeniden hesaplayabilir.
+- Çözüm: özeti **anahtarlı** yapmak → HMAC zinciri (bir sonraki slayt).
+
+---
+
+# Sürüm derlemesinde günlük neden kaldırılır?
+
+- Kayıt, bir **saldırganın da okuyabileceği** varsayılarak tasarlanır.
+- Günlüğe yazılan her sır, günlük dosyasına erişen **herkese** verilmiş demektir.
+- Kapalı bir bayrakla **susturulmuş** hata ayıklama kodu, ikili dosyada **kalır**.
+- Hem dizgeleriyle bilgi sızdırır hem de **yeniden açılabilir** — bu yüzden sürüm derlemesinde tamamen **çıkarılmalıdır**.
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 11 — Kurcalamaya dayanıklı günlük
@@ -686,6 +1127,86 @@ GUVENLI:
 Anahtar her kayıtta tek yönlü evrilir, eski anahtar silinir → ele geçirmeden **önceki** kayıtlar korunur
 
 <!-- Konuşma notu: Schneier–Kelsey 1999. Doğrulayıcı başlangıç anahtarını çevrimdışı tutar. En güçlü kanıt, saldırganın ulaşamadığı uzak kopyadır. -->
+
+---
+
+# İleriye güvenlik: anahtar neden evrilir?
+
+- Her kayıttan sonra anahtar **tek yönlü** bir fonksiyonla değişir; eski anahtar **silinir**.
+- Saldırgan makineyi ele geçirdiğinde yalnız **o anki** anahtarı bulur.
+- O andan **geriye**, önceki kayıtları mühürleyen anahtarlara **dönemez**.
+- Sonuç: ele geçirmeden **önceki** kayıtlar korunur (Schneier–Kelsey, 1999).
+
+---
+
+# Soru — sondan kesme yakalanır mı?
+
+Demo 11'in ürettiği zincirden **son üç satırı silin**.
+
+**Soru:** Doğrulayıcı bunu fark eder mi? Neden?
+
+**Cevap:** Yalnızca zincirin **son değeri** ya da **kayıt sayısı** ayrıca (uzak bir sunucuda) tutuluyorsa fark eder. Zincirin kendisi yalnız dosyada tutulursa, sondan kesme **iç tutarlılığı bozmaz** — çünkü silinen kayıtlardan sonra gelen hiçbir kayıt yoktur ki tutarsızlık göstersin.
+
+---
+
+# Kural (özet): denetim kaydı
+
+- Kullanıcı verisini **kaçışlayarak ve sınırlayarak** yazın.
+- Sırları (parola, anahtar) **asla** yazmayın.
+- Günlüğü **anahtarlı bir zincirle** mühürleyin; anahtarı her kayıtta **evriltin**.
+- Doğrulama anahtarını günlüğün bulunduğu **makinede tutmayın**.
+- Mümkünse kayıtları **anında** ayrı bir sunucuya gönderin.
+
+---
+
+# Sahada nasıl uygulanır? — mobil günlük
+
+- Mobil uygulamalarda **cihaz üzerindeki** günlük en az tutulur, hassas alan içermez.
+- Güvenlik olayları (bütünlük hatası, hata ayıklayıcı algılama) **sunucuya raporlanır**.
+- Bu, 6. haftada göreceğimiz **RASP** önlemlerinin "raporlama" ayağıdır.
+- Cihazdaki günlük saldırganın elindedir; asıl kanıt **uzaktaki** kopyadır.
+
+---
+
+# Yanılgı: "Denetim kaydına her şeyi yazalım"
+
+**Yanılgı:** Daha çok bilgi, daha iyi kanıt demektir.
+
+**Gerçek:** Parola, PIN, anahtar ve **tam kart numarası** kayda **asla** girmez (CWE-532).
+
+Kayıt, olayı yeniden kurmaya **yetecek kadar** bilgi taşır: kim, ne, ne zaman, nerede, sonuç.
+
+---
+
+# Yanılgı: "Kullanıcı adını olduğu gibi yazdım"
+
+**Yanılgı:** Kullanıcıdan gelen alan doğrudan günlüğe yazılabilir.
+
+**Gerçek:** İçinde satır sonu olan bir girdi **sahte kayıt satırı** üretir (CWE-117, Demo 10).
+
+Denetim karakterleri **kaçışlanmalı** ya da yapılandırılmış (alan alan) kayıt kullanılmalıdır.
+
+---
+
+# Yanılgı: "Kayıt sonuna özet ekledim, kurcalama anlaşılır"
+
+**Yanılgı:** Dosyanın sonuna bir özet eklemek yeterli korumadır.
+
+**Gerçek:** Anahtarsız özeti saldırgan **yeniden hesaplar**.
+
+HMAC zinciri araya ekleme/değiştirmeyi yakalar; **sondan kesmeyi** yakalamak için son zincir değeri ayrıca (**uzak sunucuda**) tutulmalıdır (Demo 11).
+
+---
+
+<!-- _class: yogun -->
+
+# Kontrol listesi — saldırı ağacı ve denetim kaydı
+
+- [ ] Bir saldırı ağacını **VE/VEYA** kurallarıyla aşağıdan yukarı çözüp en ucuz yolu bulabiliyorum.
+- [ ] Bir savunmanın en ucuz yolu **nasıl değiştirdiğini** sayıyla gösterebiliyorum (Demo 04).
+- [ ] Bir denetim kaydı satırında **olması ve olmaması** gerekenleri sayabiliyorum.
+- [ ] Günlük enjeksiyonunun (CWE-117) nasıl önlendiğini açıklayabiliyorum.
+- [ ] HMAC zincirinin ve anahtar evriminin neyi yakalayıp **neyi yakalayamadığını** söyleyebiliyorum.
 
 ---
 
@@ -933,6 +1454,88 @@ deniz IVP: beklenen 20250, bulunan 20250
 
 ---
 
+# Yanılgı: "Kimliği doğruladık, yetkiyi de doğrulamış olduk"
+
+**Yanılgı:** Giriş yapabilen kullanıcı, her şeyi yapabilir.
+
+**Gerçek:** **Kimlik doğrulama** "sen kimsin?" sorusudur; **yetkilendirme** "bunu yapabilir misin?" sorusudur — ayrı adımlardır.
+
+2025 CWE Top 25'te dördüncü sıradaki **CWE-862** (eksik yetkilendirme) tam bu hatadır.
+
+---
+
+# Yanılgı: "Hata olursa izin verelim"
+
+**Yanılgı:** Politika okunamıyorsa ya da belirsizse, kullanıcı mağdur olmasın diye **izin verilmeli**.
+
+**Gerçek:** **Güvenli varsayılan** ilkesi tam tersini söyler: politika okunamıyorsa cevap **ret** olmalıdır (CWE-636, "fail-open" hatası).
+
+"Fail-closed" (hata olunca kapat) güvenli sistemlerin varsayılanıdır.
+
+---
+
+# Yanılgı: "NULL DACL ile boş DACL aynı"
+
+**Yanılgı:** İkisi de "izin yok" gibi görünür.
+
+**Gerçek:** **NULL DACL** (hiç DACL yok) **herkese tam erişim** verir — sahiplik alma dahil. **Boş DACL** (ACE'siz liste) ise **kimseye hiçbir hak vermez**.
+
+İlki ciddi bir zafiyettir (CWE-732); ikisini karıştırmak tehlikelidir (Demo 12).
+
+---
+
+# Yanılgı: "ACE sırası önemli değil"
+
+**Yanılgı:** Aynı ACE'ler farklı sırada yazılsa da sonuç aynıdır.
+
+**Gerçek:** Windows ACE'leri **sırayla** değerlendirir ve **ilk belirleyici** girdide durur.
+
+Kanonik sırada açık ret girdileri izinlerden önce gelir; elle yanlış sıralanmış bir DACL, niyet edilen reddi **etkisiz bırakabilir** (Demo 12).
+
+---
+
+# Yanılgı: "chmod 777 ile sorun çözüldü"
+
+**Yanılgı:** "Erişim reddedildi" hatasını `chmod 777` ile geçiştirmek pratik bir çözümdür.
+
+**Gerçek:** Sorun izinlerin herkese açılmasıyla **çözülmez, büyütülür**.
+
+Sırlar `0600` ile oluşturulmalı, `umask` programın başında **bilinçli** ayarlanmalıdır (Demo 13).
+
+---
+
+# Yanılgı: "RBAC kurduk, görev ayrılığı kendiliğinden gelir"
+
+**Yanılgı:** Rol tabanlı erişim denetimi kurmak, görev ayrılığını otomatik sağlar.
+
+**Gerçek:** Aynı kişiye hem "iade başlat" hem "iade onayla" rolü verilirse RBAC görev ayrılığını **sağlamaz**.
+
+Statik (**SSD**) ya da dinamik (**DSD**) görev ayrılığı kısıtı **ayrıca** tanımlanmalıdır (Demo 14).
+
+---
+
+# Mobil izin modeli ve en az ayrıcalık
+
+- Her uygulama kendi **kum havuzunda** çalışır — diğer uygulamaların verisine varsayılan olarak erişemez.
+- Hassas kaynaklar (kamera, konum, kişiler) **çalışma anı izni** ister; kullanıcı onaylamadan erişilmez.
+- Bu, DAC (kullanıcı onayı) ile MAC'e (sistemin zorunlu kum havuzu sınırı) benzer bir **karma modeldir**.
+- En az ayrıcalık ilkesinin (Hafta 1) günümüz mobil işletim sistemlerindeki **somut hâlidir**.
+
+---
+
+<!-- _class: yogun -->
+
+# Kontrol listesi — erişim denetimi
+
+- [ ] DAC, MAC ve RBAC'ı "**kararı kim verir?**" sorusuyla ayırabiliyorum.
+- [ ] BLP, Biba ve Clark–Wilson kurallarını bir senaryoya uygulayabiliyorum.
+- [ ] Kimlik doğrulama ile yetkilendirme **farkını** bir örnekle açıklayabiliyorum.
+- [ ] `ls -l` çıktısını, setuid/sticky bitlerini ve umask hesabını yorumlayabiliyorum.
+- [ ] NULL DACL, boş DACL ve ACE sırasının neden **kritik** olduğunu gösterebiliyorum.
+- [ ] RBAC'ta SSD/DSD ile görev ayrılığının nasıl **ayrıca** kurulduğunu açıklayabiliyorum.
+
+---
+
 <!-- _class: bolum -->
 
 # Zafiyet sınıflandırma
@@ -956,6 +1559,26 @@ Hiyerarşik: pillar → class → base → variant. **En somut** CWE'yi seç.
 
 ---
 
+# Yanılgı: "CWE ile CVE aynı şey"
+
+**Yanılgı:** İkisi de aynı anlama gelir, birbirinin yerine kullanılabilir.
+
+**Gerçek:** **CWE** zayıflığın **türüdür** (SQL enjeksiyonu → CWE-89). **CVE** belirli bir üründeki belirli açığın **kimliğidir** (Heartbleed → CVE-2014-0160).
+
+Bir CVE, bir ya da birden çok CWE türüne **aittir**.
+
+---
+
+# Yanılgı: "En genel CWE'yi seçmek güvenlidir"
+
+**Yanılgı:** Emin olmadığımda en üst düzey (genel) CWE'yi yazmak daha güvenlidir.
+
+**Gerçek:** CWE-20 (girdi doğrulama) gibi üst düzey girdiler **düzeltmeyi anlatmaz**.
+
+Kural: mümkün olan **en somut** (tercihen base düzeyi) CWE'yi seçin.
+
+---
+
 # OWASP Top 10 ve MASVS
 
 | Belge | Kapsam | Türü |
@@ -966,6 +1589,16 @@ Hiyerarşik: pillar → class → base → variant. **En somut** CWE'yi seç.
 | OWASP **MASVS** + MASTG | **Mobil** | Doğrulama + test |
 
 **MASVS-RESILIENCE** = tersine mühendisliğe direnç → bu dersin kod gizleme (H9, H14), RASP (H6), whitebox (H11) konuları.
+
+---
+
+# Yanılgı: "OWASP Top 10 bir kontrol listesidir"
+
+**Yanılgı:** Top 10'daki 10 maddeyi karşılıyorsam güvenliyim demektir.
+
+**Gerçek:** Top 10 bir **farkındalık** belgesidir, doğrulama standardı değil.
+
+Doğrulanabilir gereksinimler web için **ASVS'de**, mobil için **MASVS ve MASTG'dedir**.
 
 ---
 
@@ -1010,6 +1643,143 @@ AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  Yuksek
 
 ---
 
+<!-- _class: yogun -->
+
+# CVSS puanı → ciddiyet bandı
+
+| Puan | Bant |
+| --- | --- |
+| 0.0 | Yok |
+| 0.1–3.9 | Düşük |
+| 4.0–6.9 | Orta |
+| 7.0–8.9 | Yüksek |
+| 9.0–10.0 | Kritik |
+
+Aynı etki (C:H/I:H/A:H) olsa bile **uzaktan + kimliksiz** açık, **yerel + yetkili** açıktan daha yüksek bant alır.
+
+---
+
+# CVSS v4.0 kısaca
+
+- 2023'te geldi; v3.1'in bazı zayıflıklarını giderir.
+- Temel puan artık **CVSS-B** olarak anılır.
+- **Kapsam (S)** metriği kaldırıldı; yerine ayrı **Zafiyet Etkisi** (VC/VI/VA) ve **Sonraki Sistem Etkisi** (SC/SI/SA).
+- Sömürü olgunluğu (E) ve tehdit/çevre metrikleriyle **CVSS-BTE** hesaplanabiliyor.
+- Bu derste hesap makinesi v3.1 için yazıldı; sahada hâlâ en yaygın odur.
+
+---
+
+# Yanılgı: "v3.1 vektörünü v4.0'a girerim"
+
+**Yanılgı:** CVSS v3.1 vektörü, v4.0 hesap makinesinde de doğrudan çalışır.
+
+**Gerçek:** v4.0'da **Kapsam (S)** yoktur; **AT, VC/VI/VA, SC/SI/SA** metrikleri vardır ve UI üç değer alır (N/P/A).
+
+Vektörler birbirine **çevrilmez**, yeniden **kurulur**.
+
+---
+
+# CVSS'in sık yapılan hatası
+
+**Yanılgı:** "CVSS 9.8, hemen yamalayalım; 4.0, beklesin."
+
+- Temel puan **bağlamı bilmez**: açığın kendi özelliklerini ölçer.
+- 4.0'lık bir açık, tam sizin **en değerli varlığınızın** kapısıysa sizin için 9.8'den önemli olabilir.
+- Bunun için **Çevresel** metrikler ve **varlık tablonuz** (S5) vardır.
+- Puan önceliklendirmeye **başlangıçtır**, son söz değildir.
+
+---
+
+<!-- _class: yogun -->
+
+# Değerlendirici: bulgudan puana
+
+Bir bulguyu **tekrarlanabilir** biçimde derecelendirmenin somut soruları:
+
+- Saldırgan bunu **ağdan** mı, yoksa yalnız **cihaz elindeyken** mi kullanabiliyor (AV)?
+- Önceden bir **yetki** ya da **kullanıcı etkileşimi** gerekiyor mu (PR, UI)?
+- Etki açığın olduğu bileşende mi kalıyor, dışına mı taşıyor (S)?
+
+Bu dersin bağlamında (program saldırganın cihazında) çoğu bulgu **yerel (AV:L)** çıkar; puan düşse de risk düşmez.
+
+---
+
+# CVSS'in ötesi: EPSS
+
+- **EPSS** (Exploit Prediction Scoring System): bir açığın **30 gün içinde istismar edilme olasılığı** (0–1 arası).
+- **CVSS ciddiyeti** ölçer, **EPSS olasılığı** ölçer — ikisi **farklı sorulara** cevap verir.
+- "EPSS yüksek, o hâlde CVSS de yüksektir" **yanlıştır**; ikisi birbirinden bağımsız ölçülür.
+- İkisi **birlikte** okunduğunda öncelik sırası netleşir.
+
+---
+
+# CVSS'in ötesi: KEV
+
+- **KEV** (Known Exploited Vulnerabilities): **kanıtlanmış** biçimde istismar edilen açıkların kataloğu.
+- Her kayıt: CVE kimliği, istismar kanıtı, açık düzeltme yönergesi.
+- "KEV'de yoksa istismar edilmiyordur" **yanlıştır** — listede olmamak güvenlik kanıtı değildir.
+- KEV'deki bir açık, düşük CVSS puanı alsa bile **öncelikli** ele alınmalıdır.
+
+---
+
+<!-- _class: yogun -->
+
+# SSVC: karar noktaları
+
+Bir bulguyu **karara** çeviren beş soru:
+
+- İstismar var mı? · Otomatikleştirilebilir mi?
+- Teknik etki nedir? · Görev ne kadar yaygın etkilenir?
+- Kamu esenliği nasıl etkilenir?
+
+Sonuç dört karardan biri: **Track / Track\* / Attend / Act**
+
+---
+
+<!-- _class: kucuk -->
+
+# Örnek: beş bulgu, iki sıralama
+
+| No | Bulgu | Sistem | EPSS | KEV |
+| --- | --- | --- | --- | --- |
+| B1 | Ayrıştırıcıda uzunluk denetimi yok, uzaktan kod çalıştırma | İnternete açık | 0,62 | Evet |
+| B5 | Sürücüde yerel yetki yükseltme | Çalışan bilgisayarları | 0,41 | Evet |
+| B4 | Çerezde `Secure` bayrağı yok | İnternete açık | 0,08 | Hayır |
+
+Yalnız CVSS'e göre sıralama ile EPSS+KEV eklenmiş sıralama **farklı** çıkabilir; B5, CVSS'te ortalarda kalsa da KEV'de olduğu için **öne çıkar**.
+
+---
+
+# Yanılgı: "Cihazdaki açıklar düşük puan alıyor, önemsiz"
+
+**Yanılgı:** `AV:L` (yerel erişim) çıkan bir açık, düşük puanlıysa göz ardı edilebilir.
+
+**Gerçek:** Bu dersin saldırgan modelinde **cihaz zaten saldırganın elindedir** (beyaz kutu).
+
+Puan düşse bile risk **azalmaz**; puanın yanına **saldırı potansiyeli** (süre, uzmanlık, ekipman) de yazılmalıdır.
+
+---
+
+# Pratik: vektörü siz kurun
+
+**Soru:** Bir saldırgan **ağdan**, **kimlik doğrulamadan**, **kullanıcı etkileşimi olmadan** bir sistemi tamamen ele geçiriyor (gizlilik, bütünlük, erişilebilirlik hepsi tam bozuluyor). CVSS v3.1 vektörü ve puanı nedir?
+
+**Cevap:** `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H` → **9.8 (Kritik)**. Kapsam da değişseydi (S:C) puan **10.0**'a çıkardı.
+
+---
+
+<!-- _class: yogun -->
+
+# Kontrol listesi — zafiyet sınıflandırma
+
+- [ ] CWE'nin soyutlama düzeylerini (pillar, class, base, variant) ve "en somut girdi" kuralını biliyorum.
+- [ ] CWE, CVE ve CVSS'i birer cümleyle **ayırabiliyorum**.
+- [ ] Bir bulguya CVSS v3.1 vektörü kurup puanı **elle** hesaplayabiliyorum.
+- [ ] EPSS, KEV ve CVSS'in **farklı sorulara** cevap verdiğini açıklayabiliyorum.
+- [ ] Zafiyet yaşam döngüsünü, sıfırıncı gün, yama boşluğu ve sorumlu ifşayı anlatabiliyorum.
+
+---
+
 # Zafiyet yaşam döngüsü
 
 ![w:900](assets/h02-06-zafiyet-yasam-dongusu.svg)
@@ -1017,6 +1787,77 @@ AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  Yuksek
 - **Zero-day:** satıcının bilmediği/yamasının olmadığı açık.
 - **Sorumlu ifşa:** önce satıcıya bildir, ~90 gün bekle, sonra açıkla.
 - **Yama boşluğu:** yama çıkınca açık kamuya açılır; güncellemeyen savunmasız (WannaCry).
+
+---
+
+# Yaşam döngüsü: dört aşama
+
+1. **Keşif:** açık bulunur (araştırmacı, saldırgan ya da satıcı).
+2. **Bildirim:** araştırmacı satıcıya bildirir (ya da saldırgan sessizce kullanır).
+3. **Yama:** satıcı düzeltmeyi yazıp yayımlar.
+4. **Yayın:** yama kullanıcıya ulaşır, **uygulanırsa** risk biter.
+
+Her ok arasında geçen süre, saldırgana verilen **zaman penceresidir**.
+
+---
+
+<!-- _class: yogun -->
+
+# Sorumlu ifşa vs tam ifşa
+
+| | Sorumlu ifşa (coordinated) | Tam ifşa (full) |
+| --- | --- | --- |
+| Kim önce bilir? | Satıcı | Herkes aynı anda |
+| Bekleme | ~90 gün (yama için) | Yok |
+| Amaç | Kullanıcıyı korurken satıcıyı harekete geçirmek | Satıcıyı zorlamak |
+| Risk | Düşük (yama varken açıklanır) | Yüksek (yama yokken açık bilinir) |
+
+Sektörde tartışmalı olan **tam ifşadır**.
+
+---
+
+# Hata ödül programları (bug bounty)
+
+- Şirketlerin, açığı **sorumlu biçimde** bildiren araştırmacılara **ödül** verdiği programlar.
+- Amaç: araştırmacıyı tam ifşa yerine **sorumlu ifşaya** yönlendirmek.
+- Araştırmacı için kazanç; şirket için **erken uyarı**.
+- Büyük teknoloji şirketlerinin çoğunda artık standart bir uygulamadır.
+
+---
+
+# Sahada süreç: bir açık bildirilirse ne olur?
+
+Bir ürün ekibi için yaşam döngüsü bir **süreçtir**:
+
+- Bildirim **kanalı:** `security.txt`, güvenlik e-postası.
+- Bir **sorumlu** kişi/ekip.
+- Yama **SLA'sı:** ne kadar sürede düzeltilecek?
+- Sürüm/yama **duyuru** mekanizması.
+
+Bir değerlendirme yalnız kodu değil, bu **süreci** de sorar.
+
+---
+
+# Tam ifşa neden tartışmalı?
+
+**Soru:** Tam ifşa (full disclosure) neden riskli kabul edilir?
+
+**Cevap:** Açık, **yama yokken** herkese duyurulur. Satıcıyı harekete geçirmeye zorlar, ama aynı zamanda saldırganlara da **hazır bir yol haritası** verir — kullanıcılar savunmasızken.
+
+---
+
+<!-- _class: yogun -->
+
+# Sözlük eki — bu genişletmede eklenenler
+
+| Terim | Anlam |
+| --- | --- |
+| EPSS | Açığın 30 gün içinde istismar edilme **olasılığı** |
+| KEV | **Kanıtlanmış** istismar edilen açıklar kataloğu |
+| SSVC | İstismar/etki/yaygınlık ile Track–Act kararı |
+| Sorumlu / tam ifşa | Önce satıcıya bildirme / hemen kamuya açma |
+| Kimlik doğrulama / yetkilendirme | "Sen kimsin?" / "Bunu yapabilir misin?" |
+| Güvenli varsayılan | Politika belirsizse cevap **ret** (fail-closed) |
 
 ---
 

@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
     /* Programin sizmamasi gereken "gizli" degeri. Yiginda, asagidaki
        bicim tamponuna komsu durur. */
-    volatile unsigned gizli_deger = 0x5ECE7u;   /* 387303 */
+    volatile unsigned gizli_deger = 0x5ECE7u;   /* 388327 */
     char tampon[64];
     snprintf(tampon, sizeof(tampon), "%s", argv[1]);
 

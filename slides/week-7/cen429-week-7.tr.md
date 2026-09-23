@@ -49,6 +49,12 @@ Konuşma notu: Bu hafta ders değil gösterim haftası: her takım güvenlik kı
 
 ---
 
+# Rubriğin okunuşu — şema
+
+![w:950](assets/h07-04-rubrik.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Ara raporda hangi bölümler?
@@ -60,6 +66,12 @@ Konuşma notu: Bu hafta ders değil gösterim haftası: her takım güvenlik kı
 | | S16 test (plan) · S17 uyum matrisi (taslak) |
 
 Finale kalanlar: S6 · S8 · S11 · S14 · S15
+
+---
+
+# RAP1 teslimi — şema
+
+![w:950](assets/h07-02-rap1.svg)
 
 ---
 
@@ -90,6 +102,12 @@ Her önlem için: **Neyi korur? · Nasıl yapıldı? · Nasıl kanıtlandı?**
 
 ---
 
+# Gösterim günü akışı — şema
+
+![w:950](assets/h07-01-gosterim-akisi.svg)
+
+---
+
 # Örnek sorular
 
 - Güven sınırını geçen en riskli akış hangisi?
@@ -113,6 +131,12 @@ Her önlem için: **Neyi korur? · Nasıl yapıldı? · Nasıl kanıtlandı?**
 | Genel bilgiden tehdit tablosu | Projeye özgü tehditler kaçar |
 | Prova edilmemiş gösterim | Süre boşa gider |
 | Depoda gerçek parola/anahtar/kişisel veri | Ciddi güvenlik hatası; değerler **sentetik** |
+
+---
+
+# Sık yapılan hatalar — şema
+
+![w:950](assets/h07-03-sik-hatalar.svg)
 
 ---
 

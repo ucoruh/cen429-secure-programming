@@ -905,12 +905,6 @@ LisansDenetleyici.dogrula()  →  a.b()
 
 ---
 
-# Tedarik zinciri ve SBOM — şema
-
-![w:950](assets/h05-10-sbom.svg)
-
----
-
 # Sorun · tedarik zinciri
 
 - Kendi kodunuz kusursuz olsa bile, kullandığınız **kütüphanelerdeki** açık sizi etkiler.
@@ -960,10 +954,7 @@ LisansDenetleyici.dogrula()  →  a.b()
 
 # SBOM üretimi · örnek akış
 
-```text
-derleme → SBOM üret (CycloneDX) → açık tarama
-        → VEX ile değerlendir → sürümle birlikte arşivle
-```
+![w:900](assets/h05-10-sbom.svg)
 
 Her sürümün SBOM'u sürüm kimliğiyle saklanır.
 

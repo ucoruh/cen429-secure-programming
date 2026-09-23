@@ -262,10 +262,7 @@ simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · i
 
 # En zayıf halka kuralı
 
-```text
-RSA-2048 (~112 bit) + AES-256 (256 bit)
-→ sistem ~112 bit (en zayıf halka)
-```
+![w:900](assets/h10-13-en-zayif-halka.svg)
 
 - Bileşenleri **dengeli** seç.
 - 128 bit hedefliyorsan RSA-3072 ya da ECC.
@@ -717,11 +714,7 @@ Her iki taraf "güvenli kanal kurdum" sanır.
 
 # Güven zinciri
 
-```text
-Kök CA (kendini imzalar)
-   └─ Ara CA
-        └─ Sunucu sertifikası (example.com)
-```
+![w:900](assets/h10-03-pki.svg)
 
 Her seviye bir alttakini **imzalar**.
 
@@ -730,12 +723,6 @@ Her seviye bir alttakini **imzalar**.
 # Zincir doğrulama — şema
 
 ![w:950](assets/h10-12-zincir-dogrulama.svg)
-
----
-
-# Sertifika zinciri — kim kimi imzalar?
-
-![w:1000](assets/h10-03-pki.svg)
 
 ---
 

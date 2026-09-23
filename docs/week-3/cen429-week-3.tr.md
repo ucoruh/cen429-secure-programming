@@ -317,8 +317,6 @@ oynadıysa çözme **reddedilir**.
 - **ChaCha20-Poly1305** — AES donanımı olmayan cihazlarda (bazı mobil/gömülü) daha hızlı ve yan kanala dirençli.
   RFC 8439.
 
-![AEAD girdileri (anahtar, nonce, düz metin, AAD) ve çıktıları](assets/h03-02-aead.svg)
-
 !!! info "Kitap tarifi ve güncelleme"
     Ders kitabı (Viega & Messier) simetrik şifrelemeyi **tarif 5.x**'te işler ama 2003 tarihlidir: DES/3DES/RC4 ve ayrı
     MAC önerir. Biz bunları **AES-GCM / ChaCha20-Poly1305** (AEAD) ile güncelliyoruz. "Şifreleme ile bütünlüğü birlikte
@@ -639,12 +637,7 @@ algoritmayı **doğru çağırmak** da bir beceridir.
 
 ### AEAD'in dört girdisi ve iki çıktısı
 
-```text
- anahtar (32 B, gizli) ─┐
- nonce   (12 B, benzersiz) ─┤
- AAD     (açık ama korunan başlık) ─┼──▶ [ AES-256-GCM ] ──▶ şifreli metin (n B)
- açık metin (n B) ──────┘                                 └─▶ etiket (16 B)
-```
+![AEAD'in dört girdisi ve iki çıktısı](assets/h03-02-aead.svg)
 
 **AAD** (ek doğrulanmış veri), şifrelenmeyen ama değiştirilirse fark edilmesi gereken bilgidir: dosya başlığı,
 sürüm numarası, kayıt kimliği. 1. haftadaki parola kasası örneğinde türetme parametrelerini AAD yapmıştık; biri
@@ -1046,6 +1039,8 @@ Anahtarları bir **tek yönlü zincir** olarak türetirsek — `K0 = ana sır`, 
 verisini) **hesaplayamaz**. TLS 1.3 bu güvenceyi her oturumda geçici Diffie-Hellman ile sağlar (kitap **tarif
 8.20–8.21**).
 
+![İleri gizlilik: tek yönlü anahtar zinciri](assets/h03-11-ileri-gizlilik.svg)
+
 ### Demo 5 — HKDF ile oturum anahtarları ve ileri gizlilik zinciri
 
 !!! info "Demo 5 · `code/week-03/05-hkdf-oturum` · HKDF, oturum anahtarı, ileri gizlilik"
@@ -1148,12 +1143,7 @@ küçüktür.
 Büyük miktarda veriyi doğrudan ana anahtarla şifrelemek iki sorun yaratır: ana anahtar sık kullanılır (açıkta kalma
 süresi artar) ve anahtar değiştiğinde **bütün veri** yeniden şifrelenmelidir. Zarflama bu iki sorunu çözer:
 
-```text
-  veri ──AES-GCM(DEK)──▶ şifreli veri
-  DEK  ──AES-KW / AES-GCM(KEK)──▶ sarılmış DEK     (şifreli verinin yanında saklanır)
-
-  KEK değişince: yalnız sarılmış DEK'ler yeniden sarılır; veri olduğu yerde kalır.
-```
+![Zarflama: veriyi DEK, DEK'i KEK şifreler](assets/h03-09-zarflama.svg)
 
 1. Her dosya ya da kayıt için rastgele bir **veri anahtarı (DEK)** üretilir; veri bununla şifrelenir.
 2. DEK, bir **anahtar şifreleme anahtarıyla (KEK)** sarılır (şifrelenir) ve şifreli verinin başlığına yazılır.
@@ -1167,13 +1157,7 @@ Bulut sağlayıcılarının anahtar yönetim hizmetleri (KMS) ve disk şifreleme
 Bir anahtarı yenileyebilmek için, şifreli verinin **hangi anahtarla** şifrelendiğini bilmek gerekir. Bu yüzden
 şifreli verinin başlığına bir **anahtar kimliği / sürüm** alanı konur:
 
-```text
- +---------+--------------+-------------+------------------+-----------+
- | biçim   | anahtar_sürüm| nonce (12B) | şifreli metin    | etiket    |
- | 1 bayt  | 4 bayt       |             |                  | (16 B)    |
- +---------+--------------+-------------+------------------+-----------+
-   └──────────── AAD (şifrelenmez ama değiştirilemez) ──────┘
-```
+![Şifreli kayıt biçimi ve AAD kapsamı](assets/h03-10-kayit-bicimi.svg)
 
 Okuyucu önce sürüme bakar, o sürümün anahtarını bulur ve çözer. Yeni yazmalar hep en yeni anahtarla yapılır; eski
 kayıtlar okundukça (ya da arka planda) yeni anahtarla yeniden şifrelenir. Başlık AAD olduğu için saldırgan sürüm

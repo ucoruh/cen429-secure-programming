@@ -1295,23 +1295,7 @@ kendiniz bakın: Linux'ta `objdump -d bin/linux/parola_memset | less` ile `giris
 Taşma hatalarını anlamak için önce bir programın belleğinin nasıl düzenlendiğini bilmemiz gerekir. Linux'ta çalışan
 bir sürecin sanal belleği kabaca şöyledir:
 
-```text
- yüksek adres
- +-----------------+
- | Yığın (stack)   |  <- yerel değişkenler, dönüş adresleri
- |       |         |     (aşağı doğru büyür)
- |       v         |
- |                 |
- |       ^         |
- |       |         |
- | Öbek (heap)     |  <- malloc ile alınan bellek
- +-----------------+     (yukarı doğru büyür)
- | .bss / .data    |  <- küresel ve static değişkenler
- +-----------------+
- | .text           |  <- makine kodu (salt okunur)
- +-----------------+
- düşük adres
-```
+![Süreç belleği: yığın, öbek, BSS/data ve kod bölgeleri](assets/h01-13-surec-bellegi.svg)
 
 Bir fonksiyon çağrıldığında yığında ona bir **çerçeve** (stack frame) ayrılır. Yerel değişkenler, bu çerçevede
 **yan yana** durur. C, bir dizinin sonuna gelindiğini **denetlemez**: `ad[16]` dizisine 17. baytı yazarsanız, C bunu
@@ -1326,20 +1310,7 @@ struct oturum {
 };
 ```
 
-```text
- ofset    0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15   16 17 18 19
-         +-----------------------------------------------+ +-----------+
- önce    | a  y  s  e \0  .  .  .  .  .  .  .  .  .  .  .| |00 00 00 00|
-         +-----------------------------------------------+ +-----------+
-          <------------------ ad[16] ------------------->   yonetici=0
-
- 17 karakterlik "AAAAAAAAAAAAAAAAB" kopyalanınca:
-         +-----------------------------------------------+ +-----------+
- sonra   | A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A| |42 00 00 00|
-         +-----------------------------------------------+ +-----------+
-                                                   'B' ve '\0' ^^ ^^
-                                                    yonetici = 0x42 = 66
-```
+![Taşmadan önce ve sonra ad(16) dizisi ile yonetici alanının bellekteki hâli](assets/h01-14-yapi-bellekte.svg)
 
 x86-64 işlemciler **küçük uçlu** (little-endian) çalışır: bir tamsayının en düşük baytı en düşük adreste durur. Bu
 yüzden `yonetici`'nin ilk baytına yazılan `'B'` (0x42) tamsayıyı 66 yapar — sıfır olmayan her değer "yönetici" demektir.
@@ -1387,20 +1358,7 @@ Fonksiyon çağrıldığında yığında ona ait bir **çerçeve** (stack frame)
 bir önceki çerçevenin adresi ve fonksiyon bitince **nereye dönüleceğini** gösteren **dönüş adresi** bulunur.
 Basitleştirilmiş bir görünüm (düşük adres yukarıda; gerçek yerleşim derleyiciye göre değişir):
 
-```text
-  düşük adres
-  +-----------------------+
-  | tampon[0..15]         |  <- strcpy buraya yazmaya başlar ve yukarıdan aşağı ilerler
-  +-----------------------+
-  | yetkili (int)         |  <- 16 bayttan sonrası buraya taşar
-  +-----------------------+
-  | kaydedilmiş çerçeve   |
-  +-----------------------+
-  | dönüş adresi          |  <- daha fazlası buraya taşar
-  +-----------------------+
-  | çağıranın çerçevesi   |
-  yüksek adres
-```
+![Yığın çerçevesinde taşmanın sırayla ezdiği alanlar](assets/h01-15-yiginda-tasma.svg)
 
 Üç durum vardır:
 
@@ -2199,16 +2157,7 @@ Hassas bir veri, yaşam döngüsü boyunca üç durumda bulunur: **beklemede** (
 yapmak için verinin bir noktada açılması gerekir. Hedef, bu **açıklık penceresini** zaman ve yer olarak mümkün
 olduğunca daraltmaktır:
 
-```text
-  zaman ─────────────────────────────────────────────────────────────▶
-
-  Kötü tasarım:  [ açılış ] ████████████████████████████████████████ [ kapanış ]
-                  anahtar uygulama açıldığında çözülür, kapanana kadar açık kalır
-
-  İyi tasarım:   [ açılış ] ░░░░░░░░██░░░░░░░░░░░░██░░░░░░░░░░░░░██░ [ kapanış ]
-                  anahtar yalnız her işlemin birkaç milisaniyesinde açık (██),
-                  arada şifreli ya da parçalanmış (░)
-```
+![Anahtarın bellekte açık kaldığı sürenin iki tasarımda karşılaştırması](assets/h01-16-aciklik-penceresi.svg)
 
 Bunu sağlayan teknikler:
 

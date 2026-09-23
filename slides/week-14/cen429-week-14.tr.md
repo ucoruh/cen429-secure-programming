@@ -124,9 +124,7 @@ Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terim
 - Girdi: C kaynağı. Çıktı: **yine C kaynağı** — ama gizlenmiş.
 - Sonra normal derleyicinizle derlenir.
 
-```text
-temiz.c → [araç] → gizli.c → derleyici → ikili
-```
+![w:900](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
 ---
 
@@ -214,12 +212,6 @@ kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · b
 
 ---
 
-# El ile vs araçla — şema
-
-![w:950](assets/h14-02-el-ile-vs-arac.svg)
-
----
-
 # Çözüm: araca yaptır
 
 - Gizlemeyi bir **araç** yapsın.
@@ -230,28 +222,9 @@ kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · b
 
 # Kaynaktan kaynağa fikri
 
-```text
-Sizin kaynağınız (okunur)
-      │  bakımı siz yaparsınız
-      ▼
-[ araç: dönüşümleri uygula ]
-      ▼
-Gizli kaynak (C)  →  derleyici  →  ikili   ← bu dağıtılır
-```
+![w:900](assets/h14-02-el-ile-vs-arac.svg)
 
 Bakım maliyeti **okunur kaynakta** kalır; dağıtılan kaynak gizli.
-
----
-
-# Kaynaktan kaynağa hat (S15)
-
-![w:1000](assets/h14-01-kaynaktan-kaynaga-hat.svg)
-
----
-
-# S15 hattı — şema
-
-![w:950](assets/h14-07-s15-hatti.svg)
 
 ---
 
@@ -595,12 +568,6 @@ projede **S9 koruma tablonuzun** doğrudan karşılığıdır.
 
 ---
 
-# Test ve ölçüm — şema
-
-![w:950](assets/h14-06-test-ve-olcum.svg)
-
----
-
 # Kural 2'yi hatırla
 
 > Bir kopyada işe yarayan saldırı, bütün kopyalarda işe yaramasın.
@@ -874,10 +841,7 @@ Bu tablo doğrudan **S9/S15**'e girer.
 
 # Sınıf içi · özet akış
 
-```text
-temiz.c → gizle → testleri geç → CFG karşılaştır → boyut/süre ölç
-        → iki tohumla çeşitlendir → tablo → S9/S15
-```
+![w:900](assets/h14-06-test-ve-olcum.svg)
 
 ---
 
@@ -926,10 +890,7 @@ Vize sonrası projenizin **S15** bölümü tam bunu belgeler.
 
 # Derleme hattı · şema
 
-```text
-kaynak → (Tigress dönüşüm hattı) → gizli kaynak → derleyici → ikili
-       → imzalama (sürüm imzası) → sürüm kimliği + özet → dağıtım
-```
+![w:900](assets/h14-07-s15-hatti.svg)
 
 ---
 
@@ -1494,14 +1455,7 @@ Tipik sıra (kavramsal):
 
 # Karar akışı · tek bakış
 
-```text
-Hassas mı? --hayır--> gizleme
-   | evet
-Değeri?
-   orta   -> EncodeLiterals+Arithmetic+Flatten+AddOpaque
-   yüksek+küçük -> + Virtualize
-Her durumda: çeşitlendir + ölç + testle + S9/S15
-```
+![w:900](assets/h14-09-karar-akisi.svg)
 
 ---
 
@@ -1629,10 +1583,7 @@ tigress \
 
 # CFG önce/sonra (kavram)
 
-```text
-Önce:  [hesapla] → [karşılaştır] → [geç]/[red]   (birkaç blok)
-Sonra: [switch] ⇄ {çok sayıda case + sahte}      (çok blok)
-```
+![w:900](assets/h14-10-cfg-once-sonra.svg)
 
 Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
 

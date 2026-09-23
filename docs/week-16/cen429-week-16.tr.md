@@ -74,6 +74,8 @@
 | ISO/IEC 27001 | Ortak Kriterler | Kurumu sertifikalar / ürünü sertifikalar |
 | Güvenlik etki analizi | Delta değerlendirme | Değişikliğin güvenlik etkisini belgeler / yalnız değişen kısmı yeniden değerlendirir |
 
+![Dönemin tek cümlesi](assets/h16-04-donem-ozeti.svg)
+
 ![Final ve başarı notu](assets/h16-02-final-hesabi.svg)
 
 ---

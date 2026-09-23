@@ -35,6 +35,12 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
+# Vize notu hesabı — şema
+
+![w:950](assets/h08-03-vize-hesabi.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Konu haritası (1)
@@ -47,6 +53,12 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
+# Quiz-1 kapsamı — şema
+
+![w:950](assets/h08-01-kapsam.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Konu haritası (2)
@@ -56,6 +68,12 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | 4 | SEI CERT · girdi doğrulama · biçim dizisi · UAF · tamsayı/UB · hata işleme, sinyaller · statik analiz · sanitizer · fuzzing · kanarya/FORTIFY/ASLR/NX/RELRO/CFI · gizlemeye giriş |
 | 5 | Yönetilen dil · CERT Java · enjeksiyon kökü · SQL/komut/yol · seri durumdan çıkarma · XXE/XSS · Python/JS, ReDoS · bayt kodu · ProGuard/R8 · SBOM, VEX |
 | 6 | Algılama–savunma–caydırma · MATE · RASP mimarisi · bütünlük · hata ayıklayıcı/ortam/kanca · bellek koruması · root/imza · akış sayacı · tepki, decoy, cihaz bağlama |
+
+---
+
+# Soru tipleri — şema
+
+![w:950](assets/h08-02-soru-tipleri.svg)
 
 ---
 
@@ -105,6 +123,12 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | 5 | 4. hafta: CERT çiftleri, biçim dizisi, UAF, UB, korumalar |
 | 6 | 5–6. hafta: enjeksiyon, seri durumdan çıkarma, ProGuard, SBOM, RASP |
 | 7 | Örnek soruları süre tutarak çöz, yanlışları oku |
+
+---
+
+# Çalışma planı — şema
+
+![w:950](assets/h08-04-calisma-plani.svg)
 
 ---
 

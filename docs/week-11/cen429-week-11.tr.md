@@ -99,10 +99,7 @@ Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanaca�
 - **Şifreleme (encryption):** okunur veriyi (**açık metin**), bir **anahtar** kullanarak okunamaz hale (**şifreli metin**) getirmek.
 - **Çözme (decryption):** anahtarla geri açmak.
 
-```text
-açık metin --(anahtar ile şifrele)--> şifreli metin
-şifreli metin --(anahtar ile çöz)--> açık metin
-```
+![Şifreleme: iki yönlü, anahtara bağlı dönüşüm](assets/h11-10-sifreleme-temel.svg)
 
 ### Anahtar nedir?
 

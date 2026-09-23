@@ -115,10 +115,7 @@ Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 - **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
 - **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
 
-```text
-kaynak.c  --(derleyici)-->  program (ikili)
-insan okur              makine çalıştırır
-```
+![Derleyici ne yapar: kaynaktan ikiliye](assets/h09-13-derleme-zinciri.svg)
 
 ### Makine kodu ve assembly
 
@@ -204,10 +201,7 @@ Program = temel blokların birbirine bağlanması.
 - **CFG** (Control Flow Graph): temel blokları **düğüm**, geçişleri **kenar** yapan şema.
 - Programın "yol haritası"dır.
 
-```text
-[giriş] → [koşul] → [evet bloğu] → [çıkış]
-                 ↘ [hayır bloğu] → [çıkış]
-```
+![Kontrol akışı grafiğinin temel yapısı](assets/h09-12-cfg.svg)
 
 ### Derleme bayrağı (flag)
 
@@ -655,12 +649,11 @@ Bu dört ölçüt bir **ödünleşimdir**: gücü ve dayanıklılığı artırd�
 karmaşık kod daha çok dikkat çeker). İyi bir mühendislik kararı, **korunan varlığın değerine** göre bu dördü
 dengeler.
 
-```text
-Karar kuralı (S9'a yazılır):
-  Varlık değeri düşük  → hafif, ucuz gizleme (K-01, K-02, K-07) yeter
-  Varlık değeri yüksek → katmanlı (K-04 + K-05 + K-08 + çeşitlendirme), maliyeti kabul et
-  Her katman için: güç ve dayanıklılık kazancı vs. boyut/hız maliyeti ölçülür ve yazılır
-```
+**Karar kuralı (S9'a yazılır):**
+
+- Varlık değeri **düşük** → hafif, ucuz gizleme (K-01, K-02, K-07) yeter.
+- Varlık değeri **yüksek** → katmanlı koruma (K-04 + K-05 + K-08 + çeşitlendirme); maliyeti kabul edilir.
+- Her katman için güç ve dayanıklılık kazancı, boyut/hız maliyetine karşı ölçülür ve yazılır.
 
 ## 10. Deobfuscation: karşı tarafın araçları ve dayanıklılık kuralı
 

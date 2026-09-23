@@ -1252,14 +1252,7 @@ Unix, DAC'ı **kullanıcı/grup kimlikleri** ve **izin bitleriyle** uygular. Her
 **effective** (izin denetimlerinde kullanılan), **real** (gerçek sahip) ve **saved** (geçici düşürüp geri
 almak için). Her dosyanın üç grup izin biti vardır — sahip, grup, diğerleri — her birinde oku/yaz/çalıştır:
 
-```text
- -rwxr-x---   sahip: rwx   grup: r-x   diğerleri: ---
-  │└┬┘└┬┘└┬┘
-  │ │  │  └─ diğerleri (herkes): izin yok
-  │ │  └──── grup: oku + çalıştır
-  │ └─────── sahip: oku + yaz + çalıştır
-  └───────── dosya türü (- = normal dosya)
-```
+![Unix izin bitlerinin sahip, grup ve diğerleri olarak okunuşu](assets/h02-08-unix-izinleri.svg)
 
 Ek olarak **setuid/setgid** bitleri (program, sahibinin yetkisiyle çalışır) ve **sticky** biti (`/tmp` gibi
 paylaşılan dizinlerde başkasının dosyasını silememe) vardır. `setuid root` bir program, çalıştıran kim olursa

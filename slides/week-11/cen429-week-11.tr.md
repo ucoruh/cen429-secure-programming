@@ -102,10 +102,7 @@ Diyeceğiz ki: whitebox, anahtar çıkarmayı **geciktiren bir katmandır** — 
 - **Şifreleme (encryption):** okunur veriyi (**açık metin**), bir **anahtar** kullanarak okunamaz hale (**şifreli metin**) getirmek.
 - **Çözme (decryption):** anahtarla geri açmak.
 
-```text
-açık metin --(anahtar ile şifrele)--> şifreli metin
-şifreli metin --(anahtar ile çöz)--> açık metin
-```
+![w:900](assets/h11-10-sifreleme-temel.svg)
 
 ---
 
@@ -625,16 +622,7 @@ Bir tabloyu **tek başına** inceleyen saldırganı durdurmayı amaçlar.
 - Kaynak kılavuz: "whitebox AES işlemi F ve G adlı iki rastgele tekil-olmayan matrisle kapsüllenir"
 - Yani ağ artık saf AES değil:
 
-```text
-Girdi --F⁻¹--> [ kodlanmış tablolar ağı ] --G--> Çıktı
-= G ∘ AES ∘ F⁻¹
-```
-
----
-
-# Dış kodlama F/G — şema
-
-![w:950](assets/h11-04-dis-kodlama.svg)
+![w:900](assets/h11-04-dis-kodlama.svg)
 
 ---
 
@@ -949,12 +937,6 @@ Doğru ifade: "anahtar çıkarmayı şu kadar geciktiriyorum; asıl güvencem an
 WBC tek seçenek değil. Bir anahtarı korumanın yolları var; güç ve maliyet farklı.
 
 Sırayla, en zayıftan en güçlüye.
-
----
-
-# Anahtar koruma seçenekleri — şema
-
-![w:950](assets/h11-07-anahtar-koruma.svg)
 
 ---
 
@@ -1456,15 +1438,7 @@ Hiçbiri kesin çözüm değil; hepsi **maliyet + gecikme**.
 
 # Karar akışı · tek bakış
 
-```text
-TEE/SE var mı? --evet--> donanıma koy (bitti)
-   | hayır
-Sunucu anahtarı mı? --evet--> HSM/PKCS#11
-   | hayır
-Varlık değeri yüksek mi?
-   düşük -> hafif gizleme + kısa ömür
-   yüksek -> WBC + katman + yenileme + cihaz bağlama + sunucu
-```
+![w:900](assets/h11-07-anahtar-koruma.svg)
 
 ---
 

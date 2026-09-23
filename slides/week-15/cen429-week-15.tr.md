@@ -51,6 +51,12 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
+# Kılavuz haritası S0–S17 — şema
+
+![w:950](assets/h15-02-kilavuz-haritasi.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Vizeden finale: yeni ve tamamlanacak bölümler
@@ -62,6 +68,12 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 | S11 güvenli iletişim | S12 raporlama (tam) |
 | S14 varsayımlar ve devredilenler | S13 güncel SBOM |
 | S15 derleme ve dağıtım hattı | S16 **sonuçlar** · S17 tam matris |
+
+---
+
+# RAP2 teslimi — şema
+
+![w:950](assets/h15-01-rap2.svg)
 
 ---
 
@@ -89,6 +101,12 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
+# Final gösterimi — şema
+
+![w:950](assets/h15-03-gosterim.svg)
+
+---
+
 # Örnek sorular
 
 - Bu anahtar nereden türetiliyor, nerede duruyor, ne zaman siliniyor?
@@ -112,6 +130,12 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 | Boş kalan risk bölümü | Eksik analiz |
 | Vize geri bildirimi yok sayılmış | Bulgu–aksiyon döngüsü sürecin parçası |
 | Depoda gerçek sır / kişisel veri | Değerler **sentetik** olmalı |
+
+---
+
+# S16: plan değil sonuç — şema
+
+![w:950](assets/h15-04-s16.svg)
 
 ---
 

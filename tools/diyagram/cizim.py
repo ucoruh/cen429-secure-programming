@@ -37,8 +37,12 @@ SOLUK   = "#6b7280"
 CIZGI   = "#cfd8dc"
 
 
+KUTU_METINLERI = []   # (metin_sanatcisi, kutu_sol, kutu_sag) — kutu taşması denetimi için
+
+
 def tuval(g=12.0, y=6.0):
     """Yeni bir çizim alanı (inç). 0..100 x 0..100 koordinat sistemi döner."""
+    KUTU_METINLERI.clear()
     fig, ax = plt.subplots(figsize=(g, y))
     ax.set_xlim(0, 100); ax.set_ylim(0, 100)
     ax.axis("off")
@@ -75,19 +79,22 @@ def kutu(ax, x, y, g, y_yuk, baslik_metin, satirlar=None, dolgu=COKACIK, kenar=A
     # Metin bloğunu kutu içinde DİKEY ORTALA; satır aralığını kutuya sığacak şekilde seç.
     adet = 1 + len(satirlar)
     if adet == 1:
-        ax.text(x, y, baslik_metin, ha="center", va="center",
-                fontsize=bas_boyut, fontweight="bold" if kalin else "normal",
-                color=bas_renk, zorder=3)
+        yazi_ogesi = ax.text(x, y, baslik_metin, ha="center", va="center",
+                             fontsize=bas_boyut, fontweight="bold" if kalin else "normal",
+                             color=bas_renk, zorder=3)
+        KUTU_METINLERI.append((yazi_ogesi, x - g / 2, x + g / 2))
         return kutucuk
     aralik = min(4.8, max(2.8, (y_yuk - 3.0) / adet))
     blok = (adet - 1) * aralik
     ust = y + blok / 2
-    ax.text(x, ust, baslik_metin, ha="center", va="center",
-            fontsize=bas_boyut, fontweight="bold" if kalin else "normal",
-            color=bas_renk, zorder=3)
+    yazi_ogesi = ax.text(x, ust, baslik_metin, ha="center", va="center",
+                         fontsize=bas_boyut, fontweight="bold" if kalin else "normal",
+                         color=bas_renk, zorder=3)
+    KUTU_METINLERI.append((yazi_ogesi, x - g / 2, x + g / 2))
     for i, s in enumerate(satirlar, start=1):
-        ax.text(x, ust - i * aralik, s, ha="center", va="center",
-                fontsize=satir_boyut, color=bas_renk, zorder=3)
+        alt_oge = ax.text(x, ust - i * aralik, s, ha="center", va="center",
+                          fontsize=satir_boyut, color=bas_renk, zorder=3)
+        KUTU_METINLERI.append((alt_oge, x - g / 2, x + g / 2))
     return kutucuk
 
 
@@ -119,9 +126,42 @@ def serit(ax, y, metin, renk=KOYU, dolgu=None, boyut=12):
     ax.text(50, y, metin, ha="center", va="center", fontsize=boyut, color=renk, zorder=3)
 
 
+def sigdir(fig, ax, tur=0.25, en_az=7.5, tur_sayisi=6):
+    """Kutusuna sığmayan yazıları ölçüp küçültür.
+
+    Yazı genişliği yazı tipine, harflere ve şekil boyutuna bağlı olduğu için
+    önceden kestirilemez; burada gerçekten çizip ölçüyor ve yalnız taşan
+    yazıyı, yalnız gerektiği kadar küçültüyoruz.
+    """
+    for _ in range(tur_sayisi):
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        degisti = False
+        for oge, sol, sag in KUTU_METINLERI:
+            if not oge.get_text().strip():
+                continue
+            kb = _veri_kutusu(oge, ax, renderer)
+            if kb is None:
+                continue
+            x0, _, x1, _ = kb
+            if max(sol - x0, x1 - sag) <= tur:
+                continue
+            genislik = max(x1 - x0, 0.1)
+            oran = min(0.94, max(0.55, (sag - sol - 0.8) / genislik))
+            yeni = oge.get_fontsize() * oran
+            if yeni < en_az - 0.01:
+                yeni = en_az
+            if yeni < oge.get_fontsize() - 0.01:
+                oge.set_fontsize(yeni)
+                degisti = True
+        if not degisti:
+            break
+
+
 def kaydet(fig, klasor, ad, png=True, dpi=200):
     """SVG (ana) ve isteğe bağlı PNG (PPTX/DOCX için) yazar."""
     os.makedirs(klasor, exist_ok=True)
+    sigdir(fig, fig.axes[0])               # kutuya sığmayan yazıyı küçült
     denetle(fig, fig.axes[0], ad)          # turlama: kaydetmeden önce tara
     svg = os.path.join(klasor, ad + ".svg")
     fig.savefig(svg, format="svg", bbox_inches="tight", pad_inches=0.12, facecolor="white")
@@ -452,6 +492,20 @@ def denetle(fig, ax, ad, tasma_payi=0.8):
             ax1 = min(a[2], b[2]); ay1 = min(a[3], b[3])
             if ax1 - ax0 > 1.2 and ay1 - ay0 > 1.2:      # anlamlı örtüşme
                 sorunlar.append(f"ÇAKIŞMA  '{m1}'  ↔  '{m2}'")
+
+    # Kutu içindeki yazı kutunun dışına taşmış mı? (gözle fark edilmesi zor)
+    for oge, sol, sag in KUTU_METINLERI:
+        if not oge.get_text().strip():
+            continue
+        kb = _veri_kutusu(oge, ax, renderer)
+        if kb is None:
+            continue
+        x0, _, x1, _ = kb
+        tasan = max(sol - x0, x1 - sag)
+        if tasan > 0.25:
+            sorunlar.append(
+                f"KUTU TAŞMASI  '{oge.get_text().strip()[:34]}'  {tasan:.1f} birim "
+                f"(yazı x[{x0:.1f},{x1:.1f}] kutu x[{sol:.1f},{sag:.1f}])")
 
     if sorunlar:
         UYARILAR.append((ad, sorunlar))

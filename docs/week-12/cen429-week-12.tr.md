@@ -184,28 +184,18 @@ Bu hafta "değerlendirme", "sertifikasyon", "sızma testi" gibi terimler geçece
 
 ### Saldırı potansiyeli — beş faktör
 
-<svg viewBox="0 0 940 300" style="width:95%;height:auto;display:block;margin:2px auto" font-family="sans-serif">
-  <text x="470" y="24" text-anchor="middle" font-size="16" fill="#005f66" font-weight="bold">Beş faktörün toplamı → puan → derece</text>
-  <g font-size="15" fill="#333">
-   <text x="30" y="66">Geçen zaman</text><rect x="200" y="52" width="150" height="18" rx="4" fill="#0a9396"/>
-   <text x="30" y="98">Uzmanlık</text><rect x="200" y="84" width="200" height="18" rx="4" fill="#0a9396"/>
-   <text x="30" y="130">Hedef bilgisi</text><rect x="200" y="116" width="110" height="18" rx="4" fill="#0a9396"/>
-   <text x="30" y="162">Fırsat (erişim)</text><rect x="200" y="148" width="170" height="18" rx="4" fill="#0a9396"/>
-   <text x="30" y="194">Ekipman</text><rect x="200" y="180" width="130" height="18" rx="4" fill="#0a9396"/>
-  </g>
-  <line x1="470" y1="45" x2="470" y2="205" stroke="#bbb" stroke-dasharray="4,4"/>
-  <rect x="560" y="100" width="120" height="60" rx="8" fill="#006d77"/><text x="620" y="128" text-anchor="middle" font-size="15" fill="#fff">TOPLAM</text><text x="620" y="150" text-anchor="middle" font-size="14" fill="#cdeff1">puan</text>
-  <line x1="680" y1="130" x2="720" y2="130" stroke="#333" stroke-width="3" marker-end="url(#a12)"/>
-  <g font-size="13">
-   <rect x="720" y="70" width="200" height="26" fill="#2e7d32"/><text x="820" y="88" text-anchor="middle" fill="#fff">DÜŞÜK pot. = ciddi bulgu</text>
-   <rect x="720" y="100" width="200" height="26" fill="#8bc34a"/><text x="820" y="118" text-anchor="middle" fill="#123">Temel / Gelişmiş</text>
-   <rect x="720" y="130" width="200" height="26" fill="#ffb300"/><text x="820" y="148" text-anchor="middle" fill="#123">Orta / Yüksek</text>
-   <rect x="720" y="160" width="200" height="26" fill="#c0392b"/><text x="820" y="178" text-anchor="middle" fill="#fff">YÜKSEK pot. = zor saldırı</text>
-  </g>
-  <text x="470" y="250" text-anchor="middle" font-size="14.5" fill="#555">Düşük potansiyel = az zaman/beceri/araç → çok saldırgan yapabilir → yüksek risk.</text>
-  <text x="470" y="276" text-anchor="middle" font-size="14" fill="#777">Saldırı potansiyeli = saldırının ZORLUĞU · CVSS = açığın ETKİSİ (ayrı eksenler).</text>
-  <defs><marker id="a12" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
-</svg>
+Puan beş faktörün toplamından çıkar; her faktör "saldırganın işini ne kadar zorlaştırıyor?" sorusunu ölçer:
+
+| Faktör | Neyi ölçer? |
+| --- | --- |
+| **Geçen zaman** | Saldırı ne kadar sürüyor (saatler mi, aylar mı)? |
+| **Uzmanlık** | Sıradan bir kullanıcı mı, alan uzmanı mı gerekiyor? |
+| **Hedef bilgisi** | Kamuya açık bilgi mi, iç tasarım belgesi mi gerekiyor? |
+| **Fırsat (erişim)** | Cihaza ne kadar süre, ne kadar yakından erişmek gerekiyor? |
+| **Ekipman** | Sıradan bilgisayar mı, özel laboratuvar donanımı mı? |
+
+Toplam puan bir **direnç düzeyine** çevrilir. Dikkat: **düşük** puan, saldırının **kolay** olduğu anlamına gelir; yani
+düşük puan ciddi bir bulgudur. Beş faktörün tam tablosunu ve iki işlenmiş hesabı 5. bölümde göreceğiz.
 
 ### Etki analizi ve delta değerlendirme
 

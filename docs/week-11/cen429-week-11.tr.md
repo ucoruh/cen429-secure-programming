@@ -1214,7 +1214,7 @@ artırır**:
   olur.
 - **Sunucu tarafı risk denetimi:** Uçtaki koruma ne olursa olsun, işlemin sunucuda ayrıca değerlendirilmesi (hız
   sınırı, anomali, ATC/sayaç denetimi) son ve en güvenilir savunmadır.
-- **Donanım köküne taşıma:** Mümkünse anahtarı hiç yazılıma koymamak — TEE, güvenli öğe (SE), HSM (bölüm 4).
+- **Donanım köküne taşıma:** Mümkünse anahtarı hiç yazılıma koymamak — TEE, güvenli öğe (SE), HSM (bölüm 5).
 
 ### Hangi karşı önlem hangi saldırıyı zorlaştırır? (özet tablo)
 

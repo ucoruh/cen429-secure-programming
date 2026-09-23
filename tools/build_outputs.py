@@ -18,6 +18,7 @@ import argparse
 import base64
 import functools
 import http.server
+import os
 import pathlib
 import re
 import shutil
@@ -135,6 +136,13 @@ class Oge:
         return self.sunum_md if dil == 'tr' else (
             self.sunum_md_en if self.sunum_md_en.exists() else None)
 
+    def en_not_var(self):
+        """İngilizce ders notu gerçek çeviri mi, yoksa yer tutucu mu?"""
+        if not self.sayfa_en.exists():
+            return False
+        metin = self.sayfa_en.read_text(encoding='utf-8')
+        return 'This page is being prepared' not in metin and len(metin.splitlines()) > 60
+
     def en_sunum_var(self):
         return self.sunum_md_en.exists()
 
@@ -146,6 +154,9 @@ class Oge:
 
 
 def calistir(komut, **kw):
+    # Alt süreç çıktısı boruya yönlenince Windows cp1252 kullanır ve Türkçe
+    # karakterli bir log satırı mkdocs'u çökertir; UTF-8'i zorla.
+    kw.setdefault('env', {**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'})
     sonuc = subprocess.run(komut, capture_output=True, text=True, encoding='utf-8', errors='replace', **kw)
     if sonuc.returncode != 0:
         print('   HATA:', ' '.join(map(str, komut))[:200])
@@ -368,10 +379,23 @@ class _SessizIsleyici(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def sayfa_yolu(oge):
+def sayfa_yolu(oge, kok=None, dil='tr'):
+    """Türkçe sayfanın derlenmiş sitedeki yolu.
+
+    mkdocs-static-i18n, VARSAYILAN dilin sayfalarını site köküne, ötekini
+    dil klasörüne (ör. `tr/`) koyar. Varsayılan dil değiştiğinde yol da
+    değişir; bu yüzden sabit yazmak yerine sitede hangisi varsa o seçilir.
+    """
     if oge.anahtar == 'izlence':
-        return 'tr/syllabus/syllabus/'
-    return f'tr/week-{oge.anahtar}/cen429-week-{oge.anahtar}/'
+        son = 'syllabus/syllabus/'
+    else:
+        son = f'week-{oge.anahtar}/cen429-week-{oge.anahtar}/'
+    if kok is None:
+        return dil + '/' + son
+    # Varsayılan dilin sayfaları kökte, ötekininki dil klasöründe durur.
+    if (kok / son / 'index.html').exists() and not (kok / dil / son / 'index.html').exists():
+        return son
+    return dil + '/' + son
 
 
 def logo_uri():
@@ -433,6 +457,16 @@ def sekmeleri_ac(html):
         return m.group(0) + (f'<p class="sekme-basligi">{baslik}</p>' if baslik else '')
     return re.sub(r'<div class="tabbed-labels">(.*?)</div>|<div class="tabbed-block">', degistir, html, flags=re.S)
 
+ANTET_EN = """<div class="antet">
+<img src="%(logo)s" alt="RTEU">
+<div class="orta">
+<div class="kurum">RECEP TAYYİP ERDOĞAN UNIVERSITY</div>
+<div class="birim">Faculty of Engineering and Architecture · Department of Computer Engineering</div>
+<div class="ders">CEN429 Secure Programming · 2026-2027 Fall</div>
+</div>
+<div class="sag"><b>%(tur)s</b><br>%(kisa)s<br>%(tarih)s</div>
+</div>"""
+
 ANTET_HTML = """<div class="antet">
 <img src="%(logo)s" alt="RTEÜ">
 <div class="orta">
@@ -444,37 +478,48 @@ ANTET_HTML = """<div class="antet">
 </div>"""
 
 
-def yazdirma_sayfasi(site, oge):
+def yazdirma_sayfasi(site, oge, dil='tr'):
     """Derlenmiş sayfanın yazdırmaya uygun kopyasını üretir; adresini döndürür."""
-    klasor = site.gecici / sayfa_yolu(oge)
+    yol = sayfa_yolu(oge, site.gecici, dil)
+    klasor = site.gecici / yol
     html = (klasor / 'index.html').read_text(encoding='utf-8')
     if oge.anahtar == 'izlence':
-        ust, tur, kisa, tarih = 'Ders İzlencesi', 'Ders İzlencesi', '2026-2027 Güz', 'Dr. Öğr. Üyesi Uğur CORUH'
+        if dil == 'tr':
+            ust, tur, kisa, tarih = 'Ders İzlencesi', 'Ders İzlencesi', '2026-2027 Güz', 'Dr. Öğr. Üyesi Uğur CORUH'
+        else:
+            ust, tur, kisa, tarih = 'Syllabus', 'Syllabus', '2026-2027 Fall', 'Asst. Prof. Dr. Uğur CORUH'
     else:
         n = int(oge.anahtar)
-        ust, tur, kisa, tarih = f'Hafta {n} — Ders Notu', 'Ders Notu', f'Hafta {n}', HAFTALAR[n][0]
+        if dil == 'tr':
+            ust, tur, kisa, tarih = f'Hafta {n} — Ders Notu', 'Ders Notu', f'Hafta {n}', HAFTALAR[n][0]
+        else:
+            ust, tur, kisa, tarih = f'Week {n} — Lecture Note', 'Lecture Note', f'Week {n}', HAFTALAR[n][0]
     html = re.sub(r'<details(?![^>]*\bopen\b)', '<details open', html)
     html = sekmeleri_ac(html)
     html = html.replace('</head>', f'<style>{YAZDIR_CSS % {"ust": ust}}</style></head>', 1)
-    antet = ANTET_HTML % {'logo': logo_uri(), 'tur': tur, 'kisa': kisa, 'tarih': tarih}
+    antet = (ANTET_HTML if dil == 'tr' else ANTET_EN) % {'logo': logo_uri(), 'tur': tur,
+                                                          'kisa': kisa, 'tarih': tarih}
     html, n_degisim = re.subn(r'(<article class="?md-content__inner md-typeset"?>)', r'\1' + antet.replace('\\', '\\\\'),
                               html, count=1)
     if not n_degisim:
         print('   UYARI: makale başlangıcı bulunamadı, antet eklenemedi')
-    (klasor / 'yazdir.html').write_text(html, encoding='utf-8')
-    return f'{site.adres}/{sayfa_yolu(oge)}yazdir.html'
+    (klasor / f'yazdir-{dil}.html').write_text(html, encoding='utf-8')
+    return f'{site.adres}/{yol}yazdir-{dil}.html'
 
 
-def not_pdf(oge, site):
-    if not oge.sayfa_tr.exists():
+def not_pdf(oge, site, dil='tr'):
+    if dil == 'tr' and not oge.sayfa_tr.exists():
         return
-    adres = yazdirma_sayfasi(site, oge)
-    hedef = oge.dosya('not_pdf')
+    if dil == 'en' and not oge.en_not_var():
+        return
+    adres = yazdirma_sayfasi(site, oge, dil)
+    hedef = oge.dosya('not_pdf', dil)
     if calistir([chrome_yolu(), '--headless=new', '--disable-gpu', '--no-pdf-header-footer',
                  '--virtual-time-budget=20000', '--run-all-compositor-stages-before-draw',
                  f'--print-to-pdf={hedef}', adres]):
-        oge.en_kopya('not_pdf')
-        print('   ders notu pdf:', hedef.relative_to(KOK))
+        if dil == 'tr' and not oge.en_not_var():
+            oge.en_kopya('not_pdf')
+        print(f'   ders notu pdf ({dil}):', hedef.relative_to(KOK))
 
 
 # ---------------------------------------------------------------- ders notu DOCX (antetli, pandoc)
@@ -711,38 +756,46 @@ def docx_on_isle(metin, site, gecici, sayfa_klasor=None):
     return metin
 
 
-def not_docx(oge, site):
-    if not oge.sayfa_tr.exists():
+def not_docx(oge, site, dil='tr'):
+    if dil == 'tr' and not oge.sayfa_tr.exists():
         return
+    if dil == 'en' and not oge.en_not_var():
+        return
+    kaynak_sayfa = oge.sayfa_tr if dil == 'tr' else oge.sayfa_en
     referans_docx()
     gecici = pathlib.Path(tempfile.mkdtemp(prefix='cen429-docx-'))
     try:
-        md = docx_on_isle(oge.sayfa_tr.read_text(encoding='utf-8'), site, gecici,
-                          sayfa_klasor=oge.sayfa_tr.parent)
+        md = docx_on_isle(kaynak_sayfa.read_text(encoding='utf-8'), site, gecici,
+                          sayfa_klasor=kaynak_sayfa.parent)
         kaynak = gecici / 'not.md'
         kaynak.write_text(md, encoding='utf-8')
-        hedef = oge.dosya('not_docx')
-        baslik = oge.baslik_tr if oge.anahtar != 'izlence' else 'CEN429 Güvenli Programlama — Ders İzlencesi'
+        hedef = oge.dosya('not_docx', dil)
+        if oge.anahtar == 'izlence':
+            baslik = ('CEN429 Güvenli Programlama — Ders İzlencesi' if dil == 'tr'
+                      else 'CEN429 Secure Programming — Syllabus')
+        else:
+            baslik = oge.baslik_tr if dil == 'tr' else oge.baslik_en
         if calistir(['pandoc', str(kaynak), '-f', 'markdown+pipe_tables+grid_tables+fenced_code_attributes'
                      '+link_attributes+raw_html-implicit_figures', '-t', 'docx', '--reference-doc', str(REFERANS),
                      '--resource-path', str(gecici), '--metadata', f'title-meta={baslik}', '-o', str(hedef)]):
-            oge.en_kopya('not_docx')
-            print('   ders notu docx:', hedef.relative_to(KOK))
+            if dil == 'tr' and not oge.en_not_var():
+                oge.en_kopya('not_docx')
+            print(f'   ders notu docx ({dil}):', hedef.relative_to(KOK))
     finally:
         shutil.rmtree(gecici, ignore_errors=True)
 
 
 # ---------------------------------------------------------------- çevrimdışı paket (ZIP)
-def paket(oge):
+def paket(oge, dil='tr'):
     """Haftanın bütün materyalini ve demo kodlarını tek ZIP'te toplar (derleme çıktıları hariç)."""
     import zipfile
-    hedef = oge.dosya('paket')
+    hedef = oge.dosya('paket', dil)
     kok_ad = oge.ad
     # .gitignore ile aynı: derleme/çalışma çıktıları ve hazirla betiklerinin indirdiği üçüncü taraf dosyaları pakete girmez
     atla = {'bin', 'dokum', 'build', '__pycache__', 'cikti', 'lib'}
     with zipfile.ZipFile(hedef, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for tur in ('sunum_html', 'sunum_pdf', 'sunum_pptx', 'not_pdf', 'not_docx'):
-            dosya = oge.dosya(tur)
+            dosya = oge.dosya(tur, dil)
             if dosya.exists():
                 z.write(dosya, f'{kok_ad}/{oge.baglanti(tur)}')
         kod = oge.kod_klasoru
@@ -751,7 +804,7 @@ def paket(oge):
             # ZIP açıldığında code/ klasörü kendi başına derlenir.
             kod_koku = kod.parent
             ortak = [kod_koku / ad for ad in ('CMakeLists.txt', 'CMakePresets.json', 'build.ps1', 'build.sh',
-                                               'README.md', '.gitattributes')]
+                                               'README.md', 'README.en.md', '.gitattributes')]
             for klasor in (kod_koku / 'cmake', kod_koku / 'common', kod):
                 ortak += sorted(klasor.rglob('*'))
             for yol in ortak:
@@ -759,7 +812,6 @@ def paket(oge):
                 if (yol.is_file() and not (parcalar & atla) and yol.name.lower() != 'desktop.ini'
                         and yol.suffix.lower() != '.jar'):
                     z.write(yol, f'{kok_ad}/code/{yol.relative_to(kod_koku).as_posix()}')
-    oge.en_kopya('paket')
     print(f'   paket: {hedef.relative_to(KOK)} ({hedef.stat().st_size // 1024} KB)')
 
 
@@ -797,10 +849,13 @@ def main():
                 sunum_pptx(oge, 'en')
             elif adim == 'not-pdf':
                 not_pdf(oge, site)
+                not_pdf(oge, site, 'en')
             elif adim == 'docx':
                 not_docx(oge, site)
+                not_docx(oge, site, 'en')
             elif adim == 'paket':
                 paket(oge)
+                paket(oge, 'en')
             elif adim == 'basliklar':
                 basliklar(oge)
         if site:

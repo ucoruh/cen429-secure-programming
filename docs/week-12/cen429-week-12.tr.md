@@ -5,6 +5,8 @@
 | **Tarih** | 04.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.5, 6, 7 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 2'den CVSS ve zafiyet sınıflandırma; Hafta 9'dan gizleme kurallarının maliyet/kazanç çerçevesi; birim testi kavramı |
+| **Uygulamalar** | [`code/week-12`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-12) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
 

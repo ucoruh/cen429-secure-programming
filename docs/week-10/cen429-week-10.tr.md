@@ -5,6 +5,8 @@
 | **Tarih** | 20.11.2026 |
 | **Öğrenme çıktıları** | ÖÇ.2, 4 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 3'ten AES-GCM, HMAC, anahtar türetme ve TLS'in ne yaptığı; terminalde `openssl` komutunu çalıştırabilmek |
+| **Uygulamalar** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demo; OpenSSL 3 ister; her demo klasöründe `sh demo.sh` |
 
 <!-- materyal:basla -->
 

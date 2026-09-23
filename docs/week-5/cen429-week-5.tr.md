@@ -5,6 +5,8 @@
 | **Tarih** | 16.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Java ya da Python'da temel programlama; Hafta 2'den CWE/CVE ve zafiyet sınıflandırma; Hafta 4'ten girdi doğrulama ve güvenli kodlama kuralları; SQL'de basit `SELECT` |
+| **Uygulamalar** | [`code/week-05`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-05) — 7 demo; Python 3 ve JDK 17+ ister; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
 

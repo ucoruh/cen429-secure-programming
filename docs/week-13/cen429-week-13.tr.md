@@ -5,6 +5,8 @@
 | **Tarih** | 11.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.5, 7 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 1'den varlık, tehdit ve karşı önlem; Hafta 12'den değerlendirme ve kanıt kavramları; dönem projesinin S bölümlerinin ne işe yaradığı |
+| **Uygulamalar** | [`code/week-13`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-13) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
 

@@ -378,7 +378,7 @@ acronym-expanded form you will meet in that tool documentation or literature:
 | Bogus operation | Bogus (dead) operation |
 | Dead branch | (Bogus) death branch |
 | Random exit point | Random exit point |
-| Virtualisation-based obfuscation | Virtualization-based obfuscation |
+| Virtualisation-based obfuscation | Virtualisation-based obfuscation |
 | Diversification | Diversification |
 | Symbolic execution | Symbolic execution |
 | Potency (metric) | Potency |
@@ -611,7 +611,7 @@ Let's turn the "gives/does not give" table into a timeline. Consider both versio
 **The same 10 minutes with a binary protected by this week's rules:**
 
 1. They run `strings` → thanks to K-07 the strings are invisible; they come away with no clue (minute 0).
-2. They look at the symbol table → thanks to K-06 and the layout family there is no recognizable name (minute 2).
+2. They look at the symbol table → thanks to K-06 and the layout family there is no recognisable name (minute 2).
 3. They open the CFG → because of the K-04 flattening they see a single `switch` dispatcher; it is not clear which
    `case` means "allow"; K-01's opaque predicates hide which branch is real and which is dead (minute 10, **still
    unsolved**).
@@ -747,7 +747,7 @@ if (opak_dogru(sayac)) {          /* gerçek yol: daima buraya girer */
     changes.
 
     !!! warning "Know its limit too"
-        This is a **classic** pattern; modern tools recognize it in their libraries. That's why in week 14 we
+        This is a **classic** pattern; modern tools recognise it in their libraries. That's why in week 14 we
         generate opaque predicates that are **seed-diversified** with Tigress and harder to crack — repeating the
         same pattern in every build reduces resilience.
 
@@ -756,7 +756,7 @@ inside control-flow flattening**, the body is split into small blocks, and itera
 variable. That way, the information "this loop runs N times" cannot be read off the CFG.
 
 **Cost:** low–medium (extra arithmetic and a branch). **Limit:** well-known opaque predicate patterns
-(libraries) can be recognized automatically; hence they need to be diversified. **Measurement:** basic block count
+(libraries) can be recognised automatically; hence they need to be diversified. **Measurement:** basic block count
 before/after flattening.
 
 **Worked example: let's trace an opaque loop bound by hand.** Let's verify the guide's claim that "the loop bound
@@ -836,7 +836,7 @@ never sits **anywhere** as a single byte; only `0x37` and `0x1D` sit there, so a
     will **constant-fold** this expression at compile time and embed `0x2A` directly into the binary — the MBA
     transform exists in the source, but **not in the binary**. **Rule:** verify in the compiled binary
     (`objdump`/`strings`) that the transform is really computed **at runtime**, not simplified away at compile
-    time; the "compiler flag" distinction from section 0 applies here too — test with optimization turned on.
+    time; the "compiler flag" distinction from section 0 applies here too — test with optimisation turned on.
 
 ### RULE K-03 — Bogus operations and dead branches (the two are different)
 
@@ -867,12 +867,12 @@ leaves `crc` **unchanged** (`x ^ 0 = x`). So no matter what `sabit` is, this lin
 time; its crowding effect lives only in the **compiled instruction count**, not in `crc`'s value.
 
 !!! danger "Common mistake: letting the compiler silently delete the bogus operation"
-    An optimizing compiler (`-O2`, `-O3`) may spot an operation whose result is used nowhere and can be
+    An optimising compiler (`-O2`, `-O3`) may spot an operation whose result is used nowhere and can be
     **proven** mathematically to have no effect, classify it as dead code, and **remove it entirely**. A line such
     as `crc ^= (sabit ^ sabit)` — if the compiler constant-folds it — becomes `crc ^= 0`, which it then sees does
     nothing and deletes — the obfuscation vanishes without you noticing. **Rule:** values used in bogus operations
     must be determined **at runtime** (e.g., tied to an input or an opaque predicate), never fixed at compile time;
-    also always verify obfuscation on a binary compiled **with optimization on** (using the compiler flag defined
+    also always verify obfuscation on a binary compiled **with optimisation on** (using the compiler flag defined
     in section 0) — "present in the source, gone from the binary" is a common surprise.
 
 ### RULE K-04 — Control-flow flattening (in depth)
@@ -984,15 +984,15 @@ check.
 **What does it protect?** Hints like "this function calls `memcmp`, so it must be doing a comparison." Standard
 library calls tell the attacker directly what a function does. **How?** On critical paths, standard library
 functions are replaced with **your own internal versions** (e.g., your own constant-time `esit_mi` function), so
-the linker never shows a recognizable name. The guide also lists **hiding function parameters** and **adding
+the linker never shows a recognisable name. The guide also lists **hiding function parameters** and **adding
 bogus parameters** as separate rules: unused fake parameters are placed alongside the real ones, making the
 signature misleading to an attacker.
 
 **Cost:** low–medium (your own versions need maintenance). **Limit:** behavioural analysis can still reveal what
-it does; this is a **delaying** rule. **Measurement:** count of recognizable library calls in the binary.
+it does; this is a **delaying** rule. **Measurement:** count of recognisable library calls in the binary.
 
 **Worked example: your own constant-time comparison instead of `memcmp`.** The rule tells us to replace the
-standard `memcmp` because it is recognizable; but the real payoff is closing a familiar side channel from week 3:
+standard `memcmp` because it is recognisable; but the real payoff is closing a familiar side channel from week 3:
 
 ```c title="Sabit zamanlı karşılaştırma (kavram)"
 static int sabit_zamanli_esit_mi(const uint8_t *a, const uint8_t *b, size_t n) {
@@ -1085,8 +1085,8 @@ the attacker's first and cheapest step (the "first 10 minutes" from section 3) c
 
 !!! danger "Common mistake: assuming `memset` 'wiped' the secret"
     The code example's `memset_s_benzeri(tmp, sizeof tmp)` line specifically calls a **non-ordinary** function, not
-    a plain `memset`; the reason is compiler optimizations. If a variable goes out of scope right after it's used
-    (the function ends), an optimizing compiler may perform **dead store elimination**, deciding "this `memset`
+    a plain `memset`; the reason is compiler optimisations. If a variable goes out of scope right after it's used
+    (the function ends), an optimising compiler may perform **dead store elimination**, deciding "this `memset`
     call has no observable effect" and deleting it — the decoded secret stays **unwiped** in memory. **Rule:** use
     a call the compiler cannot delete when clearing sensitive memory (`memset_s`, `SecureZeroMemory`,
     `explicit_bzero`, or a hand-written loop over a `volatile` pointer); using plain `memset` and assuming "I wiped
@@ -1153,14 +1153,14 @@ independent points > 1."
 
 ### RULE K-09 — Variable splitting, merging, and array restructuring
 
-**What does it protect?** The recognizable footprint of a sensitive variable in memory. Patterns like "a 32-byte
+**What does it protect?** The recognisable footprint of a sensitive variable in memory. Patterns like "a 32-byte
 block = an AES key" point the attacker straight at it. **How?** A variable is **split** into two parts (e.g.,
 computing a 32-bit value from two 16-bit shares), several variables are **merged** into a single word, arrays are
 rearranged; buffer sizes, order, and layout are changed, bogus padding is inserted between them, and buffers are
 filled with random values after use.
 
 **Cost:** low–medium. **Limit:** it only slows down static/pattern analysis. **Measurement:** how long it takes to
-recognize the sensitive buffer from its memory pattern.
+recognise the sensitive buffer from its memory pattern.
 
 **Worked example: let's split a 32-bit value and merge it back.** Say the value we want to store is `0x1234ABCD`
 (32-bit). Instead of keeping it as a single 4-byte block, let's split it into two separate 16-bit **shares**:
@@ -1185,7 +1185,7 @@ a key" is **never written explicitly** in the code, it hides only in the merge e
 !!! danger "Common mistake: producing the merged value early and keeping it in memory for a long time"
     Splitting/merging only pays off as long as merging happens **at the moment of use**. If the `deger` variable
     is computed once at the start of the function and kept around for the rest of the function (or stored
-    permanently in a struct), you again end up with a single, whole, recognizable 32-bit block — K-09's benefit is
+    permanently in a struct), you again end up with a single, whole, recognisable 32-bit block — K-09's benefit is
     lost. **Rule:** merge only at the **exact moment it's needed**, then wipe it immediately after use (as in K-07,
     with `memset_s`); keeping the parts (`yuksek`, `dusuk`) separate is always safer than keeping the merged form
     around.
@@ -1276,7 +1276,7 @@ hand. **How?** LLVM-based obfuscators (Obfuscator-LLVM and its derivatives) auto
 control flow, and instruction substitution passes at compile time. Advantage: the source code stays readable, the
 protection is a compile option; diversifying by giving a different seed (**seed**) per build is easy. **Cost:**
 medium; the performance impact depends on which passes are selected. **Limit:** the patterns well-known passes
-produce are recognizable; you need to stay current with the tool's version. **Measurement:** the difference between
+produce are recognisable; you need to stay current with the tool's version. **Measurement:** the difference between
 binaries produced by the same passes with different seeds (the diversification metric, section 5).
 
 **Conceptual example: same source, two seeds, two different binaries.** Suppose we compile the same `erisim_ver`
@@ -1353,7 +1353,7 @@ reminder; behind every row is a full explanation above, a worked example, and a 
 | --- | --- | --- | --- | --- |
 | K-01 Opaque predicate/loop | Control flow | Branch/loop condition | Low–medium | Known patterns are exposed to symbolic execution |
 | K-02 Arithmetic encoding | Data | Constants, simple computations | Low | Can be undone by MBA simplifiers |
-| K-03 Bogus operation/dead branch | Control flow | Hides real logic in a crowd | Low–medium | Can be deleted by compiler optimization |
+| K-03 Bogus operation/dead branch | Control flow | Hides real logic in a crowd | Low–medium | Can be deleted by compiler optimisation |
 | K-04 Flattening | Control flow | Block adjacency/order | Medium–high | Symbolic execution + pattern recognition |
 | K-05 Random exit | Control flow | Success/failure point | Low | Weak alone, meaningful with flattening |
 | K-06 Function/parameter hiding | Layout | Library call hints | Low–medium | Behavioural analysis can still show what it does |
@@ -1361,7 +1361,7 @@ reminder; behind every row is a full explanation above, a worked example, and a 
 | K-08 Opaque boolean | Data | Decision result (allow/deny) | Low | Can be solved with enough scrutiny |
 | K-09 Variable splitting/merging | Data | Memory pattern/footprint | Low–medium | Only slows pattern/static analysis |
 | K-10 Virtualisation | Virtualisation | The machine code itself | High | Once the VM is solved, everything it protects opens |
-| K-11 Compiler-based (O-LLVM) | Mixed | Applies the above automatically | Medium | Known pass patterns are recognizable |
+| K-11 Compiler-based (O-LLVM) | Mixed | Applies the above automatically | Medium | Known pass patterns are recognisable |
 | K-12 Self-modifying code | Anti-analysis | Critical code section | High, risky | Conflicts with OS memory protections (DEP/NX, W^X) |
 
 For a quick answer to "which rule do I pick when?" when preparing for the exam or S9: for **low-value, frequently
@@ -1411,9 +1411,9 @@ Copy A (e.g., "write this value at this offset, so the check always allows") dir
 holds a **different instruction**, so the patch either does nothing or crashes the program. This is the numeric
 proof of "Rule 2 — break automation" from section 1.
 
-!!! danger "Common mistake: mistaking a change in compiler optimization level for diversification"
+!!! danger "Common mistake: mistaking a change in compiler optimisation level for diversification"
     Saying "I compiled with `-O3` instead of `-O2`, so now I have two different binaries" is **not**
-    diversification. Changing the optimization level (a) produces the **same** result on every compile (it isn't
+    diversification. Changing the optimisation level (a) produces the **same** result on every compile (it isn't
     tied to a seed, so it's a repeatable, predictable single "version B," not many different copies) and
     (b) even though it strongly guarantees the behaviour stays the same, that isn't the goal here. **Rule:** real
     diversification must be produced with a **different and unpredictable** seed on every build (K-11's `--Seed`);
@@ -1525,7 +1525,7 @@ these in order **to test our own defence**:
   state space; but measure the cost.
 - **Expression simplification (MBA solvers):** undoes arithmetic encoding (K-02). **Rule:** don't treat arithmetic
   encoding as a secrecy layer on its own; combine it with control-flow obfuscation.
-- **Pattern recognition:** recognizes known library/pass patterns. **Rule:** diversify; don't rely on a single
+- **Pattern recognition:** recognises known library/pass patterns. **Rule:** diversify; don't rely on a single
   opaque predicate pattern or a single VM design.
 
 Banescu and colleagues' work (Tigress + KLEE) does exactly this: it measures how much each transform withstands
@@ -1535,7 +1535,7 @@ Instead of saying a protection is "strong," you need to say "it withstood this m
 ### How does symbolic execution break the opaque predicate in K-01? Step by step
 
 Let's return to the `opak_dogru(x) = ((x*(x+1)) & 1) == 0` predicate from section 5; the warning box there said it
-is "a classic pattern, recognized in modern tools' libraries." Now let's see **why**.
+is "a classic pattern, recognised in modern tools' libraries." Now let's see **why**.
 
 A symbolic execution tool (like KLEE) runs the program not with **concrete** values (like `x = 5`) but by keeping
 `x` as an unknown **symbol**. When it reaches the line `if (opak_dogru(x))`, the question it needs to ask is:
@@ -1569,9 +1569,9 @@ weak layers together are stronger than one.
 
 A "pattern recognition" tool scans a binary looking for known **structural signatures**: a large `switch` inside a
 single loop, non-sequential state values drawn from a fixed set, an error path exiting through `default` — exactly
-K-04's template. The flattening shape produced by popular tools like O-LLVM has itself become a "recognizable"
+K-04's template. The flattening shape produced by popular tools like O-LLVM has itself become a "recognisable"
 signature over time (there are even academic studies that guess which obfuscation tool a piece of software was
-compiled with). This is the source of the "known passes' patterns are recognizable" warning in K-11's limit line.
+compiled with). This is the source of the "known passes' patterns are recognisable" warning in K-11's limit line.
 
 !!! danger "Common mistake: assuming every technique withstands every tool equally"
     Before declaring a protection "strong," you need to state **which class of tool** it was measured against.
@@ -1744,7 +1744,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
       hasn't the core warning from section 3, "this does not protect the key," been forgotten?
     - [ ] Has an absolute claim like "unbreakable" or "impenetrable" been **avoided** everywhere (the Barak et al.
       warning from section 1)?
-    - [ ] Was it tested on a binary compiled with optimization on (`-O2`/`-O3`) (against the "the compiler silently
+    - [ ] Was it tested on a binary compiled with optimisation on (`-O2`/`-O3`) (against the "the compiler silently
       deletes it" mistake from K-02/K-03)?
 
 !!! tip "Through an evaluator's eyes"
@@ -1763,7 +1763,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
     A **bogus operation** really runs, but its result is never used (it wears out the analyst and the tool). A **dead branch** is protected by an opaque predicate and **never runs at all**. So a bogus operation is code that runs but has no effect, while a dead branch is code that never runs.
 
 ??? question "4. Why is control-flow flattening weak on its own? Name at least three rules that strengthen it."
-    Flattening leaves behind a dispatcher (switch) pattern; this pattern is recognizable, and the flow can be reconstructed by tracking the state variable. Reinforcements: **opaque predicates**, **encrypting the state variable**, **bogus states/blocks + random exit** (also name/string obfuscation).
+    Flattening leaves behind a dispatcher (switch) pattern; this pattern is recognisable, and the flow can be reconstructed by tracking the state variable. Reinforcements: **opaque predicates**, **encrypting the state variable**, **bogus states/blocks + random exit** (also name/string obfuscation).
 
 ??? question "5. Which attack does a random exit point make harder? Why does a single-byte patch stop being enough?"
     It makes pattern-matching, automated scripting, and symbolic execution attacks harder (there is no single fixed exit pattern). Because there is no single fixed exit, a single byte patch cannot close off every path; the attacker has to deal with every path separately.
@@ -1807,8 +1807,8 @@ numbers above come from this week's demo and should not be copy-pasted directly 
 ??? question "18. In section 7's small bytecode example, how does the stack change when `{OP_PUSH,5,OP_PUSH,7,OP_ADD,OP_RET}` runs, and what is the result? Why can't an analyst see this result directly 'in the source code'?"
     In order: `OP_PUSH 5` → stack `[5]`; `OP_PUSH 7` → stack `[5,7]`; `OP_ADD` → pops `7` and `5`, pushes `5+7=12` → `[12]`; `OP_RET` → returns `12`. Result: `12`. The analyst can't see this in the source because there is no "addition" instruction anywhere — the addition is a **side effect** of the `yorumla` function processing these six bytes in a particular order; the interpreter (the VM) itself has to be solved first.
 
-??? question "19. Why can a bogus operation in K-03 (`crc ^= sabit^sabit`) be completely deleted by an optimizing compiler (`-O2`)? What do you do to prevent this?"
-    `sabit^sabit` is always `0` (the XOR identity from section 0: a value XORed with itself gives `0`), and `crc^=0` leaves `crc` unchanged. The compiler can spot this by constant folding and remove it via **dead code elimination**, saying "this has no observable effect"; the obfuscation vanishes without you noticing. Prevention: decide the values used in the bogus operation **at runtime** (tied to an input/opaque predicate), never fix them at compile time; always verify obfuscation on a binary compiled with optimization on.
+??? question "19. Why can a bogus operation in K-03 (`crc ^= sabit^sabit`) be completely deleted by an optimising compiler (`-O2`)? What do you do to prevent this?"
+    `sabit^sabit` is always `0` (the XOR identity from section 0: a value XORed with itself gives `0`), and `crc^=0` leaves `crc` unchanged. The compiler can spot this by constant folding and remove it via **dead code elimination**, saying "this has no observable effect"; the obfuscation vanishes without you noticing. Prevention: decide the values used in the bogus operation **at runtime** (tied to an input/opaque predicate), never fix them at compile time; always verify obfuscation on a binary compiled with optimisation on.
 
 ??? question "20. In section 8's example, if a 512-byte function's binaries produced with two seeds differ by 340 bytes, what is the difference ratio as a percentage? What does this ratio show, and what does it not show?"
     `fark_orani = 340/512×100 ≈ %66.4`. This shows how **different** the two copies look at the code level — it implies a high likelihood that a byte-level patch written for one copy will not work at the same offset in the other. What it does not show: it does not raise a single copy's **potency/resilience**; it only makes a crack harder to **scale** (section 8's main claim).

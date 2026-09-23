@@ -32,7 +32,7 @@
 
 !!! abstract "By the end of this week you will be able to"
     1. Define the concept of **RASP** (Runtime Application Self-Protection); explain the **detect → defend → deter**
-       triad and how RASP differs from classic external defenses (WAF, network firewall).
+       triad and how RASP differs from classic external defences (WAF, network firewall).
     2. Adopt the **untrusted device (MATE)** attacker model: the device's owner is the attacker; we expect
        root/debugger/hooking.
     3. Set up an application's own **runtime integrity** verification (self-hashing, HMAC) and detect **patching**;
@@ -244,8 +244,8 @@ hooked functions.
 **RASP (Runtime Application Self-Protection)** is a set of protections embedded **inside** the application that
 watch themselves at **runtime** and respond to attacks. The application is its own guard.
 
-!!! note "How is RASP different from external defenses?"
-    | Defense | Where it sits | What it sees |
+!!! note "How is RASP different from external defences?"
+    | Defence | Where it sits | What it sees |
     | --- | --- | --- |
     | Network firewall | At the network edge | Packets |
     | WAF (Web App Firewall) | **In front of** the application | HTTP requests |
@@ -260,7 +260,7 @@ RASP does three jobs; this triad is the backbone of the week:
 
 - **Detection:** understanding that something is wrong — the binary has been patched, a debugger is attached, the
   environment is an emulator, the app is on a rooted device, a component has been repackaged.
-- **Defense:** giving a **meaningful** response to detection — erase the secret, reject the operation
+- **Defence:** giving a **meaningful** response to detection — erase the secret, reject the operation
   (fail-closed), bind the key to the device, tie a critical operation to the control flow.
 - **Deterrence:** making the attacker's job **expensive** — return a fake (decoy) result instead of crashing, delay
   the response, report the event to the server. The goal is not unbreakability; it is **slowing the attack down
@@ -275,23 +275,23 @@ a debugger. This is the same assumption as the **white-box** model in Week 11.
 
 What sets the MATE attacker apart from the other attacker types we saw in Week 1 is **position**, not capability:
 
-| Attacker type | Where it sits | What it can see | Classic defense |
+| Attacker type | Where it sits | What it can see | Classic defence |
 | --- | --- | --- | --- |
 | Network attacker | **Between** the client and the server | Only encrypted traffic (if TLS is used) | TLS, authentication |
 | Server attacker | **Outside** the server | Only the requests it sends and the responses it gets | Input validation, authorization, rate limiting |
 | **MATE (the attacker at the end)** | **Inside** the device running the app, owns it | Memory, the binary, every step at runtime | RASP: integrity, anti-debug, hook detection, device binding |
 
-Why does this table matter? Because against a MATE attacker, **network-attacker defenses** (TLS, server-side input
+Why does this table matter? Because against a MATE attacker, **network-attacker defences** (TLS, server-side input
 validation) do nothing at all — TLS protects the connection's **content**, but the attacker **is** the application
 that opens the connection; the moment it decrypts, it sees the data in the clear in its own memory. That is why
-RASP is added **on top of**, not **instead of**, the earlier weeks' defenses.
+RASP is added **on top of**, not **instead of**, the earlier weeks' defences.
 
 !!! danger "RASP's painful truth"
     If the device's owner is the attacker, **no client-side protection is ever ultimately unbreakable.** Given
     enough time and skill, every check can be bypassed. So why does RASP exist? Because the goal isn't
     **unbreakability**, it's making the attack **unscalable and expensive**: if breaking one device takes days,
     and it has to be redone on every broken device, **and** server-side anomalies get caught, the attack can
-    collapse economically. RASP is the runtime layer of **defense in depth**; it makes sense **not alone**, but
+    collapse economically. RASP is the runtime layer of **defence in depth**; it makes sense **not alone**, but
     together with crypto (Weeks 3, 10), obfuscation (Weeks 4, 9), whitebox (Week 11), and **server-side checks**.
 
 ### 1.2 This week's example architecture and its central idea
@@ -307,22 +307,22 @@ working together. This is the runtime counterpart of Week 3's **security shell**
 
 ### 1.3 Worked example: handling the same event three different ways
 
-Let's make concrete why detection, defense, and deterrence are **separate** concepts. Scenario: right before
+Let's make concrete why detection, defence, and deterrence are **separate** concepts. Scenario: right before
 unwrapping the payment key, the crypto library notices a debugger is attached (the Section 4 TracerPid signal is
 > 0). Three developers handle this in three different ways:
 
 1. **Detection only, no response:** the code increments the `supheli` (suspicious) variable but never checks it;
    the function continues its normal flow. Result: an attacker with a debugger attached **reads the key
-   directly**. The detection was wasted — because it was never wired to a defense.
-2. **Detection + a crude defense:** the code writes `if (supheli) exit(1);`. Result: the attacker can't read the
+   directly**. The detection was wasted — because it was never wired to a defence.
+2. **Detection + a crude defence:** the code writes `if (supheli) exit(1);`. Result: the attacker can't read the
    key, but they see **exactly which line** the program stopped on; within a few tries they patch that `if` (the
    same weakness as the "the checker itself gets patched too" lesson in Section 3).
-3. **Detection + defense + deterrence:** the code mixes the signal, not into `exit()` directly, but **as data**
+3. **Detection + defence + deterrence:** the code mixes the signal, not into `exit()` directly, but **as data**
    into the key-derivation operation (a small-scale version of the control-flow counter from Section 9), and if
    triggered, produces a **decoy** result (Section 10). Result: the attacker sees no error message; they get a
    result that looks "successful" but is useless, and they can't tell which check fired.
 
-All three options share the same **detection** code; they differ only in the **defense** and **deterrence**
+All three options share the same **detection** code; they differ only in the **defence** and **deterrence**
 layers. As this week's demos progress we'll keep moving toward the third approach (see the full comparison in
 Section 10.2).
 
@@ -423,7 +423,7 @@ few seconds and the response policy kicks in (Section 10).
 !!! note "How it's done in the field"
     Card scheme application-protection requirements list exactly these layers: protection against unauthorized
     modification, self-integrity checking at runtime, refusing to run on unsupported devices, blocking version
-    rollback, defense against static and dynamic reverse engineering and hooking techniques, detecting debugging
+    rollback, defence against static and dynamic reverse engineering and hooking techniques, detecting debugging
     and test environments, notifying the back end and the user in case of compromise and erasing the data, and
     checking that OS protections are turned on. A certified library's manual maps fourteen separate RASP measures
     on the native side and fourteen on the Java side to these requirements, one by one.
@@ -434,7 +434,7 @@ few seconds and the response policy kicks in (Section 10).
 
 RASP's first and most basic step: **"Have I been modified?"** An attacker tries to bypass a license check, an
 `if (odendi)` (if paid) branch, or a crypto call by **patching** it (the `je → jmp` patch we saw in Week 4). The
-defense: the application computes a **digest** of its own binary (or of a protected code/data region) at runtime
+defence: the application computes a **digest** of its own binary (or of a protected code/data region) at runtime
 and compares it against a known-in-advance **golden** value. If even a single byte has changed, the patch is
 caught.
 
@@ -544,7 +544,7 @@ output through HMAC-SHA-256's internals (each round of SHA-256's compression fun
 
 !!! note "How it's done in the field / How does an evaluator test this?"
     In the example architecture, the native library verifies a combined digest of both its own `.so`/`.dll` and
-    the upper layer (e.g., Java/DEX); it does **mutual** verification (Catalog K6, Demo 6). An evaluator patches
+    the upper layer (e.g., Java/DEX); it does **mutual** verification (Catalogue K6, Demo 6). An evaluator patches
     the binary and checks whether detection triggers, then tries patching the **checker code itself** to see
     whether the protection can be bypassed that way (a single checker or a network of them?).
 
@@ -739,8 +739,8 @@ bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
 !!! danger "The single most important lesson: false positives"
     The output above was captured on WSL2, and the **hypervisor bit said "PRESENT."** But this is **not** an
     analysis environment — it's an ordinary developer machine! On modern Windows, most machines report a
-    hypervisor because of **Hyper-V, WSL2, and virtualization-based security (VBS)**. So this bit alone does
-    **not** mean "an attacker is analyzing this." If an application refused to run just because it saw a
+    hypervisor because of **Hyper-V, WSL2, and virtualisation-based security (VBS)**. So this bit alone does
+    **not** mean "an attacker is analysing this." If an application refused to run just because it saw a
     hypervisor, it would block millions of **legitimate** users. RASP always **weighs multiple indicators** and
     accepts that each one can be **bypassed**.
 
@@ -764,7 +764,7 @@ score** comes out. The decision is not a single `if (hipervizor_var)`, but wheth
 | Signal | Source | How reliable alone? | Example weight |
 | --- | --- | --- | --- |
 | Hypervisor bit (CPUID) | Demo 3 | Low — also set under WSL2/Hyper-V/VBS | 15 |
-| Known hypervisor vendor signature | Demo 3 | Medium — more reliably shows a virtualized environment | 25 |
+| Known hypervisor vendor signature | Demo 3 | Medium — more reliably shows a virtualised environment | 25 |
 | Timing anomaly | Demo 3 | Medium — can also happen on a real machine under load | 20 |
 | Known emulator file trace (on mobile) | e.g. `ro.kernel.qemu` | High — almost never happens on a real device | 40 |
 | Debugger attached | Demo 2 (TracerPid) | High — rarely happens while a legitimate user is using the app | 35 |
@@ -783,14 +783,14 @@ trade-off of "how many legitimate users am I willing to block, in exchange for h
 
 | Product | Cost of a false positive | Cost of a false negative | Example threshold |
 | --- | --- | --- | --- |
-| Banking / payment app | User can't complete the transaction, call-center load rises | Fraudulent transaction, direct money loss | Low (e.g. 30) — reject when in doubt |
+| Banking / payment app | User can't complete the transaction, call-centre load rises | Fraudulent transaction, direct money loss | Low (e.g. 30) — reject when in doubt |
 | Loyalty points / coupon app | User is annoyed but the loss is small | An extra coupon gets used | High (e.g. 70) — rarely reject |
 | DRM-protected content player | Legitimate user can't watch the content, store rating drops | Content gets copied | Medium (e.g. 50) |
 
 !!! danger "The real cost of a false positive"
     Setting the threshold too low (e.g., making the banking threshold 10 instead of 70) blocks — **while they are
     entirely legitimate** — every developer using WSL2/Hyper-V, every IT department testing on a virtual machine,
-    and ordinary users of some accessibility/security tools. The cost of this is not abstract: call-center load,
+    and ordinary users of some accessibility/security tools. The cost of this is not abstract: call-centre load,
     store rating/negative reviews, lost users. RASP design should measure "how many legitimate users did we block"
     as carefully as "how many attackers did we catch" — ideally with a staged rollout (log-only first, then
     reject).
@@ -832,7 +832,7 @@ their own version**. This lets them make Demo 2's checks lie and always return "
 | **Inline hooking** | Overwriting a function's first bytes with a `jmp` | Everywhere |
 | **Frida / Xposed** | Dynamic binary instrumentation frameworks | Mobile/desktop |
 
-Detection ideas (Catalog K7/K8/K18):
+Detection ideas (Catalogue K7/K8/K18):
 
 - Is the `LD_PRELOAD` environment variable empty? (`getenv` — **weak**, because `getenv` itself can also be
   hooked)
@@ -894,7 +894,7 @@ address falls into. It writes the result into a `Dl_info` structure; the field w
 **Step 3 — in the clean run.** With `LD_PRELOAD` empty, the `time` symbol resolves through the normal search order
 and comes from the kernel-provided **vDSO** (virtual Dynamic Shared Object — a special virtual `.so` the kernel
 automatically adds to a process's memory to provide fast reads without a system call). Demo output: `time ->
-linux-vdso.so.1`. The `mesru_mi()` (is-it-legitimate) function recognizes this name (it looks for the
+linux-vdso.so.1`. The `mesru_mi()` (is-it-legitimate) function recognises this name (it looks for the
 `linux-vdso` substring) and says **not a hook**.
 
 **Step 4 — once the hook is loaded via `LD_PRELOAD`.** `demo.sh` starts the program with the environment variable
@@ -902,7 +902,7 @@ linux-vdso.so.1`. The `mesru_mi()` (is-it-legitimate) function recognizes this n
 normal search order; since the library defines its own `time()` function, `dlsym(RTLD_DEFAULT, "time")` now finds
 **not the real `time` in vDSO, but the fake `time` in `libsahtekanca.so`**. `dladdr` sees this address falls
 within `libsahtekanca.so`'s memory range; `dli_fname` returns `"bin/linux/libsahtekanca.so"`. Since `mesru_mi()`
-doesn't recognize this name (not libc/vDSO/ld), it says **HOOK** — exactly the `time ->
+doesn't recognise this name (not libc/vDSO/ld), it says **HOOK** — exactly the `time ->
 bin/linux/libsahtekanca.so (KANCA!)` line in the demo output.
 
 **Step 5 — why is this stronger than a `getenv(LD_PRELOAD)` check?** The `getenv` check looks at the environment
@@ -1071,7 +1071,7 @@ response policy.
 ### 8.1 Root / privileged environment indicator
 
 On a rooted (or jailbroken) device, an application's security assumptions collapse: any process can read memory,
-file-system protections are bypassed. RASP looks at root indicators (Catalog K4/K5): the presence of the `su`
+file-system protections are bypassed. RASP looks at root indicators (Catalogue K4/K5): the presence of the `su`
 binary, dangerous packages, writable system paths, root-hiding frameworks. The desktop counterpart: is the
 application running with **elevated privilege** (Linux `geteuid()==0`, an elevated token on Windows)?
 
@@ -1135,7 +1135,7 @@ are expected to appear **together** — just as in the environment example in Se
 On Android, an application verifies the **APK signature** (APK Signature Scheme v1/v2/v3) against
 **repackaging**: even if an attacker opens the app, modifies it, and repackages it, they can't carry the signature
 produced by the original developer's private key. This is the general form of "is the component I loaded/called
-the expected, unmodified version?" (Catalog K2/K3/K6).
+the expected, unmodified version?" (Catalogue K2/K3/K6).
 
 ### Demo 6 — Component signature verification and repackaging detection
 
@@ -1186,7 +1186,7 @@ note: anyone who can verify an HMAC can also **produce** one; with an asymmetric
 
 !!! success "Rule"
     Cryptographically verify every dynamically loaded component (module, plugin, native library, update package)
-    **before** loading it. Where possible, set up **mutual** verification (Catalog K6): the native side verifies
+    **before** loading it. Where possible, set up **mutual** verification (Catalogue K6): the native side verifies
     the upper layer's digest; the upper layer verifies the native side's digest — the attacker would have to patch
     **both** consistently. For the long run, prefer an **asymmetric signature** (easier distribution).
 
@@ -1198,7 +1198,7 @@ Every check so far (integrity, anti-debug, environment, root) makes **one decisi
 reddet;` (if danger, reject). The attacker's job is simple: patch **that one jump** (`je → jmp`) and skip the check
 (the patch from Section 3). So what's the way to make checks **unskippable**?
 
-The answer: tie the security checks to a **control-flow counter / key chain** (Catalog K17). A critical operation
+The answer: tie the security checks to a **control-flow counter / key chain** (Catalogue K17). A critical operation
 can only produce the correct result **if** all the checkpoints have been passed **in order**. We build this as a
 **data dependency**: each checkpoint advances a key chain (`acc = HMAC(acc, "asama-i")`); the critical operation
 unwraps a secret with the key derived from this chain.
@@ -1210,7 +1210,7 @@ is **rejected** — the real result can't be produced. So a single `jmp` patch i
 
 ### Demo 5 — Control-flow counter and a skip attack
 
-!!! info "Demo 5 · `code/week-06/05-akis-sayaci` · control-flow integrity (Catalog K17)"
+!!! info "Demo 5 · `code/week-06/05-akis-sayaci` · control-flow integrity (Catalogue K17)"
 
 ```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
 SENARYO 1 - Normal: butun kontrol noktalari sirayla calisir
@@ -1301,7 +1301,7 @@ property from Section 3.1, here in its chained form).
 !!! success "Rule"
     Don't tie critical decisions to **a single boolean** (it gets patched). Tie security checks to a **control-flow
     counter** and, where possible, to a **data dependency** (the key of the result the critical operation
-    produces). Use double/overlapping counters; randomize the failure exit points (K15/K16).
+    produces). Use double/overlapping counters; randomise the failure exit points (K15/K16).
 
 !!! warning "Common mistakes and a checklist"
     - [ ] Is the critical decision tied to a single `if`, or to a counter/key?
@@ -1321,7 +1321,7 @@ A good response policy **slows the attacker down and misleads them**:
 
 ![Response policy options](assets/h06-11-tepki.svg)
 
-| Strategy | What it does | Catalog |
+| Strategy | What it does | Catalogue |
 | --- | --- | --- |
 | **Fail-closed** | Reject the operation when in doubt; don't fall into a trusted state | — |
 | **Erase the secret** | Securely erase the valuable data the instant tampering is found (`kripto_temizle`) | K15 |
@@ -1425,7 +1425,7 @@ In Section 1.3 we briefly compared three different responses to the same detecti
 
 All three rest on the **same detection code** (Section 1.3); they differ only in **when and what** they return. In
 Demo 8's actual output, option (c) is applied: "Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...". This number
-is **different** every run (Exercise 7); if it were a fixed "ERROR-0x1234" value, the attacker would recognize
+is **different** every run (Exercise 7); if it were a fixed "ERROR-0x1234" value, the attacker would recognise
 this constant and could tell it apart from the real result — the decoy being random prevents that distinction
 too.
 
@@ -1447,7 +1447,7 @@ too.
     In the example architecture, the payment key is only unwrapped at the moment of payment, from a device-bound
     key; when tampering is detected, the key is destroyed and the transaction is reported to the server as
     "suspicious." An evaluator tries to bypass a single check to reach the **real** result; they report that the
-    protections must be broken **in combination** (not one by one, but as a chain) — that's the proof that defense
+    protections must be broken **in combination** (not one by one, but as a chain) — that's the proof that defence
     in depth is working.
 
 ---
@@ -1483,7 +1483,7 @@ too.
 !!! failure "'I'll tune the risk-score threshold once and forget about it.'"
     Devices, OS versions, and attack tools change over time; a score considered "certainly an attacker" today may,
     six months from now, mistakenly catch a legitimate configuration that has since become common (a new
-    virtualization feature, a developer tool that has become widespread). Review the threshold and the weights
+    virtualisation feature, a developer tool that has become widespread). Review the threshold and the weights
     regularly, using **telemetry** (the server reporting in Section 10.2) (Section 5.1).
 
 ---
@@ -1594,7 +1594,7 @@ Application Protections (15p → LO.3)** in the final rubric.
     ```
     ??? success "Answer"
         The hypervisor bit alone is **not proof** (Section 5, Demo 3): because of WSL2, Hyper-V, and
-        virtualization-based security (VBS), many **legitimate** Windows machines also set this bit. This code
+        virtualisation-based security (VBS), many **legitimate** Windows machines also set this bit. This code
         could block millions of real users just because it saw a hypervisor — a classic false positive. Fix: add
         this signal to a **risk score** as in Section 5.1 instead of deciding on it alone, and make the decision
         together with other signals (vendor signature, timing, debugger), against a **threshold**.
@@ -1668,7 +1668,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     application.
 
 ??? question "2. Explain the detect → defend → deter triad."
-    Detection: understanding that something is wrong (patch, debugger, hook, root). Defense: a meaningful response
+    Detection: understanding that something is wrong (patch, debugger, hook, root). Defence: a meaningful response
     (fail-closed, erase, bind to the device). Deterrence: making the attack expensive (decoy, delay, telemetry).
 
 ??? question "3. What is the MATE attacker model?"
@@ -1821,7 +1821,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     | Term | Turkish | Short definition |
     | --- | --- | --- |
     | RASP | Çalışma zamanı öz koruması | Mechanisms embedded inside an application that protect it while it runs |
-    | Detection / Defense / Deterrence | Algılama / Savunma / Caydırma | RASP's three functions |
+    | Detection / Defence / Deterrence | Algılama / Savunma / Caydırma | RASP's three functions |
     | MATE | Uçtaki saldırgan | The attacker who owns the device (white box) |
     | Self-hashing | Öz özetleme | The application digesting and verifying its own code/file at runtime |
     | Tamper | Kurcalama | Unauthorized modification of a binary/data |

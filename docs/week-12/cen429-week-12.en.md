@@ -113,14 +113,14 @@ Let's first define all of them, **one by one**, so the topic doesn't stay abstra
 
 ### What is certification?
 
-- **Certification:** an authorized party **documenting** that a product/organization complies with a given
+- **Certification:** an authorized party **documenting** that a product/organisation complies with a given
   **standard**.
 - If the evaluation succeeds, a **certificate** is issued.
 
 ### Who is the laboratory (evaluator)?
 
-- **Evaluation laboratory:** the independent, accredited organization that tests the product.
-- It is **not** the organization that develops the product (for impartiality).
+- **Evaluation laboratory:** the independent, accredited organisation that tests the product.
+- It is **not** the organisation that develops the product (for impartiality).
 - It has access to all source code and documentation.
 
 ### What is a standard?
@@ -147,7 +147,7 @@ Let's first define all of them, **one by one**, so the topic doesn't stay abstra
 
 ### What is SAST?
 
-- **SAST (Static Application Security Testing):** a tool that analyzes source **without running it**.
+- **SAST (Static Application Security Testing):** a tool that analyses source **without running it**.
 - Finds dangerous patterns and possible memory errors.
 - Fast and broad; but produces **false positives**.
 
@@ -156,7 +156,7 @@ Let's first define all of them, **one by one**, so the topic doesn't stay abstra
 ### What is DAST?
 
 - **DAST (Dynamic Application Security Testing):** tests the program **while running it**.
-- Catches memory-access errors and undefined behavior (e.g., with sanitizers).
+- Catches memory-access errors and undefined behaviour (e.g., with sanitizers).
 
 *(ASan/UBSan in week 4.)*
 
@@ -252,8 +252,8 @@ single bug — this is the first concrete example of section 3's "which method f
 
 | Method | Does it find this bug? | Why |
 | --- | --- | --- |
-| **Code review (manual)** | **Yes, reliably** | The reviewer sees, **in context**, that `sprintf` inserts user input directly into SQL; they conclude "this input is untrusted, a parameterized query is needed." |
-| **SAST** | Usually yes | Most SAST tools recognize the "user input → query string" data flow (taint analysis) and flag it; but it depends on the tool's rule set — some SAST tools can miss it. |
+| **Code review (manual)** | **Yes, reliably** | The reviewer sees, **in context**, that `sprintf` inserts user input directly into SQL; they conclude "this input is untrusted, a parameterised query is needed." |
+| **SAST** | Usually yes | Most SAST tools recognise the "user input → query string" data flow (taint analysis) and flag it; but it depends on the tool's rule set — some SAST tools can miss it. |
 | **DAST** | Only with an SQLi-specific test | A generic DAST scan running random inputs may **miss** the bug; a scanner specific to SQLi (trying payloads like `' OR '1'='1`) catches it. |
 | **Fuzzing** | Low probability | Random byte sequences have a low probability of producing valid SQL syntax (`' OR '1'='1`); fuzzing is weak at this kind of **logic** bug, strong at memory bugs. |
 | **Penetration test** | **Yes, with evidence** | From an attacker's viewpoint, `' OR '1'='1` is tried directly, a real bypass is **observed** and proven (screenshot/log). |
@@ -266,7 +266,7 @@ single bug — this is the first concrete example of section 3's "which method f
 - **Risk:** if this application is exposed to the internet and holds real user data behind it, the risk is **high**
   (high probability × high impact); if it's a prototype running only on a closed test network, the same
   vulnerability's risk can be assessed as lower.
-- **Recommendation:** use a parameterized query (prepared statement).
+- **Recommendation:** use a parameterised query (prepared statement).
 
 !!! danger "Common mistake: concluding 'SAST/DAST came back clean, so we're secure'"
     No single tool catches every class of bug: SAST sometimes misses logic errors, DAST never sees a path that
@@ -278,7 +278,7 @@ single bug — this is the first concrete example of section 3's "which method f
 
 - A **standard** is a rule: it says "key derivation should be done this way." The standard itself **approves** no
   product; it only defines the criterion.
-- A **certificate** is the document proving that a product or organization **meets** that rule. There is no
+- A **certificate** is the document proving that a product or organisation **meets** that rule. There is no
   certificate without a standard; but reading a standard (or "designing to" it) does not by itself mean you have
   **obtained** a certificate — an independent verification (evaluation) is required.
 
@@ -294,7 +294,7 @@ In the coming sections we'll often see the sentence "the evaluator assumes the a
 This assumption has a name:
 
 - **Kerckhoffs's principle:** a system's security must rest **not on the design staying secret**, but only on the
-  **key** staying secret. In other words, the defense "nobody knows our algorithm, so we're secure" is **invalid**
+  **key** staying secret. In other words, the defence "nobody knows our algorithm, so we're secure" is **invalid**
   — you must design assuming the attacker knows the source code, the design, even the manual.
 - The evaluator's working **white-box** (below) is exactly a natural consequence of this principle: since a real
   attacker can sooner or later learn the design, the evaluator should see everything from the start too.
@@ -304,7 +304,7 @@ This assumption has a name:
 | | White-box | Black-box |
 | --- | --- | --- |
 | Access | Source code + documentation + internal design | Only from the outside, like a user |
-| Type of bug found | Deep logic errors, design flaws | Only externally observable behavior |
+| Type of bug found | Deep logic errors, design flaws | Only externally observable behaviour |
 | Time/cost | Faster (looks directly) | Slower (must discover first) |
 | Represents a real attacker? | Partially — most attackers don't see the source | Yes — close to a day-one attacker's experience |
 
@@ -326,7 +326,7 @@ summary** of the rest of the week:
 > **CVSS**; once the developer fixes it, the laboratory re-examines only the changed part through **delta
 > assessment**; in the end, a **certification** authority issues the certificate for a specific **TOE** identity.
 
-If you can read this single paragraph and recognize every term, you've already built the **skeleton** of everything
+If you can read this single paragraph and recognise every term, you've already built the **skeleton** of everything
 we'll see from section 1 through 9; the remaining sections will fill in this skeleton's **flesh**.
 
 ### Now we're ready
@@ -373,16 +373,16 @@ through that process itself, step by step, through an evaluator's eyes.
 | **Common Criteria** (ISO/IEC 15408) + **CEM** (ISO/IEC 18045) | General IT products | Security target (ST), protection profile (PP), EAL levels; vulnerability analysis and attack potential | Week 13 |
 | **FIPS 140-3** | Cryptographic modules | The module's crypto algorithms, key management, physical security, self-tests | Week 13 |
 | **EMVCo** documents | Payment cards, terminals, mobile payments | Security evaluation of chip- and software-based payment solutions | Weeks 3, 6, 11, 13 |
-| **PCI** standards (DSS, PIN, MPoC, SSF) | Organizations and software handling card data | Protecting card data; secure software development; testing and scanning requirements | This week |
-| **ISO/IEC 27001** | An organization's information security management system | Processes, risk management, controls (Annex A); certifies the **organization**, not a product | This week |
+| **PCI** standards (DSS, PIN, MPoC, SSF) | Organisations and software handling card data | Protecting card data; secure software development; testing and scanning requirements | This week |
+| **ISO/IEC 27001** | An organisation's information security management system | Processes, risk management, controls (Annex A); certifies the **organisation**, not a product | This week |
 | **ETSI** (EN 303 645, TS 103 732, etc.) | Consumer IoT, telecom, mobile | Baseline device security requirements, test specifications | Week 13 |
 | **OWASP ASVS / MASVS** | Web and mobile applications | Application security verification levels (a test framework, not a certificate) | Weeks 5, 6 |
 
 !!! info "Product, or process?"
-    ISO/IEC 27001 certifies an **organization** (its information security management system); Common Criteria,
+    ISO/IEC 27001 certifies an **organisation** (its information security management system); Common Criteria,
     FIPS 140-3, and EMVCo evaluations certify a **product**. PCI DSS audits the compliance of an environment that
     handles card data. Don't mix this up in a project guide: "our product is ISO 27001 certified" is wrong; "our
-    product is developed within an organization that is ISO 27001 certified" is correct.
+    product is developed within an organisation that is ISO 27001 certified" is correct.
 
 ### What does certification say, and not say?
 
@@ -433,13 +433,13 @@ market:
 
 - If the application will be sold to a **bank**: the bank's information security management system likely falls
   under **ISO/IEC 27001** — but that certifies the bank's **processes**, not the application itself.
-- If the application **processes card data**: it falls under **PCI DSS** (organization) and/or **PCI MPoC/SSF**
+- If the application **processes card data**: it falls under **PCI DSS** (organisation) and/or **PCI MPoC/SSF**
   (software) — how the software processes, stores, and transmits card data is tested.
 - If the application will carry a **payment scheme's** (e.g., a card network's) brand: it must go through an
   **EMVCo** evaluation — the security of the chip/software-based payment flows is tested by a laboratory
   penetration test.
 - If the application makes a general **mobile security** claim: it can be tested against the **OWASP MASVS** level
-  — not a certificate, but a recognized **test framework**.
+  — not a certificate, but a recognised **test framework**.
 
 The same codebase is tested through four different lenses with four different questions. In your project, the
 answer to "which standard are we closest to?" determines **which columns** of the requirement template in S17 you
@@ -503,7 +503,7 @@ A certificate can lose validity over time, or need to be re-reviewed, for three 
 ## 2. The evaluation process: 13 steps
 
 The flow below is a generalized version of a software component (e.g., a mobile payment library) being evaluated
-at a third-party laboratory. Product, organization, and scheme names have been removed; the steps are similar
+at a third-party laboratory. Product, organisation, and scheme names have been removed; the steps are similar
 across many schemes.
 
 ![Components of a TOE identity](assets/h12-06-toe.svg)
@@ -512,8 +512,8 @@ across many schemes.
 
 The first of the 13 steps we're about to see demands a **far more precise** definition than a version number. Let's
 see why with an example: a team says "version 3.2.0," but three different binaries can exist under that same
-version number — one built with debug symbols (debug build), one an optimized release build, and one a copy a
-developer produced locally with different compiler flags. Their **behavior** (debug output, timing, even the
+version number — one built with debug symbols (debug build), one an optimised release build, and one a copy a
+developer produced locally with different compiler flags. Their **behaviour** (debug output, timing, even the
 presence of some security checks) can differ. That is why a TOE identity consists of four parts (the figure above):
 
 1. **Version label** — for human readers (e.g., "3.2.0").
@@ -523,7 +523,7 @@ presence of some security checks) can differ. That is why a TOE identity consist
 
 !!! danger "Common mistake: assuming 'same version number, same product'"
     A developer might say "nothing has changed, it's still 3.2.0," but if the build environment (compiler version,
-    optimization flag) has changed, the **binary is different**, and the previous certificate no longer covers that
+    optimisation flag) has changed, the **binary is different**, and the previous certificate no longer covers that
     binary. **Rule:** TOE identity is always verified with a hash value, never trusted to a version number — this is
     exactly what the "version identity" practice from week 1 is for.
 
@@ -670,8 +670,8 @@ parties; mixing them up, especially on "who decides what," causes confusion:
 | --- | --- | --- |
 | **Developer (TOE owner)** | The team that writes the product (GüvenPay) | Delivers documents and source code; produces actions for findings |
 | **Sponsor** | Usually the developer itself (sometimes a customer/bank) | **Requests** and funds the evaluation |
-| **Evaluation laboratory** | An independent, accredited organization | Reviews code, runs tests, reports findings — **does not decide**, it produces evidence |
-| **Certification authority (scheme owner)** | The organization running the national/international scheme | Reviews the laboratory's report, **formally issues the certificate** |
+| **Evaluation laboratory** | An independent, accredited organisation | Reviews code, runs tests, reports findings — **does not decide**, it produces evidence |
+| **Certification authority (scheme owner)** | The organisation running the national/international scheme | Reviews the laboratory's report, **formally issues the certificate** |
 
 !!! note "How it's done in the field"
     An evaluation laboratory itself is also usually **accredited** by an independent body (against a general
@@ -683,7 +683,7 @@ parties; mixing them up, especially on "who decides what," causes confusion:
 !!! danger "Common mistake: thinking the laboratory 'decides'"
     The laboratory does **not** issue the certificate; it only tests and reports its findings **with evidence**.
     The party that formally issues the certificate is the **certification authority** (the scheme-owning
-    organization). Writing "the laboratory certified us" in a project report is common but technically wrong.
+    organisation). Writing "the laboratory certified us" in a project report is common but technically wrong.
 
 ### Why in this order? (Preparation → Evaluation → Continuity)
 
@@ -868,13 +868,13 @@ findings that look low-impact on their own can form a serious chain when used to
 ## 4. The tests the standards demand
 
 Different standards emphasize different types of testing. Knowing which requirement family your project is closest
-to determines which tests you'll prioritize.
+to determines which tests you'll prioritise.
 
 ![Standards: which certifies what](assets/h12-05-standartlar.svg)
 
 | Standard / framework | Test it primarily expects | Short note |
 | --- | --- | --- |
-| **ISO/IEC 27001** | Process and management audit | Certifies the **organization**, not the product; control evidence instead of testing |
+| **ISO/IEC 27001** | Process and management audit | Certifies the **organisation**, not the product; control evidence instead of testing |
 | **Common Criteria** (ISO/IEC 15408) | Source review + vulnerability analysis + penetration test; rating by **attack potential** | Depth increases with EAL (week 13) |
 | **FIPS 140-3** | Cryptographic module tests (algorithm validation, self-test) | Covers only the module (week 13) |
 | **ETSI EN 303 645** | Verifying baseline IoT security requirements | Light, broad coverage |
@@ -905,7 +905,7 @@ Let's make the table's "test it primarily expects" row concrete — **one exampl
   requires both static and dynamic testing.
 
 !!! tip "Which standard is 'closest' for your project?"
-    When choosing your own project's requirement family, ask this question: "are we evaluating an **organization**,
+    When choosing your own project's requirement family, ask this question: "are we evaluating an **organisation**,
     a **cryptographic module**, a **general product**, or a **mobile application**?" This course's project mostly
     falls into the third and fourth categories (general product / mobile application); that's why **OWASP
     MASVS/MASTG** is the most directly applicable guide, but we borrow the attack-potential concept from the
@@ -930,12 +930,12 @@ lenses** — this is the concrete form of the "the same product can pass four di
     came out out of scope, but the Common Criteria, EMVCo/PCI, and MASVS questions were directly applicable. Doing
     the same exercise for your own project clarifies which standard you're **really** close to.
 
-### Two separate scopes in the payment domain: software, or organization?
+### Two separate scopes in the payment domain: software, or organisation?
 
 In the payment-security domain, "PCI" is not a single standard, it's a **family of standards**; which one applies
 depends on "what" is being evaluated:
 
-- **PCI DSS (Data Security Standard):** audits the compliance of an **organization/environment** that processes
+- **PCI DSS (Data Security Standard):** audits the compliance of an **organisation/environment** that processes
   card data — servers, network segmentation, access logs. It's not the software itself that's in scope, but the
   **environment the software runs in**. Like ISO/IEC 27001 (section 1), it is **process and environment**
   oriented.
@@ -976,7 +976,7 @@ matrix in week 13:
 
 | Standard | How does it express the same idea? |
 | --- | --- |
-| ISO/IEC 27001 | "Policy on the use of cryptographic controls" (an Annex A item) — the organization must have an encryption **policy** |
+| ISO/IEC 27001 | "Policy on the use of cryptographic controls" (an Annex A item) — the organisation must have an encryption **policy** |
 | Common Criteria | The "confidentiality" security functional requirement (the FCS family) — defines **which** cryptographic function the TOE provides and **how** |
 | FIPS 140-3 | Using an approved algorithm, with an approved mode and key management |
 | ETSI EN 303 645 | "Sensitive security parameters must be stored securely" (a baseline requirement) |
@@ -992,7 +992,7 @@ matrix in week 13:
 
 A question weaker students often ask but rarely get an answer to: "who's making up these standards?" Short answer:
 none of them is the product of a single person or company; each is created through the **joint work of many
-organizations** in that field and is regularly updated (usually every few years) — much like CVSS, which we saw in
+organisations** in that field and is regularly updated (usually every few years) — much like CVSS, which we saw in
 week 2, evolving from v2 to v3.1 to v4.0. The reason for these updates is usually either (a) a new attack technique
 emerging, or (b) clarifying an item in the previous version that was found ambiguous or inconsistent.
 
@@ -1029,7 +1029,7 @@ the total maps to a resistance level (e.g., "basic / moderate / high / very high
 
 **Interpretation:** if the total score is **high**, the attack is hard; the control is good. If the score is **low**
 (e.g., an ordinary user, in an hour, with free tools), this is a serious finding. The logic here is the same as
-week 9's four criteria: the strength of a defense is measured by the cost of overcoming it.
+week 9's four criteria: the strength of a defence is measured by the cost of overcoming it.
 
 ### Why does each factor exist? The reasoning, one by one
 
@@ -1053,7 +1053,7 @@ is the point weaker students confuse the most — the answer to "why these five,
   a focused ion beam).
 
 !!! success "Rule: each factor narrows the question 'how many people can do this' from a different angle"
-    The sum of the five factors indirectly answers the question: "how many people/organizations in the real world
+    The sum of the five factors indirectly answers the question: "how many people/organisations in the real world
     could carry out this attack?" Low score = many people can do it = widespread risk. High score = almost no one
     can do it = a narrow, expert threat pool.
 
@@ -1108,7 +1108,7 @@ Toplam = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  TEMEL
 **Result: BASIC level = low resistance = serious finding.** In the report, this is written as "close this first."
 
 **Now let's add a control and re-score.** We put week 9's opaque boolean + random exit on top, plus a server-side
-check. The same attack now: takes a week (4), requires an **expert** (6), learning the internal behavior needs
+check. The same attack now: takes a week (4), requires an **expert** (6), learning the internal behaviour needs
 **restricted knowledge** (3), the server-side check makes attempts **restricted** (4), equipment is still free (0):
 
 ```text
@@ -1444,7 +1444,7 @@ the laboratory doesn't just ask "is the salt unique now?" but also looks at the 
 and notices this new log line — recording it as a new finding (F-11).
 
 !!! danger "Common mistake: assuming a fix is 'only' good"
-    Assuming a change **only** closes an old finding is dangerous; every change can also cause new behavior
+    Assuming a change **only** closes an old finding is dangerous; every change can also cause new behaviour
     **around** the code it changed. **Rule:** delta assessment asks not only "did the old finding close?" but also
     "is there a **new** problem in the changed file?" — this is why delta assessment doesn't just rerun the old
     test, it re-examines the **entire** changed file.
@@ -1484,7 +1484,7 @@ environment (test environment, or production), which data (only synthetic). What
 
 ### 3. Methodology
 
-A recognized methodology is chosen and followed: **OWASP MASTG/MASVS** for mobile, **OWASP WSTG** for web, **PTES**
+A recognised methodology is chosen and followed: **OWASP MASTG/MASVS** for mobile, **OWASP WSTG** for web, **PTES**
 or **NIST SP 800-115** for the general process. Choosing a methodology makes the result **repeatable** and
 **comparable**.
 
@@ -1503,7 +1503,7 @@ section:
 | Purpose | What is being verified |
 | Preconditions | Environment, version, data |
 | Method/steps | In a repeatable form |
-| Expected result | What the secure behavior should be |
+| Expected result | What the secure behaviour should be |
 | Observed result | What happened (with evidence) |
 | Attack potential / decision | Scoring + pass/fail + recommendation |
 
@@ -1543,7 +1543,7 @@ demo:
 | Related requirement | S5 / R-12: "Card fields in the local database are encrypted with AEAD" (week 3, linked to S17) |
 | Purpose | To determine whether card data can be captured as plaintext by directly reading the local database file on a rooted device, and whether a tampered record is **rejected** |
 | Preconditions | The test device is rooted; GüvenPay v3.2.1 is installed; the database contains only **synthetic** test card data (no real PAN, per this week's ethics rule) |
-| Method/steps | (1) The application's `.db` file is pulled from the device's data directory. (2) The file is examined in a hex editor, searching for a 16-digit PAN pattern. (3) If not found, the last byte of an encrypted record's tag is modified. (4) The application is restarted, behavior is observed. |
+| Method/steps | (1) The application's `.db` file is pulled from the device's data directory. (2) The file is examined in a hex editor, searching for a 16-digit PAN pattern. (3) If not found, the last byte of an encrypted record's tag is modified. (4) The application is restarted, behaviour is observed. |
 | Expected result | No field should appear as plaintext in the file (AEAD-encrypted); the tampered record must be **rejected** on startup (fail-closed, week 3's rule) |
 | Observed result | The file was examined: all sensitive fields appear as random-looking byte sequences (encrypted), **no** pattern match. When the tampered record's tag was changed, the application logged "integrity verification failed" and **deleted** the record; it did not crash, nor did it silently return wrong data. |
 | Attack potential / decision | Since direct file reading fails, the attacker is forced toward key extraction — this falls into the same class as **Scenario B** in section 5 (physical + specialized equipment, score 55, BEYOND). **Decision: PASS.** |
@@ -1651,7 +1651,7 @@ from section 5 and a standard CVSS calculator.)*
     for the next evaluator) to trust this claim. **Rule:** every "closed" row points to the test ID that verified
     it (e.g., "verified with PT-07").
 
-### Prioritizing findings: a simple priority matrix
+### Prioritising findings: a simple priority matrix
 
 We saw in section 5 that CVSS measures **impact** and attack potential measures **cost**. If a report has dozens of
 findings, which one to look at first comes from the **combination** of these two. The matrix below is not a formal
@@ -1742,7 +1742,7 @@ this week's four-step cycle (section 6) directly to your own project:
     From cheap/automatic/broad-coverage methods toward expensive/manual/deep methods. Early, cheap scans filter out easy findings; expensive manual effort (fuzzing, penetration testing) is spent only on the remaining deep problems → budget and time are used efficiently.
 
 ??? question "4. How do ISO/IEC 27001's and Common Criteria's testing expectations differ? What does each one certify?"
-    ISO/IEC 27001 audits and certifies the **organization's information security management system** (process/organization). Common Criteria (ISO/IEC 15408) technically evaluates and certifies **a specific product (TOE)** at a defined assurance level.
+    ISO/IEC 27001 audits and certifies the **organisation's information security management system** (process/organisation). Common Criteria (ISO/IEC 15408) technically evaluates and certifies **a specific product (TOE)** at a defined assurance level.
 
 ??? question "5. List attack potential's five factors. Why is low attack potential a serious finding?"
     **Elapsed time, expertise, knowledge of the product, opportunity (access/window), equipment.** Low attack potential means it can be exploited with little time/skill/tools → many attackers could succeed → a broad and likely threat, i.e., high risk.
@@ -1775,7 +1775,7 @@ this week's four-step cycle (section 6) directly to your own project:
     A **false positive** is when a tool says "there's a problem" but there really isn't (wastes time, causes alert fatigue). A **false negative** is a real problem the tool **misses**, and it is more dangerous; because the trust of "the tool said it's clean" creates a false sense of security and the real flaw goes unnoticed.
 
 ??? question "15. Why can't TOE identity consist of just a version number?"
-    Different builds (debug/release, different compiler flags) can exist under the same version number, and their behavior can differ. That's why a TOE identity has four parts: version label + binary (build type/architecture) + source code (commit/tag) + **hash value**; the hash reveals even a single-byte difference.
+    Different builds (debug/release, different compiler flags) can exist under the same version number, and their behaviour can differ. That's why a TOE identity has four parts: version label + binary (build type/architecture) + source code (commit/tag) + **hash value**; the hash reveals even a single-byte difference.
 
 ??? question "16. What values can CVSS's AV (attack vector) and AC (attack complexity) metrics take?"
     **AV (Attack Vector):** Network · Adjacent · Local · Physical. **AC (Attack Complexity):** Low · High. These are coarse, categorical options; they operate at a different resolution than attack potential's numeric, fine-grained scoring.
@@ -1817,7 +1817,7 @@ Let's put the five most commonly confused term pairs from this week side by side
 | Pair | First | Second | Distinguishing question |
 | --- | --- | --- | --- |
 | Vulnerability / Finding / Risk | Vulnerability: a technical weakness | Finding: its form documented with evidence | Risk: "how dangerous is it, really?" (probability × impact) |
-| SAST / DAST | Analysis **without running** the source | Analysis **by running** the program | "Is the code being read, or is behavior being observed?" |
+| SAST / DAST | Analysis **without running** the source | Analysis **by running** the program | "Is the code being read, or is behaviour being observed?" |
 | Attack potential / CVSS | The **cost/difficulty** of the attack | The flaw's **impact/severity** | "How hard is it?" vs. "how bad is it if it happens?" |
 | Impact analysis / Delta assessment | The developer's **document** | The laboratory's **re-test** | "Who wrote it, who verified it?" |
 | Scope / Rules of engagement | **What** is tested | **How** it is tested | "What's being tested?" vs. "within which boundaries?" |

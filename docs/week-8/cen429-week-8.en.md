@@ -48,9 +48,9 @@
 | **1** Introduction and protection plan | CIA; asset–threat–vulnerability–risk; attacker models (white-box); Saltzer–Schroeder principles; the seven protection layers; the 7 steps of the protection plan; interface and asset tables (C/I/I+); STRIDE and DFD; attack tree; risk = likelihood × impact; secure startup; memory management errors; secure erasure; partitioning; version identity | PATH spoofing · password left in memory · privilege escalation via overflow · signed length | 1.1–1.9, 3.3–3.5, 12.1, 13.2–13.3 |
 | **2** Malware and models | Virus types, worms, trojans; outbreak rate; rule-based detection; integrity monitoring; Bell–LaPadula, Biba, Clark–Wilson; Unix and Windows access control; RBAC; CWE, OWASP Top 10, CVE, CVSS; audit logging and log injection | Rule engine · integrity monitoring · outbreak · log injection · tamper-resistant log · ACE · umask · RBAC | 2.1–2.2, 13.11 |
 | **3** Data security | The three states of data; symmetric/asymmetric/hybrid; AEAD; digest/MAC/signature; CSPRNG and modulo bias; nonce, IV, salt; ECB; PBKDF2/Argon2id; HKDF, forward secrecy; key lifecycle, hierarchy, wrapping; TLS 1.3, validation, pinning, fail-open; masking, tokenization, pseudonymization; security shells | AES-GCM · nonce reuse · ECB · round count · HKDF · MITM + pinning · SQLite encryption · mlock · four shells | 4.9–4.13, 9.1–9.3, 10.7–10.9, 11.1–11.11, 13.2 |
-| **4** C/C++ hardening | SEI CERT; input validation principles; format string; UAF; integer overflow and undefined behavior; error handling, signals; static analysis; sanitizers; fuzzing; canary, FORTIFY, ASLR, NX, RELRO, CFI; introduction to code obfuscation; flattening | Format string · UAF · UBSan · fuzzing · protections · symbols/strings · flattening | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
-| **5** Java and interpreted languages | What a managed language solves; SEI CERT Java; the common root of injection; SQL, command, path traversal; deserialization; XXE/XSS; Python/JS, ReDoS; bytecode; ProGuard/R8, `-keep`; string obfuscation, reflection; SBOM, VEX | SQL · command · path · bytecode · obfuscation · SBOM · deserialization | 3.7, 3.10, 3.11, 1.7 |
-| **6** RASP | Detection–defense–deterrence; MATE; RASP architecture; integrity checking; debugger, environment, hook detection; dynamic memory protection; root and signature verification; control-flow counter; response policy, decoy, device binding; limitations | Integrity · anti-debug · VM · LD_PRELOAD · flow counter · signature · root · RASP engine | 12.2, 12.12–12.13 (concepts) |
+| **4** C/C++ hardening | SEI CERT; input validation principles; format string; UAF; integer overflow and undefined behaviour; error handling, signals; static analysis; sanitizers; fuzzing; canary, FORTIFY, ASLR, NX, RELRO, CFI; introduction to code obfuscation; flattening | Format string · UAF · UBSan · fuzzing · protections · symbols/strings · flattening | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
+| **5** Java and interpreted languages | What a managed language solves; SEI CERT Java; the common root of injection; SQL, command, path traversal; deserialisation; XXE/XSS; Python/JS, ReDoS; bytecode; ProGuard/R8, `-keep`; string obfuscation, reflection; SBOM, VEX | SQL · command · path · bytecode · obfuscation · SBOM · deserialisation | 3.7, 3.10, 3.11, 1.7 |
+| **6** RASP | Detection–defence–deterrence; MATE; RASP architecture; integrity checking; debugger, environment, hook detection; dynamic memory protection; root and signature verification; control-flow counter; response policy, decoy, device binding; limitations | Integrity · anti-debug · VM · LD_PRELOAD · flow counter · signature · root · RASP engine | 12.2, 12.12–12.13 (concepts) |
 
 ![Quiz-1 scope](assets/h08-01-kapsam.svg)
 
@@ -73,10 +73,10 @@
 | Fail-open | Fail-closed | On error, "pass" vs. "reject"; security checks should be fail-closed |
 | Blacklist | Allowlist | Enumerating what is forbidden is always incomplete; defining what is permitted is correct |
 | Canary | ASLR | A canary detects an overflow when the function returns; ASLR randomizes addresses |
-| ASan | UBSan | ASan catches memory access errors; UBSan catches undefined behavior (overflow, shift) |
+| ASan | UBSan | ASan catches memory access errors; UBSan catches undefined behaviour (overflow, shift) |
 | Static analysis | Dynamic analysis / fuzzing | Static analysis works without running the code and can produce false positives; dynamic analysis only sees the path that actually runs, but it is conclusive |
-| Unsigned wraparound | Signed overflow | Wraparound is defined behavior (a logic bug); signed overflow is **undefined behavior** |
-| Parameterized query | Escaping | Parameterization is two channels — the real fix; escaping is a secondary line of defense |
+| Unsigned wraparound | Signed overflow | Wraparound is defined behaviour (a logic bug); signed overflow is **undefined behaviour** |
+| Parameterised query | Escaping | Parameterization is two channels — the real fix; escaping is a secondary line of defence |
 | ProGuard obfuscation | String obfuscation | ProGuard renames **identifiers**; it does not hide strings |
 | Obfuscation | Secure coding | Obfuscation delays an attacker; it does not fix the bug |
 | Detection | Response | Detection alone is useless; the response must be far from the trigger and implicit |
@@ -96,7 +96,7 @@
 | 3 | Week 3 (1) | AEAD, nonce, salt, KDF, random numbers; Demos 1–5 |
 | 4 | Week 3 (2) | Key management, TLS, pinning, masking, shells; Demos 6–9 |
 | 5 | Week 4 | CERT rule pairs, format string, UAF, UB, protection table; Demos 1–7 |
-| 6 | Weeks 5–6 | Injection, deserialization, ProGuard, SBOM; RASP architecture and response |
+| 6 | Weeks 5–6 | Injection, deserialisation, ProGuard, SBOM; RASP architecture and response |
 | 7 | Review | Work through the sample questions below against the clock; re-read the relevant section for anything you get wrong |
 
 ![Midterm grade calculation](assets/h08-03-vize-hesabi.svg)
@@ -135,7 +135,7 @@ The questions below are meant to show the **kind of thinking** Quiz-1 requires, 
     stop corruption of variables that sit before the canary, heap overflows, or a leaked canary value.
 
 ??? question "7. What are ProGuard's four phases? Which one hides strings?"
-    Shrinking, optimization, obfuscation (renaming), preverification. None of them hide strings.
+    Shrinking, optimisation, obfuscation (renaming), preverification. None of them hide strings.
 
 ??? question "8. In RASP, what does 'separating the response from the trigger' mean? Why is it needed?"
     Instead of crashing immediately at the moment of detection, delivering the response at a point removed in time
@@ -227,7 +227,7 @@ The questions below are meant to show the **kind of thinking** Quiz-1 requires, 
     size and file-count limits (decompression bombs); reject symbolic links; validate length fields, and fuzz the
     function.
 
-??? question "19. What was organizations' biggest problem during Log4Shell? Which practice would have prevented it?"
+??? question "19. What was organisations' biggest problem during Log4Shell? Which practice would have prevented it?"
     Not knowing which version of Log4j (including copies embedded inside other libraries) was present in which
     system. An SBOM (CycloneDX/SPDX) produced on every release and continuously monitored, plus an SCA tool.
 

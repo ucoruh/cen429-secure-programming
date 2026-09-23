@@ -129,10 +129,10 @@ week. If you do not know a term, read this section first; the sections that foll
 - Data is never interpreted as a command.
 - The **real** fix against SQL injection.
 
-### Serialization
+### Serialisation
 
-- **Serialization:** converting an object to a byte sequence (to save it or send it).
-- **Deserialization:** converting the bytes back into an object.
+- **Serialisation:** converting an object to a byte sequence (to save it or send it).
+- **Deserialisation:** converting the bytes back into an object.
 - Deserialising untrusted bytes is **dangerous** (code execution).
 
 ### XML and XXE
@@ -181,7 +181,7 @@ week. If you do not know a term, read this section first; the sections that foll
 
 Terms:
 
-managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialization · XML/XXE · path
+managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialisation · XML/XXE · path
 traversal · ProGuard/R8 · `-keep` · reflection · SBOM · dependency
 
 Now: what do managed languages solve, and what do they not solve?
@@ -233,7 +233,7 @@ behaviour. In **managed** languages such as Java, Kotlin, C#, Python and JavaScr
       is published — **logic/injection** bugs, not memory bugs, come to the fore.
     - **2002** — **ProGuard** (Java shrinking/obfuscation), later **R8**: a response to how easily bytecode can be
       turned back into source.
-    - **2015** — Java **deserialization** attacks; **2020–21** **SolarWinds** and **Log4Shell** open the age of
+    - **2015** — Java **deserialisation** attacks; **2020–21** **SolarWinds** and **Log4Shell** open the age of
       supply-chain/**SBOM** concerns.
 
     Main idea: the language solves memory bugs, it **does not solve injection or dependency risk**.
@@ -321,7 +321,7 @@ example, compliant solution, risk. Identifiers end with the `-J` suffix.
 | --- | --- | --- |
 | `IDS` | Input validation and data sanitisation | IDS00-J: prevent SQL injection from untrusted data · IDS07-J: do not pass untrusted data to `Runtime.exec()` · IDS16-J: prevent XML injection · IDS17-J: prevent XML external entity attacks |
 | `FIO` | Input/output | FIO16-J: canonicalise path names before validating them |
-| `SER` | Serialization | SER12-J: prevent deserialisation of untrusted data |
+| `SER` | Serialisation | SER12-J: prevent deserialisation of untrusted data |
 | `MSC` | Miscellaneous | MSC03-J: never hard-code sensitive information |
 | `ERR` | Error handling | ERR01-J: do not leak sensitive information in exceptions |
 | `FIO` | Logging | FIO13-J: do not log sensitive information outside a trust boundary |
@@ -861,8 +861,8 @@ same normalisation happens, but because the result does not start with the root 
 
 ## 7. Unsafe deserialisation
 
-**Serialization** is converting an object into a byte sequence to store it or send it over the network;
-**deserialization** is the reverse. Java's built-in `ObjectInputStream` mechanism creates an object of **any**
+**Serialisation** is converting an object into a byte sequence to store it or send it over the network;
+**deserialisation** is the reverse. Java's built-in `ObjectInputStream` mechanism creates an object of **any**
 serialisable class whose name is written in the byte stream, and while doing so runs some of that class's methods
 (such as `readObject`, `readResolve`).
 
@@ -872,7 +872,7 @@ The problem is this: if the byte stream comes from an untrusted source, **the at
 created**. Innocent-looking classes found in libraries on the application's class path can be chained together so
 that, as they are created, they trigger one another. In real incidents these chains have gone all the way to
 remote code execution; in 2015 this is exactly how a series of vulnerabilities, working through classes in a
-widely used common library, affected many enterprise server products. This is why CWE-502 ("deserialization of
+widely used common library, affected many enterprise server products. This is why CWE-502 ("deserialisation of
 untrusted data") is part of the "software and data integrity failures" category in the OWASP Top 10.
 
 !!! note "We are not writing a chain in this course"
@@ -913,14 +913,14 @@ how the chain is built, but steps 3–4 fully explain "why it is possible."
 
 !!! success "Rule"
     Before opening an untrusted byte stream with `ObjectInputStream.readObject()`, always attach an
-    `ObjectInputFilter`, and **always** end the pattern with `!*`. If possible, do not use Java serialization at
+    `ObjectInputFilter`, and **always** end the pattern with `!*`. If possible, do not use Java serialisation at
     all; formats such as JSON/Protobuf never write a class name into the stream, they only carry data fields.
 
 ### Layers of defence
 
 | Order | Measure | Explanation |
 | --- | --- | --- |
-| 1 | **Never use it** | For untrusted data, use **data formats** (JSON, Protobuf) instead of Java serialization; these only carry data, they never let the sender choose a class |
+| 1 | **Never use it** | For untrusted data, use **data formats** (JSON, Protobuf) instead of Java serialisation; these only carry data, they never let the sender choose a class |
 | 2 | **Allow-list filter** | Since Java 9, `ObjectInputFilter` (JEP 290); since Java 17, a context-specific filter factory (JEP 415): only the expected classes |
 | 3 | **Limits** | The stream's depth, array size, total byte count and object count are bounded (against denial of service) |
 | 4 | **Integrity** | If serialised data is stored or transported, it is signed with an HMAC; it is not deserialised until the signature is verified |
@@ -986,7 +986,7 @@ instantiated, none of its methods run.
 !!! question "How does an assessor test this?"
     They search the source code for `ObjectInputStream`, `readObject`, XML-based object decoders, and JSON
     libraries with "polymorphic type" support turned on; for every use they ask where the data comes from. If a
-    filter exists, they check that its pattern ends in `!*`. They look for Java serialization's magic bytes
+    filter exists, they check that its pattern ends in `!*`. They look for Java serialisation's magic bytes
     (`AC ED 00 05`) in network traffic or in files.
 
 ---
@@ -1217,7 +1217,7 @@ unexpectedly true. Defence: reject the keys `__proto__`, `constructor` and `prot
 
 !!! tip "A language-independent rule"
     Whichever language you use, four questions are the same: Is the data going to an interpreter (SQL, a shell,
-    `eval`, a template)? Is it going to a decoder that creates objects (`pickle`, Java serialization)? Is its
+    `eval`, a template)? Is it going to a decoder that creates objects (`pickle`, Java serialisation)? Is its
     length and shape bounded? Is the dependency itself trustworthy (Section 14)?
 
 ---
@@ -2014,10 +2014,10 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
 **Open standards and resources**
 
 - SEI CERT Oracle Coding Standard for Java (the IDS, FIO, SER, MSC, ERR rules).
-- OWASP: Top 10, SQL Injection Prevention Cheat Sheet, OS Command Injection Defense Cheat Sheet, XML External
-  Entity Prevention Cheat Sheet, Deserialization Cheat Sheet; MASVS-CODE and MASVS-RESILIENCE.
+- OWASP: Top 10, SQL Injection Prevention Cheat Sheet, OS Command Injection Defence Cheat Sheet, XML External
+  Entity Prevention Cheat Sheet, Deserialisation Cheat Sheet; MASVS-CODE and MASVS-RESILIENCE.
 - Oracle: JEP 290 (deserialisation filters), JEP 415 (context-specific filters); Java Secure Coding Guidelines.
-- The ProGuard manual (Guardsquare) and the Android developer documentation: "Shrink, obfuscate, and optimize your
+- The ProGuard manual (Guardsquare) and the Android developer documentation: "Shrink, obfuscate, and optimise your
   app" (R8).
 - The CycloneDX 1.5 and SPDX 2.3 (ISO/IEC 5962) specifications; the package-url (purl) specification; the CISA SBOM
   and VEX documents; the SLSA framework.
@@ -2032,7 +2032,7 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
     | Prepared statement | Prepared statement | A SQL call in which the query text and the values are sent separately |
     | Path traversal | Path traversal | Escaping the allowed folder using sequences such as `../` |
     | Canonicalization | Canonicalisation | Reducing a value to its single, definitive form |
-    | Deserialization | Deserialisation | Creating an object from a byte sequence |
+    | Deserialisation | Deserialisation | Creating an object from a byte sequence |
     | Bytecode | Bytecode | The intermediate code the virtual machine executes |
     | Decompiler | Decompiler | A tool that produces source code from bytecode |
     | Shrinking | Shrinking | Removing unused code |

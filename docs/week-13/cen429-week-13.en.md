@@ -111,7 +111,7 @@ week. If you don't know a term, read this section first; the following sections 
 
 - **Functional:** what security function will exist? (e.g., data is protected with AEAD)
 - **Assurance:** how will we trust that it was done correctly? (e.g., a test report)
-- **Process:** how must the organization operate? (e.g., every change is reviewed)
+- **Process:** how must the organisation operate? (e.g., every change is reviewed)
 
 ### Good vs. bad requirement
 
@@ -313,7 +313,7 @@ evaluator instead asks "has the requirement been met, and where is the evidence?
 | --- | --- | --- |
 | **Functional security requirement** | Which security function must the product perform? | "The application must protect sensitive data in the local database with authenticated encryption." |
 | **Assurance requirement** | How will we trust that the product performs this function correctly? | "The developer must provide the source code's static-analysis report and the results of the security tests." |
-| **Process requirement** | How must the organization that produces the product operate? | "Every change must be reviewed by at least one other developer before being merged." |
+| **Process requirement** | How must the organisation that produces the product operate? | "Every change must be reviewed by at least one other developer before being merged." |
 
 ### Bad and good requirements
 
@@ -360,7 +360,7 @@ single sentence down to "sensitive fields in the local database" marked class **
 **Step 3 — Clarify the protection goal (confidentiality, integrity, or both).** In the threat model (Week 1), the
 threat to this data is "an attacker who compromises the device reads the database file" — that is, a
 **confidentiality** threat. But we also ask whether the attacker could modify the file to fool the application —
-yes, so **integrity** is needed too. Recognizing that both goals are needed at the same time determines the next
+yes, so **integrity** is needed too. Recognising that both goals are needed at the same time determines the next
 step.
 
 > Interim step: "The confidentiality and integrity of class-C fields in the local database must be protected." →
@@ -817,7 +817,7 @@ defer to, this is an **invalid deferral** and is rejected by the evaluator.
 
 **Common Criteria** (CC) is the international standard for the security evaluation of IT products. The
 evaluation methodology is defined in a separate document (CEM, ISO/IEC 18045). Thanks to the Common Criteria
-Recognition Arrangement (CCRA), a certificate issued in one country is also recognized in the other countries
+Recognition Arrangement (CCRA), a certificate issued in one country is also recognised in the other countries
 that are party to the arrangement.
 
 ![Common Criteria concepts: PP, ST, SFR, SAR, EAL](assets/h13-07-ortak-kriterler.svg)
@@ -917,7 +917,7 @@ Before Common Criteria, the US, Europe, and Canada each had their own separate e
 Book/TCSEC in the US, ITSEC in Europe, CTCPEC in Canada). Because each country certified against its own
 criteria, a product certified in one country had to be **re-evaluated** in another. Common Criteria merged these
 three approaches into a single international standard (ISO/IEC 15408); thanks to the CCRA (Common Criteria
-Recognition Arrangement), a certificate from one country is recognized in the other party countries **without**
+Recognition Arrangement), a certificate from one country is recognised in the other party countries **without**
 needing re-evaluation. This is much like different countries switching from different electrical-outlet
 standards to a single common one: the cost of compliance drops, and comparison becomes easier.
 
@@ -963,7 +963,7 @@ requirement families can be thought of as an informal "mini PP."
 The independent-assessment steps you saw last week (Week 12) — document review, code review, repeating tests,
 vulnerability analysis — are, in fact, the evaluation activities CC defines in the CEM, **scaled down** to this
 course's level: in CC, ADV (development) documentation is reviewed, ATE (testing) results are **independently
-repeated**, and AVA (vulnerability assessment) analyzes attack potential. Your one-session assessment last week
+repeated**, and AVA (vulnerability assessment) analyses attack potential. Your one-session assessment last week
 imitates, on a small scale, a process an accredited lab spends months on — the same discipline, a different
 scale.
 
@@ -1017,7 +1017,7 @@ expectations one by one:
 | Only approved algorithms, in approved mode | **Partial** | AES-GCM is an approved algorithm/mode, but this cannot be claimed if the OpenSSL build in use has no CAVP certificate |
 | Power-up and conditional self-tests | **Not met** | The project doesn't run its own self-tests, it only trusts the library |
 | Roles and services defined | **Not met** | The code does no role separation at all |
-| Secure input/output and zeroization of critical parameters | **Not met** | "Falling back to a default key" on error is the exact opposite behavior: using a predictable key instead of zeroizing |
+| Secure input/output and zeroization of critical parameters | **Not met** | "Falling back to a default key" on error is the exact opposite behaviour: using a predictable key instead of zeroizing |
 | Security policy document | **Not met** | No such document exists |
 
 This table shows the project is far even from FIPS 140-3 Level 1, and that the most critical gap is "silently
@@ -1036,7 +1036,7 @@ violation of the "if the random generator fails, stop, don't continue" rule we s
 
 !!! question "How does an evaluator test this?"
     The evaluator first compares the version and build flags of the crypto library used against CMVP's public
-    list; then, in the source code, they look for a power-up self-test call, a stop-on-error behavior, and key
+    list; then, in the source code, they look for a power-up self-test call, a stop-on-error behaviour, and key
     zeroization (memory-wiping) calls. If even one is missing, the claim is considered invalid.
 
 ### The steps of FIPS validation (roughly)
@@ -1130,7 +1130,7 @@ provisions read like a brief summary of the topics we've covered throughout the 
 | 5.3 | Keep software updated | Week 1, update signing, Week 10 |
 | 5.4 | Securely store sensitive security parameters | Weeks 3, 10, 11 |
 | 5.5 | Communicate securely | Weeks 3, 10 |
-| 5.6 | Minimize exposed attack surfaces | Week 1, Week 5 minimization |
+| 5.6 | Minimise exposed attack surfaces | Week 1, Week 5 minimization |
 | 5.7 | Ensure software integrity | Week 6 |
 | 5.8 | Ensure that personal data is protected | Week 3, masking |
 | 5.9 | Make systems resilient to outages | Availability |
@@ -1197,7 +1197,7 @@ MASVS-STORAGE audit too — because both ask for the same underlying need (encry
 storage). But "reusable" doesn't mean "automatically met"; each standard's own criteria (e.g., MASVS also
 requires the key to be protected via the operating system's secure-storage API) must be verified **separately**.
 
-### How do you choose and prioritize among standards?
+### How do you choose and prioritise among standards?
 
 A project does not try to comply with **all five** of these sources (CC, FIPS, ETSI, GSMA/EMVCo/PCI, MASVS) at
 once; which standard applies depends on the product's **type** and **market**:
@@ -1207,7 +1207,7 @@ once; which standard applies depends on the product's **type** and **market**:
   certificate requirement).
 - If you're a payment-processing application/library → EMVCo and/or PCI documents (the card schemes'
   requirement).
-- If you're selling to a government/defense buyer → a Common Criteria certificate (often a tender requirement).
+- If you're selling to a government/defence buyer → a Common Criteria certificate (often a tender requirement).
 - If you're selling a cryptographic module/library → FIPS 140-3 (mandatory for US federal buyers).
 
 The course's requirement families (Section 8) extract the common denominator of these five; you're expected to
@@ -1249,8 +1249,8 @@ test for the course — just like the traceability chain in Section 2.
 - **GSMA NESAS** (Network Equipment Security Assurance Scheme) evaluates mobile network equipment manufacturers'
   secure development processes and their products' security tests; unlike SAS (which is facility-focused), it is
   both **process**- and **product**-focused.
-- **PCI DSS** divides organizations that process card data into levels based on transaction volume (the
-  highest-volume organizations are subject to the strictest audits); we don't go into level details within this
+- **PCI DSS** divides organisations that process card data into levels based on transaction volume (the
+  highest-volume organisations are subject to the strictest audits); we don't go into level details within this
   course, but the idea that "audit frequency/depth changes with size" is similar to CC's EAL logic: the bigger
   the risk, the deeper the assurance must be.
 
@@ -1263,7 +1263,7 @@ test for the course — just like the traceability chain in Section 2.
 | EMVCo software-based mobile payment | EMVCo | Software payment solutions emulating a card | Yes (EMVCo's list) |
 | PCI MPoC / DSS / SSF | PCI SSC | Payment acceptance, card data processing, payment software | Yes |
 | OWASP MASVS | OWASP (non-profit community) | Mobile applications | No (de facto standard, no formal certificate) |
-| Common Criteria | ISO/IEC, multinational (CCRA) | Any kind of IT product | Yes (internationally recognized) |
+| Common Criteria | ISO/IEC, multinational (CCRA) | Any kind of IT product | Yes (internationally recognised) |
 | FIPS 140-3 | NIST (US) | Cryptographic modules | Yes (CMVP) |
 
 This table is this week's answer to the question we asked at the very start of the course — "who certifies what,
@@ -1275,7 +1275,7 @@ Yes, and in fact most real products are. For example, a mobile payment applicati
 card scheme's EMVCo requirements (because it works with card data), OWASP MASVS (because it's a mobile
 application), and, indirectly through the crypto library it uses, FIPS 140-3 (because that library may be
 FIPS-validated). A Common Criteria certificate is generally **not needed** for this product, because CC is
-requested mostly by government/defense buyers and is rarely required for consumer payment applications. The same
+requested mostly by government/defence buyers and is rarely required for consumer payment applications. The same
 analysis applies to your own project: the answer to "which market are we selling into, and which standard does
 that market ask for?" determines which standards you write into S1 — you don't have to write all of them, only
 the **relevant** ones.
@@ -1333,7 +1333,7 @@ done, this threat can be realized. The requirement **links** to this threat; if 
 threat model was missing something or the requirement was unnecessary for this product (item 4 above).
 
 **5. Control and verification.** Control: `sifreleme_bellek_sil()` is called immediately after the key is used
-(overwriting with zeros; it's made sure the compiler doesn't optimize this call away — linking to Week 9's
+(overwriting with zeros; it's made sure the compiler doesn't optimise this call away — linking to Week 9's
 protection rules). Verification: a memory-analysis tool (e.g., taking a memory dump and searching for the key's
 bytes) verifies that the key is **not** present in memory once its job is done.
 
@@ -1561,7 +1561,7 @@ order:
     Keep S5 open in every session where you update S17; whenever you add a new requirement, check whether the
     corresponding asset row exists, and add it if it doesn't.
 
-### How you should organize your evidence folder
+### How you should organise your evidence folder
 
 A simple folder layout is recommended so every evidence reference in the compliance matrix is **actually
 findable**:
@@ -1715,7 +1715,7 @@ mature yet — go back to your threat model (Week 1).
     memory); the validation covers the module, not the application itself.
 
 ??? question "10. What do ISO/IEC 27001 and Common Criteria each certify?"
-    ISO/IEC 27001 certifies the organization's information security management system; Common Criteria certifies
+    ISO/IEC 27001 certifies the organisation's information security management system; Common Criteria certifies
     a product.
 
 ??? question "11. Why is each of the 'to whom, why, how' triple needed for a deferred requirement?"

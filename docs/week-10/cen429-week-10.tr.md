@@ -314,7 +314,7 @@ Tablodaki bit sayıları soyut kalabilir; somutlaştıralım. Bir güvenlik düz
 ```
 
 Bunu zamana çevirelim. Bugünkü en hızlı süper bilgisayarların saniyede yapabileceği işlem sayısını **iyimser** bir
-üst sınırla 10¹⁸ (katrilyon) olarak alalım — gerçek saldırılarda bu sayı çok daha düşüktür, çünkü şifre kırma tek bir
+üst sınırla 10¹⁸ (kentilyon; exaölçek süper bilgisayar) olarak alalım — gerçek saldırılarda bu sayı çok daha düşüktür, çünkü şifre kırma tek bir
 aritmetik işlem değil, çok daha pahalı bir işlemdir. Yine de üst sınırla hesaplayalım:
 
 ```text title="2^112 işlemi 10^18 işlem/saniye ile ne kadar sürer?"

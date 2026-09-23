@@ -1294,7 +1294,7 @@ Bir takımın `CEN429-AP-04` için matris satırı, **ilk taslakta**:
 # Bölüm 7–8 — cevaplar
 
 1. Yukarıda **kaynağa** (tehdit/standart/varlık) ve aşağıda **kanıta** (test/kod) — iki yön.
-2. (15 aileden herhangi üçü) ör. **veri güvenliği · kod sağlamlaştırma · RASP · kriptografi/sertifika · bellek koruması · arayüz koruması**.
+2. (Dokuz aileden herhangi üçü) ör. **veri güvenliği · kod sağlamlaştırma · RASP · kriptografi/sertifika · bellek koruması · arayüz koruması**.
 3. Gereksinim **ID+ifade · durum** (karşılandı/devredildi) **· kanıt** (test/dosya/S-bölümü). **Kanıtsız satır karşılanmamış** sayılır.
 
 ---

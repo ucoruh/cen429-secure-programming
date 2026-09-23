@@ -242,10 +242,10 @@ def h13_11(k):
     fig, ax = tuval(12.0, 5.6)
     baslik(ax, "Dersin gereksinim aileleri", "her gereksinim bir aileye, her aile bir varlığa bağlanır")
     aileler = [("DR", "Beklemede veri", MORBG, MOR), ("DT", "Aktarımda veri", MORBG, MOR),
-               ("DU", "Kullanımda veri", MORBG, MOR), ("ID", "Kimlik ve oturum", COKACIK, ANA),
-               ("AP", "Uygulama bütünlüğü", COKACIK, ANA), ("AS", "Varlık ve anahtar", IYIBG, IYI),
-               ("CR", "Kriptografi", IYIBG, IYI), ("LG", "Günlük ve kanıt", UYARIBG, UYARI),
-               ("PR", "Süreç ve doğrulama", UYARIBG, UYARI)]
+               ("DU", "Kullanımda veri", MORBG, MOR), ("ID", "Kimlik doğrulama ve bağlama", COKACIK, ANA),
+               ("AP", "Uygulama koruması", COKACIK, ANA), ("AS", "Varlık koruması", IYIBG, IYI),
+               ("CR", "Kripto ve anahtarlar", IYIBG, IYI), ("RP", "Raporlama", UYARIBG, UYARI),
+               ("DV", "Geliştirme süreci", UYARIBG, UYARI)]
     for i, (kod, ad, dolgu, kenar) in enumerate(aileler):
         sut = i % 3; satir = i // 3
         x = 18 + sut * 32

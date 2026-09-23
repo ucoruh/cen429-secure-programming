@@ -1360,20 +1360,9 @@ void selamla(const char *ad) {
 }
 ```
 
-```text
- düşük adres  | tampon[0..15]      |  <- yazma buradan başlar
-              | yetkili            |  <- biraz fazlası: MANTIK bozulur
-              | kaydedilmiş çerçeve|
- yüksek adres | dönüş adresi       |  <- çok fazlası: ÇÖKME / akış ele geçer
-```
+![w:900](assets/h01-15-yiginda-tasma.svg)
 
 <!-- Konuşma notu: Gerçek yerleşim derleyiciye göre değişir. Bu derste sömürü tekniğine değil, hatanın nasıl oluştuğuna, nasıl bulunduğuna ve nasıl önlendiğine odaklanıyoruz. -->
-
----
-
-# Yığında taşma adım adım — şema
-
-![w:950](assets/h01-15-yiginda-tasma.svg)
 
 ---
 

@@ -5,6 +5,8 @@
 | **Date** | 25.09.2026 |
 | **Learning outcomes** | LO.1 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Week 1 (CIA, attacker models, STRIDE, attack trees); reading files in C; `cd` and `ls` in PowerShell or a Linux terminal |
+| **Labs** | [`code/week-02`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-02) — 14 demos; runs on Windows (MSVC), WSL and Linux |
 
 <!-- materyal:basla -->
 

@@ -5,6 +5,8 @@
 | **Date** | 13.11.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
+| **Prerequisites** | The white-box attacker model from Week 1; compilation, `objdump` and reverse engineering concepts from Week 4; control flow in C (`if`, `switch`, loops) |
+| **Labs** | [`code/week-09`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-09) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
 

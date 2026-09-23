@@ -5,6 +5,8 @@
 | **Date** | 27.11.2026 |
 | **Learning outcomes** | LO.2, 3 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Symmetric encryption and key management from Week 3; obfuscation rules (K-01…K-12) from Week 9; arrays and the XOR operation in C |
+| **Labs** | [`code/week-11`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-11) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
 

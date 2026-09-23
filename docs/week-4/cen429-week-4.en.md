@@ -5,6 +5,8 @@
 | **Date** | 09.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
+| **Prerequisites** | Pointers, arrays and dynamic memory (`malloc`/`free`) in C; memory layout, stack and heap from Week 1; building and basic `gdb` steps in a Linux/WSL terminal |
+| **Labs** | [`code/week-04`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-04) — 7 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
 

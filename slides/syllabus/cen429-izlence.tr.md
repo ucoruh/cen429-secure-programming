@@ -117,7 +117,7 @@ Dr. Öğr. Üyesi Uğur CORUH
 - **Ders kitabı:** J. Viega, M. Messier, *Secure Programming Cookbook for C and C++*, O'Reilly, 2003
 - **Açık standartlar:** SEI CERT, OWASP, MITRE CWE, NIST FIPS 140-3
 - **Dizüstü bilgisayar gerekli:** WSL2 + Ubuntu, GCC/Clang, CMake, gdb, OpenSSL 3, SQLite, JDK 21, Tigress
-- Demolar: `code/week-NN` klasörlerinde, her biri `make demo`
+- Demolar: `code/week-NN` klasörlerinde; `code` içinde bir kez derleyin, sonra `demo.ps1` (Windows) ya da `demo.sh` (WSL/Linux)
 
 ---
 

@@ -358,9 +358,9 @@ Tigress, Arizona Üniversitesi'nden Christian Collberg ve ekibinin geliştirdiğ
 
 !!! note "Ama araç sihir değildir"
     9. haftanın ana kuralı burada da geçerlidir: Tigress de kırılamazlık vermez, **maliyet** yükseltir. Üstelik iyi
-    bilinen bir aracın ürettiği kalıplar zamanla tanınabilir; bu yüzden **çeşitlendirme** (bölüm 3) ve **katmanlı
+    bilinen bir aracın ürettiği kalıplar zamanla tanınabilir; bu yüzden **çeşitlendirme** (bölüm 6) ve **katmanlı
     savunma** (RASP, sunucu denetimi) yine şarttır. Tigress'in kendisi de dönüşümlerin sembolik yürütmeye ne kadar
-    dayandığını ölçen araştırmaların (bölüm 4) baş öznesidir.
+    dayandığını ölçen araştırmaların (bölüm 7) baş öznesidir.
 
 
 #### Hangi koda ne kadar gizleme? (karar akışı)

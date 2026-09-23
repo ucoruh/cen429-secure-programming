@@ -218,9 +218,11 @@ plugins:
       htmlmin_opts:
         remove_comments: true
   - git-revision-date-localized:
+      enabled: !ENV [CEN429_GIT, true]
       fallback_to_build_date: true
       type: timeago
   - git-authors:
+      enabled: !ENV [CEN429_GIT, true]
       sort_authors_by: contribution
   - macros
 

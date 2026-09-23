@@ -65,7 +65,7 @@ Sorunu Detaylıca Açıklayınız.
   {% endfor %}
 {% endfor %}
 
-{% for author in git_info.page_authors %}
+{% for author in (git_info.page_authors if git_info is defined else []) %}
   {% set id = id_for_email[author.email] if id_for_email[author.email] else author.name %}
   {% do contribs.setdefault(id, {'name':id, 'url':'#'}) %}
   {% do contribs[id].__setitem__(

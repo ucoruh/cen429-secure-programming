@@ -126,7 +126,7 @@ protection scheme (C/I/I+)**.
 ## 7. Assessment
 
 !!! info "Weights (syllabus)"
-    - **Midterm = 0.7·RAP1 + 0.3·Quiz-1** · **Final = 0.7·RAP2 + 0.3·Quiz-2**
+    - **Midterm = 0.6·RAP1 + 0.4·Quiz-1** · **Final = 0.7·RAP2 + 0.3·Quiz-2**
     - **Course grade = 0.4·Midterm + 0.6·Final**
     - **RAP1 (Week 7):** first half (S2–S5 + basic protections). **RAP2 (Week 15):** full product + S16 results.
 

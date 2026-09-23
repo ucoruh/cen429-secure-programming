@@ -179,12 +179,14 @@ plugins:
         - locale: en
           name: "English"
           build: true
-          default: true
           site_name: "RTEU CEN429 Secure Programming Course"
+          site_description: "CEN429 Secure Programming course notes, slides and hands-on labs"
         - locale: tr
           name: "Türkçe"
           build: true
+          default: true
           site_name: "RTEU CEN429 Güvenli Programlama Kursu"
+          site_description: "CEN429 Güvenli Programlama ders notları, sunumları ve uygulamalı laboratuvarları"
           nav_translations:
             Home: "Anasayfa"
             Syllabus: "Ders Programı"

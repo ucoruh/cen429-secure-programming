@@ -127,7 +127,7 @@ koruma şeması (C/I/I+)**.
 ## 7. Değerlendirme
 
 !!! info "Ağırlıklar (izlence)"
-    - **Vize = 0,7·RAP1 + 0,3·Quiz-1** · **Final = 0,7·RAP2 + 0,3·Quiz-2**
+    - **Vize = 0,6·RAP1 + 0,4·Quiz-1** · **Final = 0,7·RAP2 + 0,3·Quiz-2**
     - **Başarı notu = 0,4·Vize + 0,6·Final**
     - **RAP1 (7. hafta):** ürünün ilk yarısı (S2–S5 + temel korumalar). **RAP2 (15. hafta):** tam ürün + S16 sonuçları.
 

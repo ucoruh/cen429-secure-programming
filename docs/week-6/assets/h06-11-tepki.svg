@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T06:14:17.986867</dc:date>
+    <dc:date>2026-09-23T07:32:28.496655</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 33.192 233.238528 33.192 237.49632
 L 33.192 248.1408 
 Q 33.192 252.398592 43.0128 252.398592 
 z
-" clip-path="url(#p533bce7900)" style="fill: #e8f6f7"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
     <path d="M 43.3197 105.371712 
@@ -53,7 +53,7 @@ Q 29.8161 73.970496 29.8161 79.82496
 L 29.8161 99.517248 
 Q 29.8161 105.371712 43.3197 105.371712 
 z
-" clip-path="url(#p533bce7900)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p47414cf1f8)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_4">
     <path d="M 43.3197 142.627392 
@@ -66,7 +66,7 @@ Q 29.8161 111.226176 29.8161 117.08064
 L 29.8161 136.772928 
 Q 29.8161 142.627392 43.3197 142.627392 
 z
-" clip-path="url(#p533bce7900)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p47414cf1f8)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_5">
     <path d="M 43.3197 179.883072 
@@ -79,7 +79,7 @@ Q 29.8161 148.481856 29.8161 154.33632
 L 29.8161 174.028608 
 Q 29.8161 179.883072 43.3197 179.883072 
 z
-" clip-path="url(#p533bce7900)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p47414cf1f8)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_6">
     <path d="M 43.3197 217.138752 
@@ -92,7 +92,7 @@ Q 29.8161 185.737536 29.8161 191.592
 L 29.8161 211.284288 
 Q 29.8161 217.138752 43.3197 217.138752 
 z
-" clip-path="url(#p533bce7900)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p47414cf1f8)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_7">
     <path d="M 40.5576 103.908096 
@@ -105,7 +105,7 @@ Q 27.054 72.50688 27.054 78.361344
 L 27.054 98.053632 
 Q 27.054 103.908096 40.5576 103.908096 
 z
-" clip-path="url(#p533bce7900)" style="fill: #fdeaea; stroke: #c0392b; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #fdeaea; stroke: #c0392b; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 40.5576 141.163776 
@@ -118,7 +118,7 @@ Q 27.054 109.76256 27.054 115.617024
 L 27.054 135.309312 
 Q 27.054 141.163776 40.5576 141.163776 
 z
-" clip-path="url(#p533bce7900)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_9">
     <path d="M 40.5576 178.419456 
@@ -131,7 +131,7 @@ Q 27.054 147.01824 27.054 152.872704
 L 27.054 172.564992 
 Q 27.054 178.419456 40.5576 178.419456 
 z
-" clip-path="url(#p533bce7900)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_10">
     <path d="M 40.5576 215.675136 
@@ -144,7 +144,7 @@ Q 27.054 184.27392 27.054 190.128384
 L 27.054 209.820672 
 Q 27.054 215.675136 40.5576 215.675136 
 z
-" clip-path="url(#p533bce7900)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Tepki politikası: ne yapmalı? -->
@@ -1055,7 +1055,7 @@ Q 290.988 65.055744 290.988 65.85408
 L 290.988 65.85408 
 Q 290.988 66.652416 292.8294 66.652416 
 z
-" clip-path="url(#p533bce7900)" style="fill: #9ed6d7"/>
+" clip-path="url(#p47414cf1f8)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- Hemen çök -->
@@ -2101,7 +2101,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p533bce7900">
+  <clipPath id="p47414cf1f8">
    <rect x="8.64" y="8.64" width="613.8" height="266.112"/>
   </clipPath>
  </defs>

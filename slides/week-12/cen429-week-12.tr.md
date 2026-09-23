@@ -743,7 +743,7 @@ Ucuz + geniş → pahalı + derin.
 
 - Yukarıdakileri **birleştirir**, saldırgan bakışıyla aşılabilirliği dener.
 - En pahalı; en son.
-- 4. bölümde ayrıntılı planlayacağız.
+- 5. bölümde ayrıntılı planlayacağız.
 
 ---
 

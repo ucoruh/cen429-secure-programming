@@ -51,6 +51,8 @@
 | **5** Java ve yorumlanan diller | Yönetilen dil neyi çözer; SEI CERT Java; enjeksiyonun ortak kökü; SQL, komut, yol geçişi; seri durumdan çıkarma; XXE/XSS; Python/JS, ReDoS; bayt kodu; ProGuard/R8, `-keep`; dize gizleme, yansıma; SBOM, VEX | SQL · komut · yol · bayt kodu · gizleme · SBOM · seri durumdan çıkarma | 3.7, 3.10, 3.11, 1.7 |
 | **6** RASP | Algılama–savunma–caydırma; MATE; RASP mimarisi; bütünlük denetimi; hata ayıklayıcı, ortam, kanca algılama; dinamik bellek koruması; root ve imza doğrulama; kontrol akışı sayacı; tepki politikası, decoy, cihaz bağlama; sınırlar | Bütünlük · anti-debug · VM · LD_PRELOAD · akış sayacı · imza · root · RASP motoru | 12.2, 12.12–12.13 (kavram) |
 
+![Quiz-1 kapsamı](assets/h08-01-kapsam.svg)
+
 ---
 
 ## 2. Sık karıştırılan kavramlar
@@ -80,6 +82,8 @@
 | Maskeleme | Tokenizasyon | Maskeleme gösterimde gizler; tokenizasyon değeri kasadaki gerçek değere bağlı belirteçle değiştirir |
 | Takma adlandırma | Anonimleştirme | Takma adlı veri hâlâ kişisel veridir; anonim veri kişiye bağlanamaz |
 
+![Quiz-1 soru tipleri](assets/h08-02-soru-tipleri.svg)
+
 ---
 
 ## 3. Bir haftalık çalışma planı
@@ -94,11 +98,15 @@
 | 6 | 5–6. haftalar | Enjeksiyon, seri durumdan çıkarma, ProGuard, SBOM; RASP mimarisi ve tepki |
 | 7 | Tekrar | Aşağıdaki örnek soruları süre tutarak çöz; yanlışları ilgili bölümden oku |
 
+![Vize notu hesabı](assets/h08-03-vize-hesabi.svg)
+
 ---
 
 ## 4. Örnek sorular
 
 Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göstermek içindir.
+
+![Çalışma planı](assets/h08-04-calisma-plani.svg)
 
 ### Kavram
 

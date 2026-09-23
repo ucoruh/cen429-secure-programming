@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T03:02:26.521177</dc:date>
+    <dc:date>2026-09-23T04:31:33.774224</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -30,17 +30,17 @@ z
   </g>
   <g id="axes_1">
    <g id="patch_2">
-    <path d="M 39.4416 375.87456 
-L 619.5384 375.87456 
-Q 631.089 375.87456 631.089 368.689536 
-L 631.089 71.708544 
-Q 631.089 64.52352 619.5384 64.52352 
-L 39.4416 64.52352 
-Q 27.891 64.52352 27.891 71.708544 
-L 27.891 368.689536 
-Q 27.891 375.87456 39.4416 375.87456 
+    <path d="M 39.4416 379.86624 
+L 619.5384 379.86624 
+Q 631.089 379.86624 631.089 372.681216 
+L 631.089 107.633664 
+Q 631.089 100.44864 619.5384 100.44864 
+L 39.4416 100.44864 
+Q 27.891 100.44864 27.891 107.633664 
+L 27.891 372.681216 
+Q 27.891 379.86624 39.4416 379.86624 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 44.5752 402.219648 
@@ -53,11 +53,11 @@ Q 34.308 373.479552 34.308 379.86624
 L 34.308 395.83296 
 Q 34.308 402.219648 44.5752 402.219648 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #e8f6f7"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #e8f6f7"/>
    </g>
    <g id="text_1">
     <!-- Kabuk 4 — Kanal: TLS 1.3 + sertifika sabitleme -->
-    <g style="fill: #1f2933" transform="translate(189.21225 82.845002) scale(0.106 -0.106)">
+    <g style="fill: #1f2933" transform="translate(189.21225 117.17345) scale(0.106 -0.106)">
      <defs>
       <path id="DejaVuSans-Bold-2e" d="M 588 4666 
 L 1791 4666 
@@ -574,17 +574,17 @@ z
     </g>
    </g>
    <g id="patch_4">
-    <path d="M 81.1521 344.739456 
-L 577.8279 344.739456 
-Q 589.3785 344.739456 589.3785 337.554432 
-L 589.3785 102.843648 
-Q 589.3785 95.658624 577.8279 95.658624 
-L 81.1521 95.658624 
-Q 69.6015 95.658624 69.6015 102.843648 
-L 69.6015 337.554432 
-Q 69.6015 344.739456 81.1521 344.739456 
+    <path d="M 81.1521 351.92448 
+L 577.8279 351.92448 
+Q 589.3785 351.92448 589.3785 344.739456 
+L 589.3785 135.575424 
+Q 589.3785 128.3904 577.8279 128.3904 
+L 81.1521 128.3904 
+Q 69.6015 128.3904 69.6015 135.575424 
+L 69.6015 344.739456 
+Q 69.6015 351.92448 81.1521 351.92448 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
     <!-- Güvenlik kabukları: derinlemesine savunma -->
@@ -1284,9 +1284,22 @@ z
      <use xlink:href="#DejaVuSans-55" transform="translate(2392.828125 0)"/>
     </g>
    </g>
+   <g id="patch_5">
+    <path d="M 305.7471 95.658624 
+L 353.2329 95.658624 
+Q 355.158 95.658624 355.158 94.46112 
+L 355.158 94.46112 
+Q 355.158 93.263616 353.2329 93.263616 
+L 305.7471 93.263616 
+Q 303.822 93.263616 303.822 94.46112 
+L 303.822 94.46112 
+Q 303.822 95.658624 305.7471 95.658624 
+z
+" clip-path="url(#p07c3a4079e)" style="fill: #9ed6d7"/>
+   </g>
    <g id="text_4">
     <!-- Kabuk 3 — Oturum: mesaj AEAD + MAC -->
-    <g style="fill: #1f2933" transform="translate(212.375734 113.980106) scale(0.106 -0.106)">
+    <g style="fill: #1f2933" transform="translate(212.375734 145.11521) scale(0.106 -0.106)">
      <defs>
       <path id="DejaVuSans-Bold-32" d="M 2719 3878 
 Q 2169 3878 1866 3472 
@@ -1456,18 +1469,18 @@ z
      <use xlink:href="#DejaVuSans-Bold-26" transform="translate(2136.3125 0)"/>
     </g>
    </g>
-   <g id="patch_5">
-    <path d="M 122.8626 313.604352 
-L 536.1174 313.604352 
-Q 547.668 313.604352 547.668 306.419328 
-L 547.668 133.978752 
-Q 547.668 126.793728 536.1174 126.793728 
-L 122.8626 126.793728 
-Q 111.312 126.793728 111.312 133.978752 
-L 111.312 306.419328 
-Q 111.312 313.604352 122.8626 313.604352 
+   <g id="patch_6">
+    <path d="M 122.8626 323.98272 
+L 536.1174 323.98272 
+Q 547.668 323.98272 547.668 316.797696 
+L 547.668 163.517184 
+Q 547.668 156.33216 536.1174 156.33216 
+L 122.8626 156.33216 
+Q 111.312 156.33216 111.312 163.517184 
+L 111.312 316.797696 
+Q 111.312 323.98272 122.8626 323.98272 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_5">
     <!-- Bir kabuk delinse bile sır hâlâ diğerlerinin altındadır. -->
@@ -1634,7 +1647,7 @@ z
    </g>
    <g id="text_6">
     <!-- Kabuk 2 — Depolama: AES-GCM (beklemede) -->
-    <g style="fill: #1f2933" transform="translate(195.5325 145.11521) scale(0.106 -0.106)">
+    <g style="fill: #1f2933" transform="translate(195.5325 173.05697) scale(0.106 -0.106)">
      <defs>
       <path id="DejaVuSans-Bold-15" d="M 1844 884 
 L 3897 884 
@@ -1780,22 +1793,22 @@ z
      <use xlink:href="#DejaVuSans-Bold-c" transform="translate(2481.796875 0)"/>
     </g>
    </g>
-   <g id="patch_6">
-    <path d="M 164.5731 282.469248 
-L 494.4069 282.469248 
-Q 505.9575 282.469248 505.9575 275.284224 
-L 505.9575 165.113856 
-Q 505.9575 157.928832 494.4069 157.928832 
-L 164.5731 157.928832 
-Q 153.0225 157.928832 153.0225 165.113856 
-L 153.0225 275.284224 
-Q 153.0225 282.469248 164.5731 282.469248 
+   <g id="patch_7">
+    <path d="M 164.5731 296.04096 
+L 494.4069 296.04096 
+Q 505.9575 296.04096 505.9575 288.855936 
+L 505.9575 191.458944 
+Q 505.9575 184.27392 494.4069 184.27392 
+L 164.5731 184.27392 
+Q 153.0225 184.27392 153.0225 191.458944 
+L 153.0225 288.855936 
+Q 153.0225 296.04096 164.5731 296.04096 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <!-- Kabuk 1 — Cihaz bağlama: HKDF + AEAD -->
-    <g style="fill: #1f2933" transform="translate(207.667844 176.379501) scale(0.106 -0.106)">
+    <g style="fill: #1f2933" transform="translate(207.667844 201.127917) scale(0.106 -0.106)">
      <defs>
       <path id="DejaVuSans-Bold-4b" d="M 4056 2131 
 L 4056 0 
@@ -1945,22 +1958,22 @@ z
      <use xlink:href="#DejaVuSans-Bold-27" transform="translate(2215.515625 0)"/>
     </g>
    </g>
-   <g id="patch_7">
-    <path d="M 206.2836 251.334144 
-L 452.6964 251.334144 
-Q 464.247 251.334144 464.247 244.14912 
-L 464.247 196.24896 
-Q 464.247 189.063936 452.6964 189.063936 
-L 206.2836 189.063936 
-Q 194.733 189.063936 194.733 196.24896 
-L 194.733 244.14912 
-Q 194.733 251.334144 206.2836 251.334144 
+   <g id="patch_8">
+    <path d="M 206.2836 268.0992 
+L 452.6964 268.0992 
+Q 464.247 268.0992 464.247 260.914176 
+L 464.247 219.400704 
+Q 464.247 212.21568 452.6964 212.21568 
+L 206.2836 212.21568 
+Q 194.733 212.21568 194.733 219.400704 
+L 194.733 260.914176 
+Q 194.733 268.0992 206.2836 268.0992 
 z
-" clip-path="url(#p1311d242dc)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p07c3a4079e)" style="fill: #7cc9cc; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_8">
     <!-- SIR -->
-    <g style="fill: #1f2933" transform="translate(319.620406 222.952556) scale(0.106 -0.106)">
+    <g style="fill: #1f2933" transform="translate(319.620406 242.910956) scale(0.106 -0.106)">
      <defs>
       <path id="DejaVuSans-Bold-2c" d="M 588 4666 
 L 1791 4666 
@@ -2006,7 +2019,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p1311d242dc">
+  <clipPath id="p07c3a4079e">
    <rect x="8.64" y="8.64" width="641.7" height="399.168"/>
   </clipPath>
  </defs>

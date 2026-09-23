@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T03:02:46.927115</dc:date>
+    <dc:date>2026-09-23T04:31:50.012897</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -32,7 +32,7 @@ z
    <g id="line2d_1">
     <path d="M 343.44 224.856 
 L 343.44 80.712 
-" clip-path="url(#pd253992154)" style="fill: none; stroke: #cfd8dc; stroke-width: 1.6; stroke-linecap: square"/>
+" clip-path="url(#p85373fd16f)" style="fill: none; stroke: #cfd8dc; stroke-width: 1.6; stroke-linecap: square"/>
    </g>
    <g id="patch_2">
     <path d="M 46.1376 257.0112 
@@ -45,9 +45,35 @@ Q 35.424 237.0528 35.424 241.488
 L 35.424 252.576 
 Q 35.424 257.0112 46.1376 257.0112 
 z
-" clip-path="url(#pd253992154)" style="fill: #e8f6f7"/>
+" clip-path="url(#p85373fd16f)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
+    <path d="M 53.1684 209.7486 
+L 318.33 209.7486 
+Q 333.0612 209.7486 333.0612 203.6502 
+L 333.0612 104.967 
+Q 333.0612 98.8686 318.33 98.8686 
+L 53.1684 98.8686 
+Q 38.4372 98.8686 38.4372 104.967 
+L 38.4372 203.6502 
+Q 38.4372 209.7486 53.1684 209.7486 
+z
+" clip-path="url(#p85373fd16f)" style="fill-opacity: 0.078431"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 374.5764 209.7486 
+L 639.738 209.7486 
+Q 654.4692 209.7486 654.4692 203.6502 
+L 654.4692 104.967 
+Q 654.4692 98.8686 639.738 98.8686 
+L 374.5764 98.8686 
+Q 359.8452 98.8686 359.8452 104.967 
+L 359.8452 203.6502 
+Q 359.8452 209.7486 374.5764 209.7486 
+z
+" clip-path="url(#p85373fd16f)" style="fill-opacity: 0.078431"/>
+   </g>
+   <g id="patch_5">
     <path d="M 50.1552 208.224 
 L 315.3168 208.224 
 Q 330.048 208.224 330.048 202.1256 
@@ -58,9 +84,9 @@ Q 35.424 97.344 35.424 103.4424
 L 35.424 202.1256 
 Q 35.424 208.224 50.1552 208.224 
 z
-" clip-path="url(#pd253992154)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.8; stroke-linejoin: miter"/>
+" clip-path="url(#p85373fd16f)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
-   <g id="patch_4">
+   <g id="patch_6">
     <path d="M 371.5632 208.224 
 L 636.7248 208.224 
 Q 651.456 208.224 651.456 202.1256 
@@ -71,7 +97,7 @@ Q 356.832 97.344 356.832 103.4424
 L 356.832 202.1256 
 Q 356.832 208.224 371.5632 208.224 
 z
-" clip-path="url(#pd253992154)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.8; stroke-linejoin: miter"/>
+" clip-path="url(#p85373fd16f)" style="fill: #eaf4ea; stroke: #2e7d32; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Simetrik ve asimetrik: hangisi ne için? -->
@@ -1054,6 +1080,19 @@ z
      <use xlink:href="#DejaVuSans-4f" transform="translate(3006.703125 0)"/>
      <use xlink:href="#DejaVuSans-48" transform="translate(3034.484375 0)"/>
     </g>
+   </g>
+   <g id="patch_7">
+    <path d="M 318.6648 69.0696 
+L 368.2152 69.0696 
+Q 370.224 69.0696 370.224 68.238 
+L 370.224 68.238 
+Q 370.224 67.4064 368.2152 67.4064 
+L 318.6648 67.4064 
+Q 316.656 67.4064 316.656 68.238 
+L 316.656 68.238 
+Q 316.656 69.0696 318.6648 69.0696 
+z
+" clip-path="url(#p85373fd16f)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- SİMETRİK (AES) -->
@@ -2170,7 +2209,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pd253992154">
+  <clipPath id="p85373fd16f">
    <rect x="8.64" y="8.64" width="669.6" height="277.2"/>
   </clipPath>
  </defs>

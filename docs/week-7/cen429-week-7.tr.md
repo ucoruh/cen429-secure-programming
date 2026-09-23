@@ -44,6 +44,8 @@
 
 İzlencedeki vize kontrolü rubriğinin beş kriteri ve güvenlik kılavuzunuzda karşılık gelen bölümler:
 
+![Gösterim günü akışı](assets/h07-01-gosterim-akisi.svg)
+
 | Kriter | Öğrenme çıktısı | Kılavuzda nerede? | Hangi haftalar? |
 | --- | --- | --- | --- |
 | **Güvenlik analizi** | ÖÇ.1 | S2 ürün genel bakışı · S3 mimari ve arayüz tablosu · S4 tehdit ve saldırgan modeli | 1, 2 |
@@ -81,6 +83,8 @@ S6, S8, S11, S14 ve S15 final kontrolüne kalır.
 
 Aşağıdaki liste, ilk altı haftanın "Dönem projesi: bu hafta" bölümlerindeki görevleri tek yerde toplar. Her maddeyi
 kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
+
+![RAP1 teslim içeriği](assets/h07-02-rap1.svg)
 
 ??? success "1. hafta — Proje planı ve ilk bölümler"
     - [ ] GitHub deposu, README, proje planı (iş paketleri, takvim, görev dağılımı) onaylatıldı.
@@ -123,6 +127,8 @@ kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
 Gösterim, bir değerlendiricinin ürününüzü ilk kez incelediği toplantı gibi düşünülmelidir. Süre sınırlıdır; önceden
 prova edin. Önerilen sıra:
 
+![Gösterimde sık yapılan hatalar](assets/h07-03-sik-hatalar.svg)
+
 1. **Ürün ve mimari (S2–S3):** Uygulama ne yapıyor? Arayüz tablosunu ve güven sınırlarını tek bir şemada gösterin.
 2. **Tehditler ve varlıklar (S4–S5):** En kritik üç tehdit ve bunların hedeflediği varlıklar.
 3. **Canlı gösterim:** Uygulamayı çalıştırın; en az bir güvenlik önlemini **çalışırken** gösterin (ör. kurcalanmış bir
@@ -164,6 +170,8 @@ prova edin. Önerilen sıra:
 İzlencenin "Akademik Dürüstlük" bölümü projede de geçerlidir: başkasının kodunu ya da metnini kaynak göstermeden
 kullanmak, takım dışından çalışma almak ve sonuçları uydurmak kabul edilmez. Teslim ettiğiniz her satırı açıklayabiliyor
 olmalısınız. Gösterimde takımın her üyesine soru sorulabilir.
+
+![Rubriğin okunuşu](assets/h07-04-rubrik.svg)
 
 ---
 

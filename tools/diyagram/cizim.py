@@ -53,14 +53,22 @@ def baslik(ax, metin, alt=None, y=95):
     if alt:
         ax.text(50, y - (7.6 if bb >= 17 else 6.8), alt, ha="center", va="top",
                 fontsize=12.0, color=SOLUK)
+    _by = y - (16.8 if alt else 7.6)
+    ax.add_patch(FancyBboxPatch((46, _by), 8, 0.6,
+                                boxstyle="round,pad=0,rounding_size=0.3",
+                                linewidth=0, facecolor=ACIK, zorder=3))
 
 
 def kutu(ax, x, y, g, y_yuk, baslik_metin, satirlar=None, dolgu=COKACIK, kenar=ANA,
          yazi=YAZI, bas_renk=None, bas_boyut=13.5, satir_boyut=11.0, kalin=True, yuvarlak=2.2):
     """Ortası (x,y), genişlik g, yükseklik y_yuk olan yuvarlak kutu."""
+    # yumuşak gölge (derinlik hissi)
+    ax.add_patch(FancyBboxPatch((x - g / 2 + 0.45, y - y_yuk / 2 - 0.55), g, y_yuk,
+                                boxstyle=f"round,pad=0,rounding_size={yuvarlak}",
+                                linewidth=0, facecolor="#00000014", zorder=1.5))
     kutucuk = FancyBboxPatch((x - g / 2, y - y_yuk / 2), g, y_yuk,
                              boxstyle=f"round,pad=0,rounding_size={yuvarlak}",
-                             linewidth=1.8, edgecolor=kenar, facecolor=dolgu, zorder=2)
+                             linewidth=1.7, edgecolor=kenar, facecolor=dolgu, zorder=2)
     ax.add_patch(kutucuk)
     bas_renk = bas_renk or (yazi if dolgu != KOYU else "white")
     satirlar = satirlar or []
@@ -237,7 +245,7 @@ def ic_ice(baslik_metin, katmanlar, alt_metin=None, dip=None, g=11.5, y=7.2):
     n = len(katmanlar)
     fig, ax = tuval(g, y)
     baslik(ax, baslik_metin, alt_metin)
-    ust, alt_s = 86, 8
+    ust, alt_s = 77, 7
     sol0, sag0 = 3, 97
     # Dikey adım, etiketlerin çakışmaması için en az 6 birim olmalı.
     dikey = max(6.0, (ust - alt_s) / (2.0 * max(n, 1)))

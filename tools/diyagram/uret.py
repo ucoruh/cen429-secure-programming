@@ -14,7 +14,7 @@ import cizim
 
 # (modül adı, hafta -> fonksiyon listesi biçimi)
 TEK_HAFTA = [("hafta01", 1), ("hafta02", 2), ("hafta03", 3), ("hafta09", 9)]
-COK_HAFTA = ["haftalar_kalan", "tur2_a"]
+COK_HAFTA = ["haftalar_kalan", "tur2_a", "tur2_b", "tur2_c"]
 
 
 def calistir(docs_kok):

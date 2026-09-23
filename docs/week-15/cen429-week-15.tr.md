@@ -45,6 +45,8 @@
 
 İzlencedeki final kontrolü rubriğinin kriterleri ve güvenlik kılavuzunuzda karşılık gelen bölümler:
 
+![RAP2 teslim içeriği](assets/h15-01-rap2.svg)
+
 | Kriter | Öğrenme çıktısı | Kılavuzda nerede? | Hangi haftalar? |
 | --- | --- | --- | --- |
 | **Kriptografi uygulaması** | ÖÇ.2 | S8 algoritma envanteri, anahtar yaşam döngüsü ve hiyerarşisi, rastgele sayı | 3, 10 |
@@ -87,6 +89,8 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
     - [ ] Derleme hattında gizleme ve imzalama adımları; sürüm kimliği ve özet değerleri.
     - [ ] Gizleme öncesi ve sonrası için ölçütler (anlamlı ad oranı, düz metin hassas dizge sayısı).
 
+![Güvenlik kılavuzu haritası](assets/h15-02-kilavuz-haritasi.svg)
+
 ??? success "10. hafta — Kripto ve PKI (S8, S11)"
     - [ ] Algoritma envanteri: amaç, anahtar uzunluğu, kip, standart, kütüphane.
     - [ ] Anahtar yaşam döngüsü tablosu: üretim, saklama, kripto-periyot, yenileme, imha.
@@ -116,6 +120,8 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
 4. **Kanıt:** Testlerin, koruma tablosunun, SBOM'un ve uyum matrisinin kendisi; "şu komutla şu çıktı".
 5. **Kalan risk:** Neyi bilerek kapsam dışı bıraktınız, neyi karşılayamadınız ve neden?
 
+![Final gösterimi](assets/h15-03-gosterim.svg)
+
 ### Gösterimde sorulabilecek örnek sorular
 
 - Bu anahtar hangi anahtardan türetiliyor, nerede duruyor, ne zaman siliniyor?
@@ -142,6 +148,8 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
 
 İzlencenin "Akademik Dürüstlük" bölümü projede de geçerlidir. Teslim ettiğiniz her satırı açıklayabiliyor olmalısınız;
 gösterimde takımın her üyesine soru sorulabilir. Başkasının kodunu ya da metnini kullandıysanız kaynağını belirtin.
+
+![S16: plan değil sonuç](assets/h15-04-s16.svg)
 
 ---
 

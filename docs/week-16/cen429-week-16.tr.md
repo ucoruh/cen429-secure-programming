@@ -50,6 +50,8 @@
 | **13** Güvenlik gereksinimleri | İyi gereksinim; izlenebilirlik ve uyum matrisi; devredilen gereksinimler; Ortak Kriterler, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | Gereksinim → önlem → doğrulama → kanıt zinciri; CC ve FIPS kavramları |
 | **14** Tigress ve çeşitlendirme | Kaynaktan kaynağa gizleme; dönüşümleri birleştirme; tohumla çeşitlendirme; dayanıklılığın değerlendirilmesi | Çeşitlendirmenin amacı; maliyet ve etkinlik ölçümü |
 
+![Quiz-2 kapsamı](assets/h16-01-kapsam.svg)
+
 ---
 
 ## 2. Sık karıştırılan kavramlar
@@ -72,11 +74,15 @@
 | ISO/IEC 27001 | Ortak Kriterler | Kurumu sertifikalar / ürünü sertifikalar |
 | Güvenlik etki analizi | Delta değerlendirme | Değişikliğin güvenlik etkisini belgeler / yalnız değişen kısmı yeniden değerlendirir |
 
+![Final ve başarı notu](assets/h16-02-final-hesabi.svg)
+
 ---
 
 ## 3. Örnek sorular
 
 ### Kriptografi ve PKI (10. hafta)
+
+![Cevap kalıbı](assets/h16-03-cevap-kalibi.svg)
 
 ??? question "1. Bir tasarımda RSA-2048 ile AES-256 birlikte kullanılıyor. Güvenlik düzeyi hakkında ne söylersiniz?"
     Sistem en zayıf halkası kadar güçlüdür: RSA-2048 yaklaşık 112 bit güvenlik verir; AES-256'nın 256 bitlik düzeyi

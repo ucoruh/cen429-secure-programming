@@ -53,7 +53,7 @@
     | --- | --- | --- |
     | 0:00–0:10 | Introductions | Syllabus, term project, assessment, lab setup |
     | 0:10–0:35 | [1–4](#1-what-is-security) | Security concepts, attacker models, design principles (interactive lecture) |
-    | 0:35–0:50 | [5](#5-overview-of-application-protection-the-defense-in-depth-map) | Overview of application protection: seven layers, the white-box attacker, the cost of protection |
+    | 0:35–0:50 | [5](#5-overview-of-application-protection-the-defence-in-depth-map) | Overview of application protection: seven layers, the white-box attacker, the cost of protection |
     | 0:50–1:00 | Break | |
     | 1:00–1:25 | [6–8](#6-the-application-protection-plan) | Protection plan, interface and asset tables, STRIDE, attack tree, DFD, risk score |
     | 1:25–1:50 | [9](#9-worked-example-writing-a-protection-plan-step-by-step) | Worked example "Vault" (seven steps) — **class exercise** |
@@ -145,7 +145,7 @@ The three core goals of security:
 
 - **Attacker model:** "what can the attacker see/do?"
 - Are they connecting over the network, or do they own the device?
-- We design the defense accordingly.
+- We design the defence accordingly.
 
 ### White-box / MATE
 
@@ -178,9 +178,9 @@ The three core goals of security:
 - Process, data store, external entity, flow, trust boundary.
 - A map for finding threats.
 
-### Defense in depth
+### Defence in depth
 
-- **Defense in depth:** not one countermeasure, but **many**.
+- **Defence in depth:** not one countermeasure, but **many**.
 - If one is bypassed, another stops it.
 - A "security shell" is the combination of these layers.
 
@@ -201,7 +201,7 @@ The three core goals of security:
 Terms:
 
 security · asset · threat/vulnerability · CIA · attacker model · MATE · threat modelling · STRIDE · attack tree ·
-DFD · defense in depth · design principles · trade-off
+DFD · defence in depth · design principles · trade-off
 
 Now: what security is, in depth.
 
@@ -217,7 +217,7 @@ Now: what security is, in depth.
 
 ### A short history — the idea of secure programming
 
-- **1975** — Saltzer & Schroeder: the **8 principles** of secure design (least privilege, defense in depth...)
+- **1975** — Saltzer & Schroeder: the **8 principles** of secure design (least privilege, defence in depth...)
 - **1970s–80s** — the **CIA triad** becomes a common language
 - **1998–99** — **STRIDE** at Microsoft; Schneier introduces **attack trees**
 - **2001–03** — *Building Secure Software* and the **Secure Programming Cookbook** (the course's main source)
@@ -243,7 +243,7 @@ Think of a bank's safe. The money inside the safe is the **asset**. Someone who 
 it happens?"
 
 !!! note "A short history: where did the idea of secure programming come from?"
-    - **1975** — Saltzer & Schroeder publish the **eight principles** of secure design (least privilege, defense in
+    - **1975** — Saltzer & Schroeder publish the **eight principles** of secure design (least privilege, defence in
       depth, open design...). Still foundational today.
     - **1970s–80s** — the **CIA triad** (confidentiality · integrity · availability) emerges from military/government
       information security and becomes a common language.
@@ -334,7 +334,7 @@ The first question in evaluating any security measure is: **"Against whom?"** Th
 enough against one attacker and useless against another. That's why every project starts by writing down an
 **attacker model**.
 
-| Attacker | What can they reach? | What can they do? | Example | Where the defense weight goes |
+| Attacker | What can they reach? | What can they do? | Example | Where the defence weight goes |
 | --- | --- | --- | --- | --- |
 | **Remote attacker** | Only the messages they send over the network | Sends malformed/long input, eavesdrops on traffic | Someone attacking a web server | Input validation, TLS |
 | **Local user** | An ordinary account on the same computer | Reads files, changes environment variables, runs programs | Another student on a shared server | Permissions, secure start-up |
@@ -367,16 +367,16 @@ mind with a one-sentence example:
 | **Open design** | Security rests on the secrecy of the key, not the secrecy of the design (Kerckhoffs) | You do not write your own encryption algorithm |
 | **Economy of mechanism** | A simple design contains fewer bugs | A clear 20-line check beats a "clever" 500-line one |
 | **Separation of privilege** | A critical operation requires more than one condition | Both a password and an SMS code for a money transfer |
-| **Least common mechanism** | Resources shared between users are minimized | Every session gets its own temporary file |
+| **Least common mechanism** | Resources shared between users are minimised | Every session gets its own temporary file |
 | **Psychological acceptability** | Security must be usable, or it gets bypassed | Asking for a password every 5 minutes leads to the password being written on paper |
 
-Let's add one modern principle to these: **defense in depth**. We don't rely on a single countermeasure; we build
+Let's add one modern principle to these: **defence in depth**. We don't rely on a single countermeasure; we build
 layers that complement each other. If one is bypassed, the next one takes over. In week 3 we will see how a
 sensitive key is carried inside exactly **four separate protection layers** (a security shell).
 
 ---
 
-## 5. Overview of application protection: the defense-in-depth map
+## 5. Overview of application protection: the defence-in-depth map
 
 So far we have talked about **what** security is and **against whom** we are protecting. Now let's map out the
 toolbox we will use for the rest of the term. "Application protection" is not a single technique; it is a whole of
@@ -396,7 +396,7 @@ doormat, or the safe inside has no combination, the lock alone means nothing. It
 - You can hide the key, but the attacker can **change a check in the binary** (e.g. making the "is the license
   valid?" question always answer "yes") and bypass the protection entirely.
 
-Each line shows what one countermeasure **does not** solve. This is the logic of defense in depth: each layer
+Each line shows what one countermeasure **does not** solve. This is the logic of defence in depth: each layer
 closes the path the previous one left open; the attacker has to defeat **all of them at once**, and that
 multiplies the cost.
 
@@ -412,7 +412,7 @@ The diagram below orders the layers we will see this term from the **inside out*
 | **1. Secure design** | What are we protecting, against whom? | Threat model, asset and interface tables, least privilege | Anyone looking for a design flaw |
 | **2. Secure coding** | Is my code bug-free? | Input validation, bounds checking, safe APIs, SEI CERT rules | An attacker sending input remotely |
 | **3. Compiler/OS protections** | If a bug slips through, is it harder to exploit? | Stack canary, ASLR, DEP/NX, CFI, `_FORTIFY_SOURCE` | An attacker trying to exploit a memory error |
-| **4. Obfuscation** | Can someone reading the code understand it? | Control-flow flattening, opaque predicates, string obfuscation, virtualization | A reverse-engineering analyst |
+| **4. Obfuscation** | Can someone reading the code understand it? | Control-flow flattening, opaque predicates, string obfuscation, virtualisation | A reverse-engineering analyst |
 | **5. RASP** | Does the program notice it is under attack? | Debugger/hook detection, root/emulator detection, integrity checks | An attacker inspecting the program while it runs |
 | **6. Cryptography** | Even if the data is captured, is it meaningless? | Authenticated encryption, key hierarchy, white-box crypto | An attacker who obtains stored or transmitted data |
 | **7. Assurance** | How do we prove all of this actually works? | Code review, fuzzing, penetration testing, ETSI/EMV/FIPS/Common Criteria | Auditors and evaluators |
@@ -464,7 +464,7 @@ a six-row **attack table**. Each row is a question that at least one of the laye
 This table is the **starting point** for the threats section of a protection plan: for every asset, you write
 down how each of these six paths is closed off.
 
-The same set of requirements has two more items that state plainly why defense in depth is mandatory:
+The same set of requirements has two more items that state plainly why defence in depth is mandatory:
 
 - The application must **not rely solely** on security functions that have no assurance of their own: features
   like the OS's protections, a keychain, an app sandbox, or a hardware-backed key store vary from device to
@@ -483,7 +483,7 @@ Adding a layer is never free. When writing a protection plan, you weigh these fo
 
 1. **Performance:** Obfuscated code runs slower (e.g. control-flow flattening can slow a function down several
    times over). Integrity checking and debugger detection also cost CPU time.
-2. **Size:** Obfuscation, virtualization, and table-based white-box cryptography make the binary bigger.
+2. **Size:** Obfuscation, virtualisation, and table-based white-box cryptography make the binary bigger.
 3. **Development and maintenance:** Bugs in obfuscated code are hard to debug; crash reports become unreadable.
    That's why obfuscation is applied **only to sensitive sections**, and symbol-mapping files are kept somewhere
    safe.
@@ -572,10 +572,10 @@ security-sensitive part runs in a **native layer written in C/C++**.
 
 Notice two things in this diagram:
 
-- The phone box is labeled **"untrusted environment."** The phone is in the user's — i.e., a potential attacker's
+- The phone box is labelled **"untrusted environment."** The phone is in the user's — i.e., a potential attacker's
   — hands. It may be rooted, it may have a debugger attached. That's why the design starts from the assumption
   **"I do not trust the phone."**
-- Every arrow labeled with a letter is an **interface**. The following table is filled in for each interface:
+- Every arrow labelled with a letter is an **interface**. The following table is filled in for each interface:
 
 | Interface | End A | End B | Authentication | Confidentiality / integrity |
 | --- | --- | --- | --- | --- |
@@ -636,7 +636,7 @@ cheapest path and the key points to defend fall out on their own.
 ![Attack tree for capturing the payment key, with AND/OR nodes](assets/h01-06-saldiri-agaci.svg)
 
 Two conclusions follow immediately from this tree: (1) Path C is expensive because it requires breaking two layers
-at once — that's defense in depth at work. (2) Path B has three alternatives; that means the key **in memory** is
+at once — that's defence in depth at work. (2) Path B has three alternatives; that means the key **in memory** is
 the weakest point, and it needs dedicated countermeasures (this week's Demo 2, runtime protection in week 6,
 white-box in week 11).
 
@@ -894,7 +894,7 @@ test, it **counts as if it doesn't exist** in the evaluator's eyes.
 When a program starts running, it does not start with a **blank page**. It inherits a lot from whoever launched
 it: **environment variables** (`PATH`, `LD_PRELOAD`, `IFS`...), **open file descriptors**, the working directory,
 `umask`, resource limits. If the program trusts these, then whoever controls them also controls the program's
-behavior. The first chapter of our source book (Viega & Messier, recipes 1.1–1.9) deals with exactly this topic of
+behaviour. The first chapter of our source book (Viega & Messier, recipes 1.1–1.9) deals with exactly this topic of
 "secure start-up."
 
 ### Demo 1 — Fooling the program via PATH
@@ -1309,9 +1309,9 @@ Neden? giris_yap() fonksiyonunun makine kodu:
 ```
 
 The second step is surprising: the code plainly writes `memset`, yet the password is **still in memory**! The
-reason is the compiler's optimization. The compiler reasons like this: *"the `parola` array is never read after
+reason is the compiler's optimisation. The compiler reasons like this: *"the `parola` array is never read after
 this line; writing zeros into it has no effect on the program's result. So this write is redundant, I can remove
-it."* This is called **dead store elimination**. This optimization, which speeds up ordinary programs, leaves a
+it."* This is called **dead store elimination**. This optimisation, which speeds up ordinary programs, leaves a
 secret sitting in memory in security code. This isn't unique to GCC either: MSVC with `/O2` on Windows produces
 the same result. See for yourself: on Linux, search for `giris_yap` with `objdump -d bin/linux/parola_memset |
 less`; in Visual Studio, put a breakpoint on `giris_yap` and open **Debug > Windows > Disassembly**. There isn't a
@@ -1527,9 +1527,9 @@ void selamla(const std::string &ad)
     `std::string::c_str()`, hand it to a C function, and write to it there, all of C's problems come right back.
     Using a safe type does not exempt you from thinking about bounds.
 
-### Who catches the overflow? Layers of defense
+### Who catches the overflow? Layers of defence
 
-Defense against overflows is layered too. The **innermost** layer is correct code; the **outer** layers **limit
+Defence against overflows is layered too. The **innermost** layer is correct code; the **outer** layers **limit
 the damage** when a bug slips through:
 
 | Layer | Tool | What it does | When? |
@@ -1849,9 +1849,9 @@ lives at each step.
 | **Memory leak** | Allocated memory is never freed | A long-running server runs out of memory → denial of service; secrets stay in memory longer than they should | 401 |
 | **Double free** | The same block is `free`d twice | The memory manager's internal lists get corrupted; the next two `malloc` calls can hand the same block to two different objects | 415 |
 | **Use-after-free (UAF)** | A `free`d block is accessed through a stale pointer | If the block has been handed to another object, the stale pointer reads or modifies **someone else's** data | 416 |
-| **Uninitialized read** | A value is read before it's assigned | A previous user's data (e.g. a password) leaks; behavior becomes unpredictable | 457, 908 |
+| **Uninitialized read** | A value is read before it's assigned | A previous user's data (e.g. a password) leaks; behaviour becomes unpredictable | 457, 908 |
 | **No NULL check** | `malloc` fails, the result is not checked | A crash; on some systems, a write to a low address | 476 |
-| **Mismatch** | Something allocated with `new[]` is freed with `delete`, something allocated with `malloc` is freed with `delete` | Undefined behavior; the memory manager gets corrupted | 762 |
+| **Mismatch** | Something allocated with `new[]` is freed with `delete`, something allocated with `malloc` is freed with `delete` | Undefined behaviour; the memory manager gets corrupted | 762 |
 | **Size-calculation overflow** | `n * sizeof(T)` overflows | A small block is allocated, a large write follows → heap overflow | 190, 131 |
 | **Secret not erased** | A freed block is not zeroed | The block gets handed to other code by the next `malloc`; the secret inside it can be read | 226, 244 |
 
@@ -1951,7 +1951,7 @@ static void cen429_sil(void *p, size_t n)
 
 - Structs passed **by value** to a function (a copy is left on the stack on every call).
 - The old block left behind when `realloc` moves it.
-- `std::string`'s small-string optimization (SSO) and its copies; `std::string` does **not** erase its contents
+- `std::string`'s small-string optimisation (SSO) and its copies; `std::string` does **not** erase its contents
   when it's destroyed.
 - I/O buffers (the `stdin` buffer that `fgets` reads into).
 - The operating system's **swap file** and **hibernation file** (below).
@@ -2488,14 +2488,14 @@ the `code/week-01` folder, and **only on your own computer**.
         `/bin/ls`; on Windows the path is `GetSystemDirectoryW` + `\whoami.exe`. Rebuild from the command line
         (`.\build.ps1` or `./build.sh`) and re-run the demo.
 
-??? question "Exercise 2 — Easy: the effect of optimization"
+??? question "Exercise 2 — Easy: the effect of optimisation"
     In Demo 2's `CMakeLists.txt`, on the `parola_memset` line, change `MOD optimize` to `MOD korumasiz` (GCC
     `-O0`, MSVC `/Od`), rebuild, and run the demo. Does the `memset` version manage to erase the password this
     time? Why?
 
     ??? success "Expected result"
-        At `-O0`, the compiler doesn't optimize, so `memset` stays and the password gets erased. This shows that
-        **security should not depend on the optimization level**: release builds are always optimized, which is
+        At `-O0`, the compiler doesn't optimise, so `memset` stays and the password gets erased. This shows that
+        **security should not depend on the optimisation level**: release builds are always optimised, which is
         why `explicit_bzero` must be used.
 
 ??? question "Exercise 3 — Medium: the exact boundary of the overflow"
@@ -2617,14 +2617,14 @@ the `code/week-01` folder, and **only on your own computer**.
 
 ??? question "3. What distinguishes a 'white-box' attacker from a remote attacker? Give an example."
     A white-box attacker has full access to the device the program runs on: they read memory, attach a debugger,
-    modify the binary. Example: someone analyzing a mobile payment app on their own (rooted) phone.
+    modify the binary. Example: someone analysing a mobile payment app on their own (rooted) phone.
 
 ??? question "4. What threat does the 'E' letter in STRIDE describe? Which demo this week is an example of it?"
     **Elevation of privilege.** Demo 3: changing the `yonetici` flag with a long username.
 
-??? question "5. What is the difference between an AND node and an OR node in an attack tree? Which is better from a defense standpoint?"
+??? question "5. What is the difference between an AND node and an OR node in an attack tree? Which is better from a defence standpoint?"
     In an OR node, one branch is enough; in an AND node, every branch is required. Forcing the attacker into AND
-    nodes (making them break several layers at once) is better for defense; that is the logic of defense in
+    nodes (making them break several layers at once) is better for defence; that is the logic of defence in
     depth.
 
 ??? question "6. Why is calling the date command with system() dangerous? List three fixes."
@@ -2644,7 +2644,7 @@ the `code/week-01` folder, and **only on your own computer**.
     `memcpy`'s size parameter is `size_t`; once `-1` is converted to unsigned, it becomes 2⁶⁴ − 1, and the
     function tries to copy a gigantic region, crashing with a memory error (or worse, corrupting memory).
 
-??? question "10. What is defense in depth? Give an example from this week's mobile payment architecture."
+??? question "10. What is defence in depth? Give an example from this week's mobile payment architecture."
     Not relying on a single countermeasure, but building complementary layers. In the example architecture,
     server–phone traffic is protected both by TLS **and** by message-level encryption on top; the attacker has
     to break both at once.
@@ -2732,15 +2732,15 @@ the `code/week-01` folder, and **only on your own computer**.
 **Open sources**
 
 - J. H. Saltzer, M. D. Schroeder, "The Protection of Information in Computer Systems", 1975.
-- OWASP Threat Modeling; Microsoft STRIDE.
+- OWASP Threat Modelling; Microsoft STRIDE.
 - MITRE CWE: CWE-14, CWE-121, CWE-122, CWE-125, CWE-193, CWE-195, CWE-226, CWE-316, CWE-401, CWE-415, CWE-416,
   CWE-426, CWE-427, CWE-476, CWE-787.
 - SEI CERT C Coding Standard: STR31-C (allocating enough space when copying strings), INT31-C (integer
-  conversions), MSC06-C (beware of compiler optimizations), ENV33-C (do not call `system()`), MEM30-C (do not
+  conversions), MSC06-C (beware of compiler optimisations), ENV33-C (do not call `system()`), MEM30-C (do not
   access freed memory), MEM31-C (free dynamic memory), MEM35-C (allocate sufficient memory), POS36-C (the order
   of dropping privilege), POS37-C (verify that privilege was successfully dropped).
 - Microsoft Security Development Lifecycle (SDL); NIST SP 800-218 *Secure Software Development Framework* (SSDF).
-- A. Shostack, *Threat Modeling: Designing for Security*, Wiley, 2014 (data flow diagrams and STRIDE per
+- A. Shostack, *Threat Modelling: Designing for Security*, Wiley, 2014 (data flow diagrams and STRIDE per
   element).
 
 ??? abstract "Glossary"
@@ -2755,4 +2755,4 @@ the `code/week-01` folder, and **only on your own computer**.
     | Sanitizer | Sanitizer | A compiler tool that monitors the program for bugs at runtime |
     | Core dump | Çökme dökümü | A copy of a crashed process's memory written to disk |
     | Least privilege | En az ayrıcalık | Every component running with only the privilege it needs |
-    | Defense in depth | Derinlemesine savunma | Complementary layers of protection |
+    | Defence in depth | Derinlemesine savunma | Complementary layers of protection |

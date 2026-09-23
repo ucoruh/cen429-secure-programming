@@ -77,7 +77,7 @@ A student who completes this course successfully:
 | LO.2 | Explains basic encryption methods (symmetric/asymmetric, hash functions) and secure communication principles (SSL/TLS) for protecting sensitive data. |
 | LO.3 | Explains code hardening techniques (input validation, secure memory management, RASP, code obfuscation) and applies them to different languages (C/C++, Java). |
 | LO.4 | Explains the principles of building secure communication channels using encryption and authentication mechanisms. |
-| LO.5 | Creates a software plan using secure software design principles (least privilege, defense in depth, etc.) and defense strategies. |
+| LO.5 | Creates a software plan using secure software design principles (least privilege, defence in depth, etc.) and defence strategies. |
 | LO.6 | Knows basic security review and vulnerability assessment methods for detecting software vulnerabilities. |
 | LO.7 | Knows secure programming standards (e.g. ETSI, EMV, FIPS) and the principles of penetration test planning. |
 
@@ -106,20 +106,20 @@ the order defined in ritim.
 
 | Week | Date | Topics | LO |
 | --- | --- | --- | --- |
-| 1 | 18.09.2026 (make-up 30.09) | Course plan and communication. Introduction to secure programming: security goals (confidentiality, integrity, availability), attacker model, threat modeling (attack trees, STRIDE). Overview of application protection; buffer overflows and prevention techniques; memory management and security; secure processing with protected code partitioning and encryption. Preparing an application protection plan. | 1, 5 |
+| 1 | 18.09.2026 (make-up 30.09) | Course plan and communication. Introduction to secure programming: security goals (confidentiality, integrity, availability), attacker model, threat modelling (attack trees, STRIDE). Overview of application protection; buffer overflows and prevention techniques; memory management and security; secure processing with protected code partitioning and encryption. Preparing an application protection plan. | 1, 5 |
 | 2 | 25.09.2026 | Computer viruses and malware: virus types (program, macro, boot sector), worms and trojans; countermeasures against viruses. Attack trees and security models (Bell–LaPadula, Biba, Clark–Wilson). Classifying software vulnerabilities: CWE and the CWE Top 25, OWASP Top 10, CVE and CVSS. | 1 |
 | 3 | 02.10.2026 | Data security: in transit, at rest and in use. Encryption basics (symmetric/asymmetric, hash functions, authenticated encryption); using SSL/TLS and the TLS 1.3 handshake; certificate pinning; introduction to white-box cryptography applications; dynamic key management and session keys; data masking techniques; secure erasure of sensitive data in memory. | 2, 4 |
 | 4 | 09.10.2026 | Code hardening (C/C++): secure memory management and secure coding rules (SEI CERT C/C++); buffer overflow, use-after-free and integer overflow examples; sanitizers (AddressSanitizer, UndefinedBehaviorSanitizer) and an introduction to fuzzing; compiler and operating system protections (stack canaries, ASLR, DEP/NX, CFI, SafeStack); control flow flattening; function name obfuscation; memory allocation obfuscation; dynamic encryption techniques. | 3 |
-| 5 | 16.10.2026 | Code hardening (Java/interpreted languages): input validation and defense against injection attacks (SQL, command, path traversal; parameterized queries; SEI CERT Oracle Java); code obfuscation with ProGuard and R8; dynamic method obfuscation; static string obfuscation and protection; advanced ProGuard rules; dependency security and the software bill of materials (SBOM). | 3 |
+| 5 | 16.10.2026 | Code hardening (Java/interpreted languages): input validation and defence against injection attacks (SQL, command, path traversal; parameterised queries; SEI CERT Oracle Java); code obfuscation with ProGuard and R8; dynamic method obfuscation; static string obfuscation and protection; advanced ProGuard rules; dependency security and the software bill of materials (SBOM). | 3 |
 | 6 | 23.10.2026 | Runtime application self-protection (RASP) (C/C++): root and emulator detection; APK signature verification; runtime code block integrity (checksum) checks; debugger detection and attach prevention; hook attack detection; dynamic memory protection and memory monitoring detection; protection against dynamic analysis tools; responses when tampering is detected. | 3 |
 | 7 | 30.10.2026 | **Midterm project demonstrations** and midterm project report submission. | 1, 2, 3, 5, 7 |
 | 8 | 31.10–08.11.2026 | **Midterm exam week — Quiz-1** (weeks 1–6). | 1, 2, 3 |
-| 9 | 13.11.2026 | Advanced code obfuscation and diversification: dynamic control flow obfuscation; opaque predicates, bogus control flow and dead code insertion; program obfuscation techniques (data encoding, virtualization-based obfuscation); dynamic function calls and runtime optimizations; measuring obfuscation (potency, resilience, cost). | 3 |
+| 9 | 13.11.2026 | Advanced code obfuscation and diversification: dynamic control flow obfuscation; opaque predicates, bogus control flow and dead code insertion; program obfuscation techniques (data encoding, virtualisation-based obfuscation); dynamic function calls and runtime optimisations; measuring obfuscation (potency, resilience, cost). | 3 |
 | 10 | 20.11.2026 | Certificates and cryptographic methods (AES, RSA, PKI): AES and RSA encryption, modes of operation and padding; data integrity with HMAC; creating and verifying digital signatures; PKI components (CA, RA, certificate chain); creating X.509 certificates (OpenSSL); certificate revocation (CRL, OCSP); the key distribution problem. | 2, 4 |
 | 11 | 27.11.2026 | White-box cryptography: white-box and black-box attacker models; white-box AES and DES implementations (table-based); key protection with white-box cryptography; known attacks (differential computation and fault analysis) and countermeasures; software-based security solutions (e.g. a software security module with SoftHSM). | 2, 3 |
 | 12 | 04.12.2026 | Security certifications and penetration test planning: ETSI and EMV security standards; security testing under PCI DSS and ISO/IEC 27001; security review and vulnerability assessment (code review, static and dynamic analysis, fuzzing); penetration test plan: scope, rules of engagement, methodology (OWASP WSTG and MASTG, PTES) and reporting. | 5, 6, 7 |
 | 13 | 11.12.2026 | Security requirements: ETSI, GSMA and EMV security requirements; Common Criteria (ISO/IEC 15408) and EAL levels; FIPS 140-3 requirements; turning requirements into the software plan and asset management. | 5, 7 |
-| 14 | 18.12.2026 | Tigress and diversification: C source transformations with Tigress (control flow flattening, virtualization, literal and arithmetic encoding, opaque predicates, function split and merge); combining obfuscation methods; diversification to produce a different binary for each copy; defending against attacks and evaluating how well obfuscated code resists analysis. | 3 |
+| 14 | 18.12.2026 | Tigress and diversification: C source transformations with Tigress (control flow flattening, virtualisation, literal and arithmetic encoding, opaque predicates, function split and merge); combining obfuscation methods; diversification to produce a different binary for each copy; defending against attacks and evaluating how well obfuscated code resists analysis. | 3 |
 | 15 | 25.12.2026 | **Final project demonstrations** and final project report submission. | 1–7 |
 | 16 | 04–17.01.2027 | **Final exam period — Quiz-2** (weeks 9–14). | 2–7 |
 
@@ -261,7 +261,7 @@ you intend to do stays within academic honesty.
 - Sharing small pieces of your assignment in class to start a discussion.
 - Turning to the web or elsewhere for instructions, references and solutions to technical difficulties, but not
   for direct answers to the assignment.
-- Discussing solutions with others using diagrams or summarized statements, but not actual text or code.
+- Discussing solutions with others using diagrams or summarised statements, but not actual text or code.
 - Working with (even paying) a tutor, provided the tutor does not do your assignment for you.
 
 ### b. What is not acceptable?

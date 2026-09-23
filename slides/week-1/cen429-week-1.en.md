@@ -21,7 +21,7 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 Asst. Prof. Dr. Uğur CORUH · 18.09.2026
 
 <!--
-Speaker note: Introduce yourself and the course. This course is about "learning defense by seeing the attack." There will be working demos every week.
+Speaker note: Introduce yourself and the course. This course is about "learning defence by seeing the attack." There will be working demos every week.
 -->
 
 ---
@@ -88,7 +88,7 @@ The three core goals of security:
 
 - **Attacker model:** "what can the attacker see/do?"
 - Are they connecting over the network, or do they own the device?
-- We design the defense accordingly.
+- We design the defence accordingly.
 
 ---
 
@@ -132,9 +132,9 @@ The three core goals of security:
 
 ---
 
-# Defense in depth
+# Defence in depth
 
-- **Defense in depth:** not a single countermeasure, but **many**.
+- **Defence in depth:** not a single countermeasure, but **many**.
 - If one is bypassed, another stops it.
 - A "security shell" is the combination of these layers.
 
@@ -160,7 +160,7 @@ The three core goals of security:
 
 Terms:
 
-security · asset · threat/vulnerability · CIA · attacker model · MATE · threat modelling · STRIDE · attack tree · DFD · defense in depth · design principles · trade-off
+security · asset · threat/vulnerability · CIA · attacker model · MATE · threat modelling · STRIDE · attack tree · DFD · defence in depth · design principles · trade-off
 
 Now: what security is, in depth.
 
@@ -186,7 +186,7 @@ Speaker note: Build the demos once beforehand (Windows: `.\build.ps1` inside cod
 
 # A short history — the idea of secure programming
 
-- **1975** — Saltzer & Schroeder: the **8 principles** of secure design (least privilege, defense in depth…)
+- **1975** — Saltzer & Schroeder: the **8 principles** of secure design (least privilege, defence in depth…)
 - **1970s–80s** — the **CIA triad** becomes a common language
 - **1998–99** — **STRIDE** at Microsoft; Schneier introduces **attack trees**
 - **2001–03** — *Building Secure Software* and the **Secure Programming Cookbook** (the course's main source)
@@ -289,7 +289,7 @@ Speaker note: In Demo 4 we'll see a bug from the same family (a length check) wi
 
 # Who is the attacker, what can they reach?
 
-| Attacker | Access | Defense |
+| Attacker | Access | Defence |
 | --- | --- | --- |
 | Remote | Only network messages | Input validation, TLS |
 | Local user | Files, environment variables | Permissions, secure start-up |
@@ -338,7 +338,7 @@ Apply each row to your own project: which one is your attacker?
 | Least common mechanism | Reduce shared resources |
 | Acceptability | Unusable security gets bypassed |
 
-\+ **Defense in depth:** don't rely on one countermeasure, build **layers**.
+\+ **Defence in depth:** don't rely on one countermeasure, build **layers**.
 
 ---
 
@@ -423,7 +423,7 @@ Unusable security is **bypassed** security.
 
 ![w:1000](assets/h01-03-yedi-katman.svg)
 
-Even if a bug slips past the outer layers, the **next** layer tries to stop it (defense in depth).
+Even if a bug slips past the outer layers, the **next** layer tries to stop it (defence in depth).
 
 ---
 
@@ -436,7 +436,7 @@ Even if a bug slips past the outer layers, the **next** layer tries to stop it (
 | 1 | Design | Threat model, asset/interface tables, least privilege | Anyone looking for a design flaw |
 | 2 | Coding | Input validation, bounds checking, SEI CERT rules | An attacker sending input remotely |
 | 3 | Compiler/OS | Canary, ASLR, DEP/NX, CFI, `_FORTIFY_SOURCE` | An attacker exploiting a memory bug |
-| 4 | Obfuscation | Control-flow flattening, opaque predicates, virtualization | A reverse-engineering analyst |
+| 4 | Obfuscation | Control-flow flattening, opaque predicates, virtualisation | A reverse-engineering analyst |
 | 5 | RASP | Debugger/hook/root detection, integrity checking | An attacker inspecting the running program |
 | 6 | Cryptography | Authenticated encryption, key hierarchy, white-box | An attacker who captures the data |
 | 7 | Assurance | Code review, fuzzing, penetration testing, certification | Auditors and evaluators |
@@ -517,7 +517,7 @@ This table is the starting point for the **threats** section of a protection pla
 | Cost | Example |
 | --- | --- |
 | **Performance** | Control-flow flattening can slow a function several times over |
-| **Size** | Virtualization, white-box tables make the binary bigger |
+| **Size** | Virtualisation, white-box tables make the binary bigger |
 | **Maintenance** | Crash reports from obfuscated code are unreadable |
 | **False positive** | An overly sensitive root check punishes a legitimate user |
 
@@ -751,7 +751,7 @@ Draw the data flow diagram → ask the six letters for **every arrow that crosse
 
 This path is **expensive** because both are needed.
 
-This is proof that defense in depth **works**.
+This is proof that defence in depth **works**.
 
 ---
 
@@ -784,7 +784,7 @@ Both layers must be broken **at once** → an expensive path.
 
 # Conclusions from the attack tree
 
-- The "eavesdrop on traffic" path requires breaking **two layers at once** → expensive → **defense in depth** is working
+- The "eavesdrop on traffic" path requires breaking **two layers at once** → expensive → **defence in depth** is working
 - The "read from memory" path has **three alternatives** → the weakest point is **the key in memory**
   - This week: **Demo 2** (a secret left in memory)
   - Week 6: runtime protection (debugger, hook detection)
@@ -1192,7 +1192,7 @@ prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);           /* + ptrace ile bağlanılamaz */
 ```
 
 - Windows: `SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX)`
-- The real defense: even if a dump is taken, no secret should be **left inside it**
+- The real defence: even if a dump is taken, no secret should be **left inside it**
 
 <!-- Speaker note: Highlight PR_SET_DUMPABLE's second effect: even a debugger from the same user can't attach. A bridge to week 6. -->
 
@@ -1951,12 +1951,12 @@ Details and hints: course site → Week 1 → "Try it yourself"
 2. The recipient IBAN changing in transit — which CIA property?
 3. What does a white-box attacker do differently?
 4. STRIDE "E" — which demo?
-5. AND / OR node — which is good for defense?
+5. AND / OR node — which is good for defence?
 6. Why is `system("date")` dangerous? Three fixes?
 7. Why did `memset` disappear?
 8. Why didn't ASan catch the 17 characters?
 9. What happens when `-1` reaches `memcpy`?
-10. Defense in depth — an example from the mobile payment architecture?
+10. Defence in depth — an example from the mobile payment architecture?
 
 <!-- ask first, then open the answer slide; full solutions in the appendix -->
 
@@ -1970,7 +1970,7 @@ Details and hints: course site → Week 1 → "Try it yourself"
 2. **Integrity** — an IBAN changing in transit is a data integrity violation.
 3. **White-box (MATE)** **owns** the program (reads memory/key, modifies code); a network attacker only connects **from outside**.
 4. **E = Elevation of Privilege** → the privilege-dropping / `setuid` demo.
-5. **AND** is good for defense: the goal needs all sub-steps, cutting **one** stops the attack. OR is convenient for the attacker.
+5. **AND** is good for defence: the goal needs all sub-steps, cutting **one** stops the attack. OR is convenient for the attacker.
 6. `system` interprets a **shell** → command injection/PATH hijacking. Fix: call **directly** with `execvp` (no shell), a **full path**, an input allowlist.
 7. The compiler removed it as a **dead store** (never read afterward). Use `memset_s`/`explicit_bzero`/`volatile`.
 8. The overflow didn't **reach** the redzone / that code path wasn't run; ASan only sees the **instrumented** region.
@@ -2155,11 +2155,11 @@ Every leaf is one attack step.
 
 ---
 
-# Prioritizing from the tree
+# Prioritising from the tree
 
 - The **easiest** leaf is the biggest risk.
 - Close it first (e.g. RASP + short lifetime).
-- The tree shows the defense priority.
+- The tree shows the defence priority.
 
 ---
 
@@ -2208,7 +2208,7 @@ Every leaf is one attack step.
 
 - **Complete mediation:** every access is checked (don't skip it by trusting a cache).
 - **Separation of privilege:** more than one condition for a critical operation.
-- The foundation of defense in depth.
+- The foundation of defence in depth.
 
 ---
 
@@ -2274,7 +2274,7 @@ Every leaf is one attack step.
 
 **What is an attack tree for?**
 
-**Answer:** It breaks an attack goal into sub-steps; it shows the easiest/most likely path and helps prioritize.
+**Answer:** It breaks an attack goal into sub-steps; it shows the easiest/most likely path and helps prioritise.
 
 ---
 
@@ -2282,7 +2282,7 @@ Every leaf is one attack step.
 
 **Why isn't a single countermeasure enough?**
 
-**Answer:** Every countermeasure can be bypassed; in layered defense, if one is bypassed, another stops it. Strength comes from combination.
+**Answer:** Every countermeasure can be bypassed; in layered defence, if one is bypassed, another stops it. Strength comes from combination.
 
 ---
 
@@ -2379,7 +2379,7 @@ Let's build a quick threat model.
 | STRIDE | Six threat classes |
 | Attack tree | Breaking a goal into sub-steps |
 | DFD | Data flow diagram |
-| Defense in depth | Many countermeasures together |
+| Defence in depth | Many countermeasures together |
 
 ---
 
@@ -2387,7 +2387,7 @@ Let's build a quick threat model.
 
 - **S2–S5:** product, architecture, asset list, threat model.
 - **S1:** scope, sources.
-- Every asset labeled C/I/I+; a countermeasure for every threat.
+- Every asset labelled C/I/I+; a countermeasure for every threat.
 
 ---
 

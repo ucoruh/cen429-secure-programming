@@ -85,7 +85,7 @@
 !!! warning "Ethics rule — applies every week in this course"
     This week's demos show memory bugs and protections **only on our own small programs**. None of them touches
     another program or system; steps that could crash something are kept contained. The code obfuscation techniques
-    are taught here to protect **your own software** against reverse engineering. Analyzing or modifying someone
+    are taught here to protect **your own software** against reverse engineering. Analysing or modifying someone
     else's software without permission can violate license agreements and laws.
 
 ---
@@ -131,7 +131,7 @@ Both can be a source of overflows and bugs.
 ### Compiler flag
 
 - **Flag:** an option passed to the compiler.
-- Example: `-O2` (optimization), `-Wall` (warnings), `-fsanitize=address`.
+- Example: `-O2` (optimisation), `-Wall` (warnings), `-fsanitize=address`.
 - The right flags catch many bugs **at compile time**.
 
 ### Warning vs error
@@ -142,7 +142,7 @@ Both can be a source of overflows and bugs.
 
 ### What is a CWE?
 
-- **CWE (Common Weakness Enumeration):** a numbered catalog of software weaknesses.
+- **CWE (Common Weakness Enumeration):** a numbered catalogue of software weaknesses.
 - Example: CWE-416 = "use-after-free."
 - Naming a finding with its CWE number makes it **searchable**.
 
@@ -224,11 +224,11 @@ C and C++ code:
 
 ![The three layers of code hardening](assets/h04-05-uc-katman.svg)
 
-!!! note "A brief history: the race between memory bugs and defenses"
+!!! note "A brief history: the race between memory bugs and defences"
     - **1988** — The **Morris Worm** announces the buffer overflow to the world; the attack class stops being
       "academic."
     - **1996** — Aleph One's article *"Smashing the Stack for Fun and Profit"* teaches exploitation to everyone.
-    - **1998 → 2004** — defenses arrive in sequence: **StackGuard/canary** (1998), **PaX/ASLR** (2001), **DEP/NX**
+    - **1998 → 2004** — defences arrive in sequence: **StackGuard/canary** (1998), **PaX/ASLR** (2001), **DEP/NX**
       (2004), FORTIFY.
     - **2012 → 2013** — **AddressSanitizer** and **fuzzing** (AFL) start catching bugs **automatically**.
 
@@ -252,7 +252,7 @@ still an overflow.
     addressed," "defensive programming techniques must be applied **consistently across the entire codebase**,"
     and the application "must be protected against static and dynamic reverse engineering." A certified library's
     guide lists eighteen separate hardening measures for the native (C/C++) side alone. By the end of this week
-    you will recognize most of these measures.
+    you will recognise most of these measures.
 
 ### Why this order? What happens if we reverse the stack?
 
@@ -272,7 +272,7 @@ To see that the order (first 2, then 3, finally 4) is not arbitrary, let's try r
   step in. This is why layer 2 always comes first; layer 3 is a safety net in case a bug **slips through**; layer
   4 is a final addition that makes the attacker's job **more expensive**.
 
-These three do not **replace each other**. This is Week 1's defense-in-depth principle applied to C/C++ code: each
+These three do not **replace each other**. This is Week 1's defence-in-depth principle applied to C/C++ code: each
 layer exists to catch what the previous one missed.
 
 ---
@@ -332,7 +332,7 @@ range), `STR50-CPP` (sufficient space for a string), `EXP53-CPP` (do not read un
 | --- | --- | --- |
 | STR31-C | Sufficient space for a string | Week 1 Demo 3 |
 | INT31-C | Integer conversions must not lose data | Week 1 Demo 4 |
-| MSC06-C | Beware of compiler optimization deleting security code | Week 1 Demo 2 |
+| MSC06-C | Beware of compiler optimisation deleting security code | Week 1 Demo 2 |
 | ENV33-C | Do not call `system()` | Week 1 Demo 1 |
 | FIO30-C | Exclude user input from format strings | This week Demo 1 |
 | MEM30-C | Do not access freed memory | This week Demo 2 |
@@ -788,7 +788,7 @@ stack cell at all — they read whatever values happen **by chance** to be sitti
 moment (left over from earlier calls, e.g., `snprintf`, or `printf`'s own setup); only the `%x` markers **after**
 the 6th one reach the stack, and therefore the region where `gizli_deger` also lives. This is exactly why the demo
 script gradually increases the number of `%x` markers (step 2): how many `%x` markers are needed varies with the
-compiler, the optimization level, and the platform; the **mechanism** is what the student needs to see, not a
+compiler, the optimisation level, and the platform; the **mechanism** is what the student needs to see, not a
 specific fixed number.
 
 **3) Why `%n` is more dangerous**
@@ -804,7 +804,7 @@ corresponds to which data, and then arranging for `%n` to land exactly on that p
 that will be read as an "address" with **a value they supplied themselves**. This turns `%n` from merely a
 crash source into a tool for **writing a chosen value to a chosen location** in memory (CWE-134). This course does
 not go beyond this into a working exploitation step — understanding the mechanism is enough to understand the
-defense (fixing the format string).
+defence (fixing the format string).
 
 !!! danger "Common mistake: assuming 'the input has no `%` in it, so it's fine'"
     Looking at a code review and thinking "this input is just a username, no one's going to type `%n`," and
@@ -854,7 +854,7 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 | 4 | `sizinti_denetimli 'AAAA%n'` | `_FORTIFY_SOURCE` catches `%n` targeting writable memory and stops the program | Protection layer |
 | 5 | `sizinti_guvenli '…%n…'` | Markers are printed only as text | **The actual fix** |
 
-### The fix and its layers of defense
+### The fix and its layers of defence
 
 1. **The format string must always be constant** (FIO30-C). User data is only an argument: `printf("%s", s)`.
 2. **Compiler warnings:** `-Wformat -Wformat-security` (even `-Werror=format-security`) on GCC/Clang;
@@ -1212,7 +1212,7 @@ okunduğunda en üst bit (işaret biti) 1 olduğu için NEGATİF bir sayıdır v
 
 From the hardware's point of view nothing is "wrong": the processor dropped the 33rd bit and kept the 32 bits
 exactly as they were; that is what addition hardware **always** does. The problem is that the C standard declares
-this situation (signed integer overflow) "undefined," so the compiler is allowed to optimize under the assumption
+this situation (signed integer overflow) "undefined," so the compiler is allowed to optimise under the assumption
 that "this never happens" — even though the hardware silently wraps to `INT_MIN`, the compiler may assume the
 overflow **never occurred** and delete a check that relies on it.
 
@@ -1273,7 +1273,7 @@ line. UBSan's overhead is lower than ASan's; many projects turn both on together
     - `-Wconversion -Wsign-conversion` (GCC/Clang), `/W4` and `/w44365` (MSVC, in C++ mode): surface hidden
       conversions.
     - `-ftrapv`: halts the program on signed overflow (has a runtime cost, so it is not for the release build).
-    - `-fwrapv`: **defines** signed overflow as modular arithmetic; this disables UB-based optimizations but hides
+    - `-fwrapv`: **defines** signed overflow as modular arithmetic; this disables UB-based optimisations but hides
       the logic error.
     - `-fsanitize=undefined,integer` (Clang): catches most integer bugs in test builds.
 
@@ -1315,7 +1315,7 @@ principle:
 !!! note "How it's done in the field"
     In a sensitive native library, functions do not return a detailed error code; they return only
     "success"/"failure," and even that **opaquely** (not a plain `0`/`1`, but a structure that cannot be easily
-    recognized or tampered with). A detailed error code would be a roadmap telling the attacker exactly which
+    recognised or tampered with). A detailed error code would be a roadmap telling the attacker exactly which
     check tripped. This choice is a line straight out of Week 1's trade-off log: diagnostics for the support team
     run through a separate, secure channel instead.
 
@@ -1395,7 +1395,7 @@ false alarms; dynamic analysis only sees the paths that actually run, but whatev
 | Level | Tool | What it finds | Cost |
 | --- | --- | --- | --- |
 | Compiler warnings | `-Wall -Wextra -Wformat=2 -Wconversion -Wshadow` · MSVC `/W4` | Suspicious conversions, format strings, unused values | Zero: on every build |
-| Compiler analyzer | `gcc -fanalyzer` · `clang --analyze` · MSVC `/analyze` | Path-sensitive: NULL access, leaks, double free | Low |
+| Compiler analyser | `gcc -fanalyzer` · `clang --analyze` · MSVC `/analyze` | Path-sensitive: NULL access, leaks, double free | Low |
 | Rule checker | `clang-tidy` (`cert-*`, `bugprone-*`), `cppcheck` (`--addon=cert`) | CERT violations, dangerous APIs | Low |
 | Semantic query | CodeQL, Semgrep | Source-to-sink data flow: "does a value from argv reach an unvalidated memcpy?" | Medium |
 | Commercial | Coverity, Klocwork, Polyspace | Deep analysis and reporting on large codebases | High |
@@ -1723,9 +1723,9 @@ random address (usually invalid, so it crashes), or keeps running with memory si
    with `%x` — the canary is one of those eight-byte groups. The attacker first **learns the canary's real value**
    through the leak, then crafts the overflow to write that exact value back; the comparison comes out `==` and
    the protection never triggers. This link between the canary and the format string vulnerability is a concrete
-   example of the "no single protection is enough on its own" principle (Week 1's defense in depth).
+   example of the "no single protection is enough on its own" principle (Week 1's defence in depth).
 
-**ASLR (Address Space Layout Randomization) — what does it randomize, and what doesn't it?**
+**ASLR (Address Space Layout Randomisation) — what does it randomise, and what doesn't it?**
 
 ASLR changes the **starting addresses** of the program's code region, stack, heap, and shared libraries on every
 run (done by the operating system when the process starts). **What it blocks:** an attack that relies on the
@@ -1884,8 +1884,8 @@ release protection flags are only turned on for Demo 5's `giris_sert` target:
 
 | Mode | Purpose | Flags (summary) |
 | --- | --- | --- |
-| `korumasiz` | Show the bug "bare" | Optimization off (`-O0` / `/Od`) |
-| `optimize` | Show the effect of compiler optimization (Week 1 Demo 2) | `-O2` / `/O2` |
+| `korumasiz` | Show the bug "bare" | Optimisation off (`-O0` / `/Od`) |
+| `optimize` | Show the effect of compiler optimisation (Week 1 Demo 2) | `-O2` / `/O2` |
 | `asan` | Catch memory bugs | `-O1 -fsanitize=address` / `/fsanitize=address`; FORTIFY is turned off on Linux so only ASan is seen |
 | `denetimli` | The library's runtime checks | `-O2 -D_FORTIFY_SOURCE=2` (`KUTUPHANE_DENETIMI` define on Windows) |
 | `guvenli` | The fixed source code | `-O2` / `/O2`; the real difference is in the code itself |
@@ -1911,7 +1911,7 @@ Everything we have covered so far is enough against a remote attacker who only s
 attacker** we saw in Week 1 possesses the program itself: they can open the binary in a disassembler, read its
 strings, find its functions by name. If your code has a license check, part of a key, or a security check, reading
 it is the first step toward bypassing it. **Code obfuscation** is the general name for transformations that make a
-program's behavior harder to **understand**, without changing that behaviour.
+program's behaviour harder to **understand**, without changing that behaviour.
 
 ![The difference between a remote attacker and the owner of the device](assets/h04-17-iki-saldirgan-modeli.svg)
 
@@ -1939,7 +1939,7 @@ obfuscation raises maintenance cost; that's why it is applied only to sensitive 
 | **Data** | Constants, strings, variables | String encryption, constant transformations, variable splitting/merging, opaque booleans | This week, Week 9 |
 | **Control flow** | The algorithm's structure | Control-flow flattening, opaque predicates, fake and dead branches | This week Demo 7, Week 9 |
 | **Preventive** | The work of analysis tools | Structures that mislead a disassembler, runtime decoding | Week 9 (concept) |
-| **Virtualization** | The machine code itself | Translating a function into a custom virtual machine's bytecode | Weeks 9 and 14 (Tigress) |
+| **Virtualisation** | The machine code itself | Translating a function into a custom virtual machine's bytecode | Weeks 9 and 14 (Tigress) |
 
 !!! note "How it's done in the field"
     The list of hardening measures on the native side of a certified mobile payment library covers almost this
@@ -1948,7 +1948,7 @@ obfuscation raises maintenance cost; that's why it is applied only to sensitive 
     transformations; encrypting static strings before build time and decrypting them, then immediately wiping
     them, only at the moment of use; opaque boolean values that only return "success/failure"; replacing standard
     library functions with the library's own versions; fake operations that don't change the result and dead
-    branches that never run; control-flow flattening with a randomized exit point on error; and completely
+    branches that never run; control-flow flattening with a randomised exit point on error; and completely
     removing logging from the release build. None of these measures is strong on its own; their strength comes
     from being used **together**, and together with RASP.
 
@@ -2051,7 +2051,7 @@ combined with other techniques:
   arithmetic transformation, so the sequential order is not visible (Recipe 12.5, constant transformations).
 - **Fake and dead blocks:** blocks that never run, or that don't change the result, are added; this makes it
   harder for the analyst to tell which block is real.
-- **A randomized exit point:** when a check fails, the state variable is set to an unpredictable value and the
+- **A randomised exit point:** when a check fails, the state variable is set to an unpredictable value and the
   function exits through the `default` branch; **where** the error was caught can no longer be read off from the
   flow.
 - **Opaque values:** critical results like "true/false" are not kept as a plain `0`/`1`, but in a form that
@@ -2098,7 +2098,7 @@ to know what they are:
 - **Function name hiding:** stripping symbols removes exported names; but if an API's entry points (e.g., a JNI
   interface) must stay exposed, those names are made meaningless, and the real names are kept only in internal
   documentation. The programmer's readability is preserved through a macro layer.
-- **Allocation obfuscation:** the size and order of buffers allocated for sensitive data leave a recognizable
+- **Allocation obfuscation:** the size and order of buffers allocated for sensitive data leave a recognisable
   trace (e.g., "a 32-byte block = an AES key"). This trace is blurred by changing the buffers' sizes, order, and
   layout, adding fake allocations, and filling used memory with random values afterward.
 - **Dynamic encryption:** the most sensitive code sections stay encrypted in the binary and are decrypted into
@@ -2227,8 +2227,8 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     approach is to remove it completely at compile time.
 
 ??? question "12. Why is control-flow flattening weak on its own? Name three techniques that strengthen it."
-    The pattern is recognizable and the flow can be reconstructed by tracing the state variable. Hiding the state
-    values, fake/dead blocks, a randomized exit point, opaque values.
+    The pattern is recognisable and the flow can be reconstructed by tracing the state variable. Hiding the state
+    values, fake/dead blocks, a randomised exit point, opaque values.
 
 ??? question "13. Does `%x` in a `printf(tampon)` call always read from the stack? What is the difference on a 64-bit system?"
     In the simplified teaching model (32-bit cdecl), yes, all arguments sit consecutively on the stack. On the
@@ -2279,7 +2279,7 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     overflow to write that exact value back, and the comparison never triggers — one protection (the canary) is
     bypassed through another bug (an information leak).
 
-??? question "22. What does ASLR randomize? Why is ASLR incomplete without PIE?"
+??? question "22. What does ASLR randomise? Why is ASLR incomplete without PIE?"
     ASLR changes the starting addresses of the code, stack, heap, and shared libraries on every run. A program
     compiled without PIE always has its **own** code region at the same fixed address; even if ASLR randomizes the
     libraries, the program's own code remains predictable — PIE closes this gap.
@@ -2338,12 +2338,12 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     | Hardening | Hardening | Making code and a binary resilient against attack |
     | Format string | Format string | The first argument to the `printf` family, describing how it should write |
     | Use-after-free | Use-after-free | Accessing freed memory through an old pointer |
-    | Undefined behavior | Undefined behaviour | An operation whose result the standard does not define; the compiler assumes it never happens |
+    | Undefined behaviour | Undefined behaviour | An operation whose result the standard does not define; the compiler assumes it never happens |
     | Sanitizer | Sanitizer | A runtime error check the compiler adds |
     | Fuzzing | Fuzzing | Looking for bugs with automatically generated malformed input |
     | Harness | Harness | The function the fuzzer calls, wrapping the code under test |
     | Stack canary | Stack canary | A value placed before the return address that reveals an overflow when corrupted |
-    | ASLR | Address space layout randomization | Memory addresses changing on every run |
+    | ASLR | Address space layout randomisation | Memory addresses changing on every run |
     | DEP / NX | Data execution prevention | Forbidding code execution on data pages |
     | RELRO | Relocation read-only | Making dynamic linking tables read-only |
     | CFI / CFG | Control-flow integrity | Indirect calls going only to valid targets |

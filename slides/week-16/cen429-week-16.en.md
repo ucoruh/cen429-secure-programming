@@ -48,7 +48,7 @@ Speaker note: Quiz-2 period: we review the concepts of weeks 9-14; this deck is 
 | --- | --- |
 | 9 | Purpose, cost, and measurement of obfuscation (potency, resilience, cost) |
 | 10 | Security level · modes and padding · HMAC, EtM, replay · OAEP/PSS, Ed25519/X25519 · signature · DH · PKI, X.509 · CRL/OCSP · PKCS#11 |
-| 11 | White-box/black-box models · white-box's role and limits in layered defense |
+| 11 | White-box/black-box models · white-box's role and limits in layered defence |
 | 12 | 13 steps · requirement template · finding–action · impact analysis · delta assessment |
 | 13 | Good requirement · compliance matrix · deferred requirements · CC, EAL · FIPS 140-3 · ETSI, EMVCo, PCI, MASVS |
 | 14 | Purpose of diversification · measuring cost and effectiveness |
@@ -246,7 +246,7 @@ Speaker note: Quiz-2 period: we review the concepts of weeks 9-14; this deck is 
 
 **Two things that must always be done after a transformation pipeline?**
 
-**Answer:** Unit tests (is behavior preserved?) and size/speed measurement (cost).
+**Answer:** Unit tests (is behaviour preserved?) and size/speed measurement (cost).
 
 ---
 

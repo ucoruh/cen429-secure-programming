@@ -66,8 +66,8 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 | Week | Core concepts |
 | --- | --- |
 | 4 | SEI CERT · input validation · format string · UAF · integer/UB · error handling, signals · static analysis · sanitizers · fuzzing · canary/FORTIFY/ASLR/NX/RELRO/CFI · introduction to obfuscation |
-| 5 | Managed language · CERT Java · injection root cause · SQL/command/path · deserialization · XXE/XSS · Python/JS, ReDoS · bytecode · ProGuard/R8 · SBOM, VEX |
-| 6 | Detection–defense–deterrence · MATE · RASP architecture · integrity · debugger/environment/hook · memory protection · root/signature · flow counter · response, decoy, device binding |
+| 5 | Managed language · CERT Java · injection root cause · SQL/command/path · deserialisation · XXE/XSS · Python/JS, ReDoS · bytecode · ProGuard/R8 · SBOM, VEX |
+| 6 | Detection–defence–deterrence · MATE · RASP architecture · integrity · debugger/environment/hook · memory protection · root/signature · flow counter · response, decoy, device binding |
 
 ---
 
@@ -99,10 +99,10 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 
 | A | B | Difference |
 | --- | --- | --- |
-| Canary | ASLR | Overflow detection on return · address randomization |
-| ASan | UBSan | Memory access · undefined behavior |
+| Canary | ASLR | Overflow detection on return · address randomisation |
+| ASan | UBSan | Memory access · undefined behaviour |
 | Unsigned wraparound | Signed overflow | Defined · **undefined** |
-| Parameterized query | Escaping | The real fix · a second line of defense |
+| Parameterised query | Escaping | The real fix · a second line of defence |
 | ProGuard | String obfuscation | Names · strings |
 | Obfuscation | Secure coding | Delays · fixes |
 | Masking | Tokenization | Hide on display · token bound to a vaulted value |
@@ -121,7 +121,7 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 | 3 | Week 3 (1): AEAD, nonce, KDF, random numbers · Demo 1–5 |
 | 4 | Week 3 (2): key management, TLS, pinning, shells · Demo 6–9 |
 | 5 | Week 4: CERT pairs, format string, UAF, UB, protections |
-| 6 | Weeks 5–6: injection, deserialization, ProGuard, SBOM, RASP |
+| 6 | Weeks 5–6: injection, deserialisation, ProGuard, SBOM, RASP |
 | 7 | Work through sample questions against the clock, review mistakes |
 
 ---
@@ -193,7 +193,7 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 **Week 9 — Advanced Code Obfuscation and Diversification**
 
 - Obfuscation taxonomy, opaque predicates, data encoding
-- Virtualization and compiler-based obfuscation (concept)
+- Virtualisation and compiler-based obfuscation (concept)
 - Measuring obfuscation: potency, resilience, cost
 
 ---
@@ -211,13 +211,13 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 - CIA triad; a bug ≠ a vulnerability.
 - MATE (white-box) attacker.
 - STRIDE, attack tree, DFD.
-- Layered defense; design principles.
+- Layered defence; design principles.
 
 ---
 
 # Week 2 · Key Points
 
-- Threat modeling steps.
+- Threat modelling steps.
 - Trust boundary; least privilege.
 - Asset list and C/I/I+ labels.
 
@@ -245,7 +245,7 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 
 - A managed language solves memory errors, not injection.
 - SQL/command/path injection → parameterization/argument array.
-- Deserialization; ProGuard/R8; SBOM.
+- Deserialisation; ProGuard/R8; SBOM.
 
 ---
 
@@ -295,7 +295,7 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 
 **What definitively prevents SQL injection?**
 
-**Answer:** A parameterized query (prepared statement); data is never interpreted as a command. No string concatenation.
+**Answer:** A parameterised query (prepared statement); data is never interpreted as a command. No string concatenation.
 
 ---
 
@@ -349,7 +349,7 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 
 # Question 10
 
-**Why is deserialization dangerous, and what is the fix?**
+**Why is deserialisation dangerous, and what is the fix?**
 
 **Answer:** Code can execute during extraction (a gadget chain). Fix: a data format + schema; an allowlist filter if unavoidable.
 
@@ -367,7 +367,7 @@ A) ECB B) CBC C) **GCM** ✓ D) Raw RSA
 
 - Obfuscation fixes the bug. **(F)**
 - The nonce must be secret. **(F — must be unique, not secret)**
-- A parameterized query prevents SQL injection. **(T)**
+- A parameterised query prevents SQL injection. **(T)**
 
 ---
 

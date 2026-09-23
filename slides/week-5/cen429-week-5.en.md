@@ -153,9 +153,9 @@ This section **assumes no prior knowledge**.
 
 ---
 
-# Serialization
+# Serialisation
 
-- **Serialization:** converting an object to a byte sequence (to save or send it).
+- **Serialisation:** converting an object to a byte sequence (to save or send it).
 - **Deserialisation:** converting the bytes back into an object.
 - Deserialising untrusted bytes is **dangerous** (code execution).
 
@@ -221,7 +221,7 @@ This section **assumes no prior knowledge**.
 
 Terms:
 
-managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialization · XML/XXE · path traversal · ProGuard/R8 · `-keep` · reflection · SBOM · dependency
+managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialisation · XML/XXE · path traversal · ProGuard/R8 · `-keep` · reflection · SBOM · dependency
 
 Now: what do managed languages solve, and what do they not solve?
 
@@ -262,7 +262,7 @@ Now: what do managed languages solve, and what do they not solve?
 
 - A separate **rule book** for Java (CERT Oracle Coding Standard for Java).
 - Same structure: noncompliant example + compliant solution + risk.
-- Sample areas: injection, serialization, concurrency, sensitive data.
+- Sample areas: injection, serialisation, concurrency, sensitive data.
 
 ---
 
@@ -280,7 +280,7 @@ Now: what do managed languages solve, and what do they not solve?
 | --- | --- | --- |
 | `IDS` | Input validation | IDS00-J SQL · IDS07-J `Runtime.exec` · IDS16/17-J XML |
 | `FIO` | Input/output | FIO16-J: canonicalise path names |
-| `SER` | Serialization | SER12-J: do not deserialise untrusted data |
+| `SER` | Serialisation | SER12-J: do not deserialise untrusted data |
 | `MSC` | Miscellaneous | MSC03-J: do not embed sensitive information in code |
 | `ERR` | Error handling | ERR01-J: do not leak sensitive information in an exception |
 
@@ -648,7 +648,7 @@ Same root: **separate data from code/command**.
 
 1. Once joined into the string it makes the `WHERE` condition **always true** → all rows (data was parsed as code).
 2. Arguments pass **to the program, not the shell**, one by one; there is no metacharacter interpretation (`;` `|`) → command injection is closed off.
-3. (1) Convert to a **canonical path** (`realpath`/normalize), (2) verify it is inside the allowed **root directory** (an allow list). Never put user input directly into a path.
+3. (1) Convert to a **canonical path** (`realpath`/normalise), (2) verify it is inside the allowed **root directory** (an allow list). Never put user input directly into a path.
 
 ---
 
@@ -693,7 +693,7 @@ What if `giris` comes from an untrusted source?
 
 # Correct · best: do not do it at all
 
-- Do not deserialise untrusted data with **native serialization**.
+- Do not deserialise untrusted data with **native serialisation**.
 - Use a **JSON/data** format + a strict schema instead.
 - Read only the fields you expect.
 
@@ -1151,7 +1151,7 @@ The debug build is **not obfuscated**; verify that the shipped build is the **re
 # Sections 8–13 — answers
 
 1. Bytecode is **high-level**; type and **name metadata** (class/field/method) are preserved → a decompiler produces near-source output. C compiles to machine code, discarding names.
-2. **The `-keep` balance:** too much keep → obfuscation is weak; too little keep → reflection/serialization breaks. Keep only the **external entry points**.
+2. **The `-keep` balance:** too much keep → obfuscation is weak; too little keep → reflection/serialisation breaks. Keep only the **external entry points**.
 3. Reflection calls **by string** name; once the obfuscator renames it, the string no longer matches → a run-time error. Those names need to be kept (a gap in the obfuscation).
 
 ---
@@ -1337,7 +1337,7 @@ Each release's SBOM is stored with its release identifier.
 
 **Why is unsafe deserialisation dangerous? The fix?**
 
-**Answer:** Object methods run while unpacking; code can be run through a gadget chain. Fix: a data format + schema instead of native serialization; if you must, an `ObjectInputFilter` allow list.
+**Answer:** Object methods run while unpacking; code can be run through a gadget chain. Fix: a data format + schema instead of native serialisation; if you must, an `ObjectInputFilter` allow list.
 
 ---
 
@@ -1503,7 +1503,7 @@ ps.setString(2, ozetle(p));
 
 # Scenario
 
-An application deserialises a "session object" sent by the user using native serialization:
+An application deserialises a "session object" sent by the user using native serialisation:
 
 ```java
 Object o = new ObjectInputStream(giris).readObject();  // TEHLİKELİ
@@ -1521,7 +1521,7 @@ Object o = new ObjectInputStream(giris).readObject();  // TEHLİKELİ
 
 # Fix 1 · change the format
 
-- **JSON** + a strict schema instead of native serialization.
+- **JSON** + a strict schema instead of native serialisation.
 - Only the expected fields are read.
 - The object graph never "comes alive."
 

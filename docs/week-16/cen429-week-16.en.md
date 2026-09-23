@@ -43,9 +43,9 @@
 
 | Week | Topics (syllabus) | Focus while studying |
 | --- | --- | --- |
-| **9** Advanced code obfuscation and diversification | Obfuscation taxonomy; opaque predicates, bogus control flow, dead code; data encoding; virtualization-based obfuscation; measuring obfuscation (potency, resilience, cost) | The purpose and cost of obfuscation; measurement metrics; the basic techniques from Week 4 |
+| **9** Advanced code obfuscation and diversification | Obfuscation taxonomy; opaque predicates, bogus control flow, dead code; data encoding; virtualisation-based obfuscation; measuring obfuscation (potency, resilience, cost) | The purpose and cost of obfuscation; measurement metrics; the basic techniques from Week 4 |
 | **10** Certificates and cryptographic methods | Choosing algorithms and key lengths; modes and padding; HMAC, encrypt-then-MAC, replay; RSA-OAEP/PSS, Ed25519/X25519; digital signatures; Diffie–Hellman and man-in-the-middle; PKI, X.509, chains; CRL/OCSP; PKCS#11/SoftHSM; post-quantum | The security-level table; the correct mode and padding; pitfalls of signature verification; the four questions of chain validation |
-| **11** White-box cryptography | White-box and black-box attacker models; table-based implementation; key protection; known attack families and countermeasures; software security modules | Attacker models; where white-box fits in layered defense, and its limits |
+| **11** White-box cryptography | White-box and black-box attacker models; table-based implementation; key protection; known attack families and countermeasures; software security modules | Attacker models; where white-box fits in layered defence, and its limits |
 | **12** Certification and penetration-test planning | The 13 steps of independent assessment; the testing expectations of standards; vulnerability assessment; penetration test plan and reporting | Target of evaluation, requirement template, finding–action, impact analysis, delta assessment |
 | **13** Security requirements | What makes a good requirement; traceability and the compliance matrix; deferred requirements; Common Criteria, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | The requirement → control → verification → evidence chain; CC and FIPS concepts |
 | **14** Tigress and diversification | Source-to-source obfuscation; composing transformations; seed-based diversification; evaluating resilience | The purpose of diversification; measuring cost and effectiveness |
@@ -71,7 +71,7 @@
 | EAL | Attack potential | The depth of the assessment / the resources an attacker requires |
 | FIPS 140-3 Level 2 | Level 3 | Tamper evidence / tamper resistance and response |
 | Met | Deferred | The product meets it itself / another party meets it (to whom, why and how it is written up) |
-| ISO/IEC 27001 | Common Criteria | Certifies the organization / certifies the product |
+| ISO/IEC 27001 | Common Criteria | Certifies the organisation / certifies the product |
 | Security impact analysis | Delta assessment | Documents the security impact of a change / re-assesses only the changed part |
 
 ![The term in one sentence](assets/h16-04-donem-ozeti.svg)

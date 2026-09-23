@@ -21,7 +21,7 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 Asst. Prof. Dr. Uğur CORUH · 02.10.2026
 
 <!--
-Speaker note: This week the focus shifts from the program to the DATA. A secret has three states; each state has a different threat and a different defense. Main idea: the security shell (the concrete form of defense in depth).
+Speaker note: This week the focus shifts from the program to the DATA. A secret has three states; each state has a different threat and a different defence. Main idea: the security shell (the concrete form of defence in depth).
 -->
 
 ---
@@ -206,21 +206,21 @@ Speaker note: Build the lab in advance. build.ps1 on Windows, build.sh under WSL
 - In the first two weeks, we protected **the program itself** with "bug → attack → fix."
 - This week the focus shifts to the **data**: passwords, payment keys, personal information.
 - A secret exists in **three separate states** throughout its lifecycle.
-- Each state has a **different** threat and a **different** defense.
+- Each state has a **different** threat and a **different** defence.
 
-<!-- Speaker note: Weeks 1-2 protected the program; this week the focus is on data. The same defense-in-depth idea applies here too. -->
+<!-- Speaker note: Weeks 1-2 protected the program; this week the focus is on data. The same defence-in-depth idea applies here too. -->
 
 ---
 
 # A Secret's Three States
 
-| State | Where | Threat | Defense |
+| State | Where | Threat | Defence |
 | --- | --- | --- | --- |
 | **In transit** | Network | Eavesdropping, MITM | TLS + pinning + message AEAD |
 | **At rest** | Disk/DB | File theft | Field encryption (AEAD) |
 | **In use** | RAM | Memory dump | Short lifetime, secure erasure |
 
-Each state's threat and defense are **different**. You have to think about all of them together.
+Each state's threat and defence are **different**. You have to think about all of them together.
 
 <!--
 Speaker note: Ask the students: a password in a banking app on your phone — which of these three states is it in? Answer: all of them.
@@ -241,7 +241,7 @@ Speaker note: Ask the students: a password in a banking app on your phone — wh
 
 ![w:900](assets/h03-08-guvenlik-kabuklari.svg)
 
-To reach the secret, the attacker must break **all of them in sequence** = defense in depth.
+To reach the secret, the attacker must break **all of them in sequence** = defence in depth.
 
 ---
 
@@ -633,7 +633,7 @@ if (RAND_bytes(buf, n) != 1) { /* ASLA devam etme */ }
 - The random generator **can fail**.
 - If unchecked, the buffer stays **uninitialized** (or zero).
 - The program keeps running with what it thinks is a "random" but is actually a **fixed** key.
-- The only correct behavior on failure: **stop the process**.
+- The only correct behaviour on failure: **stop the process**.
 
 <!-- Speaker note: This is another version of the Debian incident; an unchecked return value can lead to a similar disaster. -->
 
@@ -1305,7 +1305,7 @@ Groups: dynamic device keys (whitebox) · dynamic payment keys · **a single** s
 
 # This Section's Rule
 
-- Organize keys within a **hierarchy**; give every key a **single purpose** and a crypto-period.
+- Organise keys within a **hierarchy**; give every key a **single purpose** and a crypto-period.
 - **Envelope-encrypt** the data; protect the key version with AAD.
 - Only download keys with **limited damage, short lifetime** to the client device.
 
@@ -1666,7 +1666,7 @@ while ((p = strstr(p, "parola=")) != NULL) {
 }
 ```
 
-⚠️ The filter is a **second** line of defense: it doesn't understand JSON, the data is already in memory · in the field, logging is **removed entirely** in the release build
+⚠️ The filter is a **second** line of defence: it doesn't understand JSON, the data is already in memory · in the field, logging is **removed entirely** in the release build
 
 <!-- Speaker note: An evaluator looks for full card/ID numbers and passwords in screens, network responses, logs, crash reports, and backups; they also ask whether real data is used in the test environment. -->
 
@@ -1680,7 +1680,7 @@ while ((p = strstr(p, "parola=")) != NULL) {
 | Lock memory | `mlock` | `VirtualLock` |
 | Secure erase | `OPENSSL_cleanse` | `SecureZeroMemory` |
 
-\+ **short lifetime**, no copying. `memset` can be optimized away at `-O2`; cleanse **cannot** be removed.
+\+ **short lifetime**, no copying. `memset` can be optimised away at `-O2`; cleanse **cannot** be removed.
 
 ---
 
@@ -1918,7 +1918,7 @@ Source: Viega & Messier, Recipes 3.1–3.5, 13.1
 
 # Appendix · Protecting a Piece of Data End to End
 
-<!-- Speaker note: We summarize the week by protecting a single secret in all three of its states. -->
+<!-- Speaker note: We summarise the week by protecting a single secret in all three of its states. -->
 
 ---
 

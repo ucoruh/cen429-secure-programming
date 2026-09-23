@@ -389,7 +389,7 @@ ciphertext and, by observing the server's reaction, decrypt the message byte by 
 **padding oracle** attack; it was described in 2002, and it kept reappearing in the following years in web
 frameworks and in TLS (POODLE, Lucky Thirteen).
 
-Defenses:
+Defences:
 
 1. **Use AEAD** (GCM, ChaCha20-Poly1305): there is no padding; if the tag doesn't match, nothing is decrypted.
 2. If CBC is mandatory, **encrypt first, then MAC** (next section) and verify the MAC **before checking the
@@ -492,7 +492,7 @@ previous one.
     ECB under any circumstances (file encryption, a DB field, even for "unimportant" data) — it always leaks the
     pattern. If CBC is mandatory, protect the padding with the encrypt-then-MAC rule from Section 3.
 
-In Week 2's threat modeling, "integrity" was an asset-protection goal; this section made concrete **why** that
+In Week 2's threat modelling, "integrity" was an asset-protection goal; this section made concrete **why** that
 goal cannot be achieved by encryption alone. The next section covers the tool that correctly provides integrity —
 MAC/HMAC — and the right order for combining it.
 
@@ -541,7 +541,7 @@ comparison constant-time.
 ### Replay: a valid but old message
 
 A MAC proves that a message has **not been changed**, but not that it is **new**. An attacker can record a valid
-"send 100 TL" message and resend it ten times; the MAC is valid every time. The defenses the book describes in
+"send 100 TL" message and resend it ten times; the MAC is valid every time. The defences the book describes in
 Recipe 6.21:
 
 | Method | How? | Note |
@@ -995,7 +995,7 @@ third parties.
 | Component | Role | Example |
 | --- | --- | --- |
 | **Certificate authority (CA)** | Issues a **certificate** by signing the public key of an identity-verified entity | Commercial and public CAs, an in-house CA |
-| **Registration authority (RA)** | Verifies the identity of a certificate requester; tells the CA "issue a certificate to this person" | An organization's HR department, an automated system that checks ownership of a domain (ACME) |
+| **Registration authority (RA)** | Verifies the identity of a certificate requester; tells the CA "issue a certificate to this person" | An organisation's HR department, an automated system that checks ownership of a domain (ACME) |
 | **Root CA** | The self-signed CA at the top of the chain; usually kept offline | The roots in the operating system's and browsers' trust stores |
 | **Intermediate CA** | A CA signed by the root that issues day-to-day certificates | So the root can stay offline |
 | **Leaf certificate** | A certificate belonging to a server, a person, or a device | A TLS certificate for `sunucu.ornek` |
@@ -1319,7 +1319,7 @@ error sunucu_yanlis.crt: verification failed
 This time validation was **rejected** — because `ara_yanlis.crt`'s `basicConstraints` is `CA:FALSE`, even
 though the mathematical signature is correct, OpenSSL sees that this certificate has **no authority to sign
 another certificate** and treats the chain as invalid at "depth 1" (the middle layer). This is proof that the
-`Basic Constraints` field from Section 8 is an extension that **actually changes behavior** — not a fancy text
+`Basic Constraints` field from Section 8 is an extension that **actually changes behaviour** — not a fancy text
 field.
 
 Compare Scenario 1 with Scenario 2: both build a "wrong" chain, but one (**signing directly with the root**) is
@@ -1739,7 +1739,7 @@ checkpoint, looks for exactly these two tables.
 ??? question "1. What is the key length for RSA and for elliptic curve at the 128-bit security level?"
     RSA 3072 bits, elliptic curve 256 bits (P-256, Ed25519/X25519).
 
-??? question "2. Under what condition is the padding oracle attack possible? Give two defenses."
+??? question "2. Under what condition is the padding oracle attack possible? Give two defences."
     When the decoder reports "invalid padding" in a way distinguishable from other errors (a different message or
     timing). Using AEAD; if CBC is mandatory, encrypt-then-MAC and verifying the MAC before the padding, and
     returning all errors in the same form.

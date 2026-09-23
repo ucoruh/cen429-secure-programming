@@ -45,7 +45,7 @@ Speaker note: This week we harden the code itself: first bug-free code, then pro
 
 <!-- _class: yogun -->
 
-# A Brief History — the Race Between Memory Bugs and Defenses
+# A Brief History — the Race Between Memory Bugs and Defences
 
 - **1988** — **Morris Worm** announces the buffer overflow to the world
 - **1996** — *Smashing the Stack for Fun and Profit* teaches exploitation to everyone
@@ -71,7 +71,7 @@ This week is about **LO.3** (binary application protections).
 
 By the end, you will be able to:
 
-- Recognize and fix common C/C++ vulnerabilities
+- Recognise and fix common C/C++ vulnerabilities
 - Use static analysis, sanitizers, fuzzing
 - Turn on and verify compiler/OS protections
 
@@ -149,7 +149,7 @@ Both can be a source of overflows and bugs.
 # Compiler Flag
 
 - **Flag:** an option passed to the compiler.
-- Example: `-O2` (optimization), `-Wall` (warnings), `-fsanitize=address`.
+- Example: `-O2` (optimisation), `-Wall` (warnings), `-fsanitize=address`.
 - The right flags catch many bugs **at compile time**.
 
 ---
@@ -164,7 +164,7 @@ Both can be a source of overflows and bugs.
 
 # What Is a CWE?
 
-- **CWE (Common Weakness Enumeration):** a numbered catalog of software weaknesses.
+- **CWE (Common Weakness Enumeration):** a numbered catalogue of software weaknesses.
 - Example: CWE-416 = "use-after-free."
 - Naming a finding with its CWE number makes it **searchable**.
 
@@ -933,7 +933,7 @@ Disadvantage: it produces **false alarms**.
 | Level | Tool | What It Finds |
 | --- | --- | --- |
 | Warnings | `-Wall -Wextra -Wconversion` | Conversion, format |
-| Analyzer | `-fanalyzer`, `clang --analyze`, `/analyze` | NULL, leaks |
+| Analyser | `-fanalyzer`, `clang --analyze`, `/analyze` | NULL, leaks |
 | Rule | `clang-tidy cert-*`, `cppcheck` | CERT violation |
 | Semantic | CodeQL, Semgrep | Data flow |
 | Commercial | Coverity, Klocwork | Deep analysis |
@@ -1294,7 +1294,7 @@ Most of the protection flags: Demo 5's `giris_sert`.
 # Section 5 — Answers
 
 1. **Stops:** a **sequential** stack overflow that overwrites the return address (the canary gets corrupted). **Does not stop:** a targeted write, a heap overflow, an information leak.
-2. A single **leaked address** reveals the module's base address (the offset is fixed) → the entire randomization **collapses**.
+2. A single **leaked address** reveals the module's base address (the offset is fixed) → the entire randomisation **collapses**.
 3. Protections catch **memory** violations; incorrect authorization/business logic is a **valid** memory access → no protection is triggered. Correct design + review is required.
 
 ---
@@ -1337,13 +1337,13 @@ Not making it impossible, but making it **expensive** (Cookbook 12.1):
 | Data | Constants, strings, variables | 4, 9 |
 | Control flow | Algorithm structure | 4, 9 |
 | Preventive | Analysis tool | 9 |
-| Virtualization | Machine code | 9, 14 |
+| Virtualisation | Machine code | 9, 14 |
 
 ---
 
 # From the Field: 18 Measures on the Native Side
 
-Symbol visibility off · name mangling · constant arithmetic hiding · string encryption (decrypt on use, **wipe immediately**) · opaque booleans · your own library functions · fake operation/dead branch · flattening + randomized exit · **no** logging in the release build.
+Symbol visibility off · name mangling · constant arithmetic hiding · string encryption (decrypt on use, **wipe immediately**) · opaque booleans · your own library functions · fake operation/dead branch · flattening + randomised exit · **no** logging in the release build.
 
 ➡️ The strength comes from **combining them**, and from RASP.
 
@@ -1442,7 +1442,7 @@ The blocks' natural adjacency is lost; the order lives only in the **state varia
 
 - **Hide the state values** (arithmetic transformation)
 - **Fake/dead blocks** (which one is real?)
-- **Randomized exit** (where the error was caught becomes unreadable)
+- **Randomised exit** (where the error was caught becomes unreadable)
 - **Opaque values** (a single byte cannot flip it)
 
 The template alone is solved quickly on its own → Week 9 depth.
@@ -1487,7 +1487,7 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 1. **No.** Obfuscation only makes reverse engineering harder; the bug **stays where it is**. **Fix first, then obfuscate.**
 2. The string/code **remains** in the binary; the attacker can flip the flag or read the strings. Remove logging in the release build **at compile time** (macro/dead-code elimination).
-3. **Opaque predicates** + **fake blocks/dead branches** + **state-variable encoding & randomized exit** (also name/string hiding).
+3. **Opaque predicates** + **fake blocks/dead branches** + **state-variable encoding & randomised exit** (also name/string hiding).
 
 ---
 
@@ -1549,7 +1549,7 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 **Why can `if (x + 100 < x)` be deleted?**
 
-**Answer:** Signed integer overflow is **undefined behaviour**; the compiler assumes "overflow never happens" and can optimize the check away, **deleting** it.
+**Answer:** Signed integer overflow is **undefined behaviour**; the compiler assumes "overflow never happens" and can optimise the check away, **deleting** it.
 
 ---
 
@@ -1589,7 +1589,7 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 **Why is ASLR weakened by an information leak?**
 
-**Answer:** If one address leaks, the attacker can **calculate** the other addresses relative to it; the advantage of randomization is lost.
+**Answer:** If one address leaks, the attacker can **calculate** the other addresses relative to it; the advantage of randomisation is lost.
 
 ---
 
@@ -1605,7 +1605,7 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 **Three techniques that strengthen flattening?**
 
-**Answer:** Hiding state values, fake/dead blocks, a randomized exit point (and opaque values).
+**Answer:** Hiding state values, fake/dead blocks, a randomised exit point (and opaque values).
 
 ---
 
@@ -1698,7 +1698,7 @@ if (n < 0 || (size_t)n >= sizeof tampon) {
 # Lesson: One Line, Many Layers
 
 - One bug: `strcpy`.
-- Defense: the right function + compiler protection + sanitizer testing.
+- Defence: the right function + compiler protection + sanitizer testing.
 - But the **real** fix is in the first line: bounded copying.
 
 ---
@@ -1765,7 +1765,7 @@ if (n < 0 || (size_t)n >= sizeof tampon) {
 | --- | --- |
 | UB | Undefined behaviour |
 | UAF | Use-after-free |
-| CERT/CWE | Rulebook / weakness catalog |
+| CERT/CWE | Rulebook / weakness catalogue |
 | Sanitizer | Runtime bug detector |
 | Fuzzing | Finding crashes with random input |
 | Canary/ASLR/NX | Compiler/OS protections |

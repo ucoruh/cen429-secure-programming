@@ -94,7 +94,7 @@ protection scheme (C/I/I+)**.
   its **results**; attack potential + CVSS.
 
 ### 4.14 Binary application protection · (Weeks 6, 9, 11, 14 · S9, S10, S15)
-- **Detection** (checksum, anti-debug, emulator), **defense** (obfuscation, string/resource encryption, call hiding),
+- **Detection** (checksum, anti-debug, emulator), **defence** (obfuscation, string/resource encryption, call hiding),
   **deterrence** (response/shutdown policy).
 
 ### 4.15 OWASP and build/deploy pipeline · (Weeks 5, 14 · S13, S15)

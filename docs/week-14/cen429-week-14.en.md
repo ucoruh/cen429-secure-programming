@@ -258,7 +258,7 @@ will meet these terms by these English names in Tigress's official documentation
 | Seed | Seed |
 | Environment (target platform) | Environment |
 | Opaque predicate (init / add / update) | (Init / Add / Update) Opaque |
-| Virtualisation-based obfuscation | Virtualization-based obfuscation |
+| Virtualisation-based obfuscation | Virtualisation-based obfuscation |
 | Continuous integration | Continuous Integration (CI) |
 | Target of evaluation | Target of Evaluation (TOE) |
 | Function splitting / merging | Split / Merge |
@@ -622,7 +622,7 @@ flag.
 
 !!! note "Different functions may need different transforms"
     `erisim_ver` and `anahtar_turet` might not be at the same **value** level — perhaps `anahtar_turet` is more
-    critical and also needs Virtualize, while `erisim_ver` is satisfied with Flatten+AddOpaque (the decision flow
+    critical and also needs Virtualise, while `erisim_ver` is satisfied with Flatten+AddOpaque (the decision flow
     from section 1). In that case, instead of applying **the same thing to all of them** in a single command, you
     use **a separate `--Transform`/`--Functions` pair for each function** (or a separate Tigress call); the
     assumption of "one pipeline for everyone" is an extension of section 2's "why is `--Functions` so important"
@@ -646,15 +646,15 @@ official documentation; there may be small differences between versions):
 | **EncodeLiterals** | Encodes constants and strings | K-07 string encoding, K-08 constant transform |
 | **EncodeData** | Encodes the representation of variables | K-09 variable splitting/encoding |
 | **Split / Merge** | Splits / merges functions (obscures structure) | K-06 call/structure hiding |
-| **Virtualize** | Turns a function into a custom VM bytecode | K-10 virtualisation |
+| **Virtualise** | Turns a function into a custom VM bytecode | K-10 virtualisation |
 | **Jit** | Generates code at run time (dynamic) | K-12 dynamic (concept) |
 | **AntiBranchAnalysis / AntiAliasAnalysis / AntiTaintAnalysis** | Makes static analysis techniques harder | Preventive family |
 | **RandomFuns / RndArgs** | Adds random functions / bogus parameters | Diversification, K-06 bogus parameter |
 
 !!! tip "Families and cost"
     Think about these transforms in week 9's cost order: EncodeArithmetic/EncodeLiterals are **cheap**; Flatten and
-    opaque predicates are **moderate**; Virtualize is **expensive** (tens of times slower). That's why you apply
-    Virtualize only to the most critical, small functions — selecting the target with `--Functions` in Tigress
+    opaque predicates are **moderate**; Virtualise is **expensive** (tens of times slower). That's why you apply
+    Virtualise only to the most critical, small functions — selecting the target with `--Functions` in Tigress
     exists exactly for this.
 
 ### Worked example: let's map K-01 onto a Tigress transform, step by step
@@ -1025,10 +1025,10 @@ int erisim_ver(const char *jeton) {
 | 2 | EncodeArithmetic | The comparison/computation turns into a complex expression | Low |
 | 3 | Flatten | The single branch is no longer visible; a switch dispatcher | Moderate |
 | 4 | AddOpaque | Bogus branches and opaque conditions are added | Moderate |
-| 5 | (Virtualize, only if needed) | The function turns into VM bytecode | High |
+| 5 | (Virtualise, only if needed) | The function turns into VM bytecode | High |
 
 **Takeaway:** each step makes the attack a little more expensive; but each step also adds a cost. You decide where
-to stop based on the value of the protected asset and the cost you measure (section 4). Step 5 (Virtualize) is
+to stop based on the value of the protected asset and the cost you measure (section 4). Step 5 (Virtualise) is
 unnecessary for most checks; it's applied only to the most critical, small functions.
 
 ### Let's trace the step-by-step cost increase with a numeric example (hypothetical)
@@ -1060,12 +1060,12 @@ Three observations:
    other; it should not be confused with the cost of a **single** transform (the real **82%** measured in week 9's
    hand-applied Flatten+AddOpaque example) — here four transforms are counted together.
 
-!!! danger "Common mistake: applying Step 5 (Virtualize) on the logic 'since I'm here, let's add everything'"
+!!! danger "Common mistake: applying Step 5 (Virtualise) on the logic 'since I'm here, let's add everything'"
     After seeing a cumulative cost like 359% in the table above, thinking "it's already grown a lot, let me also
-    add Virtualize" is a common mistake. Virtualize is **many times** more expensive than the sum of the other four
+    add Virtualise" is a common mistake. Virtualise is **many times** more expensive than the sum of the other four
     transforms (section 1's "Families and cost" box: "tens of times slower") — it is measured not in percentages,
     but in **multiples**. While a 359% growth for a check function is often acceptable, adding a further 10-50x
-    slowdown on top is meaningless for most products. **Rule:** make the Virtualize decision separately; don't add
+    slowdown on top is meaningless for most products. **Rule:** make the Virtualise decision separately; don't add
     it automatically on the logic "I already obfuscated it" — go back to section 1's decision flow (is it
     sensitive, how valuable is it).
 
@@ -1263,7 +1263,7 @@ Measure the following for every transform pipeline and write them into S9/S15:
 | Metric | How | Expectation |
 | --- | --- | --- |
 | Binary size | `ls -l` / `size` | Obfuscation increases size |
-| Running time | Run an operation many times and average it | Flatten/Virtualize slow it down |
+| Running time | Run an operation many times and average it | Flatten/Virtualise slow it down |
 | Source/CFG complexity | Basic block count in a decompiler (e.g., Ghidra) | An increase before/after |
 
 ```bash title="Basit maliyet ölçümü (kavram)"
@@ -1727,9 +1727,9 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     license/usage terms, so **everyone downloads it themselves**; the binary isn't shared in the course. The demos
     are written so that they still work with a clean derivative/fallback if Tigress is absent.
 
-??? question "3. Map the following transforms onto week 9's rules: Flatten, EncodeArithmetic, EncodeLiterals, Virtualize, AddOpaque."
+??? question "3. Map the following transforms onto week 9's rules: Flatten, EncodeArithmetic, EncodeLiterals, Virtualise, AddOpaque."
     **Flatten** = control-flow flattening; **EncodeArithmetic** = arithmetic obfuscation; **EncodeLiterals** =
-    constant/string obfuscation; **Virtualize** = virtualisation (strongest, most expensive); **AddOpaque** =
+    constant/string obfuscation; **Virtualise** = virtualisation (strongest, most expensive); **AddOpaque** =
     adding an opaque predicate/dead branch.
 
 ??? question "4. Why is a transform pipeline stronger than a single transform? Why does order matter?"
@@ -1741,7 +1741,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     (1) **You test that behaviour hasn't changed** (unit tests must pass — obfuscation must not break the
     function), (2) **you measure the cost** (size/speed/instruction count; compared before and after).
 
-??? question "6. Why is Virtualize applied only to small and critical functions?"
+??? question "6. Why is Virtualise applied only to small and critical functions?"
     Virtualisation brings a large **performance** and **size** penalty; it can't be applied everywhere. That's why
     it's used only on high-value, small, critical functions — where the cost is justified.
 
@@ -1825,8 +1825,8 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     diversifying a broken binary only produces **different copies of the broken behaviour**, it doesn't fix the
     problem. The pipeline must be fixed first, behaviour re-verified, and only then diversified.
 
-??? question "23. Why is it a mistake to automatically add Virtualize on the logic 'since I'm obfuscating anyway, let's add everything'?"
-    Virtualize is **many times** (tens of times) more expensive than the sum of the other transforms; it's
+??? question "23. Why is it a mistake to automatically add Virtualise on the logic 'since I'm obfuscating anyway, let's add everything'?"
+    Virtualise is **many times** (tens of times) more expensive than the sum of the other transforms; it's
     measured not in percentages but in **multiples**. While a growth like 359% may be acceptable for a function,
     adding a further 10-50x slowdown on top is meaningless for most products; the decision must be made
     **separately**, with section 1's 'is it sensitive, how valuable is it' flow.
@@ -1918,7 +1918,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
 ??? question "39. Is using a list like `--Functions=erisim_ver,anahtar_turet` always correct? When could it be wrong?"
     It's correct only if the two functions are of **the same value/sensitivity** and deserve the same transform
     pipeline. Applying the same pipeline with the same list to functions of different value (e.g., one critical and
-    needing Virtualize, the other light) means skipping section 1's decision flow (is it sensitive, how valuable is
+    needing Virtualise, the other light) means skipping section 1's decision flow (is it sensitive, how valuable is
     it).
 
 ??? question "40. Why is writing 'Resilience: not measured' in the example mini-report better engineering practice than writing 'Resilience: high'?"

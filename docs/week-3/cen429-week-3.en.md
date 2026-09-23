@@ -51,7 +51,7 @@
        OpenSSL EVP and Windows CNG; never touch the plaintext before the tag is verified; and use constant-time
        comparison.
     10. Explain a key's **lifecycle**, **hierarchy**, **envelope encryption**, and renewal via key versioning;
-        wire up a TLS client line by line and recognize **fail-open** bugs; use **masking, tokenization, and
+        wire up a TLS client line by line and recognise **fail-open** bugs; use **masking, tokenization, and
         pseudonymization** in the right place.
 
 ??? info "Class schedule (timing plan for the instructor)"
@@ -65,7 +65,7 @@
     | 1:25–1:50 | [9–10](#9-data-in-transit-tls-13-certificate-validation-and-pinning) | TLS 1.3, validation, pinning, **Demo 6**; wiring up TLS in code, fail-open — **class activity** |
     | 1:50–2:00 | Break | |
     | 2:00–2:25 | [11–13](#11-data-at-rest-file-and-database-encryption) | Data at rest **Demo 7**; data masking; data in use **Demo 8** |
-    | 2:25–2:45 | [14–15](#14-security-shells-defense-in-depth-made-concrete) | **Demo 9** (shell) and the field shell matrix; whitebox motivation |
+    | 2:25–2:45 | [14–15](#14-security-shells-defence-in-depth-made-concrete) | **Demo 9** (shell) and the field shell matrix; whitebox motivation |
     | 2:45–3:00 | [17–21](#17-term-project-this-week) | Project (S5/S7), self-check, wrap-up |
 
 !!! tip "Prepare the lab in advance (there's crypto this week)"
@@ -122,7 +122,7 @@ Let's define them all, **one by one**, first.
 
 ### The three states of data
 
-- **In transit:** while traveling over the network (TLS).
+- **In transit:** while travelling over the network (TLS).
 - **At rest:** while sitting on disk (file encryption).
 - **In use:** while being processed in memory (the hardest).
 
@@ -236,7 +236,7 @@ Now: the three states of data and the security shell.
 
 Over the past two weeks we protected the program **itself** with "bug → attack → fix." This week we shift the
 focus to **data**. A secret — a password, a payment key, personal information — exists in **three separate
-states** across its lifecycle, and each state has a different threat and a different defense:
+states** across its lifecycle, and each state has a different threat and a different defence:
 
 !!! note "A short history: the tools for protecting data"
     - **1976** — Diffie & Hellman kick off **public-key** cryptography; **1977** brings the **RSA** and **DES**
@@ -248,7 +248,7 @@ states** across its lifecycle, and each state has a different threat and a diffe
 
     The course's rule follows from this: "don't write your own crypto, use **AEAD**, manage the key correctly."
 
-| State | Where? | Threat | Typical defense |
+| State | Where? | Threat | Typical defence |
 | --- | --- | --- | --- |
 | **In transit** | On the network, between two endpoints | Eavesdropping, man-in-the-middle (MITM), replay | TLS 1.3, certificate validation + pinning, message-level AEAD |
 | **At rest** | Disk, database, backup | Theft of the file/DB | File/field encryption (AEAD), device-bound key, masking |
@@ -259,8 +259,8 @@ states** across its lifecycle, and each state has a different threat and a diffe
 !!! note "This week's main idea: the security shell"
     A single measure is never enough. We wrap a sensitive asset in nested **protection layers** (shells) at
     **every stage** of its lifecycle: on the outside, channel security (TLS); inside that, message-level
-    encryption; inside that, storage encryption; and at the very center, a device-bound key. To reach the secret,
-    the attacker must break **all of them, in order**. This is the concrete form of the **defense in depth** we
+    encryption; inside that, storage encryption; and at the very centre, a device-bound key. To reach the secret,
+    the attacker must break **all of them, in order**. This is the concrete form of the **defence in depth** we
     introduced in Week 1; in Section 14 we'll wrap and unwrap a key with four shells.
 
 Recall the **example architecture** we use throughout the term (a mobile payment app plus a security library that
@@ -576,7 +576,7 @@ whole sequence is known.
 
 !!! warning "Check the return value"
     A random generator **can fail**. If the return value isn't checked, the buffer stays uninitialized (or zero)
-    and the program keeps running with a fixed "key" it believes is random. On failure, the only correct behavior
+    and the program keeps running with a fixed "key" it believes is random. On failure, the only correct behaviour
     is to stop the operation.
 
 ### Mistake 3: bias when reducing to a range (modulo bias)
@@ -1150,7 +1150,7 @@ the key is. A key sitting on a client device should have a much shorter lifetime
 
 ### Key hierarchy: a separate key for every job
 
-Instead of doing everything with a single key, keys are organized into a **tree**. Keys near the top are used
+Instead of doing everything with a single key, keys are organised into a **tree**. Keys near the top are used
 rarely and sit in the best-protected place; keys near the bottom are used often, are short-lived, and cause
 little damage if lost.
 
@@ -1272,14 +1272,14 @@ derived per session. The outline of a design from the field (names generalized):
 5. Messages are encrypted with this key in **AES-CTR** mode, and a 256-bit MAC is additionally attached to every
    message; the receiver doesn't use a message without verifying the MAC.
 
-This design is a good example of defense in depth: even if TLS is broken, messages are separately encrypted and
+This design is a good example of defence in depth: even if TLS is broken, messages are separately encrypted and
 integrity-protected; the session key changes every session; the authentication code is device-bound. If the same
 design were built today, the following improvements would be recommended:
 
 | In the design | Recommended today | Why? |
 | --- | --- | --- |
 | AES-CTR + a separate MAC (manually combined) | The library's AEAD mode: AES-GCM, AES-CCM, or ChaCha20-Poly1305 | Confidentiality and integrity in a single call; removes the burden of manually getting the "encrypt first, then MAC" order and two separate keys right |
-| A custom HMAC-based derivation from a digest, with truncated output | HKDF; separate `info` for encryption and MAC | Standard, analyzed; key separation is explicit |
+| A custom HMAC-based derivation from a digest, with truncated output | HKDF; separate `info` for encryption and MAC | Standard, analysed; key separation is explicit |
 | SHA-1 in some steps | SHA-256 | Collision attacks against SHA-1 became practical |
 | A session key from a symmetric root | Ephemeral (EC)DH for forward secrecy | Prevents past sessions from also being decrypted if the root key is stolen |
 
@@ -1290,7 +1290,7 @@ design were built today, the following improvements would be recommended:
     exactly this eye.
 
 !!! success "Rule"
-    Organize keys within a hierarchy; give every key a single purpose, a crypto-period, and a moment of
+    Organise keys within a hierarchy; give every key a single purpose, a crypto-period, and a moment of
     destruction. Envelope your data; write the key version into the encrypted data's header and protect it with
     AAD. Keep the key in the strongest store available, and only download keys with limited damage and short
     lifetimes to the client device.
@@ -1662,7 +1662,7 @@ The correct design is **fail-closed**: if you can't determine a security check's
     openssl s_client -connect sunucu.ornek:443 -tls1_1 </dev/null
     ```
 
-=== "App behavior"
+=== "App behaviour"
 
     1. Connect to a local server presenting a self-signed certificate: the app **should reject it** (Demo 6).
     2. Present a valid certificate obtained for a different name: the app **should reject it**.
@@ -1771,7 +1771,7 @@ plain name) is found, but `4242-4242` (the card) is **not found**, because it's 
 ## 12. Data masking techniques: using data without showing it
 
 Encryption hides data from anyone **without the key**. But in many cases, even systems and people **who do have
-the key** don't need to see all of it: a call-center employee should see the last four digits of a customer's
+the key** don't need to see all of it: a call-centre employee should see the last four digits of a customer's
 card number, not the whole thing; a test-environment database shouldn't contain real people's national ID
 numbers; a log file should never see a password at all. **Data masking** is a family of techniques that shows
 only as much of the data as its purpose requires and hides the rest. Personal-data-protection regulation (KVKK,
@@ -1888,9 +1888,9 @@ void gunluk_suz(char *satir)
 }
 ```
 
-!!! warning "The filter is the second line of defense"
+!!! warning "The filter is the second line of defence"
     Filtering at the output is a **safety net** for catching a programmer's mistake; the real fix is never
-    sending sensitive data to the log in the first place. A filter can't recognize every format (e.g., `"parola":
+    sending sensitive data to the log in the first place. A filter can't recognise every format (e.g., `"parola":
     "..."` inside JSON), and by the time it runs, the data has already sat in memory and perhaps in a buffer.
     That's why, in release builds in the field, removing the logging code entirely is often the preferred choice
     (Week 1's trade-off record).
@@ -1899,9 +1899,9 @@ void gunluk_suz(char *satir)
 
 | Situation | Recommended technique |
 | --- | --- |
-| Card number on a call-center screen | Masking at display (last 4); the full value never reaches the client at all |
+| Card number on a call-centre screen | Masking at display (last 4); the full value never reaches the client at all |
 | Storing a card number for recurring payments | Tokenization (preferably at the payment provider) |
-| Analyzing the same customer's behavior | Keyed pseudonym (HMAC) |
+| Analysing the same customer's behaviour | Keyed pseudonym (HMAC) |
 | Test database | Synthetic data; failing that, static masking |
 | Log file | Prevention at the source + filtering at the output |
 | Sharing as open data | Anonymization (generalization, aggregation) and assessing re-identification risk |
@@ -1990,7 +1990,7 @@ shell in Section 14; we'll combine it with RASP in Week 6.
 
 ---
 
-## 14. Security shells: defense in depth made concrete
+## 14. Security shells: defence in depth made concrete
 
 Now we bring together every piece of this week into a single idea. We never leave a sensitive asset to **a
 single** protection; we wrap it in **nested shells** that correspond to every stage of its lifecycle:
@@ -2003,7 +2003,7 @@ in transit," "field encryption at rest," and "device binding in use" principles 
 
 ### Demo 9 — Wrapping and unwrapping a key with four shells
 
-!!! info "Demo 9 · `code/week-03/09-guvenlik-kabugu` · defense in depth"
+!!! info "Demo 9 · `code/week-03/09-guvenlik-kabugu` · defence in depth"
     The program wraps a 16-byte secret with four AES-GCM shells in sequence (innermost: a device-bound HKDF key),
     then unwraps it in reverse order. Two attacks: (1) if one bit of the packet is tampered with, the outermost
     shell won't open; (2) if the packet is copied to another device (a different fingerprint), the outer shells
@@ -2091,7 +2091,7 @@ How to read the matrix:
     An evaluator asks for the security-shell matrix and confirms that at least one shell exists at **every
     stage** for every sensitive asset; they check that the shells are applied **in the right order** and that
     the keys are **not shared**. In a penetration test, breaking a single shell isn't enough; they report that
-    the protections must be broken **together** (in a chain) — this is the proof that defense in depth is
+    the protections must be broken **together** (in a chain) — this is the proof that defence in depth is
     working.
 
 !!! warning "Common mistakes and a checklist"
@@ -2207,7 +2207,7 @@ This week you will write the **data security** sections of your security guide. 
 !!! example "Activity 3 — A map of the three data states (15 min, group of 3–4)"
     Consider a **"health-tracking app"**: the user records measurements on their phone, uploads them to the
     cloud, and the doctor views them. Draw a table: for every sensitive data item (measurement, identity,
-    doctor's note), write the threat and the defense in each of the three states (in transit/at rest/in use).
+    doctor's note), write the threat and the defence in each of the three states (in transit/at rest/in use).
     Fill in the security-shell matrix for at least **two** assets.
 
 !!! example "Activity 4 — Tuning KDF cost (10 min, individual)"
@@ -2371,7 +2371,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 
 ## 21. Self-check
 
-??? question "1. What are the three states of data? Name one threat and one defense for each."
+??? question "1. What are the three states of data? Name one threat and one defence for each."
     In transit (eavesdropping/MITM → TLS+pinning), at rest (file theft → AEAD field encryption), in use (memory
     dump → secure erasure + short lifetime).
 

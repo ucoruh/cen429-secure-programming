@@ -315,21 +315,21 @@ The bit counts in the table can stay abstract; let's make them concrete. A secur
 attacker needs, on average, **2ⁿ⁻¹** attempted operations (2ⁿ is used as the upper bound). The difference between
 RSA-2048 (112 bit) and AES-128 (128 bit) is far larger than it looks:
 
-```text title="Elle hesap (üstel büyüme)"
-2^112 ≈ 5,19 × 10^33   (RSA-2048'in eşdeğer zorluğu)
-2^128 ≈ 3,40 × 10^38   (AES-128'in anahtar uzayı)
-2^128 / 2^112 = 2^16 = 65.536   → AES-128'i kırmak, RSA-2048'i "eşdeğer" zorlukta kırmaktan 65.536 KAT daha zor
+```text title="Hand calculation (exponential growth)"
+2^112 ≈ 5,19 × 10^33   (RSA-2048's equivalent difficulty)
+2^128 ≈ 3,40 × 10^38   (AES-128's key space)
+2^128 / 2^112 = 2^16 = 65.536   → breaking AES-128 is 65.536 TIMES harder than breaking RSA-2048 at "equivalent" difficulty
 ```
 
 Let's convert this into time. Let's take, as an **optimistic** upper bound, 10¹⁸ (quintillion; exascale supercomputer) operations per
 second for today's fastest supercomputers — in real attacks this number is much lower, because breaking a cipher
 is not a single arithmetic operation but a far more costly one. Still, let's calculate with the upper bound:
 
-```text title="2^112 işlemi 10^18 işlem/saniye ile ne kadar sürer?"
-2^112 işlem ÷ 10^18 işlem/saniye ≈ 1,6 × 10^8 yıl  (≈ 165 milyon yıl)
-Karşılaştırma: yazılı insanlık tarihi ≈ 5.000 yıl → 165 milyon yıl, bunun ~33.000 katı
-2^128 işlem ÷ 10^18 işlem/saniye ≈ 1,08 × 10^13 yıl
-Karşılaştırma: evrenin yaşı ≈ 1,38 × 10^10 yıl → 2^128, evrenin yaşının ~780 katı kadar sürer
+```text title="How long does 2^112 operations take at 10^18 operations/second?"
+2^112 operations ÷ 10^18 operations/second ≈ 1,6 × 10^8 years  (≈ 165 million years)
+Comparison: recorded human history ≈ 5.000 years → 165 million years is ~33.000 times that
+2^128 operations ÷ 10^18 operations/second ≈ 1,08 × 10^13 years
+Comparison: the age of the universe ≈ 1,38 × 10^10 years → 2^128 takes ~780 times the age of the universe
 ```
 
 The lesson to draw has two parts. First, **even 112 bits cannot practically be brute-forced today**; the reason
@@ -410,9 +410,9 @@ with a real OpenSSL run. Let's encrypt the 13-byte text `"MERHABA DUNYA"` with A
 key and an IV that counts up from zero (only for this example; in a real system the IV is generated randomly for
 every message):
 
-```bash title="PKCS#7 dolgusunu elle izlemek (gerçek çıktı)"
-K=00112233445566778899aabbccddeeff   # 16 bayt (32 hex karakter) — yalnız gösterim için sabit
-IV=000102030405060708090a0b0c0d0e0f  # 16 bayt — yalnız gösterim için sabit
+```bash title="Tracing PKCS#7 padding by hand (real output)"
+K=00112233445566778899aabbccddeeff   # 16 bytes (32 hex characters) — fixed only for this demonstration
+IV=000102030405060708090a0b0c0d0e0f  # 16 bytes — fixed only for this demonstration
 printf 'MERHABA DUNYA' | openssl enc -aes-128-cbc -K "$K" -iv "$IV" -out cikti.bin
 xxd -p cikti.bin
 ```
@@ -458,9 +458,9 @@ In ECB, every 16-byte block is encrypted **independently**; the same plaintext b
 ciphertext block. Let's encrypt a plaintext that repeats over 48 bytes ("AAAAAAAAAAAAAAAA" three times) with
 AES-128-ECB:
 
-```bash title="ECB'de tekrar eden blok = tekrar eden şifreli metin (gerçek çıktı)"
+```bash title="Repeating block in ECB = repeating ciphertext (real output)"
 K2=$(openssl rand -hex 16)
-printf 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' | head -c 48 > duz.txt   # 48 bayt = 3 blok, hepsi ayni
+printf 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' | head -c 48 > duz.txt   # 48 bytes = 3 blocks, all the same
 openssl enc -aes-128-ecb -K "$K2" -in duz.txt -out cikti_ecb.bin -nopad
 xxd cikti_ecb.bin
 ```
@@ -521,7 +521,7 @@ The two nested digests remove the **length-extension** weakness of the plain `H(
 Merkle–Damgård-structured digests like SHA-256, if `H(K ‖ m)` is known, `H(K ‖ m ‖ extra)` can be computed
 without knowing the key. So **don't derive your own MAC from a digest**; use HMAC (the warning in Recipe 6.19).
 
-```bash title="OpenSSL ile HMAC-SHA-256"
+```bash title="HMAC-SHA-256 with OpenSSL"
 printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(openssl rand -hex 32)
 ```
 
@@ -562,8 +562,8 @@ Recipe 6.21:
 Without leaving the rules abstract, let's trace a real HMAC-SHA-256 computation end to end. Let's use a fixed
 (only for this example) 32-byte key and compute the HMAC of a payment instruction:
 
-```bash title="HMAC-SHA-256 (gerçek çıktı)"
-ANAHTAR=0000000000000000000000000000000000000000000000000000000000000001   # 32 bayt, yalniz gosterim icin sabit
+```bash title="HMAC-SHA-256 (real output)"
+ANAHTAR=0000000000000000000000000000000000000000000000000000000000000001   # 32 bytes, fixed only for this demonstration
 printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$ANAHTAR
 ```
 
@@ -595,13 +595,13 @@ the function's running time varies depending on how many bytes matched. An attac
 over a network can guess the correct tag **byte by byte** from microsecond differences in response times (a
 timing attack).
 
-```c title="Yanlış ve doğru karşılaştırma"
-/* YANLIS: erken cikis sure farki yaratir */
-if (memcmp(hesaplanan, gelen, 32) == 0) { /* kabul */ }
+```c title="Incorrect and correct comparison"
+/* WRONG: an early exit creates a timing difference */
+if (memcmp(hesaplanan, gelen, 32) == 0) { /* accept */ }
 
-/* DOGRU: sabit zamanli, her zaman 32 baytin tamamini gezer */
-if (CRYPTO_memcmp(hesaplanan, gelen, 32) == 0) { /* kabul */ }   /* OpenSSL */
-/* ya da: sodium_memcmp (libsodium), hmac.compare_digest (Python) */
+/* CORRECT: constant-time, always walks through all 32 bytes */
+if (CRYPTO_memcmp(hesaplanan, gelen, 32) == 0) { /* accept */ }   /* OpenSSL */
+/* or: sodium_memcmp (libsodium), hmac.compare_digest (Python) */
 ```
 
 !!! danger "Common mistake: comparing a MAC/tag with `==` or `memcmp`"
@@ -651,16 +651,16 @@ they are not used in production. The warning in Recipe 7.14 still matters, thoug
 needs care; if the signature is not bound to the recipient and context of the encrypted content, the recipient
 can re-encrypt the signed message and forward it to someone else.
 
-```bash title="OpenSSL 3 ile RSA-3072: anahtar, OAEP şifreleme, PSS imza"
+```bash title="RSA-3072 with OpenSSL 3: key, OAEP encryption, PSS signature"
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out rsa_ozel.pem
 openssl pkey -in rsa_ozel.pem -pubout -out rsa_acik.pem
 
-# OAEP (SHA-256) ile kısa bir oturum anahtarını şifrele
+# Encrypt a short session key with OAEP (SHA-256)
 openssl rand -out oturum.key 32
 openssl pkeyutl -encrypt -pubin -inkey rsa_acik.pem -in oturum.key -out oturum.enc \
     -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
 
-# PSS ile imzala ve doğrula
+# Sign and verify with PSS
 openssl dgst -sha256 -sign rsa_ozel.pem -sigopt rsa_padding_mode:pss -out belge.sig belge.txt
 openssl dgst -sha256 -verify rsa_acik.pem -sigopt rsa_padding_mode:pss -signature belge.sig belge.txt
 ```
@@ -685,7 +685,7 @@ operations are faster, and its keys and signatures are much shorter.
     generator. This is the most striking proof of Week 3's sentence "random numbers are the invisible foundation
     of cryptography." Ed25519 and the deterministic ECDSA in RFC 6979 remove this risk.
 
-```bash title="OpenSSL 3 ile Ed25519 imza"
+```bash title="Ed25519 signature with OpenSSL 3"
 openssl genpkey -algorithm ED25519 -out ed_ozel.pem
 openssl pkey -in ed_ozel.pem -pubout -out ed_acik.pem
 openssl pkeyutl -sign   -inkey ed_ozel.pem -rawin -in belge.txt -out belge.ed.sig
@@ -697,7 +697,7 @@ openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge.txt -sigfile 
 Let's confirm the sentence "ECC gives the same security with a smaller key" with real bytes. Both are at
 ~128-bit security level (see the table in Section 1):
 
-```bash title="Anahtar ve imza boyutlarını ölçmek (gerçek çıktı)"
+```bash title="Measuring key and signature sizes (real output)"
 wc -c rsa_acik.pem ed_acik.pem
 openssl dgst -sha256 -sign rsa_ozel.pem -sigopt rsa_padding_mode:pss -out belge.rsa.sig belge.txt
 openssl pkeyutl -sign -inkey ed_ozel.pem -rawin -in belge.txt -out belge.ed.sig
@@ -725,7 +725,7 @@ pattern leak. "Textbook RSA" (raw, unpadded) carries the same disease: the same 
 same ciphertext. OAEP fixes this by mixing a **random** value into the message before encryption. Let's encrypt
 the same message twice with OAEP:
 
-```bash title="OAEP: aynı mesaj, iki farklı şifreli metin (gerçek çıktı)"
+```bash title="OAEP: same message, two different ciphertexts (real output)"
 echo MERHABA > kisa.txt
 openssl pkeyutl -encrypt -pubin -inkey rsa_acik.pem -in kisa.txt -out c1.bin \
     -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
@@ -784,19 +784,19 @@ STRIDE), a MAC does not.
 
 ### Verifying a signature in code: OpenSSL EVP
 
-```c title="Ed25519 imzasını doğrulamak (OpenSSL 3)"
+```c title="Verifying an Ed25519 signature (OpenSSL 3)"
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
-/* 1: geçerli, 0: geçersiz, -1: hata. Güncelleme paketini ÇALIŞTIRMADAN önce çağrılır. */
+/* 1: valid, 0: invalid, -1: error. Called BEFORE running the update package. */
 int imza_dogrula(EVP_PKEY *acik, const unsigned char *veri, size_t n,
                  const unsigned char *imza, size_t imza_n)
 {
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     int sonuc = -1;
     if (ctx == NULL) return -1;
-    if (EVP_DigestVerifyInit(ctx, NULL, NULL, NULL, acik) == 1)   /* Ed25519: özet NULL */
-        sonuc = EVP_DigestVerify(ctx, imza, imza_n, veri, n);      /* 1 ya da 0 */
+    if (EVP_DigestVerifyInit(ctx, NULL, NULL, NULL, acik) == 1)   /* Ed25519: digest is NULL */
+        sonuc = EVP_DigestVerify(ctx, imza, imza_n, veri, n);      /* 1 or 0 */
     EVP_MD_CTX_free(ctx);
     return sonuc == 1 ? 1 : (sonuc == 0 ? 0 : -1);
 }
@@ -818,7 +818,7 @@ int imza_dogrula(EVP_PKEY *acik, const unsigned char *veri, size_t n,
 You can see the logic of the C code above with `openssl pkeyutl -verify` too, without needing to compile — the
 CLI produces the same three outcomes (valid / invalid / error):
 
-```bash title="1) Doğru belge, doğru imza"
+```bash title="1) Correct document, correct signature"
 openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge.txt -sigfile belge.ed.sig
 echo "cikis kodu: $?"
 ```
@@ -828,7 +828,7 @@ Signature Verified Successfully
 cikis kodu: 0
 ```
 
-```bash title="2) Belge değişti, imza aynı"
+```bash title="2) Document changed, signature unchanged"
 echo "MERHABA DEGISTI" > belge2.txt
 openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge2.txt -sigfile belge.ed.sig
 echo "cikis kodu: $?"
@@ -919,15 +919,15 @@ Let's confirm Diffie–Hellman's sentence "two parties reach the same shared val
 secret" with real keys. Alice and Bob each independently generate an X25519 key pair and exchange only their
 **public** keys:
 
-```bash title="X25519 anahtar anlaşması: Alice ve Bob (gerçek çıktı)"
+```bash title="X25519 key agreement: Alice and Bob (real output)"
 openssl genpkey -algorithm X25519 -out alice.key
 openssl genpkey -algorithm X25519 -out bob.key
 openssl pkey -in alice.key -pubout -out alice.pub
 openssl pkey -in bob.key -pubout -out bob.pub
 
-# Alice: kendi ozel anahtari + Bob'un acik anahtari
+# Alice: her own private key + Bob's public key
 openssl pkeyutl -derive -inkey alice.key -peerkey bob.pub -out alice_sir.bin
-# Bob: kendi ozel anahtari + Alice'in acik anahtari
+# Bob: his own private key + Alice's public key
 openssl pkeyutl -derive -inkey bob.key -peerkey alice.pub -out bob_sir.bin
 
 xxd -p alice_sir.bin
@@ -1143,7 +1143,7 @@ Let's read the `openssl x509 -text` output of the `sunucu.crt` we will generate 
 against every field in the table above (this is exactly the real output of the command
 `openssl x509 -in sunucu.crt -noout -text`):
 
-```text title="openssl x509 -in sunucu.crt -noout -text (gerçek çıktı)"
+```text title="openssl x509 -in sunucu.crt -noout -text (real output)"
 Certificate:
     Data:
         Version: 3 (0x2)
@@ -1228,7 +1228,7 @@ add the root certificate to any trust store**.
 
 ![The four questions of chain validation](assets/h10-12-zincir-dogrulama.svg)
 
-```bash title="1. Kök CA (kendi kendini imzalar)"
+```bash title="1. Root CA (self-signed)"
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out kok.key
 openssl req -x509 -new -key kok.key -sha256 -days 3650 -out kok.crt \
   -subj "/CN=CEN429 Lab Kok CA" \
@@ -1236,24 +1236,24 @@ openssl req -x509 -new -key kok.key -sha256 -days 3650 -out kok.crt \
   -addext "keyUsage=critical,keyCertSign,cRLSign"
 ```
 
-```bash title="2. Ara CA (kök imzalar, yol uzunluğu 0: altında başka CA olamaz)"
+```bash title="2. Intermediate CA (signed by the root, path length 0: no CA can exist beneath it)"
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out ara.key
 openssl req -new -key ara.key -out ara.csr -subj "/CN=CEN429 Lab Ara CA"
 openssl x509 -req -in ara.csr -CA kok.crt -CAkey kok.key -CAcreateserial -days 1825 -sha256 \
   -out ara.crt -extfile <(printf "basicConstraints=critical,CA:TRUE,pathlen:0\nkeyUsage=critical,keyCertSign,cRLSign")
 ```
 
-```bash title="3. Sunucu sertifikası (ara CA imzalar, SAN ile)"
+```bash title="3. Server certificate (signed by the intermediate CA, with SAN)"
 openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out sunucu.key
 openssl req -new -key sunucu.key -out sunucu.csr -subj "/CN=localhost"
 openssl x509 -req -in sunucu.csr -CA ara.crt -CAkey ara.key -CAcreateserial -days 90 -sha256 \
   -out sunucu.crt -extfile <(printf "basicConstraints=CA:FALSE\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1")
 ```
 
-```bash title="4. Doğrula ve incele"
+```bash title="4. Verify and inspect"
 openssl verify -CAfile kok.crt -untrusted ara.crt sunucu.crt      # sunucu.crt: OK
-openssl x509 -in sunucu.crt -noout -text | less                    # alanları inceleyin
-openssl verify -CAfile kok.crt sunucu.crt                          # ara olmadan: HATA (zincir eksik)
+openssl x509 -in sunucu.crt -noout -text | less                    # inspect the fields
+openssl verify -CAfile kok.crt sunucu.crt                          # without the intermediate: ERROR (chain incomplete)
 ```
 
 !!! tip "On Windows"
@@ -1342,8 +1342,8 @@ before its validity period expires. There are three ways for the client to learn
 | **OCSP** | The client asks the CA's responder "is this serial number valid?" | Instant | Latency, privacy (the CA learns which site was visited), what happens if the responder is unreachable? |
 | **OCSP stapling** | The server attaches a fresh OCSP response for its own certificate to the handshake | Privacy and speed | Requires server configuration |
 
-```bash title="Laboratuvar CA'sıyla iptal ve CRL denetimi (özet)"
-# ara CA ile bir CRL üretmek için 'openssl ca' yapılandırması gerekir; sonra:
+```bash title="Revocation and CRL check with the lab CA (summary)"
+# producing a CRL with the intermediate CA requires 'openssl ca' configuration; then:
 openssl ca -config ara.cnf -revoke sunucu.crt
 openssl ca -config ara.cnf -gencrl -out ara.crl
 openssl verify -crl_check -CAfile kok.crt -untrusted ara.crt -CRLfile ara.crl sunucu.crt   # "certificate revoked"
@@ -1363,11 +1363,11 @@ Let's trace the full version of the "summary" commands above, actually run, step
 database and configuration file that `openssl ca` needs is set up (this is a heavily scaled-down version of a
 real CA):
 
-```bash title="1. Minimal CA veritabanı kurmak"
+```bash title="1. Setting up a minimal CA database"
 mkdir -p demoCA/newcerts
-touch demoCA/index.txt          # her cikarilan/iptal edilen sertifikanin kaydedildigi "defter"
-echo 1000 > demoCA/crlnumber    # bir sonraki CRL'in surum numarasi
-echo 1000 > demoCA/serial       # bir sonraki sertifikanin seri numarasi
+touch demoCA/index.txt          # the "ledger" where every issued/revoked certificate is recorded
+echo 1000 > demoCA/crlnumber    # the next CRL's version number
+echo 1000 > demoCA/serial       # the next certificate's serial number
 ```
 
 ```ini title="ara.cnf"
@@ -1392,7 +1392,7 @@ email_in_dn      = no
 commonName = supplied
 ```
 
-```bash title="2. İptal et, CRL üret, doğrula (gerçek çıktı)"
+```bash title="2. Revoke, generate CRL, verify (real output)"
 openssl ca -config ara.cnf -revoke sunucu.crt
 ```
 
@@ -1469,7 +1469,7 @@ never sees the key; it tells the HSM "sign this with that key."
 | **Session and PIN** | The application opens a session to a slot and authenticates with the user's PIN |
 | **SoftHSM** | An open-source HSM simulation that provides the PKCS#11 interface in software; for development and testing |
 
-```bash title="SoftHSM ile bir anahtar üretmek ve listelemek (WSL/Linux)"
+```bash title="Generating and listing a key with SoftHSM (WSL/Linux)"
 export SOFTHSM2_CONF=$PWD/softhsm2.conf
 mkdir -p belirtecler && echo "directories.tokendir = $PWD/belirtecler" > softhsm2.conf
 softhsm2-util --init-token --free --label "cen429" --pin 1234 --so-pin 5678
@@ -1509,12 +1509,12 @@ byte**:
    enter the application code's memory at any point.
 5. **Close the session:** `C_Logout` / `C_CloseSession`.
 
-```c title="PKCS#11 C_Sign çağrısının biçimi (OASIS Cryptoki v3, referans)"
+```c title="The shape of the PKCS#11 C_Sign call (OASIS Cryptoki v3, reference)"
 CK_RV C_Sign(
-    CK_SESSION_HANDLE hSession,   /* acik oturum */
-    CK_BYTE_PTR       pData,      /* imzalanacak veri */
+    CK_SESSION_HANDLE hSession,   /* open session */
+    CK_BYTE_PTR       pData,      /* data to be signed */
     CK_ULONG          ulDataLen,
-    CK_BYTE_PTR       pSignature, /* HSM'in doldurdugu cikti tamponu: yalniz imza, anahtar degil */
+    CK_BYTE_PTR       pSignature, /* output buffer filled by the HSM: only the signature, not the key */
     CK_ULONG_PTR      pulSignatureLen
 );
 ```
@@ -1578,7 +1578,7 @@ needed.
 OpenSSL 3.5 supports the standardized post-quantum algorithms **directly**; you can generate them today, on
 your own machine, and compare their sizes with classical algorithms:
 
-```bash title="ML-KEM-768 (anahtar anlaşması) ve ML-DSA-65 (imza) — gerçek çıktı"
+```bash title="ML-KEM-768 (key agreement) and ML-DSA-65 (signature) — real output"
 openssl genpkey -algorithm ML-KEM-768 -out mlkem.pem
 openssl pkey -in mlkem.pem -pubout -out mlkem_pub.pem
 wc -c mlkem_pub.pem

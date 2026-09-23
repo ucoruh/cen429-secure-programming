@@ -452,7 +452,7 @@ first minute was not the defence — it was that **the network bandwidth had fil
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış; Windows'ta aynı)"
+```text title="sh demo.sh — output (abridged; same on Windows)"
   Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
     N=75000 savunmasiz  i0=1  ikilenme=8.50 s
       zaman        enfekte    oran
@@ -546,7 +546,7 @@ Compile and run it (`.\build.ps1` or `./build.sh` inside `code/`, then in the de
 
 **Step 2 — Hash signature.** Compares the file's SHA-256 digest against a digest in the database.
 
-```text title="demo — Adım 2"
+```text title="demo — Step 2"
 ADIM 2 — Hash (ozet) imzasi: birebir ayni dosyayi yakalar
   temiz.txt          TEMIZ      sha256=ce1f848e3795ae86...
   ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
@@ -560,7 +560,7 @@ to the file.
 
 **Step 3 — Pattern (byte-sequence) signature.** Checks whether a known byte sequence occurs inside the file.
 
-```text title="demo — Adım 3"
+```text title="demo — Step 3"
 ADIM 3 — Desen (bayt dizisi) imzasi: kucuk degisikliklere dayanikli
   ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
   ornek_a_1bayt.bin  YAKALANDI  Ornek.MaviKedi.A
@@ -578,7 +578,7 @@ detection.
 
 **Step 4 — Same body, different key.** The first body bytes of the three polymorphic copies:
 
-```text title="demo — Adım 4"
+```text title="demo — Step 4"
   poli_1.bin   ilk 16 govde bayti: 6f 57 bc 28 e2 81 dd 85 87 e1 f4 3d ...
   poli_2.bin   ilk 16 govde bayti: 83 b7 07 06 d8 38 3d 53 27 06 bc e8 ...
   poli_3.bin   ilk 16 govde bayti: bd 2c 85 32 f4 1f 3a 57 7f 6b 08 c0 ...
@@ -590,7 +590,7 @@ this is close to impossible.
 **Step 5 — Heuristic analysis.** When there is no signature, it scores **suspicious features**: high entropy
 (+50), decryptor code that runs before the body (+30), meaningless "junk" instructions (+20).
 
-```text title="demo — Adım 5"
+```text title="demo — Step 5"
   temiz.txt          TEMIZ      puan=  0 H=4.29
   ornek_a.bin        TEMIZ      puan=  0 H=4.71
   poli_1.bin         SUPHELI    puan= 80 H=7.95 entropi cozucu
@@ -607,7 +607,7 @@ plain-bodied `ornek_a.bin` (a **false negative**). This is exactly the uncertain
 **Step 6 — Emulation.** Runs the capsule's decryptor in a **safe "virtual machine"** (not real machine code,
 a toy language with 6 instructions), then scans the decrypted body again with the pattern:
 
-```text title="demo — Adım 6"
+```text title="demo — Step 6"
   temiz.txt          TEMIZ      kapsul degil
   ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A | cozucu yok (duz govde)
   poli_1.bin         YAKALANDI  Ornek.MaviKedi.A | 5 komut, 0 BOS, xs32
@@ -699,7 +699,7 @@ characters frequently (low H); encrypted/compressed data uses all bytes equally 
 Sample files are generated the same way on both platforms (no external tool required): uniform, plain text,
 synthetic machine-code-like data, AES-256-GCM-encrypted, and random files.
 
-```text title="demo — Adım 1 ve 2"
+```text title="demo — Steps 1 and 2"
 ADIM 1 — Farkli turde dosyalarin entropisi (0 = tekduze, 8 = rastgele)
   tekduze.txt      4096  0.00 |........................| tekduze
   belge.txt        3360  4.17 |#############...........| dusuk
@@ -720,7 +720,7 @@ compiled machine code medium (~6). (2) But high entropy **in an unexpected place
 this: an encrypted section hidden in the middle of a text shows up as a "hot region" in a windowed scan — the
 same "small unpacking stub + high-entropy body" pattern that is typical of packed programs.
 
-```text title="demo — Adım 3 (kısaltılmış)"
+```text title="demo — Step 3 (abridged)"
     1024-  1535  4.14 |#################...............| dusuk
     1536-  2047  7.56 |##############################..| YUKSEK   <-- gizli bölge
     2048-  2559  7.66 |###############################.| YUKSEK
@@ -778,7 +778,7 @@ written from scratch, using only **harmless patterns we made up ourselves**.
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış; Windows'ta aynı)"
+```text title="sh demo.sh — output (abridged; same on Windows)"
 ADIM 2 — Bes dosyayi bes kuralla tara
   temiz.txt     (eslesme yok)
   kilavuz.txt   Kelime_Cifti
@@ -845,7 +845,7 @@ code-signing checks all rest on the same idea.
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış; HMAC anahtarı her çalıştırmada rastgele)"
+```text title="sh demo.sh — output (abridged; HMAC key is random on every run)"
 ADIM 4 — Benzetim: bir 'saldirgan' dosyalara dokunur
   TAMAM    ayar.conf        fa747caed81475dc...
   DEGISTI  kutuphane.bin    c603d7c61459... -> 64b8f2b2c00e... (49->65 B)
@@ -943,25 +943,25 @@ tree bottom-up and find **the cheapest attack**:
 Windows: `cd code\week-02\04-saldiri-agaci ; .\demo.ps1` · WSL/Linux:
 `cd code/week-02/04-saldiri-agaci && sh demo.sh` (build once inside `code/` first).
 
-```text title="demo — Adım 1 (kısaltılmış)"
-  [VEYA] Odeme anahtarini ele gecir  (maliyet=2)
-    [VE] Yerel veritabanini kopyala ve coz [hepsi gerekir]  (maliyet=9)
-    [VEYA] Kullanim aninda bellekten oku [biri yeter]  (maliyet=2)
-      Hata ayiklayici ile bellekten oku  (maliyet=2)
-    [VE] Sunucu ile telefon arasinda dinle [hepsi gerekir]  (maliyet=15)
+```text title="demo — Step 1 (abridged)"
+  [OR] Capture the payment key  (cost=2)
+    [AND] Copy the local database and decrypt it [all required]  (cost=9)
+    [OR] Read it from memory at the moment of use [one is enough]  (cost=2)
+      Read from memory with a debugger  (cost=2)
+    [AND] Eavesdrop between the server and the phone [all required]  (cost=15)
 
-  EN UCUZ SALDIRI = 2 birim. ... en zayif nokta:
-  -> Kullanim aninda bellekten oku -> Hata ayiklayici ile bellekten oku
+  CHEAPEST ATTACK = 2 units. ... the weakest point:
+  -> Read it from memory at the moment of use -> Read from memory with a debugger
 ```
 
 The cheapest path is **2 units**: reading the key from memory. The second tree shows what happens when
 **RASP** (debugger and hook detection — Week 6) is added to this branch:
 
-```text title="demo — Adım 2 (kısaltılmış)"
-  [VEYA] Odeme anahtarini ele gecir  (maliyet=8)
-    [VEYA] Kullanim aninda bellekten oku [biri yeter]  (maliyet=8)
-      Bellek dokumu (rastgele silme'yi as)  (maliyet=8)
-  EN UCUZ SALDIRI = 8 birim.
+```text title="demo — Step 2 (abridged)"
+  [OR] Capture the payment key  (cost=8)
+    [OR] Read it from memory at the moment of use [one is enough]  (cost=8)
+      Memory dump (defeat the random erasure)  (cost=8)
+  CHEAPEST ATTACK = 8 units.
 ```
 
 The defence raised the cheapest attack **from 2 to 8**; the weakest point changed. This is how you justify a
@@ -1023,7 +1023,7 @@ attacker can make the log print an event that never happened, or hide a real lin
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış)"
+```text title="sh demo.sh — output (abridged)"
 ADIM 1 - GUVENSIZ gunluk: alan denetlenmeden yaziliyor
   DENETIM giris kullanici=ayse sonuc=BASARISIZ
   DENETIM giris kullanici=kayra
@@ -1099,7 +1099,7 @@ recomputing the chain from the start.
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış)"
+```text title="sh demo.sh — output (abridged)"
 ADIM 2 - Saglam gunlugu dogrula (evrim):
   #1 seq=1 "cuzdan acildi"  MAC:OK
   ...
@@ -1178,7 +1178,7 @@ matrix alone**:
 Windows: `cd code\week-02\03-erisim-modeli ; .\demo.ps1` · WSL/Linux:
 `cd code/week-02/03-erisim-modeli && sh demo.sh`.
 
-```text title="demo — Adım 0 (salt DAC)"
+```text title="demo — Step 0 (DAC only)"
 ADIM 0 — Salt DAC (erisim denetim matrisi): karar sahibin izninde
   kutuphane(D   ) OKU odeme_anahtari(D   )  DAC:VAR ...  => IZIN
   uygulama(D   ) OKU odeme_anahtari(D   )  DAC:yok ...  => RED
@@ -1276,14 +1276,14 @@ formal form of last week's "separation of privileges" principle.
 
 ### Demo 03 — Compare the Models
 
-```text title="demo — Adım 1 (Bell–LaPadula)"
+```text title="demo — Step 1 (Bell–LaPadula)"
   memur  (Gene) OKU operasyon(CokG)  DAC:VAR BLP:RED ...  => RED
   general(CokG) YAZ ilan     (Gene)  DAC:VAR BLP:RED ...  => RED
    ^ memur OKU operasyon: yukari okuma -> RED (gizli bilgiyi goremez)
      general YAZ ilan: asagi yazma -> RED (sizinti onlenir)
 ```
 
-```text title="demo — Adım 2 (Biba)"
+```text title="demo — Step 2 (Biba)"
   aglayici(Dis ) YAZ kayit    (Uygu)  ... BIBA:RED  => RED
   islemci(Uygu) OKU gelen    (Dis )  ... BIBA:RED  => RED
    ^ aglayici YAZ kayit: yukari yazma -> RED (kirli veri temizi bozmasin)
@@ -1369,7 +1369,7 @@ Control) and **AppContainer** — so formal models are still alive in practice.
 WSL / Linux (this demo only runs here): `cd code/week-02/06-toctou && sh demo.sh` (run `./build.sh` inside
 `code/` first). On Windows, `.\demo.ps1` prints how to run it in WSL.
 
-```text title="demo (kısaltılmış)"
+```text title="demo (abridged)"
 ADIM 1 — GUVENSIZ surum: once denetle, sonra ac (yaris acigi)
   guvensiz: 'SAHTE-KAYIT-...' -> calisma/gunluk.txt (yazildi)
   --- Sonuc: gizli_hedef.txt icerigi ---
@@ -1424,7 +1424,7 @@ simple, but the outcomes are surprising:
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış; Windows'ta aynı)"
+```text title="sh demo.sh — output (abridged; same on Windows)"
 == SENARYO: 1a - kitaptaki DACL, ayse Pazarlama uyesi ==
     1. RET  Herkes         TAM
     2. IZIN Pazarlama      YAZ
@@ -1492,7 +1492,7 @@ Three subtleties of the Unix model (Recipe 2.1) explain most real-world bugs:
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış)"
+```text title="sh demo.sh — output (abridged)"
 A) Cekirdek izin denetimi: ilk eslesen sinif karar verir
   surec   istek dosya         sahip:grup     izinler     sinif -> karar
   mehmet  yaz   rapor.txt     ayse:muhasebe  rw-r-----   grup -> RED
@@ -1543,7 +1543,7 @@ the **same session**.
     sh demo.sh
     ```
 
-```text title="sh demo.sh — çıktı (kısaltılmış; Windows'ta aynı)"
+```text title="sh demo.sh — output (abridged; same on Windows)"
 == 1 - RBAC: rol atama ve gorev ayriligi (SSD/DSD) ==
 [01] ATA cem GISE
      SSD(GISE,ONAYCI): cem ikisini birden tasiyamaz -> RED
@@ -1697,7 +1697,7 @@ CVSS v3.1's eight Base score metrics:
 Windows: `cd code\week-02\05-cvss ; .\demo.ps1` · WSL/Linux: `cd code/week-02/05-cvss && sh demo.sh`.
 By hand: `python3 cvss.py --ornekler` (on Windows `py -3 cvss.py --ornekler`).
 
-```text title="demo — örnekler (kısaltılmış)"
+```text title="demo — examples (abridged)"
   1) Uzaktan, kimlik gerektirmeyen tam ele gecirme
   CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
     TEMEL PUAN = 9.8  |####################|  Kritik (Critical)
@@ -2061,35 +2061,35 @@ numbers in parentheses are the leaf's row in the threat table.
 The same tree in Demo 04's input format (`agac-s4.txt`):
 
 ```text
-HEDEF: Baskasinin hesabindan odeme yap
-  VE Calinti cihazla odeme yap
-    YAPRAK Ekran kilidini as                  maliyet=6
-    YAPRAK Uygulama PIN'ini as                maliyet=5
-  VE Oturum anahtarini kopyala ve tasi
-    VEYA Anahtari elde et
-      YAPRAK Root + hata ayiklayici (T1)      maliyet=4
-      YAPRAK Yerel DB'yi kopyala ve coz       maliyet=8
-      YAPRAK Zararli baglantiyla kod (T9)     maliyet=9
-    YAPRAK Cihaz baglamayi as                 maliyet=6
-  VE Agda araya gir
-    YAPRAK Sahte erisim noktasi kur           maliyet=1
-    YAPRAK Sertifika dogrulamasini as (T3)    maliyet=2
-    YAPRAK Oturum belirtecini yeniden oynat   maliyet=3
-  VE Sunucu API'sini kotuye kullan
-    YAPRAK Kendi hesabiyla giris yap          maliyet=1
-    YAPRAK Islem numarasini degistir (T7)     maliyet=2
+TARGET: Make a payment from someone else's account
+  AND Pay with a stolen device
+    LEAF Bypass the screen lock               cost=6
+    LEAF Bypass the app PIN                   cost=5
+  AND Copy and exfiltrate the session key
+    OR Obtain the key
+      LEAF Root + debugger (T1)               cost=4
+      LEAF Copy the local DB and decrypt it   cost=8
+      LEAF Code via a malicious link (T9)     cost=9
+    LEAF Bypass device binding                cost=6
+  AND Intercept on the network
+    LEAF Set up a rogue access point          cost=1
+    LEAF Bypass certificate validation (T3)   cost=2
+    LEAF Replay the session token             cost=3
+  AND Abuse the server API
+    LEAF Log in with your own account         cost=1
+    LEAF Change the transaction number (T7)   cost=2
 ```
 
 The end of the output we get when we run this through Demo 04's calculator:
 
-```text title="agac agac-s4.txt (son kısım)"
-  EN UCUZ SALDIRI = 3 birim. Savunmacinin oncelikle kirmasi
-  gereken zincir (en zayif nokta):
+```text title="agac agac-s4.txt (final part)"
+  CHEAPEST ATTACK = 3 units. The chain the defender must break
+  first (the weakest point):
 
-  -> Baskasinin hesabindan odeme yap (maliyet=3)
-    -> Sunucu API'sini kotuye kullan [hepsi gerekir] (maliyet=3)
-      -> Kendi hesabiyla giris yap (maliyet=1)
-      -> Islem numarasini degistir (T7) (maliyet=2)
+  -> Make a payment from someone else's account (cost=3)
+    -> Abuse the server API [all required] (cost=3)
+      -> Log in with your own account (cost=1)
+      -> Change the transaction number (T7) (cost=2)
 ```
 
 When we applied the countermeasures in order, the cheapest path changed as follows (the same program, with
@@ -2299,7 +2299,7 @@ hidden box.
 
 ??? question "Snippet 1 — Access Control"
     ```c
-    /* Kullanıcının dosyaya erişimi var mı? */
+    /* Does the user have access to the file? */
     if (access(dosya, W_OK) == 0) {
         FILE *f = fopen(dosya, "w");     /* ... */
         fprintf(f, "%s\n", kayit);
@@ -2319,7 +2319,7 @@ hidden box.
     uint32_t beklenen = 0x1a2b3c4d;
     uint32_t bulunan  = crc32(kod_bolgesi, boyut);
     if (bulunan != beklenen)
-        return HATA;   /* kurcalanmış */
+        return HATA;   /* tampered */
     calistir();
     ```
     An integrity (anti-tampering) check. It has two serious weaknesses; find them.
@@ -2335,7 +2335,7 @@ hidden box.
     ```c
     struct kullanici k;
     strncpy(k.ad, girdi, sizeof k.ad);
-    /* k.yonetici alanı hiç atanmadı */
+    /* k.yonetici field is never assigned */
     if (k.yonetici) ver_yonetici_paneli();
     ```
     Which principle is violated here?

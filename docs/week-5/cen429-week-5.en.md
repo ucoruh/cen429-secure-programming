@@ -268,10 +268,10 @@ trace the same bug in Java, step by step.
 ```java title="DiziTasmasi.java"
 public class DiziTasmasi {
     public static void main(String[] args) {
-        int[] dizi = new int[10];      // 10 elemanlik dizi: indeks 0..9 gecerli
-        dizi[9] = 42;                   // gecerli: son eleman
+        int[] dizi = new int[10];      // a 10-element array: indices 0..9 are valid
+        dizi[9] = 42;                   // valid: the last element
         System.out.println("dizi[9] = " + dizi[9]);
-        dizi[10] = 99;                  // GECERSIZ: 11. eleman yok
+        dizi[10] = 99;                  // INVALID: there is no 11th element
     }
 }
 ```
@@ -411,7 +411,7 @@ Imagine that behind a login form there is code like this:
 
 ![SQL injection forming step by step](assets/h05-03-sql-enjeksiyon.svg)
 
-```java title="Hatalı: sorgu dize birleştirmeyle kuruluyor"
+```java title="Wrong: the query is built by string concatenation"
 String sql = "SELECT id, rol FROM kullanicilar WHERE ad = '" + ad +
              "' AND parola_ozeti = '" + ozet + "'";
 ResultSet rs = baglanti.createStatement().executeQuery(sql);
@@ -432,7 +432,7 @@ years (CWE-89).
 
 ### The fix: a parameterised query
 
-```java title="Doğru: PreparedStatement"
+```java title="Correct: PreparedStatement"
 String sql = "SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?";
 try (PreparedStatement ps = baglanti.prepareStatement(sql)) {
     ps.setString(1, ad);
@@ -610,10 +610,10 @@ string (`;`, `&&`, `|`, `` ` ``, `$( )`) start new commands:
 
 ![Shell-based execution compared with ProcessBuilder](assets/h05-04-komut-enjeksiyon.svg)
 
-```java title="Hatalı: kabuk üzerinden dize"
+```java title="Wrong: a string through the shell"
 String kullanici = istek.getParameter("ad");
 Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Merhaba " + kullanici});
-/* ad = "ayse; <başka bir komut>"  →  kabuk iki komut çalıştırır */
+/* ad = "ayse; <another command>"  →  the shell runs two commands */
 ```
 
 The same situation arises on Windows with `cmd /c` and the `&` character. Java's `Runtime.exec(String)` form,
@@ -641,11 +641,11 @@ string reached the shell.
 
 ### The fix: no shell, with an argument list
 
-```java title="Doğru: ProcessBuilder + izin listesi"
+```java title="Correct: ProcessBuilder + an allow list"
 private static final Pattern AD = Pattern.compile("^[A-Za-z0-9_]{1,32}$");
 
 if (!AD.matcher(kullanici).matches()) {
-    throw new IllegalArgumentException("gecersiz ad");       // varsayılan: reddet
+    throw new IllegalArgumentException("gecersiz ad");       // default: reject
 }
 Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
         .redirectErrorStream(true)
@@ -743,10 +743,10 @@ this folder's path, sequences of `../` escape **outside** the root:
 
 ![Canonicalisation and allow-list steps that close off path traversal](assets/h05-05-yol-gecisi.svg)
 
-```java title="Hatalı"
+```java title="Wrong"
 Path kok = Paths.get("/srv/veri");
 Path dosya = kok.resolve(istek);                  // istek = "../../etc/passwd"
-return Files.readAllBytes(dosya);                 // kökün dışındaki dosya okunur
+return Files.readAllBytes(dosya);                 // a file outside the root is read
 ```
 
 ### Path normalisation step by step: why does `../` walk back up to the root?
@@ -772,11 +772,11 @@ content, not the intermediate steps.
 
 ### The fix: canonicalise first, then check whether it is inside the root
 
-```java title="Doğru: kanonik yol + kök denetimi (FIO16-J)"
+```java title="Correct: canonical path + root check (FIO16-J)"
 Path kok = Paths.get("/srv/veri").toRealPath();
-Path aday = kok.resolve(istek).normalize();      // istek mutlak yolsa resolve onu olduğu gibi döndürür
+Path aday = kok.resolve(istek).normalize();      // if istek is an absolute path, resolve returns it unchanged
 if (!aday.startsWith(kok)) throw new SecurityException("kok disi");
-Path gercek = aday.toRealPath();                  // sembolik bağlantıları da çözer
+Path gercek = aday.toRealPath();                  // also resolves symbolic links
 if (!gercek.startsWith(kok)) throw new SecurityException("kok disi");
 return Files.readAllBytes(gercek);
 ```
@@ -926,12 +926,12 @@ how the chain is built, but steps 3–4 fully explain "why it is possible."
 | 4 | **Integrity** | If serialised data is stored or transported, it is signed with an HMAC; it is not deserialised until the signature is verified |
 | 5 | **Dependency hygiene** | Do not leave unused libraries on the class path (Section 14) |
 
-```java title="İzin listesi filtresi (SER12-J)"
+```java title="Allow-list filter (SER12-J)"
 ObjectInputFilter filtre = ObjectInputFilter.Config.createFilter(
         "com.ornek.Ayar;java.base/*;maxdepth=5;maxarray=1000;maxbytes=65536;!*");
 try (ObjectInputStream in = new ObjectInputStream(akis)) {
     in.setObjectInputFilter(filtre);
-    Ayar a = (Ayar) in.readObject();          // beklenmeyen sınıf → InvalidClassException
+    Ayar a = (Ayar) in.readObject();          // unexpected class → InvalidClassException
 }
 ```
 
@@ -1043,9 +1043,9 @@ The critical point is, again, the same: the parser is not making a mistake, it i
     in the parser (`disallow-doctype-decl`, rejecting external entities). This is the most direct application of
     the "disable what you don't need" principle (the rule at the start of Section 8).
 
-```java title="XXE'ye karşı ayrıştırıcıyı sağlamlaştırmak (IDS17-J)"
+```java title="Hardening the parser against XXE (IDS17-J)"
 DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);   // DTD yok
+f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);   // no DTD
 f.setFeature("http://xml.org/sax/features/external-general-entities", false);
 f.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 f.setXIncludeAware(false);
@@ -1096,12 +1096,12 @@ much easier than Java does. The same bug classes appear here under different nam
 The most dangerous feature of interpreted languages is being able to run a string **as code**. A string coming
 from the user reaching `eval` is the most direct form of injection: the interpreter itself is the command channel.
 
-```python title="Hatalı ve doğru: kullanıcının girdiği bir sayıyı okumak"
-deger = eval(girdi)                 # HATALI: girdi herhangi bir Python ifadesi olabilir
+```python title="Wrong and correct: reading a number the user entered"
+deger = eval(girdi)                 # WRONG: girdi could be any Python expression
 
 import ast
-deger = ast.literal_eval(girdi)     # Daha iyi: yalnız sayı, dizge, liste gibi SABİTLERİ kabul eder
-deger = int(girdi)                  # En iyisi: beklenen türü doğrudan ayrıştır, hatayı yakala
+deger = ast.literal_eval(girdi)     # Better: accepts only LITERALS such as numbers, strings, lists
+deger = int(girdi)                  # Best: parse the expected type directly, catch the error
 ```
 
 The rule is simple: **user data must never reach `eval`, `exec`, `new Function`, or a script engine.** If a
@@ -1125,12 +1125,12 @@ Python's `pickle` module carries the same problem as Java serialisation: the dat
 **which objects get created and how**; its own documentation explicitly says "never unpickle untrusted data." YAML
 libraries' full loaders can create objects in a similar way.
 
-```python title="Güvenli seçimler"
+```python title="Safe choices"
 import json, yaml
 
-veri = json.loads(metin)            # yalnız veri: sözlük, liste, sayı, dizge
-ayar = yaml.safe_load(metin)        # yalnız temel YAML türleri
-# pickle.loads(metin)               # YALNIZ kendi ürettiğiniz ve HMAC ile doğruladığınız veride
+veri = json.loads(metin)            # data only: dict, list, number, string
+ayar = yaml.safe_load(metin)        # only basic YAML types
+# pickle.loads(metin)               # ONLY on data you produced yourself and verified with an HMAC
 ```
 
 ### Denial of service through regular expressions (ReDoS)
@@ -1140,8 +1140,8 @@ itself become an attack surface. In engines that use backtracking (the built-in 
 JavaScript), a pattern containing nested repetition runs in **exponential** time on a specially crafted input:
 
 ```text
-Desen:  ^(a+)+$
-Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"   → motor, eşleşmeyi kanıtlamak için milyonlarca yol dener
+Pattern: ^(a+)+$
+Input:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"   → the engine tries millions of paths to prove there's no match
 ```
 
 A single request can keep a server's processor busy for seconds or minutes (CWE-1333). Defence:
@@ -1242,7 +1242,7 @@ most of the structure are lost. The Java compiler, on the other hand, translates
 This is why reversing a Java or Android application does not require expertise. The JDK's own tool, `javap`, shows
 bytecode as text; decompilers such as `jadx`, CFR and Fernflower produce readable Java source.
 
-```text title="javap -c -p LisansDenetimi.class (kısaltılmış)"
+```text title="javap -c -p LisansDenetimi.class (abridged)"
 private static final java.lang.String GECERLI_PIN;
 public boolean pinDogru(java.lang.String);
   Code:
@@ -1333,7 +1333,7 @@ jobs:
 
 Obfuscation's output is a **mapping file** (`mapping.txt`) that matches old names to new ones:
 
-```text title="mapping.txt (kısaltılmış, adlar sentetik)"
+```text title="mapping.txt (abridged, names synthetic)"
 com.ornek.odeme.KartYoneticisi -> com.ornek.a:
     android.content.Context baglam -> a
     boolean varsayilanKartiAyarla(java.lang.String) -> b
@@ -1385,7 +1385,7 @@ this class in `proguard-rules.pro`, here is what happens, step by step:
    method's name changed) — this is seen **only in the release build**, because obfuscation is turned off in the
    debug build (Section 13); the developer usually only notices the problem during store testing.
 
-```text title="Eksik -keep'in tipik çökme izi (illüstratif)"
+```text title="A typical crash trace from a missing -keep (illustrative)"
 java.lang.ClassNotFoundException: com.ornek.Odeme
     at java.lang.Class.forName(Class.java:...)
     at com.ornek.a.b.baslat(Unknown Source:1)
@@ -1460,21 +1460,21 @@ Demo 5's `GizliSabit.java` file scrambles the synthetic string `"sunucu-anahtari
 by hand; by the definition of XOR, XOR-ing with the same key **twice** returns the original value
 (`x ⊕ k ⊕ k = x`) — this is why encryption and decoding are **the same** operation:
 
-```text title="1. bayt: 41 ⊕ 90 = 's' (0x73)"
+```text title="Byte 1: 41 ⊕ 90 = 's' (0x73)"
   41 = 0010 1001
   90 = 0101 1010
-  ----------------  (bit bit XOR: aynıysa 0, farklıysa 1)
+  ----------------  (bit by bit XOR: 0 if the same, 1 if different)
  115 = 0111 0011  =  0x73  =  's'
 ```
 
-```text title="2. bayt: 47 ⊕ 90 = 'u' (0x75)"
+```text title="Byte 2: 47 ⊕ 90 = 'u' (0x75)"
   47 = 0010 1111
   90 = 0101 1010
   ----------------
  117 = 0111 0101  =  0x75  =  'u'
 ```
 
-```text title="3. bayt: 52 ⊕ 90 = 'n' (0x6E)"
+```text title="Byte 3: 52 ⊕ 90 = 'n' (0x6E)"
   52 = 0011 0100
   90 = 0101 1010
   ----------------
@@ -1505,12 +1505,12 @@ Calling a method directly (`nesne.gizliIslem()`) leaves an explicit link (`invok
 bytecode; the decompiler easily reconstructs the graph of "this function is called from here." With
 **reflection**, the method name in the call is generated at run time (and this name can also be obfuscated):
 
-```java title="Doğrudan ve dinamik çağrı"
-sonuc = Hesap.gizliIslem(girdi);                                   // bayt kodunda açık bağlantı
+```java title="Direct and dynamic invocation"
+sonuc = Hesap.gizliIslem(girdi);                                   // an explicit link in the bytecode
 
 Method m = Hesap.class.getDeclaredMethod(adiCoz(ADI_BAYTLARI), String.class);
 m.setAccessible(true);
-sonuc = (String) m.invoke(null, girdi);                            // statik çağrı grafiği kırılır
+sonuc = (String) m.invoke(null, girdi);                            // the static call graph is broken
 ```
 
 Let's be honest about the limits: the method is still defined in the class, and `javap -p` lists it; reflection
@@ -1569,12 +1569,12 @@ handful of genuinely sensitive calls.
 In Android applications, R8 is turned on with a few lines in the Gradle configuration. Having it on in the release
 build is a baseline expectation of mobile security standards (OWASP MASVS-RESILIENCE):
 
-```groovy title="app/build.gradle — sürüm derlemesinde küçültme ve gizleme"
+```groovy title="app/build.gradle — shrinking and obfuscation in the release build"
 android {
     buildTypes {
         release {
-            minifyEnabled true          // R8: küçültme + iyileştirme + gizleme
-            shrinkResources true        // kullanılmayan kaynakları (resim, düzen) da kaldır
+            minifyEnabled true          // R8: shrinking + optimisation + obfuscation
+            shrinkResources true        // also remove unused resources (images, layouts)
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                           'proguard-rules.pro'
         }
@@ -1626,20 +1626,20 @@ Filling in this table for before and after obfuscation and putting it into the s
 Let's actually run the first two rows of this table on the jar files Demo 5 produces (if you downloaded ProGuard
 with the demo's `hazirla` script):
 
-```bash title="1) Gizleme oncesi: anlamli ad sayisini say"
+```bash title="1) Before obfuscation: count meaningful names"
 cd code/week-05/05-gizleme/cikti
 javap -p -classpath oncesi.jar 'GizliSabit' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Cikti: kaynaktaki adlarin hepsi (sinif, alan, metot) birebir gorunur
+# Output: every name from the source (class, field, method) appears verbatim
 ```
 
-```bash title="2) Gizleme sonrasi: ayni arama"
+```bash title="2) After obfuscation: the same search"
 javap -p -classpath sonrasi.jar 'a' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Beklenen: 0 (ya da yalnizca -keep ile korunan giris noktasinin adi)
+# Expected: 0 (or only the name of the entry point kept with -keep)
 ```
 
-```bash title="3) Paket boyutu"
+```bash title="3) Package size"
 ls -la oncesi.jar sonrasi.jar
-# Kucultme sinif sayisina bagli olarak boyutu azaltir; tek basina gizleme boyutu pek degistirmez
+# Shrinking reduces the size depending on the class count; obfuscation alone barely changes the size
 ```
 
 These three commands turn the claim "obfuscation worked" into **a measurable number**: if the first command's
@@ -1659,9 +1659,9 @@ The Java counterparts of the static-analysis layers we saw for C/C++ in Week 4:
 | Android Lint | Android-specific security warnings (exported components, insecure network configuration) |
 | OWASP Dependency-Check (Maven/Gradle plugin) | Vulnerable dependencies (Section 14) |
 
-```bash title="Maven projesinde SpotBugs + Find Security Bugs"
+```bash title="SpotBugs + Find Security Bugs in a Maven project"
 mvn com.github.spotbugs:spotbugs-maven-plugin:check
-# pom.xml'de eklenti yapılandırmasına findsecbugs-plugin eklenir
+# the findsecbugs-plugin is added to the plugin configuration in pom.xml
 ```
 
 These tools are added to the secure build pipeline (CI) from Week 4 in exactly the same way: a new high-severity
@@ -1702,7 +1702,7 @@ There are two common standards: OWASP's **CycloneDX** (security-focused) and the
 (started licence-focused, now the ISO/IEC 5962 standard). The United States' 2021 cybersecurity executive order
 and the European Union's Cyber Resilience Act have begun requiring an SBOM from software suppliers.
 
-```json title="CycloneDX 1.5 — tek bileşenlik kesit (değerler sentetik)"
+```json title="CycloneDX 1.5 — a single-component excerpt (values synthetic)"
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",

@@ -92,7 +92,7 @@
         dropdown at the top; **Build > Build All**. If you run the anti-debug demo with **F5** (under the
         debugger), you will see the detection trigger.
 
-    Setup details and safety rules: [`code/README.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.md).
+    Setup details and safety rules: [`code/README.en.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.en.md).
 
 !!! warning "Ethics rule — applies every week in this course"
     This week we look at techniques an application uses to protect **itself**, and how those techniques are

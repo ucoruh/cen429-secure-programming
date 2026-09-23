@@ -40,7 +40,7 @@
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
-    The initial build is explained in `code/README.md`. From the **`code`** folder:
+    The initial build is explained in `code/README.en.md`. From the **`code`** folder:
 
     ```powershell
     # Windows (PowerShell)

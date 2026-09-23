@@ -66,7 +66,7 @@
 !!! tip "Prepare the lab beforehand"
     All demos run on **Windows** (Visual Studio 2022 Community or PowerShell), on **WSL**, and on **Linux**.
     Setup, opening the project in Visual Studio, and the safety rules:
-    [`code/README.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.md). In short:
+    [`code/README.en.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.en.md). In short:
 
     === "Windows"
 
@@ -2464,10 +2464,10 @@ certification"** and write a **security guide** for it (20–30 pages). This wee
     - **S5** Asset list (draft): for every asset, its location, creation → deletion, and C/I/I+ class
 - [ ] Fill in **steps 0–4** of the seven-step template from the "Worked example" section, for your own project.
 
-```markdown title="S3 arayüz tablosu şablonu"
-| ID | Uç A | Uç B | Kimlik doğrulama | Gizlilik / bütünlük | Açıklama |
-| -- | ---- | ---- | ---------------- | ------------------- | -------- |
-| A  | Konsol uyg. | Güvenlik DLL'i | ... | ... | ... |
+```markdown title="S3 interface table template"
+| ID | End A | End B | Authentication | Confidentiality / integrity | Description |
+| -- | ----- | ----- | --------------- | ---------------------------- | ----------- |
+| A  | Console app | Security DLL | ... | ... | ... |
 ```
 
 ---

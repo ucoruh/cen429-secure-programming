@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T13:11:21.403899</dc:date>
+    <dc:date>2026-09-23T16:37:26.957080</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 27.054 85.1472 27.054 91.13472
 L 27.054 312.00768 
 Q 27.054 317.9952 38.1024 317.9952 
 z
-" clip-path="url(#ped0602f571)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p418b3955e2)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 43.0128 336.62304 
@@ -53,7 +53,7 @@ Q 33.192 312.67296 33.192 317.9952
 L 33.192 331.3008 
 Q 33.192 336.62304 43.0128 336.62304 
 z
-" clip-path="url(#ped0602f571)" style="fill: #e8f6f7"/>
+" clip-path="url(#p418b3955e2)" style="fill: #e8f6f7"/>
    </g>
    <g id="text_1">
     <!-- Süreç ve gereksinim (13. hafta) -->
@@ -582,7 +582,7 @@ Q 66.951 114.2532 66.951 120.24072
 L 66.951 282.90168 
 Q 66.951 288.8892 77.9994 288.8892 
 z
-" clip-path="url(#ped0602f571)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p418b3955e2)" style="fill: #d3eef0; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
     <!-- Katmanlı savunmada gizlemenin yeri -->
@@ -1259,7 +1259,7 @@ Q 290.988 79.15968 290.988 80.1576
 L 290.988 80.1576 
 Q 290.988 81.15552 292.8294 81.15552 
 z
-" clip-path="url(#ped0602f571)" style="fill: #9ed6d7"/>
+" clip-path="url(#p418b3955e2)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_4">
     <!-- Kriptografi ve anahtar yönetimi (3., 10. hafta) -->
@@ -1464,7 +1464,7 @@ Q 106.848 143.3592 106.848 149.34672
 L 106.848 253.79568 
 Q 106.848 259.7832 117.8964 259.7832 
 z
-" clip-path="url(#ped0602f571)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p418b3955e2)" style="fill: #b9e3e5; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_5">
     <!-- Tek başına gizleme bir güvenlik mimarisi değildir; diğer katmanların ömrünü uzatır. -->
@@ -1909,7 +1909,7 @@ Q 146.745 172.4652 146.745 178.45272
 L 146.745 224.68968 
 Q 146.745 230.6772 157.7934 230.6772 
 z
-" clip-path="url(#ped0602f571)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p418b3955e2)" style="fill: #9ed6d7; stroke: #0a9396; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
     <!-- GİZLEME (9., 14. hafta) -->
@@ -2084,7 +2084,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="ped0602f571">
+  <clipPath id="p418b3955e2">
    <rect x="8.64" y="8.64" width="613.8" height="332.64"/>
   </clipPath>
  </defs>

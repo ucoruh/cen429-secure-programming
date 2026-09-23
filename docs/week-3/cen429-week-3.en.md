@@ -95,7 +95,7 @@
         dropdown at the top; **Build > Build All**. The binaries land in each demo's `bin\windows` or `bin/linux`
         folder.
 
-    Setup details and safety rules: [`code/README.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.md).
+    Setup details and safety rules: [`code/README.en.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.en.md).
 
 !!! warning "Ethics rule — applies every week in this course"
     In this course we learn about attacks **by seeing them**. All demos only produce files inside their own

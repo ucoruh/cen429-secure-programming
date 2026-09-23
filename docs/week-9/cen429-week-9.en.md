@@ -38,7 +38,7 @@
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
-    Setup and the first build are in `code/README.md` (Visual Studio or the command line). After cloning the repository and entering the **`code`** folder:
+    Setup and the first build are in `code/README.en.md` (Visual Studio or the command line). After cloning the repository and entering the **`code`** folder:
 
     ```powershell
     # Windows (PowerShell) — 'code' klasöründe
@@ -144,7 +144,7 @@ Goal: someone with no access to the source can infer the logic just by looking a
 When we open the function `int topla(int a, int b) { return a + b; }` in a decompiler, the typical output looks
 like this (the exact format varies from tool to tool, but the idea is the same):
 
-```text title="Tersine derleyici çıktısı (kavramsal örnek — Ghidra/IDA benzeri)"
+```text title="Decompiler output (conceptual example — Ghidra/IDA-like)"
 undefined4 FUN_00401020(int param_1, int param_2)
 {
     return param_1 + param_2;
@@ -209,8 +209,8 @@ operations explicitly).
 - Property: `a ^ b ^ b == a` → **it undoes itself**.
 
 ```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
+c = a ^ 0x5A;   /* encode */
+a = c ^ 0x5A;   /* decode */
 ```
 
 It is heavily used in obfuscation because it is reversible.
@@ -295,13 +295,13 @@ Program = basic blocks wired together.
 **Let's tie the "basic block" and "CFG" ideas together with a concrete example.** Take the small function below,
 which we will meet again in section 5:
 
-```c title="denetim: üç temel bloklu küçük bir fonksiyon"
+```c title="denetim: a small function with three basic blocks"
 int denetim(int girdi) {
-    int a = girdi + 1;      /* Blok 1 */
-    if (a > 10) {            /* Blok 2 */
+    int a = girdi + 1;      /* Block 1 */
+    if (a > 10) {            /* Block 2 */
         return HATA;
     }
-    return a * 2;             /* Blok 3 */
+    return a * 2;             /* Block 3 */
 }
 ```
 
@@ -522,17 +522,17 @@ when each family "becomes a rule."
 Let's not leave the taxonomy abstract. In the small (synthetic) function below, let's mark which line belongs to
 **which family** with comments:
 
-```c title="Beş aile tek fonksiyonda (kavram gösterimi)"
-/* DÜZEN (layout): fonksiyon adı 'esik_hesapla' değil, anlamsız 'f7' */
+```c title="Five families in one function (concept demonstration)"
+/* LAYOUT: the function name isn't 'esik_hesapla' but the meaningless 'f7' */
 int f7(int x) {
-    /* VERİ (data): 0x2A sabiti doğrudan yazılmıyor, iki parçadan üretiliyor (K-02, bölüm 6) */
+    /* DATA: the 0x2A constant isn't written directly, it's produced from two parts (K-02, section 6) */
     uint8_t esik = (uint8_t)(0x37 ^ 0x1D);
 
-    /* KONTROL AKIŞI (control flow): opak yüklem ile dallanma (K-01, bölüm 5) */
+    /* CONTROL FLOW: branching via an opaque predicate (K-01, section 5) */
     if (((x * (x + 1)) & 1u) == 0u) {
-        return esik;          /* gerçek yol: x*(x+1) her zaman çift olduğu için buraya HER ZAMAN girilir */
+        return esik;          /* real path: since x*(x+1) is always even, this is ALWAYS entered */
     }
-    return 0;                 /* ÖNLEYİCİ (anti-analysis) amaçlı ölü dal: hiç çalışmaz, analisti oyalar */
+    return 0;                 /* ANTI-ANALYSIS dead branch: never runs, just distracts the analyst */
 }
 ```
 
@@ -636,13 +636,13 @@ your own project with this same template:
 ![The six lines of the protection rule template](assets/h09-10-koruma-kurali.svg)
 
 ```text
-KURAL K-xx: <tekniğin adı>
-  Neyi korur? : hangi varlık / hangi kod bölümü (ör. lisans denetimi, anahtar türetme)
-  Hangi tehdide karşı? : statik analiz / dinamik analiz / otomatik saldırı / kurcalama
-  Nasıl? : kavram düzeyinde uygulama (bir cümle)
-  Maliyet : boyut, hız, bakım, hata ayıklama zorluğu
-  Sınır : neyi korumaz, hangi saldırıya dayanmaz
-  Ölçüm : etkinliği nasıl doğrularız (bkz. bölüm 5)
+RULE K-xx: <name of the technique>
+  What does it protect? : which asset / which code section (e.g. licence check, key derivation)
+  Against which threat? : static analysis / dynamic analysis / automated attack / tampering
+  How?                  : concept-level application (one sentence)
+  Cost                  : size, speed, maintenance, debugging difficulty
+  Limit                 : what it doesn't protect, which attack it doesn't withstand
+  Measurement           : how we verify its effectiveness (see section 5)
 ```
 
 The value of this template is this: obfuscation is not a "yes/no" attribute. An evaluator (week 13, attack
@@ -655,13 +655,13 @@ So this doesn't stay abstract, let's fill the template exactly, using the **real
 the "This week's working demo" box at the start of this section (K-04 as applied in the demo):
 
 ```text
-KURAL K-04-uygulama: erisim_ver fonksiyonuna kontrol akışı düzleştirme
-  Neyi korur?       : erişim denetiminin akış sırası (CEN429-OK karşılaştırmasının nerede/nasıl yapıldığı)
-  Hangi tehdide karşı?: statik analiz (tersine derleyicide CFG okuma), tek-bayt/tek-dal yama saldırısı
-  Nasıl?            : switch tabanlı dağıtıcı (K-04) + opak yüklem (K-01) + rastgele çıkış (K-05)
-  Maliyet           : komut sayısı 28 → 51 (+82%), dal sayısı 3 → 6 (+100%) — objdump ile ölçüldü
-  Sınır             : yalnız düzleştirme; sembolik yürütmeyle geri açılabilir (bölüm 10); veri hâlâ K-07 ister
-  Ölçüm             : objdump çıktısında komut/dal sayısı karşılaştırması (bu haftanın demosu, adım adım kılavuzda)
+RULE K-04-applied: control-flow flattening applied to the erisim_ver function
+  What does it protect? : access-check flow order (where/how the CEN429-OK comparison is done)
+  Against which threat? : static analysis (reading the CFG in a decompiler), single-byte/single-branch patch attack
+  How?                  : switch-based dispatcher (K-04) + opaque predicate (K-01) + random exit (K-05)
+  Cost                  : instruction count 28 → 51 (+82%), branch count 3 → 6 (+100%) — measured with objdump
+  Limit                 : flattening only; can be undone via symbolic execution (section 10); data still needs K-07
+  Measurement           : instruction/branch count comparison in objdump output (this week's demo, in the step-by-step guide)
 ```
 
 Let's verify the percentages in the cost line: the increase in instruction count is `(51 − 28) / 28 × 100 ≈
@@ -681,13 +681,13 @@ To see that the template fits any kind of asset, let's fill it this time for a *
 in section 6 (a string, not a function):
 
 ```text
-KURAL K-07-uygulama: hata mesajı dizgesine dize kodlama
-  Neyi korur?       : ikili dosyada duran "Erisim reddedildi" gibi okunabilir metinler
-  Hangi tehdide karşı?: strings taraması (bölüm 3'teki "saldırganın ilk 10 dakikası")
-  Nasıl?            : XOR 0x5A ile kodla, kullanım anında çöz, memset_s ile hemen sil (bölüm 6)
-  Maliyet           : düşük — birkaç ek komut, ölçülebilir bir hız kaybı yok
-  Sınır             : çözme anahtarı ikilide durur; gerçek anahtar koruması değildir (bölüm 3 kuralı)
-  Ölçüm             : strings çıktısında ilgili dizge sayısı: kodlama öncesi 1, sonrası 0
+RULE K-07-applied: string encoding applied to the error-message string
+  What does it protect? : readable text sitting in the binary, such as "Erisim reddedildi"
+  Against which threat? : strings scanning (section 3's "attacker's first 10 minutes")
+  How?                  : encode with XOR 0x5A, decode at the moment of use, wipe immediately with memset_s (section 6)
+  Cost                  : low — a few extra instructions, no measurable speed loss
+  Limit                 : the decoding key sits in the binary; not real key protection (section 3's rule)
+  Measurement           : count of the relevant string in strings output: 1 before encoding, 0 after
 ```
 
 Placing the two examples (K-04-uygulama and K-07-uygulama) side by side makes the difference clear: **control-flow**
@@ -713,14 +713,14 @@ that **strengthen** it. All examples are synthetic and are told through a single
 is done on a value that the programmer knows but that an analysis tool cannot easily resolve (an **opaque
 predicate**). A classic example is an arithmetic identity that is always true but hard to prove statically:
 
-```c title="Opak yüklem: her zaman true, ama statik analiz kolay kanıtlayamaz"
-/* x*(x+1) her zaman çifttir → (x*(x+1)) % 2 == 0 daima doğrudur. */
+```c title="Opaque predicate: always true, but static analysis can't easily prove it"
+/* x*(x+1) is always even → (x*(x+1)) % 2 == 0 is always true. */
 static int opak_dogru(unsigned x) { return ((x * (x + 1)) & 1u) == 0; }
 
-if (opak_dogru(sayac)) {          /* gerçek yol: daima buraya girer */
+if (opak_dogru(sayac)) {          /* real path: this is ALWAYS entered */
     durum = gercek_adim(durum);
 } else {
-    durum = sahte_adim(durum);    /* ölü yol: hiç çalışmaz ama analizde gerçek görünür */
+    durum = sahte_adim(durum);    /* dead path: never runs, but looks real under analysis */
 }
 ```
 
@@ -763,11 +763,11 @@ before/after flattening.
 cannot be read off the CFG" with numbers. Let our real iteration bound be `3`, but instead of writing it directly,
 let's wrap it in a second **always-true** opaque predicate:
 
-```c title="Opak döngü: gerçek sınır (3) kodda açıkça görünmez"
-static int hep_dogru(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) her zaman çift — bkz. yukarısı */
+```c title="Opaque loop: the real bound (3) isn't explicitly visible in the code"
+static int hep_dogru(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) is always even — see above */
 
 unsigned i = 0;
-while (hep_dogru(i) && i < GERCEK_SINIR) {   /* GERCEK_SINIR = 3, ayrı bir sabitte tanımlı (K-02 ile kodlanabilir) */
+while (hep_dogru(i) && i < GERCEK_SINIR) {   /* GERCEK_SINIR = 3, defined in a separate constant (can be encoded with K-02) */
     isle(i);
     i++;
 }
@@ -795,9 +795,9 @@ same result but looks more complex (mixed boolean-arithmetic, MBA). For example,
 `(a ^ b) + 2*(a & b)`; `x * 2` equals `x << 1`. Constants are never written directly; they are produced at runtime
 by a small computation:
 
-```c title="Sabit dönüşümü: 0x2A doğrudan görünmez"
+```c title="Constant transform: 0x2A isn't directly visible"
 
-/* 0x2A yerine iki parçadan üret; ikili dosyada '0x2A' araması sonuç vermez. */
+/* Produce it from two parts instead of 0x2A; a '0x2A' search in the binary returns nothing. */
 static uint8_t esik(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
 ```
 
@@ -850,9 +850,9 @@ The guide writes these two as **separate** rules, and the difference matters:
 | Purpose | Hide real operations in a crowd | Show the analyst a fake execution path |
 | Example | Adding `x ^ x` to a CRC computation (result unchanged) | The code inside `if (opak_yanlis()) { ... }` |
 
-```c title="Sahte işlem: sonucu değiştirmez, kodu kalabalıklaştırır"
+```c title="Bogus operation: doesn't change the result, just crowds the code"
 crc = crc32_guncelle(crc, veri, n);
-crc ^= (sabit ^ sabit);   /* = crc; sahte işlem, sonuç aynı */
+crc ^= (sabit ^ sabit);   /* = crc; bogus operation, result unchanged */
 ```
 
 **What does it protect?** The real logic, by surrounding it with meaningless-but-plausible-looking code. **Cost:**
@@ -882,7 +882,7 @@ block leads to which." **How?** In the guide's words, **vertical** control flow 
 basic blocks are moved into a `switch` dispatcher inside a single loop; the sequence is read only from a **state
 variable**.
 
-```c title="Düzleştirme şablonu (4. haftadan; burada güçlendiriyoruz)"
+```c title="Flattening template (from week 4; here we strengthen it)"
 int durum = BASLA;
 for (;;) {
     switch (durum) {
@@ -891,7 +891,7 @@ for (;;) {
     case ADIM2:  durum = BITIR; break;
     case HATA:   return RED;
     case BITIR:  return IZIN;
-    default:     return RED;          /* rastgele çıkış buraya düşer (K-05) */
+    default:     return RED;          /* random exit lands here (K-05) */
     }
 }
 ```
@@ -913,19 +913,19 @@ node/edge count in a decompiler, time required to trace a single check.
 **Worked example: let's flatten a three-block function by hand.** Let's start with the following ordinary
 (unflattened) function:
 
-```c title="Düzleştirme öncesi: doğal (dikey) akış"
+```c title="Before flattening: natural (vertical) flow"
 int denetim(int girdi) {
-    int a = girdi + 1;      /* Blok 1 */
-    if (a > 10) {            /* Blok 2 */
+    int a = girdi + 1;      /* Block 1 */
+    if (a > 10) {            /* Block 2 */
         return HATA;
     }
-    return a * 2;             /* Blok 3 */
+    return a * 2;             /* Block 3 */
 }
 ```
 
 Let's move these three blocks by hand into the flattened form using K-04's template:
 
-```c title="Düzleştirme sonrası: aynı üç blok, tek switch içinde"
+```c title="After flattening: the same three blocks, inside a single switch"
 int denetim(int girdi) {
     int durum = B1, a = 0;
     for (;;) {
@@ -934,7 +934,7 @@ int denetim(int girdi) {
         case B2: durum = (a > 10) ? B_HATA : B3; break;
         case B3: return a * 2;
         case B_HATA: return HATA;
-        default: return HATA;      /* rastgele çıkış buraya düşer (K-05) */
+        default: return HATA;      /* random exit lands here (K-05) */
         }
     }
 }
@@ -961,9 +961,9 @@ straight to a `return RED` line; instead the state variable is set to an **unpre
 function exits through the `default` branch. Successful exit can use the same trick, so success and failure look
 alike in the flow.
 
-```c title="Rastgele çıkış: hata noktası akıştan okunamaz"
+```c title="Random exit: the failure point can't be read off the flow"
 if (!imza_gecerli(p)) {
-    durum = kararsiz_deger();   /* switch'te tanımlı olmayan bir değer → default */
+    durum = kararsiz_deger();   /* a value not defined in the switch → default */
     break;
 }
 ```
@@ -994,13 +994,13 @@ it does; this is a **delaying** rule. **Measurement:** count of recognisable lib
 **Worked example: your own constant-time comparison instead of `memcmp`.** The rule tells us to replace the
 standard `memcmp` because it is recognisable; but the real payoff is closing a familiar side channel from week 3:
 
-```c title="Sabit zamanlı karşılaştırma (kavram)"
+```c title="Constant-time comparison (concept)"
 static int sabit_zamanli_esit_mi(const uint8_t *a, const uint8_t *b, size_t n) {
     uint8_t fark = 0;
     for (size_t i = 0; i < n; i++) {
-        fark |= (uint8_t)(a[i] ^ b[i]);   /* her bayt işlenir, ilk uyuşmazlıkta DURMAZ */
+        fark |= (uint8_t)(a[i] ^ b[i]);   /* every byte is processed, does NOT stop at the first mismatch */
     }
-    return fark == 0;                      /* tek karşılaştırma, dizinin sonunda */
+    return fark == 0;                      /* a single comparison, at the end of the array */
 }
 ```
 
@@ -1014,11 +1014,11 @@ twofold: the `memcmp` name no longer appears in the binary, and the comparison i
 
 **A bogus parameter example.** The rule's second part — bogus parameters — makes the signature misleading:
 
-```c title="Sahte parametre: imza yanıltıcı hâle gelir"
-/* Gerçek imza: int erisim_kontrol(const char *kod); */
+```c title="Bogus parameter: the signature becomes misleading"
+/* Real signature: int erisim_kontrol(const char *kod); */
 int erisim_kontrol(const char *kod, int gunluk_seviyesi, void *ayarlar) {
-    (void)gunluk_seviyesi;   /* kullanılmıyor — sahte parametre */
-    (void)ayarlar;           /* kullanılmıyor — sahte parametre */
+    (void)gunluk_seviyesi;   /* unused — bogus parameter */
+    (void)ayarlar;           /* unused — bogus parameter */
     return sabit_zamanli_esit_mi((const uint8_t *)kod, GERCEK_KOD, GERCEK_KOD_UZUNLUK);
 }
 ```
@@ -1050,13 +1050,13 @@ running `strings`; `"Lisans gecersiz"` or a URL tells the attacker exactly where
 strings are **encoded before compilation** (e.g., encrypted with an XOR key or a generation script), sit encoded in
 the binary, are **decoded only at the moment of use**, and are **wiped from memory** the instant the job is done.
 
-```c title="Dize kodlama: kullan ve hemen sil (sentetik)"
-static const uint8_t GIZLI[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* "merhaba" değil; sentetik */
+```c title="String encoding: use then wipe immediately (synthetic)"
+static const uint8_t GIZLI[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* not "merhaba"; synthetic */
 void kullan(void) {
     char tmp[sizeof GIZLI];
-    for (size_t i = 0; i < sizeof GIZLI; i++) tmp[i] = GIZLI[i] ^ 0x5A;  /* çöz */
+    for (size_t i = 0; i < sizeof GIZLI; i++) tmp[i] = GIZLI[i] ^ 0x5A;  /* decode */
     isle(tmp, sizeof GIZLI);
-    memset_s_benzeri(tmp, sizeof tmp);   /* kullanımdan hemen sonra sil (3. hafta) */
+    memset_s_benzeri(tmp, sizeof tmp);   /* wipe immediately after use (week 3) */
 }
 ```
 
@@ -1104,8 +1104,8 @@ The guide makes a separate rule out of how security results are represented. Ret
 rule keeps a true/false value tied to **multiple values** in a way that cannot be flipped by patching a single
 byte. Functions likewise return this kind of **opaque return code** instead of a plain boolean.
 
-```c title="Opak boolean: tek bayt yaması sonucu çeviremez (kavram)"
-/* "izin" değeri tek bir sabit değil; iki durumdan türetilir ve çağıran taraf ikisini de doğrular. */
+```c title="Opaque boolean: a single-byte patch can't flip the result (concept)"
+/* The "allow" value isn't a single constant; it's derived from two states, and the caller verifies both. */
 typedef struct { uint32_t a, b; } Karar;
 static Karar izin_ver(void)  { return (Karar){ 0xA3C1u, 0x5C3Eu }; } /* a ^ b == 0xFFFF */
 static int  karar_izin_mi(Karar k) { return (k.a ^ k.b) == 0xFFFFu; }
@@ -1165,11 +1165,11 @@ recognise the sensitive buffer from its memory pattern.
 **Worked example: let's split a 32-bit value and merge it back.** Say the value we want to store is `0x1234ABCD`
 (32-bit). Instead of keeping it as a single 4-byte block, let's split it into two separate 16-bit **shares**:
 
-```c title="Değişken bölme ve yeniden birleştirme"
-uint16_t yuksek = 0x1234;   /* üst 16 bit — ayrı bir değişkende, belki ayrı bir yapıda */
-uint16_t dusuk  = 0xABCD;   /* alt 16 bit — koddaki başka bir yerde tutulur */
+```c title="Variable splitting and re-merging"
+uint16_t yuksek = 0x1234;   /* upper 16 bits — in a separate variable, perhaps a separate struct */
+uint16_t dusuk  = 0xABCD;   /* lower 16 bits — kept somewhere else in the code */
 
-uint32_t deger = ((uint32_t)yuksek << 16) | dusuk;   /* kullanım anında yeniden birleştirilir */
+uint32_t deger = ((uint32_t)yuksek << 16) | dusuk;   /* re-merged at the moment of use */
 ```
 
 Let's verify: `yuksek << 16` shifts `0x1234` left by 16 bits → `0x12340000`. OR-ing this with
@@ -1211,9 +1211,9 @@ out the VM's instruction set. We'll see this conceptually in week 14 with Tigres
 complex; but to see the mechanism, let's build a tiny three-instruction "virtual machine" — our goal is to compute
 `5 + 7` **without** a real addition instruction:
 
-```c title="Sanallaştırma fikri (küçük, kavramsal örnek — gerçek Tigress çıktısı değildir)"
+```c title="Virtualisation idea (small, conceptual example — not real Tigress output)"
 enum { OP_PUSH, OP_ADD, OP_RET };
-uint8_t kod[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* '5 + 7 hesapla' bayt kodu */
+uint8_t kod[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* bytecode for 'compute 5 + 7' */
 
 int yorumla(const uint8_t *kod, size_t n) {
     int yigin[8], sp = 0, pc = 0;
@@ -1400,7 +1400,7 @@ Comparing this function byte-by-byte between binaries produced with two differen
 coming out different (a hypothetical but realistic demo result):
 
 ```text
-fark_orani = degisen_bayt_sayisi / toplam_bayt_sayisi × 100
+diff_ratio = changed_byte_count / total_byte_count × 100
            = 340 / 512 × 100
            ≈ 66,4 %
 ```
@@ -1462,9 +1462,9 @@ the four metrics here:
 one entry/one exit, `complexity ≈ number_of_branches + 1`.
 
 ```text
-Öncesi : 3 dal + 1 = 4
-Sonrası: 6 dal + 1 = 7
-Artış  : (7 − 4) / 4 × 100 = %75
+Before  : 3 branches + 1 = 4
+After   : 6 branches + 1 = 7
+Increase: (7 − 4) / 4 × 100 = %75
 ```
 
 Complexity rises from `4` to `7`, i.e. by **75%**: a human analyst tracing the function by hand now has to follow
@@ -1699,32 +1699,32 @@ Let's combine this week's examples into a short S9 draft (replace the function n
 measurements in your own project):
 
 ```text
-S9 — İleri sağlamlaştırma (örnek taslak)
+S9 — Advanced hardening (example draft)
 
-1) Koruma tablosu
-   KURAL: lisans_dogrula fonksiyonuna K-04 (düzleştirme) + K-01 (opak yüklem) + K-05 (rastgele çıkış)
-     Neyi korur?        : lisans anahtarının doğrulama sırası
-     Hangi tehdide karşı?: statik CFG okuma, tek-bayt yama
-     Nasıl?             : switch dağıtıcı + x*(x+1) tabanlı opak yüklem + öngörülemeyen hata çıkışı
-     Maliyet             : komut 28→51 (+%82), dal 3→6 (+%100) [objdump ile ölçüldü]
-     Sınır               : sembolik yürütmeye (bölüm 10) karşı zayıf; veri hâlâ K-07 ile korunmalı
-     Ölçüm               : objdump çıktısı (ek A), CFG düğüm/kenar sayısı
+1) Protection table
+   RULE: K-04 (flattening) + K-01 (opaque predicate) + K-05 (random exit) applied to the lisans_dogrula function
+     What does it protect? : the order in which the licence key is verified
+     Against which threat? : static CFG reading, single-byte patch
+     How?                  : switch dispatcher + x*(x+1)-based opaque predicate + unpredictable failure exit
+     Cost                  : instructions 28→51 (+%82), branches 3→6 (+%100) [measured with objdump]
+     Limit                 : weak against symbolic execution (section 10); data still needs K-07 protection
+     Measurement           : objdump output (appendix A), CFG node/edge count
 
-   KURAL: anahtar dizesine K-07 (dize kodlama)
-     Neyi korur?        : ikili dosyadaki hassas dizgeler
-     Hangi tehdide karşı?: strings taraması (bölüm 3'teki "ilk 10 dakika" saldırısı)
-     Nasıl?             : XOR 0x5A ile kodlama, kullanım anında çözüp memset_s ile silme
-     Maliyet             : düşük (birkaç ek komut)
-     Sınır               : çözme anahtarı ikilide durur; gerçek anahtar koruması S8/whitebox işidir
-     Ölçüm               : strings çıktısında hassas dizge sayısı: 3 → 0
+   RULE: K-07 (string encoding) applied to the key string
+     What does it protect? : sensitive strings in the binary
+     Against which threat? : strings scanning (section 3's "first 10 minutes" attack)
+     How?                  : encode with XOR 0x5A, decode at the moment of use and wipe with memset_s
+     Cost                  : low (a few extra instructions)
+     Limit                 : the decoding key sits in the binary; real key protection is S8/whitebox's job
+     Measurement           : count of sensitive strings in strings output: 3 → 0
 
-2) Ölçüm: yukarıdaki iki satırda "Ölçüm" alanı doldurulmuş durumda (objdump + strings)
+2) Measurement: the "Measurement" field is filled in on both lines above (objdump + strings)
 
-3) Çeşitlendirme kararı: EVET — derleme betiğine rastgele bir --seed parametresi eklendi;
-   her sürüm farklı durum sabitleriyle derlenir (bölüm 8, K-11 ile).
+3) Diversification decision: YES — a random --seed parameter was added to the build script;
+   every release is compiled with different state constants (section 8, with K-11).
 
-4) Sınır ve kalan risk: Bu katman anahtarı korumaz (yalnız statik taramayı geciktirir);
-   sembolik yürütmeye karşı ölçülmedi (gelecek iş); anahtarın kalıcı koruması S10/S11'e bırakıldı.
+4) Limit and remaining risk: this layer doesn't protect the key (it only delays static scanning);
+   it hasn't been measured against symbolic execution (future work); permanent protection of the key is left to S10/S11.
 ```
 
 This draft combines the template from section 4 with the four metrics from section 9 and the diversification

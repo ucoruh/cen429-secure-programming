@@ -1,5 +1,7 @@
 # CEN429 Güvenli Programlama — Uygulama Kodları
 
+> English version: [README.en.md](README.en.md)
+
 Bu klasör, ders notlarındaki bütün demoların ve alıştırmaların **çalışan** kaynak kodlarını içerir. Her hafta bir
 klasördür (`week-01`, `week-02`, ...); her demo kendi alt klasöründedir. Bütün demolar **üç ortamda da** çalışır:
 

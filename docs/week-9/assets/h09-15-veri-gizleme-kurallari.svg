@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T13:11:20.839327</dc:date>
+    <dc:date>2026-09-23T16:37:26.528391</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 34.308 223.880256 34.308 227.96064
 L 34.308 238.1616 
 Q 34.308 242.241984 44.5752 242.241984 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill: #e8f6f7"/>
+" clip-path="url(#p06710ccd7f)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
     <path d="M 44.89605 113.242344 
@@ -53,7 +53,7 @@ Q 30.77865 71.248392 30.77865 76.85892
 L 30.77865 107.631816 
 Q 30.77865 113.242344 44.89605 113.242344 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p06710ccd7f)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_4">
     <path d="M 44.89605 160.846824 
@@ -66,7 +66,7 @@ Q 30.77865 118.852872 30.77865 124.4634
 L 30.77865 155.236296 
 Q 30.77865 160.846824 44.89605 160.846824 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p06710ccd7f)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_5">
     <path d="M 44.89605 208.451304 
@@ -79,7 +79,7 @@ Q 30.77865 166.457352 30.77865 172.06788
 L 30.77865 202.840776 
 Q 30.77865 208.451304 44.89605 208.451304 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#p06710ccd7f)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_6">
     <path d="M 42.0084 111.839712 
@@ -92,7 +92,7 @@ Q 27.891 69.84576 27.891 75.456288
 L 27.891 106.229184 
 Q 27.891 111.839712 42.0084 111.839712 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p06710ccd7f)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 42.0084 159.444192 
@@ -105,7 +105,7 @@ Q 27.891 117.45024 27.891 123.060768
 L 27.891 153.833664 
 Q 27.891 159.444192 42.0084 159.444192 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p06710ccd7f)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 42.0084 207.048672 
@@ -118,7 +118,7 @@ Q 27.891 165.05472 27.891 170.665248
 L 27.891 201.438144 
 Q 27.891 207.048672 42.0084 207.048672 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#p06710ccd7f)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Veri gizleme kuralları (K-07 – K-09) -->
@@ -945,7 +945,7 @@ Q 303.822 62.705088 303.822 63.47016
 L 303.822 63.47016 
 Q 303.822 64.235232 305.7471 64.235232 
 z
-" clip-path="url(#pa690fe0a8c)" style="fill: #9ed6d7"/>
+" clip-path="url(#p06710ccd7f)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- K-07 Dize kodlama -->
@@ -1982,7 +1982,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pa690fe0a8c">
+  <clipPath id="p06710ccd7f">
    <rect x="8.64" y="8.64" width="641.7" height="255.024"/>
   </clipPath>
  </defs>

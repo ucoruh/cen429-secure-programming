@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-09-23T13:11:15.688236</dc:date>
+    <dc:date>2026-09-23T16:37:22.143698</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 35.424 273.288384 35.424 278.0784
 L 35.424 290.05344 
 Q 35.424 294.843456 46.1376 294.843456 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill: #e8f6f7"/>
+" clip-path="url(#pe59c64bc35)" style="fill: #e8f6f7"/>
    </g>
    <g id="patch_3">
     <path d="M 46.4724 128.540088 
@@ -53,7 +53,7 @@ Q 31.7412 83.633688 31.7412 90.21996
 L 31.7412 121.953816 
 Q 31.7412 128.540088 46.4724 128.540088 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pe59c64bc35)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_4">
     <path d="M 46.4724 185.421528 
@@ -66,7 +66,7 @@ Q 31.7412 140.515128 31.7412 147.1014
 L 31.7412 178.835256 
 Q 31.7412 185.421528 46.4724 185.421528 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pe59c64bc35)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_5">
     <path d="M 46.4724 242.302968 
@@ -79,7 +79,7 @@ Q 31.7412 197.396568 31.7412 203.98284
 L 31.7412 235.716696 
 Q 31.7412 242.302968 46.4724 242.302968 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill-opacity: 0.078431"/>
+" clip-path="url(#pe59c64bc35)" style="fill-opacity: 0.078431"/>
    </g>
    <g id="patch_6">
     <path d="M 43.4592 126.89352 
@@ -92,7 +92,7 @@ Q 28.728 81.98712 28.728 88.573392
 L 28.728 120.307248 
 Q 28.728 126.89352 43.4592 126.89352 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pe59c64bc35)" style="fill: #eef2ff; stroke: #4054b2; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 43.4592 183.77496 
@@ -105,7 +105,7 @@ Q 28.728 138.86856 28.728 145.454832
 L 28.728 177.188688 
 Q 28.728 183.77496 43.4592 183.77496 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pe59c64bc35)" style="fill: #e8f6f7; stroke: #0a9396; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 43.4592 240.6564 
@@ -118,7 +118,7 @@ Q 28.728 195.75 28.728 202.336272
 L 28.728 234.070128 
 Q 28.728 240.6564 43.4592 240.6564 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill: #fdeaea; stroke: #c0392b; stroke-width: 1.7; stroke-linejoin: miter"/>
+" clip-path="url(#pe59c64bc35)" style="fill: #fdeaea; stroke: #c0392b; stroke-width: 1.7; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Tuz, IV ve nonce: üçü de gizli değil, üçü de farklı iş yapar -->
@@ -1191,7 +1191,7 @@ Q 316.656 72.107712 316.656 73.00584
 L 316.656 73.00584 
 Q 316.656 73.903968 318.6648 73.903968 
 z
-" clip-path="url(#p7ba909bfd7)" style="fill: #9ed6d7"/>
+" clip-path="url(#pe59c64bc35)" style="fill: #9ed6d7"/>
    </g>
    <g id="text_3">
     <!-- TUZ (salt) -->
@@ -2452,7 +2452,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p7ba909bfd7">
+  <clipPath id="pe59c64bc35">
    <rect x="8.64" y="8.64" width="669.6" height="299.376"/>
   </clipPath>
  </defs>

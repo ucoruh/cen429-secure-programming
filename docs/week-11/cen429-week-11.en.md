@@ -38,7 +38,7 @@
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
-    The initial build is explained in `code/README.md`. From the **`code`** folder:
+    The initial build is explained in `code/README.en.md`. From the **`code`** folder:
 
     ```powershell
     # Windows (PowerShell)
@@ -554,7 +554,7 @@ So in the binary, `kodlanmis_k = 0x66`. The developer thinks "the key no longer 
 that is, somewhere it **must** perform this computation:
 
 ```c
-uint8_t k_gercek = kodlanmis_k ^ m;   /* m de ikilide bir yerde olmalı! */
+uint8_t k_gercek = kodlanmis_k ^ m;   /* m must also live somewhere in the binary! */
 ```
 
 The constant `m = 0x5A` sits inside the binary too, **right next to** the constant `kodlanmis_k = 0x66` (both are
@@ -568,7 +568,7 @@ k = kodlanmis_k XOR m = 0x66 XOR 0x5A
   = 0110 0110
   ^ 0101 1010
   -----------
-  = 0011 1100 = 0x3C        ← ANAHTAR YİNE BULUNDU
+  = 0011 1100 = 0x3C        ← KEY FOUND AGAIN
 ```
 
 **Conclusion.** Masking changes the key's **bit pattern** in the binary but doesn't change the protection: if the
@@ -652,8 +652,8 @@ In one round, AES first XORs the state byte with the round key, then passes it t
 key, these two operations can be merged into **a single lookup table**:
 
 ```text
-Normal:   çıktı = S-box[ x XOR k ]     (k tur anahtarının baytı)
-WBC:      T[x] = S-box[ x XOR k ]      → 256 girişli bir tablo, k tablonun İÇİNDE
+Normal:   output = S-box[ x XOR k ]     (k is the round key's byte)
+WBC:      T[x] = S-box[ x XOR k ]      → a 256-entry table, k is INSIDE the table
 ```
 
 Now there's no variable called `k` in the code anymore; `k` is embedded in the table's contents. But this is
@@ -682,7 +682,7 @@ That is, the value they read in the binary: `T[0x00] = 0xEB`.
 **Step 2 — Invert the S-box.** The S-box is public and **one-to-one**; its inverse is also known:
 
 ```text
-S-box⁻¹[0xEB] = 0x3C        (çünkü S-box[0x3C] = 0xEB)
+S-box⁻¹[0xEB] = 0x3C        (because S-box[0x3C] = 0xEB)
 ```
 
 **Step 3 — Solve for the key.** Since, by definition, `S-box⁻¹[T[x]] = x XOR k`:
@@ -690,7 +690,7 @@ S-box⁻¹[0xEB] = 0x3C        (çünkü S-box[0x3C] = 0xEB)
 ```text
 x XOR k = 0x3C
 0x00 XOR k = 0x3C
-k = 0x3C XOR 0x00 = 0x3C        ← ANAHTAR BULUNDU
+k = 0x3C XOR 0x00 = 0x3C        ← KEY FOUND
 ```
 
 **Conclusion.** The attacker found the key with **a single table entry**, without even trying all 256
@@ -884,8 +884,8 @@ extension on top of our toy S-box.
 Normally, in a non-whitebox implementation, **two separate steps** run for input `x`:
 
 ```text
-Adım 1: y = S[x XOR k]        (bizim oyuncak S-box'ımız, anahtarla)
-Adım 2: z = y XOR c            (c: sonraki turdan gelen sabit bir "karıştırma" değeri, ör. c = 1)
+Step 1: y = S[x XOR k]        (our toy S-box, with the key)
+Step 2: z = y XOR c            (c: a fixed "mixing" value coming from the next round, e.g. c = 1)
 ```
 
 If these two steps run as **two separate instructions**, the attacker can **separately** observe the intermediate
@@ -893,7 +893,7 @@ value `y` in a debugger — each step is its own observation point on its own. T
 these two steps into **a single table**:
 
 ```text
-Birleşik tablo: U[x] = S[x XOR k] XOR c
+Merged table: U[x] = S[x XOR k] XOR c
 ```
 
 Let's take `k = 2`, `c = 1` and build `U[x]` for the four inputs (recall our earlier table `T[x] = S[x XOR k]`,
@@ -984,8 +984,8 @@ concrete. Consider this tiny matrix, which mixes a 2-bit value `(v₁, v₀)` (e
 number 3):
 
 ```text
-M = | 1 1 |     yeni_v1 = v1 XOR v0
-    | 0 1 |     yeni_v0 = v0
+M = | 1 1 |     new_v1 = v1 XOR v0
+    | 0 1 |     new_v0 = v0
 ```
 
 This is a **linear transformation** over GF(2): each new bit is a selected XOR of the old bits (recall the GF(2)
@@ -994,8 +994,8 @@ definition from Section 0: addition = XOR).
 **Example input: `v = 11` (i.e. `v₁=1, v₀=1`, decimal 3).**
 
 ```text
-yeni_v1 = v1 XOR v0 = 1 XOR 1 = 0
-yeni_v0 = v0        = 1
+new_v1 = v1 XOR v0 = 1 XOR 1 = 0
+new_v0 = v0        = 1
 ```
 
 Result: `M·v = 01` (decimal 1). Someone looking at this in isolation would say "the number 3 turned into 1", but
@@ -1005,10 +1005,10 @@ without knowing **which matrix** did it, they cannot reverse it.
 the same input — if we return to the original value, we confirm that `M` is its own inverse (an involution):
 
 ```text
-girdi: 01  (yeni_v1=0, yeni_v0=1)
-yeni_v1' = 0 XOR 1 = 1
-yeni_v0' = 1
-sonuç: 11  ← özgün değere (3) geri döndük
+input: 01  (new_v1=0, new_v0=1)
+new_v1' = 0 XOR 1 = 1
+new_v0' = 1
+result: 11  ← we're back to the original value (3)
 ```
 
 **Confirmed:** `M` is a non-singular matrix (it has an inverse — here, coincidentally, itself), meaning
@@ -1034,7 +1034,7 @@ the whitebox AES operation is encapsulated with two random non-singular matrices
 ![AES wrapped in external encoding with F and G](assets/h11-04-dis-kodlama.svg)
 
 ```text
-Girdi --F⁻¹--> [ kodlanmış AES tabloları ağı ] --G--> Çıktı
+Input --F⁻¹--> [ network of encoded AES tables ] --G--> Output
 ```
 
 **This step is both the strongest protection and the biggest limitation:**

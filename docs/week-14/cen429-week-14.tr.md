@@ -5,6 +5,8 @@
 | **Tarih** | 18.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 9'dan gizleme kuralları ve ölçüm çerçevesi; C'de derleme; Linux/WSL terminali (Tigress yalnız Linux'ta çalışır) |
+| **Uygulamalar** | [`code/week-14`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-14) — 1 demo; WSL/Linux'ta `sh tigress-hatti.sh`; Tigress kurulu değilse betik temiz bir türevle aynı akışı gösterir |
 
 <!-- materyal:basla -->
 

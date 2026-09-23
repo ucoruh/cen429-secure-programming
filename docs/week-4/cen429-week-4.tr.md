@@ -5,6 +5,8 @@
 | **Tarih** | 09.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | C'de işaretçi, dizi, dinamik bellek (`malloc`/`free`); Hafta 1'den bellek düzeni, yığın ve öbek; Linux/WSL terminalinde derleme ve `gdb` ile temel adımlar |
+| **Uygulamalar** | [`code/week-04`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-04) — 7 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
 

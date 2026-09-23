@@ -5,6 +5,8 @@
 | **Tarih** | 27.11.2026 |
 | **Öğrenme çıktıları** | ÖÇ.2, 3 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 3'ten simetrik şifreleme ve anahtar yönetimi; Hafta 9'dan gizleme kuralları (K-01…K-12); C'de dizi ve XOR işlemi |
+| **Uygulamalar** | [`code/week-11`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-11) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
 

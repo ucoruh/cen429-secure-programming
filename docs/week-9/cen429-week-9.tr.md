@@ -5,6 +5,8 @@
 | **Tarih** | 13.11.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
+| **Ön bilgi** | Hafta 1'den beyaz kutu saldırgan modeli; Hafta 4'ten derleme, `objdump` ve tersine mühendislik kavramları; C'de kontrol akışı (`if`, `switch`, döngü) |
+| **Uygulamalar** | [`code/week-09`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-09) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
 

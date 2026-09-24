@@ -15,7 +15,7 @@ tags:
 | **Tarih** | 25.09.2026 |
 | **Öğrenme çıktısı** | ÖÇ.1 (yaygın yazılım güvenlik açıklarını tanımlar ve sınıflandırır) |
 | **Süre** | 3 saat (3 × 50 dakika) |
-| **Ön bilgi** | Hafta 1 (CIA, saldırgan modeli, STRIDE, saldırı ağacı); C'de dosya okuma; PowerShell ya da Linux terminalinde `cd`, `ls` |
+| **Ön bilgi** | [Hafta 1](../week-1/cen429-week-1.md) (CIA, saldırgan modeli, STRIDE, saldırı ağacı); C'de dosya okuma; PowerShell ya da Linux terminalinde `cd`, `ls` |
 | **Uygulamalar** | [`code/week-02`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-02) — 14 demo; Windows (MSVC), WSL ve Linux'ta çalışır |
 
 <!-- materyal:basla -->
@@ -101,135 +101,46 @@ tags:
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Neden bu bölüm?
+### Önceki haftalardan gelenler
 
-Bu hafta "polimorfik virüs", "Bell–LaPadula", "CVSS" gibi terimler geçecek.
+- **Varlık, tehdit, zafiyet, risk ve saldırgan modeli** — bir varlığın değerini, ona yönelik tehdidi, tehdidi
+  mümkün kılan zayıflığı (zafiyet) ve olasılık × etki çarpımı olan riski ayırt etme dili
+  ([Hafta 1, §1](../week-1/cen429-week-1.md#1-guvenlik-nedir); saldırgan modeli için
+  [Hafta 1, §3](../week-1/cen429-week-1.md#3-saldirgan-kim-neye-erisebiliyor)). Bu hafta bu dili zararlı yazılım
+  (tehdit tarafı) ve erişim modelleri (savunma tarafı) üzerinden somutlaştırıyoruz.
+- **STRIDE ve saldırı ağacı** — bir arayüzdeki tehdit türlerini STRIDE'ın altı harfiyle sorup, bulunan tehditleri
+  kök hedeften dallara VE/VEYA mantığıyla ayrıştırma yöntemi
+  ([Hafta 1, §7](../week-1/cen429-week-1.md#7-tehdit-modelleme-stride-ve-saldiri-agaclari)). Bu hafta saldırı
+  ağacına **maliyet** ekleyip en ucuz saldırı yolunu hesaplıyoruz ([§8](#8-saldiri-agaclari), Demo 04).
 
-Hiçbirini bilmediğinizi varsayıyoruz.
+### Bu haftanın kavram haritası
 
-Önce hepsini **tek tek** tanımlayalım.
-
-### Zararlı yazılım (malware)
-
-- **Zararlı yazılım:** zarar vermek için yazılmış program.
-- "Virüs" bir alt türdür; hepsi virüs değildir.
-- Türler: virüs, solucan, truva atı, fidye, casus…
-
-### Virüs, solucan, truva atı
-
-- **Virüs:** başka bir programa **bulaşarak** yayılır.
-- **Solucan:** kendi başına, ağ üzerinden **kendini kopyalar**.
-- **Truva atı:** faydalı görünüp gizli zararlı taşır.
-
-### Fidye ve diğerleri
-
-- **Fidye (ransomware):** dosyaları şifreleyip fidye ister.
-- **Casus (spyware):** gizlice bilgi toplar.
-- **Arka kapı (backdoor):** gizli erişim bırakır.
-
-### Bir virüsün üç parçası
-
-- **Bulaştırıcı:** nasıl yayılır.
-- **Tetikleyici:** ne zaman etkinleşir.
-- **Yük (payload):** ne yapar.
-
-### Gizlenme: polimorfik/metamorfik
-
-- **Polimorfik:** her kopyada kendini **farklı şifreler** (imzadan kaçar).
-- **Metamorfik:** her kopyada kodunu **yeniden yazar**.
-- Amaç: imza tabanlı tespitten kaçmak.
-
-### Tespit: imza vs sezgisel
-
-- **İmza tabanlı:** bilinen zararlının parmak izini arar (hızlı, yeniyi kaçırır).
-- **Sezgisel/davranış:** şüpheli **davranışı** arar (yeniyi bulur, yanlış alarm).
-
-### Entropi (rastgelelik)
-
-- **Entropi:** verinin ne kadar rastgele göründüğü.
-- Şifreli/paketlenmiş kod **yüksek entropili**.
-- Tespitte ipucu: yüksek entropili bölge şüphelidir.
-
-### Erişim denetimi
-
-- **Erişim denetimi:** kim (özne), neye (nesne), ne yapabilir (hak)?
-- Bir **matris** ile modellenir.
-- Modeller: DAC, MAC, RBAC.
-
-### DAC / MAC / RBAC
-
-- **DAC:** sahibi izinleri belirler (Unix dosya izinleri).
-- **MAC:** sistem zorunlu kurallar koyar (etiketli).
-- **RBAC:** izinler **rollere** bağlı.
-
-### Biçimsel modeller
-
-- **Bell–LaPadula:** **gizlilik** (yukarı okuma yok).
-- **Biba:** **bütünlük** (aşağı okuma yok — BLP'nin tersi).
-- **Clark–Wilson:** ticari bütünlük (iyi biçimli işlemler).
-
-### Denetim kaydı (audit log)
-
-- **Denetim kaydı:** kim ne zaman ne yaptı — **kanıt** olarak günlük.
-- Kurcalamaya dayanıklı olmalı.
-- Günlük enjeksiyonuna (CWE-117) dikkat.
-
-### CWE, CVE, CVSS
-
-- **CWE:** zayıflık **türü** kataloğu (ör. CWE-416).
-- **CVE:** **belirli** bir üründeki açık (ör. CVE-2024-xxxx).
-- **CVSS:** bir açığın **ciddiyet puanı** (0–10).
-
-### OWASP ve zafiyet yaşam döngüsü
-
-- **OWASP Top 10 / MASVS:** yaygın açıklar ve mobil gereksinimler.
-- **Sorumlu ifşa:** açığı önce üreticiye bildirme.
-- Açık: keşif → bildirim → yama → yayın.
-
-### Şimdi hazırız
-
-Terimler:
-
-zararlı yazılım · virüs/solucan/truva/fidye · virüsün üç parçası · polimorfik · imza/sezgisel tespit · entropi · erişim denetimi (DAC/MAC/RBAC) · BLP/Biba · denetim kaydı · CWE/CVE/CVSS · OWASP
-
-Şimdi: tehdit, model, sınıflandırmanın büyük resmi.
-
-### Bugünün planı (3 saat)
-
-| Saat | Konu |
-| --- | --- |
-| 1 | Zararlı yazılım: tarih, anatomi, türler · gizlenme |
-| 2 | **Demo 1–2** · karşı önlemler · saldırı ağacı (**Demo 4**) · erişim ve modeller (**Demo 3, 6**) |
-| 3 | CWE · OWASP · CVE · CVSS (**Demo 5**) · yaşam döngüsü · proje |
-
-**Demolar:** `code/week-02` — Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
-
-### Kısa tarihçe — zararlı yazılım ve güvenlik modelleri
-
-- **1949** — von Neumann: **kendini çoğaltan** otomata (virüsün matematiksel kökü)
-- **1971** Creeper · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** interneti durdurur
-- **1973–77** — **Bell–LaPadula** (gizlilik), **Biba** (bütünlük); **1987** Clark–Wilson
-- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
-
-> İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
-
-### Öğrenme çıktısı ve kapsam
-
-- **ÖÇ.1:** Yaygın yazılım güvenlik açıklarını **tanımlar ve sınıflandırır.**
-- Bu hafta üç konu bir arada:
-  - **Tehdit:** zararlı yazılım türleri ve gizlenmesi
-  - **Savunma:** erişim denetimi ve biçimsel modeller
-  - **Ortak dil:** CWE · CVE · CVSS · OWASP · MASVS
-
-> ⚠️ **Etik:** Hiçbir demoda gerçek zararlı yazılım yok. Hepsi kendi klasöründe, yönetici yetkisi olmadan çalışan **güvenli benzetimlerdir.**
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Zararlı yazılım (malware) | Sahibinin izni ve bilgisi dışında zarar vermek, veri çalmak ya da kontrolü ele geçirmek için yazılmış her programdır; virüs bunun yalnızca bir alt türüdür. | [§2](#2-zararli-yazilim-nedir-kisa-bir-tarih) |
+| Bir virüsün üç parçası | Bir virüs, nasıl yayıldığını belirleyen bulaştırıcı, ne zaman etkinleştiğini belirleyen tetikleyici ve asıl zararı yapan yük olmak üzere üç işleve ayrılır. | [§3](#3-zararli-yazilimin-anatomisi-ve-turleri) |
+| Zararlı yazılım türleri | Virüs bir taşıyıcıya bulaşır, solucan kendi başına ağdan yayılır, truva atı masum görünüp gizli zarar taşır, fidye yazılımı dosyaları şifreler; rootkit, bot, casus yazılım ve silici bu aileye eklenen diğer türlerdir. | [§3](#3-zararli-yazilimin-anatomisi-ve-turleri) |
+| Gizlenme: polimorfik/metamorfik | Polimorfik zararlı gövdesini şifreli tutup yalnız çözücüyü her kopyada değiştirir, metamorfik zararlı ise şifreleme kullanmadan kodun tamamını yeniden yazar; ikisinin de amacı imza tabanlı tespitten kaçmaktır. | [§5](#5-yayilma-ve-gizlenme-nasil-fark-edilmez) |
+| Tespit yöntemleri | Zararlı tespiti imza (bilinenin parmak izini arama), sezgisel (şüpheli özelliklere puan verme), davranış tabanlı (çalışırkenki eylemleri izleme), kum havuzu ve emülasyon (yalıtılmış ortamda çalıştırma) gibi katmanlı yöntemler kullanır. | [§6](#6-karsi-onlemler-nasil-yakalariz) |
+| Entropi | Bir verinin baytlarındaki rastgeleliği 0 (tekdüze) ile 8 (tam rastgele) arasında ölçen değerdir; şifreli/paketlenmiş içerik genelde yüksek entropili görünür, ama bu tek başına zararlı olduğunu kanıtlamaz. | [§6](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir) |
+| Erişim denetimi | "Bu özne, bu nesne üzerinde bu işlemi yapabilir mi?" sorusunu düzenleyen; özne, nesne ve hak üçlüsünü bir erişim matrisiyle ifade eden çerçevedir. | [§10](#10-erisim-denetimi-kim-neye-ne-yapabilir) |
+| DAC / MAC / RBAC | DAC'ta izinleri nesnenin sahibi belirler, MAC'ta sistem/politika zorunlu kurallar koyar, RBAC'ta izinler kişilere değil rollere verilir. | [§10](#10-erisim-denetimi-kim-neye-ne-yapabilir) |
+| Bell–LaPadula, Biba, Clark–Wilson | Bell–LaPadula "yukarı okuma yok, aşağı yazma yok" kurallarıyla gizliliği, Biba bunun tersini uygulayarak bütünlüğü, Clark–Wilson ise iyi biçimli işlemler ve görev ayrılığıyla ticari bütünlüğü korur. | [§11](#11-bicimsel-guvenlik-modelleri) |
+| Denetim kaydı (audit log) | Kimin, ne zaman, neyi yaptığını kanıt olarak tutan; kurcalamaya karşı anahtarlı bir özetle (HMAC) mühürlenmesi gereken günlüktür. | [§9](#9-guvenlik-denetim-kaydi-kanit-olarak-gunluk) |
+| CWE | MITRE'ın yürüttüğü, belirli bir açığı değil zayıflığın **türünü** numaralandıran kataloğudur. | [§13](#13-yazilim-guvenlik-aciklarinin-siniflandirilmasi-cwe) |
+| CVE ve CVSS | CVE, belirli bir üründeki belirli bir açığın benzersiz kimliğidir; CVSS ise o açığın ciddiyetini 0–10 arasında bir sayıya çeviren puanlama sistemidir. | [§15](#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi) |
+| OWASP Top 10 ve MASVS | CWE'nin kapsadığı zayıflıkları web (Top 10, ASVS) ve mobil (MASVS) için önceliklendirilmiş, doğrulanabilir listelere çeviren belgelerdir. | [§14](#14-owasp-top-10-ve-masvs) |
+| Zafiyet yaşam döngüsü | Bir açığın keşiften kamuya açılmaya kadar geçirdiği; sorumlu ifşa ve yama boşluğu kavramlarını içeren süreçtir. | [§16](#16-zafiyet-yasam-dongusu-ve-sorumlu-ifsa) |
 
 ## 1. Bu haftanın büyük resmi: tehdit, model, sınıflandırma
 
-Geçen hafta güvenliğin dilini kurduk: varlık, tehdit, zafiyet, risk; saldırgan modeli; STRIDE ve saldırı ağacı.
+[Geçen hafta](../week-1/cen429-week-1.md#1-guvenlik-nedir) güvenliğin dilini kurduk: varlık, tehdit, zafiyet, risk;
+saldırgan modeli; STRIDE ve saldırı ağacı ([Hafta 1, §7](../week-1/cen429-week-1.md#7-tehdit-modelleme-stride-ve-saldiri-agaclari)).
 Bu hafta o dilin üç sütununu dolduruyoruz:
 
 !!! note "Kısa tarihçe: zararlı yazılım ve güvenlik modelleri"
@@ -258,7 +169,7 @@ göremez, açıkları ortak bir dille adlandırmadan da hangi tehdide öncelik v
 !!! note "Bu dersin bakış açısı"
     Klasik "virüs dersi" antivirüs kullanmayı öğretir. Biz **programcı** gözüyle bakıyoruz: bir zararlının
     gizlenme yöntemi (polimorfizm, entropi) ile bizim kendi kodumuzu **koruma** yöntemimiz (kod gizleme,
-    şifreli sabitler — 9. ve 11. hafta) çoğu zaman **aynı tekniklerdir**. Saldıran ve savunan aynı kutudan
+    şifreli sabitler — 9. ve [11. hafta](../week-11/cen429-week-11.md)) çoğu zaman **aynı tekniklerdir**. Saldıran ve savunan aynı kutudan
     alet çıkarır; fark, niyet ve bağlamdadır.
 
 ---
@@ -303,7 +214,7 @@ hepsi için kullanılır; oysa virüs yalnızca **bir türdür**. Ayrımı görm
 !!! quote "Gerçek olay: WannaCry (2017) — bir haftada bir programcı dersi"
     WannaCry, üç farklı konuyu tek olayda birleştirdiği için öğreticidir. (1) **Yayılma:** bir ağ dosya paylaşım
     protokolündeki bir taşma açığını (EternalBlue) kullanarak, kullanıcı hiçbir şey yapmadan, **solucan** gibi
-    yayıldı — yani bu hafta göreceğimiz taşma sınıfı (Hafta 1) doğrudan bir solucanın motoru oldu. (2) **Yük:**
+    yayıldı — yani bu hafta göreceğimiz taşma sınıfı ([Hafta 1](../week-1/cen429-week-1.md)) doğrudan bir solucanın motoru oldu. (2) **Yük:**
     ulaştığı makinelerde dosyaları **şifreleyerek** fidye istedi; işte bu yükün bıraktığı iz, [Demo
     2](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)'de göreceğimiz **entropi sıçramasıdır**. (3) **Yama boşluğu:** Kullanılan
     açığın yaması saldırıdan **haftalar önce** yayımlanmıştı; buna rağmen güncellememiş yüz binlerce makine
@@ -368,6 +279,9 @@ Zararlı yazılımları en yararlı biçimde **nasıl yayıldıklarına ve ne ya
     - **Bot / botnet:** Uzaktan komut alan makineler ağı; DDoS, spam, kripto madenciliği için kullanılır.
     - **Casus yazılım (spyware) / reklam yazılımı (adware):** Veri toplar ya da reklam gösterir.
     - **Silici (wiper):** Fidye gibi görünüp veriyi **kalıcı yok eder** (NotPetya). Amaç para değil, yıkımdır.
+    - **Arka kapı (backdoor):** Normal kimlik doğrulamayı atlayan, saldırgana **gizli erişim** bırakan yük türüdür;
+      kendi başına yayılmaz, genellikle başka bir zararlının (truva atı, tedarik zinciri saldırısı) bıraktığı
+      kalıcı giriş noktasıdır — aşağıdaki SUNBURST olayı buna bir örnektir.
 
 !!! example "Sınıfta hızlı ayrım (3 dakika)"
     Aşağıdakiler hangi tür? (Cevaplar gizli kutuda.)
@@ -608,7 +522,7 @@ zararlı bunu anlarsa (anti-emülasyon) gizlenebilir.
 !!! note "Sahada nasıl uygulanır?"
     Kendi kodunuzu koruma açısından madalyonun öbür yüzü: bir mobil ödeme uygulaması, tersine mühendisliği
     zorlaştırmak için hassas dizeleri ve sabitleri **şifreli** tutar, kullanım anında çözer. Yani meşru bir
-    yazılım da "şifreli gövde + çözücü" desenini kullanır (9. ve 11. hafta). Fark, bunun sizin varlığınızı
+    yazılım da "şifreli gövde + çözücü" desenini kullanır (9. ve [11. hafta](../week-11/cen429-week-11.md)). Fark, bunun sizin varlığınızı
     koruması; virüste ise imzadan kaçmasıdır. Bir güvenlik değerlendiricisi tam bu yüzden **yüksek entropili
     bölgeleri** arar: "burada şifreli bir şey var, çözücü nerede, anahtarı nasıl buluyor?"
 
@@ -641,7 +555,7 @@ yazılımı belirtisidir — dosyaların **içine bakmadan**, yalnız davranış
 !!! note "Sahada nasıl uygulanır? — savunma ve saldırı aynı alet kutusu"
     Bir zararlının gizlenmek için kullandığı teknikler ile meşru bir yazılımın **kendini korumak** için
     kullandığı teknikler çoğu zaman aynıdır. Bir mobil ödeme kütüphanesi, tersine mühendisliği yavaşlatmak için
-    hassas dizeleri şifreli tutar ve çalışma anında çözer (Hafta 9, 11); bu tam da polimorfik bir zararlının
+    hassas dizeleri şifreli tutar ve çalışma anında çözer ([Hafta 9](../week-9/cen429-week-9.md), 11); bu tam da polimorfik bir zararlının
     "şifreli gövde + çözücü" desenidir. Fark **niyet ve bağlamdadır**: biri sizin varlığınızı korur, diğeri
     imzadan kaçar. Bu yüzden bir güvenlik değerlendiricisi ikili dosyanızda yüksek entropili bölgeler gördüğünde
     "burada şifreli bir şey var" der ve doğal soruyu sorar: çözücü nerede, anahtarı nereden alıyor, anahtar
@@ -707,7 +621,7 @@ programlarda da tipik olan "küçük açıcı kod + yüksek entropili gövde" de
     Bir güvenlik laboratuvarı, ikili dosyanızı bölümlere ayırıp her bölümün entropisini ölçer. `.text` (kod)
     bölümü beklenenden çok yüksekse "burası paketli/şifreli" der ve açıcıyı arar. Sizin projenizde şifreli
     sabitler kullanıyorsanız bu normaldir; ama **anahtarın** düşük entropili ve tahmin edilebilir bir yerde
-    durması bir bulgudur. Yani "şifreledim, bitti" yetmez; anahtarın nerede durduğu kritiktir (3. ve 11. hafta).
+    durması bir bulgudur. Yani "şifreledim, bitti" yetmez; anahtarın nerede durduğu kritiktir (3. ve [11. hafta](../week-11/cen429-week-11.md)).
 
 !!! example "Sınıf etkinliği 1 — Yöntemleri kıyasla (10 dakika)"
     Demo 01'i açık tutun. Üç grup, üç soruyu tartışıp bir cümleyle yanıtlasın:
@@ -843,7 +757,7 @@ izlenen dosyalarla aynı yerde tutmamaktır. Karşılaştırma da sabit zamanlı
 doğru baytların sayısını sızdırabilir.
 
 !!! note "Sahada nasıl uygulanır?"
-    Aynı ilke 6. haftada **çalışma zamanı bütünlük denetimi** olarak geri gelecek: yüksek güvenlik gerektiren
+    Aynı ilke [6. haftada](../week-6/cen429-week-6.md) **çalışma zamanı bütünlük denetimi** olarak geri gelecek: yüksek güvenlik gerektiren
     bir uygulama kendi kod bölümünün özetini çalışırken hesaplar ve derleme sonrasında gömülen beklenen
     değerle karşılaştırır. Beklenen değerin nerede ve nasıl saklandığı, denetimin kendisi kadar önemlidir.
 
@@ -870,13 +784,13 @@ okuyoruz; çünkü bu dersin konusu o giriş kapısını kapatmaktır.
 | Stuxnet (2010) | Kısayol (`.lnk`) dosyasının görüntülenmesiyle kod yükleme (CVE-2010-2568) ve üç sıfırıncı gün açığı daha; çalınmış sürücü imzaları | Güvenilmeyen içerikten kod yükleme; imza anahtarlarının korunmaması | Görüntüleme sırasında kod çalıştırmamak; imza anahtarlarını donanımda (HSM) korumak |
 | WannaCry (12 Mayıs 2017) | SMBv1 sunucusunda bellek bozulması (EternalBlue, CVE-2017-0144); yama 14 Mart 2017'de yayımlanmıştı | Girdi doğrulama / bellek güvenliği | Ayrıştırıcıda sınır denetimi; eski protokolü kapatmak; yamayı iki ay bekletmemek |
 | NotPetya (27 Haziran 2017) | Bir muhasebe yazılımının güncelleme sunucusu üzerinden dağıtım; ardından EternalBlue/EternalRomance ve kimlik bilgisi toplama ile yanal hareket | CWE-494 (bütünlüğü doğrulanmayan kod indirme) | Güncellemeleri imzalamak ve imzayı istemcide doğrulamak; güncelleme altyapısını korumak |
-| SUNBURST (Aralık 2020) | Bir izleme yazılımının derleme ortamına sızılıp imzalı bir kütüphanenin içine arka kapı eklenmesi; ~18.000 müşteri etkilendi | Tedarik zinciri: derleme ortamı güvenliği | Derleme ortamını korumak, tekrarlanabilir derleme, derleme çıktısını kaynakla karşılaştırmak (5. haftadaki SBOM ve bütünlük konusu) |
+| SUNBURST (Aralık 2020) | Bir izleme yazılımının derleme ortamına sızılıp imzalı bir kütüphanenin içine arka kapı eklenmesi; ~18.000 müşteri etkilendi | Tedarik zinciri: derleme ortamı güvenliği | Derleme ortamını korumak, tekrarlanabilir derleme, derleme çıktısını kaynakla karşılaştırmak ([5. haftadaki](../week-5/cen429-week-5.md) SBOM ve bütünlük konusu) |
 
 Tabloyu yukarıdan aşağı okuyunca bir eğilim görülür: 1988–2008 arasındaki salgınların çoğu **tek bir
 arabellek taşmasıyla** yayıldı. 2017'den sonra ise giriş kapısı giderek **güncelleme ve derleme
 süreçlerine** kaydı: saldırgan kodu kırmak yerine, kodun kullanıcıya ulaştığı yolu ele geçirdi. Bu dersin
-iki ucu buradan çıkar: bir yanda sınır denetimi ve güvenli bellek yönetimi (1. ve 4. hafta), öbür yanda
-imzalı güncelleme, bütünlük doğrulaması ve tedarik zinciri güvenliği (3., 5. ve 10. hafta).
+iki ucu buradan çıkar: bir yanda sınır denetimi ve güvenli bellek yönetimi (1. ve [4. hafta](../week-4/cen429-week-4.md)), öbür yanda
+imzalı güncelleme, bütünlük doğrulaması ve tedarik zinciri güvenliği (3., 5. ve [10. hafta](../week-10/cen429-week-10.md)).
 
 !!! warning "Yama gecikmesi"
     WannaCry'ın kullandığı açığın yaması, salgından iki ay önce yayımlanmıştı; Slammer'ınki de aylar öncesinden
@@ -893,7 +807,8 @@ imzalı güncelleme, bütünlük doğrulaması ve tedarik zinciri güvenliği (3
 
 ## 8. Saldırı ağaçları
 
-Saldırı ağacını geçen hafta çizmiştik; bu hafta **niceliğe** dökeceğiz. Kök, saldırganın hedefidir; dallar ona
+Saldırı ağacını [geçen hafta](../week-1/cen429-week-1.md#7-tehdit-modelleme-stride-ve-saldiri-agaclari) çizmiştik;
+bu hafta **niceliğe** dökeceğiz. Kök, saldırganın hedefidir; dallar ona
 ulaşma yollarıdır. **VEYA** düğümünde bir dal yeter, **VE** düğümünde hepsi gerekir. Her yaprağa bir **maliyet**
 (gün-adam, ekipman, uzmanlık) yazarsak, ağacı aşağıdan yukarı çözerek **en ucuz saldırıyı** bulabiliriz:
 
@@ -923,7 +838,7 @@ Windows: `cd code\week-02\04-saldiri-agaci ; .\demo.ps1` · WSL/Linux:
 ```
 
 En ucuz yol **2 birim**: bellekteki anahtarı okumak. İkinci ağaç, bu dala **RASP** (hata ayıklayıcı ve kanca
-algılama — 6. hafta) eklendiğinde ne olduğunu gösterir:
+algılama — [6. hafta](../week-6/cen429-week-6.md)) eklendiğinde ne olduğunu gösterir:
 
 ```text title="demo — Adım 2 (kısaltılmış)"
   [VEYA] Odeme anahtarini ele gecir  (maliyet=8)
@@ -1013,7 +928,7 @@ yanlış bir olaya tepki verir; gerçek saldırı ise gürültünün arasında k
 2. **Sınır:** alan belirli bir uzunlukta kırpılır (`...`); günlük dosyası bir girdiyle şişirilemez.
 3. **Sabit biçim dizgesi:** alan hiçbir zaman `printf`/`syslog`'un biçim dizgesi olarak verilmez. Kitabın
    Tarif 13.11'de uyardığı `syslog(LOG_INFO, kullanici_girdisi)` hatası bir **biçim dizgesi açığıdır**
-   (CWE-134; 4. haftada ayrıntılı): doğrusu `syslog(LOG_INFO, "%s", kullanici_girdisi)`.
+   (CWE-134; [4. haftada](../week-4/cen429-week-4.md) ayrıntılı): doğrusu `syslog(LOG_INFO, "%s", kullanici_girdisi)`.
 
 !!! tip "Değerlendirici nasıl test eder?"
     Kullanıcı adı, dosya adı gibi günlüğe düşen her alana satır sonu, ESC dizisi ve `%n`/`%x` gibi biçim
@@ -1084,7 +999,7 @@ anahtarlar artık hiçbir yerde yoktur.
 
 !!! note "Sahada nasıl uygulanır?"
     Mobil ödeme gibi uygulamalarda cihaz üzerindeki günlük en az tutulur ve hassas alan içermez; güvenlik
-    olayları (bütünlük hatası, hata ayıklayıcı algılama) sunucuya raporlanır. 6. haftada göreceğimiz RASP
+    olayları (bütünlük hatası, hata ayıklayıcı algılama) sunucuya raporlanır. [6. haftada](../week-6/cen429-week-6.md) göreceğimiz RASP
     önlemlerinin "raporlama" ayağı budur.
 
 ---
@@ -1202,7 +1117,7 @@ kritik adımı tek kişiye/tek yola bağlama.** Geçen haftaki "ayrıcalıkları
 !!! note "Sahada nasıl uygulanır? — modellerin kod karşılığı"
     Bu modeller soyut görünse de günlük kodda karşılıkları vardır. **Biba** ilkesi, "dışarıdan gelen veriye
     doğrudan güvenme" demektir; pratikte bu, her dış girdiyi **güvenilmez** kabul edip doğrulama katmanından
-    geçirmektir (Hafta 1'deki girdi doğrulama). **Bell–LaPadula**'nın "aşağı yazma yok" kuralı, bir mobil ödeme
+    geçirmektir ([Hafta 1](../week-1/cen429-week-1.md)'deki girdi doğrulama). **Bell–LaPadula**'nın "aşağı yazma yok" kuralı, bir mobil ödeme
     kütüphanesinde "hassas bir anahtarı, daha az korunan bir günlüğe ya da panoya (clipboard) yazma" yasağına
     dönüşür — sırların yanlışlıkla düşük güvenlikli bir kanala sızmasını önler. **Clark–Wilson**'ın "iyi biçimli
     işlem" fikri, bir bakiyeyi ya da işlem sayacını **doğrudan** güncellemek yerine yalnız denetlenen bir
@@ -1405,7 +1320,7 @@ Unix modelinin (Tarif 2.1) üç inceliği, gerçek hataların çoğunu açıklar
   üyesiyse yalnız grup bitleri, hiçbiri değilse diğerleri bitleri kullanılır.
 - **umask**, yeni dosyanın izinlerini daraltır: `gerçek izin = istenen & ~umask`. `fopen()` her zaman
   `0666` ister; umask `000` ise dosya **herkese yazılabilir** olur. Hassas dosya `open(..., 0600)` ile
-  açılmalıdır (Tarif 2.7, 1. hafta).
+  açılmalıdır (Tarif 2.7, [1. hafta](../week-1/cen429-week-1.md)).
 - **setuid** program, çalıştıran kişinin değil **dosya sahibinin** yetkisiyle çalışır. Gerçek, etkin ve
   saklı kullanıcı kimliği ayrımını bilmeyen bir program, yetkisini "bıraktığını" sanırken saklı kimlik
   üzerinden geri alınabilir durumda bırakır (Tarif 1.3).
@@ -1517,15 +1432,15 @@ kataloğu. CVE belirli bir üründeki belirli bir açıksa, CWE onun **türüdü
 
 | CWE | Zayıflık türü | Bu derste nerede? |
 | --- | --- | --- |
-| CWE-787 | Sınır dışına yazma | Hafta 1 Demo 03 (taşma) |
+| CWE-787 | Sınır dışına yazma | [Hafta 1](../week-1/cen429-week-1.md) Demo 03 (taşma) |
 | CWE-125 | Sınır dışından okuma | Heartbleed ailesi |
-| CWE-89 | SQL enjeksiyonu | Hafta 5 |
+| CWE-89 | SQL enjeksiyonu | [Hafta 5](../week-5/cen429-week-5.md) |
 | CWE-79 | Siteler arası betik (XSS) | Web zafiyetleri |
-| CWE-416 | Serbest bırakılan belleğin kullanımı | Hafta 4 |
+| CWE-416 | Serbest bırakılan belleğin kullanımı | [Hafta 4](../week-4/cen429-week-4.md) |
 | CWE-20 | Yetersiz girdi doğrulama | Her hafta |
 | CWE-367 | TOCTOU yarış durumu | Bu hafta Demo 06 |
-| CWE-798 | Gömülü (hardcoded) kimlik bilgisi | Hafta 3, 10 |
-| CWE-327 | Zayıf/yanlış kripto kullanımı | Hafta 10 |
+| CWE-798 | Gömülü (hardcoded) kimlik bilgisi | [Hafta 3](../week-3/cen429-week-3.md), 10 |
+| CWE-327 | Zayıf/yanlış kripto kullanımı | [Hafta 10](../week-10/cen429-week-10.md) |
 | CWE-326 | Yetersiz şifreleme gücü | Hafta 10, 11 |
 
 **CWE Top 25**, o yıl en çok görülen ve en tehlikeli 25 zayıflığın listesidir; gerçek CVE verisinden, sıklık ve
@@ -1579,7 +1494,7 @@ standartlarına** çevirir.
 | OWASP MASVS + MASTG | Mobil | Doğrulama standardı + test kılavuzu |
 
 !!! tip "Bu dersle bağ: MASVS-RESILIENCE"
-    Dönem boyunca işleyeceğimiz kod gizleme (9, 14. hafta), RASP (6. hafta) ve whitebox (11. hafta) konuları,
+    Dönem boyunca işleyeceğimiz kod gizleme (9, [14. hafta](../week-14/cen429-week-14.md)), RASP ([6. hafta](../week-6/cen429-week-6.md)) ve whitebox ([11. hafta](../week-11/cen429-week-11.md)) konuları,
     doğrudan MASVS'in **RESILIENCE** kategorisinin karşılığıdır. Yani öğrendiğiniz her koruma, tanınmış bir
     standardın bir maddesine oturuyor.
 
@@ -1725,8 +1640,8 @@ cümlelerinizle** anlatabiliyorsanız o konuyu öğrenmişsiniz demektir.
     - **"Her zararlı bir virüstür."** Virüs yalnız bir türdür: bir taşıyıcıya iliştirilir ve taşıyıcı çalışınca
       çalışır. Solucan taşıyıcı gerektirmez, truva atı kendini kopyalamaz. Türü yanlış koymak yanlış savunmayı
       seçtirir (solucana karşı ağ yaması, truva atına karşı kullanıcı eğitimi ve izin listesi).
-    - **"İmza veritabanım güncel, güvendeyim."** İmza yalnız **bilineni** yakalar. Tek baytlık değişiklik özet
-      imzasını, çözücüsü değişen polimorfik kopya desen imzasını atlatır (Demo 01).
+    - **"İmza veritabanım güncel, güvendeyim."** İmza yalnız **bilineni** yakalar; ayrıntısı
+      [§5](#5-yayilma-ve-gizlenme-nasil-fark-edilmez) (Demo 01).
     - **"Yüksek entropi = zararlı."** Şifreli, sıkıştırılmış ve rastgele veri hep 8'e yakındır; `.zip`, `.png`,
       şifreli yedek de öyle. Entropi yalnız **beklenmedik yerde** anlamlı bir ipucudur (Demo 02).
     - **"Kum havuzunda temiz çıktı, o hâlde temiz."** Zararlı sanal ortamı sezip uyuyabilir, tarih ya da kullanıcı
@@ -1739,8 +1654,8 @@ cümlelerinizle** anlatabiliyorsanız o konuyu öğrenmişsiniz demektir.
     - **"Bütünlük izlemesini düz SHA-256 listesiyle yaptım."** Saldırgan dosyayı değiştirdiği gibi listeyi de
       güncelleyebilir. Temel değerler anahtarlı (HMAC) ya da imzalı olmalı ve saldırganın erişemeyeceği yerde
       durmalıdır (Demo 08).
-    - **"Yama yayımlandı, iş bitti."** WannaCry'ın kullandığı açığın yaması saldırıdan yaklaşık iki ay önce
-      çıkmıştı. Yama **uygulanana** kadar risk sürer; yayımlanan yama saldırgana da yol gösterir.
+    - **"Yama yayımlandı, iş bitti."** Yama **uygulanana** kadar risk sürer; ayrıntısı
+      [§7](#7-olay-incelemeleri-hangi-programlama-hatasi-hangi-onlem) (WannaCry örneği).
 
 !!! success "Kontrol listesi — zararlı yazılım"
     - [ ] Virüs, solucan, truva atı, fidye yazılımı, rootkit, bot, casus yazılım ve siliciyi **yayılma** ve
@@ -1837,11 +1752,10 @@ cümlelerinizle** anlatabiliyorsanız o konuyu öğrenmişsiniz demektir.
       üründeki belirli bir açığın **kimliğidir** (CVE-2014-0160, Heartbleed).
     - **"En genel CWE'yi seçmek güvenlidir."** CWE-20 (girdi doğrulama) ya da CWE-693 gibi üst düzey girdiler
       düzeltmeyi anlatmaz. Kural: mümkün olan **en somut** (tercihen base düzeyi) girdiyi seçin.
-    - **"CVSS puanı risktir."** Temel puan açığın kendi özelliklerini ölçer; sizin varlığınızın değerini,
-      istismar kodunun varlığını, sistemin internete açık olup olmadığını bilmez.
-    - **"Cihazdaki açıklar düşük puan alıyor, o hâlde önemsiz."** Beyaz kutu senaryolarında vektör çoğunlukla
-      `AV:L` ve `PR:H` çıkar ve puan düşer. Oysa bu dersin saldırgan modeli tam da budur; puanın yanına saldırı
-      potansiyeli ve varlık değeri yazılmalıdır.
+    - **"CVSS puanı risktir."** Temel puan bağlamı bilmez; ayrıntısı [§15](#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi).
+      Bu dersin saldırgan modelinde açıklar sık sık `AV:L`/`PR:H` alıp puanı düşürür — ama cihaz zaten saldırganın
+      elindeyse ("Cihazdaki açık düşük puanlı, önemsiz" yanılgısı) risk azalmaz; puanın yanına saldırı potansiyeli
+      ve varlık değeri yazılmalıdır.
     - **"CVSS v3.1 vektörünü v4.0 hesap makinesine girerim."** v4.0'da Kapsam (S) yoktur; AT, VC/VI/VA ve
       SC/SI/SA metrikleri vardır ve UI üç değer alır (N/P/A). Vektörler birbirine çevrilmez, yeniden kurulur.
     - **"EPSS yüksek, o hâlde CVSS de yüksektir."** EPSS istismar **olasılığını** (30 gün içinde), CVSS
@@ -2219,7 +2133,7 @@ Aşağıdaki kod parçalarında birer zafiyet var. Türünü (CWE) ve düzeltmes
         (1) **CRC32 kriptografik değildir** (CWE-327/CWE-354): saldırgan kodu değiştirip CRC'yi eski değere
         döndürebilir (çakışma kolay). Kriptografik özet (SHA-256) ya da imza gerekir. (2) Denetim **tek bir
         dala** bağlı (`if`): saldırgan `jne`'yi `jmp`'a çevirerek denetimi atlar. Düzeltme: özet sonucunu
-        **karar akışında** kullanmak (ör. anahtar türetmede), tek dala bağlamamak. (6. hafta.)
+        **karar akışında** kullanmak (ör. anahtar türetmede), tek dala bağlamamak. ([6. hafta](../week-6/cen429-week-6.md).)
 
 ??? question "Parça 3 — Erişim varsayılanı"
     ```c
@@ -2383,18 +2297,18 @@ Not verilmez; dersi pekiştirmek içindir. Hepsi `code/week-02` üzerinde, yaln�
     kaldığı süredir.
 
 ??? question "17. MASVS-RESILIENCE bu dersin hangi konularıyla ilgilidir?"
-    Tersine mühendislik ve kurcalamaya karşı dayanıklılıkla: kod gizleme (9, 14. hafta), RASP (6. hafta) ve
-    whitebox kriptografi (11. hafta). Bu derste öğrendiğimiz korumalar doğrudan bu kategorinin karşılığıdır.
+    Tersine mühendislik ve kurcalamaya karşı dayanıklılıkla: kod gizleme (9, [14. hafta](../week-14/cen429-week-14.md)), RASP ([6. hafta](../week-6/cen429-week-6.md)) ve
+    whitebox kriptografi ([11. hafta](../week-11/cen429-week-11.md)). Bu derste öğrendiğimiz korumalar doğrudan bu kategorinin karşılığıdır.
 
 ??? question "18. Bir güvenlik değerlendiricisi 'sırların açıkta olması' için hangi CWE'lere bakar?"
     Gömülü kimlik/anahtar için **CWE-798**, bellekte açık kalan hassas veri için **CWE-316**; bunları
-    kaynak/ikili analizi ve bellek dökümüyle test eder (Hafta 1 Demo 02'deki gibi).
+    kaynak/ikili analizi ve bellek dökümüyle test eder ([Hafta 1](../week-1/cen429-week-1.md) Demo 02'deki gibi).
 
 ---
 
 ## 23. Quiz-1 tarzı örnek sorular
 
-Quiz-1 (8. hafta) bu tarz kısa cevaplı ve kod okuma soruları içerir. Deneyin; cevapları yukarıdaki bölümlerden
+Quiz-1 ([8. hafta](../week-8/cen429-week-8.md)) bu tarz kısa cevaplı ve kod okuma soruları içerir. Deneyin; cevapları yukarıdaki bölümlerden
 doğrulayın.
 
 1. Aşağıdaki türleri "kullanıcı etkileşimi gerektirir / gerektirmez" diye ikiye ayırın: virüs, solucan, truva
@@ -2456,3 +2370,11 @@ doğrulayın.
     | CVSS | Zafiyet puanı | Açığın ciddiyetinin 0–10 arası puanı |
     | Responsible disclosure | Sorumlu ifşa | Açığı önce satıcıya bildirip yama için bekleme |
     | Zero-day | Sıfırıncı gün | Satıcının bilmediği/yamasının olmadığı açık |
+
+!!! info "Bir sonraki hafta"
+    **3. hafta — Veri güvenliği.** Bu hafta zararlı yazılım tespitinde kullandığımız **entropi** ölçütünü
+    ([§6](#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)), gelecek hafta kriptografik rastgele
+    sayı üretecinin (CSPRNG) girdisindeki düzensizliği değerlendirmek için yeniden kullanacağız
+    ([Hafta 3, §3](../week-3/cen429-week-3.md#3-rastgele-sayilar-kriptografinin-gorunmez-temeli)). Bu hafta
+    CWE ve CVSS ile önceliklendirdiğimiz zafiyet dili, [12. haftada](../week-12/cen429-week-12.md) sızma testi planlamasının girdisi olarak
+    yeniden karşımıza çıkacak.

@@ -165,6 +165,7 @@ plugins:
       hooks:
         on_config: "hooks:on_config"
         on_env: "hooks:on_env"
+        on_page_content: "hooks:on_page_content"
         on_post_build: "hooks:on_post_build"
   - external-markdown
   - mkdocs-video

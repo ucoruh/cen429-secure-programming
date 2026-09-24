@@ -5,7 +5,7 @@
 | **Date** | 20.11.2026 |
 | **Learning outcomes** | LO.2, 4 |
 | **Duration** | 3 hours |
-| **Prerequisites** | AES-GCM, HMAC, key derivation and what TLS does, from Week 3; being able to run the `openssl` command in a terminal |
+| **Prerequisites** | AES-GCM, HMAC, key derivation and what TLS does, from [Week 3](../week-3/cen429-week-3.md); being able to run the `openssl` command in a terminal |
 | **Labs** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demos; requires OpenSSL 3; `sh demo.sh` in each demo folder |
 
 <!-- materyal:basla -->
@@ -107,103 +107,50 @@
 
 ## 0. Basic concepts (from scratch)
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use throughout the rest of
-the week. If you don't know a term, read this section first; the later sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### Symmetric vs. asymmetric (reminder)
+### What we bring from earlier weeks
 
-- **Symmetric:** a single key, encrypt and decrypt (AES). Fast.
-- **Asymmetric:** a public + private key pair (RSA, ECC). Slow, but key distribution is easy.
-- In practice, **together**: carry the key with asymmetric, encrypt the data with symmetric.
+- **Symmetric and asymmetric encryption** — symmetric encryption runs fast with a single key shared by both
+  parties; asymmetric encryption uses a public/private key pair, which makes key distribution easy but is slow
+  ([Week 3, §2.2](../week-3/cen429-week-3.md#22-symmetric-or-asymmetric-answer-both-hybrid)). This week we go
+  deeper into the asymmetric side's mathematics (RSA, ECC — §4) and the symmetric side's correct choice of mode and
+  padding (§2).
+- **AEAD** — authenticated encryption gives confidentiality and integrity together, in a single call, by producing
+  a tag that also proves the data has not changed
+  ([Week 3, §2.1](../week-3/cen429-week-3.md#21-authenticated-encryption-aead-confidentiality-integrity-in-one-call)).
+  This week we show why the mode inside AEAD (GCM) and the alternatives you should stay away from (ECB, CBC) give
+  such different security (§2).
+- **Digest (hash), MAC, and digital signature** — a digest is a one-way fingerprint computed from data; a MAC
+  proves a message has not changed using a shared key, and a digital signature does the same with a public/private
+  key pair ([Week 3, §2.4](../week-3/cen429-week-3.md#24-hash-mac-and-signature-which-one-when)). This week we
+  cover HMAC's internal construction and the correct order for combining it with encryption (§3), and the
+  practical pitfalls of signature verification (§5).
+- **Forward secrecy** — deleting a session's derived key right after use, so that even if today's key leaks, past
+  sessions cannot be decrypted
+  ([Week 3, §7.1](../week-3/cen429-week-3.md#71-forward-secrecy)). This week we build the Diffie–Hellman key
+  exchange and its authentication — the mechanism underneath forward secrecy — from scratch (§6).
+- **TLS certificate validation** — the client checking a server certificate's chain, validity dates, intended
+  usage, and name
+  ([Week 3, §9.2](../week-3/cen429-week-3.md#92-the-three-layers-of-validation-and-the-most-dangerous-trap)). This
+  week we build the PKI, X.509, and revocation (CRL/OCSP) machinery this validation rests on, from the ground up
+  (§7–10).
 
-### Block cipher and mode
+### This week's concept map
 
-- **Block cipher:** encrypts a fixed-size block (AES: 16 bytes).
-- **Mode:** **how** we chain the blocks together (CBC, GCM, …).
-- The choice of mode is the **heart** of security.
-
-### Padding
-
-- **Padding:** filling out the data when it is not a multiple of the block size.
-- Required in some modes (CBC), **absent** in others (GCM).
-- Handling padding incorrectly → the **padding oracle** attack.
-
-### What is AEAD?
-
-- **AEAD (Authenticated Encryption with Associated Data):** encryption that gives confidentiality **and**
-  integrity **together**.
-- Example: AES-GCM, ChaCha20-Poly1305.
-- Modern preference: don't bother with a separate MAC, use AEAD.
-
-### MAC and HMAC
-
-- **MAC (Message Authentication Code):** a tag that proves a message has **not changed** and comes from the
-  correct party (symmetric).
-- **HMAC:** a common MAC built on a hash function.
-- For integrity.
-
-### Digest (hash)
-
-- **Digest:** a fixed-size fingerprint computed from data (SHA-256).
-- One-way: you cannot get the data back from the digest.
-- The building block of signatures and MACs.
-
-### Digital signature
-
-- **Signature:** asymmetric; sign with the **private** key, verify with the **public** key.
-- Provides: integrity + **non-repudiation** (who signed it).
-- Difference from a MAC: asymmetric, anyone can verify.
-
-### RSA and elliptic curve (ECC)
-
-- **RSA:** the classic asymmetric algorithm; large keys (2048+ bits).
-- **ECC:** elliptic curve; the same security with a **smaller** key (Ed25519, X25519).
-- The modern preference is increasingly ECC.
-
-### Diffie–Hellman (DH)
-
-- **DH:** two parties derive a shared secret **without sharing** a private key.
-- Key agreement over a network.
-- Risk of **man-in-the-middle** (MITM) if identity is not authenticated.
-
-### PKI and CA
-
-- **PKI (Public Key Infrastructure):** a trust system that answers the question "which public key belongs to
-  whom?"
-- **CA (Certificate Authority):** the trusted party that signs certificates.
-- Root CA → intermediate CA → server certificate.
-
-### Certificate and X.509
-
-- **Certificate:** a document, signed by a CA, that binds a public key to an identity (a domain name).
-- **X.509:** the standard format for certificates.
-- It contains: subject, public key, validity, signature, SAN.
-
-### CRL and OCSP
-
-- **CRL (Certificate Revocation List):** a **list** of revoked certificates.
-- **OCSP:** asking about a certificate's revocation status **on the spot**.
-- The question "is this certificate still valid?"
-
-### HSM, PKCS#11, SoftHSM
-
-- **HSM:** dedicated **hardware** that stores and operates on keys; the key never leaves it.
-- **PKCS#11:** the standard interface for talking to key modules.
-- **SoftHSM:** a software simulation of an HSM (for testing).
-
-### Post-quantum (PQC)
-
-- **PQC (Post-Quantum Cryptography):** algorithms resistant to quantum computers.
-- Today's RSA/ECC will be under threat in the future.
-- Standardization is ongoing (e.g., ML-KEM).
-
-### Now we're ready
-
-Terms:
-
-symmetric/asymmetric · block cipher/mode · padding · AEAD · MAC/HMAC · digest · signature · RSA/ECC · DH · PKI/CA · certificate/X.509 · CRL/OCSP · HSM/PKCS#11 · PQC
-
-Now: choosing the right algorithm and key.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Block cipher modes and padding | A block cipher encrypts a fixed-size block; the way we apply it to a longer message is called a mode, and if the message isn't a multiple of the block size it is completed with padding; the choice of mode and padding matters as much as the algorithm itself. | [§2](#2-block-cipher-modes-and-padding-recipe-54-511) |
+| MAC and HMAC | A MAC is a function that produces a short tag from a secret key and a message, proving the message hasn't changed; HMAC is the standard way to build one from a hash function using two nested calls. | [§3](#3-mac-hmac-and-combining-integrity-with-encryption-recipe-64-610-618-621) |
+| Asymmetric cryptography: RSA and ECC | RSA relies on the difficulty of factoring large integers, while elliptic curve cryptography (ECC) relies on the difficulty of the discrete logarithm problem on a curve; ECC gives the same security with a much shorter key. | [§4](#4-asymmetric-cryptography-rsa-and-elliptic-curves-recipe-7173) |
+| Digital signature | A mechanism proving a message was created by the holder of a specific private key and has not been altered, verifiable by anyone with the public key; unlike a MAC, it also provides non-repudiation. | [§5](#5-digital-signature-creation-verification-and-where-its-used) |
+| Diffie–Hellman (DH) | A key-exchange method that lets two parties agree on a shared secret over an insecure channel without ever sharing a prior secret; without authentication it is open to a man-in-the-middle attack. | [§6](#6-key-exchange-diffiehellman-and-man-in-the-middle-recipe-816818) |
+| PKI and CA | Public key infrastructure (PKI) is the set of rules, roles, and documents that lets you verify, through certificate authorities (CAs), that a public key really belongs to the party who claims it. | [§7](#7-public-key-infrastructure-pki-who-trusts-whom-recipe-101) |
+| Certificate and X.509 | X.509 is the standard format for certificates that bind a public key to an identity and carry a CA's signature; it contains the subject, public key, validity dates, and extensions (SAN, key usage). | [§8](#8-the-structure-of-an-x509-certificate) |
+| CRL and OCSP | A CRL is a CA-signed list of revoked certificates; OCSP is a protocol for querying a certificate's revocation status on the spot. | [§10](#10-certificate-revocation-crl-ocsp-and-stapling-recipe-10101012) |
+| HSM, PKCS#11, SoftHSM | An HSM is a tamper-resistant hardware module that generates and operates on keys without ever releasing them; PKCS#11 is the standard interface for talking to such modules, and SoftHSM is a software simulation of one for testing. | [§11](#11-storing-the-key-in-hardware-hsm-pkcs11-and-softhsm) |
+| Post-quantum cryptography (PQC) | New algorithms built on different mathematical problems, such as lattices, as a hedge against the assumption that a sufficiently large quantum computer could efficiently solve the problems RSA and elliptic curves rely on. | [§12](#12-a-look-at-post-quantum-cryptography) |
 
 ### How do the concepts connect?
 
@@ -239,7 +186,12 @@ first know the term in the "prerequisite" column.** For example, before reading 
 
 ## 1. The map of cryptography and algorithm selection
 
-In Week 3 we used cryptography as a **tool** to protect data in transit, at rest, and in use. This week we look
+We ended Week 9 with a warning: obfuscating code does **not** store a key, it only makes the surroundings harder to
+work with ([Week 9, §3](../week-9/cen429-week-9.md#3-what-does-obfuscation-give-and-what-does-it-not-give)). This
+week we move on to the actual fix — instead of hiding keys, we protect them **for real** with the right algorithm
+choice, the right protocol, and, where needed, hardware-backed storage (PKI, HSM). In Week 3 we used cryptography
+as a **tool** to protect data in transit, at rest, and in use
+([Week 3, §1](../week-3/cen429-week-3.md#1-the-three-states-of-data-and-the-security-shell)); this week we look
 inside those same tools: which algorithm does which job, why some were abandoned, how to choose, and how a
 certificate authority (CA) fits into this structure. The book's Chapters 4–8 and 10–11 cover these topics in more
 than 55 recipes; since most of the algorithms have changed since 2003, we give each one its current equivalent.
@@ -350,7 +302,8 @@ work down to **one in 65,536** — you must read bit counts **exponentially**, n
     Document a cryptographic choice not just by the algorithm's name, but by the **(algorithm, key length, mode,
     library, standard)** quintuple. "We use AES" is not an answer; "AES-256-GCM, OpenSSL EVP, NIST SP 800-38D" is.
 
-In Week 3 we only saw the "which tool do I use when" part of this map (AEAD, the hybrid scheme, random numbers).
+[In Week 3](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what) we only saw the "which
+tool do I use when" part of this map (AEAD, the hybrid scheme, random numbers).
 This week we see **why** the same map is drawn this way — which mathematical problem gives which security, why
 each algorithm was abandoned. The next two sections look inside the symmetric tools (mode, padding, MAC);
 Sections 4–6 look inside the asymmetric tools (RSA, ECC, DH); Sections 7–10 will look at how these come together
@@ -362,7 +315,7 @@ in PKI.
 
 AES is a **block cipher**: it turns exactly a 16-byte block into another 16-byte block. To encrypt a longer
 message you need a **mode of operation** that chains the blocks together. The choice of mode is as important as
-the choice of algorithm; recall the ECB penguin from Week 3.
+the choice of algorithm; recall [the ECB penguin from Week 3](../week-3/cen429-week-3.md#52-ecb-leaks-patterns).
 
 ![Consequences of nonce reuse](assets/h10-07-nonce-tekrari.svg)
 
@@ -401,7 +354,8 @@ Defences:
     a separate SHA-256-based MAC; for the cryptogram computation of the payment schemes, a DES-based MAC
     algorithm resting on ISO/IEC 9797-1 (with the padding methods the schemes specify) is used. These choices
     come from scheme specifications that must be complied with. For internal communication that the scheme does
-    not specify, AEAD is preferred today (the critical reading from Week 3).
+    not specify, AEAD is preferred today
+    ([the critical reading from Week 3](../week-3/cen429-week-3.md#critical-reading-the-door-that-opens-silently-fail-open)).
 
 ### Worked example: tracing PKCS#7 padding by hand
 
@@ -492,7 +446,7 @@ previous one.
     ECB under any circumstances (file encryption, a DB field, even for "unimportant" data) — it always leaks the
     pattern. If CBC is mandatory, protect the padding with the encrypt-then-MAC rule from Section 3.
 
-In Week 2's threat modelling, "integrity" was an asset-protection goal; this section made concrete **why** that
+In [Week 2](../week-2/cen429-week-2.md#18-term-project-this-week-s4)'s threat modelling, "integrity" was an asset-protection goal; this section made concrete **why** that
 goal cannot be achieved by encryption alone. The next section covers the tool that correctly provides integrity —
 MAC/HMAC — and the right order for combining it.
 
@@ -554,7 +508,7 @@ Recipe 6.21:
     In contactless card transactions, every transaction is signed with a cryptogram that contains the card's
     **transaction counter** (ATC); the server does not accept the same counter a second time. In mobile payment
     libraries, each one-time key is also used in only one transaction, and the counter is kept in a database.
-    This is why the "rollback of the usage counter" threat has the asset-protection class **I+** in Week 2's
+    This is why the "rollback of the usage counter" threat has the asset-protection class **I+** in [Week 2](../week-2/cen429-week-2.md#18-term-project-this-week-s4)'s
     threat table.
 
 ### Worked example: computing HMAC by hand and seeing the avalanche effect
@@ -615,7 +569,8 @@ if (CRYPTO_memcmp(hesaplanan, gelen, 32) == 0) { /* accept */ }   /* OpenSSL */
     (`CRYPTO_memcmp`, `sodium_memcmp`, the language's own "constant-time compare" function). Don't write your own
     comparison function; this is another appearance of this week's "don't write your own crypto" rule (Section 1).
 
-In Week 3 we introduced AEAD as "the tool that gives confidentiality + integrity in a single package"; this
+[In Week 3](../week-3/cen429-week-3.md#21-authenticated-encryption-aead-confidentiality-integrity-in-one-call) we
+introduced AEAD as "the tool that gives confidentiality + integrity in a single package"; this
 section showed the correct order and the correct comparison for when you are forced to provide integrity
 **separately** (an old protocol where you can't use AEAD, a hardware constraint, etc.). The next section moves on
 to the asymmetric tools that give what a MAC cannot — **non-repudiation**.
@@ -633,7 +588,8 @@ private key; what is signed with the private key can be verified by everyone wit
 
 Asymmetric operations are hundreds, thousands of times slower than symmetric ones. This is why asymmetric
 cryptography is used for only two jobs (Recipe 7.1): **carrying or agreeing on a short symmetric key** and
-**signing**. The data itself is always protected with a symmetric cipher (the hybrid scheme from Week 3).
+**signing**. The data itself is always protected with a symmetric cipher
+([the hybrid scheme from Week 3](../week-3/cen429-week-3.md#22-symmetric-or-asymmetric-answer-both-hybrid)).
 
 ### RSA: with the right padding
 
@@ -682,7 +638,9 @@ operations are faster, and its keys and signatures are much shorter.
     signatures, or if it can be predicted, the **private key** can be computed from the two signatures. In 2010,
     a game console's signing key was exposed exactly this way because the manufacturer used the same `k` on every
     signature; in 2013, some mobile crypto wallets suffered the same kind of loss because of a weak random
-    generator. This is the most striking proof of Week 3's sentence "random numbers are the invisible foundation
+    generator. This is the most striking proof of
+    [Week 3's](../week-3/cen429-week-3.md#3-random-numbers-the-invisible-foundation-of-cryptography) sentence
+    "random numbers are the invisible foundation
     of cryptography." Ed25519 and the deterministic ECDSA in RFC 6979 remove this risk.
 
 ```bash title="Ed25519 signature with OpenSSL 3"
@@ -757,7 +715,8 @@ directly for encryption.
     with an old system is mandatory, and even then only for signing (never for new encryption designs). In a new
     design, prefer Ed25519/X25519 over RSA where possible.
 
-In Week 3 we used asymmetric cryptography (RSA or ECDHE back then) as a black box in TLS's key setup. This
+[In Week 3](../week-3/cen429-week-3.md#9-data-in-transit-tls-13-certificate-validation-and-pinning) we used
+asymmetric cryptography (RSA or ECDHE back then) as a black box in TLS's key setup. This
 section opened up that black box: which padding, which curve, which size. The next section goes deeper into the
 **signature** leg of these tools; then in Section 6 we move on to the **key exchange** leg.
 
@@ -776,10 +735,10 @@ STRIDE), a MAC does not.
 
 | Use | What is signed? | Where it appears in this course |
 | --- | --- | --- |
-| Software update | The update package | Week 1's "Vault" example, threat T6 |
-| Code signing | Executable file, mobile app package | Week 6 signature verification |
+| Software update | The update package | [Week 1's "Vault" example, threat T6](../week-1/cen429-week-1.md#9-worked-example-writing-a-protection-plan-step-by-step) |
+| Code signing | Executable file, mobile app package | [Week 6 signature verification](../week-6/cen429-week-6.md#8-rootprivileged-environment-and-component-signature-verification) |
 | Certificate | Public key + identity information (the CA signs) | PKI, this week |
-| TLS handshake | Handshake digest (the server signs) | Week 3's `CertificateVerify` |
+| TLS handshake | Handshake digest (the server signs) | [Week 3's](../week-3/cen429-week-3.md#91-the-tls-13-handshake) `CertificateVerify` |
 | Document and transaction | Contract, payment approval | Electronic-signature regulation |
 
 ### Verifying a signature in code: OpenSSL EVP
@@ -871,7 +830,8 @@ signature does not do this for you.
     window. A client must ask not just "is this signature valid," but "is this signature valid **for this**
     context and for the **most current** version."
 
-In Week 1's "Vault" example we saw that accepting an update package without a signature leads to the T6 threat;
+In [Week 1's "Vault" example](../week-1/cen429-week-1.md#9-worked-example-writing-a-protection-plan-step-by-step)
+we saw that accepting an update package without a signature leads to the T6 threat;
 this section showed that even the **existence** of a signature alone is not enough — its scope must also be
 designed correctly. The next section covers how we use signatures and asymmetric cryptography in **key
 exchange** — and what goes wrong if we don't.
@@ -900,11 +860,13 @@ Both parties think "I have a secure channel"; in reality every message passes th
 The public values are **signed** with a key whose identity is known in advance (the current version of Recipe
 8.18's "DH and DSA together" idea: ECDHE + Ed25519/ECDSA/RSA-PSS). In TLS 1.3, the server signs the handshake
 digest — which also includes the ephemeral ECDHE public value — with the private key in its certificate
-(`CertificateVerify`); the client verifies the certificate by chain and by name (Week 3). This way:
+(`CertificateVerify`); the client verifies the certificate by chain and by name
+([Week 3](../week-3/cen429-week-3.md#92-the-three-layers-of-validation-and-the-most-dangerous-trap)). This way:
 
 - **Identity:** The signature proves that whoever sent the public value really is the certificate's owner.
 - **Forward secrecy:** DH values are freshly generated and discarded for every session; even if the long-lived
-  signing key is stolen later, past sessions' keys cannot be computed (Week 3).
+  signing key is stolen later, past sessions' keys cannot be computed
+  ([Week 3](../week-3/cen429-week-3.md#71-forward-secrecy)).
 
 !!! info "Identity without PKI"
     Not every scenario has a certificate authority. The "authentication without PKI" paths the book describes in
@@ -943,7 +905,9 @@ AYNI
 
 The two parties, without ever knowing each other's private key, reached the **same** 32-byte shared secret,
 passing only public keys over the network. This shared secret is not used directly for data encryption; it is
-passed through a KDF (HKDF, the key-derivation topic from Week 3) and session keys are derived from it. A
+passed through a KDF
+([HKDF, the key-derivation topic from Week 3](../week-3/cen429-week-3.md#7-deriving-keys-from-a-master-secret-session-keys-and-forward-secrecy))
+and session keys are derived from it. A
 third-party eavesdropper sees only `alice.pub` and `bob.pub`; computing the shared secret from these (without
 solving the elliptic-curve discrete logarithm problem) is not possible.
 
@@ -977,7 +941,8 @@ any modern protocol such as TLS 1.3.
     previously validated certificate (TLS 1.3's `CertificateVerify`). Never use raw DH output directly as an
     encryption key; pass it through HKDF.
 
-In Week 3's TLS 1.3 handshake we asked "what would happen if someone in the middle could swap the keys"; this
+In [Week 3's](../week-3/cen429-week-3.md#91-the-tls-13-handshake) TLS 1.3 handshake we asked "what would happen if
+someone in the middle could swap the keys"; this
 section answered that question with concrete steps. The next three sections (7–9) build, from scratch, the
 identity infrastructure — PKI — that signed DH rests on.
 
@@ -1021,7 +986,8 @@ Before a client accepts a certificate, it asks the following:
    `CA:TRUE` basic constraint on an intermediate CA.)
 4. **Name and revocation:** Is the certificate for **this** server (SAN)? Has it been revoked?
 
-In Week 3 we saw how the first and fourth questions are asked in code (`SSL_CTX_set_verify`, `SSL_set1_host`).
+In [Week 3](../week-3/cen429-week-3.md#10-wiring-up-tls-correctly-in-code-a-step-by-step-client-pinning-and-common-mistakes)
+we saw how the first and fourth questions are asked in code (`SSL_CTX_set_verify`, `SSL_set1_host`).
 In this section we build the same chain ourselves.
 
 ### Worked example: asking the "four questions" from the command line
@@ -1090,12 +1056,15 @@ only sign leaf certificates).
 (covered in detail in Section 8).
 
 A client library (OpenSSL, Windows CryptoAPI, Java's `X509TrustManager`) asks these four questions **on your
-behalf**; disabling the `verify` functions (Week 3's `SSL_CTX_set_verify`) or swallowing errors means these four
+behalf**; disabling the `verify` functions
+([Week 3's](../week-3/cen429-week-3.md#10-wiring-up-tls-correctly-in-code-a-step-by-step-client-pinning-and-common-mistakes)
+`SSL_CTX_set_verify`) or swallowing errors means these four
 questions are never asked at all.
 
 !!! danger "Common mistake: assuming 'it connected, so it must be secure'"
     A developer's assumption that "the TLS connection was established, so the certificate must have been
-    validated" is wrong. The connection is also established when validation has been **turned off** (Week 3's
+    validated" is wrong. The connection is also established when validation has been **turned off**
+    ([Week 3's](../week-3/cen429-week-3.md#the-most-common-tls-mistakes-in-real-applications)
     `SSL_VERIFY_NONE` / `InsecureSkipVerify` mistake). A successful connection is not proof that the four
     questions were **asked**; you must **separately** check in the code that validation is turned on.
 
@@ -1126,7 +1095,7 @@ part:
 | Issuer | The name of the CA that signed the certificate |
 | Validity | `notBefore` – `notAfter` |
 | Subject | The certificate's owner |
-| Subject public key info (SPKI) | Algorithm + public key; the **pinning** from Week 3 uses the digest of this |
+| Subject public key info (SPKI) | Algorithm + public key; the [**pinning** from Week 3](../week-3/cen429-week-3.md#93-pinning-and-tofu) uses the digest of this |
 | **Extensions** | Basic constraints (`CA:TRUE/FALSE`, path length), key usage, extended key usage (server/client authentication, code signing), **SAN** (alternative names: DNS names, IP), CRL distribution point, OCSP address (AIA) |
 
 Certificates are stored in binary **DER** encoding, or in **PEM**, its Base64-wrapped text form (Recipe 7.16,
@@ -1352,7 +1321,8 @@ openssl verify -crl_check -CAfile kok.crt -untrusted ara.crt -CRLfile ara.crl su
 !!! danger "Soft-fail"
     Most browsers **accept** a certificate when they cannot reach the OCSP responder; otherwise a brief outage of
     the responder would make every site unreachable. But this means an attacker in the middle can bypass
-    revocation checking simply by blocking the OCSP request: the PKI counterpart of Week 3's **fail-open**
+    revocation checking simply by blocking the OCSP request: the PKI counterpart of
+    [Week 3's](../week-3/cen429-week-3.md#critical-reading-the-door-that-opens-silently-fail-open) **fail-open**
     pattern. In critical applications, "a stapled response is mandatory" (OCSP Must-Staple) or short-lived
     certificates (days, weeks) reduce this problem; this is why certificate lifetimes are getting shorter and
     shorter.
@@ -1482,12 +1452,14 @@ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --pin 1234 --list-o
     SoftHSM stores keys on disk, in a file; there is no hardware protection. Its value is that it lets you write
     your application **against the PKCS#11 interface**: the same code connects, in production, to a real HSM or
     smart card just by changing the module path. We will look at software-based security modules again from this
-    angle in Week 11.
+    angle in [Week 11](../week-11/cen429-week-11.md#5-wbcs-place-in-layered-defence).
 
 !!! note "How it's done in the field"
     In payment systems, the keys at the top of the key hierarchy (the card issuer's master keys, the keys that
     generate device keys) sit in HSMs on the server side; in the mobile payment platform's back end, the HSM
-    appears as a separate component in the architecture diagram (the example architecture from Week 1). The keys
+    appears as a separate component in the architecture diagram
+    ([the example architecture from Week 1](../week-1/cen429-week-1.md#9-worked-example-writing-a-protection-plan-step-by-step)).
+    The keys
     that land on the phone are generated on the server with an HSM, encrypted for binding to the device, and the
     library itself never **generates** an account key. The guide contains an algorithm inventory that lists every
     algorithm it uses together with the standard it rests on (NIST FIPS, ISO/IEC 9797-1, EMV specifications).
@@ -1545,7 +1517,8 @@ prevent, **at the hardware level**, the HSM from ever giving out the key in plai
     `pkcs11-tool --list-objects` (or its equivalent) that these attributes were actually applied — don't trust
     the default.
 
-We will look again, in Week 11, at software-based security modules (structures like the Secure Enclave/TEE on
+We will look again, in [Week 11](../week-11/cen429-week-11.md#5-wbcs-place-in-layered-defence), at software-based
+security modules (structures like the Secure Enclave/TEE on
 mobile devices) through the PKCS#11 logic of this section; the principle you learned here — "work through a
 handle, never move the raw key" — is the foundation of that entire discussion. The next and final technical
 section looks at why the RSA/ECC we consider secure today needs to change in the future.
@@ -1570,7 +1543,8 @@ agenda starting today.
 
 For this course's project, the practical outcome is a single sentence: **crypto agility**. Don't hard-code
 algorithm names everywhere in your code; use formats that carry a key version and algorithm identifier (the key
-version field from Week 3), so that when the algorithm changes, only configuration and re-encryption are
+version field from [Week 3](../week-3/cen429-week-3.md#8-dynamic-key-management-lifecycle-hierarchy-and-renewal)),
+so that when the algorithm changes, only configuration and re-encryption are
 needed.
 
 ### Worked example: generating post-quantum keys today
@@ -1651,7 +1625,8 @@ Draft the **S8** and **S11** sections expected at the final checkpoint:
       standard it rests on, and the library. If the table contains an obsolete algorithm, give its justification
       and a migration plan.
 - [ ] **S8 — Key lifecycle table:** for every key, where it is generated, where it is stored, its crypto-period,
-      and its renewal and destruction (Week 3).
+      and its renewal and destruction
+      ([Week 3](../week-3/cen429-week-3.md#8-dynamic-key-management-lifecycle-hierarchy-and-renewal)).
 - [ ] **S11 — Secure communication:** TLS version and validation; if pinning is used, the SPKI and backup pin;
       message-level protection.
 - [ ] If your project has an update or configuration file, add **signature verification** (Ed25519 recommended)
@@ -1672,7 +1647,9 @@ component ("user session token generation") — replace the rows with your own c
 | Server authentication | ECDSA P-256 | 128-bit level | — | OpenSSL/TLS | FIPS 186-5 | TLS certificate, Sections 7–9 |
 | Update package signature | Ed25519 | 128-bit level | — | OpenSSL EVP | RFC 8032 | Section 5, version field signed |
 
-The key lifecycle table (this week's counterpart to Week 3's key management topic) for the same component:
+The key lifecycle table (this week's counterpart to
+[Week 3's key management topic](../week-3/cen429-week-3.md#8-dynamic-key-management-lifecycle-hierarchy-and-renewal))
+for the same component:
 
 | Key | Where generated | Where stored | Crypto-period | Renewal | Destruction |
 | --- | --- | --- | --- | --- | --- |
@@ -1890,3 +1867,10 @@ checkpoint, looks for exactly these two tables.
     | HSM | Donanım güvenlik modülü | Tamper-resistant hardware that never gives out the key |
     | PKCS#11 | — | The standard API for accessing cryptographic tokens |
     | Crypto agility | Kripto çevikliği | Being able to swap out algorithms easily |
+
+!!! info "Next week"
+    **[Week 11](../week-11/cen429-week-11.md) — Whitebox cryptography.** This week we saw the "entrust it to hardware" path for protecting a key
+    (HSM, PKCS#11, `CKA_EXTRACTABLE=false`, §11). Week 11 asks the same question with no hardware available: how
+    do you protect a key inside an application that is pure software, with no access to any HSM? Table-based
+    whitebox AES and the attacks built against it (BGE, DCA, DFA) are the software-side counterpart of this
+    week's "the key must never be exposed" principle.

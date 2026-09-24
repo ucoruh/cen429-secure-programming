@@ -5,7 +5,7 @@
 | **Date** | 25.09.2026 |
 | **Learning outcomes** | LO.1 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Week 1 (CIA, attacker models, STRIDE, attack trees); reading files in C; `cd` and `ls` in PowerShell or a Linux terminal |
+| **Prerequisites** | [Week 1](../week-1/cen429-week-1.md) (CIA, attacker models, STRIDE, attack trees); reading files in C; `cd` and `ls` in PowerShell or a Linux terminal |
 | **Labs** | [`code/week-02`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-02) — 14 demos; runs on Windows (MSVC), WSL and Linux |
 
 <!-- materyal:basla -->
@@ -95,139 +95,48 @@
 
 ---
 
-## 0. Basic concepts (from zero)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from zero, the terms we will use for the rest of the
-week. If you do not know a term, read this section first; the following sections build on these.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### Why this section?
+### What we bring from earlier weeks
 
-This week terms like "polymorphic virus", "Bell–LaPadula", "CVSS" will come up.
+- **Asset, threat, vulnerability, risk, and the attacker model** — the language for telling an asset's value,
+  the threat against it, the weakness that makes the threat possible (vulnerability), and risk (probability ×
+  impact) apart ([Week 1, §1](../week-1/cen429-week-1.md#1-what-is-security); for the attacker model,
+  [Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach)). This week we make
+  this language concrete through malware (the threat side) and access models (the defence side).
+- **STRIDE and the attack tree** — asking STRIDE's six letters against an interface, then breaking the
+  resulting threats down from a root goal into branches with AND/OR logic
+  ([Week 1, §7](../week-1/cen429-week-1.md#7-threat-modelling-stride-and-attack-trees)). This week we add
+  **cost** to the attack tree and compute the cheapest attack path ([§8](#8-attack-trees), Demo 04).
 
-We assume you know none of them.
+### This week's concept map
 
-Let's first define each one **one by one**.
-
-### Malware
-
-- **Malware:** a program written to cause harm.
-- "Virus" is one subtype; not everything is a virus.
-- Types: virus, worm, trojan horse, ransomware, spyware…
-
-### Virus, worm, trojan horse
-
-- **Virus:** spreads by **infecting** another program.
-- **Worm:** **copies itself** over the network, on its own.
-- **Trojan horse:** looks useful while secretly carrying something harmful.
-
-### Ransomware and others
-
-- **Ransomware:** encrypts files and demands a ransom.
-- **Spyware:** secretly collects information.
-- **Backdoor:** leaves behind hidden access.
-
-### A virus's three parts
-
-- **Infection mechanism:** how it spreads.
-- **Trigger:** when it activates.
-- **Payload:** what it does.
-
-### Concealment: polymorphic/metamorphic
-
-- **Polymorphic:** encrypts itself **differently** in every copy (evades signatures).
-- **Metamorphic:** **rewrites** its own code in every copy.
-- Goal: evade signature-based detection.
-
-### Detection: signature vs heuristic
-
-- **Signature-based:** looks for the fingerprint of a known malware sample (fast, misses new ones).
-- **Heuristic/behaviour-based:** looks for suspicious **behaviour** (finds new ones, false alarms).
-
-### Entropy (randomness)
-
-- **Entropy:** how random data appears to be.
-- Encrypted/packed code has **high entropy**.
-- Detection clue: a high-entropy region is suspicious.
-
-### Access control
-
-- **Access control:** who (subject), on what (object), can do what (right)?
-- Modelled with a **matrix**.
-- Models: DAC, MAC, RBAC.
-
-### DAC / MAC / RBAC
-
-- **DAC:** the owner decides the permissions (Unix file permissions).
-- **MAC:** the system imposes mandatory rules (labelled).
-- **RBAC:** permissions are tied to **roles**.
-
-### Formal models
-
-- **Bell–LaPadula:** **confidentiality** (no read up).
-- **Biba:** **integrity** (no read down — the reverse of BLP).
-- **Clark–Wilson:** commercial integrity (well-formed transactions).
-
-### Audit log
-
-- **Audit log:** who did what and when — a log kept as **evidence**.
-- Must be tamper-resistant.
-- Watch out for log injection (CWE-117).
-
-### CWE, CVE, CVSS
-
-- **CWE:** a catalogue of weakness **types** (e.g. CWE-416).
-- **CVE:** a **specific** flaw in a specific product (e.g. CVE-2024-xxxx).
-- **CVSS:** a vulnerability's **severity score** (0–10).
-
-### OWASP and the vulnerability lifecycle
-
-- **OWASP Top 10 / MASVS:** common vulnerabilities and mobile requirements.
-- **Responsible disclosure:** reporting a vulnerability to the vendor first.
-- Flaw lifecycle: discovery → notification → patch → release.
-
-### Now we are ready
-
-Terms:
-
-malware · virus/worm/trojan/ransomware · a virus's three parts · polymorphic · signature/heuristic detection ·
-entropy · access control (DAC/MAC/RBAC) · BLP/Biba · audit log · CWE/CVE/CVSS · OWASP
-
-Now: the big picture of threat, model, and classification.
-
-### Today's plan (3 hours)
-
-| Hour | Topic |
-| --- | --- |
-| 1 | Malware: history, anatomy, types · concealment |
-| 2 | **Demo 1–2** · countermeasures · attack tree (**Demo 4**) · access and models (**Demo 3, 6**) |
-| 3 | CWE · OWASP · CVE · CVSS (**Demo 5**) · lifecycle · project |
-
-**Demos:** `code/week-02` — Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
-
-### Brief history — malware and security models
-
-- **1949** — von Neumann: theory of **self-replicating** automata (the mathematical root of the virus)
-- **1971** Creeper · **1986** Brain (first PC virus) · **1988** **Morris Worm** halts the internet
-- **1973–77** — **Bell–LaPadula** (confidentiality), **Biba** (integrity); **1987** Clark–Wilson
-- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: a common classification language
-
-> Two separate strands: **recognising malware** + **modelling access**. Today we cover both at once.
-
-### Learning outcome and scope
-
-- **LO.1:** Identifies and classifies common software security vulnerabilities.
-- This week combines three topics:
-  - **Threat:** malware types and concealment
-  - **Defence:** access control and formal models
-  - **Common language:** CWE · CVE · CVSS · OWASP · MASVS
-
-> ⚠️ **Ethics:** No demo contains real malware. All of them are **safe simulations** that run in their own
-> folder, without administrator privileges.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Malware | Any program written to cause harm, steal data, or seize control without the owner's permission and knowledge; a virus is only one subtype of it. | [§2](#2-what-is-malware-a-brief-history) |
+| A virus's three parts | A virus splits into three functions: the infection mechanism (how it spreads), the trigger (when it activates), and the payload (the actual harm it does). | [§3](#3-the-anatomy-and-types-of-malware) |
+| Malware types | A virus infects a carrier, a worm copies itself over the network on its own, a trojan horse looks harmless while carrying hidden harm, and ransomware encrypts files; rootkits, bots, spyware, and wipers are other types in this family. | [§3](#3-the-anatomy-and-types-of-malware) |
+| Concealment: polymorphic/metamorphic | Polymorphic malware keeps its body encrypted and changes only the decryptor in each copy; metamorphic malware uses no encryption and rewrites its entire code in each copy; both aim to evade signature-based detection. | [§5](#5-propagation-and-concealment-how-does-it-go-unnoticed) |
+| Detection methods | Malware detection layers signature (looking for a known fingerprint), heuristic (scoring suspicious features), behaviour-based (watching runtime actions), sandboxing, and emulation (running code in an isolated environment). | [§6](#6-countermeasures-how-do-we-catch-it) |
+| Entropy | A measure of how random a file's bytes look, from 0 (uniform) to 8 (fully random); encrypted/packed content usually looks high-entropy, but that alone does not prove it is malicious. | [§6](#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised) |
+| Access control | The framework that answers "can this subject perform this operation on this object?", expressed as a matrix of subjects, objects, and rights. | [§10](#10-access-control-who-can-do-what-to-what) |
+| DAC / MAC / RBAC | In DAC the object's owner decides permissions, in MAC the system/policy imposes mandatory rules, and in RBAC permissions are tied to roles rather than individuals. | [§10](#10-access-control-who-can-do-what-to-what) |
+| Bell–LaPadula, Biba, Clark–Wilson | Bell–LaPadula protects confidentiality with "no read up, no write down"; Biba protects integrity by applying the reverse rules; Clark–Wilson protects commercial integrity through well-formed transactions and separation of duty. | [§11](#11-formal-security-models) |
+| Audit log | A log kept as evidence of who did what and when, which must be sealed with a keyed digest (HMAC) against tampering. | [§9](#9-security-audit-logging-the-log-as-evidence) |
+| CWE | MITRE's numbered catalogue of weakness **types**, as opposed to specific flaws. | [§13](#13-classifying-software-security-vulnerabilities-cwe) |
+| CVE and CVSS | A CVE is the unique identifier of a specific flaw in a specific product; CVSS is the scoring system that turns that flaw's severity into a number from 0 to 10. | [§15](#15-cve-and-cvss-which-flaw-how-severe) |
+| OWASP Top 10 and MASVS | Documents that turn the weaknesses CWE covers into prioritised, verifiable lists for the web (Top 10, ASVS) and mobile (MASVS). | [§14](#14-owasp-top-10-and-masvs) |
+| The vulnerability lifecycle | The process a flaw goes through from discovery to public release, including responsible disclosure and the patch gap. | [§16](#16-the-vulnerability-lifecycle-and-responsible-disclosure) |
 
 ## 1. This week's big picture: threat, model, classification
 
-Last week we built the language of security: asset, threat, vulnerability, risk; the attacker model; STRIDE
-and the attack tree. This week we fill in three columns of that language:
+[Last week](../week-1/cen429-week-1.md#1-what-is-security) we built the language of security: asset, threat,
+vulnerability, risk; the attacker model; STRIDE and the attack tree
+([Week 1, §7](../week-1/cen429-week-1.md#7-threat-modelling-stride-and-attack-trees)). This week we fill in
+three columns of that language:
 
 !!! note "Brief history: malware and security models"
     - **1949** — von Neumann establishes the theory of **self-replicating** automata: the mathematical root of
@@ -306,7 +215,7 @@ however, a virus is only **one type**. To see the distinction, let's first look 
     WannaCry is instructive because it combines three different topics in a single incident. (1)
     **Propagation:** it spread like a **worm**, without the user doing anything, by exploiting a buffer
     overflow flaw (EternalBlue) in a network file-sharing protocol — that is, the overflow class we will see
-    this week (Week 1) directly became a worm's engine. (2) **Payload:** on machines it reached, it demanded
+    this week ([Week 1](../week-1/cen429-week-1.md)) directly became a worm's engine. (2) **Payload:** on machines it reached, it demanded
     a ransom by **encrypting** files; this is exactly the trace this payload leaves behind — the **entropy
     spike** we will see in [Demo 2](#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised). (3)
     **Patch gap:** the patch for the exploited flaw had been released **weeks before** the attack;
@@ -376,6 +285,9 @@ The most useful way to distinguish malware is by **how it spreads and what it do
     - **Spyware / adware:** Collects data or displays advertisements.
     - **Wiper:** Looks like ransomware but **permanently destroys** data (NotPetya). The goal is not money
       but destruction.
+    - **Backdoor:** A payload that bypasses normal authentication and leaves the attacker **hidden access**;
+      it does not spread on its own and is usually the persistent entry point left behind by another piece of
+      malware or a supply-chain attack — the SUNBURST incident below is an example.
 
 !!! example "Quick classification in class (3 minutes)"
     Which type are the following? (Answers are in the hidden box.)
@@ -871,7 +783,7 @@ not keep the key in the same place as the monitored files. The comparison is als
 otherwise a timing difference could leak how many bytes matched.
 
 !!! note "How is this applied in the field?"
-    The same principle comes back in Week 6 as **runtime integrity checking**: an application that needs
+    The same principle comes back in [Week 6](../week-6/cen429-week-6.md) as **runtime integrity checking**: an application that needs
     high security computes the digest of its own code section while running and compares it against an
     expected value embedded after compilation. Where and how the expected value is stored matters just as
     much as the check itself.
@@ -900,7 +812,7 @@ subject is closing that entry point.
 | Stuxnet (2010) | Code loading via displaying a shortcut (`.lnk`) file (CVE-2010-2568) plus three more zero-day flaws; stolen driver signing certificates | Loading code from untrusted content; signing keys not being protected | Not executing code while displaying content; protecting signing keys in hardware (an HSM) |
 | WannaCry (12 May 2017) | Memory corruption in the SMBv1 server (EternalBlue, CVE-2017-0144); the patch had been released on 14 March 2017 | Input validation / memory safety | Bounds checking in the parser; disabling the legacy protocol; not leaving the patch unapplied for two months |
 | NotPetya (27 June 2017) | Distributed through an accounting software's update server; followed by lateral movement via EternalBlue/EternalRomance and credential harvesting | CWE-494 (downloading code without integrity check) | Signing updates and verifying the signature on the client; protecting the update infrastructure |
-| SUNBURST (December 2020) | A monitoring software's build environment was breached and a backdoor was inserted into a signed library; ~18,000 customers affected | Supply chain: build environment security | Protecting the build environment, reproducible builds, comparing the build output against the source (the SBOM and integrity topic in Week 5) |
+| SUNBURST (December 2020) | A monitoring software's build environment was breached and a backdoor was inserted into a signed library; ~18,000 customers affected | Supply chain: build environment security | Protecting the build environment, reproducible builds, comparing the build output against the source (the SBOM and integrity topic in [Week 5](../week-5/cen429-week-5.md)) |
 
 Reading the table from top to bottom, a trend appears: most epidemics between 1988 and 2008 spread through
 **a single buffer overflow**. After 2017, the entry point increasingly shifted to **update and build
@@ -924,7 +836,8 @@ and 10).
 
 ## 8. Attack Trees
 
-We drew an attack tree last week; this week we will put it into **numbers**. The root is the attacker's goal;
+We drew an attack tree [last week](../week-1/cen429-week-1.md#7-threat-modelling-stride-and-attack-trees);
+this week we will put it into **numbers**. The root is the attacker's goal;
 the branches are the ways to reach it. At an **OR** node, one branch is enough; at an **AND** node, all of
 them are required. If we write a **cost** (person-days, equipment, expertise) on every leaf, we can solve the
 tree bottom-up and find **the cheapest attack**:
@@ -955,7 +868,7 @@ Windows: `cd code\week-02\04-saldiri-agaci ; .\demo.ps1` · WSL/Linux:
 ```
 
 The cheapest path is **2 units**: reading the key from memory. The second tree shows what happens when
-**RASP** (debugger and hook detection — Week 6) is added to this branch:
+**RASP** (debugger and hook detection — [Week 6](../week-6/cen429-week-6.md)) is added to this branch:
 
 ```text title="demo — Step 2 (abridged)"
   [OR] Capture the payment key  (cost=8)
@@ -1050,7 +963,7 @@ does three things:
    single input.
 3. **A fixed format string:** the field is never passed as the format string of `printf`/`syslog`. The
    mistake `syslog(LOG_INFO, kullanici_girdisi)` that the book warns about in Recipe 13.11 is a **format
-   string vulnerability** (CWE-134; covered in detail in Week 4): the correct form is
+   string vulnerability** (CWE-134; covered in detail in [Week 4](../week-4/cen429-week-4.md)): the correct form is
    `syslog(LOG_INFO, "%s", kullanici_girdisi)`.
 
 !!! tip "How does an assessor test this?"
@@ -1126,7 +1039,7 @@ the earlier keys no longer exist anywhere.
 !!! note "How is this applied in the field?"
     In applications like mobile payments, the on-device log is kept to a minimum and contains no sensitive
     field; security events (integrity failure, debugger detection) are reported to the server. This is the
-    "reporting" leg of the RASP countermeasures we will see in Week 6.
+    "reporting" leg of the RASP countermeasures we will see in [Week 6](../week-6/cen429-week-6.md).
 
 ---
 
@@ -1254,7 +1167,7 @@ formal form of last week's "separation of privileges" principle.
     Although these models look abstract, they have everyday code equivalents. The **Biba** principle means
     "do not directly trust data coming from the outside"; in practice, this means treating every piece of
     external input as **untrusted** and passing it through a validation layer (the input validation from
-    Week 1). Bell–LaPadula's "no write down" rule turns, in a mobile payment library, into a ban on "writing
+    [Week 1](../week-1/cen429-week-1.md)). Bell–LaPadula's "no write down" rule turns, in a mobile payment library, into a ban on "writing
     a sensitive key into a less protected log or the clipboard" — it prevents secrets from accidentally
     leaking into a low-security channel. Clark–Wilson's "well-formed transaction" idea means changing a
     balance or a transaction counter only through an audited function instead of updating it **directly**;
@@ -1465,7 +1378,7 @@ Three subtleties of the Unix model (Recipe 2.1) explain most real-world bugs:
   a group member, only the group bits are used; if neither, the other bits are used.
 - **umask** narrows a new file's permissions: `actual permission = requested & ~umask`. `fopen()` always
   requests `0666`; if umask is `000`, the file becomes **writable by everyone**. A sensitive file should be
-  opened with `open(..., 0600)` (Recipe 2.7, Week 1).
+  opened with `open(..., 0600)` (Recipe 2.7, [Week 1](../week-1/cen429-week-1.md)).
 - A **setuid** program runs with the authority of the **file's owner**, not the person running it. A program
   that does not know the distinction between real, effective, and saved user IDs can think it has "dropped"
   its privilege while leaving it recoverable through the saved identity (Recipe 1.3).
@@ -1581,15 +1494,15 @@ product, CWE is its **type**.
 
 | CWE | Weakness type | Where in this course? |
 | --- | --- | --- |
-| CWE-787 | Out-of-bounds write | Week 1 Demo 03 (overflow) |
+| CWE-787 | Out-of-bounds write | [Week 1](../week-1/cen429-week-1.md) Demo 03 (overflow) |
 | CWE-125 | Out-of-bounds read | The Heartbleed family |
-| CWE-89 | SQL injection | Week 5 |
+| CWE-89 | SQL injection | [Week 5](../week-5/cen429-week-5.md) |
 | CWE-79 | Cross-site scripting (XSS) | Web vulnerabilities |
-| CWE-416 | Use after free | Week 4 |
+| CWE-416 | Use after free | [Week 4](../week-4/cen429-week-4.md) |
 | CWE-20 | Improper input validation | Every week |
 | CWE-367 | TOCTOU race condition | This week, Demo 06 |
 | CWE-798 | Hardcoded credentials | Weeks 3, 10 |
-| CWE-327 | Use of a broken/risky cryptographic algorithm | Week 10 |
+| CWE-327 | Use of a broken/risky cryptographic algorithm | [Week 10](../week-10/cen429-week-10.md) |
 | CWE-326 | Inadequate encryption strength | Weeks 10, 11 |
 
 The **CWE Top 25** is the list of the 25 most common and most dangerous weaknesses of the year; it is computed
@@ -1645,8 +1558,8 @@ CWE catalogues all weaknesses; **OWASP**, on the other hand, turns these into **
 | OWASP MASVS + MASTG | Mobile | Verification standard + test guide |
 
 !!! tip "Connection to this course: MASVS-RESILIENCE"
-    The topics we will cover throughout the term — code obfuscation (Weeks 9, 14), RASP (Week 6), and
-    whitebox (Week 11) — are the direct counterpart of MASVS's **RESILIENCE** category. In other words, every
+    The topics we will cover throughout the term — code obfuscation (Weeks 9, 14), RASP ([Week 6](../week-6/cen429-week-6.md)), and
+    whitebox ([Week 11](../week-11/cen429-week-11.md)) — are the direct counterpart of MASVS's **RESILIENCE** category. In other words, every
     protection you learn maps onto an item of a recognised standard.
 
 !!! example "Class activity 3 — Classify the finding (10 minutes)"
@@ -1799,9 +1712,8 @@ a friend **in your own words**, you have learned that topic.
       carrier runs. A worm needs no carrier, a trojan horse does not copy itself. Getting the type wrong
       leads to the wrong defence being chosen (a network patch against a worm, user training and an
       allow-list against a trojan horse).
-    - **"My signature database is up to date, so I'm safe."** A signature only catches **what is known**. A
-      single-byte change evades a hash signature; a polymorphic copy whose decryptor has changed evades a
-      pattern signature (Demo 01).
+    - **"My signature database is up to date, so I'm safe."** A signature only catches **what is known**;
+      details in [§5](#5-propagation-and-concealment-how-does-it-go-unnoticed) (Demo 01).
     - **"High entropy = malicious."** Encrypted, compressed, and random data are all close to 8; so are a
       `.zip`, a `.png`, an encrypted backup. Entropy is only a meaningful clue **in an unexpected place**
       (Demo 02).
@@ -1817,9 +1729,8 @@ a friend **in your own words**, you have learned that topic.
     - **"I did integrity monitoring with a plain SHA-256 list."** Just as an attacker can modify the file,
       they can update the list too. The baseline values must be keyed (HMAC) or signed and must sit somewhere
       the attacker cannot reach (Demo 08).
-    - **"The patch was released, job done."** The patch for the flaw WannaCry used had come out roughly two
-      months before the attack. The risk continues until the patch is **applied**; a released patch also
-      shows the attacker the way.
+    - **"The patch was released, job done."** The risk continues until the patch is **applied**; details in
+      [§7](#7-incident-case-studies-which-programming-error-which-countermeasure) (the WannaCry example).
 
 !!! success "Checklist — Malware"
     - [ ] I can distinguish virus, worm, trojan horse, ransomware, rootkit, bot, spyware, and wiper by
@@ -1926,10 +1837,10 @@ a friend **in your own words**, you have learned that topic.
     - **"Picking the most general CWE is safe."** High-level entries like CWE-20 (input validation) or
       CWE-693 do not describe the fix. Rule: pick the **most concrete** entry possible (preferably at base
       level).
-    - **"The CVSS score is the risk."** The base score measures the flaw's own properties; it does not know
-      the value of your asset, whether exploit code exists, or whether the system is exposed to the internet.
-    - **"Flaws on the device score low, so they're unimportant."** In white-box scenarios the vector usually
-      comes out `AV:L` and `PR:H`, lowering the score. But this is exactly this course's attacker model; the
+    - **"The CVSS score is the risk."** The base score does not know your context; details in
+      [§15](#15-cve-and-cvss-which-flaw-how-severe). In this course's attacker model the vector usually comes
+      out `AV:L`/`PR:H`, lowering the score — but if the device is already in the attacker's hands ("flaws on
+      the device score low, so they're unimportant" is the matching fallacy), the risk does not shrink; the
       attack potential and asset value must be written next to the score.
     - **"I'll enter a CVSS v3.1 vector into a v4.0 calculator."** v4.0 has no Scope (S); it has AT, VC/VI/VA,
       and SC/SI/SA metrics, and UI takes three values (N/P/A). Vectors are not converted into each other,
@@ -2329,7 +2240,7 @@ hidden box.
         CRC back to its old value (collisions are easy). A cryptographic digest (SHA-256) or a signature is
         needed. (2) The check is tied to a **single branch** (`if`): an attacker evades it by turning `jne`
         into `jmp`. Fix: use the digest's result **in the decision flow** (e.g. in key derivation), not tied
-        to a single branch. (Week 6.)
+        to a single branch. ([Week 6](../week-6/cen429-week-6.md).)
 
 ??? question "Snippet 3 — Access Default"
     ```c
@@ -2504,18 +2415,18 @@ computer.
 
 ??? question "17. Which topics of this course does MASVS-RESILIENCE relate to?"
     With resilience against reverse engineering and tampering: code obfuscation (Weeks 9, 14), RASP (Week
-    6), and whitebox cryptography (Week 11). The protections we learn in this course are the direct
+    6), and whitebox cryptography ([Week 11](../week-11/cen429-week-11.md)). The protections we learn in this course are the direct
     counterpart of this category.
 
 ??? question "18. Which CWEs does a security assessor look at for 'exposed secrets'?"
     **CWE-798** for a hardcoded credential/key, **CWE-316** for sensitive data left exposed in memory; they
-    test these with source/binary analysis and a memory dump (as in Week 1 Demo 02).
+    test these with source/binary analysis and a memory dump (as in [Week 1](../week-1/cen429-week-1.md) Demo 02).
 
 ---
 
 ## 23. Sample Quiz-1-Style Questions
 
-Quiz-1 (Week 8) contains short-answer and code-reading questions of this kind. Try them; verify the answers
+Quiz-1 ([Week 8](../week-8/cen429-week-8.md)) contains short-answer and code-reading questions of this kind. Try them; verify the answers
 against the sections above.
 
 1. Split the following types into two groups, "requires user interaction / does not require it": virus,
@@ -2579,3 +2490,11 @@ against the sections above.
     | CVSS | Zafiyet puanı | A flaw's severity score, from 0 to 10 |
     | Responsible disclosure | Sorumlu ifşa | Reporting the flaw to the vendor first and waiting for a patch |
     | Zero-day | Sıfırıncı gün | A flaw the vendor does not know about / has no patch for |
+
+!!! info "Next week"
+    **Week 3 — Data security.** The **entropy** metric we used for malware detection this week
+    ([§6](#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised)) comes back next week to assess the
+    disorder feeding a cryptographic random generator (CSPRNG)
+    ([Week 3, §3](../week-3/cen429-week-3.md#3-random-numbers-the-invisible-foundation-of-cryptography)). The
+    vulnerability language we prioritised with CWE and CVSS this week also resurfaces in [Week 12](../week-12/cen429-week-12.md), as an input
+    to penetration-test planning.

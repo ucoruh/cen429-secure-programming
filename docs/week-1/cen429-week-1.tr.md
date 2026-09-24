@@ -107,142 +107,45 @@ tags:
     istemez ve bilgisayarınızın hiçbir ayarını değiştirmez. Öğrendiğiniz teknikleri **yalnız kendi bilgisayarınızda ve
     verilen demolar üzerinde** deneyin. Başkasına ait bir sistemde izinsiz denemek suçtur.
 
+!!! info "Ders nasıl yürüyor?"
+    - **Tek dönem projesi:** C/C++ uygulaması + "sertifikasyondan geçecekmiş gibi" bir **güvenlik kılavuzu**; vize
+      kontrolü **[7. hafta](../week-7/cen429-week-7.md)**, final kontrolü **[15. hafta](../week-15/cen429-week-15.md)** gösterimiyle yapılır.
+    - **İki quiz:** [8. hafta](../week-8/cen429-week-8.md) (1–6. hafta konuları) · [16. hafta](../week-16/cen429-week-16.md) (9–14. hafta konuları).
+    - Not hesaplaması: `Vize = 0,6·Proje1 + 0,4·Quiz1` · `Final = 0,7·Proje2 + 0,3·Quiz2`.
+    - Her hafta aynı kalıpla ilerler: **hatalı kod → saldırı → düzeltme**.
+
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Dersin ilk haftası olduğu için önceki bir konuya dayanmıyoruz: aşağıdaki kavram
+haritası bu haftanın kavramlarını birer cümleyle tanımlar ve her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Neden bu bölüm?
+### Bu haftanın kavram haritası
 
-Bu ders "güvenlik", "zafiyet", "tehdit modeli" gibi terimlerle dolu.
-
-Hiçbirini bilmediğinizi varsayıyoruz.
-
-Önce hepsini **tek tek** tanımlayalım.
-
-### Güvenlik nedir?
-
-- **Güvenlik:** bir sistemi, ona **zarar vermek isteyen** birine karşı korumak.
-- Normal hata: yanlışlıkla olur.
-- Güvenlik: **kasıtlı** bir saldırgan var.
-
-### Varlık (asset) nedir?
-
-- **Varlık:** korumaya değer her şey (veri, anahtar, işlev).
-- Örnek: parola, kredi kartı, lisans, kullanıcı verisi.
-- Güvenlik "neyi koruyoruz?" ile başlar.
-
-### Tehdit ve zafiyet
-
-- **Tehdit:** olabilecek kötü bir olay (veri çalınması).
-- **Zafiyet:** bunu mümkün kılan **zayıf nokta** (denetimsiz girdi).
-- Tehdit + zafiyet + saldırgan = risk.
-
-### CIA üçlüsü
-
-Güvenliğin üç temel hedefi:
-
-- **Gizlilik (C):** yalnız yetkili görsün.
-- **Bütünlük (I):** izinsiz değişmesin.
-- **Erişilebilirlik (A):** gerektiğinde çalışsın.
-
-### Saldırgan modeli
-
-- **Saldırgan modeli:** "saldırgan neyi görebilir/yapabilir?"
-- Ağdan mı bağlanıyor, cihaza mı sahip?
-- Savunmayı buna göre tasarlarız.
-
-### Beyaz kutu / MATE
-
-- **MATE (Man-At-The-End):** programa **sahip** saldırgan.
-- Kodu okur, belleği görür, değiştirir.
-- Mobil/masaüstü uygulamanın gerçek durumu (bu dersin ana teması).
-
-### Tehdit modelleme
-
-- **Tehdit modelleme:** "neyi, kime karşı, nasıl koruyacağız?" sorusunu **sistemli** yanıtlamak.
-- Varlıkları, tehditleri, önlemleri listeler.
-- Bugün STRIDE ve saldırı ağaçlarıyla yapacağız.
-
-### STRIDE
-
-- Tehditleri altı harfle sınıflandıran yöntem:
-- **Spoofing**, **Tampering**, **Repudiation**, **Information disclosure**, **Denial of service**, **Elevation of privilege**.
-- Her öğe için "hangi tehdit?" diye sorar.
-
-### Saldırı ağacı
-
-- **Saldırı ağacı:** bir hedefi (ör. "anahtarı çal") **alt adımlara** bölen ağaç.
-- Kök: saldırganın amacı.
-- Dallar: bunu başarmanın yolları.
-
-### Veri akış diyagramı (DFD)
-
-- **DFD:** verinin sistemde **nasıl aktığını** gösteren şema.
-- Süreç, veri deposu, dış varlık, akış, güven sınırı.
-- Tehditleri bulmak için harita.
-
-### Katmanlı savunma
-
-- **Katmanlı savunma (defense in depth):** tek önlem değil, **birçok** önlem.
-- Biri aşılırsa diğeri durdurur.
-- "Güvenlik kabuğu" bu katmanların birleşimi.
-
-### Güvenli tasarım ilkeleri
-
-- Saltzer & Schroeder (1975): en az yetki, güvenli varsayılan, ekonomi, açık tasarım…
-- Bugün hâlâ geçerli.
-- Bu dersin omurgası.
-
-### Ödünleşim (trade-off)
-
-- Her koruma bir **bedel** getirir: hız, karmaşıklık, maliyet.
-- Güvenlik "sonsuz koruma" değil, **dengeli** koruma.
-- Kalan riski açıkça yazarız.
-
-### Şimdi hazırız
-
-Terimler:
-
-güvenlik · varlık · tehdit/zafiyet · CIA · saldırgan modeli · MATE · tehdit modelleme · STRIDE · saldırı ağacı · DFD · katmanlı savunma · tasarım ilkeleri · ödünleşim
-
-Şimdi: güvenlik nedir, derinlemesine.
-
-### Bugünün planı (3 saat)
-
-| Saat | Konu |
-| --- | --- |
-| 1 | Ders tanıtımı · Güvenlik nedir? · Saldırgan · İlkeler · **Uygulama korumasına genel bakış** |
-| 2 | Koruma planı · STRIDE ve risk puanı · Saldırı ağacı · **Uygulamalı örnek "Kasa"** · Sınıf alıştırması |
-| 3 | **Demo 1–2** · Güvenli başlatma · Taşmalar · **Demo 3–4** · Bellek yönetimi · Bölümleme · Güvenli süreç · Proje |
-
-**Demolar:** `code/week-01` — Windows `.\demo.ps1` · WSL / Linux `sh demo.sh` · Visual Studio: Klasör Aç → `code`
-
-### Kısa tarihçe — güvenli programlama fikri
-
-- **1975** — Saltzer & Schroeder: güvenli tasarımın **8 ilkesi** (en az ayrıcalık, derinlemesine savunma…)
-- **1970–80'ler** — **CIA üçlüsü** ortak dil hâline gelir
-- **1998–99** — Microsoft'ta **STRIDE**; Schneier **saldırı ağaçlarını** tanıtır
-- **2001–03** — *Building Secure Software* ve **Secure Programming Cookbook** (dersin ana kaynağı)
-
-> Bugünkü araçlar (CIA · saldırgan modeli · STRIDE · saldırı ağacı) bu çizginin ürünüdür.
-
-### Ders nasıl yürüyor?
-
-- **Tek dönem projesi:** C/C++ uygulaması + "sertifikasyondan geçecekmiş gibi" bir **güvenlik kılavuzu**
-  - Vize kontrolü: **7. hafta** gösterim · Final kontrolü: **15. hafta** gösterim
-- **İki quiz:** 8. hafta (1–6) · 16. hafta (9–14)
-- Not: `Vize = 0,6·Proje1 + 0,4·Quiz1` · `Final = 0,7·Proje2 + 0,3·Quiz2`
-- Her hafta: **hatalı kod → saldırı → düzeltme**
-
-> ⚠️ **Etik:** Teknikleri yalnız **kendi bilgisayarınızda** ve verilen demolar üzerinde deneyin.
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Güvenlik | Güvenlik, bir sistemi ona zarar vermek isteyen kasıtlı bir saldırgana karşı korumaktır; sıradan bir hatadan farkı, karşısında bilinçli bir düşmanın olmasıdır. | [§1](#1-guvenlik-nedir) |
+| Varlık (asset) | Varlık, korunmaya değer her şeydir — veri, anahtar ya da işlev — ve güvenlik sorusu her zaman "neyi koruyoruz?" ile başlar. | [§1](#1-guvenlik-nedir) |
+| Tehdit ve zafiyet | Tehdit, bir varlığa zarar verebilecek olası bir olay ya da kişidir; zafiyet, bu tehdidin kullanabileceği zayıf noktadır; tehdit + zafiyet + saldırgan risk oluşturur. | [§1](#1-guvenlik-nedir) |
+| CIA üçlüsü | Güvenliğin üç temel hedefi gizlilik (yalnız yetkili görsün), bütünlük (izinsiz değişmesin) ve erişilebilirliktir (gerektiğinde çalışsın). | [§1](#guvenligin-uc-hedefi-cia) |
+| Saldırgan modeli | Saldırgan modeli, "saldırgan neyi görebilir, neyi yapabilir?" sorusunun sistemli cevabıdır; savunma buna göre tasarlanır. | [§3](#3-saldirgan-kim-neye-erisebiliyor) |
+| Beyaz kutu / MATE | MATE (Man-At-The-End), programın **kendisine sahip** olan saldırgandır: kodu okuyabilir, belleği görebilir ve değiştirebilir; mobil/masaüstü uygulamaların gerçek durumudur. | [§3](#3-saldirgan-kim-neye-erisebiliyor) |
+| Güvenli tasarım ilkeleri | Saltzer ve Schroeder'in 1975'te yazdığı ilkeler — en az ayrıcalık, güvenli varsayılan, açık tasarım ve benzerleri — güvenli tasarımın bugün de geçerli omurgasıdır. | [§4](#4-guvenli-tasarimin-temel-ilkeleri) |
+| Katmanlı savunma | Katmanlı savunma, tek bir önleme güvenmek yerine birbirini tamamlayan birçok koruma katmanı kurmaktır; biri aşılırsa diğeri devreye girer. | [§5](#5-uygulama-korumasina-genel-bakis-katmanli-savunma-haritasi) |
+| Ödünleşim (trade-off) | Her koruma bir bedel getirir (hız, karmaşıklık, maliyet); güvenlik "sonsuz koruma" değil, dengeli koruma ve açıkça yazılmış bir kalan risktir. | [§5](#korumanin-maliyeti-her-katmanin-bir-bedeli-var) |
+| Tehdit modelleme | Tehdit modelleme, "neyi, kime karşı, nasıl koruyacağız?" sorusunu sistemli biçimde yanıtlamaktır; varlıkları, tehditleri ve önlemleri listeler. | [§7](#7-tehdit-modelleme-stride-ve-saldiri-agaclari) |
+| STRIDE | STRIDE, tehditleri altı harfle sınıflandıran bir yöntemdir: kimlik taklidi, kurcalama, inkâr, bilgi sızması, hizmet engelleme ve yetki yükseltme. | [§7](#7-tehdit-modelleme-stride-ve-saldiri-agaclari) |
+| Saldırı ağacı | Saldırı ağacı, bir hedefi saldırganın izleyebileceği alt adımlara bölen bir ağaçtır; kökü saldırganın amacını, dalları bu amaca ulaşmanın yollarını gösterir. | [§7](#saldiri-agaci) |
+| Veri akış diyagramı (DFD) | DFD, verinin sistemde süreç, veri deposu, dış varlık, akış ve güven sınırlarıyla nasıl aktığını gösteren bir şemadır; tehditleri bulmak için bir haritadır. | [§8](#8-tehdit-modellemeyi-derinlestirmek-veri-akis-diyagrami-stride-ayrintilari-ve-risk-puani) |
 
 ## 1. Güvenlik nedir?
 
-Bir bankanın kasasını düşünün. Kasanın içindeki para **varlıktır**. Parayı çalmak isteyen biri **tehdittir**.
-Kasanın kilidinin arızalı olması bir **zafiyettir**. Hırsızın o arızalı kilidi kullanması bir **saldırıdır**.
-**Risk** ise "bu olay ne kadar olası ve olursa ne kadar zarar verir?" sorusunun cevabıdır.
+**Güvenlik**, bir sistemi ona zarar vermek isteyen kasıtlı bir saldırgana karşı korumaktır; sıradan bir yazılım
+hatasından farkı, karşısında **bilinçli bir düşmanın** bulunmasıdır. Bunu somutlaştırmak için bir bankanın kasasını
+düşünün. Kasanın içindeki para **varlıktır**. Parayı çalmak isteyen biri **tehdittir**. Kasanın kilidinin arızalı
+olması bir **zafiyettir**. Hırsızın o arızalı kilidi kullanması bir **saldırıdır**. **Risk** ise "bu olay ne kadar
+olası ve olursa ne kadar zarar verir?" sorusunun cevabıdır.
 
 !!! note "Kısa tarihçe: güvenli programlama fikri nereden geldi?"
     - **1975** — Saltzer & Schroeder, güvenli tasarımın **sekiz ilkesini** yayımlar (en az ayrıcalık, derinlemesine savunma, açık tasarım…). Bugün hâlâ temeldir.
@@ -267,7 +170,8 @@ Yazılımda da aynı zincir vardır; yalnız kasanın yerinde program, paranın 
 
 ### Güvenliğin üç hedefi: CIA
 
-Güvenlikten söz ettiğimizde neredeyse her zaman şu üç şeyi korumaya çalışırız:
+Güvenlikten söz ettiğimizde neredeyse her zaman şu üç şeyi korumaya çalışırız; bu üçlü birlikte **CIA üçlüsü**
+(confidentiality, integrity, availability) olarak anılır:
 
 | Hedef | Soru | Bozulursa ne olur? | Tipik önlem |
 | --- | --- | --- | --- |
@@ -362,8 +266,9 @@ başka birine karşı işe yaramaz olabilir. Bu yüzden her projede önce **sald
 | **Psikolojik kabul edilebilirlik** | Güvenlik kullanılabilir olmalıdır, yoksa atlatılır | Her 5 dakikada parola sormak, parolanın kâğıda yazılmasına yol açar |
 
 Bunlara modern bir ilke ekleyelim: **Derinlemesine savunma** (defense in depth). Tek bir önleme güvenmeyiz; birbirini
-tamamlayan **katmanlar** kurarız. Biri aşılırsa diğeri devreye girer. 3. haftada hassas bir anahtarın tam **dört ayrı
-koruma katmanı** (güvenlik kabuğu) içinde nasıl taşındığını göreceğiz.
+tamamlayan **katmanlar** kurarız. Biri aşılırsa diğeri devreye girer.
+[3. haftada](../week-3/cen429-week-3.md#14-guvenlik-kabuklari-derinlemesine-savunmanin-somut-hali) hassas bir
+anahtarın tam **dört ayrı koruma katmanı** (güvenlik kabuğu) içinde nasıl taşındığını göreceğiz.
 
 ---
 
@@ -411,8 +316,9 @@ dış katmanlar "kod saldırganın elindeyken ne olacak?" sorusuyla ilgilenir.
     Öğretim üyesinin sahada kullandığı yöntemde, hassas bir veri (ör. bir anahtar) bu katmanların **birkaçının
     içinde aynı anda** taşınır: şifrelenmiş olarak saklanır, yalnız kullanılacağı an ve yalnız gerektiği kadar
     çözülür, çözüldüğü kod bölümü gizlenmiş ve bütünlüğü denetlenmiştir, çalıştığı süreçte hata ayıklayıcı
-    denetimi vardır. Bu iç içe katmanlara bu derste **güvenlik kabuğu** diyeceğiz. 3. haftada dört kabuklu bir
-    tasarımı adım adım kuracağız.
+    denetimi vardır. Bu iç içe katmanlara bu derste **güvenlik kabuğu** diyeceğiz.
+    [3. haftada](../week-3/cen429-week-3.md#14-guvenlik-kabuklari-derinlemesine-savunmanin-somut-hali) dört kabuklu
+    bir tasarımı adım adım kuracağız.
 
 ### Hangi katman ne zaman önemlidir? Saldırgan modeline göre seçim
 
@@ -470,7 +376,9 @@ kuralların hepsini dönem boyunca tek tek uygulayacağız.
 
 ### Korumanın maliyeti: her katmanın bir bedeli var
 
-Katman eklemek bedava değildir. Bir koruma planı yazarken her katman için şu dört bedeli tartarsınız:
+Katman eklemek bedava değildir; güvenlik, hız ve karmaşıklık arasında sürekli bir **ödünleşim (trade-off)** kurmayı
+gerektirir — hedef sonsuz koruma değil, **dengeli** koruma ve açıkça yazılmış bir kalan risktir. Bir koruma planı
+yazarken her katman için şu dört bedeli tartarsınız:
 
 1. **Performans:** Gizlenmiş kod daha yavaş çalışır (ör. kontrol akışı düzleştirme bir fonksiyonu birkaç kat
    yavaşlatabilir). Bütünlük denetimi ve hata ayıklayıcı algılama da işlemci zamanı harcar.
@@ -589,9 +497,9 @@ Ve **varlık tablosundan** bir kesit (değerler sentetiktir):
 
 !!! tip "Bu yöntemin devamı"
     Bu dönem her hafta, bu tablolardaki varlıkları koruyan yöntemlerden birini açacağız: katmanlı veri koruması ve
-    güvenlik kabukları (3. hafta), native kod sağlamlaştırma (4. ve 9. haftalar), Java tarafı sağlamlaştırma
-    (5. hafta), çalışma zamanı öz koruması (6. hafta), kripto yöntemleri ve anahtar hiyerarşisi (10. hafta), whitebox
-    kriptografi (11. hafta), sertifikasyon ve gereksinim eşlemesi (12–13. haftalar).
+    güvenlik kabukları ([3. hafta](../week-3/cen429-week-3.md)), native kod sağlamlaştırma (4. ve [9. haftalar](../week-9/cen429-week-9.md)), Java tarafı sağlamlaştırma
+    ([5. hafta](../week-5/cen429-week-5.md)), çalışma zamanı öz koruması ([6. hafta](../week-6/cen429-week-6.md)), kripto yöntemleri ve anahtar hiyerarşisi ([10. hafta](../week-10/cen429-week-10.md)), whitebox
+    kriptografi ([11. hafta](../week-11/cen429-week-11.md)), sertifikasyon ve gereksinim eşlemesi (12–13. haftalar).
 
 ---
 
@@ -623,7 +531,7 @@ kendiliğinden ortaya çıkar.
 
 Bu ağaçtan hemen şu sonuçlar çıkar: (1) C yolu **iki** katmanı birden kırmayı gerektirdiği için pahalıdır — işte
 derinlemesine savunma. (2) B yolunun üç alternatifi var; demek ki **bellekteki anahtar** en zayıf nokta ve buna
-karşı özel önlemler (bu hafta Demo 2, 6. hafta çalışma zamanı koruması, 11. hafta whitebox) gerekir.
+karşı özel önlemler (bu hafta Demo 2, [6. hafta](../week-6/cen429-week-6.md) çalışma zamanı koruması, [11. hafta](../week-11/cen429-week-11.md) whitebox) gerekir.
 
 !!! example "Sınıf alıştırması (15 dakika, 3–4 kişilik gruplar)"
     Bir **"öğrenci not sistemi"** düşünün: öğretim üyesi not girer, öğrenci notunu görür, veriler bir sunucuda durur.
@@ -686,11 +594,11 @@ taklit edilebilir, kodu değiştirilebilir, belleği okunabilir, çökertilebili
 
 | Harf | Kendinize sorun | Tipik karşı önlem | Bu dersteki yeri |
 | --- | --- | --- | --- |
-| **S** | Karşı taraf olduğunu söylediği kişi mi? Bir başkası kendini onun yerine koyabilir mi? | Kimlik doğrulama, karşılıklı TLS, imza doğrulama, sertifika sabitleme | 3, 10. hafta |
-| **T** | Bu veri ya da kod yolda veya diskte değiştirilebilir mi? Değiştirilse fark eder miyim? | MAC/HMAC, dijital imza, bütünlük denetimi, salt okunur bellek | 2, 3, 6. hafta |
-| **R** | Bir kullanıcı "bunu ben yapmadım" derse kanıtım var mı? | Kurcalamaya dayanıklı denetim kaydı, imzalı işlem, zaman damgası | 2. hafta |
-| **I** | Bu veri yetkisi olmayan birinin eline geçebilir mi — diskte, ağda, bellekte, günlükte, hata iletisinde? | Şifreleme, bellek temizleme, en az veri, maskeleme | 1, 3, 11. hafta |
-| **D** | Bu bileşen çökertilebilir, kilitlenebilir ya da kaynakları tüketilebilir mi? | Girdi sınırları, oran sınırlama, zaman aşımı, kaynak kotası | 1, 4. hafta |
+| **S** | Karşı taraf olduğunu söylediği kişi mi? Bir başkası kendini onun yerine koyabilir mi? | Kimlik doğrulama, karşılıklı TLS, imza doğrulama, sertifika sabitleme | 3, [10. hafta](../week-10/cen429-week-10.md) |
+| **T** | Bu veri ya da kod yolda veya diskte değiştirilebilir mi? Değiştirilse fark eder miyim? | MAC/HMAC, dijital imza, bütünlük denetimi, salt okunur bellek | 2, 3, [6. hafta](../week-6/cen429-week-6.md) |
+| **R** | Bir kullanıcı "bunu ben yapmadım" derse kanıtım var mı? | Kurcalamaya dayanıklı denetim kaydı, imzalı işlem, zaman damgası | [2. hafta](../week-2/cen429-week-2.md) |
+| **I** | Bu veri yetkisi olmayan birinin eline geçebilir mi — diskte, ağda, bellekte, günlükte, hata iletisinde? | Şifreleme, bellek temizleme, en az veri, maskeleme | 1, 3, [11. hafta](../week-11/cen429-week-11.md) |
+| **D** | Bu bileşen çökertilebilir, kilitlenebilir ya da kaynakları tüketilebilir mi? | Girdi sınırları, oran sınırlama, zaman aşımı, kaynak kotası | 1, [4. hafta](../week-4/cen429-week-4.md) |
 | **E** | Daha az yetkili biri, daha yetkili birinin işini yaptırabilir mi? | En az ayrıcalık, tam aracılık, bellek güvenliği, sandbox | 1, 2, 4. hafta |
 
 !!! example "Aynı hatanın birden fazla harfi olabilir"
@@ -717,7 +625,7 @@ varlık tablosuna dönün: hangi varlık etkileniyor, kaç kullanıcı etkileniy
     Sektörde bundan daha ayrıntılı puanlama sistemleri kullanılır. 2. haftada göreceğimiz **CVSS**, bir zafiyeti
     saldırı vektörü, karmaşıklık, gereken yetki, kullanıcı etkileşimi ve gizlilik/bütünlük/erişilebilirlik etkisi
     gibi ölçütlerle 0–10 arasında puanlar. Ödeme sistemlerinin sertifikasyonunda ise "saldırı potansiyeli" denen,
-    gereken süre, uzmanlık, hedef bilgisi, erişim fırsatı ve ekipmanı toplayan bir ölçek kullanılır (13. hafta).
+    gereken süre, uzmanlık, hedef bilgisi, erişim fırsatı ve ekipmanı toplayan bir ölçek kullanılır ([13. hafta](../week-13/cen429-week-13.md)).
     Bu hafta basit 3×3 matris yeterlidir.
 
 ### Tehdide verilebilecek dört yanıt
@@ -837,7 +745,7 @@ değerlendirici gözünde **yok** sayılır.
 | T4 bütünlük | Kasa dosyasının rastgele bir baytı değiştirilir | Uygulama "dosya bozuk" der, açmaz, çökmez |
 | T5 parametre | Başlıktaki yineleme sayısı 1 yapılır | Uygulama dosyayı reddeder |
 | T6 imza | İmzası bozuk paket sunulur | Kurulum reddedilir, olay günlüğe yazılır |
-| T8 ayrıştırıcı | 24 saat fuzzing (4. hafta) | Çökme yok; sanitizer bulgusu yok |
+| T8 ayrıştırıcı | 24 saat fuzzing ([4. hafta](../week-4/cen429-week-4.md)) | Çökme yok; sanitizer bulgusu yok |
 
 ### Adım 7 — Kalan risk
 
@@ -1080,7 +988,7 @@ umask(077);     /* yeni dosyalar yalnız sahibine açık: rw------- */
 `umask` bir **maskedir**: `open()`'a verdiğiniz izinlerden maskedeki bitler **çıkarılır**. `077` ile grup ve
 diğerleri için hiçbir bit kalmaz. Yine de hassas dosyayı açarken izni açıkça yazın: `open(yol, O_WRONLY |
 O_CREAT | O_EXCL, 0600)`. `O_EXCL`, dosya zaten varsa (ör. saldırganın önceden oluşturduğu bir bağlantıysa)
-açmayı reddeder; 2. haftadaki TOCTOU demosunu hatırlayın.
+açmayı reddeder; [2. haftadaki](../week-2/cen429-week-2.md) TOCTOU demosunu hatırlayın.
 
 ### Adım 4 — Çökme dökümünü kapat (Tarif 1.9)
 
@@ -1103,7 +1011,7 @@ parola tam olarak böyle bulunabilir.
     ```
 
     `PR_SET_DUMPABLE` ikinci bir kazanç sağlar: aynı kullanıcıyla çalışan başka bir süreç, bu sürece hata
-    ayıklayıcı olarak **bağlanamaz** ve `/proc/<pid>/mem` dosyasını okuyamaz. 6. haftada hata ayıklayıcı
+    ayıklayıcı olarak **bağlanamaz** ve `/proc/<pid>/mem` dosyasını okuyamaz. [6. haftada](../week-6/cen429-week-6.md) hata ayıklayıcı
     algılamayı konuşurken bu satıra döneceğiz.
 
 === "Windows"
@@ -1161,7 +1069,7 @@ yetkisiz bir "kum havuzu" (sandbox) sürecinde çalıştırması bu fikrin bugü
 
 | Hatalı | Neden? | Doğrusu |
 | --- | --- | --- |
-| `system("convert " + dosya)` | Kabuk çalışır; dosya adındaki `;`, `&&`, `$(...)` komut olur (5. hafta) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
+| `system("convert " + dosya)` | Kabuk çalışır; dosya adındaki `;`, `&&`, `$(...)` komut olur ([5. hafta](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
 | `execvp("convert", ...)` | `PATH`'te arar (Demo 1) | Tam yol ile `execve` |
 | `CreateProcess(NULL, "C:\Program Files\Araç\a.exe", ...)` | Tırnaksız boşluklu yol: önce `C:\Program.exe` denenir | `lpApplicationName`'e tam yolu ver, komut satırını tırnakla |
 | `LoadLibrary("yardimci.dll")` | Arama sırasında uygulamanın ya da çalışma dizininin içine konmuş sahte DLL yüklenebilir | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` ve tam yol |
@@ -1380,7 +1288,7 @@ Basitleştirilmiş bir görünüm (düşük adres yukarıda; gerçek yerleşim d
 
 Üçüncü satırın son kısmı, taşmayı bu kadar tehlikeli yapan şeydir: dönüş adresini kontrol eden, programın **bir
 sonra hangi kodu çalıştıracağını** kontrol eder. 1988'deki Morris solucanından 2003'teki Slammer'a kadar
-salgınların çoğunun giriş kapısı buydu (2. hafta). Bugünkü işletim sistemleri ve derleyiciler bu yolu çok
+salgınların çoğunun giriş kapısı buydu ([2. hafta](../week-2/cen429-week-2.md)). Bugünkü işletim sistemleri ve derleyiciler bu yolu çok
 zorlaştıran korumalar ekler (aşağıda), ama **hatanın kendisi hâlâ kodunuzdadır** ve korumalar her durumu
 kapatmaz. Bu derste sömürünün nasıl yapılacağıyla değil, hatanın **nasıl oluştuğu, nasıl bulunduğu ve nasıl
 önlendiğiyle** ilgileniyoruz.
@@ -1507,7 +1415,9 @@ zararı sınırlar:
 | İşletim sistemi | DEP/NX, ASLR | Veri bölgesinde kod çalıştırmayı engeller; adresleri her çalıştırmada değiştirir | Sürüm |
 | Donanım | Gölge yığın (Intel CET, ARM PAC) | Dönüş adresinin ayrı ve korumalı bir kopyasını tutar | Sürüm (yeni işlemciler) |
 
-Bu korumaların her birini 4. haftada ayrı ayrı açıp kapatarak inceleyeceğiz. Bu hafta şu fikri aklınızda tutun:
+Bu korumaların her birini
+[4. haftada](../week-4/cen429-week-4.md#12-derleyici-ve-isletim-sistemi-korumalari) ayrı ayrı açıp kapatarak
+inceleyeceğiz. Bu hafta şu fikri aklınızda tutun:
 **koruma, sömürüyü zorlaştırır; hatayı gidermez.** Kanarya bozulduğunda programı **sonlandırır**; yani saldırgan
 akışı ele geçiremese bile programı çökertebilir. Bu da bir hizmet engellemedir.
 
@@ -1547,7 +1457,7 @@ kullanılır, sürüm derlemesinde kullanılmaz.
     olan en kısa süre tutulur, bellek güvenli bir silme fonksiyonuyla temizlenir. Bazı ekipler `memcpy`, `memset`,
     `strcmp` gibi standart fonksiyonların yerine kendi yazdıkları sürümleri kullanır. Bunun iki nedeni vardır:
     saldırganın bu iyi bilinen fonksiyonlara kanca atıp veriyi yolda okumasını zorlaştırmak ve bu fonksiyonların
-    kodunu da bütünlük denetiminin kapsamına almak (6. hafta).
+    kodunu da bütünlük denetiminin kapsamına almak ([6. hafta](../week-6/cen429-week-6.md)).
 
 ---
 
@@ -1666,7 +1576,7 @@ snprintf(o.ad, sizeof(o.ad), "%s", argv[1]);  /* boyutu bilen kopya */
     de durur; taşma oraya kadar uzanırsa saldırgan programın akışını değiştirebilir. Modern sistemler buna karşı
     katmanlı önlemler alır: **stack canary** (dönüş adresinden önce konan ve taşmada bozulan gizli değer),
     **DEP/NX** (yığındaki veriyi kod olarak çalıştırmayı yasaklar) ve **ASLR** (adresleri her çalıştırmada
-    değiştirir). Bunları 4. haftada ayrıntılı işleyeceğiz; önemli olan, bunların **hatayı düzeltmediğini, yalnız
+    değiştirir). Bunları [4. haftada](../week-4/cen429-week-4.md) ayrıntılı işleyeceğiz; önemli olan, bunların **hatayı düzeltmediğini, yalnız
     sömürmeyi zorlaştırdığını** bilmek.
 
 ---
@@ -1779,6 +1689,9 @@ static int uzunluk_oku(const char *metin, size_t *sonuc)
     denetleyin. `atoi` yerine hatayı bildiren `strtol` kullanın. Derlerken `-Wall -Wextra -Wconversion
     -Wsign-conversion` açık olsun.
 
+Bu tamsayı hatasının daha geniş ailesini — taşma, işaret dönüşümü, sınır değerleri — [4. haftada tanımsız davranış
+bölümünde](../week-4/cen429-week-4.md#7-tamsayilar-ve-tanimsiz-davranis-tarif-35) derinlemesine işleyeceğiz.
+
 ---
 
 ## 17. Bellek yönetimi ve güvenlik
@@ -1844,6 +1757,9 @@ bloğa birden fazla işaretçinin sahip çıkmasıdır. Çözüm bir **sahiplik 
     alır ve sahibinden uzun yaşayacak hiçbir yerde saklamaz. Sahiplik bir fonksiyondan diğerine geçiyorsa, bu
     fonksiyonun adında ve belgesinde açıkça yazılır (ör. `..._al()` sahipliği devralır, `..._goster()` yalnız
     ödünç alır).
+
+UAF'i C/C++'ta adım adım sömürüp AddressSanitizer ile yakalamayı [4. haftada
+göreceğiz](../week-4/cen429-week-4.md#6-serbest-birakilmis-bellegin-kullanimi-ve-cift-serbest-birakma).
 
 ### Diğer hataların düzeltilmiş halleri
 
@@ -2166,8 +2082,9 @@ Karşı önlemler bu nedenle "anahtarı sakla"nın ötesine geçer:
 
 Hassas bir veri, yaşam döngüsü boyunca üç durumda bulunur: **beklemede** (disk), **aktarımda** (ağ) ve
 **kullanımda** (bellek, yazmaçlar). İlk ikisini şifrelemek standarttır; asıl zor olan üçüncüsüdür, çünkü işlem
-yapmak için verinin bir noktada açılması gerekir. Hedef, bu **açıklık penceresini** zaman ve yer olarak mümkün
-olduğunca daraltmaktır:
+yapmak için verinin bir noktada açılması gerekir. (Beklemede ve aktarımda veriyi koruma yöntemlerini
+[3. haftada](../week-3/cen429-week-3.md#1-verinin-uc-hali-ve-guvenlik-kabugu) ayrıntılı işleyeceğiz.) Hedef, bu
+**açıklık penceresini** zaman ve yer olarak mümkün olduğunca daraltmaktır:
 
 ![Anahtarın bellekte açık kaldığı sürenin iki tasarımda karşılaştırması](assets/h01-16-aciklik-penceresi.svg)
 
@@ -2182,7 +2099,7 @@ Bunu sağlayan teknikler:
    şifreli durur; çalışma anında belleğe çözülüp çalıştırılır, sonra yeniden şifrelenir. Ayrıntısı 4. ve 9.
    haftalarda.
 5. **Anahtarı hiç açmadan işlem:** Whitebox kriptografide anahtar, hesaplama tablolarının içine öyle gömülür ki
-   işlem boyunca bellekte hiçbir zaman açık halde bulunmaz (11. hafta).
+   işlem boyunca bellekte hiçbir zaman açık halde bulunmaz ([11. hafta](../week-11/cen429-week-11.md)).
 
 ```c title="Bellekte örtme: anahtar iki parça olarak durur"
 #include <stdint.h>
@@ -2227,7 +2144,8 @@ void imzala(const OrtuluAnahtar *o, const uint8_t *veri, size_t n, uint8_t etike
 - Aynı süreç içindeki bir modül, aynı süreçte çalışan bir saldırgana (ör. programa kanca atan bir araç) karşı
   gerçek bir yalıtım sağlamaz. Bu durumda asıl koruma RASP ve gizlemedir.
 - Süreçler arası ya da istemci–sunucu sınırında, **iletişim kanalının kendisi** yeni bir saldırı yüzeyidir;
-  karşılıklı kimlik doğrulama ve bütünlük gerekir (3. hafta).
+  karşılıklı kimlik doğrulama ve bütünlük gerekir
+  ([3. hafta](../week-3/cen429-week-3.md#9-aktarimda-veri-tls-13-sertifika-dogrulama-ve-sabitleme)).
 - Donanım yalıtımı (TEE, güvenli eleman) güçlüdür ama içinde çalışan kodun da hatasız olması gerekir; TEE
   uygulamalarında da arabellek taşmaları bulunmuştur.
 
@@ -2254,11 +2172,11 @@ SP 800-218), güvenliğin yazılımın **her** aşamasına dağıtılması gerek
 
 | Aşama | Güvenlik etkinliği | Bu dersteki karşılığı |
 | --- | --- | --- |
-| Gereksinim | Güvenlik gereksinimlerini yaz (standartlardan türet) | 13. hafta |
+| Gereksinim | Güvenlik gereksinimlerini yaz (standartlardan türet) | [13. hafta](../week-13/cen429-week-13.md) |
 | Tasarım | Tehdit modeli, koruma planı, saldırı yüzeyi analizi | 1–2. hafta |
 | Gerçekleştirme | Kodlama kuralları, yasaklı fonksiyonlar, statik analiz, kod incelemesi | 4–5. hafta |
-| Doğrulama | Sanitizer, fuzzing, sızma testi, güvenlik testleri | 4, 12. hafta |
-| Yayın | İmzalı derleme, benzersiz sürüm kimliği, olay müdahale planı | Bu bölüm, 10. hafta |
+| Doğrulama | Sanitizer, fuzzing, sızma testi, güvenlik testleri | 4, [12. hafta](../week-12/cen429-week-12.md) |
+| Yayın | İmzalı derleme, benzersiz sürüm kimliği, olay müdahale planı | Bu bölüm, [10. hafta](../week-10/cen429-week-10.md) |
 | Yanıt | Zafiyet bildirimi alma, acil güncelleme süreci | 12. hafta |
 
 ### Benzersiz sürüm kimliği: "incelenen ile dağıtılan aynı mı?"
@@ -2303,6 +2221,10 @@ if (argc > 1 && strcmp(argv[1], "--surum") == 0) {
     kullanıcı eski ve zafiyetli bir sürüme geri dönerse (sürüm geri alma saldırısı), o sürüm yeni sürümün
     anahtarlarını çözemez. Sürüm kimliği bu şekilde bir güvenlik önlemine dönüşür.
 
+Aynı disiplin dönemin sonunda yeniden karşımıza çıkar: [14. haftada](../week-14/cen429-week-14.md#9-gizlemeyi-derleme-ve-dagitim-hattina-yerlestirmek-s15) kod
+gizleme derleme hattına girdiğinde, hangi sürümün hangi dönüşüm ve tohumla üretildiği yine bu kimlik ve özet
+değerleriyle izlenir.
+
 ### Değişiklik yönetimi: yedi adım
 
 Olgun bir geliştirme ekibinde hiçbir değişiklik "doğrudan ana dala" gitmez. BT hizmet yönetiminden uyarlanan tipik
@@ -2322,7 +2244,7 @@ Kaynak kod deposunda da aynı disiplin uygulanır:
 - Her değişiklik en az **bir başka geliştirici** tarafından incelenir.
 - Sürümler **etiketlenir** (tercihen imzalı etiket).
 - Depoya dışarıdan erişim çok faktörlü kimlik doğrulamayla yapılır.
-- Derleme ortamı da korunur: 2. haftada gördüğümüz tedarik zinciri saldırıları, derleme sunucusuna giren kodu
+- Derleme ortamı da korunur: [2. haftada](../week-2/cen429-week-2.md) gördüğümüz tedarik zinciri saldırıları, derleme sunucusuna giren kodu
   hedef alır.
 
 ### Ödünleşim kaydı: bilinçli kararların belgesi
@@ -2349,7 +2271,7 @@ için doğru özet değerinin programa gömülmesi gerekir; ama özeti gömmek p
 Bu döngü, **birkaç turlu** bir derlemeyle çözülür: önce derlenir, özet ölçülür, gizlenerek koda gömülür, yeniden
 derlenir; ölçülen bölge gömülen değeri içermeyecek şekilde tasarlanır. Sahada imza sertifikasının özeti, paket
 özeti ve kod özeti gibi değerlerin art arda gömüldüğü **beş turlu** imzalı derlemeler kullanılır. Bu tür adımlar
-elle yapılırsa hata yapılır; bu yüzden derleme betiğine dönüştürülür ve belgelenir. 6. haftada bu döngüyü küçük
+elle yapılırsa hata yapılır; bu yüzden derleme betiğine dönüştürülür ve belgelenir. [6. haftada](../week-6/cen429-week-6.md) bu döngüyü küçük
 bir örnekle kuracağız.
 
 ### Korumaların maliyetini ölçmek
@@ -2676,3 +2598,12 @@ yalnız kendi bilgisayarınızda yapılır.
     | Core dump | Çökme dökümü | Çöken sürecin belleğinin diske yazılmış kopyası |
     | Least privilege | En az ayrıcalık | Her bileşenin yalnız gereken yetkiyle çalışması |
     | Defense in depth | Derinlemesine savunma | Birbirini tamamlayan koruma katmanları |
+
+---
+
+!!! info "Bir sonraki hafta"
+    **[2. hafta](../week-2/cen429-week-2.md) — Bilgisayar virüsleri ve güvenlik modelleri.** Bu hafta kurduğumuz tehdit modelleme (STRIDE,
+    saldırı ağacı) ve saldırgan modeli araçlarını, gelecek hafta somut bir tehdit sınıfına — zararlı yazılıma —
+    uygulayacağız: bir virüsün nasıl yayıldığını, nasıl gizlendiğini ve hangi erişim denetimi modelleriyle
+    (DAC/MAC/RBAC) durdurulduğunu göreceğiz. Bu haftaki bellek güvenliği hataları için gördüğümüz CWE
+    sınıflandırması, 2. haftada CVE ve CVSS ile birlikte derinleşecek.

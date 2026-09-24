@@ -5,7 +5,7 @@
 | **Tarih** | 16.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Java ya da Python'da temel programlama; Hafta 2'den CWE/CVE ve zafiyet sınıflandırma; Hafta 4'ten girdi doğrulama ve güvenli kodlama kuralları; SQL'de basit `SELECT` |
+| **Ön bilgi** | Java ya da Python'da temel programlama; [Hafta 2](../week-2/cen429-week-2.md)'den CWE/CVE ve zafiyet sınıflandırma; [Hafta 4](../week-4/cen429-week-4.md)'ten girdi doğrulama ve güvenli kodlama kuralları; SQL'de basit `SELECT` |
 | **Uygulamalar** | [`code/week-05`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-05) — 7 demo; Python 3 ve JDK 17+ ister; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -83,105 +83,68 @@
     Enjeksiyon örnekleri yalnız demo klasöründe oluşturulan **sentetik** bir veritabanına ve dosyalara karşı çalışır;
     enjekte edilen komut yalnız zararsız bir `echo`'dur. Seri durumdan çıkarma demosu hiçbir saldırı zinciri içermez,
     yalnız savunmayı gösterir. Bu teknikleri başkasına ait bir web sitesinde, uygulamada ya da veritabanında denemek
-    yasa dışıdır; izinli sızma testleri yazılı bir sözleşme ve kapsam belgesiyle yapılır (12. hafta).
+    yasa dışıdır; izinli sızma testleri yazılı bir sözleşme ve kapsam belgesiyle yapılır ([12. hafta](../week-12/cen429-week-12.md)).
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar. Önceki haftalarda görülmemiş
+temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 
-### Yönetilen dil nedir?
+### Önceki haftalardan gelenler
 
-- **Yönetilen dil:** belleği **otomatik** yöneten dil (Java, C#, Python, JS).
-- Programcı `malloc`/`free` yapmaz; **çöp toplayıcı** (GC) hallreder.
-- → çoğu bellek hatası (taşma, UAF) **ortadan kalkar**.
+- **Bellek hataları (taşma, serbest bellek kullanımı, tanımsız davranış)** — ilk dört hafta boyunca C/C++'ta
+  arabellek taşmasının, serbest bırakılmış belleğin kullanımının ve tanımsız davranışın nasıl oluştuğunu ve
+  önlendiğini gördük ([Hafta 4](../week-4/cen429-week-4.md#1-kod-saglamlastirma-nedir)). Bu hafta §1'de bu hata
+  sınıflarının **hangilerinin** yönetilen dillerde dil düzeyinde ortadan kalktığını, hangilerinin **kalmadığını**
+  karşılaştırıyoruz.
+- **SEI CERT kural kitabının yapısı** — dördüncü haftada SEI CERT C/C++ kurallarının kimlik, başlık, hatalı örnek,
+  uyumlu çözüm ve risk bölümlerinden oluşan ortak yapısını görmüştük
+  ([Hafta 4, §2](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi)). Bu hafta §2'de aynı
+  yapıyı Java standardında, `IDS`/`SER`/`FIO`/`MSC`/`ERR` kategorileriyle yeniden kullanıyoruz.
+- **TOCTOU (denetim ile kullanım arasındaki zaman)** — ikinci haftada bir dosyanın izin denetimiyle gerçek
+  kullanımı arasındaki zaman farkının bir yarış durumu açığı olduğunu görmüştük
+  ([Hafta 2, §12](../week-2/cen429-week-2.md#demo-06-toctou-yaris-durumu)). Bu hafta §6'da yol geçişine karşı
+  dosya açıldıktan **sonra** da kök içinde kalındığının doğrulanmasını aynı ilkeyle gerekçelendiriyoruz.
 
-### JVM ve bayt kodu
+### Bu haftanın kavram haritası
 
-- **JVM (Java Virtual Machine):** Java'yı çalıştıran sanal makine.
-- **Bayt kodu:** Java kaynağının derlendiği ara biçim (`.class` dosyaları).
-- Bayt kodu makineden bağımsız; JVM onu çalıştırır.
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Enjeksiyon | Kullanıcıdan gelen verinin bir yorumlayıcı (SQL motoru, kabuk, dosya sistemi, XML ayrıştırıcısı) tarafından veri yerine **komut** olarak işlenmesidir; bütün enjeksiyon türlerinin ortak kökü budur. | [§3](#3-enjeksiyonun-ortak-koku-veri-ile-komutun-karismasi-tarif-311) |
+| JVM ve bayt kodu | JVM (Java Virtual Machine), Java'yı çalıştıran sanal makinedir; bayt kodu, Java kaynağının derlendiği, makineden bağımsız ara biçimdir ve makine koduna göre çok daha kolay geri çevrilir. | [§10](#10-bayt-kodu-ve-tersine-derleme) |
+| Parametreli sorgu | Sorgunun metnini sabit tutup kullanıcı verisini ayrı bir kanaldan **değer** olarak bağlayan SQL çağrısıdır (prepared statement); veri hiçbir zaman sorgunun yapısını değiştiremez. | [§4](#4-sql-enjeksiyonu) |
+| Seri durumdan çıkarma | Bir bayt dizisinden nesne oluşturmaktır (deserialization); akış güvenilmezse hangi sınıfın oluşturulacağını saldırgan seçebilir. | [§7](#7-guvensiz-seri-durumdan-cikarma) |
+| XXE (XML dış varlık) | Bir XML ayrıştırıcısının, belgedeki `<!DOCTYPE>`/varlık tanımlarını kullanarak yerel dosya ya da ağ adresi okumasının kötüye kullanılmasıdır. | [§8](#8-xml-sablon-ve-diger-enjeksiyonlar) |
+| Yol geçişi | `../` gibi dizilerle izin verilen bir klasörün **dışına** çıkıp kök dizinin dışındaki dosyalara erişmektir (path traversal). | [§6](#6-yol-gecisi-tarif-37) |
+| ProGuard / R8 | Java bayt kodunu küçülten, iyileştiren ve sınıf/metot adlarını anlamsız adlarla değiştirerek gizleyen araçlardır; R8, ProGuard'ın Android'deki halefidir. | [§11](#11-proguard-ve-r8-kucultme-iyilestirme-gizleme) |
+| `-keep` kuralı | ProGuard/R8'e belirtilen sınıf ya da metodun adını **değiştirmemesini** söyleyen yapılandırma kuralıdır; yansımayla adıyla çağrılan kod bu kural olmadan çalışma anında bulunamaz. | [§11](#-keep-kurallari-neyin-adi-korunmali) |
+| SBOM | Bir yazılımın içindeki bütün bileşenlerin makine tarafından okunabilir listesidir (Software Bill of Materials); bir bağımlılıkta açık çıktığında "etkilendik mi?" sorusunu hızlı yanıtlar. | [§14](#14-bagimlilik-guvenligi-ve-yazilim-malzeme-listesi-sbom) |
 
-### Çöp toplayıcı (GC)
+### Ön bilgi: Yönetilen diller ve çöp toplama
 
-- **GC (Garbage Collector):** artık kullanılmayan nesneleri otomatik temizler.
-- Programcı belleği elle bırakmaz.
-- Bu yüzden UAF/çift bırakma Java'da **yok denecek kadar az**.
+Bir **yönetilen dil** (managed language — Java, C#, Python, JavaScript gibi), belleği programcı yerine çalışma
+ortamının otomatik yönettiği bir dildir; programcı `malloc`/`free` çağırmaz, bunun yerine bir **çöp toplayıcı**
+(garbage collector, GC) artık kullanılmayan nesneleri arka planda otomatik olarak temizler. Bu tek fark, ilk dört
+haftada C/C++'ta gördüğümüz taşma ve serbest bellek kullanımı gibi hataların büyük kısmının dil düzeyinde ortadan
+kalkmasını sağlar; §1 bunu ayrıntılı biçimde gösterir.
 
-### Enjeksiyon nedir?
+### Ön bilgi: Veritabanları ve SQL
 
-- **Enjeksiyon:** kullanıcı **verisinin** bir **komut** olarak yorumlanması.
-- Örnek: kullanıcı adı diye girilen metnin SQL sorgusuna komut olarak sızması.
-- Bu haftanın ana teması.
+**SQL**, bir veritabanına sorgu göndermek için kullanılan sorgulama dilidir (`SELECT ... WHERE ...` gibi); bir
+uygulama, kullanıcıdan aldığı bir değeri (kullanıcı adı, arama terimi) bu sorgunun içine koyarak veritabanından
+veri okur ya da yazar. Bu değer sorgunun metnine kaçışsız biçimde eklenirse §3–4'te göreceğimiz SQL enjeksiyonu
+ortaya çıkar.
 
-### SQL ve veritabanı
+### Ön bilgi: Yansıma ve bağımlılıklar
 
-- **SQL:** veritabanı sorgulama dili (`SELECT ... WHERE ...`).
-- Uygulama, kullanıcı girdisini sorguya koyar.
-- Yanlış konursa → **SQL enjeksiyonu**.
-
-### Parametreli sorgu
-
-- **Parametreli sorgu (prepared statement):** sorgu iskeleti sabit, veriler ayrı **parametre** olarak verilir.
-- Veri asla komut olarak yorumlanmaz.
-- SQL enjeksiyonuna karşı **asıl** çözüm.
-
-### Seri durum (serialization)
-
-- **Serileştirme:** bir nesneyi bayt dizisine çevirme (kaydetmek/göndermek için).
-- **Seri durumdan çıkarma (deserialization):** baytları geri nesneye çevirme.
-- Güvenilmez baytları çıkarmak **tehlikeli** (kod çalıştırma).
-
-### XML ve XXE
-
-- **XML:** yapılandırılmış veri biçimi (etiketlerle).
-- **XXE (XML External Entity):** XML'in "dış varlık" özelliğinin kötüye kullanımı → dosya okuma, SSRF.
-- XML ayrıştırıcıda dış varlıklar **kapatılır**.
-
-### Yol geçişi (path traversal)
-
-- **Yol geçişi:** `../` ile izin verilen klasörün **dışına** çıkma.
-- `dosyalar/../../etc/passwd` gibi.
-- Kanonikleştirme + kök denetimiyle önlenir.
-
-### ProGuard ve R8
-
-- **ProGuard / R8:** Java/Android bayt kodunu **küçülten, adları gizleyen** araçlar.
-- R8, Android'in varsayılan aracı.
-- Ad gizleme + ölü kod eleme + küçültme.
-
-### `-keep` kuralı
-
-- **`-keep`:** ProGuard/R8'e "bu sınıf/metodun adını **değiştirme**" demek.
-- Reflection ile ada göre çağrılan kod korunmalı.
-- Yanlış `-keep` → ya çökme ya zayıf gizleme.
-
-### Reflection nedir?
-
-- **Reflection:** bir sınıfı/metodu **çalışma anında adıyla** bulup çağırma.
-- `Class.forName("...")`, `getMethod("...")`.
-- Gizleme bunu bozabilir → `-keep` gerekir.
-
-### SBOM nedir?
-
-- **SBOM (Software Bill of Materials):** yazılımın **malzeme listesi** — hangi kütüphaneler, hangi sürümler.
-- Bir kütüphanede açık çıkınca "etkilendik mi?" sorusunu **hızlı** yanıtlar.
-- Biçimler: CycloneDX, SPDX.
-
-### Bağımlılık (dependency)
-
-- **Bağımlılık:** projenizin kullandığı dış kütüphaneler.
-- Kendi kodunuz güvenli olsa bile, bir bağımlılıktaki açık sizi etkiler.
-- Tedarik zinciri güvenliği.
-
-### Şimdi hazırız
-
-Terimler:
-
-yönetilen dil · JVM/bayt kodu · GC · enjeksiyon · SQL/parametreli sorgu · serileştirme · XML/XXE · yol geçişi · ProGuard/R8 · `-keep` · reflection · SBOM · bağımlılık
-
-Şimdi: yönetilen diller neyi çözer, neyi çözmez?
+**Yansıma** (reflection), bir sınıfı ya da metodu kaynak kodda doğrudan adıyla yazmak yerine **çalışma anında**
+bir dizgeden (`Class.forName("...")`, `getMethod("...")` gibi) bulup çağırma yeteneğidir; §12 bunun gizlemeyle
+nasıl etkileştiğini gösterecek. **Bağımlılık** (dependency), projenizin kullandığı, kendi ekibinizin yazmadığı
+dış bir kütüphanedir; kendi kodunuz güvenli olsa bile, kullandığınız bir bağımlılıktaki bir açık uygulamanızı da
+etkiler — §14 bunu SBOM ile ele alır.
 
 ### Kavramlar birbirine nasıl bağlanır?
 
@@ -247,11 +210,11 @@ bağımsızdır ve web uygulamalarından mobil uygulamalara kadar en çok buluna
 | **Koda gömülü sırlar** | Bayt kodu kolayca okunur | Demo 4 |
 | **Tersine mühendislik** | Bayt kodu yüksek düzeylidir; adlar ve dizgeler korunur | Demo 4–5 |
 | **Zafiyetli bağımlılıklar** | Uygulamanın büyük kısmı başkasının kodudur | Demo 6 |
-| **Mantık ve yetkilendirme hataları** | Dilin bilemeyeceği iş kurallarıdır | 2. hafta |
+| **Mantık ve yetkilendirme hataları** | Dilin bilemeyeceği iş kurallarıdır | [2. hafta](../week-2/cen429-week-2.md) |
 
 ### İşlenmiş örnek: bir dizi taşması Java'da neden çöker de C'de çökmez
 
-Dördüncü haftada `buf[10]` gibi 10 elemanlı bir diziye 10. indeksle (11. eleman) yazmanın C'de **tanımsız davranış**
+[Dördüncü haftada](../week-4/cen429-week-4.md) `buf[10]` gibi 10 elemanlı bir diziye 10. indeksle (11. eleman) yazmanın C'de **tanımsız davranış**
 olduğunu, çoğu zaman hiçbir hata vermeden bitişik belleği bozduğunu görmüştük. Aynı hatayı Java'da adım adım izleyelim.
 
 ```java title="DiziTasmasi.java"
@@ -290,7 +253,7 @@ Adım adım ne oldu:
 
 !!! note "Yönetilen dil içinde native kod"
     Bir Java uygulaması bellek güvenliğini ancak **tamamen** Java'da kaldığı sürece kazanır. Performans ya da güvenlik
-    için JNI ile çağrılan C/C++ kodu (1. haftadaki mobil ödeme mimarisindeki native katman gibi), ilk dört haftanın
+    için JNI ile çağrılan C/C++ kodu ([1. haftadaki](../week-1/cen429-week-1.md) mobil ödeme mimarisindeki native katman gibi), ilk dört haftanın
     bütün riskini yeniden taşır. Sahada bu yüzden iki taraf ayrı ayrı sağlamlaştırılır: native taraf 4. haftanın
     yöntemleriyle, Java tarafı bu haftanın yöntemleriyle; iki taraf da birbirinin bütünlüğünü denetler.
 
@@ -298,7 +261,7 @@ Adım adım ne oldu:
 
 ## 2. SEI CERT Oracle Java: yönetilen dilin kural kitabı
 
-Dördüncü haftada tanıdığımız SEI CERT'in Java standardı da aynı yapıdadır: kimlik, başlık, hatalı örnek, uyumlu çözüm, risk.
+[Dördüncü haftada](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi) tanıdığımız SEI CERT'in Java standardı da aynı yapıdadır: kimlik, başlık, hatalı örnek, uyumlu çözüm, risk.
 Kimlikler `-J` sonekiyle biter.
 
 ![SEI CERT Oracle Java kuralının yapısı](assets/h05-11-cert-java.svg)
@@ -324,7 +287,7 @@ ilgilidir. Bu yüzden CERT, dilden dile "hangi kategori büyür, hangisi küçü
 `MEM` ve `ARR` kalın, Java standardında `IDS` ve `SER` kalın basılıdır.
 
 !!! tip "OWASP ile birlikte okumak"
-    Web uygulamaları için **OWASP Top 10** (2. hafta) ve ASVS, mobil uygulamalar için **OWASP MASVS** (özellikle
+    Web uygulamaları için **OWASP Top 10** ([2. hafta](../week-2/cen429-week-2.md)) ve ASVS, mobil uygulamalar için **OWASP MASVS** (özellikle
     MASVS-CODE ve MASVS-RESILIENCE) aynı konuları uygulama türüne göre sıralar. CERT kuralları "kodu nasıl yazarım?",
     OWASP belgeleri "neyi test ederim?" sorusunu cevaplar.
 
@@ -332,8 +295,9 @@ ilgilidir. Bu yüzden CERT, dilden dile "hangi kategori büyür, hangisi küçü
 
 ## 3. Enjeksiyonun ortak kökü: veri ile komutun karışması (Tarif 3.11)
 
-SQL enjeksiyonu, komut enjeksiyonu, yol geçişi, XML enjeksiyonu, şablon enjeksiyonu, 2. haftadaki günlük enjeksiyonu
-ve 4. haftadaki biçim dizisi açığı aynı hatanın farklı yüzleridir: bir **yorumlayıcıya** (SQL motoru, kabuk, dosya
+SQL enjeksiyonu, komut enjeksiyonu, yol geçişi, XML enjeksiyonu, şablon enjeksiyonu, [2. haftadaki günlük
+enjeksiyonu](../week-2/cen429-week-2.md#demo-10-gunluk-enjeksiyonu-cwe-117) ve [4. haftadaki biçim dizisi
+açığı](../week-4/cen429-week-4.md#5-bicim-dizisi-acigi-tarif-32) aynı hatanın farklı yüzleridir: bir **yorumlayıcıya** (SQL motoru, kabuk, dosya
 sistemi, XML ayrıştırıcı, `printf`) verilen metnin içinde **komut** ile **veri** aynı kanaldan geçer. Kullanıcı
 verisi, yorumlayıcının özel karakterlerini (`'`, `;`, `../`, `<`, `%`) içeriyorsa, veri komutun bir parçası olur.
 
@@ -627,7 +591,7 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
 ```
 
 1. **Kabuk yok:** `ProcessBuilder` programı doğrudan başlatır; `;` ya da `&` yalnız argümanın içindeki karakterlerdir.
-2. **Tam yol:** 1. haftadaki PATH saldırısına karşı programın tam yolu verilir.
+2. **Tam yol:** [1. haftadaki](../week-1/cen429-week-1.md) PATH saldırısına karşı programın tam yolu verilir.
 3. **İzin listesi:** Argüman, çalıştırılmadan önce beklenen biçime göre doğrulanır.
 4. **En iyisi:** Dış programa hiç gerek bırakmamak. Bir resim dönüştürmek için bir kütüphane, bir adresi sınamak için
    `InetAddress.isReachable` kullanmak, bütün sorunu ortadan kaldırır.
@@ -987,7 +951,7 @@ gelebilmesidir:
    "okumayı bitirdiğinde" varlık zaten genişletilmiş, dosya içeriği belge metnine karışmıştır.
 4. Eğer uygulama bu genişletilmiş metni herhangi bir biçimde kullanıcıya geri gösteriyorsa (bir hata iletisinde,
    bir yanıt alanında), dosyanın içeriği **sızdırılmış** olur; kaynak bir ağ adresiyse bu aynı zamanda sunucunun
-   iç ağa istek göndermesi (SSRF, 3. hafta) anlamına gelir.
+   iç ağa istek göndermesi (SSRF, [3. hafta](../week-3/cen429-week-3.md)) anlamına gelir.
 
 Kritik nokta yine aynı: ayrıştırıcı hata yapmıyor, DTD standardını **tam olarak** uyguluyor. Aşağıdaki
 sağlamlaştırma, bu dört adımın **birinci adımını** (DTD'nin hiç işlenmesini) ve **ikinci adımını** (dış
@@ -1105,7 +1069,7 @@ Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"   → motor, eşleşmeyi kanıtlamak i�
 Tek bir istek, sunucunun bir işlemcisini saniyelerce ya da dakikalarca meşgul edebilir (CWE-1333). Savunma:
 
 1. İç içe tekrarlardan (`(a+)+`, `(a|a)*`, `(\w+\s?)*`) kaçının; deseni olabildiğince **kesin** yazın.
-2. Girdinin uzunluğunu düzenli ifadeden **önce** sınırlayın (4. haftadaki "önce uzunluk" ilkesi).
+2. Girdinin uzunluğunu düzenli ifadeden **önce** sınırlayın ([4. haftadaki](../week-4/cen429-week-4.md) "önce uzunluk" ilkesi).
 3. Mümkünse doğrusal zamanlı bir motor kullanın (RE2 ve türevleri).
 4. Statik analiz araçlarının ReDoS kurallarını açın.
 
@@ -1181,8 +1145,9 @@ prototipsiz nesneler (`Object.create(null)`) ya da `Map` kullanmak, gelen JSON'u
 ## 10. Bayt kodu ve tersine derleme
 
 C/C++ derleyicisi kaynak kodu doğrudan makine koduna çevirir; bu sırada değişken adları, tipler ve yapının büyük kısmı
-kaybolur. Java derleyicisi ise kaynak kodu **JVM bayt koduna** (`.class`) çevirir; Android'de bu bayt kodu ayrıca
-**DEX** biçimine dönüştürülür. Bayt kodu makine kodundan çok daha **yüksek düzeylidir**:
+kaybolur. Java derleyicisi ise kaynak kodu, Java'yı çalıştıran sanal makine olan **JVM**'nin (Java Virtual Machine) anladığı
+**bayt koduna** (`.class`) çevirir; Android'de bu bayt kodu ayrıca **DEX** biçimine dönüştürülür. Bayt kodu makine
+kodundan çok daha **yüksek düzeylidir**:
 
 ![Java bayt kodu ile makine kodunun geri çevrilebilirliği](assets/h05-08-bayt-kod.svg)
 
@@ -1196,6 +1161,9 @@ kaybolur. Java derleyicisi ise kaynak kodu **JVM bayt koduna** (`.class`) çevir
 
 Bu yüzden bir Java ya da Android uygulamasını tersine çevirmek için uzmanlık gerekmez. JDK'nin kendi aracı `javap`,
 bayt kodunu metin olarak gösterir; `jadx`, CFR, Fernflower gibi geri derleyiciler ise okunabilir Java kaynağı üretir.
+Dokuzuncu haftada, gizlemeye karşı kullanılan bu tür araçları (sembolik yürütme, kalıp tanıma) ve bunlara karşı
+**dayanıklılık** ilkesini C/C++ tarafında derinlemesine işleyeceğiz
+([Hafta 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-karsi-tarafin-araclari-ve-dayaniklilik-kurali)).
 
 ```text title="javap -c -p LisansDenetimi.class (kısaltılmış)"
 private static final java.lang.String GECERLI_PIN;
@@ -1223,7 +1191,7 @@ Bu dört satır, kaynaktaki `return girilenPin.equals("4729");` ifadesinin **bir
 kaybolmamıştır. `// String 4729` yorumu, `javap`'ın sabit havuzundaki 7 numaralı girişi okuyup göstermesidir;
 geri derleyiciler (jadx, CFR) bu dört satırı görüp doğrudan `return girilenPin.equals("4729");` **kaynak
 kodunu** üretir. C'de `strip` sonrası eşdeğer makine kodunda ne sabitin değeri ne de `equals` çağrısının hangi
-tür üzerinde olduğu bu kadar açık kalırdı (dördüncü haftadaki makine kodu örnekleriyle karşılaştırın).
+tür üzerinde olduğu bu kadar açık kalırdı ([dördüncü haftadaki](../week-4/cen429-week-4.md) makine kodu örnekleriyle karşılaştırın).
 
 Kaynak kod olmadan bile üç şey açıkça görünür: sabit (`4729`), anlamlı adlar (`GECERLI_PIN`, `pinDogru`) ve mantık
 ("girdiyi şu sabitle karşılaştır"). Koda gömülü bir parola, API anahtarı ya da sunucu adresi, uygulamayı indiren herkese
@@ -1241,8 +1209,8 @@ verilmiş demektir (MSC03-J, CWE-798).
 !!! warning "İstemcide sır yoktur"
     Gizleme bu bölümde anlatılanları **zorlaştırır**, ama bir sırrı istemci uygulamasında gerçekten saklamanın yolu
     değildir. Bir API anahtarı ya da parola istemcide durmak zorunda değilse durmamalıdır: sunucu tarafında tutulur,
-    istemci kısa ömürlü bir belirteçle kimlik doğrular. İstemcide durmak zorunda olan anahtarlar için 3. haftadaki
-    kabuklar ve 11. haftadaki whitebox kriptografi gerekir.
+    istemci kısa ömürlü bir belirteçle kimlik doğrular. İstemcide durmak zorunda olan anahtarlar için [3. haftadaki](../week-3/cen429-week-3.md)
+    kabuklar ve [11. haftadaki](../week-11/cen429-week-11.md) whitebox kriptografi gerekir.
 
 ### Demo 4 — Bayt kodunda ne görünür?
 
@@ -1360,7 +1328,7 @@ Sertifikasyondan geçmiş bir mobil ödeme kütüphanesinin gizleme yapılandır
 | `-repackageclasses` | Yeniden adlandırılan bütün sınıflar tek pakete taşınır | Paket yapısı (hangi sınıf hangi modülde) kaybolur |
 | `-keeppackagenames` belirtilmez, `-useuniqueclassmembernames` | Paket adları da gizlenir; aynı adlı üyeler tutarlı adlandırılır | Yapı ipucu kalmaz; ama çökme ayıklaması tutarlı olur |
 | `-keepattributes Exceptions` | Yalnız istisna bildirimleri korunur | Kaynak dosya adı ve satır numarası (`SourceFile`, `LineNumberTable`) sürüme girmez |
-| `-assumenosideeffects class android.util.Log { *; }` | Günlük çağrıları "yan etkisiz" sayılır ve **silinir** | Sürümde günlük dizgeleri ve çağrıları kalmaz (4. haftadaki günlük kaldırmanın Java karşılığı) |
+| `-assumenosideeffects class android.util.Log { *; }` | Günlük çağrıları "yan etkisiz" sayılır ve **silinir** | Sürümde günlük dizgeleri ve çağrıları kalmaz ([4. haftadaki](../week-4/cen429-week-4.md) günlük kaldırmanın Java karşılığı) |
 
 !!! note "Sahada nasıl uygulanır?"
     Aynı kılavuz önemli bir sorumluluk ayrımını da açıkça yazar: kütüphane kendi kodunu gizler ve küçültür, ama
@@ -1386,7 +1354,9 @@ azaltır.
 
 ### Statik dize gizleme
 
-Hassas dizge kaynakta düz metin olarak değil, **şifrelenmiş ya da karıştırılmış bir bayt dizisi** olarak durur ve
+Dördüncü haftada [C tarafında sembol ve dize gizlemeyi](../week-4/cen429-week-4.md#15-sembol-dize-ve-gunluk-gizleme)
+görmüştük; burada aynı fikri Java bayt kodunda uyguluyoruz. Hassas dizge kaynakta düz metin olarak değil,
+**şifrelenmiş ya da karıştırılmış bir bayt dizisi** olarak durur ve
 kullanım anında çözülür. Sabit havuzunda dizgenin kendisi yerine anlamsız baytlar görünür.
 
 - Basit bir XOR karıştırması `javap` ve `strings` taramasını durdurur; ama çözme fonksiyonu ve anahtarı da uygulamanın
@@ -1394,7 +1364,7 @@ kullanım anında çözülür. Sabit havuzunda dizgenin kendisi yerine anlamsız
 - Sahada dizgeler derleme öncesinde bir araçla **AES ile şifrelenir** ve derleme yapılandırmasına şifreli sabitler
   olarak gömülür; çözme işi native tarafta, ek denetimlerle korunan tek bir fonksiyona bırakılır ve çözülen dizge iş
   bitince bellekten silinir. Böylece Java tarafında ne dizgenin kendisi ne de çözme anahtarı bulunur.
-- Çözülen dizge kullanım anında bellekte açıktır; bu yüzden dize gizleme, çalışma anı korumasıyla (RASP, 6. hafta)
+- Çözülen dizge kullanım anında bellekte açıktır; bu yüzden dize gizleme, çalışma anı korumasıyla (RASP, [6. hafta](../week-6/cen429-week-6.md))
   birlikte anlam kazanır.
 
 ### İşlenmiş örnek: XOR gizlemeyi elle çözmek
@@ -1438,7 +1408,7 @@ bulamaz. Ama anahtar (`0x5A`) ve çözme döngüsü **aynı sınıfın içindedi
 !!! success "Kural"
     Dize gizleme "sırrı saklar" demek değildir; "sabit havuzunda düz metin bırakmaz" demektir. Gerçekten hassas
     bir değer (üretim sunucusunun adresi, gerçek bir API anahtarı) hiçbir zaman istemci koduna gömülmemeli;
-    sunucudan çalışma anında alınmalı ya da 11. haftadaki whitebox kriptografi gibi özel yöntemlerle korunmalıdır.
+    sunucudan çalışma anında alınmalı ya da [11. haftadaki](../week-11/cen429-week-11.md) whitebox kriptografi gibi özel yöntemlerle korunmalıdır.
 
 ### Dinamik yöntem çağrısı (yansıma)
 
@@ -1534,7 +1504,7 @@ android {
 !!! warning "Hata ayıklama derlemesinde gizleme yoktur"
     Android Studio'da çalıştırılan hata ayıklama (debug) derlemesi varsayılan olarak **gizlenmez** ve ayrıca
     "debuggable" işaretlidir. Dağıtılan paketin **sürüm** derlemesi olduğunu ve `debuggable` bayrağının kapalı olduğunu
-    doğrulamak, değerlendiricinin ilk kontrollerinden biridir (6. haftada hata ayıklayıcı algılama).
+    doğrulamak, değerlendiricinin ilk kontrollerinden biridir ([6. haftada](../week-6/cen429-week-6.md) hata ayıklayıcı algılama).
 
 ### Çökme raporlarını okumak: retrace
 
@@ -1555,7 +1525,7 @@ numaralarını pakete koyar; bu da bir ödünleşimdir ve kayda geçirilir.
 | Düz metin hassas dizge sayısı | `strings` / sabit havuzu taraması, bilinen hassas dizgelerin listesiyle | Dize gizlemeyle sıfıra iner |
 | Paket boyutu | Dosya boyutu | Küçültmeyle azalır (gizleme tek başına pek değiştirmez) |
 | Günlük çağrısı sayısı | Geri derlenmiş kodda `Log.` araması | Sürümde sıfır |
-| Bir güvenlik denetimini bulma süresi | İnsan deneyi | Artar; 9. haftada ölçme yöntemleri |
+| Bir güvenlik denetimini bulma süresi | İnsan deneyi | Artar; [9. haftada](../week-9/cen429-week-9.md) ölçme yöntemleri |
 
 Bu tabloyu gizleme öncesi ve sonrası için doldurup güvenlik kılavuzuna koymak, "gizleme yapıldı" iddiasını kanıta
 dönüştürür.
@@ -1587,7 +1557,7 @@ hiç çalışmamıştır — ikisi de Bölüm 11'deki "sahada en sık görülen 
 
 ### Java için statik analiz
 
-Dördüncü haftada C/C++ için gördüğümüz statik analiz katmanlarının Java karşılıkları:
+[Dördüncü haftada](../week-4/cen429-week-4.md) C/C++ için gördüğümüz statik analiz katmanlarının Java karşılıkları:
 
 | Araç | Ne bulur? |
 | --- | --- |
@@ -1620,7 +1590,7 @@ Bu bileşenlerden birindeki bir zafiyet, uygulamanın zafiyetidir.
     ifade, kütüphanenin uzaktaki bir adresten sınıf yükleyip çalıştırmasına yol açıyordu (CVE-2021-44228, CVSS 10.0).
     Günlüğe kullanıcı verisi yazan her uygulama etkilendi. Asıl kriz yamayı uygulamak değil, **hangi sistemde hangi
     sürümün bulunduğunu bilmek** oldu: çoğu kurum, Log4j'nin başka bir kütüphanenin içine gömülü olarak hangi
-    uygulamalarında bulunduğunu günlerce aradı. Olay, 2. haftadaki günlük enjeksiyonu ve bu bölümdeki bağımlılık
+    uygulamalarında bulunduğunu günlerce aradı. Olay, [2. haftadaki](../week-2/cen429-week-2.md) günlük enjeksiyonu ve bu bölümdeki bağımlılık
     güvenliği konularını birleştirir.
 
 ### SBOM nedir?
@@ -1966,3 +1936,10 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
     | purl | Paket URL'si | Bir paketi ekosistemden bağımsız tanımlayan kimlik |
     | SCA | Yazılım bileşen analizi | Bağımlılıkları zafiyet veritabanlarıyla eşleştirme |
     | VEX | Zafiyet sömürülebilirlik bildirimi | Bir zafiyetin ürünü etkileyip etkilemediğinin beyanı |
+
+!!! info "Bir sonraki hafta"
+    **[6. hafta](../week-6/cen429-week-6.md) — RASP.** Bu hafta gizleme ve küçültmeyle bayt kodunun **statik** olarak okunmasını zorlaştırdık; ama
+    saldırgan uygulamayı **çalışırken** de inceleyebilir (hata ayıklayıcı bağlamak, bellek dökümü almak, kanca
+    takmak). 6. haftada RASP (Runtime Application Self-Protection) ile bir uygulamanın çalışma anında kendini nasıl
+    doğruladığını, hata ayıklayıcıyı ve kancaları nasıl algıladığını göreceğiz — bu haftaki statik savunmanın üstüne
+    inşa edilen bir sonraki katman.

@@ -5,7 +5,7 @@
 | **Date** | 16.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Basic programming in Java or Python; CWE/CVE and vulnerability classification from Week 2; input validation and secure coding rules from Week 4; simple `SELECT` in SQL |
+| **Prerequisites** | Basic programming in Java or Python; CWE/CVE and vulnerability classification from [Week 2](../week-2/cen429-week-2.md); input validation and secure coding rules from [Week 4](../week-4/cen429-week-4.md); simple `SELECT` in SQL |
 | **Labs** | [`code/week-05`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-05) — 7 demos; requires Python 3 and JDK 17+; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -83,108 +83,66 @@
     injected command is only a harmless `echo`. The deserialisation demo contains no attack chain at all — it only
     shows the defence. Trying these techniques against a website, application or database that belongs to someone
     else is illegal; authorised penetration testing is carried out under a written contract and scope document
-    (Week 12).
+    ([Week 12](../week-12/cen429-week-12.md)).
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you do not know a term, read this section first; the sections that follow build on top of it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
+Background knowledge not covered in earlier weeks is explained from scratch under the "Background" headings.
 
-### What is a managed language?
+### What we bring from earlier weeks
 
-- **Managed language:** a language that manages memory **automatically** (Java, C#, Python, JS).
-- The programmer does not call `malloc`/`free`; the **garbage collector** (GC) handles it.
-- → most memory bugs (overflow, UAF) **disappear**.
+- **Memory bugs (overflow, use of freed memory, undefined behaviour)** — across the first four weeks we saw how
+  buffer overflow, use of freed memory, and undefined behaviour arise in C/C++ and how they are prevented
+  ([Week 4](../week-4/cen429-week-4.md#1-what-is-code-hardening)). This week Section 1 compares **which** of
+  these bug classes disappear at the language level in managed languages, and which **do not**.
+- **The structure of the SEI CERT rule book** — in Week 4 we saw the common structure of the SEI CERT C/C++ rules:
+  identifier, title, non-compliant example, compliant solution, risk
+  ([Week 4, §2](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding)). This week Section 2
+  reuses the same structure for the Java standard, with the `IDS`/`SER`/`FIO`/`MSC`/`ERR` categories.
+- **TOCTOU (time-of-check to time-of-use)** — in Week 2 we saw that the gap between checking a file's permissions
+  and actually using it is a race-condition flaw
+  ([Week 2, §12](../week-2/cen429-week-2.md#demo-06-toctou-race-condition)). This week Section 6 justifies, on the
+  same principle, re-checking that a path is still inside the root **after** the file has been opened.
 
-### The JVM and bytecode
+### This week's concept map
 
-- **JVM (Java Virtual Machine):** the virtual machine that runs Java.
-- **Bytecode:** the intermediate form Java source is compiled into (`.class` files).
-- Bytecode is machine-independent; the JVM executes it.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Injection | Data from the user being processed as a **command**, instead of data, by an interpreter (a SQL engine, a shell, a filesystem, an XML parser); this is the common root of every injection type. | [§3](#3-the-common-root-of-injection-data-and-command-mixing-together-recipe-311) |
+| JVM and bytecode | The JVM (Java Virtual Machine) is the virtual machine that runs Java; bytecode is the machine-independent intermediate form Java source is compiled into, and it reverses back to source much more easily than machine code. | [§10](#10-bytecode-and-decompilation) |
+| Parameterised query | A SQL call that keeps the query text fixed and binds user data as a **value** through a separate channel (a prepared statement); the data can never change the structure of the query. | [§4](#4-sql-injection) |
+| Deserialisation | Creating an object from a byte sequence; if the stream is untrusted, an attacker can choose which class gets created. | [§7](#7-unsafe-deserialisation) |
+| XXE (XML external entity) | Abuse of an XML parser reading a local file or a network address via the `<!DOCTYPE>`/entity definitions in a document. | [§8](#8-xml-template-and-other-kinds-of-injection) |
+| Path traversal | Escaping **outside** an allowed folder with sequences such as `../`, reaching files outside the root directory. | [§6](#6-path-traversal-recipe-37) |
+| ProGuard / R8 | Tools that shrink and optimise Java bytecode, and obfuscate it by replacing class/method names with meaningless ones; R8 is ProGuard's successor on Android. | [§11](#11-proguard-and-r8-shrinking-optimisation-obfuscation) |
+| The `-keep` rule | A configuration rule telling ProGuard/R8 **not to change** the name of a given class or method; code called by name through reflection cannot be found at run time without it. | [§11](#-keep-rules-whose-name-has-to-be-kept) |
+| SBOM | A machine-readable list of every component inside a piece of software (Software Bill of Materials); it quickly answers "are we affected?" when a vulnerability is disclosed in a dependency. | [§14](#14-dependency-security-and-the-software-bill-of-materials-sbom) |
 
-### The garbage collector (GC)
+### Background: managed languages and garbage collection
 
-- **GC (Garbage Collector):** automatically cleans up objects that are no longer used.
-- The programmer never frees memory by hand.
-- This is why UAF / double free is **almost nonexistent** in Java.
+A **managed language** (Java, C#, Python, JavaScript, and the like) is a language whose memory is managed
+automatically by the runtime instead of the programmer; the programmer never calls `malloc`/`free`, and instead a
+**garbage collector** (GC) automatically cleans up objects that are no longer used, in the background. This single
+difference is why most of the overflow and use-of-freed-memory bugs we saw in C/C++ over the first four weeks
+disappear at the language level; §1 shows this in detail.
 
-### What is injection?
+### Background: databases and SQL
 
-- **Injection:** user **data** being interpreted as a **command**.
-- Example: text entered as a username leaking into a SQL query as a command.
-- The main theme of this week.
+**SQL** is the query language used to talk to a database (`SELECT ... WHERE ...` and the like); an application
+reads or writes data by putting a value it received from the user (a username, a search term) into such a query.
+If that value is spliced into the query text without escaping, the SQL injection we will meet in §3–4 results.
 
-### SQL and databases
+### Background: reflection and dependencies
 
-- **SQL:** a database query language (`SELECT ... WHERE ...`).
-- The application puts user input into the query.
-- If put in wrong → **SQL injection**.
-
-### Parameterised query
-
-- **Parameterised query (prepared statement):** the query skeleton is fixed; the data is supplied separately, as
-  **parameters**.
-- Data is never interpreted as a command.
-- The **real** fix against SQL injection.
-
-### Serialisation
-
-- **Serialisation:** converting an object to a byte sequence (to save it or send it).
-- **Deserialisation:** converting the bytes back into an object.
-- Deserialising untrusted bytes is **dangerous** (code execution).
-
-### XML and XXE
-
-- **XML:** a structured data format (built from tags).
-- **XXE (XML External Entity):** abuse of XML's "external entity" feature → file reading, SSRF.
-- External entities are **disabled** in the XML parser.
-
-### Path traversal
-
-- **Path traversal:** escaping **outside** the allowed folder with `../`.
-- Like `dosyalar/../../etc/passwd`.
-- Prevented with canonicalisation + a root check.
-
-### ProGuard and R8
-
-- **ProGuard / R8:** tools that **shrink** Java/Android bytecode and **obfuscate names**.
-- R8 is Android's default tool.
-- Name obfuscation + dead-code elimination + shrinking.
-
-### The `-keep` rule
-
-- **`-keep`:** telling ProGuard/R8 "do not **change** this class's/method's name."
-- Code called by name through reflection has to be kept.
-- A wrong `-keep` → either a crash or weak obfuscation.
-
-### What is reflection?
-
-- **Reflection:** finding and calling a class/method **by its name, at run time**.
-- `Class.forName("...")`, `getMethod("...")`.
-- Obfuscation can break this → `-keep` is required.
-
-### What is an SBOM?
-
-- **SBOM (Software Bill of Materials):** the software's **bill of materials** — which libraries, which versions.
-- When a vulnerability is disclosed in a library, it answers "are we affected?" **quickly**.
-- Formats: CycloneDX, SPDX.
-
-### Dependency
-
-- **Dependency:** the external libraries your project uses.
-- Even if your own code is secure, a flaw in a dependency affects you.
-- Supply-chain security.
-
-### Now we are ready
-
-Terms:
-
-managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialisation · XML/XXE · path
-traversal · ProGuard/R8 · `-keep` · reflection · SBOM · dependency
-
-Now: what do managed languages solve, and what do they not solve?
+**Reflection** is the ability to find and call a class or method **at run time**, from a string
+(`Class.forName("...")`, `getMethod("...")`), instead of writing it by name directly in the source; §12 shows how
+this interacts with obfuscation. A **dependency** is an external library your project uses that your own team did
+not write; even if your own code is secure, a flaw in a dependency you use affects you too — §14 covers this with
+the SBOM.
 
 ### How do the concepts connect to each other?
 
@@ -257,11 +215,11 @@ mobile applications:
 | **Secrets embedded in code** | Bytecode is easy to read | Demo 4 |
 | **Reverse engineering** | Bytecode is high-level; names and strings are preserved | Demos 4–5 |
 | **Vulnerable dependencies** | Most of the application is someone else's code | Demo 6 |
-| **Logic and authorisation errors** | Business rules the language cannot know | Week 2 |
+| **Logic and authorisation errors** | Business rules the language cannot know | [Week 2](../week-2/cen429-week-2.md) |
 
 ### Worked example: why an array overflow crashes in Java but not in C
 
-In Week 4 we saw that for a 10-element array such as `buf[10]`, writing to index 10 (the 11th element) is
+In [Week 4](../week-4/cen429-week-4.md) we saw that for a 10-element array such as `buf[10]`, writing to index 10 (the 11th element) is
 **undefined behaviour** in C, and most of the time silently corrupts adjacent memory with no error at all. Let's
 trace the same bug in Java, step by step.
 
@@ -304,7 +262,7 @@ Step by step, what happened:
 !!! note "Native code inside a managed language"
     A Java application gains memory safety only for as long as it stays **entirely** in Java. C/C++ code invoked
     through JNI for performance or security reasons (such as the native layer in the mobile payment architecture
-    from Week 1) carries all of the first four weeks' risk right back in. In the field, the two sides are therefore
+    from [Week 1](../week-1/cen429-week-1.md)) carries all of the first four weeks' risk right back in. In the field, the two sides are therefore
     hardened separately: the native side with Week 4's methods, the Java side with this week's methods; each side
     checks the other's integrity.
 
@@ -312,7 +270,7 @@ Step by step, what happened:
 
 ## 2. SEI CERT Oracle Java: the managed language's rule book
 
-The SEI CERT Java standard, which we met in Week 4, has the same structure: identifier, title, non-compliant
+The [SEI CERT Java standard, which we met in Week 4](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding), has the same structure: identifier, title, non-compliant
 example, compliant solution, risk. Identifiers end with the `-J` suffix.
 
 ![The structure of an SEI CERT Oracle Java rule](assets/h05-11-cert-java.svg)
@@ -338,7 +296,7 @@ memory. This is why CERT works from language to language on the principle "which
 in the C standard `MEM` and `ARR` are printed bold; in the Java standard `IDS` and `SER` are.
 
 !!! tip "Reading it alongside OWASP"
-    For web applications, the **OWASP Top 10** (Week 2) and ASVS, and for mobile applications **OWASP MASVS**
+    For web applications, the **OWASP Top 10** ([Week 2](../week-2/cen429-week-2.md)) and ASVS, and for mobile applications **OWASP MASVS**
     (especially MASVS-CODE and MASVS-RESILIENCE) rank the same topics by application type. The CERT rules answer
     "how do I write the code?"; the OWASP documents answer "what do I test?"
 
@@ -346,8 +304,9 @@ in the C standard `MEM` and `ARR` are printed bold; in the Java standard `IDS` a
 
 ## 3. The common root of injection: data and command mixing together (Recipe 3.11)
 
-SQL injection, command injection, path traversal, XML injection, template injection, the log injection from
-Week 2, and the format-string flaw from Week 4 are different faces of the same bug: inside the text handed to an
+SQL injection, command injection, path traversal, XML injection, template injection, [the log injection from
+Week 2](../week-2/cen429-week-2.md#demo-10-log-injection-cwe-117), and [the format-string flaw from
+Week 4](../week-4/cen429-week-4.md#5-format-string-vulnerability-recipe-32) are different faces of the same bug: inside the text handed to an
 **interpreter** (a SQL engine, a shell, a filesystem, an XML parser, `printf`), the **command** and the **data**
 travel through the same channel. If the user data contains the interpreter's special characters (`'`, `;`, `../`,
 `<`, `%`), the data becomes part of the command.
@@ -653,7 +612,7 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
 ```
 
 1. **No shell:** `ProcessBuilder` launches the program directly; `;` or `&` are just characters inside an argument.
-2. **Full path:** the program's full path is given, against the PATH attack from Week 1.
+2. **Full path:** the program's full path is given, against the PATH attack from [Week 1](../week-1/cen429-week-1.md).
 3. **Allow list:** the argument is validated against the expected shape before it is run.
 4. **Best of all:** removing the need for an external program entirely. Using a library to convert an image, or
    `InetAddress.isReachable` to test an address, eliminates the whole problem.
@@ -784,7 +743,7 @@ return Files.readAllBytes(gercek);
 Order matters: first the **canonical** (single, definitive) path is obtained, and only then is it checked.
 Checking the raw string (`istek.contains("..")`) is not enough; `..%2f`, `....//`, `..\` on Windows and absolute
 paths with a drive letter, Unicode forms, and **symbolic links** can all bypass the check. `toRealPath()` also
-resolves symbolic links to their real targets; because the TOCTOU problem from Week 2 (the time between check and
+resolves symbolic links to their real targets; because the TOCTOU problem from [Week 2](../week-2/cen429-week-2.md) (the time between check and
 use) still applies, it is most robust to verify again that the file is inside the root after it has been opened.
 
 !!! example "Path traversal inside archives: Zip Slip"
@@ -1027,7 +986,7 @@ marked with the `SYSTEM` keyword):
    has been mixed into the document text.
 4. If the application shows this expanded text back to the user in any form (in an error message, in a response
    field), the file's content has been **leaked**; if the source is a network address, this also means the server
-   has sent a request into the internal network (SSRF, Week 3).
+   has sent a request into the internal network (SSRF, [Week 3](../week-3/cen429-week-3.md)).
 
 The critical point is, again, the same: the parser is not making a mistake, it is implementing the DTD standard
 **exactly**. The hardening below closes off the **first step** of these four (processing the DTD at all) and the
@@ -1147,7 +1106,7 @@ Input:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"   → the engine tries millions of pat
 A single request can keep a server's processor busy for seconds or minutes (CWE-1333). Defence:
 
 1. Avoid nested repetition (`(a+)+`, `(a|a)*`, `(\w+\s?)*`); write the pattern as **precisely** as possible.
-2. Bound the input's length **before** the regular expression runs (the "length first" principle from Week 4).
+2. Bound the input's length **before** the regular expression runs (the "length first" principle from [Week 4](../week-4/cen429-week-4.md)).
 3. Use a linear-time engine where possible (RE2 and its derivatives).
 4. Turn on static analysis tools' ReDoS rules.
 
@@ -1225,9 +1184,9 @@ unexpectedly true. Defence: reject the keys `__proto__`, `constructor` and `prot
 ## 10. Bytecode and decompilation
 
 The C/C++ compiler translates source code directly into machine code; in the process, variable names, types and
-most of the structure are lost. The Java compiler, on the other hand, translates source code into **JVM bytecode**
-(`.class`); on Android this bytecode is further converted into the **DEX** format. Bytecode is much more
-**high-level** than machine code:
+most of the structure are lost. The Java compiler, on the other hand, translates source code into the bytecode understood by the **JVM**
+(Java Virtual Machine), the virtual machine that runs Java, as **`.class`** files; on Android this bytecode is
+further converted into the **DEX** format. Bytecode is much more **high-level** than machine code:
 
 ![How reversible Java bytecode is compared with machine code](assets/h05-08-bayt-kod.svg)
 
@@ -1240,7 +1199,10 @@ most of the structure are lost. The Java compiler, on the other hand, translates
 | Result of reversing | Pseudo-C that takes effort to read | Often **compilable** Java code |
 
 This is why reversing a Java or Android application does not require expertise. The JDK's own tool, `javap`, shows
-bytecode as text; decompilers such as `jadx`, CFR and Fernflower produce readable Java source.
+bytecode as text; decompilers such as `jadx`, CFR and Fernflower produce readable Java source. In Week 9 we will
+cover, in depth on the C/C++ side, the very tools used against obfuscation (symbolic execution, pattern
+recognition) and the principle of **resilience** against them
+([Week 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-the-other-sides-tools-and-the-resilience-rule)).
 
 ```text title="javap -c -p LisansDenetimi.class (abridged)"
 private static final java.lang.String GECERLI_PIN;
@@ -1269,7 +1231,7 @@ information has been lost. The `// String 4729` comment is `javap` reading and s
 pool; decompilers (jadx, CFR) see these four lines and produce the source code
 `return girilenPin.equals("4729");` directly. In C, in the equivalent machine code after `strip`, neither the
 constant's value nor which type the `equals` call operates on would remain this obvious (compare with the machine
-code examples from Week 4).
+code examples from [Week 4](../week-4/cen429-week-4.md)).
 
 Even without the source code, three things are plainly visible: the constant (`4729`), meaningful names
 (`GECERLI_PIN`, `pinDogru`), and the logic ("compare the input to this constant"). A password, API key or server
@@ -1290,8 +1252,8 @@ CWE-798).
     Obfuscation **makes what is described in this section harder**, but it is not a way of genuinely hiding a
     secret in a client application. An API key or password should not stay on the client unless it absolutely has
     to: it should be kept server-side, and the client should authenticate with a short-lived token. For keys that
-    genuinely have to stay on the client, the secure enclaves from Week 3 and the whitebox cryptography from
-    Week 11 are needed.
+    genuinely have to stay on the client, the secure enclaves from [Week 3](../week-3/cen429-week-3.md) and the whitebox cryptography from
+    [Week 11](../week-11/cen429-week-11.md) are needed.
 
 ### Demo 4 — What shows up in the bytecode?
 
@@ -1415,7 +1377,7 @@ rationale (a generalised version of the library's own rules):
 | `-repackageclasses` | All renamed classes are moved into a single package | The package structure (which class is in which module) is lost |
 | `-keeppackagenames` not specified, `-useuniqueclassmembernames` | Package names are also obfuscated; members with the same name get consistent renaming | No structural hint remains; but crash debugging stays consistent |
 | `-keepattributes Exceptions` | Only exception declarations are kept | The source file name and line number (`SourceFile`, `LineNumberTable`) do not go into the release |
-| `-assumenosideeffects class android.util.Log { *; }` | Logging calls are treated as "side-effect free" and **removed** | No logging strings or calls remain in the release (the Java counterpart of the log removal from Week 4) |
+| `-assumenosideeffects class android.util.Log { *; }` | Logging calls are treated as "side-effect free" and **removed** | No logging strings or calls remain in the release (the Java counterpart of the log removal from [Week 4](../week-4/cen429-week-4.md)) |
 
 !!! note "How is this applied in the field?"
     The same guide also spells out an important separation of responsibility: the library obfuscates and shrinks
@@ -1441,7 +1403,9 @@ The leak in Demo 4 had two sources: **plain-text constants** and **direct calls*
 
 ### Static string obfuscation
 
-The sensitive string sits in the source not as plain text but as an **encrypted or scrambled byte sequence**, and
+In Week 4 we saw [symbol and string hiding on the C side](../week-4/cen429-week-4.md#15-symbol-string-and-log-hiding);
+here we apply the same idea to Java bytecode. The sensitive string sits in the source not as plain text but as an
+**encrypted or scrambled byte sequence**, and
 is decoded at the moment it is used. Meaningless bytes appear in the constant pool instead of the string itself.
 
 - A simple XOR scramble stops `javap` and `strings` scans; but the decoding function and the key are also inside
@@ -1451,7 +1415,7 @@ is decoded at the moment it is used. Meaningless bytes appear in the constant po
   additional checks, and the decoded string is wiped from memory once the job is done. This way, neither the
   string itself nor the decoding key is found on the Java side.
 - The decoded string sits in memory in the clear at the moment it is used; this is why string obfuscation gains
-  its real meaning together with run-time protection (RASP, Week 6).
+  its real meaning together with run-time protection (RASP, [Week 6](../week-6/cen429-week-6.md)).
 
 ### Worked example: decoding XOR obfuscation by hand
 
@@ -1497,7 +1461,7 @@ loop are **inside the same class** — which is why the warning below applies.
     String obfuscation does not mean "the secret is hidden"; it means "no plain text is left in the constant
     pool." A genuinely sensitive value (a production server's address, a real API key) should never be embedded in
     client code at all; it should be fetched from the server at run time, or protected with dedicated methods such
-    as the whitebox cryptography from Week 11.
+    as the whitebox cryptography from [Week 11](../week-11/cen429-week-11.md).
 
 ### Dynamic method invocation (reflection)
 
@@ -1595,7 +1559,7 @@ written into the `proguard-rules.pro` file. A typical rule for methods called fr
 !!! warning "There is no obfuscation in the debug build"
     The debug build run inside Android Studio is **not obfuscated** by default, and is also marked "debuggable."
     Confirming that the distributed package is the **release** build and that the `debuggable` flag is off is one
-    of the assessor's first checks (debugger detection is covered in Week 6).
+    of the assessor's first checks (debugger detection is covered in [Week 6](../week-6/cen429-week-6.md)).
 
 ### Reading crash reports: retrace
 
@@ -1616,7 +1580,7 @@ Saying "obfuscation is on" is not enough; you need to show what actually changed
 | Number of plain-text sensitive strings | `strings` / constant-pool scan, against a list of known sensitive strings | Drops to zero with string obfuscation |
 | Package size | File size | Decreases with shrinking (obfuscation alone barely changes it) |
 | Number of logging calls | Searching for `Log.` in the decompiled code | Zero in the release |
-| Time to find a security check | Human trial | Increases; measurement methods in Week 9 |
+| Time to find a security check | Human trial | Increases; measurement methods in [Week 9](../week-9/cen429-week-9.md) |
 
 Filling in this table for before and after obfuscation and putting it into the security guide turns the claim
 "obfuscation was done" into evidence.
@@ -1649,7 +1613,7 @@ in the field" from Section 11.
 
 ### Static analysis for Java
 
-The Java counterparts of the static-analysis layers we saw for C/C++ in Week 4:
+The Java counterparts of the static-analysis layers we saw for C/C++ in [Week 4](../week-4/cen429-week-4.md):
 
 | Tool | What does it find? |
 | --- | --- |
@@ -1683,7 +1647,7 @@ counted in. A vulnerability in one of these components is a vulnerability in the
     CVSS 10.0). Every application that logged user data was affected. The real crisis was not applying the patch,
     it was **knowing which system had which version**: most organisations spent days searching for which of their
     applications had Log4j embedded inside another library. The incident ties together the log injection from
-    Week 2 and the dependency security topics of this section.
+    [Week 2](../week-2/cen429-week-2.md) and the dependency security topics of this section.
 
 ### What is an SBOM?
 
@@ -2042,3 +2006,10 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
     | purl | purl | An identifier that identifies a package independent of its ecosystem |
     | SCA | SCA | Matching dependencies against vulnerability databases |
     | VEX | VEX | A declaration of whether a vulnerability affects the product |
+
+!!! info "Next week"
+    **[Week 6](../week-6/cen429-week-6.md) — RASP.** This week we used obfuscation and shrinking to make bytecode harder to read **statically**;
+    but an attacker can also examine an application **while it runs** (attaching a debugger, dumping memory,
+    installing a hook). In Week 6 we will see how an application verifies itself at run time with RASP (Runtime
+    Application Self-Protection), and how it detects debuggers and hooks — the next layer built on top of this
+    week's static defences.

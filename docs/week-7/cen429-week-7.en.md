@@ -50,10 +50,10 @@ guide:
 
 | Criterion | Learning outcome | Where in the guide | Which weeks? |
 | --- | --- | --- | --- |
-| **Security analysis** | LO.1 | S2 product overview · S3 architecture and interface table · S4 threat and attacker model | 1, 2 |
-| **Data security** | LO.2 | S5 asset list (draft) · S7 data security and security shell matrix | 1, 3 |
-| **C/C++ code hardening and RASP** | LO.3 | S9 code hardening (basic) · S10 RASP and response policy | 4, 6 |
-| **Project management** | LO.5 | S13 development environment and process, SBOM, change management · GitHub repository and plan | 1, 5 |
+| **Security analysis** | LO.1 | S2 product overview · S3 architecture and interface table · S4 threat and attacker model | [1](../week-1/cen429-week-1.md#21-term-project-this-week), [2](../week-2/cen429-week-2.md#18-term-project-this-week-s4) |
+| **Data security** | LO.2 | S5 asset list (draft) · S7 data security and security shell matrix | [1](../week-1/cen429-week-1.md#21-term-project-this-week), [3](../week-3/cen429-week-3.md#17-term-project-this-week) |
+| **C/C++ code hardening and RASP** | LO.3 | S9 code hardening (basic) · S10 RASP and response policy | [4](../week-4/cen429-week-4.md#17-term-project-this-week), [6](../week-6/cen429-week-6.md#12-term-project-this-week) |
+| **Project management** | LO.5 | S13 development environment and process, SBOM, change management · GitHub repository and plan | [1](../week-1/cen429-week-1.md#21-term-project-this-week), [5](../week-5/cen429-week-5.md#15-term-project-this-week) |
 | **Interim report** | LO.7 | All sections in the midterm column; document structure, references | All |
 
 ### Sections that must be present in the interim report
@@ -89,6 +89,8 @@ You should be able to show every item in your guide and your repository.
 ![RAP1 submission contents](assets/h07-02-rap1.svg)
 
 ??? success "Week 1 — Project plan and first sections"
+    Source: [Week 1 · Term project](../week-1/cen429-week-1.md#21-term-project-this-week)
+
     - [ ] GitHub repository, README, project plan (work packages, schedule, task assignment) approved.
     - [ ] S0 cover and version history.
     - [ ] S2 product overview: what does the application do, who uses it?
@@ -98,27 +100,37 @@ You should be able to show every item in your guide and your repository.
     - [ ] S5 asset list draft: location, creation → deletion, C/I/I+.
 
 ??? success "Week 2 — Threat table and classification"
+    Source: [Week 2 · Term project](../week-2/cen429-week-2.md#18-term-project-this-week-s4)
+
     - [ ] In the S4 threat table, every threat is matched to a **CWE** and has a **CVSS v3.1** vector.
     - [ ] The attack tree is attached in a tool's input format or as a drawing.
     - [ ] Threats are derived from the rows of the interface table; every asset appears in at least one threat.
 
 ??? success "Week 3 — Data security"
+    Source: [Week 3 · Term project](../week-3/cen429-week-3.md#17-term-project-this-week)
+
     - [ ] S7: for data in transit, at rest and in use — which algorithm, which key, which binding?
     - [ ] A **security shell matrix** (stage × shell) for the most sensitive asset.
     - [ ] Random values come from a CSPRNG; the AEAD tag is verified before the plaintext is used.
     - [ ] If TLS is used, chain validation + hostname verification (+ pinning if applicable) can be demonstrated.
 
 ??? success "Week 4 — C/C++ hardening"
+    Source: [Week 4 · Term project](../week-4/cen429-week-4.md#17-term-project-this-week)
+
     - [ ] S9: compiler protection table (`checksec` / `dumpbin`); justification for any protection left off.
     - [ ] Scan against CERT rules; at least five findings fixed and documented with the rule id.
     - [ ] Tests run with ASan + UBSan; at least one fuzz target and its result.
     - [ ] No logging in the release build; no sensitive string appears in `strings` output.
 
 ??? success "Week 5 — Dependencies and input validation"
+    Source: [Week 5 · Term project](../week-5/cen429-week-5.md#15-term-project-this-week)
+
     - [ ] S13: SBOM in CycloneDX format and vulnerability scan result.
     - [ ] Input validation table: for each entry point, format, length limit, validating function.
 
 ??? success "Week 6 — RASP"
+    Source: [Week 6 · Term project](../week-6/cen429-week-6.md#12-term-project-this-week)
+
     - [ ] S10: for each critical operation, which RASP checks run, when, and where?
     - [ ] Response policy: which secret is wiped, is it fail-closed, is it a decoy, where is the event reported?
     - [ ] A bypass attempt on at least one check and its result (also written into the S16 plan).
@@ -183,7 +195,7 @@ to explain every line you submit. Any member of the team may be asked a question
 ## 5. After the demonstration
 
 - Write the feedback you received as a **finding list** (finding, severity, correction plan, target date). This list
-  is a small model of the assessment process you will see in Week 12.
+  is a small model of the assessment process you will see in [Week 12](../week-12/cen429-week-12.md).
 - The sections expected at the final checkpoint (S6 identity and binding, S8 cryptography and key lifecycle, S11
   secure communication, S14 assumptions and deferred requirements, S15 build and deployment pipeline, S16 test
   results, S17 compliance matrix) will be filled in with the topics of weeks 9–14.

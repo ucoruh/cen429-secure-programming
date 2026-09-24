@@ -5,7 +5,7 @@
 | **Date** | 11.12.2026 |
 | **Learning outcomes** | LO.5, 7 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Asset, threat and countermeasure from Week 1; evaluation and evidence concepts from Week 12; what the S sections of the term project are for |
+| **Prerequisites** | Asset, threat and countermeasure from [Week 1](../week-1/cen429-week-1.md); evaluation and evidence concepts from [Week 12](../week-12/cen429-week-12.md); what the S sections of the term project are for |
 | **Labs** | [`code/week-13`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-13) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
@@ -96,79 +96,41 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you don't know a term, read this section first; the following sections build on these.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### What is a requirement?
+### What we bring from earlier weeks
 
-- **Requirement:** a condition the system **must meet**.
-- A security requirement: a security condition.
-- A good requirement is **verifiable** (testable).
+- **Assets, threats, and the application protection plan** — the written plan that governs a piece of software's
+  security: scope, architecture and interfaces, assets, threats, controls, verification, residual risk; for each
+  asset, where it lives, when it is created and destroyed, and which protection (C/I) it needs is listed in an
+  **asset table** ([Week 1, §6](../week-1/cen429-week-1.md#6-the-application-protection-plan)). This week, in
+  Section 2 we link every requirement to that table and to the threat model, and in Section 7 we turn that link
+  into a decision process.
+- **Independent evaluation, findings, and evidence** — the evidence-based evaluation process carried out by an
+  independent laboratory rather than the product's own developer; every gap the evaluator documents is a
+  **finding** ([Week 12, §2](../week-12/cen429-week-12.md#2-the-evaluation-process-13-steps)). This week, in
+  Section 2 we use the same discipline as the "traceability chain from requirement to evidence," and in Section 9
+  as your term project's S17/S14 sections.
 
-### Three types of requirement
+### This week's concept map
 
-- **Functional:** what security function will exist? (e.g., data is protected with AEAD)
-- **Assurance:** how will we trust that it was done correctly? (e.g., a test report)
-- **Process:** how must the organisation operate? (e.g., every change is reviewed)
-
-### Good vs. bad requirement
-
-- **Bad:** "The application must be secure." (unverifiable)
-- **Good:** "The release build must be produced with a stack canary, PIE, and full RELRO." (measurable)
-
-### Traceability
-
-- **Traceability:** linking each requirement to a **control**, a **test**, and **evidence**.
-- "Where was this requirement met, how was it verified?"
-
-### Compliance matrix
-
-- **Compliance matrix:** a requirement → status → section → verification → evidence table.
-- The project's **S17** section.
-- The first thing an evaluator looks at.
-
-### Requirement statuses
-
-- **Met:** the product satisfies this requirement (with evidence).
-- **Deferred:** another party satisfies it (to whom, why, how).
-- **Not met:** not yet satisfied.
-
-### Deferred requirement
-
-- If a component cannot meet a requirement, it **defers** it to the parent application/OS.
-- The guide states **to whom**, **why**, and **how** it will be met.
-- The project's **S14** section.
-
-### Common Criteria (CC)
-
-- **Common Criteria (ISO/IEC 15408):** the international standard for product security evaluation.
-- Concepts: TOE, ST, PP, SFR, SAR, EAL (shortly).
-
-### CC · basic terms
-
-- **TOE:** the product being evaluated.
-- **ST (Security Target):** this product's security-target document.
-- **PP (Protection Profile):** a common requirement set for a product **class**.
-
-### CC · SFR, SAR, EAL
-
-- **SFR:** security **functional** requirements.
-- **SAR:** security **assurance** requirements.
-- **EAL:** the **depth** level of the evaluation (EAL1–EAL7).
-
-### FIPS 140-3
-
-- **FIPS 140-3:** the standard for validating cryptographic **modules**.
-- Security levels (1–4).
-- It covers only the module, not the whole application.
-
-### Sector standards
-
-- **ETSI EN 303 645:** baseline IoT security.
-- **GSMA, EMVCo, PCI:** mobile/payment.
-- **OWASP MASVS:** mobile application requirements.
+| Concept | In one sentence | Details |
+| --- | --- | --- |
+| Requirement | A verifiable condition the system must meet; it states what the product must do, not how. | [§1](#1-what-is-a-security-requirement-how-do-you-write-a-good-one) |
+| Three types of requirement | Requirements split into functional (what security function), assurance (how will we trust it), and process (how the organisation must operate). | [§1](#three-types-of-requirement) |
+| Good and bad requirement | A good requirement is singular, verifiable, traceable, achievable, and focused on "what" not "how"; a sentence like "the application must be secure" satisfies none of these, so it is bad. | [§1](#bad-and-good-requirements) |
+| Traceability | The discipline of linking each requirement to a control, a test, and evidence; it answers "where was this requirement met, how was it verified?" | [§2](#2-from-requirement-to-evidence-traceability) |
+| Compliance matrix | The table that holds id, requirement, status, control, verification, and evidence together; the first thing an evaluator opens (project section S17). | [§2](#2-from-requirement-to-evidence-traceability) |
+| Requirement statuses | A requirement is marked met (the product satisfies it itself), deferred (another party satisfies it), not met (applies but is a gap), or not applicable (does not apply to the product at all). | [§2](#2-from-requirement-to-evidence-traceability) |
+| Deferred requirement | A requirement a component cannot meet on its own, passed on to the parent application, the OS, or hardware, stating to whom/why/how (project section S14). | [§3](#deferred-requirements-the-boundary-of-responsibility) |
+| Common Criteria (CC) | ISO/IEC 15408; the international standard for the security evaluation of IT products. | [§4](#4-common-criteria-isoiec-15408) |
+| TOE, ST, PP | TOE is the product being evaluated; ST is that product's own security-target document; PP is a common requirement set for a product class. | [§4](#basic-concepts) |
+| SFR, SAR, EAL | SFR is functional, SAR is assurance requirements; EAL (1–7) shows how deep the evaluation was, not how secure the product is. | [§4](#basic-concepts) |
+| FIPS 140-3 | NIST's standard for validating cryptographic **modules**; it has security levels (1–4) and covers only the module, not the whole application. | [§5](#5-fips-140-3-validating-cryptographic-modules) |
+| Sector standards | Sector-specific requirement sets: ETSI EN 303 645 targets consumer IoT, GSMA the mobile/SIM ecosystem, EMVCo and PCI payments, and OWASP MASVS mobile applications. | [§6](#6-etsi-gsma-emvco-pci-and-owasp-sector-specific-requirement-sets) |
 
 ### Why are there so many terms? (rationale)
 
@@ -199,27 +161,6 @@ requires is, first, using the right word in the right place; the technical solut
     separate "control" column or sentence. If a sentence contains a product name, a library name, or an algorithm
     name, that sentence is most likely a control, not a requirement.
 
-### Let's see the concepts through a single asset (mini example)
-
-To see how the terms fit together, let's quickly walk through a single asset; we'll see the fully worked-out
-version end to end in Section 2.
-
-1. **Asset** (from Week 1): "the user's session token"; marked with confidentiality class **C** in the asset
-   table.
-2. **Threat** (from Week 1): an attacker listening on the network can capture this token and act as the user.
-3. **Requirement:** "The session token must only be carried over an encrypted channel." This states **what** the
-   system must do against the threat; it does not say **how**.
-4. **Status:** Does the team meet this itself, or **defer** it to another party? Say the product sets up TLS
-   itself: the status is **met**.
-5. **Traceability:** In which section of the guide is this requirement explained (control), how is it verified
-   (test), and where is its evidence? The answers to these three questions form one row of the **compliance
-   matrix**.
-
-Let's follow the same asset to see the "deferred" status too: if the product were a library and the parent
-application set up the TLS connection, the requirement would be **deferred** to the parent application, and S14
-would read "to whom: the parent application; why: the library does not open network connections itself; how: the
-parent application must connect using TLS 1.2+ and certificate validation."
-
 ### The difference between a 'requirement family' and a 'standard'
 
 This course uses two different things coming from two different sources, and confusing them is a common mistake:
@@ -232,18 +173,8 @@ This course uses two different things coming from two different sources, and con
 
 When writing a requirement, "which standard it is based on" (source) and "which of the course's families it
 belongs to" (id) are two separate questions; you state both separately, in the S1 (sources) and S17 (compliance
-matrix) sections.
-
-### Quick self-check (before finishing Section 0)
-
-- **Q:** Is "The release build must be produced with PIE" a requirement or a control? **A:** A requirement — a
-  measurable condition; it doesn't yet say "how it is met" (which compiler flag).
-- **Q:** A row in a guide reads "met" but has no file name next to it. What does this row mean? **A:** It proves
-  nothing; the traceability chain is considered broken (Section 2).
-- **Q:** If the product never connects to the network, what status is written for "data in transit" requirements?
-  **A:** "Not applicable," together with its rationale.
-- **Q:** Why isn't "Keys must be well managed" singular? **A:** "Managing well" vaguely packs several conditions —
-  generation, storage, use, and destruction — into one sentence; each should be its own requirement.
+matrix) sections. In Section 6 we'll see how these two express the same need in different words, across four
+standards.
 
 ### The difference between 'not met' and 'not applicable'
 
@@ -256,9 +187,8 @@ to the matrix's credibility as the requirement statuses themselves:
   network connectivity, "data in transit" requirements are not applicable). This is not a gap, but if written
   without a rationale, the evaluator treats it as "the requirement was skipped, not checked."
 
-Rule: whenever you write "not applicable," always add one sentence stating **why** it does not apply. A "not
-applicable" with no rationale is just as untrustworthy as a "met" with no evidence — in the evaluator's eyes, both
-can mean "not checked."
+We'll see this rule's common mistake and its consequence again in Section 7, when we carry requirements into the
+project.
 
 ### The six status/decision words we've seen in this section
 
@@ -268,22 +198,13 @@ over and over when filling in S17 and S14 in your term project:
 | Word | When to use it | What must accompany it |
 | --- | --- | --- |
 | **Met** | The product satisfies the requirement itself | Control + verification + evidence (Section 2) |
-| **Deferred** | Another party satisfies it | To whom + why + how (this section, Section 3) |
+| **Deferred** | Another party satisfies it | To whom + why + how (Section 3) |
 | **Not met** | Applies but not yet satisfied | Residual risk + planned fix |
 | **Not applicable** | Does not apply to the product at all | Rationale |
 | **must (MUST)** | Mandatory | A direct finding if not met |
 | **should (SHOULD)** | Strong recommendation | A written rationale if not met |
 
 Keeping this table in mind will give you a reference point as you read every example in the sections ahead.
-
-### Now we're ready
-
-Terms:
-
-requirement (functional/assurance/process) · traceability · compliance matrix · status (met/deferred/not met) ·
-deferred · CC (TOE/ST/PP/SFR/SAR/EAL) · FIPS 140-3 · ETSI/GSMA/EMVCo/PCI/MASVS
-
-Now: how do you write a good requirement?
 
 ## 1. What is a security requirement? How do you write a good one?
 
@@ -300,12 +221,15 @@ evaluator instead asks "has the requirement been met, and where is the evidence?
     - **1985** — **TCSEC** (the "Orange Book") formalizes security **requirement levels** for the first time.
     - **1994** — **FIPS 140** cryptographic module requirements (today **140-3**, 2019).
     - **1999** — **Common Criteria (ISO/IEC 15408)**: the **PP/ST**, **SFR/SAR**, and **EAL** concepts come from
-      here (Week 12's process).
+      here ([Week 12](../week-12/cen429-week-12.md)'s process).
     - **2010s** — sector-specific sets: **OWASP MASVS/MASTG** for mobile, **ETSI EN 303 645** for consumer IoT,
       **EMVCo/PCI** for payments.
 
     The unchanging principle: a good requirement must be **measurable** and **traceable**; a "met" with no
     evidence is invalid.
+
+Before writing a requirement, you first need to be clear about which type you mean; requirements split into three
+main types:
 
 ### Three types of requirement
 
@@ -349,7 +273,7 @@ requirement" table ("the application must be secure"): the sentence says everyth
 
 > Interim step: "The application must protect user data." → it isn't clear which data, against which threat.
 
-**Step 2 — Link it to the asset table (Week 1).** "User data" is not a single thing; it is separate rows in the
+**Step 2 — Link it to the asset table ([Week 1](../week-1/cen429-week-1.md)).** "User data" is not a single thing; it is separate rows in the
 asset table: session token, profile information, payment token, log records... Each has a different
 confidentiality/integrity class (C/I/I+/N) and requires a different requirement. In this step, we narrow the
 single sentence down to "sensitive fields in the local database" marked class **C** in the asset table.
@@ -366,8 +290,8 @@ step.
 > Interim step: "The confidentiality and integrity of class-C fields in the local database must be protected." →
 > there's still no "how," no measurable criterion.
 
-**Step 4 — Add a measurable technical criterion (linking to Week 9's protection rules).** The rule we saw in Week
-9: if you want confidentiality and integrity at the same time, the right tool class is AEAD (see Week 3). This
+**Step 4 — Add a measurable technical criterion (linking to [Week 9](../week-9/cen429-week-9.md)'s protection rules).** The rule we saw in Week
+9: if you want confidentiality and integrity at the same time, the right tool class is AEAD (see [Week 3](../week-3/cen429-week-3.md)). This
 adds a concrete, technology-independent criterion to the requirement; we still aren't naming a specific library.
 
 > Interim step: "Class-C fields in the local database must be protected with authenticated encryption (AEAD)." →
@@ -470,8 +394,10 @@ question takes us to the traceability chain in Section 2.
 
 ## 2. From requirement to evidence: traceability
 
-A requirement is only considered met **together with its evidence**. In certification, the following chain is
-built for every requirement:
+A requirement is only considered met **together with its evidence**. This discipline is called **traceability**:
+linking each requirement to a control, a test, and evidence; it means being able to answer "where was this
+requirement met, how was it verified?" at all times. In certification, the following chain is built for every
+requirement:
 
 ![The traceability chain from requirement to evidence](assets/h13-01-izlenebilirlik.svg)
 
@@ -492,7 +418,7 @@ evaluator reads the forward direction first: a row claimed to be met but with no
 
 Let's fill in how the chain is built, from start to finish, through a single asset.
 
-**1. Asset (from Week 1's asset table).**
+**1. Asset (from [Week 1](../week-1/cen429-week-1.md)'s asset table).**
 
 | Field | Value |
 | --- | --- |
@@ -514,7 +440,7 @@ identity) → tool class (encrypted channel + server authentication) → state (
 
 **4. Control (which section of the guide, what is done).** In the guide's S10.3 "Transport security" section:
 "The client performs a TLS 1.2+ handshake on every connection to the server; the certificate chain and hostname
-are validated (see Week 10). No request is sent before the channel is established."
+are validated (see [Week 10](../week-10/cen429-week-10.md)). No request is sent before the channel is established."
 
 **5. Verification (how it was tested).** The security testing team tries to intercept the connection with a MITM
 (man-in-the-middle) tool: it verifies that (a) presenting an invalid/self-signed certificate gets the connection
@@ -539,6 +465,12 @@ What would happen if **one** of the chain's six links were missing?
 - If no control were written → the "met" claim would be unsupported.
 - If no verification were defined → there would be no answer to "how was it tested?"
 - If there were no evidence → the row would be the evaluator's first finding (see the rule below).
+
+Let's also see the "deferred" status with the same requirement: if the product were a library and the host
+application opened the TLS connection, `CEN429-DT-01` would be **deferred** to the host application, and S14
+would say "to whom: the host application; why: the library opens no network connection; how: the host application
+must connect with TLS 1.2+ and certificate validation". The rules for deferring are in
+[§3](#3-the-requirement-block-pattern-and-deferred-requirements).
 
 ### Backward traceability: finding a superfluous control
 
@@ -565,7 +497,7 @@ unnecessary control lengthens the evaluation time.
 
 ### The link between traceability and Week 12's assessment
 
-The assessment process you saw last week (Week 12) is, in fact, the way this matrix is **read**: when an
+The assessment process you saw last week ([Week 12](../week-12/cen429-week-12.md)) is, in fact, the way this matrix is **read**: when an
 evaluator examines your project, they don't read random lines of code; they open the compliance matrix first,
 select the "met" rows, request evidence for each, and **independently verify** that evidence (Week 12's
 "independent verification" principle). The better your matrix is built, the faster and with fewer question marks
@@ -733,7 +665,7 @@ boundary of responsibility lies.
 Projects usually forget these three assumptions; check for them when adding to S14:
 
 1. **Is the build environment trustworthy?** The assumption "an attacker cannot access the build server" is
-   usually not written down, but it is a foundation every project rests on (Week 6, supply-chain security).
+   usually not written down, but it is a foundation every project rests on ([Week 6](../week-6/cen429-week-6.md), supply-chain security).
 2. **Is the user's device not rooted/jailbroken?** If it is, which controls become invalid (e.g., secure storage
    may no longer be secure) must be stated explicitly.
 3. **Is the server side protected by a separate team?** If so, it must be stated clearly which requirements
@@ -826,7 +758,7 @@ that are party to the arrangement.
 
 | Concept | Meaning | Its counterpart in this course |
 | --- | --- | --- |
-| **TOE** (Target of Evaluation) | The product being evaluated and its documents; uniquely identified | The target of evaluation (Week 1, S0/S1) |
+| **TOE** (Target of Evaluation) | The product being evaluated and its documents; uniquely identified | The target of evaluation ([Week 1](../week-1/cen429-week-1.md), S0/S1) |
 | **ST** (Security Target) | A product-specific security-target document: threats, assumptions, security objectives, requirements | Your security guide |
 | **PP** (Protection Profile) | A common requirement set for a product class (e.g., mobile device, firewall); products claim to conform to it | The course's requirement families |
 | **SFR** (Security Functional Requirement) | Functional security requirements; chosen from a standard catalogue (e.g., FCS cryptographic support, FDP user data protection, FIA identification and authentication) | Functional requirements |
@@ -944,7 +876,7 @@ discipline target**:
 | Your project's situation | Suitable target | Why |
 | --- | --- | --- |
 | Small, single-developer, course project | EAL1–EAL2-like discipline (functional test + structural test) | No comprehensive documentation infrastructure |
-| Team project, has code review and CI | EAL3–EAL4-like discipline (methodical design, testing, review) | The processes you built throughout this course (Week 6 CI, Week 12 review) correspond exactly to this level |
+| Team project, has code review and CI | EAL3–EAL4-like discipline (methodical design, testing, review) | The processes you built throughout this course ([Week 6](../week-6/cen429-week-6.md) CI, [Week 12](../week-12/cen429-week-12.md) review) correspond exactly to this level |
 | A high-risk component such as payment/authentication | EAL5+-like discipline (semi-formal design) | In field examples, smart-card and secure-element products are evaluated at this level |
 
 This table does not promise a CC certificate; it only offers a rough comparison for the question "how rigorous a
@@ -1009,7 +941,7 @@ textbook's Recipe 11.18; as of 2026, FIPS 140-2 certificates are being moved to 
 
 Let's apply the "summary" list above to a real (but simplified) project. Say your project's crypto layer works
 like this: it uses OpenSSL's standard `EVP` interface, encrypts with AES-256-GCM, generates keys from
-`getrandom()` (Week 3), and silently **falls back to a default key** on error. Let's check off the Level 1
+`getrandom()` ([Week 3](../week-3/cen429-week-3.md)), and silently **falls back to a default key** on error. Let's check off the Level 1
 expectations one by one:
 
 | Level 1 expectation | Status in this project | Why |
@@ -1125,16 +1057,16 @@ provisions read like a brief summary of the topics we've covered throughout the 
 
 | # | Provision | Its counterpart in this course |
 | --- | --- | --- |
-| 5.1 | No universal default passwords | Week 1, authentication |
-| 5.2 | Implement a means to manage reports of vulnerabilities | Week 12 |
-| 5.3 | Keep software updated | Week 1, update signing, Week 10 |
+| 5.1 | No universal default passwords | [Week 1](../week-1/cen429-week-1.md), authentication |
+| 5.2 | Implement a means to manage reports of vulnerabilities | [Week 12](../week-12/cen429-week-12.md) |
+| 5.3 | Keep software updated | Week 1, update signing, [Week 10](../week-10/cen429-week-10.md) |
 | 5.4 | Securely store sensitive security parameters | Weeks 3, 10, 11 |
 | 5.5 | Communicate securely | Weeks 3, 10 |
-| 5.6 | Minimise exposed attack surfaces | Week 1, Week 5 minimization |
-| 5.7 | Ensure software integrity | Week 6 |
-| 5.8 | Ensure that personal data is protected | Week 3, masking |
+| 5.6 | Minimise exposed attack surfaces | Week 1, [Week 5](../week-5/cen429-week-5.md) minimization |
+| 5.7 | Ensure software integrity | [Week 6](../week-6/cen429-week-6.md) |
+| 5.8 | Ensure that personal data is protected | [Week 3](../week-3/cen429-week-3.md), masking |
 | 5.9 | Make systems resilient to outages | Availability |
-| 5.10 | Examine system telemetry data | Week 2, audit logging |
+| 5.10 | Examine system telemetry data | [Week 2](../week-2/cen429-week-2.md), audit logging |
 | 5.11 | Make it easy for users to delete user data | Week 3, destruction |
 | 5.12 | Make installation and maintenance of devices easy | Psychological acceptability |
 | 5.13 | Validate input data | Weeks 4, 5 |
@@ -1238,7 +1170,7 @@ we saw in Weeks 4 and 5:
    check before being processed (see Weeks 4–5)."
 3. **Control:** The guide lists which parsing functions perform boundary checking.
 4. **Verification:** Fuzzing or boundary-value testing shows that invalid input is safely rejected (links to
-   Week 4's fuzzing demo).
+   [Week 4](../week-4/cen429-week-4.md)'s fuzzing demo).
 5. **Evidence:** The fuzz-test run report, a summary showing the crash count is zero.
 
 This example shows how the ETSI provision's abstract sentence turns into a concrete requirement, control, and
@@ -1327,13 +1259,13 @@ defer. The team decides **we meet it ourselves**.
 their "creation → use → erasure" column filled in; right now the "vault-file key" row has an empty erasure time.
 This **gap** is noticed right here.
 
-**4. Linking to threats.** Which threat requires this requirement? Week 1's threat model has the threat "an
+**4. Linking to threats.** Which threat requires this requirement? [Week 1](../week-1/cen429-week-1.md)'s threat model has the threat "an
 attacker with physical access to the device takes a memory dump"; if the key stays in memory after its job is
 done, this threat can be realized. The requirement **links** to this threat; if it couldn't be linked, either the
 threat model was missing something or the requirement was unnecessary for this product (item 4 above).
 
 **5. Control and verification.** Control: `sifreleme_bellek_sil()` is called immediately after the key is used
-(overwriting with zeros; it's made sure the compiler doesn't optimise this call away — linking to Week 9's
+(overwriting with zeros; it's made sure the compiler doesn't optimise this call away — linking to [Week 9](../week-9/cen429-week-9.md)'s
 protection rules). Verification: a memory-analysis tool (e.g., taking a memory dump and searching for the key's
 bytes) verifies that the key is **not** present in memory once its job is done.
 
@@ -1366,7 +1298,7 @@ quickly through `CEN429-DV-02` ("every change must be reviewed"):
 2. **Responsibility:** The team meets it through its own process (there's no party to defer to).
 3. **Linking to assets:** It's not linked to an "asset" directly, but to the **development process**; it's
    documented not in S5, but in the guide's "development lifecycle" section.
-4. **Linking to threats:** Threat: "a malicious or faulty change entering the main branch unnoticed" (Week 6,
+4. **Linking to threats:** Threat: "a malicious or faulty change entering the main branch unnoticed" ([Week 6](../week-6/cen429-week-6.md),
    supply-chain security).
 5. **Control and verification:** Control: a pull-request rule, at least one approval mandatory. Verification:
    it's checked that the last 20 merges in the version-control history have at least one approval record.
@@ -1520,7 +1452,7 @@ after use") — one asks for the asset's **inventory**, the other for the asset'
 The order AP-ID-AS-DR-DU-DT-RP-CR-DV can be hard to remember; remembering this chain of questions can help: "Does
 it protect itself (AP)? Who does it trust (ID)? What does it protect (AS)? Where is that thing — at rest (DR), in
 use (DU), in transit (DT)? What does it say if something goes wrong (RP)? With which tool (CR)? Who produced it,
-and how (DV)?" This is the "asset → threat → control" chain we've followed since Week 1, split into nine pieces.
+and how (DV)?" This is the "asset → threat → control" chain we've followed since [Week 1](../week-1/cen429-week-1.md), split into nine pieces.
 
 ---
 
@@ -1674,7 +1606,7 @@ steps from Section 1):
 
 Once you fill in every bracket, you'll have a requirement resembling the examples in Section 1. If one of the
 blanks can't be filled in (e.g., you can't answer "against which threat"), this is a sign the requirement isn't
-mature yet — go back to your threat model (Week 1).
+mature yet — go back to your threat model ([Week 1](../week-1/cen429-week-1.md)).
 
 ---
 
@@ -1869,8 +1801,8 @@ This week we saw how to write a good requirement from scratch (Section 1), how t
 evidence (Section 2), how to write it correctly into the guide (Section 3), and how the major standard families
 (Common Criteria, FIPS 140-3, ETSI/GSMA/EMVCo/PCI/MASVS) express the same needs in different words (Sections 4–6).
 In Sections 7–8 we covered how to carry these into your project, and in Section 9, how to prepare this week's
-concrete deliverable step by step. The asset table you've gathered since the start of the term (Week 1), the
-protection rules (Week 9), and the assessment process (last week) all come together this week in a single
+concrete deliverable step by step. The asset table you've gathered since the start of the term ([Week 1](../week-1/cen429-week-1.md)), the
+protection rules ([Week 9](../week-9/cen429-week-9.md)), and the assessment process (last week) all come together this week in a single
 document (the compliance matrix) — in the coming weeks, this document will be the first and most important page
 you present to the evaluator for your project.
 
@@ -1886,3 +1818,9 @@ you present to the evaluator for your project.
     | EAL | Değerlendirme güvence düzeyi | CC's assurance packages (1–7) |
     | Attack potential | Saldırı potansiyeli | The score of resources needed for a successful attack |
     | Zeroization | Sıfırlama | The secure erasure of critical parameters |
+
+!!! info "Next week"
+    **[Week 14](../week-14/cen429-week-14.md) — Tigress and diversification.** This week we defined requirements such as "sensitive code sections
+    must be obfuscated" in the course's **CEN429-AP** (application protection) family. Next week we'll see the
+    concrete counterpart of that requirement — its **control** — as we apply code obfuscation and diversification
+    transformations with Tigress and link them to the matching rows of your compliance matrix (S17).

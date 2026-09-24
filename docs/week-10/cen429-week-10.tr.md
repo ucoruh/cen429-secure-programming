@@ -5,7 +5,7 @@
 | **Tarih** | 20.11.2026 |
 | **Öğrenme çıktıları** | ÖÇ.2, 4 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Hafta 3'ten AES-GCM, HMAC, anahtar türetme ve TLS'in ne yaptığı; terminalde `openssl` komutunu çalıştırabilmek |
+| **Ön bilgi** | [Hafta 3](../week-3/cen429-week-3.md)'ten AES-GCM, HMAC, anahtar türetme ve TLS'in ne yaptığı; terminalde `openssl` komutunu çalıştırabilmek |
 | **Uygulamalar** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demo; OpenSSL 3 ister; her demo klasöründe `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -108,99 +108,47 @@
 
 ## 0. Temel kavramlar (sıfırdan)
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Simetrik vs asimetrik (hatırlatma)
+### Önceki haftalardan gelenler
 
-- **Simetrik:** tek anahtar, şifrele ve çöz (AES). Hızlı.
-- **Asimetrik:** açık + gizli anahtar çifti (RSA, ECC). Yavaş ama anahtar dağıtımı kolay.
-- Pratikte **birlikte**: asimetrik ile anahtar taşı, simetrik ile veri şifrele.
+- **Simetrik ve asimetrik şifreleme** — simetrik şifreleme iki tarafın paylaştığı tek bir anahtarla hızlı çalışır;
+  asimetrik şifreleme açık ve özel anahtar çiftiyle anahtar dağıtımını kolaylaştırır ama yavaştır
+  ([Hafta 3, §2.2](../week-3/cen429-week-3.md#22-simetrik-mi-asimetrik-mi-cevap-ikisi-birden-hibrit)). Bu hafta
+  asimetrik tarafın matematiğini (RSA, ECC — §4) ve simetrik tarafın doğru kip/dolgu seçimini (§2) derinleştiriyoruz.
+- **AEAD** — kimlik doğrulamalı şifreleme, veriyi tek bir çağrıda hem şifreleyip hem de değişmediğini kanıtlayan bir
+  etiket üreterek gizlilik ve bütünlüğü birlikte sağlar
+  ([Hafta 3, §2.1](../week-3/cen429-week-3.md#21-kimlik-dogrulamali-sifreleme-aead-tek-cagrida-gizlilik-butunluk)).
+  Bu hafta AEAD'in içindeki kip (GCM) ile ondan uzak durulması gereken alternatiflerin (ECB, CBC) neden farklı
+  güvenlik verdiğini gösteriyoruz (§2).
+- **Özet (hash), MAC ve dijital imza** — özet veriden hesaplanan tek yönlü bir parmak izidir; MAC paylaşılan bir
+  anahtarla, dijital imza ise açık/özel anahtar çiftiyle mesajın değişmediğini kanıtlar
+  ([Hafta 3, §2.4](../week-3/cen429-week-3.md#24-ozet-mac-ve-imza-hangisi-ne-zaman)). Bu hafta HMAC'in iç yapısını
+  ve şifrelemeyle doğru birleştirme sırasını (§3), imza doğrulamasının pratikteki tuzaklarını (§5) işliyoruz.
+- **İleri gizlilik (forward secrecy)** — oturum için türetilen anahtarın kullanımdan sonra silinmesiyle, bugünkü
+  anahtar sızsa bile geçmiş oturumların çözülememesidir
+  ([Hafta 3, §7.1](../week-3/cen429-week-3.md#71-ileri-gizlilik-forward-secrecy)). Bu hafta bunun temelindeki
+  Diffie–Hellman anahtar değişimini ve kimlik doğrulamasını sıfırdan kuruyoruz (§6).
+- **TLS sertifika doğrulama** — istemcinin bir sunucu sertifikasını zincir, geçerlilik tarihi, kullanım amacı ve ad
+  açısından denetlemesidir
+  ([Hafta 3, §9.2](../week-3/cen429-week-3.md#92-dogrulamanin-uc-katmani-ve-en-tehlikeli-tuzak)). Bu hafta bu
+  doğrulamanın dayandığı PKI, X.509 ve iptal (CRL/OCSP) mekanizmalarını baştan kuruyoruz (§7–10).
 
-### Blok şifre ve kip
+### Bu haftanın kavram haritası
 
-- **Blok şifre:** sabit boyutlu bloğu şifreler (AES: 16 bayt).
-- **Kip (mode):** blokları **nasıl** zincirleyeceğimiz (CBC, GCM…).
-- Kip seçimi güvenliğin **kalbidir**.
-
-### Dolgu (padding)
-
-- **Dolgu:** veri blok boyutunun katı değilse tamamlama.
-- Bazı kiplerde gerekir (CBC), bazılarında **yok** (GCM).
-- Yanlış dolgu işleme → **dolgu kâhini** saldırısı.
-
-### AEAD nedir?
-
-- **AEAD (Authenticated Encryption with Associated Data):** gizlilik **+** bütünlüğü **birlikte** veren şifreleme.
-- Örnek: AES-GCM, ChaCha20-Poly1305.
-- Modern tercih: ayrı MAC uğraşma, AEAD kullan.
-
-### MAC ve HMAC
-
-- **MAC (Message Authentication Code):** bir mesajın **değişmediğini** ve doğru taraftan geldiğini kanıtlayan etiket (simetrik).
-- **HMAC:** özet fonksiyonuna dayalı yaygın bir MAC.
-- Bütünlük için.
-
-### Özet (hash)
-
-- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
-- Tek yönlü: özetten veri geri gelmez.
-- İmza ve MAC'in yapı taşı.
-
-### Dijital imza
-
-- **İmza:** asimetrik; **gizli** anahtarla imzala, **açık** anahtarla doğrula.
-- Sağlar: bütünlük + **inkâr edilemezlik** (kim imzaladı).
-- MAC'ten farkı: asimetrik, herkes doğrulayabilir.
-
-### RSA ve eliptik eğri (ECC)
-
-- **RSA:** klasik asimetrik; büyük anahtarlar (2048+ bit).
-- **ECC:** eliptik eğri; aynı güvenlik **daha küçük** anahtarla (Ed25519, X25519).
-- Modern tercih giderek ECC.
-
-### Diffie–Hellman (DH)
-
-- **DH:** iki tarafın, gizli anahtar **paylaşmadan** ortak bir sır türetmesi.
-- Ağ üzerinden anahtar anlaşması.
-- Kimlik doğrulanmazsa **araya girme** (MITM) riski.
-
-### PKI ve CA
-
-- **PKI (Public Key Infrastructure):** "hangi açık anahtar kime ait?" sorusunu çözen güven sistemi.
-- **CA (Certificate Authority):** sertifikaları imzalayan güvenilir taraf.
-- Kök CA → ara CA → sunucu sertifikası.
-
-### Sertifika ve X.509
-
-- **Sertifika:** bir açık anahtarı bir kimliğe (alan adı) bağlayan, CA'nın imzaladığı belge.
-- **X.509:** sertifikaların standart biçimi.
-- İçinde: konu, açık anahtar, geçerlilik, imza, SAN.
-
-### CRL ve OCSP
-
-- **CRL (Certificate Revocation List):** iptal edilmiş sertifikaların **listesi**.
-- **OCSP:** bir sertifikanın iptal durumunu **anlık** sorma.
-- "Bu sertifika hâlâ geçerli mi?" sorusu.
-
-### HSM, PKCS#11, SoftHSM
-
-- **HSM:** anahtarları saklayan/işleten özel **donanım**; anahtar dışarı çıkmaz.
-- **PKCS#11:** anahtar modülleriyle konuşmanın standart arayüzü.
-- **SoftHSM:** HSM'in yazılım benzetimi (test için).
-
-### Kuantum sonrası (PQC)
-
-- **PQC (Post-Quantum Cryptography):** kuantum bilgisayara dayanıklı algoritmalar.
-- Bugünkü RSA/ECC gelecekte tehdit altında.
-- Standartlaşma sürüyor (ör. ML-KEM).
-
-### Şimdi hazırız
-
-Terimler:
-
-simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · imza · RSA/ECC · DH · PKI/CA · sertifika/X.509 · CRL/OCSP · HSM/PKCS#11 · PQC
-
-Şimdi: doğru algoritma ve anahtar seçimi.
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Blok şifre kipleri ve dolgu | Bir blok şifre sabit boyutlu bir bloğu şifreler; bu blokları uzun bir mesaja uygulama yöntemine kip denir ve mesaj blok boyutunun katı değilse dolgu ile tamamlanır; kip ve dolgu seçimi algoritmanın kendisi kadar güvenliği belirler. | [§2](#2-blok-sifre-kipleri-ve-dolgu-tarif-54-511) |
+| MAC ve HMAC | MAC, gizli bir anahtar ve bir mesajdan, mesajın değişmediğini kanıtlayan kısa bir etiket üreten fonksiyondur; HMAC bunu bir özet fonksiyonundan iç içe iki çağrıyla türetmenin standart yoludur. | [§3](#3-mac-hmac-ve-sifreleme-ile-butunlugun-birlestirilmesi-tarif-64-610-618-621) |
+| Asimetrik kriptografi: RSA ve ECC | RSA büyük tam sayıların çarpanlarına ayrılmasının, eliptik eğri kriptografisi (ECC) ise bir eğri üzerindeki ayrık logaritma probleminin zorluğuna dayanır; ECC aynı güvenliği çok daha kısa anahtarla verir. | [§4](#4-asimetrik-kriptografi-rsa-ve-eliptik-egriler-tarif-7173) |
+| Dijital imza | Bir mesajın belirli bir özel anahtarın sahibi tarafından oluşturulduğunu ve değiştirilmediğini, herkesin açık anahtarla doğrulayabildiği; MAC'ten farklı olarak inkâr edilemezlik de sağlayan bir mekanizmadır. | [§5](#5-dijital-imza-olusturma-dogrulama-ve-kullanim-yerleri) |
+| Diffie–Hellman (DH) | İki tarafın önceden hiçbir sır paylaşmadan, güvensiz bir kanal üzerinden ortak bir sırda anlaşmasını sağlayan bir anahtar değişimi yöntemidir; kimlik doğrulanmazsa araya girme saldırısına açıktır. | [§6](#6-anahtar-degisimi-diffiehellman-ve-araya-girme-tarif-816818) |
+| PKI ve CA | Açık anahtar altyapısı (PKI), bir açık anahtarın gerçekten iddia edilen sahibine ait olduğunu sertifika otoriteleri (CA) aracılığıyla doğrulayan kurallar, roller ve belgeler bütünüdür. | [§7](#7-acik-anahtar-altyapisi-pki-kim-kime-guvenir-tarif-101) |
+| Sertifika ve X.509 | X.509, bir açık anahtarı bir kimliğe bağlayan ve CA'nın imzasını taşıyan sertifikaların standart biçimidir; içinde konu, açık anahtar, geçerlilik tarihleri ve uzantılar (SAN, anahtar kullanımı) bulunur. | [§8](#8-x509-sertifikasinin-yapisi) |
+| CRL ve OCSP | CRL, iptal edilmiş sertifikaların CA tarafından imzalanmış listesidir; OCSP ise bir sertifikanın iptal durumunu anlık sorgulamayı sağlayan protokoldür. | [§10](#10-sertifika-iptali-crl-ocsp-ve-zimbalama-tarif-10101012) |
+| HSM, PKCS#11, SoftHSM | HSM, kurcalamaya dayanıklı bir donanımda anahtar üretip işleyen, anahtarı asla dışarı vermeyen bir modüldür; PKCS#11 bu modüllerle konuşmanın standart arayüzüdür ve SoftHSM bunun test amaçlı yazılım benzetimidir. | [§11](#11-anahtari-donanimda-saklamak-hsm-pkcs11-ve-softhsm) |
+| Kuantum sonrası kriptografi (PQC) | Yeterince büyük bir kuantum bilgisayarın RSA'nın ve eliptik eğrinin dayandığı matematiksel problemleri verimli çözebileceği varsayımına karşı, kafes gibi farklı matematiksel problemlere dayanan yeni algoritmalar geliştirir. | [§12](#12-kuantum-sonrasi-kriptografiye-bakis) |
 
 ### Kavramlar birbirine nasıl bağlanır?
 
@@ -235,9 +183,14 @@ oturmuş olması gerekir; aksi hâlde "CA neden iptal listesini imzalıyor?" sor
 
 ## 1. Kriptografinin haritası ve algoritma seçimi
 
-Üçüncü haftada veriyi aktarımda, beklemede ve kullanımda korumak için kriptografiyi bir **araç** olarak kullandık. Bu hafta
-aynı araçların içine bakıyoruz: hangi algoritma hangi işi yapar, neden bazıları terk edildi, nasıl seçilir ve bir
-sertifika otoritesi (CA) bu yapıya nasıl oturur. Kitabın 4–8. ve 10–11. bölümleri, 55'ten fazla tarifle bu konuları
+Dokuzuncu haftayı bir uyarıyla bitirmiştik: kod gizleme bir anahtarı **saklamaz**, yalnız çevresini zorlaştırır
+([Hafta 9, §3](../week-9/cen429-week-9.md#3-gizleme-ne-verir-ne-vermez)). Bu hafta tam da bunun çözümüne
+geçiyoruz — anahtarları gizlemek yerine, doğru algoritma seçimi, doğru protokol ve gerektiğinde donanım destekli
+saklama (PKI, HSM) ile **gerçekten** koruyoruz. Üçüncü haftada veriyi aktarımda, beklemede ve kullanımda korumak
+için kriptografiyi bir **araç** olarak kullanmıştık
+([Hafta 3, §1](../week-3/cen429-week-3.md#1-verinin-uc-hali-ve-guvenlik-kabugu)); bu hafta aynı araçların içine
+bakıyoruz: hangi algoritma hangi işi yapar, neden bazıları terk edildi, nasıl seçilir ve bir sertifika otoritesi
+(CA) bu yapıya nasıl oturur. Kitabın 4–8. ve 10–11. bölümleri, 55'ten fazla tarifle bu konuları
 işler; 2003'ten beri algoritmaların çoğu değiştiği için her birini güncel karşılığıyla veriyoruz.
 
 ![Simetrik ve asimetrik kriptografinin rolleri](assets/h10-05-simetrik-asimetrik.svg)
@@ -342,7 +295,8 @@ değil, **üstel** okumalısınız.
     beşlisiyle belgeleyin. "AES kullanıyoruz" bir cevap değildir; "AES-256-GCM, OpenSSL EVP, NIST SP 800-38D" bir
     cevaptır.
 
-Üçüncü haftada bu haritanın yalnız "hangi aracı ne zaman kullanırım" kısmını gördük (AEAD, hibrit şema, rastgele sayı).
+[Üçüncü haftada](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur) bu haritanın yalnız "hangi
+aracı ne zaman kullanırım" kısmını gördük (AEAD, hibrit şema, rastgele sayı).
 Bu hafta aynı haritanın **neden** böyle çizildiğini — hangi matematiksel problem hangi güvenliği veriyor, hangi
 algoritma neden terk edildi — görüyoruz. Sıradaki iki bölüm simetrik araçların (kip, dolgu, MAC) içine; 4–6. bölümler
 asimetrik araçların (RSA, ECC, DH) içine; 7–10. bölümler bunların PKI'da nasıl bir araya geldiğine bakacak.
@@ -353,7 +307,7 @@ asimetrik araçların (RSA, ECC, DH) içine; 7–10. bölümler bunların PKI'da
 
 AES bir **blok şifredir**: tam olarak 16 baytlık bir bloğu, 16 baytlık başka bir bloğa çevirir. Daha uzun bir mesajı
 şifrelemek için blokları birbirine bağlayan bir **kip** (mode of operation) gerekir. Kip seçimi, algoritma seçimi kadar
-önemlidir; 3. haftadaki ECB penguenini hatırlayın.
+önemlidir; [3. haftadaki ECB penguenini](../week-3/cen429-week-3.md#52-ecb-deseni-sizdirir) hatırlayın.
 
 ![Nonce tekrarının sonuçları](assets/h10-07-nonce-tekrari.svg)
 
@@ -388,8 +342,8 @@ Savunmalar:
     Sertifikasyondan geçmiş bir mobil ödeme kütüphanesinin algoritma envanterinde AES'in CBC ve CTR kiplerinde, ayrı bir
     SHA-256 tabanlı MAC ile kullanıldığı görülür; ödeme şemalarının kriptogram hesabı için ise ISO/IEC 9797-1'e dayanan,
     DES tabanlı bir MAC algoritması (şemaların belirlediği dolgu yöntemleriyle) kullanılır. Bu seçimler, uyulması gereken
-    şema belirtimlerinden gelir. Şemanın belirlemediği iç iletişimde ise bugün AEAD tercih edilir (3. haftadaki eleştirel
-    okuma).
+    şema belirtimlerinden gelir. Şemanın belirlemediği iç iletişimde ise bugün AEAD tercih edilir
+    ([3. haftadaki eleştirel okuma](../week-3/cen429-week-3.md#elestirel-okuma-sessizce-acilan-kapi-fail-open)).
 
 ### İşlenmiş örnek: PKCS#7 dolgusunu elle izlemek
 
@@ -476,7 +430,7 @@ her blok bir öncekiyle XOR'lanarak zincirlenir.
     kullanmayın (dosya şifreleme, DB alanı, hatta "önemsiz" veri için bile) — deseni her zaman sızdırır. CBC
     zorunluysa dolguyu Bölüm 3'teki şifrele-sonra-MAC kuralıyla koruyun.
 
-İkinci haftadaki tehdit modellemesinde "bütünlük" bir varlık koruma hedefiydi; bu bölüm o hedefin **neden yalnız
+[İkinci haftadaki](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4) tehdit modellemesinde "bütünlük" bir varlık koruma hedefiydi; bu bölüm o hedefin **neden yalnız
 şifrelemekle sağlanamadığını** somutlaştırdı. Sıradaki bölüm, bütünlüğü doğru sağlayan aracı — MAC/HMAC'i ve doğru
 birleştirme sırasını — işliyor.
 
@@ -535,7 +489,7 @@ savunmalar:
 !!! example "Ödemede sayaç"
     Temassız kart işlemlerinde her işlem, kartın **işlem sayacını** (ATC) içeren bir kriptogramla imzalanır; sunucu aynı
     sayacı ikinci kez kabul etmez. Mobil ödeme kütüphanelerinde her tek kullanımlık anahtar da yalnız bir işlemde
-    kullanılır ve sayaç veritabanında tutulur. 2. haftadaki tehdit tablosunda "kullanım sayacının geri sarılması"
+    kullanılır ve sayaç veritabanında tutulur. [2. haftadaki](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4) tehdit tablosunda "kullanım sayacının geri sarılması"
     tehdidinin varlık koruma sınıfının **I+** olması bu yüzdendir.
 
 ### İşlenmiş örnek: HMAC'i elle hesaplamak ve çığ etkisini görmek
@@ -595,7 +549,8 @@ if (CRYPTO_memcmp(hesaplanan, gelen, 32) == 0) { /* kabul */ }   /* OpenSSL */
     `sodium_memcmp`, dilin kendi "constant-time compare" fonksiyonu) karşılaştırın. Kendi karşılaştırma
     fonksiyonunuzu yazmayın; bu haftanın "kendi kriptonuzu yazmayın" kuralının bir başka görünümüdür (Bölüm 1).
 
-Üçüncü haftada AEAD'i "gizlilik + bütünlüğü tek pakette veren araç" olarak tanıttık; bu bölüm bütünlüğü **ayrı**
+[Üçüncü haftada](../week-3/cen429-week-3.md#21-kimlik-dogrulamali-sifreleme-aead-tek-cagrida-gizlilik-butunluk)
+AEAD'i "gizlilik + bütünlüğü tek pakette veren araç" olarak tanıttık; bu bölüm bütünlüğü **ayrı**
 sağlamak zorunda kaldığınızda (AEAD kullanamadığınız eski bir protokol, donanım kısıtı, vb.) doğru sırayı ve doğru
 karşılaştırmayı gösterdi. Sıradaki bölüm, MAC'in veremediği şeyi — **inkâr edilemezliği** — veren asimetrik araçlara
 geçiyor.
@@ -613,7 +568,8 @@ anahtarla doğrulanır.
 
 Asimetrik işlemler simetrik olanlardan yüzlerce, binlerce kat yavaştır. Bu yüzden asimetrik kriptografi yalnız iki iş
 için kullanılır (Tarif 7.1): **kısa bir simetrik anahtarı taşımak ya da anlaşmak** ve **imzalamak**. Verinin kendisi
-her zaman simetrik şifreyle korunur (3. haftadaki hibrit şema).
+her zaman simetrik şifreyle korunur
+([3. haftadaki hibrit şema](../week-3/cen429-week-3.md#22-simetrik-mi-asimetrik-mi-cevap-ikisi-birden-hibrit)).
 
 ### RSA: doğru dolguyla
 
@@ -659,7 +615,8 @@ hızlı, anahtarları ve imzaları çok daha kısadır.
     ECDSA her imzada gizli bir rastgele değer (`k`) kullanır. Aynı `k` iki farklı imzada kullanılırsa ya da tahmin
     edilebilirse, iki imzadan **özel anahtar** hesaplanabilir. 2010'da bir oyun konsolunun imza anahtarı, üreticinin her
     imzada aynı `k`'yi kullanması yüzünden bu yolla ortaya çıktı; 2013'te bazı mobil kripto para cüzdanları, zayıf bir
-    rastgele üreteç yüzünden aynı şekilde kayıp yaşadı. 3. haftadaki "rastgele sayılar kriptografinin görünmez temelidir"
+    rastgele üreteç yüzünden aynı şekilde kayıp yaşadı.
+    [3. haftadaki "rastgele sayılar kriptografinin görünmez temelidir"](../week-3/cen429-week-3.md#3-rastgele-sayilar-kriptografinin-gorunmez-temeli)
     cümlesinin en çarpıcı kanıtıdır. Ed25519 ve RFC 6979'daki deterministik ECDSA bu riski ortadan kaldırır.
 
 ```bash title="OpenSSL 3 ile Ed25519 imza"
@@ -732,7 +689,8 @@ deterministik bir işlemdir. Bu yüzden ham RSA hiçbir zaman doğrudan şifrele
     uyumluluk zorunluysa ve o zaman da yalnız imza için (asla yeni şifreleme tasarımında) düşünülür. Yeni tasarımda
     mümkünse RSA yerine Ed25519/X25519'u tercih edin.
 
-Üçüncü haftada TLS'in anahtar kurulumunda asimetrik kriptografiyi (o zaman RSA ya da ECDHE) bir kara kutu gibi
+[Üçüncü haftada](../week-3/cen429-week-3.md#9-aktarimda-veri-tls-13-sertifika-dogrulama-ve-sabitleme) TLS'in
+anahtar kurulumunda asimetrik kriptografiyi (o zaman RSA ya da ECDHE) bir kara kutu gibi
 kullanmıştık. Bu bölüm o kara kutunun içini açtı: hangi dolgu, hangi eğri, hangi boyut. Sıradaki bölüm bu araçların
 **imza** ayağını derinleştiriyor; sonra Bölüm 6'da **anahtar değişimi** ayağına geçiyoruz.
 
@@ -750,10 +708,10 @@ yalnız özel anahtarın sahibi imzalayabilir. Bu yüzden imza **inkâr edilemez
 
 | Kullanım | Ne imzalanır? | Bu dersteki yeri |
 | --- | --- | --- |
-| Yazılım güncellemesi | Güncelleme paketi | 1. hafta "Kasa" örneği, T6 tehdidi |
-| Kod imzalama | Çalıştırılabilir dosya, mobil uygulama paketi | 6. hafta imza doğrulaması |
+| Yazılım güncellemesi | Güncelleme paketi | [1. hafta "Kasa" örneği, T6 tehdidi](../week-1/cen429-week-1.md#9-uygulamali-ornek-bir-koruma-planini-adim-adim-yazmak) |
+| Kod imzalama | Çalıştırılabilir dosya, mobil uygulama paketi | [6. hafta imza doğrulaması](../week-6/cen429-week-6.md#8-kokayricalikli-ortam-ve-bilesen-imza-dogrulamasi) |
 | Sertifika | Açık anahtar + kimlik bilgisi (CA imzalar) | Bu hafta PKI |
-| TLS el sıkışması | El sıkışma özeti (sunucu imzalar) | 3. hafta `CertificateVerify` |
+| TLS el sıkışması | El sıkışma özeti (sunucu imzalar) | [3. hafta](../week-3/cen429-week-3.md#91-tls-13-el-sikismasi) `CertificateVerify` |
 | Belge ve işlem | Sözleşme, ödeme onayı | Elektronik imza mevzuatı |
 
 ### Kodda imza doğrulama: OpenSSL EVP
@@ -840,7 +798,8 @@ istemci ayrıca "gördüğüm en yüksek sürümden daha eski bir sürümü kabu
     İmzalanan veri her zaman **bağlamını** taşısın: sürüm, hedef ürün/cihaz, zaman damgası ya da geçerlilik penceresi.
     İstemci yalnız "imza geçerli mi" değil, "bu imza **bu** bağlam için ve **en güncel** sürüm için mi" diye sormalıdır.
 
-Birinci haftadaki "Kasa" örneğinde bir güncelleme paketinin imzasız kabul edilmesinin T6 tehdidine yol açtığını
+[Birinci haftadaki "Kasa" örneğinde](../week-1/cen429-week-1.md#9-uygulamali-ornek-bir-koruma-planini-adim-adim-yazmak)
+bir güncelleme paketinin imzasız kabul edilmesinin T6 tehdidine yol açtığını
 görmüştük; bu bölüm imzanın **var olmasının bile** tek başına yetmediğini, kapsamının da doğru tasarlanması
 gerektiğini gösterdi. Sıradaki bölüm, imza ve asimetrik kriptografiyi **anahtar değişiminde** nasıl kullandığımızı
 — ve kullanmazsak neyin ters gideceğini — işliyor.
@@ -867,11 +826,12 @@ DH **kimin** ile anlaşıldığını söylemez. Kanalın ortasındaki bir saldı
 Açık değerler, kimliği önceden bilinen bir anahtarla **imzalanır** (Tarif 8.18'deki "DH ve DSA birlikte" fikrinin güncel
 hali: ECDHE + Ed25519/ECDSA/RSA-PSS). TLS 1.3'te sunucu, geçici (ephemeral) ECDHE açık değerini de içeren el sıkışma
 özetini sertifikasındaki özel anahtarla imzalar (`CertificateVerify`); istemci sertifikayı zincir ve ad açısından
-doğrular (3. hafta). Böylece:
+doğrular ([3. hafta](../week-3/cen429-week-3.md#92-dogrulamanin-uc-katmani-ve-en-tehlikeli-tuzak)). Böylece:
 
 - **Kimlik:** İmza, açık değeri gönderenin gerçekten sertifikanın sahibi olduğunu kanıtlar.
 - **İleri gizlilik:** DH değerleri her oturum için yeniden üretilir ve silinir; uzun ömürlü imza anahtarı ileride
-  çalınsa bile geçmiş oturumların anahtarları hesaplanamaz (3. hafta).
+  çalınsa bile geçmiş oturumların anahtarları hesaplanamaz
+  ([3. hafta](../week-3/cen429-week-3.md#71-ileri-gizlilik-forward-secrecy)).
 
 !!! info "PKI olmadan kimlik"
     Her senaryoda bir sertifika otoritesi yoktur. Kitabın Tarif 8.19'da anlattığı "PKI olmadan kimlik doğrulama" yolları
@@ -909,8 +869,9 @@ AYNI
 ```
 
 İki taraf, birbirinin **hiç görmediği** özel anahtarını bilmeden, ağdan yalnız açık anahtarları geçirerek **aynı**
-32 baytlık ortak sırra ulaştı. Bu ortak sır, doğrudan veri şifrelemede kullanılmaz; bir KDF'den (HKDF, 3. haftadaki
-anahtar türetme konusu) geçirilip oturum anahtarları buradan türetilir. Dinleyen bir üçüncü taraf yalnız `alice.pub`
+32 baytlık ortak sırra ulaştı. Bu ortak sır, doğrudan veri şifrelemede kullanılmaz; bir KDF'den
+([HKDF, 3. haftadaki anahtar türetme konusu](../week-3/cen429-week-3.md#7-ana-sirdan-anahtar-turetme-oturum-anahtarlari-ve-ileri-gizlilik))
+geçirilip oturum anahtarları buradan türetilir. Dinleyen bir üçüncü taraf yalnız `alice.pub`
 ve `bob.pub`'ı görür; bunlardan ortak sırrı hesaplamak (eliptik eğri ayrık logaritma problemini çözmeden) mümkün
 değildir.
 
@@ -941,7 +902,8 @@ protokolde tek başına kullanılmaz.
     doğrulanmış bir sertifikanın parçası olmalıdır (TLS 1.3'ün `CertificateVerify`'ı). Ham DH çıktısını asla
     doğrudan şifreleme anahtarı olarak kullanmayın; HKDF'den geçirin.
 
-Üçüncü haftada TLS 1.3 el sıkışmasında "eğer aradaki biri anahtarları değiştirebilseydi ne olurdu" sorusunu
+[Üçüncü haftada](../week-3/cen429-week-3.md#91-tls-13-el-sikismasi) TLS 1.3 el sıkışmasında "eğer aradaki biri
+anahtarları değiştirebilseydi ne olurdu" sorusunu
 sormuştuk; bu bölüm o soruyu somut adımlarla cevapladı. Sıradaki üç bölüm (7–9), imzalı DH'nin dayandığı kimlik
 doğrulama altyapısını — PKI'yı — sıfırdan kuruyor.
 
@@ -983,7 +945,8 @@ Bir istemci bir sertifikayı kabul etmeden önce şunları sorar:
    ara CA'da `CA:TRUE` temel kısıtı.)
 4. **Ad ve iptal:** Sertifika **bu** sunucu için mi (SAN)? İptal edilmiş mi?
 
-Üçüncü haftada ilk ve dördüncü sorunun kodda nasıl sorulduğunu gördük (`SSL_CTX_set_verify`, `SSL_set1_host`). Bu bölümde
+[Üçüncü haftada](../week-3/cen429-week-3.md#10-tlsi-kodda-dogru-kurmak-adim-adim-istemci-sabitleme-ve-sik-hatalar)
+ilk ve dördüncü sorunun kodda nasıl sorulduğunu gördük (`SSL_CTX_set_verify`, `SSL_set1_host`). Bu bölümde
 aynı zinciri kendimiz kuruyoruz.
 
 ### İşlenmiş örnek: "dört soru"yu komut satırında sormak
@@ -1049,12 +1012,16 @@ ise tam tersi: `CA:TRUE` ve `pathlen:0` (altında başka bir ara CA olamaz, yaln
 istemci bağlandığı adı bu listeyle karşılaştırır (Bölüm 8'de ayrıntılı işleniyor).
 
 Bir istemci kütüphanesi (OpenSSL, Windows CryptoAPI, Java'nın `X509TrustManager`'ı) bu dört soruyu **sizin yerinize**
-sorar; `verify` fonksiyonlarını (3. haftadaki `SSL_CTX_set_verify`) devre dışı bırakmak ya da hataları yutmak,
+sorar; `verify` fonksiyonlarını
+([3. haftadaki](../week-3/cen429-week-3.md#10-tlsi-kodda-dogru-kurmak-adim-adim-istemci-sabitleme-ve-sik-hatalar)
+`SSL_CTX_set_verify`) devre dışı bırakmak ya da hataları yutmak,
 bu dört sorunun hiç sorulmaması anlamına gelir.
 
 !!! danger "Sık yapılan hata: 'bağlandı, demek ki güvenli' varsayımı"
     Bir geliştiricinin "TLS bağlantısı kuruldu, o zaman sertifika doğrulanmış olmalı" varsayımı yanlıştır. Bağlantı,
-    doğrulama **kapatılmışsa** da kurulur (3. haftadaki `SSL_VERIFY_NONE` / `InsecureSkipVerify` hatası). Bağlantının
+    doğrulama **kapatılmışsa** da kurulur
+    ([3. haftadaki](../week-3/cen429-week-3.md#gercek-uygulamalarda-en-sik-tls-hatalari) `SSL_VERIFY_NONE` /
+    `InsecureSkipVerify` hatası). Bağlantının
     kurulmuş olması, dört sorunun **sorulduğunun** kanıtı değildir; kodda doğrulamanın açık olduğunu **ayrıca**
     denetlemek gerekir.
 
@@ -1083,7 +1050,7 @@ Bir X.509 v3 sertifikası, **imzalanan kısım** (TBSCertificate) ile CA'nın bu
 | Düzenleyen (Issuer) | Sertifikayı imzalayan CA'nın adı |
 | Geçerlilik | `notBefore` – `notAfter` |
 | Konu (Subject) | Sertifikanın sahibi |
-| Konu açık anahtar bilgisi (SPKI) | Algoritma + açık anahtar; 3. haftadaki **sabitleme bunun özetini** kullanır |
+| Konu açık anahtar bilgisi (SPKI) | Algoritma + açık anahtar; [3. haftadaki](../week-3/cen429-week-3.md#93-sabitleme-pinning-ve-tofu) **sabitleme bunun özetini** kullanır |
 | **Uzantılar** | Temel kısıtlar (`CA:TRUE/FALSE`, yol uzunluğu), anahtar kullanımı, genişletilmiş anahtar kullanımı (sunucu/istemci kimlik doğrulama, kod imzalama), **SAN** (alternatif adlar: DNS adları, IP), CRL dağıtım noktası, OCSP adresi (AIA) |
 
 Sertifikalar ikili **DER** kodlamasıyla ya da onun Base64 ile sarılmış metin biçimi olan **PEM** ile saklanır (Tarif 7.16,
@@ -1301,7 +1268,9 @@ openssl verify -crl_check -CAfile kok.crt -untrusted ara.crt -CRLfile ara.crl su
 !!! danger "Yumuşak başarısızlık (soft-fail)"
     Tarayıcıların çoğu, OCSP yanıtlayıcısına ulaşamadığında sertifikayı **kabul eder**; aksi halde yanıtlayıcının kısa
     bir kesintisi bütün siteleri erişilemez kılardı. Ama bu, araya giren bir saldırganın OCSP isteğini engelleyerek iptal
-    denetimini atlatabileceği anlamına gelir: 3. haftadaki **fail-open** örüntüsünün PKI'deki karşılığı. Kritik
+    denetimini atlatabileceği anlamına gelir:
+    [3. haftadaki](../week-3/cen429-week-3.md#elestirel-okuma-sessizce-acilan-kapi-fail-open) **fail-open**
+    örüntüsünün PKI'deki karşılığı. Kritik
     uygulamalarda "zımbalanmış yanıt zorunlu" (OCSP Must-Staple) ya da kısa ömürlü sertifikalar (günler, haftalar) bu
     sorunu azaltır; bu yüzden sertifika ömürleri giderek kısalmaktadır.
 
@@ -1424,12 +1393,15 @@ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so --login --pin 1234 --list-o
 !!! warning "SoftHSM bir HSM değildir"
     SoftHSM anahtarları diskte, bir dosyada saklar; donanım koruması yoktur. Değeri, uygulamanızı **PKCS#11 arayüzüne
     göre** yazmanızı sağlamasıdır: aynı kod, üretimde gerçek bir HSM'e ya da akıllı karta yalnız modül yolu değiştirilerek
-    bağlanır. 11. haftada yazılım tabanlı güvenlik modüllerine bu açıdan yeniden bakacağız.
+    bağlanır. [11. haftada](../week-11/cen429-week-11.md#5-wbcnin-katmanli-savunmadaki-yeri) yazılım tabanlı güvenlik
+    modüllerine bu açıdan yeniden bakacağız.
 
 !!! note "Sahada nasıl uygulanır?"
     Ödeme sistemlerinde anahtar hiyerarşisinin tepesindeki anahtarlar (kart çıkaran kurumun ana anahtarları, cihaz
     anahtarlarını üreten anahtarlar) sunucu tarafında HSM'lerde durur; mobil ödeme platformunun arka ucunda HSM, ayrı bir
-    bileşen olarak mimari şemada yer alır (1. haftadaki örnek mimari). Telefona inen anahtarlar sunucuda HSM ile üretilir,
+    bileşen olarak mimari şemada yer alır
+    ([1. haftadaki örnek mimari](../week-1/cen429-week-1.md#9-uygulamali-ornek-bir-koruma-planini-adim-adim-yazmak)).
+    Telefona inen anahtarlar sunucuda HSM ile üretilir,
     cihaza bağlanarak şifrelenir ve kütüphanenin kendisi hesap anahtarı **üretmez**. Kılavuz, kullandığı her algoritmayı
     dayandığı standartla (NIST FIPS, ISO/IEC 9797-1, EMV belirtimleri) birlikte listeleyen bir algoritma envanteri içerir.
 
@@ -1482,7 +1454,8 @@ fonksiyon çağrılsa bile HSM'in anahtarı düz metin olarak dışarı vermesin
     --list-objects` (ya da eşdeğeri) ile bu özniteliklerin gerçekten uygulandığı **doğrulanmalıdır** — varsayılana
     güvenmeyin.
 
-Yazılım tabanlı güvenlik modüllerine (mobil cihazlardaki Secure Enclave/TEE benzeri yapılar) 11. haftada bu bölümün
+Yazılım tabanlı güvenlik modüllerine (mobil cihazlardaki Secure Enclave/TEE benzeri yapılar)
+[11. haftada](../week-11/cen429-week-11.md#5-wbcnin-katmanli-savunmadaki-yeri) bu bölümün
 PKCS#11 mantığıyla yeniden bakacağız; burada öğrendiğiniz "tutamaç üzerinden çalış, ham anahtarı asla taşıma"
 prensibi oradaki bütün tartışmanın temelidir. Sıradaki ve son teknik bölüm, bugün güvenli saydığımız RSA/ECC'nin
 gelecekte neden değişmesi gerektiğine bakıyor.
@@ -1505,7 +1478,9 @@ trafiğin yıllar sonra çözülebileceği ("şimdi topla, sonra çöz") düşü
 | Takvim | NIST'in geçiş planı RSA ve eliptik eğri algoritmalarını 2030'dan sonra aşamalı olarak bırakmayı öngörür |
 
 Bu dersin projesi için pratik sonucu tek cümledir: **kripto çevikliği** (crypto agility). Algoritma adlarını kodun her
-yerine gömmeyin; anahtar sürümü ve algoritma kimliği taşıyan biçimler (3. haftadaki anahtar sürümü alanı) kullanın ki
+yerine gömmeyin; anahtar sürümü ve algoritma kimliği taşıyan biçimler
+([3. haftadaki anahtar sürümü alanı](../week-3/cen429-week-3.md#8-dinamik-anahtar-yonetimi-yasam-dongusu-hiyerarsi-ve-yenileme))
+kullanın ki
 algoritma değiştiğinde yalnız yapılandırma ve yeniden şifreleme gereksin.
 
 ### İşlenmiş örnek: kuantum sonrası anahtarları bugünden üretmek
@@ -1583,7 +1558,7 @@ Final kontrolünde beklenen **S8** ve **S11** bölümlerinin taslağını yazın
 - [ ] **S8 — Algoritma envanteri:** projenizde kullanılan her algoritma için amaç, anahtar uzunluğu, kip, dayandığı
       standart ve kütüphane. Tabloda eskimiş bir algoritma varsa gerekçesi ve geçiş planı.
 - [ ] **S8 — Anahtar yaşam döngüsü tablosu:** her anahtar için üretildiği yer, saklandığı yer, kripto-periyot, yenileme
-      ve imha (3. hafta).
+      ve imha ([3. hafta](../week-3/cen429-week-3.md#8-dinamik-anahtar-yonetimi-yasam-dongusu-hiyerarsi-ve-yenileme)).
 - [ ] **S11 — Güvenli iletişim:** TLS sürümü ve doğrulama; sabitleme varsa SPKI ve yedek pin; mesaj düzeyi koruma.
 - [ ] Projenizde bir güncelleme ya da yapılandırma dosyası varsa, **imza doğrulamasını** ekleyin (Ed25519 önerilir) ve
       sürüm geri almayı reddedin.
@@ -1603,7 +1578,9 @@ Boş bir tablo karşısında ne yazılacağı belirsiz kalabilir; örnek bir pro
 | Sunucu kimlik doğrulama | ECDSA P-256 | 128 bit düzeyi | — | OpenSSL/TLS | FIPS 186-5 | TLS sertifikası, Bölüm 7–9 |
 | Güncelleme paketi imzası | Ed25519 | 128 bit düzeyi | — | OpenSSL EVP | RFC 8032 | Bölüm 5, sürüm alanı imzalı |
 
-Anahtar yaşam döngüsü tablosu (3. haftadaki anahtar yönetimi konusunun bu haftaki karşılığı) aynı bileşen için:
+Anahtar yaşam döngüsü tablosu
+([3. haftadaki anahtar yönetimi](../week-3/cen429-week-3.md#8-dinamik-anahtar-yonetimi-yasam-dongusu-hiyerarsi-ve-yenileme)
+konusunun bu haftaki karşılığı) aynı bileşen için:
 
 | Anahtar | Üretildiği yer | Saklandığı yer | Kripto-periyot | Yenileme | İmha |
 | --- | --- | --- | --- | --- | --- |
@@ -1808,3 +1785,10 @@ arar.
     | HSM | Donanım güvenlik modülü | Anahtarı dışa vermeyen kurcalamaya dayanıklı donanım |
     | PKCS#11 | — | Kriptografik belirteçlere erişim için standart API |
     | Crypto agility | Kripto çevikliği | Algoritmaları kolayca değiştirebilme |
+
+!!! info "Bir sonraki hafta"
+    **[11. hafta](../week-11/cen429-week-11.md) — Whitebox kriptografi.** Bu hafta anahtarı korumanın "donanıma emanet et" yolunu (HSM, PKCS#11,
+    `CKA_EXTRACTABLE=false`, §11) gördük. 11. hafta aynı soruyu donanım yokken sorar: bir anahtar, hiçbir HSM'e
+    erişimi olmayan, tamamen yazılımdan ibaret bir uygulamanın içinde nasıl korunur? Tablo tabanlı whitebox AES ve
+    ona karşı geliştirilen saldırılar (BGE, DCA, DFA), bu haftaki "anahtar hiç açığa çıkmasın" ilkesinin yazılım
+    tarafındaki karşılığıdır.

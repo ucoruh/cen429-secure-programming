@@ -49,12 +49,12 @@
 
 | Kriter | Öğrenme çıktısı | Kılavuzda nerede? | Hangi haftalar? |
 | --- | --- | --- | --- |
-| **Kriptografi uygulaması** | ÖÇ.2 | S8 algoritma envanteri, anahtar yaşam döngüsü ve hiyerarşisi, rastgele sayı | 3, 10 |
-| **Güvenli iletişim** | ÖÇ.4 | S6 kimlik doğrulama ve bağlama · S11 TLS, sabitleme, mesaj düzeyi koruma | 3, 10 |
-| **Varlık yönetimi** | ÖÇ.5 | S5 varlık listesi (tam) · S8 anahtarlar | 1, 3, 13 |
-| **İkili uygulama korumaları** | ÖÇ.3 | S9 kod sağlamlaştırma (ileri) · S15 derleme, imzalama ve dağıtım hattı | 4, 5, 6, 9, 14 |
-| **Güvenlik testi ve birim testleri** | ÖÇ.6 | S16 test ve doğrulama sonuçları | 4, 12 |
-| **Güvenlik standartları** | ÖÇ.7 | S1 kaynaklar · S14 varsayımlar ve devredilenler · S17 uyum matrisi | 12, 13 |
+| **Kriptografi uygulaması** | ÖÇ.2 | S8 algoritma envanteri, anahtar yaşam döngüsü ve hiyerarşisi, rastgele sayı | [3](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta), [10](../week-10/cen429-week-10.md#13-donem-projesi-bu-hafta) |
+| **Güvenli iletişim** | ÖÇ.4 | S6 kimlik doğrulama ve bağlama · S11 TLS, sabitleme, mesaj düzeyi koruma | [3](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta), [10](../week-10/cen429-week-10.md#13-donem-projesi-bu-hafta) |
+| **Varlık yönetimi** | ÖÇ.5 | S5 varlık listesi (tam) · S8 anahtarlar | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [3](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta), [13](../week-13/cen429-week-13.md#9-donem-projesi-bu-hafta) |
+| **İkili uygulama korumaları** | ÖÇ.3 | S9 kod sağlamlaştırma (ileri) · S15 derleme, imzalama ve dağıtım hattı | [4](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta), [5](../week-5/cen429-week-5.md#15-donem-projesi-bu-hafta), [6](../week-6/cen429-week-6.md#12-donem-projesi-bu-hafta), [9](../week-9/cen429-week-9.md#12-donem-projesi-bu-hafta-s9-ileri-saglamlastirma), [14](../week-14/cen429-week-14.md#10-donem-projesi-bu-hafta-s9-ileri-s15-hat) |
+| **Güvenlik testi ve birim testleri** | ÖÇ.6 | S16 test ve doğrulama sonuçları | [4](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta), [12](../week-12/cen429-week-12.md#9-donem-projesi-bu-hafta-s16-test-plani-ve-sonuclari) |
+| **Güvenlik standartları** | ÖÇ.7 | S1 kaynaklar · S14 varsayımlar ve devredilenler · S17 uyum matrisi | [12](../week-12/cen429-week-12.md#9-donem-projesi-bu-hafta-s16-test-plani-ve-sonuclari), [13](../week-13/cen429-week-13.md#9-donem-projesi-bu-hafta) |
 | **Final rapor ve sunum** | ÖÇ.7 | Bütün bölümler; belge düzeni, tutarlılık, sunum | Tümü |
 
 ### Final raporunda bulunması gereken bölümler
@@ -85,6 +85,8 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
 ## 2. Hazırlık kontrol listesi (9–14. haftalar)
 
 ??? success "9. ve 14. haftalar — İleri kod sağlamlaştırma (S9, S15)"
+    Kaynak: [Hafta 9 · Dönem projesi](../week-9/cen429-week-9.md#12-donem-projesi-bu-hafta-s9-ileri-saglamlastirma) · [Hafta 14 · Dönem projesi](../week-14/cen429-week-14.md#10-donem-projesi-bu-hafta-s9-ileri-s15-hat)
+
     - [ ] Gizlemenin hangi fonksiyonlara, neden uygulandığı; maliyet ölçümü (süre, boyut) öncesi/sonrası tablosu.
     - [ ] Derleme hattında gizleme ve imzalama adımları; sürüm kimliği ve özet değerleri.
     - [ ] Gizleme öncesi ve sonrası için ölçütler (anlamlı ad oranı, düz metin hassas dizge sayısı).
@@ -92,20 +94,28 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
 ![Güvenlik kılavuzu haritası](assets/h15-02-kilavuz-haritasi.svg)
 
 ??? success "10. hafta — Kripto ve PKI (S8, S11)"
+    Kaynak: [Hafta 10 · Dönem projesi](../week-10/cen429-week-10.md#13-donem-projesi-bu-hafta)
+
     - [ ] Algoritma envanteri: amaç, anahtar uzunluğu, kip, standart, kütüphane.
     - [ ] Anahtar yaşam döngüsü tablosu: üretim, saklama, kripto-periyot, yenileme, imha.
     - [ ] TLS doğrulaması; varsa SPKI sabitleme ve yedek pin; güncelleme dosyasında imza doğrulaması.
 
 ??? success "11. hafta — Anahtar koruması (S8)"
+    Kaynak: [Hafta 11 · Dönem projesi](../week-11/cen429-week-11.md#7-donem-projesi-bu-hafta-s8-anahtar-koruma-gerekcesi)
+
     - [ ] En az bir hassas varlık için koruma yöntemi ve gerekçesi (ör. cihaza bağlama, katmanlı koruma); kullanılmıyorsa
           neden kullanılmadığının gerekçesi.
 
 ??? success "12. hafta — Test ve değerlendirme (S16)"
+    Kaynak: [Hafta 12 · Dönem projesi](../week-12/cen429-week-12.md#9-donem-projesi-bu-hafta-s16-test-plani-ve-sonuclari)
+
     - [ ] Test planı ve **sonuçları**: her test için amaç, yöntem, beklenen ve gözlenen sonuç.
     - [ ] Birim testleri (kripto ve koruma fonksiyonları için) ve sürekli entegrasyon kaydı.
     - [ ] Vize geri bildirimlerinin bulgu–aksiyon listesi.
 
 ??? success "13. hafta — Gereksinimler (S14, S17)"
+    Kaynak: [Hafta 13 · Dönem projesi](../week-13/cen429-week-13.md#9-donem-projesi-bu-hafta)
+
     - [ ] Uyum matrisi: uygulanan her gereksinim için durum, bölüm, doğrulama, kanıt.
     - [ ] Varsayımlar ve devredilen gereksinimler: kime, neden, nasıl.
 
@@ -157,4 +167,4 @@ gösterimde takımın her üyesine soru sorulabilir. Başkasının kodunu ya da 
 
 - Güvenlik kılavuzunuz, sertifikasyondan geçen ürünlerin belgelerinin küçültülmüş bir modelidir; iş başvurularında bir
   **portfolyo** öğesi olarak kullanabilirsiniz (gizli bilgi içermediğinden emin olun).
-- Quiz-2 final döneminde yapılır; kapsam 9–14. haftalardır (16. hafta sayfası).
+- Quiz-2 final döneminde yapılır; kapsam 9–14. haftalardır ([16. hafta sayfası](../week-16/cen429-week-16.md)).

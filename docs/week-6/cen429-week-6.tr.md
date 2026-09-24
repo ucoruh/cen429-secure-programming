@@ -16,7 +16,7 @@ tags:
 | **Tarih** | 23.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 (kod sağlamlaştırma tekniklerini — RASP dâhil — açıklar ve C/C++, Java için uygular) |
 | **Süre** | 3 saat (3 × 50 dakika) |
-| **Ön bilgi** | C'de işaretçi, dizi, dosya; Hafta 1'den bellek düzeni ve güvenli silme; Hafta 3'ten AES-GCM/HMAC/HKDF ve güvenlik kabuğu; Hafta 4'ten yama ve tersine mühendislik kavramları |
+| **Ön bilgi** | C'de işaretçi, dizi, dosya; [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni ve güvenli silme; [Hafta 3](../week-3/cen429-week-3.md)'ten AES-GCM/HMAC/HKDF ve güvenlik kabuğu; [Hafta 4](../week-4/cen429-week-4.md)'ten yama ve tersine mühendislik kavramları |
 | **Uygulamalar** | [`code/week-06`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-06) — 8 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -112,97 +112,50 @@ tags:
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Çalışma anı (runtime) nedir?
+### Önceki haftalardan gelenler
 
-- **Çalışma anı:** programın **çalıştığı** an (derleme değil).
-- RASP korumaları burada devreye girer: program kendini **çalışırken** izler.
+- **Beyaz kutu saldırgan modeli** — cihazın sahibi olan kullanıcının aynı zamanda potansiyel saldırgan olduğu;
+  belleği okuyup hata ayıklayıcı bağlayabildiği ve kodu değiştirebildiği model
+  ([Hafta 1, §3](../week-1/cen429-week-1.md#3-saldirgan-kim-neye-erisebiliyor); "beyaz kutu saldırganın altı yolu"
+  tablosuna da bakınız: [Hafta 1, §5](../week-1/cen429-week-1.md#beyaz-kutu-saldirganin-alti-yolu)). Bu hafta bu
+  modeli **MATE** adıyla RASP'in tek saldırgan modeli yapıyoruz (§1.1).
+- **Özet, MAC ve HMAC** — özet bir veriden hesaplanan sabit boyutlu, tek yönlü bir parmak izidir; MAC/HMAC ise
+  paylaşılan bir gizli anahtarla mesajın değişmediğini kanıtlar
+  ([Hafta 3, §2.4](../week-3/cen429-week-3.md#24-ozet-mac-ve-imza-hangisi-ne-zaman)). Bu hafta HMAC-SHA-256'yı
+  uygulamanın kendi kodunu doğrulamak (§3) ve bir kontrol akışı zinciri kurmak (§9) için kullanıyoruz.
+- **Ana sırdan anahtar türetme (HKDF)** — RFC 5869 HKDF, bir ana sırdan Extract ve Expand adımlarıyla yeni
+  anahtarlar türeten fonksiyondur
+  ([Hafta 3, §7](../week-3/cen429-week-3.md#7-ana-sirdan-anahtar-turetme-oturum-anahtarlari-ve-ileri-gizlilik)).
+  Bu hafta aynı iki adımı, bir ana sır yerine bir **cihaz parmak izinden** anahtar türetmek için elle izliyoruz (§10.1).
+- **Cihaz bağlama** — bir sırrın yalnızca belirli bir cihazda anlamlı olması, güvenlik kabuğunun en iç katmanıdır
+  ([Hafta 3, §13.1](../week-3/cen429-week-3.md#131-cihaz-baglama)). Bu hafta bu katmanı bir RASP tepki
+  politikasının parçası yapıyoruz (§10).
 
-### RASP nedir?
+### Bu haftanın kavram haritası
 
-- **RASP (Runtime Application Self-Protection):** uygulamanın çalışırken kendini koruması.
-- Kurcalama, hata ayıklama, sahte ortam gibi tehditleri **algılar** ve **tepki** verir.
-
-### Hata ayıklayıcı (debugger)
-
-- **Debugger:** programı adım adım çalıştırıp durduran, belleği okuyan araç (gdb, lldb).
-- Saldırgan bununla akışı izler, değer değiştirir.
-- RASP "bana debugger bağlı mı?" diye bakar.
-
-### Emülatör ve sanal makine
-
-- **Emülatör/VM:** bir cihazı **taklit eden** yazılım ortamı (Android emülatör, QEMU).
-- Saldırgan analizini gerçek cihaz yerine burada yapar (daha kolay).
-- RASP sahte ortamı sezmeye çalışır.
-
-### Kanca (hook) ve enstrümantasyon
-
-- **Kanca (hook):** bir fonksiyonun çağrısını **araya girip** değiştirme.
-- **Enstrümantasyon:** çalışan programa kod enjekte edip davranışını izleme/değiştirme.
-- Araç: **Frida** (çok yaygın dinamik enstrümantasyon aracı).
-
-### LD_PRELOAD
-
-- **LD_PRELOAD:** Linux'ta bir kütüphaneyi programdan **önce** yükletip fonksiyonları değiştirme yolu.
-- Saldırgan bununla kritik fonksiyonları **kancalayabilir**.
-- RASP bunu tespit etmeye çalışır.
-
-### Bütünlük ve self-hashing
-
-- **Bütünlük (integrity):** kodun/dosyanın **değişmemiş** olması.
-- **Self-hashing:** programın **kendi kodunun** özetini hesaplayıp beklenenle karşılaştırması.
-- Kurcalanmışsa özet tutmaz.
-
-### Özet (checksum/hash)
-
-- **Özet:** bir veriden hesaplanan sabit boyutlu **parmak izi** (SHA-256).
-- Veri değişirse özet değişir.
-- Bütünlük denetiminin temeli.
-
-### Kök (root) / jailbreak
-
-- **Kök (root):** cihaz üzerinde tam yetki (normalde kısıtlı).
-- Köklü cihazda korumalar zayıflar; saldırgan her şeye erişir.
-- RASP "cihaz köklü mü?" diye bakar.
-
-### İmza doğrulama
-
-- Uygulama paketleri **dijital imzayla** imzalanır.
-- **İmza doğrulama:** çağıran/yüklenen bileşenin imzasının beklenen olup olmadığını denetleme.
-- Sahte/değiştirilmiş bileşeni yakalar.
-
-### Kontrol akışı bütünlüğü (sayaç)
-
-- Kritik denetimler **tek bir `if`** ile yapılırsa, tek nokta yamayla atlanır.
-- **Kontrol akışı sayacı:** denetimlerin doğru **sırayla** geçtiğini sayarak doğrulama.
-- Tek yama yetmez hale gelir.
-
-### Tepki politikası (response)
-
-- **Tepki politikası:** RASP bir tehdit görünce **ne yapacak**?
-- Sessizce kapan, işlevi kısıtla, sunucuya bildir, gecikmeli tepki…
-- "Hemen çök" her zaman en iyisi değildir.
-
-### Cihaz bağlama ve caydırma
-
-- **Cihaz bağlama:** verilerin/anahtarların yalnız **belirli cihazda** anlamlı olması.
-- **Caydırma (deterrence):** saldırıyı zahmetli/riskli kılıp vazgeçirme.
-- RASP'in nihai amacı: maliyeti yükseltmek.
-
-### Şimdi hazırız
-
-Terimler:
-
-çalışma anı · RASP · debugger · emülatör/VM · hook/Frida · LD_PRELOAD · bütünlük/self-hashing · özet · kök · imza doğrulama · kontrol akışı sayacı · tepki politikası · cihaz bağlama · caydırma
-
-Şimdi: RASP nedir, ne yapar?
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| RASP (algıla/savun/caydır) | RASP, uygulamanın kendi içine gömülen, çalışma zamanında kendini izleyen ve saldırıya algılama, savunma ve caydırma ile tepki veren korumalardır. | [§1](#1-rasp-nedir-algilama-savunma-caydirma) |
+| MATE saldırgan modeli | MATE ("Man-At-The-End"), saldırganın uygulamanın çalıştığı cihazın/uç noktanın sahibi olduğu; belleği okuyup kodu değiştirebildiği ve hata ayıklayıcı bağlayabildiği saldırgan modelidir. | [§1.1](#11-saldirgan-modeli-mate-man-at-the-end) |
+| RASP mimarisi | RASP denetimleri yükleme anında, hassas işlem öncesinde ve arka planda düzensiz aralıklarla, kodun birçok noktasında çalışır ve sonucu bir `if`'e değil bir veri bağımlılığına bağlar. | [§2](#2-rasp-mimarisi-denetimler-ne-zaman-nerede-ve-nasil-calisir) |
+| Bütünlük / self-hashing | Self-hashing, uygulamanın kendi kodunun/dosyasının HMAC özetini çalışma zamanında hesaplayıp önceden bilinen bir altın değerle karşılaştırarak yama/kurcalamayı yakalamasıdır. | [§3](#3-butunluk-denetimi-uygulama-kendini-dogrular-self-hashing) |
+| Hata ayıklayıcı (debugger) algılama | Anti-debug, çekirdeğin/işletim sisteminin zaten tuttuğu bilgileri (Linux'ta TracerPid, Windows'ta PEB) okuyarak sürece bir hata ayıklayıcının bağlı olup olmadığını anlamaya çalışmaktır. | [§4](#4-hata-ayiklayici-debugger-algilama) |
+| Emülatör/VM algılama | Ortam algılama, CPUID hipervizör biti, satıcı imzası ve zamanlama ölçümü gibi ipuçlarıyla uygulamanın bir sanal makinede/emülatörde mi, yoksa gerçek donanımda mı çalıştığını sezmeye çalışmaktır. | [§5](#5-ortam-algilama-sanal-makine-ve-emulator) |
+| Kanca (hook) / LD_PRELOAD algılama | Kanca algılama, kritik bir fonksiyonun hangi paylaşımlı nesneden (`.so`) çözüldüğünü `dlsym`+`dladdr` ile denetleyerek LD_PRELOAD/Frida gibi araçlarla değiştirilip değiştirilmediğini bulmaktır. | [§6](#6-kanca-ve-enstrumantasyon-algilama-ld_preload-frida) |
+| Dinamik bellek koruması | Dinamik bellek koruması, çalışan programın belleğindeki hassas verinin okunmasını (döküm kapatma, kilitleme) ve sessizce değiştirilmesini (gölge kopya + özet) zorlaştıran önlemler bütünüdür. | [§7](#7-dinamik-bellek-korumasi-ve-bellek-izleme-tespiti) |
+| Kök (root) göstergesi | Root göstergesi, cihazın/sürecin güvenlik kısıtlarının kaldırılmış (root/jailbreak) ya da yükseltilmiş yetkiyle çalışıyor olduğuna işaret eden, tek başına kanıt sayılmayan sinyallerdir. | [§8.1](#81-kok-root-ayricalikli-ortam-gostergesi) |
+| Bileşen imza doğrulaması | Bileşen imza doğrulaması, dinamik yüklenen bir modülün/paketin yüklenmeden önce beklenen imza/özetini taşıyıp taşımadığını denetleyerek yeniden paketlemeyi (repackaging) yakalamaktır. | [§8.2](#82-bilesenpaket-imza-ve-ozet-dogrulamasi-apk-imza-dogrulamasinin-genel-hali) |
+| Kontrol akışı sayacı | Kontrol akışı sayacı, güvenlik kontrol noktalarının doğru sırayla geçildiğini bir anahtar zincirine (`acc = HMAC(acc, aşama)`) bağlayarak tek bir kontrolün yamalanmasını işe yaramaz kılan tekniktir. | [§9](#9-kontrol-akisi-butunlugu-tek-bir-if-neden-yetmez) |
+| Tepki politikası ve cihaz bağlama | Tepki politikası, bir tehdit algılandığında sırrı silme, decoy döndürme, cihaza/sürüme bağlama ve sunucuya bildirme gibi seçenekler arasından saldırgana en az bilgi verecek yanıtı seçmektir. | [§10](#10-tepki-response-politikasi-cihaz-baglama-ve-caydirma) |
 
 ### Kavramlar birbirine nasıl bağlanır?
 
-Yukarıdaki terimler rastgele bir liste değildir; her biri bir öncekinin üstüne oturur. Bir terimi ilerideki
+Yukarıdaki kavramlar rastgele bir liste değildir; her biri bir öncekinin üstüne oturur. Bir kavramı ilerideki
 bölümlerde unutursanız, aşağıdaki tablonun "önkoşul" sütununa dönüp önce onu tazeleyin.
 
 | Terim | Önkoşulu | Hangi bölümde derinleşir? |
@@ -230,8 +183,9 @@ bölümlerde unutursanız, aşağıdaki tablonun "önkoşul" sütununa dönüp �
 ## 1. RASP nedir? Algılama → savunma → caydırma
 
 İlk beş hafta boyunca uygulamayı **statik** olarak sağlamlaştırdık: girdiyi doğruladık (Hafta 1, 4), veriyi şifreledik
-(Hafta 3), kodu gizledik (Hafta 4, 5). Ama bütün bunlar bir varsayıma dayanıyordu: **program yazıldığı gibi çalışacak.**
-Bu hafta o varsayımı bırakıyoruz. Uygulama, **çalışırken** düşman bir ortamda olabilir: kullanıcı cihazın sahibidir,
+([Hafta 3](../week-3/cen429-week-3.md)), kodu gizledik ([Hafta 4](../week-4/cen429-week-4.md), 5). Ama bütün bunlar bir varsayıma dayanıyordu: **program yazıldığı gibi çalışacak.**
+Bu hafta o varsayımı bırakıyoruz ve **çalışma anına (runtime)** — programın derlenip diskte durduğu an değil, fiilen
+**çalıştığı** an — bakıyoruz. Uygulama, çalışırken düşman bir ortamda olabilir: kullanıcı cihazın sahibidir,
 root almış, hata ayıklayıcı bağlamış, kod parçalarını yamalamış, fonksiyonları kancalamış olabilir.
 
 ![WAF ile RASP farkı](assets/h06-06-waf-rasp.svg)
@@ -240,7 +194,7 @@ root almış, hata ayıklayıcı bağlamış, kod parçalarını yamalamış, fo
     - **1980'ler** — crack / anti-crack kültürü: **anti-debug** ve kendini denetleyen kodun kökeni buraya dayanır.
     - **2000'ler** — DRM, mobil bankacılık ve ödeme uygulamaları korumayı **uygulamanın içine** taşımak zorunda kalır (cihaz artık güvenilir değildir).
     - **2012** — Gartner **RASP** (Runtime Application Self-Protection) terimini ortaya atar: koruma, uygulamanın **içinde** çalışır.
-    - **2010'lar–bugün** — **OWASP MASVS-RESILIENCE** bu beklentileri denetlenebilir gereksinimlere çevirir (13. hafta).
+    - **2010'lar–bugün** — **OWASP MASVS-RESILIENCE** bu beklentileri denetlenebilir gereksinimlere çevirir ([13. hafta](../week-13/cen429-week-13.md)).
 
     Kısacası RASP yeni bir fikir değil; **MATE saldırganına** verilen kurumsal cevabın adıdır.
 
@@ -272,10 +226,10 @@ RASP üç iş yapar; bu haftanın omurgası bu üçlüdür:
 
 ### 1.1 Saldırgan modeli: MATE ("Man-At-The-End")
 
-Hafta 1'de üç saldırgan tipini görmüştük. RASP'in dünyası tümüyle **MATE**'tir: saldırgan uygulamanın **çalıştığı uç
+[Hafta 1'de](../week-1/cen429-week-1.md#3-saldirgan-kim-neye-erisebiliyor) üç saldırgan tipini görmüştük. RASP'in dünyası tümüyle **MATE**'tir: saldırgan uygulamanın **çalıştığı uç
 noktanın sahibidir**. Sunucuya karşı saldırgan dışarıdadır (ve TLS, kimlik doğrulama korur); ama istemci uygulamada
 saldırgan **her şeyi görür**: belleği okuyabilir, kodu değiştirebilir, hata ayıklayıcıyla adım adım izleyebilir. Bu,
-Hafta 11'deki **beyaz kutu** modeliyle aynı varsayımdır.
+[Hafta 11](../week-11/cen429-week-11.md)'deki **beyaz kutu** modeliyle aynı varsayımdır.
 
 MATE saldırganını, Hafta 1'de gördüğümüz diğer saldırgan tiplerinden ayıran şey **konumdur**, yetenek değil:
 
@@ -354,15 +308,16 @@ bir hata ayıklayıcı hiç görmez.
 - **Çok noktalılık:** Aynı denetim tek bir fonksiyonda değil, kodun **birçok yerinde**, her seferinde biraz farklı
   biçimde yapılır. Saldırgan bir noktayı yamaladığında diğerleri hâlâ çalışır.
 - **Karşılıklı denetim:** Yönetilen katman (Java) ile native katman birbirinin bütünlüğünü denetler; biri
-  değiştirilirse diğeri fark eder (5. haftadaki ayrık parmak izi ve 1. haftadaki arayüz tablosunda "karşılıklı
-  bütünlük denetimi").
+  değiştirilirse diğeri fark eder ([5. haftadaki](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi) ayrık parmak izi ve
+  [1. haftadaki](../week-1/cen429-week-1.md#planin-iki-temel-araci-arayuz-tablosu-ve-varlik-tablosu) arayüz
+  tablosunda "karşılıklı bütünlük denetimi").
 - **Korunan fonksiyonun içinde:** Değerli bir fonksiyon (ör. dize çözme ya da anahtar türetme), kendi giriş
   noktasında birkaç denetimi **kendisi** yapar. Sahada böyle tek bir fonksiyonun, yüklenme anında zaten yapılmış
   denetimlere ek olarak kendi başına on beşe yakın denetimle (kod bütünlüğü, hata ayıklayıcı, ortam, root, kontrol
   akışı sayacı) korunduğu görülür. Performans nedeniyle, yalnız iç kullanımdaki sürümlerinde bu denetimlerin bir kısmı
   giriş noktasına indirilir.
 - **Sahte parametreler:** Hassas fonksiyonların giriş noktalarında, programcının okunabilirliği için makroyla gizlenen
-  ve bir bütünlük denetimini tetikleyen ek parametreler bulunabilir (4. haftadaki "sahte parametreler").
+  ve bir bütünlük denetimini tetikleyen ek parametreler bulunabilir ([4. haftadaki](../week-4/cen429-week-4.md) "sahte parametreler").
 
 ### Nasıl karar verir? Merkezî değil, veri bağımlı
 
@@ -433,7 +388,7 @@ yakalar ve tepki politikası devreye girer (Bölüm 10).
 ## 3. Bütünlük denetimi: uygulama kendini doğrular (self-hashing)
 
 RASP'in ilk ve en temel adımı: **"Ben değiştirildim mi?"** Saldırgan bir lisans kontrolünü, bir `if (odendi)` dalını ya
-da bir kripto çağrısını **yamalayarak** (patching) korumayı atlatmaya çalışır (Hafta 4'te gördüğümüz `je → jmp`
+da bir kripto çağrısını **yamalayarak** (patching) korumayı atlatmaya çalışır ([Hafta 4](../week-4/cen429-week-4.md)'te gördüğümüz `je → jmp`
 yaması). Savunma: uygulama, kendi ikili dosyasının (ya da korunan bir kod/veri bölgesinin) bir **özetini** çalışma
 zamanında hesaplar ve önceden bilinen **altın (golden)** değerle karşılaştırır. Tek bir bayt bile değişmişse, yama
 yakalanır.
@@ -441,7 +396,8 @@ yakalanır.
 !!! info "Kitap tarifi ve güncelleme"
     Ders kitabı (Viega & Messier) bunu **tarif 12.2 (Detecting Modification)**'te **CRC32** ile yapar. CRC32
     **kriptografik değildir**: saldırgan kodu yamalayıp aynı CRC'yi verecek şekilde kolayca ayarlayabilir. Biz bunu
-    **HMAC-SHA-256** ile güncelliyoruz (bkz. Hafta 3): doğru HMAC'i üretmek için gizli anahtar gerekir. Yazarın CRC
+    **HMAC-SHA-256** ile güncelliyoruz (bkz. [Hafta 3, §2.4](../week-3/cen429-week-3.md#24-ozet-mac-ve-imza-hangisi-ne-zaman)):
+    doğru HMAC'i üretmek için gizli anahtar gerekir. Yazarın CRC
     seçmesinin bir nedeni vardır: asıl saldırı zaten **checksum kodunun kendisini** yamalamaktır — bu bölümün ana
     tartışması budur.
 
@@ -485,7 +441,8 @@ SONUC: YAMA ALGILANDI - hedef degistirilmis! (tamper)   (cikis kodu 3)
 ```
 
 Yama yokken özet altın değerle **birebir** aynı çıktı. Tek bir baytı değiştirince özet tamamen değişti (çığ etkisi) ve
-yama yakalandı. Karşılaştırma **sabit zamanlı** yapılır (`memcmp` değil), çünkü Hafta 3'te gördüğümüz gibi düz `memcmp`
+yama yakalandı. Karşılaştırma **sabit zamanlı** yapılır (`memcmp` değil), çünkü
+[Hafta 3'te](../week-3/cen429-week-3.md#sabit-zamanli-karsilastirma) gördüğümüz gibi düz `memcmp`
 ilk farklı baytta durup zamanlama sızdırır.
 
 ### 3.1 İşlenmiş örnek: HMAC hangi baytları özetliyor, yama onu nasıl bozuyor?
@@ -625,7 +582,7 @@ Studio ile **F5** (hata ayıklayıcıda) çalıştırırsanız `IsDebuggerPresen
 
 Demo 2'nin çıktısında TracerPid'in `0`'dan `2909`'a geçtiğini gördük; şimdi bu geçişin **neden** olduğunu adım
 adım açalım. `/proc/self/status`, çekirdeğin her süreç için tuttuğu, o sürecin kendisi tarafından da okunabilen
-bir metin dosyasıdır (Hafta 1'de `/proc` dosya sistemini "çekirdeğin sürece açtığı bir pencere" olarak tanımlamıştık).
+bir metin dosyasıdır ([Hafta 1](../week-1/cen429-week-1.md)'de `/proc` dosya sistemini "çekirdeğin sürece açtığı bir pencere" olarak tanımlamıştık).
 İçindeki `TracerPid:` satırı, o süreci `ptrace()` sistem çağrısıyla izleyen sürecin **PID**'ini (Process ID —
 süreç kimliği) tutar; kimse izlemiyorsa değer **0**'dır.
 
@@ -707,7 +664,9 @@ işlemidir; program hiçbir şeyi değiştirmez, çekirdeğin/yükleyicinin zate
 ## 5. Ortam algılama: sanal makine ve emülatör
 
 Saldırgan uygulamayı çoğu zaman kontrollü bir **analiz ortamında** — bir sanal makine, emülatör ya da kum havuzunda
-(sandbox) — çalıştırır. RASP bunu ortam ipuçlarından sezmeye çalışır.
+(sandbox) — çalıştırır. **Emülatör**, bir cihazı yazılımla **taklit eden** ortamdır (Android emülatörü, QEMU);
+**sanal makine (VM)** ise gerçek donanımı soyutlayıp üzerinde başka bir işletim sistemi çalıştırır. Saldırgan
+analizini gerçek cihaz yerine burada yapar, çünkü orada daha kolaydır. RASP bunu ortam ipuçlarından sezmeye çalışır.
 
 ![Emülatör algılamada yanlış pozitif riski](assets/h06-09-emulator.svg)
 
@@ -795,7 +754,9 @@ engellemeye razıyım, karşılığında kaç saldırıyı önlerim" dengesi:
 
 ## 6. Kanca ve enstrümantasyon algılama (LD_PRELOAD, Frida)
 
-Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyon kancalama (hooking)** ve **dinamik enstrümantasyon**. Saldırgan
+Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyon kancalama (hooking)** ve **dinamik enstrümantasyon**. Kanca
+(hook), bir fonksiyonun çağrısını araya girip değiştirmektir; enstrümantasyon ise çalışan bir programa kod enjekte
+edip davranışını izleme ya da değiştirme tekniğidir (bunun en yaygın aracı **Frida**'dır). Saldırgan
 programı durdurmadan, çağırdığı fonksiyonları (kendi anti-debug/anti-root kontrollerimiz dâhil) **kendi sürümüyle
 değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek şekilde yalancıya çıkarabilir.
 
@@ -915,8 +876,11 @@ yüzden `getenv` sahteciliğine dayanmaz.
 ## 7. Dinamik bellek koruması ve bellek izleme tespiti
 
 İzlencenin bu haftaya koyduğu maddelerden biri **dinamik bellek korumasıdır**: program çalışırken bellekteki hassas
-verinin okunmasına ve değiştirilmesine karşı alınan önlemler. 1. haftada sırları bellekten silmeyi ve takasa düşmesini
-önlemeyi, 3. haftada "kullanımda veri" katmanlarını gördük. Bu bölüm aynı soruyu çalışma anı saldırganı açısından
+verinin okunmasına ve değiştirilmesine karşı alınan önlemler.
+[1. haftada](../week-1/cen429-week-1.md#sirlari-bellekten-silmek-tarif-132) sırları bellekten silmeyi ve takasa
+düşmesini önlemeyi,
+[3. haftada](../week-3/cen429-week-3.md#13-kullanimda-veri-bellekte-guvenli-silme-ve-cihaz-baglama) "kullanımda
+veri" katmanlarını gördük. Bu bölüm aynı soruyu çalışma anı saldırganı açısından
 yeniden sorar: saldırgan belleği **izliyor** ya da **değiştiriyorsa** ne yapabiliriz?
 
 ![Dinamik bellek korumasının katmanları](assets/h06-13-bellek-koruma-katmanlari.svg)
@@ -943,7 +907,7 @@ En etkili bellek koruması, bellekte **okunacak bir şey bırakmamaktır**:
    durur; bellekte tek bir yerde sırrın kendisi bulunmaz.
 3. **Rastgele değerle silme:** İş bitince bellek sıfırla değil rastgele değerlerle doldurulur; "burada az önce bir sır
    vardı" izini de bırakmaz. Sahada native tarafta rastgele üretecin tek kullanım yeri budur.
-4. **Hiç açılmamak:** Whitebox kriptografide anahtar hiçbir anda açık halde bellekte bulunmaz (11. hafta). Sahadaki
+4. **Hiç açılmamak:** Whitebox kriptografide anahtar hiçbir anda açık halde bellekte bulunmaz ([11. hafta](../week-11/cen429-week-11.md)). Sahadaki
    kabuk matrisinde ödeme sırasında native tarafta kalan tek kabuk budur (3. hafta).
 
 ### Önlem 2: Belleğin okunmasını işletim sistemiyle zorlaştır
@@ -995,9 +959,9 @@ int sayac_oku(const KorunanSayac *s, uint32_t *cikti)
 ```
 
 Saldırgan bellekte yalnız `deger` alanını değiştirirse gölge kopya ve özet tutmaz. Üçünü birden tutarlı biçimde
-değiştirmek için maskeyi ve özet anahtarını da bulması gerekir; bu da işin maliyetini artırır. Aynı fikir, 5. haftadaki
-cihaz parmak izinin **iki farklı özetle iki farklı yerde** saklanmasında ve 2. haftadaki kurcalamaya dayanıklı günlükte
-de vardır.
+değiştirmek için maskeyi ve özet anahtarını da bulması gerekir; bu da işin maliyetini artırır. Aynı fikir, [5. haftadaki](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi)
+cihaz parmak izinin **iki farklı özetle iki farklı yerde** saklanmasında ve
+[2. haftadaki](../week-2/cen429-week-2.md#kurcalamaya-dayanikli-gunluk) kurcalamaya dayanıklı günlükte de vardır.
 
 ### 7.1 İşlenmiş örnek: `KorunanSayac` bir saldırıyı nasıl yakalar?
 
@@ -1054,8 +1018,9 @@ Bu sinyallerin hiçbiri tek başına kesin değildir; hepsi tepki politikasında
 
 ### 8.1 Kök (root) / ayrıcalıklı ortam göstergesi
 
-Root'lu (ya da jailbreak'li) bir cihazda uygulamanın güvenlik varsayımları çöker: her süreç belleği okuyabilir, dosya
-sistemi korumaları aşılır. RASP root göstergelerine bakar (Katalog K4/K5): `su` ikilisinin varlığı, tehlikeli paketler,
+**Kök (root)**, bir cihaz üzerinde normalde kısıtlı olan tam yetkidir; **jailbreak** aynı yetkiyi iOS gibi kapalı
+sistemlerde zorla açmanın adıdır. Root'lu (ya da jailbreak'li) bir cihazda uygulamanın güvenlik varsayımları çöker:
+her süreç belleği okuyabilir, dosya sistemi korumaları aşılır. RASP root göstergelerine bakar (Katalog K4/K5): `su` ikilisinin varlığı, tehlikeli paketler,
 yazılabilir sistem yolları, root gizleme çerçeveleri. Masaüstündeki taşınabilir karşılığı: uygulama **yükseltilmiş
 yetkiyle** mi çalışıyor (Linux `geteuid()==0`, Windows yükseltilmiş token)?
 
@@ -1136,10 +1101,12 @@ Yukleme REDDEDILDI.   (cikis kodu 3)
 ```
 
 !!! info "Önemli fark: HMAC vs. asimetrik imza"
-    APK v2/v3 **açık anahtar (asimetrik)** imza kullanır (bkz. Hafta 3'teki dijital imza): doğrulayanın imzalama
+    APK v2/v3 **açık anahtar (asimetrik)** imza kullanır (bkz.
+    [Hafta 3'teki](../week-3/cen429-week-3.md#24-ozet-mac-ve-imza-hangisi-ne-zaman) dijital imza): doğrulayanın imzalama
     anahtarına değil, yalnız **açık anahtara** ihtiyacı olur. Bu demoda öğretim için **paylaşılan anahtarlı HMAC**
     kullanıyoruz (basit ve `cen429_kripto.h`'da hazır); asimetrik imza (Ed25519 / RSA-PSS) ve sertifika zincirlerini
-    **Hafta 10**'da işleyeceğiz. İlke aynı: yüklemeden önce **bütünlük + kaynak** doğrulaması.
+    [Hafta 10'da](../week-10/cen429-week-10.md#5-dijital-imza-olusturma-dogrulama-ve-kullanim-yerleri) işleyeceğiz.
+    İlke aynı: yüklemeden önce **bütünlük + kaynak** doğrulaması.
 
 ### 8.2.1 İşlenmiş örnek: repackaging bir bayt eklemekle nasıl yakalanır?
 
@@ -1308,14 +1275,15 @@ politikası saldırganı **yavaşlatır ve yanıltır**:
 | **Cihaz/sürüm bağlama** | Sırrı cihaza/sürüme bağla; anahtarlar kopyalansa bile başka cihazda açılmaz | L1/L2 |
 | **Telemetri/attestation** | Olayı sunucuya bildir; sunucu tarafı risk motoru karar versin | K5 |
 
-**Cihaz bağlama** (Hafta 3 Demo 9'un en iç kabuğu) burada RASP'in bir parçası olur: değerli sır, cihaz parmak izinden ve
-sürüm dizesinden **HKDF** ile türetilen bir anahtarla sarılır. Telefon klonlansa, dosyalar başka cihaza kopyalansa bile
-anahtar farklı çıkar ve sır **açılamaz**.
+**Cihaz bağlama** ([Hafta 3, §13.1](../week-3/cen429-week-3.md#131-cihaz-baglama)'in, Demo 9'un en iç kabuğu) burada
+RASP'in bir parçası olur: değerli sır, cihaz parmak izinden ve sürüm dizesinden **HKDF** ile türetilen bir anahtarla
+sarılır. Telefon klonlansa, dosyalar başka cihaza kopyalansa bile anahtar farklı çıkar ve sır **açılamaz**.
 
 ### 10.1 İşlenmiş örnek: cihaz parmak izinden anahtar türetmek (adım adım HKDF)
 
-Demo 8'in "cihaz/sürüm bağlama" adımını **gerçek değerlerle** elle izleyelim. `kripto_hkdf_sha256`, Hafta 3'te
-gördüğümüz **RFC 5869 HKDF**'in iki adımını (Extract, Expand) uygular; burada `ikm` (girdi anahtar malzemesi)
+Demo 8'in "cihaz/sürüm bağlama" adımını **gerçek değerlerle** elle izleyelim. `kripto_hkdf_sha256`,
+[Hafta 3'te](../week-3/cen429-week-3.md#7-ana-sirdan-anahtar-turetme-oturum-anahtarlari-ve-ileri-gizlilik) gördüğümüz
+**RFC 5869 HKDF**'in iki adımını (Extract, Expand) uygular; burada `ikm` (girdi anahtar malzemesi)
 cihaz parmak izi, `tuz` (salt) sürüm dizesi, `info` ise sabit bir bağlam etiketidir:
 
 | Parametre | Değer (Demo 8'in `normal` senaryosu) |
@@ -1453,7 +1421,7 @@ ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da 
 
 !!! failure "'RASP her yavaşlığa değer.'"
     RASP bir **maliyet** getirir (CPU, batarya, karmaşıklık, yanlış pozitif). Korumayı **varlığın değerine** göre
-    ölçekleyin: her fonksiyona değil, kritik işlemlere (ödeme, anahtar kullanımı) koyun. Bu, Hafta 1'deki "korumayı
+    ölçekleyin: her fonksiyona değil, kritik işlemlere (ödeme, anahtar kullanımı) koyun. Bu, [Hafta 1](../week-1/cen429-week-1.md)'deki "korumayı
     varlığa göre planla" ilkesidir.
 
 !!! failure "'Risk skoru eşiğini bir kere ayarlayıp unuturum.'"
@@ -1467,7 +1435,7 @@ ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da 
 ## 12. Dönem projesi: bu hafta
 
 Bu hafta güvenlik kılavuzunuzun **RASP (öz koruma)** bölümlerini yazacak ve ilk RASP kontrolünüzü projenize
-ekleyeceksiniz. Bu, **vize proje gösteriminin** (Hafta 7) ve **Quiz-1'in** (Hafta 8, 1–6. haftalar) doğrudan konusudur;
+ekleyeceksiniz. Bu, **vize proje gösteriminin** ([Hafta 7](../week-7/cen429-week-7.md)) ve **Quiz-1'in** ([Hafta 8](../week-8/cen429-week-8.md), 1–6. haftalar) doğrudan konusudur;
 ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğinde **F2.4 İkili Uygulama Korumaları
 (15p → ÖÇ.3)** olarak puanlanır.
 
@@ -1641,7 +1609,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 
 ??? question "3. MATE saldırgan modeli nedir?"
     "Man-At-The-End": saldırgan uygulamanın çalıştığı uç noktanın sahibidir; belleği okuyabilir, kodu değiştirebilir,
-    hata ayıklayıcı bağlayabilir. Beyaz kutu (Hafta 11) ile aynı varsayım.
+    hata ayıklayıcı bağlayabilir. Beyaz kutu ([Hafta 11](../week-11/cen429-week-11.md)) ile aynı varsayım.
 
 ??? question "4. Self-hashing nedir? Neden CRC değil HMAC?"
     Uygulamanın kendi kod/dosyasının özetini çalışma zamanında hesaplayıp altın değerle karşılaştırması. CRC
@@ -1684,7 +1652,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 
 ??? question "14. Cihaz bağlama RASP'e ne katar?"
     Anahtarlar/dosyalar kopyalansa bile başka cihazda açılamaz (klonlamaya karşı). HKDF(cihaz parmak izi)+AES-GCM ile
-    kurulur; Hafta 3 güvenlik kabuğunun en iç katmanı.
+    kurulur; [Hafta 3](../week-3/cen429-week-3.md) güvenlik kabuğunun en iç katmanı.
 
 ??? question "15. RASP kırılmaz mıdır? Öyleyse neden kullanılır?"
     Cihazın sahibi saldırgansa nihai olarak kırılabilir. Amaç kırılmazlık değil; saldırıyı pahalı, ölçeklenemez ve
@@ -1773,7 +1741,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 
 - Tarif 12.2 (Detecting Modification — CRC → HMAC/imza olarak güncellendi)
 - Tarif 12.12–12.15 (Detecting Debuggers — Unix/Windows; SoftICE → modern araçlar)
-- Bölüm 12 (Anti-Tampering) genel olarak bu haftanın ve Hafta 9'un çekirdeğidir.
+- Bölüm 12 (Anti-Tampering) genel olarak bu haftanın ve [Hafta 9](../week-9/cen429-week-9.md)'un çekirdeğidir.
 
 **Açık standartlar ve kaynaklar**
 
@@ -1812,3 +1780,9 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | HKDF Extract / Expand | Sıkıştırma / genişletme | HKDF'in iki adımı: düzensiz girdiyi PRK'ya sıkıştırma, PRK'dan istenen uzunlukta anahtar türetme |
     | Çığ etkisi (avalanche effect) | Çığ etkisi | Girdide tek bir bit değişince çıktının ortalama yarısının değişmesi; kriptografik özet/MAC'in temel özelliği |
     | `PR_SET_DUMPABLE` | Dökülebilirlik bayrağı | Linux'ta bir sürecin başka bir süreç tarafından `ptrace` ile izlenip izlenemeyeceğini ve çekirdek dökümü üretip üretmeyeceğini kontrol eden bayrak |
+
+!!! info "Bir sonraki hafta"
+    **[7. hafta](../week-7/cen429-week-7.md) — Ara proje gösterimleri.** Bu haftaki RASP kontrollerinizi (bütünlük denetimi, hata ayıklayıcı/ortam/kanca
+    algılama, kontrol akışı sayacı, tepki politikası) projenizde canlı göstereceksiniz. **[8. hafta](../week-8/cen429-week-8.md)**, 1–6. haftaları
+    kapsayan **Quiz-1**'dir. Ardından **9. hafta — Gelişmiş gizleme ve çeşitlendirme**, bu haftanın hata ayıklayıcı/ortam
+    algılama ve "gizleme/caydırma kırılmazlık değildir" fikirlerini kod gizleme tarafında derinleştirerek sürer.

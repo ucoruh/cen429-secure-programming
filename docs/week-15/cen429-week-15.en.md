@@ -50,12 +50,12 @@ The criteria of the final checkpoint rubric in the syllabus, and the correspondi
 
 | Criterion | Learning outcome | Where in the guide | Which weeks? |
 | --- | --- | --- | --- |
-| **Cryptography implementation** | LO.2 | S8 algorithm inventory, key lifecycle and hierarchy, random numbers | 3, 10 |
-| **Secure communication** | LO.4 | S6 authentication and binding · S11 TLS, pinning, message-level protection | 3, 10 |
-| **Asset management** | LO.5 | S5 asset list (complete) · S8 keys | 1, 3, 13 |
-| **Binary application protections** | LO.3 | S9 code hardening (advanced) · S15 build, signing and deployment pipeline | 4, 5, 6, 9, 14 |
-| **Security testing and unit tests** | LO.6 | S16 test and verification results | 4, 12 |
-| **Security standards** | LO.7 | S1 references · S14 assumptions and deferrals · S17 compliance matrix | 12, 13 |
+| **Cryptography implementation** | LO.2 | S8 algorithm inventory, key lifecycle and hierarchy, random numbers | [3](../week-3/cen429-week-3.md#17-term-project-this-week), [10](../week-10/cen429-week-10.md#13-term-project-this-week) |
+| **Secure communication** | LO.4 | S6 authentication and binding · S11 TLS, pinning, message-level protection | [3](../week-3/cen429-week-3.md#17-term-project-this-week), [10](../week-10/cen429-week-10.md#13-term-project-this-week) |
+| **Asset management** | LO.5 | S5 asset list (complete) · S8 keys | [1](../week-1/cen429-week-1.md#21-term-project-this-week), [3](../week-3/cen429-week-3.md#17-term-project-this-week), [13](../week-13/cen429-week-13.md#9-term-project-this-week) |
+| **Binary application protections** | LO.3 | S9 code hardening (advanced) · S15 build, signing and deployment pipeline | [4](../week-4/cen429-week-4.md#17-term-project-this-week), [5](../week-5/cen429-week-5.md#15-term-project-this-week), [6](../week-6/cen429-week-6.md#12-term-project-this-week), [9](../week-9/cen429-week-9.md#12-term-project-this-week-s9-advanced-hardening), [14](../week-14/cen429-week-14.md#10-term-project-this-week-s9-advanced-s15-pipeline) |
+| **Security testing and unit tests** | LO.6 | S16 test and verification results | [4](../week-4/cen429-week-4.md#17-term-project-this-week), [12](../week-12/cen429-week-12.md#9-term-project-this-week-s16-test-plan-and-results) |
+| **Security standards** | LO.7 | S1 references · S14 assumptions and deferrals · S17 compliance matrix | [12](../week-12/cen429-week-12.md#9-term-project-this-week-s16-test-plan-and-results), [13](../week-13/cen429-week-13.md#9-term-project-this-week) |
 | **Final report and presentation** | LO.7 | All sections; document structure, consistency, presentation | All |
 
 ### Sections that must be present in the final report
@@ -86,6 +86,8 @@ At the final checkpoint, every section is expected to be **complete**:
 ## 2. Preparation checklist (weeks 9–14)
 
 ??? success "Weeks 9 and 14 — Advanced code hardening (S9, S15)"
+    Source: [Week 9 · Term project](../week-9/cen429-week-9.md#12-term-project-this-week-s9-advanced-hardening) · [Week 14 · Term project](../week-14/cen429-week-14.md#10-term-project-this-week-s9-advanced-s15-pipeline)
+
     - [ ] Which functions obfuscation was applied to and why; a before/after cost table (time, size).
     - [ ] Obfuscation and signing steps in the build pipeline; version identity and digest values.
     - [ ] Metrics for before and after obfuscation (ratio of meaningful names, count of plaintext sensitive strings).
@@ -93,20 +95,28 @@ At the final checkpoint, every section is expected to be **complete**:
 ![Security guide map](assets/h15-02-kilavuz-haritasi.svg)
 
 ??? success "Week 10 — Cryptography and PKI (S8, S11)"
+    Source: [Week 10 · Term project](../week-10/cen429-week-10.md#13-term-project-this-week)
+
     - [ ] Algorithm inventory: purpose, key length, mode, standard, library.
     - [ ] Key lifecycle table: generation, storage, crypto-period, renewal, destruction.
     - [ ] TLS validation; SPKI pinning and a backup pin if used; signature verification on the update file.
 
 ??? success "Week 11 — Key protection (S8)"
+    Source: [Week 11 · Term project](../week-11/cen429-week-11.md#7-term-project-this-week-s8-key-protection-justification)
+
     - [ ] Protection method and justification for at least one sensitive asset (e.g., device binding, layered
           protection); if not used, the justification for why not.
 
 ??? success "Week 12 — Testing and assessment (S16)"
+    Source: [Week 12 · Term project](../week-12/cen429-week-12.md#9-term-project-this-week-s16-test-plan-and-results)
+
     - [ ] Test plan and **results**: for each test, the purpose, method, expected and observed result.
     - [ ] Unit tests (for cryptography and protection functions) and a continuous integration record.
     - [ ] A finding–action list for the midterm feedback.
 
 ??? success "Week 13 — Requirements (S14, S17)"
+    Source: [Week 13 · Term project](../week-13/cen429-week-13.md#9-term-project-this-week)
+
     - [ ] Compliance matrix: for every implemented requirement, its status, section, verification and evidence.
     - [ ] Assumptions and deferred requirements: to whom, why, how.
 
@@ -160,4 +170,4 @@ code or text, cite the source.
 
 - Your security guide is a scaled-down model of the documentation that certified products carry; you can use it as
   a **portfolio** item in job applications (make sure it contains no confidential information).
-- Quiz-2 is held in the final exam period; its scope is weeks 9–14 (see the Week 16 page).
+- Quiz-2 is held in the final exam period; its scope is weeks 9–14 (see the [Week 16 page](../week-16/cen429-week-16.md)).

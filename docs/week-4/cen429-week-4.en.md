@@ -5,7 +5,7 @@
 | **Date** | 09.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Pointers, arrays and dynamic memory (`malloc`/`free`) in C; memory layout, stack and heap from Week 1; building and basic `gdb` steps in a Linux/WSL terminal |
+| **Prerequisites** | Pointers, arrays and dynamic memory (`malloc`/`free`) in C; memory layout, stack and heap from [Week 1](../week-1/cen429-week-1.md); building and basic `gdb` steps in a Linux/WSL terminal |
 | **Labs** | [`code/week-04`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-04) — 7 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -90,136 +90,72 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use throughout the rest of
-the week. If you don't know a term, read this section first; the later sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
+Background knowledge not covered in earlier weeks is explained from scratch under the "Background" headings.
 
 ![Comparison of stack and heap memory](assets/h04-13-yigin-obek.svg)
 
-### Memory: stack and heap
+### What we bring from earlier weeks
 
-- **Stack:** automatically managed memory that holds the local variables of function calls.
-- **Heap:** memory allocated **manually** with `malloc`/`new` and released with `free`/`delete`.
+- **Process memory: stack and heap** — the memory a running program uses; the stack automatically manages the
+  local variables of function calls, and the heap is allocated manually with `malloc`/`new` and released with
+  `free`/`delete` ([Week 1, §13](../week-1/cen429-week-1.md#13-process-memory-where-does-your-data-live)). This
+  week we build on this in §6 (reallocating a freed heap block) and §12 (protecting the stack frame with a
+  canary).
+- **Buffer overflow** — a program writing more data to an array than the size allocated for it; the overflowing
+  bytes land in the memory right next to the buffer, overwriting other variables or the return address
+  ([Week 1, §14](../week-1/cen429-week-1.md#14-buffer-overflows-how-they-happen-how-to-prevent-them)). This week
+  we extend this bug with the format string vulnerability (§5) and integer-driven overflows (§7).
+- **Stack frame and return address** — the portion of the stack allocated for a function when it is called,
+  holding its local variables and the return address that says where to go back to when it ends
+  ([Week 1, §14](../week-1/cen429-week-1.md#14-buffer-overflows-how-they-happen-how-to-prevent-them)). This week
+  we trace, step by step, how the format string vulnerability reads from the stack (§5) and how the stack canary
+  protects this frame (§12); we will also use the term **offset** often (a distance from a starting point, in
+  bytes).
+- **The white-box attacker model** — the model in which the user who owns the device is also a potential
+  attacker, able to read memory and attach a debugger
+  ([Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach); see also the "the
+  white-box attacker's six paths" table in Week 1 §5). This week we build the motivation for code obfuscation
+  (§14) on this model.
+- **CWE** — the numbered catalogue of software weaknesses maintained by MITRE
+  ([Week 2, §13](../week-2/cen429-week-2.md#13-classifying-software-security-vulnerabilities-cwe)). This week we
+  name findings by their CWE number in almost every section.
 
-Both can be a source of overflows and bugs.
+### This week's concept map
 
-### Pointer
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| CERT | SEI CERT C/C++ is a catalogue of secure-coding rules drawn from real vulnerabilities, each giving a noncompliant example, a compliant fix, a risk assessment, and a CWE link. | [§2](#2-sei-cert-cc-the-rulebook-for-secure-coding) |
+| Undefined behaviour (UB) | An operation the C/C++ standard does not define the result of (e.g., signed integer overflow); the compiler may assume it never happens and delete a check that relies on it. | [§7](#7-integers-and-undefined-behaviour-recipe-35) |
+| Static and dynamic analysis | Static analysis looks for bugs **without running** the code (compiler warnings, `clang-tidy`); dynamic analysis observes it **while it runs** (sanitizers); the two complement each other. | [§9](#9-static-analysis-finding-bugs-without-running-the-code) |
+| Sanitizer | A compiler-added runtime check that inspects every memory access or undefined-behaviour-prone operation and gives a detailed report at the first failure (e.g., AddressSanitizer). | [§10](#10-sanitizers-catching-bugs-at-runtime) |
+| Fuzzing | The technique of running a program with large numbers of automatically generated, mostly malformed inputs to find ones that crash it or trigger a sanitizer report. | [§11](#11-introduction-to-fuzzing) |
+| ASLR / NX / canary | Compiler and OS protections that make a bug harder to exploit once it slips through: ASLR randomises addresses, NX/DEP blocks executing code on data pages, and the stack canary catches an overflow that reaches the return address. | [§12](#12-compiler-and-operating-system-protections) |
+| CI | A continuous-integration system that runs an automatic build, static analysis, sanitizer-instrumented tests, and fuzzing on every code change. | [§13](#13-secure-build-pipeline-bringing-it-all-together-in-continuous-integration) |
 
-- **Pointer:** a variable that holds a memory **address**.
-- `p` is an address; `*p` is the value at that address.
-- Wrong address → crash or wrong data.
+### Background: pointers and compiler options
 
-### Buffer and overflow
+These two were not taught in earlier weeks but are used in almost every example this week; let's define them
+briefly.
 
-- **Buffer:** a contiguous block of memory (e.g., `char ad[16]`).
-- **Overflow (buffer overflow):** writing more data than the buffer can hold → corrupts neighbouring memory.
-- A classic and dangerous class of bug.
+**Pointer.** A pointer is a variable that holds a memory **address**. `p` holds an address; `*p` reads or writes
+the value at that address (dereferencing). If a pointer points at an invalid or wrong address, the program crashes
+or reads/writes the wrong data — most of this week's bugs ultimately come down to a pointer pointing at the wrong
+place.
 
-### Why is an overflow dangerous?
-
-- It can corrupt neighbouring variables or the return address.
-- An attacker can use this to hijack **control flow**.
-- This is why **bounds checking** is vital.
-
-### What is undefined behaviour (UB)?
-
-- **Undefined behaviour:** situations the C/C++ standard calls "the result is unspecified."
-- Example: signed integer overflow, accessing past the end of an array.
-- The compiler may handle this **however it likes** — it may even **delete** the corresponding check.
-
-### Compiler flag
-
-- **Flag:** an option passed to the compiler.
-- Example: `-O2` (optimisation), `-Wall` (warnings), `-fsanitize=address`.
-- The right flags catch many bugs **at compile time**.
-
-### Warning vs error
-
-- **Error:** compilation stops.
-- **Warning:** compilation continues but a problem is reported.
-- Rule: **turn warnings into errors** (`-Werror`) — an ignored warning is a future vulnerability.
-
-### What is a CWE?
-
-- **CWE (Common Weakness Enumeration):** a numbered catalogue of software weaknesses.
-- Example: CWE-416 = "use-after-free."
-- Naming a finding with its CWE number makes it **searchable**.
-
-### What is CERT?
-
-- **SEI CERT C/C++:** the **rulebook** of secure coding.
-- Every rule: a noncompliant example + a compliant solution + risk + a CWE link.
-- Example: `STR31-C` = allocate sufficient memory for the string.
-
-### Static vs dynamic analysis
-
-- **Static analysis:** examining code **without running** it (compiler warnings, clang-tidy).
-- **Dynamic analysis:** observing code **while it runs** (sanitizers).
-- The two complement each other.
-
-### What is a sanitizer?
-
-- **Sanitizer:** a compiler tool that catches memory/UB bugs while the program runs.
-- Example: **ASan** (address), **UBSan** (undefined behaviour).
-- It does not ship in the release build; it is used in **testing/CI**.
-
-### What is fuzzing?
-
-- **Fuzzing:** feeding a program **random/unexpected** inputs and looking for crashes.
-- It finds inputs a human would never think of.
-- Very powerful when combined with a sanitizer.
-
-### ASLR, NX/DEP, canary
-
-- **ASLR:** **randomizes** memory addresses (so the attacker cannot guess an address).
-- **NX/DEP:** prevents bytes in a data region from being **executed as code**.
-- **Stack canary:** a **sentinel value** placed just before the return address; if an overflow corrupts it, the
-  program halts.
-
-### White-box attacker (reminder)
-
-- An attacker who possesses the program (Week 1's MATE).
-- Reads strings, finds functions by name, bypasses checks.
-- We will return to this in the obfuscation section (later today).
-
-### Stack frame, return address, and offset
-
-There are three more terms we will keep using in this week's "step by step at the memory level" examples (format
-string, use-after-free, canary); let's define them now so we don't have to stop and look them up when the examples
-come along:
-
-- **Stack frame:** the portion of the stack allocated for a function when it is called. It holds the function's
-  local variables, the saved frame pointer, and the return address. A new frame opens every time the function is
-  called; when the function ends the frame **collapses** (the stack pointer is rolled back), but the bytes inside
-  it are not erased — they are only marked "no longer in use." The old values **keep sitting there** until the
-  next call overwrites the same bytes. (This is one reason why some of the memory bugs we will see later can
-  appear to "work" at first.)
-- **Return address:** when a function is called, the processor automatically writes "which instruction to return
-  to once this function ends" onto the stack. At the end of the function this address is read and the program
-  jumps there. An attacker who can modify the return address can choose **where the program continues executing**
-  — this is why the return address is one of the most valuable targets on the stack.
-- **Offset:** the distance from a starting point, in bytes. Phrases like "8 bytes after the buffer" or "starting
-  from the file's 16th byte" describe an offset. The answer to the question "how many extra bytes does an overflow
-  have to write before it reaches the return address?" is an offset.
-
-### CI (continuous integration)
-
-- **CI (Continuous Integration):** a system that runs an automatic build + tests on every code change.
-- It runs security tools (warnings, static analysis, sanitizers, fuzzing) **on every merge**.
-
-### Now we're ready
-
-Terms:
-
-stack/heap · pointer · buffer/overflow · UB · flag · warning/error · CWE · CERT · static/dynamic · sanitizer ·
-fuzzing · ASLR/NX/canary · CI
-
-Now: the layers of code hardening.
+**Compiler flag, warning, and error.** A flag is an option passed to the compiler on the command line; e.g., `-O2`
+tells it to optimise the code, `-Wall` turns on all warnings, and `-fsanitize=address` adds instrumentation. When
+the compiler sees a suspicious construct in the code, it reports one of two kinds of message: an **error** stops
+compilation; a **warning** does not stop compilation, it only reports a problem. This distinction matters for this
+week's rule: with the right flags (`-Werror`), warnings must be turned into errors, because an ignored warning is
+tomorrow's vulnerability.
 
 ## 1. What is code hardening?
 
-In Week 1 we saw the seven layers of application protection. This week we open up three of them, specifically for
+In [Week 1](../week-1/cen429-week-1.md) we saw the seven layers of application protection. This week we open up three of them, specifically for
 C and C++ code:
 
 ![The three layers of code hardening](assets/h04-05-uc-katman.svg)
@@ -330,7 +266,7 @@ range), `STR50-CPP` (sufficient space for a string), `EXP53-CPP` (do not read un
 
 | Rule | Summary | Where did we see it? |
 | --- | --- | --- |
-| STR31-C | Sufficient space for a string | Week 1 Demo 3 |
+| STR31-C | Sufficient space for a string | [Week 1](../week-1/cen429-week-1.md) Demo 3 |
 | INT31-C | Integer conversions must not lose data | Week 1 Demo 4 |
 | MSC06-C | Beware of compiler optimisation deleting security code | Week 1 Demo 2 |
 | ENV33-C | Do not call `system()` | Week 1 Demo 1 |
@@ -413,7 +349,7 @@ principles in Recipe 3.1 still hold today; let's turn them into a daily checklis
 | Source | Example | Commonly forgotten point |
 | --- | --- | --- |
 | Command line | `argv` | Even `argv[0]` can be a value the attacker chose |
-| Environment variables | `PATH`, `HOME`, `LANG` | Week 1's secure startup |
+| Environment variables | `PATH`, `HOME`, `LANG` | [Week 1](../week-1/cen429-week-1.md)'s secure startup |
 | Files | Configuration, document, image | Length fields inside the file format |
 | Network | Protocol message, HTTP header | The client can say "this message is 16 bytes" and send 1 byte |
 | Inter-process communication | Socket, named pipe, shared memory | Another process on the same machine is untrusted too |
@@ -680,7 +616,7 @@ return sonuc;
 
 An uninitialized local variable carries whatever value used to sit at that stack location — which could even be a
 **secret** belonging to a previous function. For security purposes, the default value should mean "no
-permission" or "error" (Week 1's secure-default principle).
+permission" or "error" ([Week 1](../week-1/cen429-week-1.md)'s secure-default principle).
 
 ### ERR33-C: detect library errors
 
@@ -732,7 +668,7 @@ printf("%s", kullanici_girdisi);     /* CORRECT: the input is only data */
 How harmful this is depends on the platform and the protections in place; but even the mildest outcome is an
 **information leak**: a key sitting on the stack, an address (which weakens ASLR), or a canary value could be
 read. The same bug shows up in `syslog`, `fprintf`, `snprintf`, `err`/`warn`, and every function that takes a
-format string; in Week 2 we saw this exact `syslog(LOG_INFO, kullanici_girdisi)` bug in an audit log.
+format string; in [Week 2](../week-2/cen429-week-2.md) we saw this exact `syslog(LOG_INFO, kullanici_girdisi)` bug in an audit log.
 
 ### Worked example: what does `%x` read from the stack? Step by step
 
@@ -818,9 +754,9 @@ defence (fixing the format string).
     `printf(girdi)`.
 
 This mechanism is a concrete example of the "violation of memory read/write bounds" family of bugs we saw in
-Week 1: `%x` performs an **out-of-bounds read**, `%n` performs an **out-of-bounds write** — the difference is that
+[Week 1](../week-1/cen429-week-1.md): `%x` performs an **out-of-bounds read**, `%n` performs an **out-of-bounds write** — the difference is that
 what crosses the bound is not an array index but the number of markers in the format string. It comes from the
-same root as the injection attacks we will see in Week 5: **data has taken the place of a command** — in SQL
+same root as the injection attacks we will see in [Week 5](../week-5/cen429-week-5.md): **data has taken the place of a command** — in SQL
 injection the data becomes part of a query, here the data is interpreted as a formatting command.
 
 ### Demo 1 — Format string vulnerability
@@ -887,8 +823,9 @@ gunluk_yaz(1, "%s", kullanici);    /* correct */
 
 ## 6. Use-after-free and double free
 
-In Week 1 we saw the theory of memory management bugs and the ownership rule. In this section we trace the same
-bug in a running program and see how C++ eliminates most of these bugs **by design**.
+[Week 1, §17](../week-1/cen429-week-1.md#17-memory-management-and-security) gave us, at a basic level, the theory
+of memory management bugs, the ownership rule, and why use-after-free is dangerous. In this section we trace the
+same bug byte by byte in a running program and see how C++ eliminates most of these bugs **by design**.
 
 ![The use-after-free chain](assets/h04-08-uaf.svg)
 
@@ -1061,7 +998,7 @@ if (auto o = onbellek.lock()) {                // is the object still alive?
 
 ## 7. Integers and undefined behaviour (Recipe 3.5)
 
-In Week 1 we saw a signed length turn into a huge number when converted to `size_t`. In this section we cover the
+In [Week 1](../week-1/cen429-week-1.md#16-integers-and-the-signed-length-bug) we saw a signed length turn into a huge number when converted to `size_t`. In this section we cover the
 whole family of integer bugs and one of C's most surprising concepts: **undefined behaviour**.
 
 ![The signed value -1 turning into SIZE_MAX](assets/h04-09-tamsayi.svg)
@@ -1294,9 +1231,9 @@ unchecked error means the program continues on a **false assumption**:
 | Call | On failure | If not checked |
 | --- | --- | --- |
 | `malloc` | `NULL` | Writing through a NULL pointer, crash |
-| `setuid` / `setresuid` | `-1` | The program stays privileged but believes it has dropped privileges (Week 1) |
+| `setuid` / `setresuid` | `-1` | The program stays privileged but believes it has dropped privileges ([Week 1](../week-1/cen429-week-1.md)) |
 | `fopen` | `NULL` | The next `fread` crashes, or the operation proceeds with empty data |
-| `RAND_bytes` / `getrandom` | `!= 1` / `-1` | The "random" key is made of zeros (Week 3) |
+| `RAND_bytes` / `getrandom` | `!= 1` / `-1` | The "random" key is made of zeros ([Week 3](../week-3/cen429-week-3.md)) |
 | `EVP_DecryptFinal_ex` | `!= 1` | Tampered data is treated as verified (Week 3) |
 | `snprintf` | Return ≥ size | The output has been truncated; a path or command can change meaning |
 
@@ -1433,6 +1370,11 @@ Static analysis produces false alarms; managing them is also part of the process
 ---
 
 ## 10. Sanitizers: catching bugs at runtime
+
+In Week 1 we briefly saw AddressSanitizer for the first time, catching an overflow
+([Week 1, §14](../week-1/cen429-week-1.md#14-buffer-overflows-how-they-happen-how-to-prevent-them)). This week we
+go deep into the whole sanitizer family, ASan's internal mechanism (shadow memory), and how to read a report line
+by line.
 
 A **sanitizer** is a checking layer the compiler adds to a program: it checks, at runtime, whether every memory
 access, every integer operation, or every thread access is valid, and gives a detailed report at the first bug.
@@ -1634,8 +1576,11 @@ demo shows the bug via the ASan replay build instead. On Windows, libFuzzer runs
 
 ## 12. Compiler and operating system protections
 
-Secure coding **prevents** bugs; compiler and operating system protections **make a bug harder to exploit** once
-one slips through. The textbook mentions only the stack protector among these (StackGuard, ProPolice, MSVC `/GS`)
+Week 1's "Who catches the overflow?" section already gave us a brief list of these protections
+([Week 1, §14](../week-1/cen429-week-1.md#14-buffer-overflows-how-they-happen-how-to-prevent-them)); this week we
+go through each one's internal mechanism and what it stops and doesn't stop, one at a time. Secure coding
+**prevents** bugs; compiler and operating system protections **make a bug harder to exploit** once one slips
+through. The textbook mentions only the stack protector among these (StackGuard, ProPolice, MSVC `/GS`)
 (Recipe 3.3); ASLR, DEP/NX, RELRO, and control-flow integrity became widespread after the textbook was written.
 
 ![Compiler and operating system protection layers](assets/h04-02-derleyici-os-korumalari.svg)
@@ -1885,7 +1830,7 @@ release protection flags are only turned on for Demo 5's `giris_sert` target:
 | Mode | Purpose | Flags (summary) |
 | --- | --- | --- |
 | `korumasiz` | Show the bug "bare" | Optimisation off (`-O0` / `/Od`) |
-| `optimize` | Show the effect of compiler optimisation (Week 1 Demo 2) | `-O2` / `/O2` |
+| `optimize` | Show the effect of compiler optimisation ([Week 1](../week-1/cen429-week-1.md) Demo 2) | `-O2` / `/O2` |
 | `asan` | Catch memory bugs | `-O1 -fsanitize=address` / `/fsanitize=address`; FORTIFY is turned off on Linux so only ASan is seen |
 | `denetimli` | The library's runtime checks | `-O2 -D_FORTIFY_SOURCE=2` (`KUTUPHANE_DENETIMI` define on Windows) |
 | `guvenli` | The fixed source code | `-O2` / `/O2`; the real difference is in the code itself |
@@ -1895,11 +1840,11 @@ CI, protections on and logging off for the release build.
 
 ### Supply chain: the build environment itself
 
-As we saw in Week 2, an attacker sometimes targets not the code but the **build environment**. For the security
+As we saw in [Week 2](../week-2/cen429-week-2.md), an attacker sometimes targets not the code but the **build environment**. For the security
 of the build pipeline:
 
 - Access to the build server must be restricted and logged.
-- Dependencies must be pinned by version and hash digest (Week 5's SBOM).
+- Dependencies must be pinned by version and hash digest ([Week 5](../week-5/cen429-week-5.md)'s SBOM).
 - Release binaries must be signed and their hash digests published (Week 1's unique version identifier).
 - Where possible, use a **reproducible build**: the same source always produces a bit-for-bit identical binary.
 
@@ -1908,10 +1853,14 @@ of the build pipeline:
 ## 14. Introduction to code obfuscation (Recipe 12.1, 12.3)
 
 Everything we have covered so far is enough against a remote attacker who only sends input. But the **white-box
-attacker** we saw in Week 1 possesses the program itself: they can open the binary in a disassembler, read its
+attacker** we saw in [Week 1](../week-1/cen429-week-1.md) possesses the program itself: they can open the binary in a disassembler, read its
 strings, find its functions by name. If your code has a license check, part of a key, or a security check, reading
 it is the first step toward bypassing it. **Code obfuscation** is the general name for transformations that make a
 program's behaviour harder to **understand**, without changing that behaviour.
+
+This week we only **introduce** obfuscation: what it gives, what it does not, and three simple measures. The full
+catalogue of obfuscation rules and how to measure them come in [Week 9](../week-9/cen429-week-9.md#3-what-does-obfuscation-give-and-what-does-it-not-give);
+applying the same rules automatically with a tool comes in [Week 14](../week-14/cen429-week-14.md#1-what-is-source-to-source-obfuscation).
 
 ![The difference between a remote attacker and the owner of the device](assets/h04-17-iki-saldirgan-modeli.svg)
 
@@ -1988,8 +1937,8 @@ usually a deliberate decision recorded in the trade-off log (e.g., writing only 
 !!! warning "String hiding is not a key-storage method"
     An encrypted string is decrypted at the moment of use while the program is running; at that moment it sits in
     memory unencrypted, and the decryption key is also inside the program. String hiding stops **static** scans
-    like `strings`; against an attacker examining the program while it runs you need RASP (Week 6), and for real
-    keys you need whitebox cryptography (Week 11). This is why, in the field, the string-hiding key is itself also
+    like `strings`; against an attacker examining the program while it runs you need RASP ([Week 6](../week-6/cen429-week-6.md)), and for real
+    keys you need whitebox cryptography ([Week 11](../week-11/cen429-week-11.md)). This is why, in the field, the string-hiding key is itself also
     split up and hidden, and the decryption function is protected with additional checks.
 
 ### Demo 6 — Symbol and string leakage
@@ -2027,7 +1976,8 @@ usually a deliberate decision recorded in the trade-off log (e.g., writing only 
 A compiled function's control-flow graph (CFG) shows the algorithm's skeleton: which check is done in which order,
 which branch leads to success. **Control-flow flattening** moves all of a function's basic blocks into a `switch`
 dispatcher inside a single loop. The natural adjacency between blocks disappears; which block follows which can
-only be read off from the value of a **state variable**.
+only be read off from the value of a **state variable**. Here we see the idea and a small demo; the in-depth version
+comes in [Week 9 as rule K-04](../week-9/cen429-week-9.md#5-control-flow-rules-advanced).
 
 ![Control flow before and after flattening](assets/h04-19-duzlestirme-giris.svg)
 
@@ -2086,7 +2036,7 @@ combined with other techniques:
 | 2 | `objdump` / `dumpbin` is used to compare `pin_dogrula`'s machine code: the flattened version has far more branches |
 | 3 | Timing: the flattened version is slower |
 
-This demo is the hand-made counterpart to what we will do **automatically** in Week 14 with Tigress's
+This demo is the hand-made counterpart to what we will do **automatically** in [Week 14](../week-14/cen429-week-14.md) with Tigress's
 `--Transform=Flatten` transformation. We will cover how to measure obfuscation's effectiveness (strength,
 resilience, cost) in Week 9.
 
@@ -2110,7 +2060,7 @@ to know what they are:
     They evaluate obfuscation not as "present/absent" but by **time**: how long did it take to find a sensitive
     function in the binary, understand its logic, and bypass a check? They start with a `strings` and symbol scan,
     then examine the control flow with a disassembler. The report records how much each protection layer delayed
-    the attack; in attack-potential scoring (Week 13), the "time required" and "expertise required" metrics come
+    the attack; in attack-potential scoring ([Week 13](../week-13/cen429-week-13.md)), the "time required" and "expertise required" metrics come
     from exactly this.
 
 ---
@@ -2330,7 +2280,7 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
   CWE-415, CWE-416, CWE-479 (unsafe function call from a signal handler), CWE-758 (reliance on undefined
   behaviour), CWE-215 (information exposure through debug information), CWE-200.
 - C. Collberg, J. Nagra, *Surreptitious Software*, Addison-Wesley, 2009 (taxonomy of obfuscation; covered in
-  detail in Week 9).
+  detail in [Week 9](../week-9/cen429-week-9.md)).
 
 ??? abstract "Glossary"
     | Term | English | Short definition |
@@ -2350,3 +2300,9 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     | Obfuscation | Obfuscation | A transformation that makes something harder to understand without changing its behaviour |
     | Control-flow flattening | Control-flow flattening | Moving blocks into a single loop + `switch` dispatcher |
     | Opaque predicate | Opaque predicate | A condition whose value the programmer knows but that is hard to work out through analysis |
+
+!!! info "Next week"
+    **[Week 5](../week-5/cen429-week-5.md) — Java and interpreted languages.** This week we dealt with manually managed memory and
+    compiler/OS protections in C/C++; Week 5 shows how Java's runtime (the JVM) eliminates most of the memory
+    bugs we saw this week (overflow, use-after-free, undefined behaviour), but opens up a new bug class —
+    injection. The SEI CERT Java rules will be compared with the SEI CERT C/C++ rules we covered today.

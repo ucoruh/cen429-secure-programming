@@ -5,7 +5,7 @@
 | **Tarih** | 11.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.5, 7 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Hafta 1'den varlık, tehdit ve karşı önlem; Hafta 12'den değerlendirme ve kanıt kavramları; dönem projesinin S bölümlerinin ne işe yaradığı |
+| **Ön bilgi** | [Hafta 1](../week-1/cen429-week-1.md)'den varlık, tehdit ve karşı önlem; [Hafta 12](../week-12/cen429-week-12.md)'den değerlendirme ve kanıt kavramları; dönem projesinin S bölümlerinin ne işe yaradığı |
 | **Uygulamalar** | [`code/week-13`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-13) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
@@ -90,78 +90,40 @@
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Gereksinim (requirement) nedir?
+### Önceki haftalardan gelenler
 
-- **Gereksinim:** sistemin **karşılaması gereken** bir koşul.
-- Güvenlik gereksinimi: bir güvenlik koşulu.
-- İyi gereksinim **doğrulanabilir** (test edilebilir).
+- **Varlık, tehdit ve uygulama koruma planı** — bir yazılımın güvenliğini yöneten yazılı plan: kapsam, mimari ve
+  arayüzler, varlıklar, tehditler, karşı önlemler, doğrulama, kalan risk; her varlık için nerede durduğu, ne zaman
+  oluşup silindiği ve hangi korumayı (C/I) gerektirdiği bir **varlık tablosunda** listelenir
+  ([Hafta 1, §6](../week-1/cen429-week-1.md#6-uygulama-koruma-plani)). Bu hafta §2'de her gereksinimi bu tabloya
+  ve tehdit modeline bağlıyoruz, §7'de bu bağlamayı bir karar sürecine dönüştürüyoruz.
+- **Bağımsız değerlendirme, bulgu ve kanıt** — bir ürünün geliştiricisi değil bağımsız bir laboratuvarın kanıta
+  dayalı olarak yürüttüğü değerlendirme süreci; değerlendiricinin belgelediği her eksiklik bir **bulgudur**
+  ([Hafta 12, §2](../week-12/cen429-week-12.md#2-degerlendirme-sureci-13-adim)). Bu hafta §2'de aynı disiplini
+  "gereksinimden kanıta izlenebilirlik zinciri" olarak, §9'da ise dönem projenizin S17/S14 bölümleri olarak
+  kullanıyoruz.
 
-### Üç tür gereksinim
+### Bu haftanın kavram haritası
 
-- **İşlevsel:** hangi güvenlik işlevi olacak? (ör. veri AEAD ile korunur)
-- **Güvence:** doğru yapıldığına nasıl güveneceğiz? (ör. test raporu)
-- **Süreç:** kurum nasıl çalışmalı? (ör. her değişiklik incelenir)
-
-### İyi vs kötü gereksinim
-
-- **Kötü:** "Uygulama güvenli olmalıdır." (doğrulanamaz)
-- **İyi:** "Sürüm derlemesi yığın koruyucu, PIE ve tam RELRO ile üretilmelidir." (ölçülebilir)
-
-### İzlenebilirlik (traceability)
-
-- **İzlenebilirlik:** her gereksinimi bir **önleme**, **teste** ve **kanıta** bağlamak.
-- "Bu gereksinim nerede karşılandı, nasıl doğrulandı?"
-
-### Uyum matrisi
-
-- **Uyum matrisi:** gereksinim → durum → bölüm → doğrulama → kanıt tablosu.
-- Projenin **S17** bölümü.
-- Değerlendiricinin ilk baktığı yer.
-
-### Gereksinim durumları
-
-- **Karşılandı:** ürün bu gereksinimi sağlar (kanıtla).
-- **Devredildi:** başka bir taraf sağlar (kime, neden, nasıl).
-- **Karşılanmadı:** henüz sağlanmıyor.
-
-### Devredilen gereksinim
-
-- Bir bileşen bir gereksinimi **karşılayamıyorsa**, üst uygulamaya/OS'a **devreder**.
-- Kılavuza: **kime**, **neden**, **nasıl** karşılanacağı yazılır.
-- Projenin **S14** bölümü.
-
-### Ortak Kriterler (CC)
-
-- **Ortak Kriterler (ISO/IEC 15408):** ürün güvenliği değerlendirme standardı.
-- Kavramlar: TOE, ST, PP, SFR, SAR, EAL (birazdan).
-
-### CC · temel terimler
-
-- **TOE:** değerlendirilen ürün.
-- **ST (Security Target):** bu ürünün güvenlik hedefi belgesi.
-- **PP (Protection Profile):** bir ürün **sınıfı** için ortak gereksinim seti.
-
-### CC · SFR, SAR, EAL
-
-- **SFR:** güvenlik **işlevsel** gereksinimleri.
-- **SAR:** güvenlik **güvence** gereksinimleri.
-- **EAL:** değerlendirmenin **derinlik** düzeyi (EAL1–EAL7).
-
-### FIPS 140-3
-
-- **FIPS 140-3:** kriptografik **modüllerin** doğrulanması standardı.
-- Güvenlik düzeyleri (1–4).
-- Yalnız modülü kapsar, uygulamanın tamamını değil.
-
-### Sektör standartları
-
-- **ETSI EN 303 645:** IoT temel güvenlik.
-- **GSMA, EMVCo, PCI:** mobil/ödeme.
-- **OWASP MASVS:** mobil uygulama gereksinimleri.
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Gereksinim | Sistemin karşılaması gereken, doğrulanabilir bir koşuldur; ürünün ne yapması gerektiğini söyler, nasıl yapacağını söylemez. | [§1](#1-guvenlik-gereksinimi-nedir-iyi-gereksinim-nasil-yazilir) |
+| Üç tür gereksinim | Gereksinimler işlevsel (hangi güvenlik işlevi), güvence (buna nasıl güveneceğiz) ve süreç (kurum nasıl çalışmalı) olmak üzere üçe ayrılır. | [§1](#uc-tur-gereksinim) |
+| İyi ve kötü gereksinim | İyi bir gereksinim tekil, doğrulanabilir, izlenebilir, uygulanabilir ve "nasıl" değil "ne" odaklıdır; "uygulama güvenli olmalıdır" gibi bir cümle bunların hiçbirini sağlamadığı için kötüdür. | [§1](#kotu-ve-iyi-gereksinim) |
+| İzlenebilirlik | Her gereksinimi bir önleme, bir teste ve bir kanıta bağlama disiplinidir; "bu gereksinim nerede karşılandı, nasıl doğrulandı?" sorusuna cevap verir. | [§2](#2-gereksinimden-kanita-izlenebilirlik) |
+| Uyum matrisi | Kimlik, gereksinim, durum, önlem, doğrulama ve kanıt sütunlarını bir arada tutan, değerlendiricinin ilk açtığı tablodur (proje bölümü S17). | [§2](#2-gereksinimden-kanita-izlenebilirlik) |
+| Gereksinim durumları | Bir gereksinim karşılandı (ürün kendisi sağlıyor), devredildi (başka bir taraf sağlıyor), karşılanmadı (uygulanır ama eksik) ya da uygulanmaz (ürüne hiç uygulanmıyor) olarak işaretlenir. | [§2](#2-gereksinimden-kanita-izlenebilirlik) |
+| Devredilen gereksinim | Bir bileşenin tek başına karşılayamadığı, üst uygulamaya, işletim sistemine ya da donanıma kime/neden/nasıl belirtilerek aktarıldığı gereksinimdir (proje bölümü S14). | [§3](#devredilen-gereksinimler-sorumlulugun-siniri) |
+| Ortak Kriterler (CC) | ISO/IEC 15408; bilgi teknolojisi ürünlerinin güvenlik değerlendirmesi için uluslararası standarttır. | [§4](#4-ortak-kriterler-isoiec-15408) |
+| TOE, ST, PP | TOE değerlendirilen üründür; ST bu ürüne özgü güvenlik hedefi belgesidir; PP bir ürün sınıfı için ortak gereksinim setidir. | [§4](#temel-kavramlar) |
+| SFR, SAR, EAL | SFR işlevsel, SAR güvence gereksinimleridir; EAL (1–7) ürünün ne kadar güvenli olduğunu değil, değerlendirmenin ne kadar derin yapıldığını gösterir. | [§4](#temel-kavramlar) |
+| FIPS 140-3 | Kriptografik **modüllerin** doğrulanması için NIST standardıdır; güvenlik düzeyleri (1–4) vardır ve yalnız modülü kapsar, uygulamanın tamamını değil. | [§5](#5-fips-140-3-kriptografik-modullerin-dogrulanmasi) |
+| Sektör standartları | ETSI EN 303 645 tüketici IoT'sini, GSMA mobil/SIM ekosistemini, EMVCo ve PCI ödemeyi, OWASP MASVS mobil uygulamaları hedefleyen, sektöre özgü gereksinim setleridir. | [§6](#6-etsi-gsma-emvco-pci-ve-owasp-sektore-ozgu-gereksinim-setleri) |
 
 ### Neden bu kadar çok terim var? (gerekçe)
 
@@ -191,25 +153,6 @@ adımdır.
     da cümlesine yazın. Bir cümlede ürün adı, kütüphane adı ya da algoritma adı geçiyorsa, o cümle büyük olasılıkla
     önlemdir, gereksinim değil.
 
-### Kavramları tek bir varlık üzerinden görelim (mini örnek)
-
-Terimlerin nasıl bir araya geldiğini görmek için tek bir varlık üzerinden hızlıca geçelim; tam işlenmiş hâlini
-2. bölümde uçtan uca göreceğiz.
-
-1. **Varlık** (1. haftadan): "kullanıcının oturum belirteci (session token)"; varlık tablosunda gizlilik sınıfı
-   **C** olarak işaretli.
-2. **Tehdit** (1. haftadan): ağı dinleyen bir saldırgan bu belirteci ele geçirip kullanıcı gibi davranabilir.
-3. **Gereksinim:** "Oturum belirteci yalnız şifreli bir kanaldan taşınmalıdır." Bu, tehdide karşı sistemin **ne**
-   yapması gerektiğini söyler; **nasıl** yapacağını söylemez.
-4. **Durum:** Ekip bunu ürünün kendisi mi karşılıyor, yoksa başka bir tarafa mı **devrediyor**? Diyelim ki ürün
-   TLS'i kendi kuruyor: durum **karşılandı**.
-5. **İzlenebilirlik:** Bu gereksinim kılavuzun hangi bölümünde açıklanıyor (önlem), nasıl doğrulanıyor (test),
-   kanıtı nerede? Bu üç sorunun cevabı **uyum matrisinin** bir satırını oluşturur.
-
-Aynı varlık üzerinden gidip "devredildi" durumunu da görelim: ürün bir kütüphane olsaydı ve TLS bağlantısını üst
-uygulama kuruyor olsaydı, gereksinim üst uygulamaya **devredilir** ve S14'e "kime: üst uygulama; neden: kütüphane
-ağ bağlantısı açmıyor; nasıl: üst uygulama TLS 1.2+ ve sertifika doğrulamasıyla bağlanmalı" yazılırdı.
-
 ### 'Gereksinim ailesi' ile 'standart' farkı
 
 Bu derste iki farklı kaynaktan gelen iki farklı şey kullanılır ve bunları karıştırmak yaygın bir hatadır:
@@ -220,18 +163,8 @@ Bu derste iki farklı kaynaktan gelen iki farklı şey kullanılır ve bunları 
   kısa listesi (8. bölüm). Amacı, farklı standartların ortak paydasını tek bir çalışılabilir listede toplamaktır.
 
 Bir gereksinimi yazarken "hangi standarda dayanıyor" (kaynak) ile "dersin hangi ailesine giriyor" (kimlik) iki
-ayrı sorudur; ikisini de S1 (kaynaklar) ve S17 (uyum matrisi) bölümlerinde ayrı ayrı belirtirsiniz.
-
-### Hızlı öz-kontrol (bölüm 0'ı bitirmeden)
-
-- **S:** "Sürüm derlemesi PIE ile üretilmelidir" bir gereksinim mi, önlem mi? **C:** Gereksinim — ölçülebilir bir
-  koşul, henüz "nasıl karşılandığını" (hangi derleyici bayrağı) söylemiyor.
-- **S:** Bir kılavuzda bir satır "karşılandı" yazıyor ama yanında hiç dosya adı yok. Bu satır ne anlama gelir?
-  **C:** Hiçbir şey kanıtlamaz; izlenebilirlik zinciri kırık sayılır (2. bölüm).
-- **S:** Ürün ağa hiç bağlanmıyorsa "aktarımda veri" gereksinimleri için durum ne yazılır? **C:** "Uygulanmaz",
-  gerekçesiyle birlikte.
-- **S:** "Anahtarlar iyi yönetilmelidir" cümlesi neden tekil değildir? **C:** "İyi yönetmek" içine üretim, saklama,
-  kullanım ve imha gibi birden çok koşulu belirsizce sıkıştırır; her biri ayrı bir gereksinim olmalıdır.
+ayrı sorudur; ikisini de S1 (kaynaklar) ve S17 (uyum matrisi) bölümlerinde ayrı ayrı belirtirsiniz. 6. bölümde bu
+ikisinin aynı ihtiyacı nasıl farklı sözcüklerle ifade ettiğini dört standart üzerinden göreceğiz.
 
 ### 'Karşılanmadı' ile 'uygulanmaz' farkı
 
@@ -244,9 +177,7 @@ için gereksinim durumları kadar önemlidir:
   gereksinimleri uygulanmaz). Bu bir eksiklik değildir, ama **gerekçesiz** yazılırsa değerlendirici bunu
   "gereksinim atlanmış, kontrol edilmemiş" sayar.
 
-Kural: "Uygulanmaz" yazarken her zaman **neden** uygulanmadığını bir cümleyle ekleyin. Gerekçesiz "uygulanmaz",
-gerekçesiz "karşılandı" kadar güvenilmezdir — ikisi de değerlendiricinin gözünde "kontrol edilmedi" anlamına
-gelebilir.
+Bu ayrımın sık yapılan hatasını ve kuralını, gereksinimleri projeye aktarırken 7. bölümde tekrar göreceğiz.
 
 ### Bu bölümde gördüğümüz altı durum/karar kelimesi
 
@@ -256,7 +187,7 @@ doldururken tekrar tekrar kullanacağınız kelimelerdir:
 | Kelime | Ne zaman kullanılır | Yanında ne yazılmalı |
 | --- | --- | --- |
 | **Karşılandı** | Ürün gereksinimi kendisi sağlıyor | Önlem + doğrulama + kanıt (2. bölüm) |
-| **Devredildi** | Başka bir taraf sağlıyor | Kime + neden + nasıl (bu bölüm, 3. bölüm) |
+| **Devredildi** | Başka bir taraf sağlıyor | Kime + neden + nasıl (3. bölüm) |
 | **Karşılanmadı** | Uygulanır ama henüz sağlanmıyor | Kalan risk + planlanan düzeltme |
 | **Uygulanmaz** | Ürüne hiç uygulanmıyor | Gerekçe |
 | **-malıdır (MUST)** | Zorunlu | Karşılanmazsa doğrudan bulgu |
@@ -264,14 +195,6 @@ doldururken tekrar tekrar kullanacağınız kelimelerdir:
 
 Bu tabloyu aklınızda tutmak, ilerideki bölümlerde göreceğiniz bütün örnekleri okurken size bir referans noktası
 verecektir.
-
-### Şimdi hazırız
-
-Terimler:
-
-gereksinim (işlevsel/güvence/süreç) · izlenebilirlik · uyum matrisi · durum (karşılandı/devredildi/karşılanmadı) · devredilen · CC (TOE/ST/PP/SFR/SAR/EAL) · FIPS 140-3 · ETSI/GSMA/EMVCo/PCI/MASVS
-
-Şimdi: iyi gereksinim nasıl yazılır?
 
 ## 1. Güvenlik gereksinimi nedir? İyi gereksinim nasıl yazılır?
 
@@ -287,10 +210,13 @@ nerede?" diye sorar.
 !!! note "Kısa tarihçe: güvenlik gereksinimleri nasıl standartlaştı?"
     - **1985** — **TCSEC** ("Orange Book") güvenlik **gereksinim düzeylerini** ilk kez resmîleştirir.
     - **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**, 2019).
-    - **1999** — **Ortak Kriterler (ISO/IEC 15408)**: **PP/ST**, **SFR/SAR** ve **EAL** kavramları buradan gelir (12. hafta süreci).
+    - **1999** — **Ortak Kriterler (ISO/IEC 15408)**: **PP/ST**, **SFR/SAR** ve **EAL** kavramları buradan gelir ([12. hafta](../week-12/cen429-week-12.md) süreci).
     - **2010'lar** — sektöre özgü setler: mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**, ödeme için **EMVCo/PCI**.
 
     Değişmeyen ilke: iyi gereksinim **ölçülebilir** ve **izlenebilir** olmalıdır; kanıtsız "karşılandı" geçersizdir.
+
+Bir gereksinim yazmaya başlamadan önce hangi türden söz ettiğimizi netleştirmek gerekir; gereksinimler üç ana türe
+ayrılır:
 
 ### Üç tür gereksinim
 
@@ -333,7 +259,7 @@ güvenli olmalıdır") aynı hastalığıdır: cümle her şeyi ve hiçbir şeyi
 
 > Ara adım: "Uygulama, kullanıcı verilerini korumalıdır." → hangi veri, hangi tehdide karşı belli değil.
 
-**Adım 2 — Varlık tablosuna bağlayın (1. hafta).** "Kullanıcı verileri" tek bir şey değildir; varlık tablosunda
+**Adım 2 — Varlık tablosuna bağlayın ([1. hafta](../week-1/cen429-week-1.md)).** "Kullanıcı verileri" tek bir şey değildir; varlık tablosunda
 ayrı ayrı satırlardır: oturum belirteci, profil bilgisi, ödeme jetonu, günlük kayıtları... Her biri farklı bir
 gizlilik/bütünlük sınıfına (C/I/I+/N) sahiptir ve farklı bir gereksinim gerektirir. Bu adımda tek cümleyi, varlık
 tablosundaki **C sınıfı** işaretli olan "yerel veritabanındaki hassas alanlar" ile sınırlıyoruz.
@@ -348,8 +274,8 @@ de gerekir. İki hedefin de aynı anda gerekli olduğunu fark etmek, bir sonraki
 > Ara adım: "Yerel veritabanındaki C sınıfı alanların gizliliği ve bütünlüğü korunmalıdır." → "nasıl" hâlâ yok,
 > ölçülebilir bir kriter yok.
 
-**Adım 4 — Ölçülebilir bir teknik kriter ekleyin (9. hafta koruma kurallarına bağlanarak).** 9. haftada gördüğümüz
-kural: gizlilik ve bütünlüğü **aynı anda** istiyorsanız doğru araç sınıfı AEAD'dir (bkz. 3. hafta). Bu, gereksinime
+**Adım 4 — Ölçülebilir bir teknik kriter ekleyin ([9. hafta](../week-9/cen429-week-9.md) koruma kurallarına bağlanarak).** 9. haftada gördüğümüz
+kural: gizlilik ve bütünlüğü **aynı anda** istiyorsanız doğru araç sınıfı AEAD'dir (bkz. [3. hafta](../week-3/cen429-week-3.md)). Bu, gereksinime
 somut, teknolojiden bağımsız bir ölçüt katar; hâlâ belirli bir kütüphane adı vermiyoruz.
 
 > Ara adım: "Yerel veritabanındaki C sınıfı alanlar kimlik doğrulamalı şifrelemeyle (AEAD) korunmalıdır." → hangi
@@ -449,7 +375,9 @@ soru bizi 2. bölümdeki izlenebilirlik zincirine götürür.
 
 ## 2. Gereksinimden kanıta: izlenebilirlik
 
-Bir gereksinim ancak **kanıtıyla** karşılanmış sayılır. Sertifikasyonda her gereksinim için şu zincir kurulur:
+Bir gereksinim ancak **kanıtıyla** karşılanmış sayılır. Bu disipline **izlenebilirlik** denir: her gereksinimi bir
+önleme, bir teste ve bir kanıta bağlamak; "bu gereksinim nerede karşılandı, nasıl doğrulandı?" sorusuna her zaman
+cevap verebilmektir. Sertifikasyonda her gereksinim için şu zincir kurulur:
 
 ![Gereksinimden kanıta izlenebilirlik zinciri](assets/h13-01-izlenebilirlik.svg)
 
@@ -470,7 +398,7 @@ yönü okur: karşılanmış denen ama kanıtı olmayan bir satır, ilk bulgudur
 
 Zincirin nasıl kurulduğunu tek bir varlık üzerinden başından sonuna kadar dolduralım.
 
-**1. Varlık (1. hafta varlık tablosundan).**
+**1. Varlık ([1. hafta](../week-1/cen429-week-1.md) varlık tablosundan).**
 
 | Alan | Değer |
 | --- | --- |
@@ -492,7 +420,7 @@ araç sınıfı (şifreli kanal + sunucu kimlik doğrulaması) → durum (aktar�
 
 **4. Önlem (kılavuzda hangi bölüm, ne yapılıyor).** Kılavuzun S10.3 "Aktarım güvenliği" bölümünde: "İstemci,
 sunucuya her bağlantıda TLS 1.2+ el sıkışması yapar; sertifika zinciri ve ana bilgisayar adı doğrulanır (bkz.
-Hafta 10). Kanal kurulmadan hiçbir istek gönderilmez."
+[Hafta 10](../week-10/cen429-week-10.md)). Kanal kurulmadan hiçbir istek gönderilmez."
 
 **5. Doğrulama (nasıl test edildi).** Güvenlik testi ekibi bir MITM (ortadaki adam) aracı ile bağlantıyı araya
 girmeye çalışır: (a) geçersiz/kendinden imzalı bir sertifika sunarak bağlantının **reddedildiğini**, (b) düz metin
@@ -515,6 +443,11 @@ Zincirin altı halkasından **biri eksik olsaydı** ne olurdu?
 - Önlem yazılmasaydı → "karşılandı" iddiası desteksiz kalırdı.
 - Doğrulama tanımlanmasaydı → "nasıl test edildi?" sorusuna cevap olmazdı.
 - Kanıt olmasaydı → satır, değerlendiricinin ilk bulgusu olurdu (bkz. aşağıdaki kural).
+
+Aynı gereksinim üzerinden "devredildi" durumunu da görelim: ürün bir kütüphane olsaydı ve TLS bağlantısını üst
+uygulama kuruyor olsaydı, `CEN429-DT-01` üst uygulamaya **devredilir** ve S14'e "kime: üst uygulama; neden:
+kütüphane ağ bağlantısı açmıyor; nasıl: üst uygulama TLS 1.2+ ve sertifika doğrulamasıyla bağlanmalı" yazılırdı.
+Devretmenin kuralları [§3](#3-gereksinim-blogu-kalibi-ve-devredilen-gereksinimler)'te.
 
 ### Geri izlenebilirlik: fazladan bir önlem bulmak
 
@@ -541,7 +474,7 @@ değerlendirme süresini uzatır.
 
 ### İzlenebilirlik ile 12. hafta değerlendirmesi arasındaki bağ
 
-Geçen hafta (12. hafta) gördüğünüz değerlendirme süreci, aslında bu matrisin **okunma** biçimidir: bir değerlendirici
+Geçen hafta ([12. hafta](../week-12/cen429-week-12.md)) gördüğünüz değerlendirme süreci, aslında bu matrisin **okunma** biçimidir: bir değerlendirici
 projenizi incelerken rastgele kod satırlarını okumaz; önce uyum matrisini açar, "karşılandı" satırlarını seçer,
 her birinin kanıtını talep eder ve kanıtı **bağımsız olarak** doğrular (12. haftadaki "bağımsız doğrulama"
 ilkesi). Matrisiniz ne kadar iyi kurulmuşsa, değerlendirme o kadar hızlı ve o kadar az soru işaretiyle ilerler;
@@ -704,7 +637,7 @@ değildir; tam tersine daha fazla açıklama ister, çünkü sorumluluk sınır�
 Projeler genelde şu üç varsayımı unutur; S14'e eklerken kontrol edin:
 
 1. **Derleme ortamı güvenilir mi?** "Derleme sunucusuna saldırgan erişemez" varsayımı genelde yazılmaz ama her
-   projenin dayandığı bir temeldir (6. hafta tedarik zinciri güvenliği).
+   projenin dayandığı bir temeldir ([6. hafta](../week-6/cen429-week-6.md) tedarik zinciri güvenliği).
 2. **Kullanıcı cihazı kök/jailbreak yapılmamış mı?** Yapılmışsa hangi önlemlerin geçersiz kaldığı (ör. güvenli
    depolama artık güvenli olmayabilir) açıkça yazılmalıdır.
 3. **Sunucu tarafı ayrı bir ekip tarafından mı korunuyor?** Öyleyse hangi gereksinimlerin (ör. sunucu tarafı
@@ -794,7 +727,7 @@ bir ülkede verilen sertifika, anlaşmaya taraf diğer ülkelerde de tanınır.
 
 | Kavram | Anlamı | Dersteki karşılığı |
 | --- | --- | --- |
-| **TOE** (Target of Evaluation) | Değerlendirilen ürün ve belgeleri; benzersiz tanımlanır | Değerlendirme hedefi (1. hafta, S0/S1) |
+| **TOE** (Target of Evaluation) | Değerlendirilen ürün ve belgeleri; benzersiz tanımlanır | Değerlendirme hedefi ([1. hafta](../week-1/cen429-week-1.md), S0/S1) |
 | **ST** (Security Target) | Ürüne özgü güvenlik hedefi belgesi: tehditler, varsayımlar, güvenlik amaçları, gereksinimler | Güvenlik kılavuzunuz |
 | **PP** (Protection Profile) | Bir ürün sınıfı için (ör. mobil cihaz, güvenlik duvarı) ortak gereksinim seti; ürünler buna uyduğunu iddia eder | Dersin gereksinim aileleri |
 | **SFR** (Security Functional Requirement) | İşlevsel güvenlik gereksinimleri; standart bir katalogdan seçilir (ör. FCS kriptografik destek, FDP kullanıcı verisi koruma, FIA kimlik doğrulama) | İşlevsel gereksinimler |
@@ -908,7 +841,7 @@ kullanmak faydalıdır:
 | Projenizin durumu | Uygun hedef | Neden |
 | --- | --- | --- |
 | Küçük, tek geliştiricili, ders projesi | EAL1–EAL2 benzeri disiplin (işlevsel test + yapısal test) | Kapsamlı belgeleme altyapısı yok |
-| Takım projesi, kod incelemesi ve CI var | EAL3–EAL4 benzeri disiplin (yöntemli tasarım, test, inceleme) | Bu ders boyunca kurduğunuz süreçler (6. hafta CI, 12. hafta inceleme) tam bu düzeye karşılık gelir |
+| Takım projesi, kod incelemesi ve CI var | EAL3–EAL4 benzeri disiplin (yöntemli tasarım, test, inceleme) | Bu ders boyunca kurduğunuz süreçler ([6. hafta](../week-6/cen429-week-6.md) CI, [12. hafta](../week-12/cen429-week-12.md) inceleme) tam bu düzeye karşılık gelir |
 | Ödeme/kimlik doğrulama gibi yüksek riskli bir bileşen | EAL5+ benzeri disiplin (yarı biçimsel tasarım) | Saha örneklerinde akıllı kart ve güvenli eleman ürünleri bu düzeyde değerlendirilir |
 
 Bu tablo bir **CC sertifikası** vaat etmez; yalnızca "ne kadar titiz belgeleme ve test sürecine ihtiyacımız var"
@@ -964,7 +897,7 @@ sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 
 !!! tip "FIPS doğrulaması ne demek değildir?"
     Bir uygulamanın "FIPS doğrulanmış bir kütüphane kullanması", uygulamanın kendisinin doğrulandığı anlamına gelmez.
-    Kütüphaneyi yanlış kullanmak (nonce tekrarı, anahtarı bellekte bırakmak, doğrulamayı kapatmak) 3. ve 10. haftalarda
+    Kütüphaneyi yanlış kullanmak (nonce tekrarı, anahtarı bellekte bırakmak, doğrulamayı kapatmak) 3. ve [10. haftalarda](../week-10/cen429-week-10.md)
     gördüğümüz bütün hataları yeniden getirir. Projenizde "OpenSSL'in FIPS sağlayıcısını kullanıyoruz" diyorsanız, bunun
     hangi gereksinimi karşıladığını ve neyi karşılamadığını ayrıca yazın.
 
@@ -972,7 +905,7 @@ sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 
 Yukarıdaki "özet" listesini gerçek (ama basitleştirilmiş) bir projeye uygulayalım. Diyelim ki projenizin kripto
 katmanı şöyle: OpenSSL'in standart `EVP` arayüzünü kullanıyor, AES-256-GCM ile şifreliyor, anahtarları
-`getrandom()`'dan üretiyor (3. hafta), hata durumunda sessizce varsayılan bir anahtara düşüyor. Düzey 1
+`getrandom()`'dan üretiyor ([3. hafta](../week-3/cen429-week-3.md)), hata durumunda sessizce varsayılan bir anahtara düşüyor. Düzey 1
 beklentilerini tek tek işaretleyelim:
 
 | Düzey 1 beklentisi | Bu projede durum | Neden |
@@ -1085,16 +1018,16 @@ konuların kısa bir özeti gibidir:
 
 | # | Başlık | Dersteki karşılığı |
 | --- | --- | --- |
-| 5.1 | Evrensel varsayılan parola kullanmamak | 1. hafta kimlik doğrulama |
-| 5.2 | Zafiyet bildirimlerini yönetmek için bir yol sunmak | 12. hafta |
-| 5.3 | Yazılımı güncel tutmak | 1. hafta güncelleme imzası, 10. hafta |
-| 5.4 | Hassas güvenlik parametrelerini güvenle saklamak | 3, 10, 11. haftalar |
+| 5.1 | Evrensel varsayılan parola kullanmamak | [1. hafta](../week-1/cen429-week-1.md) kimlik doğrulama |
+| 5.2 | Zafiyet bildirimlerini yönetmek için bir yol sunmak | [12. hafta](../week-12/cen429-week-12.md) |
+| 5.3 | Yazılımı güncel tutmak | 1. hafta güncelleme imzası, [10. hafta](../week-10/cen429-week-10.md) |
+| 5.4 | Hassas güvenlik parametrelerini güvenle saklamak | 3, 10, [11. haftalar](../week-11/cen429-week-11.md) |
 | 5.5 | Güvenli iletişim kurmak | 3, 10. haftalar |
-| 5.6 | Açık saldırı yüzeyini en aza indirmek | 1. hafta, 5. hafta küçültme |
-| 5.7 | Yazılım bütünlüğünü sağlamak | 6. hafta |
-| 5.8 | Kişisel verilerin güvenliğini sağlamak | 3. hafta maskeleme |
+| 5.6 | Açık saldırı yüzeyini en aza indirmek | 1. hafta, [5. hafta](../week-5/cen429-week-5.md) küçültme |
+| 5.7 | Yazılım bütünlüğünü sağlamak | [6. hafta](../week-6/cen429-week-6.md) |
+| 5.8 | Kişisel verilerin güvenliğini sağlamak | [3. hafta](../week-3/cen429-week-3.md) maskeleme |
 | 5.9 | Kesintilere dayanıklı olmak | Erişilebilirlik |
-| 5.10 | Sistem telemetrisini incelemek | 2. hafta denetim kaydı |
+| 5.10 | Sistem telemetrisini incelemek | [2. hafta](../week-2/cen429-week-2.md) denetim kaydı |
 | 5.11 | Kullanıcının verisini kolayca silebilmesi | 3. hafta imha |
 | 5.12 | Kurulumu ve bakımı kolaylaştırmak | Psikolojik kabul edilebilirlik |
 | 5.13 | Girdi verisini doğrulamak | 4, 5. haftalar |
@@ -1195,7 +1128,7 @@ konusuyla birebir eşleyelim:
    geçirilmelidir (bkz. Hafta 4–5)."
 3. **Önlem:** Kılavuzda hangi ayrıştırma (parsing) fonksiyonlarının sınır denetimi yaptığı listelenir.
 4. **Doğrulama:** Bulanıklaştırma (fuzzing) testi ya da sınır değer testleriyle geçersiz girdilerin güvenle
-   reddedildiği gösterilir (Hafta 4'teki bulanıklaştırma demosuna bağlanır).
+   reddedildiği gösterilir ([Hafta 4](../week-4/cen429-week-4.md)'teki bulanıklaştırma demosuna bağlanır).
 5. **Kanıt:** Fuzz testi çalıştırma raporu, çökme (crash) sayısının sıfır olduğunu gösteren özet.
 
 Bu örnek, ETSI maddesinin soyut cümlesinin nasıl **somut bir dersin gereksinimine, önlemine ve testine**
@@ -1279,13 +1212,13 @@ karşılarız** kararını verir.
 anahtarı". Her ikisinin de "oluşma → kullanım → silinme" sütunu doldurulmalı; şu an "kasa dosyası anahtarı"
 satırında silinme zamanı boş. Bu **eksiklik** burada fark edilir.
 
-**4. Tehditlere bağlama.** Hangi tehdit bu gereksinimi gerektiriyor? 1. haftanın tehdit modelinde "cihaza fiziksel
+**4. Tehditlere bağlama.** Hangi tehdit bu gereksinimi gerektiriyor? [1. haftanın](../week-1/cen429-week-1.md) tehdit modelinde "cihaza fiziksel
 erişimi olan saldırgan bellek dökümü (memory dump) alır" tehdidi var; anahtar iş bittikten sonra bellekte kalırsa
 bu tehdit gerçekleşebilir. Gereksinim bu tehdide **bağlanır**; bağlanamasaydı ya tehdit modeli eksikti ya da
 gereksinim bu ürün için gereksizdi (yukarıdaki 4. madde).
 
 **5. Önlem ve doğrulama.** Önlem: anahtar kullanımdan hemen sonra `sifreleme_bellek_sil()` çağrılır (sıfırlarla
-üzerine yazma, derleyicinin bu çağrıyı optimize ederek silmediğinden emin olunur — 9. hafta koruma kurallarına
+üzerine yazma, derleyicinin bu çağrıyı optimize ederek silmediğinden emin olunur — [9. hafta](../week-9/cen429-week-9.md) koruma kurallarına
 bağlanır). Doğrulama: bellek analiz aracı (ör. bir bellek dökümü alıp anahtar baytlarını aramak) ile anahtarın iş
 bitiminden sonra bellekte **bulunmadığı** doğrulanır.
 
@@ -1317,7 +1250,7 @@ Adımlar yalnız teknik gereksinimler için değil, süreç gereksinimleri için
 3. **Varlıklara bağlama:** Doğrudan bir "varlığa" değil, **geliştirme sürecine** bağlanır; S5'te değil, kılavuzun
    "geliştirme yaşam döngüsü" bölümünde belgelenir.
 4. **Tehditlere bağlama:** Tehdit: "kötü niyetli ya da hatalı bir değişikliğin fark edilmeden ana dala girmesi"
-   (6. hafta tedarik zinciri güvenliği).
+   ([6. hafta](../week-6/cen429-week-6.md) tedarik zinciri güvenliği).
 5. **Önlem ve doğrulama:** Önlem: birleştirme isteği (pull request) kuralı, en az bir onay zorunlu. Doğrulama:
    sürüm kontrol geçmişinde son 20 birleştirmenin en az bir onay kaydına sahip olduğu kontrol edilir.
 6. **Sürüm planı:** Bu süreç zaten yürürlükte; "karşılandı", sürekli izlenmesi gereken bir kural olarak not
@@ -1464,7 +1397,7 @@ olabilir — biri varlığın **envanterini**, diğeri varlığın **belirli bir
 
 AP-ID-AS-DR-DU-DT-RP-CR-DV sırası akılda tutulması zor olabilir; şu soru zincirini hatırlamak yardımcı olabilir:
 "Kendini koruyor mu (AP)? Kime güveniyor (ID)? Neyi koruyor (AS)? O şey nerede — beklemede (DR), kullanımda (DU),
-aktarımda (DT)? Sorun olursa ne diyor (RP)? Hangi araçla (CR)? Kim üretti, nasıl (DV)?" Bu, 1. haftadan beri
+aktarımda (DT)? Sorun olursa ne diyor (RP)? Hangi araçla (CR)? Kim üretti, nasıl (DV)?" Bu, [1. haftadan](../week-1/cen429-week-1.md) beri
 takip ettiğimiz "varlık → tehdit → önlem" zincirinin dokuz parçaya bölünmüş hâlidir.
 
 ---
@@ -1614,7 +1547,7 @@ sıkıştırılmış hâli):
 
 Her köşeli parantezi doldurduğunuzda, elinizde 1. bölümdeki örneklere benzer bir gereksinim olur. Boşluklardan
 biri doldurulamıyorsa (ör. "hangi tehdide karşı" sorusuna cevap veremiyorsanız), bu, gereksinimin henüz olgun
-olmadığının bir işaretidir — tehdit modelinize geri dönün (1. hafta).
+olmadığının bir işaretidir — tehdit modelinize geri dönün ([1. hafta](../week-1/cen429-week-1.md)).
 
 ---
 
@@ -1803,7 +1736,7 @@ Bu hafta bir gereksinimi sıfırdan iyi yazmayı (1. bölüm), onu kanıta kadar
 biçimde yazmayı (3. bölüm) ve büyük standart ailelerinin (Ortak Kriterler, FIPS 140-3, ETSI/GSMA/EMVCo/PCI/
 MASVS) aynı ihtiyaçları nasıl farklı sözcüklerle ifade ettiğini (4-6. bölümler) gördük. 7-8. bölümlerde bunları
 projenize nasıl aktaracağınızı, 9. bölümde bu haftaki somut teslimi adım adım nasıl hazırlayacağınızı işledik.
-Dönem başından beri topladığınız varlık tablosu (1. hafta), koruma kuralları (9. hafta) ve değerlendirme süreci
+Dönem başından beri topladığınız varlık tablosu ([1. hafta](../week-1/cen429-week-1.md)), koruma kuralları ([9. hafta](../week-9/cen429-week-9.md)) ve değerlendirme süreci
 (geçen hafta) bilgileri, bu hafta tek bir belgede (uyum matrisi) birleşiyor — gelecek haftalarda bu belge,
 projenizin değerlendiriciye sunacağınız ilk ve en önemli sayfası olacak.
 
@@ -1819,3 +1752,9 @@ projenizin değerlendiriciye sunacağınız ilk ve en önemli sayfası olacak.
     | EAL | Değerlendirme güvence düzeyi | CC'nin güvence paketleri (1–7) |
     | Attack potential | Saldırı potansiyeli | Başarılı saldırı için gereken kaynakların puanı |
     | Zeroization | Sıfırlama | Kritik parametrelerin güvenle silinmesi |
+
+!!! info "Bir sonraki hafta"
+    **[14. hafta](../week-14/cen429-week-14.md) — Tigress ve çeşitlendirme.** Bu hafta tanımladığımız dersin gereksinim ailelerinden **CEN429-AP**
+    (uygulama koruması) grubundaki "hassas kod bölümleri gizlenmelidir" gibi gereksinimlerin somut karşılığını,
+    yani **önlem** tarafını, 14. haftada göreceğiz: Tigress aracıyla kod gizleme ve çeşitlendirme dönüşümlerini
+    uygulayıp bunları uyum matrisinizin (S17) ilgili satırlarına bağlayacaksınız.

@@ -16,7 +16,7 @@ tags:
 | **Tarih** | 02.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.2 (şifreleme yöntemleri ve güvenli iletişim ilkeleri) · ÖÇ.4 (güvenli iletişim kanalı kurma) |
 | **Süre** | 3 saat (3 × 50 dakika) |
-| **Ön bilgi** | C'de işaretçi, dizi, dosya; Hafta 1'den bellek düzeni ve güvenli silme; Linux/WSL terminalinde `cd`, derleme |
+| **Ön bilgi** | C'de işaretçi, dizi, dosya; [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni ve güvenli silme; Linux/WSL terminalinde `cd`, derleme |
 | **Uygulamalar** | [`code/week-03`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-03) — 9 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -114,129 +114,41 @@ tags:
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Neden bu bölüm?
+### Önceki haftalardan gelenler
 
-Bu hafta "şifreleme", "nonce", "anahtar türetme" gibi terimler geçecek.
+- **Beyaz kutu saldırgan modeli** — cihazın ya da sunucunun sahibi olan kullanıcı aynı zamanda potansiyel
+  saldırgandır; belleği okuyabilir, hata ayıklayıcı bağlayabilir
+  ([Hafta 1, §3](../week-1/cen429-week-1.md#3-saldirgan-kim-neye-erisebiliyor)). Bu hafta bu modeli **kullanımda
+  veri** (§13) ve **whitebox kriptografi motivasyonu**nda (§15) yeniden kullanıyoruz.
+- **Bellekten güvenli silme** — bir sırrı, derleyicinin kaldıramayacağı bir işlevle (`explicit_bzero`,
+  `OPENSSL_cleanse`) üzerine yazarak silmek
+  ([Hafta 1, §17](../week-1/cen429-week-1.md#sirlari-bellekten-silmek-tarif-132)). Bu hafta §13'te buna döküm
+  engelleme, bellek kilitleme ve cihaz bağlamayı ekliyoruz.
+- **Entropi ölçümü** — bir dosyanın baytlarındaki düzensizliği ölçüp şifreli/paketli içeriği ayırt etme fikri
+  ([Hafta 2, §6](../week-2/cen429-week-2.md#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)). §3'te
+  aynı fikri, bu kez rastgele üretecin **girdisindeki** düzensizlik (entropi) açısından kullanıyoruz.
 
-Hiçbirini bilmediğinizi varsayıyoruz.
+### Bu haftanın kavram haritası
 
-Önce hepsini **tek tek** tanımlayalım.
-
-### Verinin üç hâli
-
-- **Aktarımda:** ağda giderken (TLS).
-- **Beklemede:** diskte dururken (dosya şifreleme).
-- **Kullanımda:** bellekte işlenirken (en zor).
-
-Her hâl farklı koruma ister.
-
-### Şifreleme nedir?
-
-- **Şifreleme:** okunur veriyi (açık metin) bir **anahtarla** okunamaz hale (şifreli metin) getirmek.
-- **Çözme:** anahtarla geri açmak.
-- Güvenlik **anahtarın** gizliliğine bağlı.
-
-### Simetrik vs asimetrik
-
-- **Simetrik:** tek anahtar (AES). Hızlı.
-- **Asimetrik:** açık + gizli çift (RSA/ECC). Anahtar dağıtımı kolay.
-- Pratikte **birlikte** (hibrit).
-
-### Özet (hash)
-
-- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
-- Tek yönlü; veri değişirse özet değişir.
-- Bütünlük ve imzanın temeli.
-
-### MAC ve imza
-
-- **MAC:** simetrik; mesaj değişmedi + doğru taraftan.
-- **İmza:** asimetrik; kim imzaladı (inkâr edilemezlik).
-- İkisi de **bütünlük** sağlar.
-
-### AEAD
-
-- **AEAD:** gizlilik **+** bütünlük **birlikte** (AES-GCM).
-- Ayrı MAC uğraşmadan ikisini verir.
-- Modern tercih.
-
-### IV / nonce / tuz
-
-- **IV/nonce:** her şifrelemede **benzersiz** başlangıç değeri.
-- **Tuz (salt):** paroladan anahtar türetirken eklenen rastgele değer.
-- Üçü de **gizli değil**, ama **tekrarsız/benzersiz** olmalı.
-
-### Rastgelelik ve CSPRNG
-
-- **CSPRNG:** kriptografik olarak güvenli rastgele üreteç (işletim sisteminin `getrandom`/`BCryptGenRandom`).
-- `rand()` **güvensizdir**.
-- Anahtar/nonce/tuz bundan üretilir.
-
-### Anahtar türetme (KDF)
-
-- **KDF:** bir sırdan (parola ya da ana anahtar) **anahtar üretme**.
-- **PBKDF2/Argon2:** paroladan (yavaş, tuzlu).
-- **HKDF:** ana sırdan çok anahtar.
-
-### Anahtar hiyerarşisi
-
-- Tek anahtar her işte kullanılmaz.
-- Ana anahtar → türev anahtarlar (veri, oturum).
-- **Kripto-periyot:** her anahtarın ömrü.
-
-### İleri gizlilik
-
-- **İleri gizlilik:** her oturum için yeni anahtar.
-- Uzun vadeli anahtar sızsa bile **eski** oturumlar çözülemez.
-- Modern TLS sağlar.
-
-### TLS (kısaca)
-
-- **TLS:** ağda güvenli iletişim protokolü (HTTPS'in altında).
-- Anahtar anlaşması + AEAD + sertifika doğrulama.
-- 8. bölümde göreceğiz.
-
-### Şimdi hazırız
-
-Terimler:
-
-verinin üç hâli · şifreleme · simetrik/asimetrik · özet · MAC/imza · AEAD · IV/nonce/tuz · CSPRNG · KDF/HKDF · anahtar hiyerarşisi · ileri gizlilik · TLS
-
-Şimdi: verinin üç hâli ve güvenlik kabuğu.
-
-### Bugünün planı (3 saat)
-
-| Saat | Konu |
-| --- | --- |
-| 1 | Veri durumları · Şifreleme temelleri **Demo 1** · Rastgele sayılar · Kripto API'leri · IV/nonce **Demo 2–3** |
-| 2 | Parola ve HKDF **Demo 4–5** · Anahtar yönetimi · TLS 1.3 **Demo 6** · TLS'i kodda kurmak, fail-open |
-| 3 | Beklemede **Demo 7** · Maskeleme · Kullanımda **Demo 8** · Kabuklar **Demo 9** · Whitebox · Proje |
-
-**Öğrenme çıktıları:** ÖÇ.2 (şifreleme, güvenli iletişim) · ÖÇ.4 (güvenli kanal)
-
-### Kısa tarihçe — veriyi korumanın araçları
-
-- **1976** Diffie–Hellman (açık anahtar) · **1977** **RSA** ve **DES**
-- **2001** — **AES** (Rijndael) DES'in yerini alır
-- **2007** — **GCM** standart olur: **AEAD** çağı (gizlilik + bütünlük birlikte)
-- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
-
-> Kural buradan çıkar: kendi kriptonu yazma, **AEAD** kullan, **anahtarı** doğru yönet.
-
-### Demolar nasıl çalışıyor?
-
-- Tek kaynak, iki platform: **Windows (Visual Studio 2022)** ve **WSL/Linux (GCC)**
-- Kripto ortak başlıktan: **Linux → OpenSSL**, **Windows → BCrypt (CNG)** — OpenSSL kurmaya gerek yok
-- Derle: Windows `.\build.ps1` · WSL `./build.sh`
-- Çalıştır: Windows `.\demo.ps1` · WSL `sh demo.sh`
-- İkili dosyalar her demonun `bin\windows` / `bin/linux` klasöründe
-
-> ⚠️ **Etik:** ağ yalnız `localhost`; sertifikalar bizim; teknikleri yalnız kendi
-> bilgisayarınızda deneyin.
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Verinin üç hâli | Bir sır yaşam döngüsü boyunca aktarımda (ağda), beklemede (diskte) ve kullanımda (bellekte) olmak üzere üç farklı durumda bulunur; her durumun tehdidi ve savunması farklıdır. | [§1](#1-verinin-uc-hali-ve-guvenlik-kabugu) |
+| Şifreleme | Şifreleme, açık metni bir anahtar kullanarak okunamaz şifreli metne dönüştürme işlemidir; çözme aynı (ya da eşleşen) anahtarla bunu tersine çevirir ve güvenlik anahtarın gizliliğine dayanır. | [§2](#2-sifreleme-temelleri-hangi-arac-neyi-korur) |
+| AEAD | Kimlik doğrulamalı şifreleme, veriyi tek bir çağrıda hem şifreleyip hem de değişmediğini kanıtlayan bir etiket üreterek gizlilik ve bütünlüğü birlikte sağlar. | [§2.1](#21-kimlik-dogrulamali-sifreleme-aead-tek-cagrida-gizlilik-butunluk) |
+| Simetrik ve asimetrik şifreleme | Simetrik şifreleme iki tarafın paylaştığı tek bir gizli anahtarla hızlı çalışır; asimetrik şifreleme bir açık ve bir özel anahtar çiftiyle anahtar dağıtımını kolaylaştırır ama yavaştır; gerçek sistemler ikisini birlikte (hibrit) kullanır. | [§2.2](#22-simetrik-mi-asimetrik-mi-cevap-ikisi-birden-hibrit) |
+| Özet (hash) | Özet, veriden hesaplanan sabit boyutlu, tek yönlü bir parmak izidir; anahtarsız olduğu için tek başına bütünlük kanıtı sayılmaz. | [§2.4](#24-ozet-mac-ve-imza-hangisi-ne-zaman) |
+| MAC ve imza | MAC paylaşılan bir gizli anahtarla mesajın değişmediğini kanıtlar; dijital imza açık/özel anahtar çiftiyle aynı şeyi inkâr edilemezlikle birlikte sağlar. | [§2.4](#24-ozet-mac-ve-imza-hangisi-ne-zaman) |
+| Rastgelelik ve CSPRNG | CSPRNG, işletim sisteminin sunduğu kriptografik olarak güvenli rastgele sayı üretecidir; anahtar, IV, nonce ve tuz gibi güvenlikle ilgili her değer buradan üretilmeli, `rand()` gibi istatistiksel üreteçlerden gelmemelidir. | [§3](#3-rastgele-sayilar-kriptografinin-gorunmez-temeli) |
+| IV / nonce / tuz | IV, nonce ve tuz; gizli olmayan ama tekrarsız ya da rastgele olması zorunlu başlangıç değerleridir; nonce'un aynı anahtarla tekrarı anahtar akışını sızdırır. | [§5](#5-ivnonce-ve-tuz-ayni-anahtari-tekrar-kullanmak) |
+| Anahtar türetme (KDF) | KDF, bir paroladan (PBKDF2/scrypt/Argon2id ile, tuzlu ve yavaş) ya da bir ana sırdan (HKDF ile) yeni anahtarlar üreten fonksiyondur. | [§6](#6-paroladan-anahtar-turetme) |
+| İleri gizlilik | Her oturum için türetilen anahtarın kullanımdan sonra silinmesiyle, bugünkü anahtar sızsa bile geçmiş oturumların çözülememesidir. | [§7.1](#71-ileri-gizlilik-forward-secrecy) |
+| Anahtar hiyerarşisi | Tek bir anahtar her işte kullanılmaz; bir ana anahtardan amaca özel türev anahtarlar (veri anahtarı, oturum anahtarı) üretilir ve her birinin kendi kripto-periyodu vardır. | [§8](#8-dinamik-anahtar-yonetimi-yasam-dongusu-hiyerarsi-ve-yenileme) |
+| TLS | TLS, iki uç arasında anahtar anlaşmasını, AEAD ile şifrelemeyi ve sertifika doğrulamasını birleştirip ağ üzerinde güvenli iletişim sağlayan protokoldür (HTTPS'in altındaki katman). | [§9](#9-aktarimda-veri-tls-13-sertifika-dogrulama-ve-sabitleme) |
 
 ## 1. Verinin üç hâli ve güvenlik kabuğu
 
@@ -264,7 +176,7 @@ de savunması da farklıdır:
     Tek bir önlem yetmez. Hassas bir varlığı, yaşam döngüsünün **her aşamasında** iç içe geçmiş **koruma katmanlarıyla**
     (kabuklarla) sararız: en dışta kanal güvenliği (TLS), onun içinde mesaj düzeyi şifreleme, onun içinde depolama
     şifrelemesi, en içte cihaza bağlı bir anahtar. Saldırganın sırra ulaşması için **hepsini sırayla** kırması gerekir.
-    Bu, Hafta 1'de tanıttığımız **derinlemesine savunmanın** somut hâlidir; Bölüm 14'da bir anahtarı
+    Bu, [Hafta 1](../week-1/cen429-week-1.md)'de tanıttığımız **derinlemesine savunmanın** somut hâlidir; Bölüm 14'da bir anahtarı
     dört kabukla sarıp açacağız.
 
 Dönem boyunca kullandığımız **örnek mimariyi** (bir mobil ödeme uygulaması + onun kritik işlerini yapan bir güvenlik
@@ -286,8 +198,10 @@ Bütün örnek değerler **sentetiktir** (uydurma); gerçek anahtar, kart numara
 
 ## 2. Şifreleme temelleri: hangi araç neyi korur?
 
-Kriptografi tek bir şey değildir; **farklı hedefler için farklı araçlar** vardır. En sık karıştırılan dört aileyi
-netleştirelim.
+**Şifreleme (encryption)**, okunur veriyi (**açık metin**) bir **anahtar** kullanarak okunamaz hale (**şifreli
+metin**) getirme işlemidir; **çözme (decryption)** aynı (ya da eşleşen) anahtarla bunu tersine çevirir. Güvenlik,
+algoritmanın değil **anahtarın** gizliliğine dayanır. Ama kriptografi tek bir şey değildir; **farklı hedefler için
+farklı araçlar** vardır. En sık karıştırılan dört aileyi netleştirelim.
 
 ![Kriptografinin dört ailesi](assets/h03-12-kripto-aileleri.svg)
 
@@ -360,17 +274,17 @@ ChaCha20 zaten bir **akış şifresidir** (blok kavramı yoktur); Poly1305 MAC'i
 
 Bu üçü **bütünlük** ailesindendir ama farklı şeyler kanıtlarlar; karıştırmak yaygın bir hatadır:
 
-- **Özet (hash)** anahtarsızdır. Yalnız verinin **değişip değişmediğini** (parmak izi) gösterir. Ama saldırgan veriyi
-  değiştirip **özeti de yeniden hesaplayabilir**; bu yüzden özet tek başına bütünlük **kanıtı değildir**. Özet, HMAC ve
-  HKDF gibi yapıların yapıtaşıdır ve parmak izi/karşılaştırma için kullanılır. Eski MD5/SHA-1 çakışmaya açıktır;
-  SHA-256/SHA-3 kullanın.
+- **Özet (hash)**, veriden hesaplanan **sabit boyutlu, tek yönlü bir parmak izidir** ve anahtarsızdır. Yalnız
+  verinin **değişip değişmediğini** gösterir. Ama saldırgan veriyi değiştirip **özeti de yeniden hesaplayabilir**;
+  bu yüzden özet tek başına bütünlük **kanıtı değildir**. Özet, HMAC ve HKDF gibi yapıların yapıtaşıdır ve parmak
+  izi/karşılaştırma için kullanılır. Eski MD5/SHA-1 çakışmaya açıktır; SHA-256/SHA-3 kullanın.
 - **MAC** (ör. HMAC-SHA-256) **paylaşılan gizli anahtar** ister. "Bu mesajı, anahtarı bilen biri gönderdi ve
   değişmedi" der. İki taraf da anahtarı bildiği için MAC **inkâr edilemezlik sağlamaz** (hangi taraf ürettiği
   ayırt edilemez). Sırları MAC ile karşılaştırırken **sabit zamanlı** karşılaştırma kullanın (`CRYPTO_memcmp`), düz
   `memcmp` zamanlama sızdırır.
 - **Dijital imza** (ör. Ed25519, RSA-PSS) **açık/özel anahtar** çiftiyle çalışır. Yalnız özel anahtar sahibi imza
   üretebilir, herkes açık anahtarla doğrular; bu yüzden **inkâr edilemezlik** sağlar. Sertifikalar ve sürüm imzalama
-  (Hafta 10) bununla çalışır.
+  ([Hafta 10](../week-10/cen429-week-10.md)) bununla çalışır.
 
 | Soru | Doğru araç |
 | --- | --- |
@@ -492,6 +406,12 @@ adım işleyeceğiz.
 Kural basittir: **güvenlikle ilgili her rastgele değer CSPRNG'den gelir.** `rand()` ve `mt19937` istatistiksel
 olarak "rastgele görünür", ama güvenlik açısından tamamen tahmin edilebilirdir. Mersenne Twister'ın 624 ardışık
 çıktısını gören biri, sonraki bütün çıktıları hesaplayabilir.
+
+Bu **tahmin edilemezlik**, [Hafta 2](../week-2/cen429-week-2.md#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)'de
+gördüğümüz **entropi** fikrinin diğer yüzüdür: orada bir dosyanın baytlarındaki düzensizliği ölçüp şifreli/paketli
+içeriği ayırt ediyorduk; burada üretecin **girdisindeki** düzensizliğin (entropinin) yeterli olmasını isteyip
+**tahmin edilemez** çıktı üretmeye çalışıyoruz. Üretecin havuzu yeterince tohumlanmamışsa (aşağıdaki Hata 2'de
+göreceğimiz gibi) çıktı da tahmin edilebilir hale gelir.
 
 ### Hata 1: zamanla tohumlamak
 
@@ -644,7 +564,7 @@ algoritmayı **doğru çağırmak** da bir beceridir.
 ![AEAD'in dört girdisi ve iki çıktısı](assets/h03-02-aead.svg)
 
 **AAD** (ek doğrulanmış veri), şifrelenmeyen ama değiştirilirse fark edilmesi gereken bilgidir: dosya başlığı,
-sürüm numarası, kayıt kimliği. 1. haftadaki parola kasası örneğinde türetme parametrelerini AAD yapmıştık; biri
+sürüm numarası, kayıt kimliği. [1. haftadaki](../week-1/cen429-week-1.md) parola kasası örneğinde türetme parametrelerini AAD yapmıştık; biri
 yineleme sayısını değiştirirse etiket tutmaz.
 
 ### OpenSSL EVP ile şifreleme
@@ -1080,7 +1000,7 @@ silindi; elde yalnız son anahtar kaldı ve tek yönlülük geçmişi korudu.
 !!! note "Sahada nasıl uygulanır?"
     Örnek mimaride sunucuyla anlaşılan bir ana sırdan; şifreleme anahtarı, MAC anahtarı ve her oturum için ayrı bir
     oturum anahtarı HKDF ile türetilir. Anahtar hiyerarşisini (hangi anahtar hangi anahtardan türer, ne kadar yaşar)
-    Hafta 10'da ayrıntılı işleyeceğiz; bu hafta ilke şudur: **tek bir anahtarı her işe koşmayın.**
+    [Hafta 10](../week-10/cen429-week-10.md)'da ayrıntılı işleyeceğiz; bu hafta ilke şudur: **tek bir anahtarı her işe koşmayın.**
 
 !!! question "Değerlendirici nasıl test eder?"
     Değerlendirici anahtar hiyerarşisi belgesini ister ve her anahtarın **tek bir amacı** olduğunu, oturum anahtarlarının
@@ -1175,7 +1095,7 @@ alanını değiştirip uygulamayı eski, zayıf bir anahtara yönlendiremez.
 
 | Seçenek | Platform | Koruma | Not |
 | --- | --- | --- | --- |
-| Kaynak koda gömülü | Hepsi | **Yok**: `strings` ile bulunur | Asla (zorunlu değilse; zorunluysa gizleme + parçalama, 4. hafta) |
+| Kaynak koda gömülü | Hepsi | **Yok**: `strings` ile bulunur | Asla (zorunlu değilse; zorunluysa gizleme + parçalama, [4. hafta](../week-4/cen429-week-4.md)) |
 | Yapılandırma dosyası | Hepsi | Dosya izinleri | Yedeklere, depoya sızar |
 | Ortam değişkeni | Hepsi | Zayıf | Alt süreçlere, çökme raporlarına sızar |
 | DPAPI (`CryptProtectData`) | Windows | Kullanıcı ya da makine hesabına bağlı | Aynı kullanıcıyla çalışan zararlıya karşı korumaz |
@@ -1205,11 +1125,11 @@ madde ister. İki şemanın (burada **Şema-A** ve **Şema-B**) kripto ve anahta
 | Gereksinim (özet) | Bu haftadaki karşılığı |
 | --- | --- |
 | Endüstri standardı algoritmalar ve protokoller kullanılmalı, **güvenli yapılandırılmalı** | Kripto API'lerini doğru kullanmak; TLS'i kodda kurmak |
-| Anahtarların gizliliği ve bütünlüğü korunmalı ya da anahtarlar gizlenmeli | Güvenlik kabukları, whitebox (11. hafta) |
+| Anahtarların gizliliği ve bütünlüğü korunmalı ya da anahtarlar gizlenmeli | Güvenlik kabukları, whitebox ([11. hafta](../week-11/cen429-week-11.md)) |
 | Anahtarlar güvenle **kurulmalı, güncellenmeli** ve iş bitince bellekten ve geçici depolardan **silinmeli** | Yaşam döngüsü; kullanımda veri |
 | Her anahtarın **hiyerarşisi, kullanımı ve kripto-periyodu** tanımlı olmalı; anahtar **yalnız tek amacı** için kullanılmalı | Anahtar hiyerarşisi, anahtar ayrımı |
 | Yeterli entropili, tahmin edilemez rastgele sayılar kullanılmalı (ör. arka uçtan) | Rastgele sayılar bölümü |
-| Rastgele sayı kaynağına yapılan çağrı **kancalanamamalı** | 6. hafta (kanca algılama) |
+| Rastgele sayı kaynağına yapılan çağrı **kancalanamamalı** | [6. hafta](../week-6/cen429-week-6.md) (kanca algılama) |
 | Veri şifreleme ve sınırlı kullanım anahtarları, uygulamaya ve cihaza **bağlı, birbirinden farklı** anahtarlarla korunmalı | Cihaz ve sürüm bağlama |
 
 Bu gereksinimleri karşılayan bir kütüphanenin kılavuzu, anahtarları dört gruba ayırır:
@@ -1255,7 +1175,7 @@ yapılsaydı şu iyileştirmeler önerilirdi:
 !!! tip "Eleştirel okuma bir beceridir"
     Birkaç yıl önce yazılmış, sertifikasyondan geçmiş bir tasarımı bugünün ölçütleriyle okumak, onu "yanlış" ilan
     etmek değildir. Tasarım kendi dönemindeki gereksinimleri karşılamıştır. Mühendislik becerisi, hangi seçimin
-    **bugün** neden değişmesi gerektiğini gerekçesiyle söyleyebilmektir. 12. haftada bir güvenlik kılavuzunu bu
+    **bugün** neden değişmesi gerektiğini gerekçesiyle söyleyebilmektir. [12. haftada](../week-12/cen429-week-12.md) bir güvenlik kılavuzunu bu
     gözle inceleyeceğiz.
 
 !!! success "Kural"
@@ -1273,8 +1193,10 @@ yapılsaydı şu iyileştirmeler önerilirdi:
 
 ## 9. Aktarımda veri: TLS 1.3, sertifika doğrulama ve sabitleme
 
-Aktarımdaki veriyi koruyan standart **TLS**'tir (eski adıyla SSL). Bugün **TLS 1.3** kullanılır; SSLv2/SSLv3 ve
-TLS 1.0/1.1 kırık kabul edilir ve bırakılmıştır (POODLE, BEAST gibi saldırılar).
+**TLS** (Transport Layer Security), iki uç arasında **anahtar anlaşmasını**, **AEAD ile şifrelemeyi** ve **sertifika
+doğrulamasını** birleştirip ağ üzerinde güvenli iletişim sağlayan protokoldür — HTTPS'in altındaki katmandır (eski
+adıyla SSL). Aktarımdaki veriyi koruyan standart budur. Bugün **TLS 1.3** kullanılır; SSLv2/SSLv3 ve TLS 1.0/1.1
+kırık kabul edilir ve bırakılmıştır (POODLE, BEAST gibi saldırılar).
 
 ### 9.1 TLS 1.3 el sıkışması
 
@@ -1304,7 +1226,7 @@ bir **kök CA** imzalamıştır. İstemci, elindeki güvenilir kök listesine (t
 doğru** doğrular; ayrıca her sertifikanın **süresini** ve **iptal durumunu** (CRL/OCSP) kontrol eder. Demo 6'da bu güven
 kökünü kendi ürettiğimiz küçük bir CA ile kuruyoruz: "gerçek" sunucu sertifikası bu CA tarafından imzalıdır, "saldırgan"
 sertifikası ise kendi imzalıdır (kök listesinde yoktur), bu yüzden zincir doğrulaması onu reddeder. PKI, sertifika
-zincirleri, CRL ve OCSP'yi **Hafta 10**'da ayrıntılı işleyeceğiz.
+zincirleri, CRL ve OCSP'yi **[Hafta 10](../week-10/cen429-week-10.md)**'da ayrıntılı işleyeceğiz.
 
 ### 9.3 Sabitleme (pinning) ve TOFU
 
@@ -1528,7 +1450,7 @@ masaüstü uygulamalarda ise sabitleme hâlâ yaygındır (OWASP MASVS-NETWORK).
 !!! tip "Uç sertifika mı, ara CA mı?"
     Uç (leaf) sertifikanın anahtarını sabitlemek en sıkı seçenektir ama en çok bakım gerektirir. Ara CA'nın
     anahtarını sabitlemek, o CA'nın imzaladığı her sertifikayı kabul eder; bakım kolaylaşır ama güvence azalır.
-    Seçim, koruma planına bir **ödünleşim kaydı** olarak yazılır (1. hafta).
+    Seçim, koruma planına bir **ödünleşim kaydı** olarak yazılır ([1. hafta](../week-1/cen429-week-1.md)).
 
 ### Windows'ta TLS: WinHTTP ve Schannel
 
@@ -1633,7 +1555,7 @@ belirleyemiyorsanız, sonuç "reddet"tir.
 !!! question "Değerlendirici nasıl test eder?"
     Test cihazına kendi kök sertifikasını kurar ve trafiği bir araya-girme proxy'sinden geçirir. Uygulama bu durumda
     bağlanabiliyorsa sabitleme yok ya da etkisizdir. Sonra RASP ve gizleme katmanlarını aşarak sabitleme denetimini
-    çalışma anında devre dışı bırakmayı dener (6. hafta); bu denemenin ne kadar sürdüğü, korumanın gücünü gösterir.
+    çalışma anında devre dışı bırakmayı dener ([6. hafta](../week-6/cen429-week-6.md)); bu denemenin ne kadar sürdüğü, korumanın gücünü gösterir.
     Ayrıca sunucu tarafında TLS sürümlerini, şifre takımlarını ve sertifika zincirini tarar.
 
 !!! note "Sahada nasıl uygulanır?"
@@ -1662,7 +1584,7 @@ korumanın iki düzeyi vardır:
 
 - **Kısmi maskeleme:** yalnız bir kısmını gösterme, ör. kart no `**** **** **** 4242`, e-posta `a***@ornek.com`.
   Kullanıcı arayüzünde ve müşteri hizmetleri ekranlarında kullanılır.
-- **Loglama maskesi:** loglara hassas alan **hiç** yazılmaz ya da maskeli yazılır. (Hafta 1'de gördüğümüz "sırrı
+- **Loglama maskesi:** loglara hassas alan **hiç** yazılmaz ya da maskeli yazılır. ([Hafta 1](../week-1/cen429-week-1.md)'de gördüğümüz "sırrı
   loglama" hatasının veri tarafı.)
 - **Tokenizasyon:** gerçek değeri anlamsız bir "token" ile değiştirip gerçek değeri ayrı, güvenli bir kasada tutma.
   Ödeme sistemlerinde kart numarası yerine token dolaşır; asıl numara yalnız gerekince kasadan çözülür.
@@ -1771,7 +1693,7 @@ ya da istemci belleğini inceleyen biri tam değeri görür. Doğrusu, istemciye
 
 Tokenizasyonun gücü, gerçek verinin **tek bir küçük ve çok iyi korunan** sistemde toplanmasıdır. Uygulamanın geri
 kalanı, veritabanları, raporlar ve günlükler yalnız belirteci görür; bunlar ele geçirilse bile kart verisi sızmaz.
-Bu, 1. haftadaki "tehdidi aktarma" yanıtının teknik karşılığıdır: kart verisini hiç saklamayıp ödeme sağlayıcısının
+Bu, [1. haftadaki](../week-1/cen429-week-1.md) "tehdidi aktarma" yanıtının teknik karşılığıdır: kart verisini hiç saklamayıp ödeme sağlayıcısının
 belirteç hizmetini kullanmak, uygulamanın PCI DSS kapsamını büyük ölçüde küçültür. Mobil ödemede telefona indirilen
 kart bilgisi de gerçek kart numarası değil, cihaza özgü bir **belirteç numarasıdır**.
 
@@ -1870,8 +1792,12 @@ void gunluk_suz(char *satir)
 ## 13. Kullanımda veri: bellekte güvenli silme ve cihaz bağlama
 
 Bir sır **kullanılmak için** eninde sonunda bellekte açılır. O anda risk altındadır: bellek dökümü, hata ayıklayıcı,
-takas alanı (swap), aynı belleği sonra kullanan başka kod. Hafta 1'de `explicit_bzero` ile "ölü yazma giderme"yi görmüştük;
-bu hafta **kullanımda veri** için ek katmanları kuruyoruz.
+takas alanı (swap), aynı belleği sonra kullanan başka kod.
+[Hafta 1, §17](../week-1/cen429-week-1.md#sirlari-bellekten-silmek-tarif-132)'de `explicit_bzero` ile "ölü yazma
+giderme"yi ve sırrı bellekten silmeyi (Tarif 13.2), ayrıca
+[belleğin diske yazılmasını önlemeyi](../week-1/cen429-week-1.md#bellegin-diske-dusmesini-onlemek-tarif-133)
+(Tarif 13.3) görmüştük; bu hafta **kullanımda veri** için döküm engelleme, bellek kilitleme ve **cihaz bağlama**
+katmanlarını ekliyoruz.
 
 ![Kullanımda veriyi koruyan katmanlar](assets/h03-18-kullanimda-veri-katmanlari.svg)
 
@@ -1907,7 +1833,7 @@ kaldırılamaz** — makine kodunda gerçek bir çağrı olarak kalır (demo bun
 **Kullanımda** korumanın bir parçası da anahtarın **belirli bir cihaza/sürüme bağlanmasıdır**. Anahtarı, cihazın parmak
 izinden (üretici, model, cihaz kimliği, sürüm dizesi) türetilen bir değerle sararsak, dosyalar başka bir cihaza
 kopyalansa bile orada **açılamaz**. Doğru yol: XOR ya da tuzsuz özet değil, **HKDF ile tuzlanmış türetme** ve AEAD ile
-sarma. Bölüm 14'daki güvenlik kabuğunun en iç katmanı tam olarak budur; bunu Hafta 6'da RASP ile
+sarma. Bölüm 14'daki güvenlik kabuğunun en iç katmanı tam olarak budur; bunu [Hafta 6](../week-6/cen429-week-6.md)'da RASP ile
 birleştireceğiz.
 
 !!! success "Kural"
@@ -1970,10 +1896,10 @@ SALDIRI 2 - Paket BASKA cihaza kopyalanirsa (yanlis parmak izi):
 Normal akışta dört kabuk sırayla açıldı ve sır doğru geri geldi. Tek bir bit kurcalanınca en dış GCM etiketi tuttu ve
 o katmanda reddedildi. Paket başka bir cihaza taşındığında dış üç kabuk (anahtarları taşınabilir) açıldı ama **cihaza
 bağlı en iç kabuk** açılamadı — sır ele geçmedi. Gerçek ürünlerde bu en iç kabuk çoğu zaman **whitebox kripto** olur
-(Hafta 11).
+([Hafta 11](../week-11/cen429-week-11.md)).
 
-Bu kabuk yaklaşımı dönemin geri kalanına köprüdür: native kod sağlamlaştırma ve RASP (Hafta 4, 6, 9) kabukları
-**çalışma zamanında** korur; kripto ve anahtar hiyerarşisi (Hafta 10) kabukların anahtarlarını doğru üretir ve yönetir;
+Bu kabuk yaklaşımı dönemin geri kalanına köprüdür: native kod sağlamlaştırma ve RASP ([Hafta 4](../week-4/cen429-week-4.md), 6, 9) kabukları
+**çalışma zamanında** korur; kripto ve anahtar hiyerarşisi ([Hafta 10](../week-10/cen429-week-10.md)) kabukların anahtarlarını doğru üretir ve yönetir;
 whitebox (Hafta 11) en iç kabuğu güçlendirir; sertifikasyon (Hafta 12–13) bütün bu katmanların **kanıtını** ister. Yani
 bu haftanın veri güvenliği bölümü, güvenlik kılavuzunuzun (S5, S7) omurgasıdır ve ilerideki her hafta bir kabuğu daha
 somutlaştırır.
@@ -2011,7 +1937,7 @@ Matrisin okunuşu:
   kabukla, aktarımda yalnız dış iki kabukla korunur. Her varlığa en güçlü korumayı uygulamak performans ve bakım
   maliyetini gereksiz yere artırır; varlık tablosundaki C/I sınıflandırması bu kararın dayanağıdır.
 - Kullanımda kalan açıklığı (bellekteki işlem anı) kabuklar değil, **RASP ve kod sağlamlaştırma** korur (4, 6 ve
-  9. haftalar).
+  [9. haftalar](../week-9/cen429-week-9.md)).
 - Kütüphane yerel veritabanında (SQLite) kart profillerini, sınırlı kullanım anahtarlarını, kalan anahtar sayısını,
   kart durumunu, işlem kayıtlarını ve cihaz parmak izini tutar. Kayıt silindiğinde **ya da bir saldırı algılandığında**
   bu tabloların tamamı silinir.
@@ -2044,7 +1970,7 @@ Matrisin okunuşu:
 ## 15. Whitebox kriptografiye giriş (motivasyon)
 
 Bütün bu haftanın gizli varsayımı şudur: **anahtar kullanıldığı an bellekte açık durur.** "Cihazın sahibi saldırgan"
-(Hafta 1, beyaz kutu) senaryosunda saldırgan belleği okuyabilir, hata ayıklayıcı bağlayabilir; o anı yakalayıp anahtarı
+([Hafta 1](../week-1/cen429-week-1.md), beyaz kutu) senaryosunda saldırgan belleği okuyabilir, hata ayıklayıcı bağlayabilir; o anı yakalayıp anahtarı
 çalabilir. Güvenli silme ve bellek kilitleme bu pencereyi **daraltır** ama kapatmaz.
 
 ![Whitebox kriptografiye giden yol](assets/h03-19-whitebox-motivasyon.svg)
@@ -2056,13 +1982,13 @@ katmanının gerçek dünyadaki hâlidir.
 
 !!! note "Bu yalnız bir giriş"
     Whitebox'ın nasıl kurulduğunu, saldırılarını (BGE, DFA, DCA) ve neden "yayımlanmış tüm tasarımların kırıldığını"
-    **Hafta 11**'de ayrıntılı işleyeceğiz. Bu hafta yalnız **neden var olduğunu** bilmeniz yeterli: bellekte açık anahtar
-    problemi.
+    [Hafta 11](../week-11/cen429-week-11.md#1-uc-saldirgan-modeli-kara-gri-beyaz-kutu)'de ayrıntılı işleyeceğiz. Bu
+    hafta yalnız **neden var olduğunu** bilmeniz yeterli: bellekte açık anahtar problemi.
 
 !!! warning "Whitebox sihirli değnek değildir"
     Whitebox kripto tek başına yeterli değildir: saldırgan anahtarı okuyamasa bile whitebox işlevinin **kendisini** bir
     "kâhin" (oracle) gibi çağırıp kullanabilir ya da kod parçasını kopyalayıp (code lifting) başka yerde çalıştırabilir.
-    Bu yüzden whitebox her zaman **diğer kabuklarla** birlikte gelir: cihaz bağlama, RASP (Hafta 6), sunucu tarafı risk
+    Bu yüzden whitebox her zaman **diğer kabuklarla** birlikte gelir: cihaz bağlama, RASP ([Hafta 6](../week-6/cen429-week-6.md)), sunucu tarafı risk
     denetimi ve anahtar yenileme. Yine bir **güvenlik kabuğu**.
 
 ---
@@ -2233,7 +2159,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     eder? Rastgele nonce'ta çakışma olasılığı ne zaman kaygı verir (doğum günü sınırı)?
 
 ??? question "Alıştırma 9 — Zor: Whitebox motivasyonu"
-    Demo 8'i çalıştırırken (WSL) programı `gdb` ile durdurup belleği inceleyin (Hafta 1 Demo 2'deki gcore yöntemi).
+    Demo 8'i çalıştırırken (WSL) programı `gdb` ile durdurup belleği inceleyin ([Hafta 1](../week-1/cen429-week-1.md) Demo 2'deki gcore yöntemi).
     Sır silinmeden **önce** bellekte görünüyor mu? Bu, whitebox kriptografinin hangi problemi çözmeye çalıştığını nasıl
     açıklar?
 
@@ -2484,3 +2410,10 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | Tokenization | Tokenizasyon | Gerçek değeri anlamsız bir token ile değiştirip kasada saklama |
     | Constant-time compare | Sabit zamanlı karşılaştırma | Sırları/MAC'leri zamanlama sızdırmadan karşılaştırma (`CRYPTO_memcmp`) |
     | AAD | İlişkili veri | AEAD'de şifrelenmeyen ama doğrulanan (bağlanan) ek veri |
+
+!!! info "Bir sonraki hafta"
+    **[4. hafta](../week-4/cen429-week-4.md) — Kod Sağlamlaştırma: C/C++.** Bu hafta veriyi (anahtarı, açık metni) doğru şifreleme ve anahtar
+    yönetimiyle korumayı öğrendik; ama şifreleme kodunun kendisi de bir C/C++ programıdır ve bir arabellek taşması,
+    biçim dizisi açığı ya da tamsayı hatası, bu hafta özenle koruduğumuz anahtarı ve açık metni belleğe sızdırabilir.
+    4. haftada SEI CERT C/C++ kurallarıyla tam olarak bu tür hataları önlemeyi, statik analiz ve sanitizer'larla
+    yakalamayı işleyeceğiz.

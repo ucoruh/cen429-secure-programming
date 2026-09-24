@@ -45,12 +45,12 @@
 
 | Week | Core concepts | Demos | Book |
 | --- | --- | --- | --- |
-| **1** Introduction and protection plan | CIA; asset–threat–vulnerability–risk; attacker models (white-box); Saltzer–Schroeder principles; the seven protection layers; the 7 steps of the protection plan; interface and asset tables (C/I/I+); STRIDE and DFD; attack tree; risk = likelihood × impact; secure startup; memory management errors; secure erasure; partitioning; version identity | PATH spoofing · password left in memory · privilege escalation via overflow · signed length | 1.1–1.9, 3.3–3.5, 12.1, 13.2–13.3 |
-| **2** Malware and models | Virus types, worms, trojans; outbreak rate; rule-based detection; integrity monitoring; Bell–LaPadula, Biba, Clark–Wilson; Unix and Windows access control; RBAC; CWE, OWASP Top 10, CVE, CVSS; audit logging and log injection | Rule engine · integrity monitoring · outbreak · log injection · tamper-resistant log · ACE · umask · RBAC | 2.1–2.2, 13.11 |
-| **3** Data security | The three states of data; symmetric/asymmetric/hybrid; AEAD; digest/MAC/signature; CSPRNG and modulo bias; nonce, IV, salt; ECB; PBKDF2/Argon2id; HKDF, forward secrecy; key lifecycle, hierarchy, wrapping; TLS 1.3, validation, pinning, fail-open; masking, tokenization, pseudonymization; security shells | AES-GCM · nonce reuse · ECB · round count · HKDF · MITM + pinning · SQLite encryption · mlock · four shells | 4.9–4.13, 9.1–9.3, 10.7–10.9, 11.1–11.11, 13.2 |
-| **4** C/C++ hardening | SEI CERT; input validation principles; format string; UAF; integer overflow and undefined behaviour; error handling, signals; static analysis; sanitizers; fuzzing; canary, FORTIFY, ASLR, NX, RELRO, CFI; introduction to code obfuscation; flattening | Format string · UAF · UBSan · fuzzing · protections · symbols/strings · flattening | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
-| **5** Java and interpreted languages | What a managed language solves; SEI CERT Java; the common root of injection; SQL, command, path traversal; deserialisation; XXE/XSS; Python/JS, ReDoS; bytecode; ProGuard/R8, `-keep`; string obfuscation, reflection; SBOM, VEX | SQL · command · path · bytecode · obfuscation · SBOM · deserialisation | 3.7, 3.10, 3.11, 1.7 |
-| **6** RASP | Detection–defence–deterrence; MATE; RASP architecture; integrity checking; debugger, environment, hook detection; dynamic memory protection; root and signature verification; control-flow counter; response policy, decoy, device binding; limitations | Integrity · anti-debug · VM · LD_PRELOAD · flow counter · signature · root · RASP engine | 12.2, 12.12–12.13 (concepts) |
+| [**1** Introduction and protection plan](../week-1/cen429-week-1.md) | CIA; asset–threat–vulnerability–risk; attacker models (white-box); Saltzer–Schroeder principles; the seven protection layers; the 7 steps of the protection plan; interface and asset tables (C/I/I+); STRIDE and DFD; attack tree; risk = likelihood × impact; secure startup; memory management errors; secure erasure; partitioning; version identity | PATH spoofing · password left in memory · privilege escalation via overflow · signed length | 1.1–1.9, 3.3–3.5, 12.1, 13.2–13.3 |
+| [**2** Malware and models](../week-2/cen429-week-2.md) | Virus types, worms, trojans; outbreak rate; rule-based detection; integrity monitoring; Bell–LaPadula, Biba, Clark–Wilson; Unix and Windows access control; RBAC; CWE, OWASP Top 10, CVE, CVSS; audit logging and log injection | Rule engine · integrity monitoring · outbreak · log injection · tamper-resistant log · ACE · umask · RBAC | 2.1–2.2, 13.11 |
+| [**3** Data security](../week-3/cen429-week-3.md) | The three states of data; symmetric/asymmetric/hybrid; AEAD; digest/MAC/signature; CSPRNG and modulo bias; nonce, IV, salt; ECB; PBKDF2/Argon2id; HKDF, forward secrecy; key lifecycle, hierarchy, wrapping; TLS 1.3, validation, pinning, fail-open; masking, tokenization, pseudonymization; security shells | AES-GCM · nonce reuse · ECB · round count · HKDF · MITM + pinning · SQLite encryption · mlock · four shells | 4.9–4.13, 9.1–9.3, 10.7–10.9, 11.1–11.11, 13.2 |
+| [**4** C/C++ hardening](../week-4/cen429-week-4.md) | SEI CERT; input validation principles; format string; UAF; integer overflow and undefined behaviour; error handling, signals; static analysis; sanitizers; fuzzing; canary, FORTIFY, ASLR, NX, RELRO, CFI; introduction to code obfuscation; flattening | Format string · UAF · UBSan · fuzzing · protections · symbols/strings · flattening | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
+| [**5** Java and interpreted languages](../week-5/cen429-week-5.md) | What a managed language solves; SEI CERT Java; the common root of injection; SQL, command, path traversal; deserialisation; XXE/XSS; Python/JS, ReDoS; bytecode; ProGuard/R8, `-keep`; string obfuscation, reflection; SBOM, VEX | SQL · command · path · bytecode · obfuscation · SBOM · deserialisation | 3.7, 3.10, 3.11, 1.7 |
+| [**6** RASP](../week-6/cen429-week-6.md) | Detection–defence–deterrence; MATE; RASP architecture; integrity checking; debugger, environment, hook detection; dynamic memory protection; root and signature verification; control-flow counter; response policy, decoy, device binding; limitations | Integrity · anti-debug · VM · LD_PRELOAD · flow counter · signature · root · RASP engine | 12.2, 12.12–12.13 (concepts) |
 
 ![Quiz-1 scope](assets/h08-01-kapsam.svg)
 
@@ -91,11 +91,11 @@
 
 | Day | Topic | What to do |
 | --- | --- | --- |
-| 1 | Week 1 | STRIDE, attack tree, protection plan; rerun Demos 1–4; self-check 1–25 |
-| 2 | Week 2 | Models (BLP, Biba, Clark–Wilson), CWE/CVSS; score a CVSS vector yourself |
-| 3 | Week 3 (1) | AEAD, nonce, salt, KDF, random numbers; Demos 1–5 |
+| 1 | [Week 1](../week-1/cen429-week-1.md) | STRIDE, attack tree, protection plan; rerun Demos 1–4; self-check 1–25 |
+| 2 | [Week 2](../week-2/cen429-week-2.md) | Models (BLP, Biba, Clark–Wilson), CWE/CVSS; score a CVSS vector yourself |
+| 3 | [Week 3](../week-3/cen429-week-3.md) (1) | AEAD, nonce, salt, KDF, random numbers; Demos 1–5 |
 | 4 | Week 3 (2) | Key management, TLS, pinning, masking, shells; Demos 6–9 |
-| 5 | Week 4 | CERT rule pairs, format string, UAF, UB, protection table; Demos 1–7 |
+| 5 | [Week 4](../week-4/cen429-week-4.md) | CERT rule pairs, format string, UAF, UB, protection table; Demos 1–7 |
 | 6 | Weeks 5–6 | Injection, deserialisation, ProGuard, SBOM; RASP architecture and response |
 | 7 | Review | Work through the sample questions below against the clock; re-read the relevant section for anything you get wrong |
 

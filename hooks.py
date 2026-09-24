@@ -1,3 +1,5 @@
+import re
+
 from markdown.extensions.toc import slugify as _slugify
 
 # Başlık çapaları (#...) Türkçe harfleri Latin karşılığına çevirerek üretilir. Varsayılan üretici
@@ -13,6 +15,15 @@ def slugify_tr(value, separator):
 def on_config(config, **kwargs):
     config['mdx_configs'].setdefault('toc', {})['slugify'] = slugify_tr
     return config
+
+
+# Sayfa içeriğindeki bağlantılar (dış siteler, indirmeler, sunumlar, diğer haftalar) yeni sekmede açılır; öğrenci
+# notu okurken sayfayı kaybetmez. Aynı sayfa içindeki "#bölüm" atlamaları ve üst menü olduğu gibi kalır.
+_BAGLANTI = re.compile(r'<a\s(?![^>]*\btarget=)([^>]*\bhref="(?!#)[^"]*"[^>]*)>')
+
+
+def on_page_content(html, page, config, files):
+    return _BAGLANTI.sub(r'<a target="_blank" rel="noopener" \1>', html)
 
 
 def on_env(env, config, files):

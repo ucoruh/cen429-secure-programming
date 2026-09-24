@@ -5,7 +5,7 @@
 | **Date** | 02.10.2026 |
 | **Learning outcomes** | LO.2, 4 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from Week 1; `cd` and building in a Linux/WSL terminal |
+| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from [Week 1](../week-1/cen429-week-1.md); `cd` and building in a Linux/WSL terminal |
 | **Labs** | [`code/week-03`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-03) — 9 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -107,130 +107,41 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we'll use for the rest of the
-week. If you don't know a term, read this section first; the following sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### Why this section?
+### What we bring from earlier weeks
 
-This week terms such as "encryption," "nonce," and "key derivation" will come up.
+- **The white-box attacker model** — the user who owns the device or server is also a potential attacker; they
+  can read memory and attach a debugger
+  ([Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach)). This week we reuse
+  this model for **data in use** (Section 13) and the **whitebox cryptography motivation** (Section 15).
+- **Secure erasure from memory** — wiping a secret with a function the compiler can't remove
+  (`explicit_bzero`, `OPENSSL_cleanse`)
+  ([Week 1, §17](../week-1/cen429-week-1.md#erasing-secrets-from-memory-recipe-132)). This week Section 13 adds
+  blocking dumps, memory locking, and device binding on top of this.
+- **Entropy measurement** — measuring the disorder in a file's bytes to tell encrypted/packed content apart
+  ([Week 2, §6](../week-2/cen429-week-2.md#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised)).
+  Section 3 uses the same idea, this time for the disorder (entropy) **feeding** a random generator.
 
-We assume you don't know any of them.
+### This week's concept map
 
-Let's define them all, **one by one**, first.
-
-### The three states of data
-
-- **In transit:** while travelling over the network (TLS).
-- **At rest:** while sitting on disk (file encryption).
-- **In use:** while being processed in memory (the hardest).
-
-Each state calls for a different protection.
-
-### What is encryption?
-
-- **Encryption:** turning readable data (plaintext) into unreadable data (ciphertext) using a **key**.
-- **Decryption:** reversing it with the key.
-- Security depends on the **key's** secrecy.
-
-### Symmetric vs. asymmetric
-
-- **Symmetric:** a single key (AES). Fast.
-- **Asymmetric:** a public + private pair (RSA/ECC). Easy key distribution.
-- In practice, used **together** (hybrid).
-
-### Hash
-
-- **Hash:** a fixed-size fingerprint computed from data (SHA-256).
-- One-way; if the data changes, the hash changes.
-- The foundation of integrity and of signatures.
-
-### MAC and signature
-
-- **MAC:** symmetric; says "the message hasn't changed and came from the right party."
-- **Signature:** asymmetric; says who signed it (non-repudiation).
-- Both provide **integrity**.
-
-### AEAD
-
-- **AEAD:** confidentiality **plus** integrity **together** (AES-GCM).
-- Gives you both without wrestling with a separate MAC.
-- The modern choice.
-
-### IV / nonce / salt
-
-- **IV/nonce:** a value that must be **unique** for every encryption.
-- **Salt:** a random value added when deriving a key from a password.
-- All three are **not secret**, but they must be **non-repeating/unique**.
-
-### Randomness and CSPRNG
-
-- **CSPRNG:** a cryptographically secure random generator (the operating system's `getrandom`/`BCryptGenRandom`).
-- `rand()` is **insecure**.
-- Keys/nonces/salts are generated from a CSPRNG.
-
-### Key derivation (KDF)
-
-- **KDF:** **generating a key** from a secret (a password or a master key).
-- **PBKDF2/Argon2:** from a password (slow, salted).
-- **HKDF:** many keys from a master secret.
-
-### Key hierarchy
-
-- A single key is not used for everything.
-- Master key → derived keys (data, session).
-- **Crypto-period:** each key's lifetime.
-
-### Forward secrecy
-
-- **Forward secrecy:** a new key for every session.
-- Even if the long-term key leaks, **past** sessions still can't be decrypted.
-- Provided by modern TLS.
-
-### TLS (briefly)
-
-- **TLS:** the protocol for secure communication over the network (what HTTPS runs on).
-- Key agreement + AEAD + certificate validation.
-- We'll see it in Section 8.
-
-### Now we're ready
-
-Terms:
-
-the three states of data · encryption · symmetric/asymmetric · hash · MAC/signature · AEAD · IV/nonce/salt · CSPRNG · KDF/HKDF · key hierarchy · forward secrecy · TLS
-
-Now: the three states of data and the security shell.
-
-### Today's plan (3 hours)
-
-| Hour | Topic |
-| --- | --- |
-| 1 | Data states · Encryption fundamentals **Demo 1** · Random numbers · Crypto APIs · IV/nonce **Demo 2–3** |
-| 2 | Passwords and HKDF **Demo 4–5** · Key management · TLS 1.3 **Demo 6** · Wiring up TLS in code, fail-open |
-| 3 | At rest **Demo 7** · Masking · In use **Demo 8** · Shells **Demo 9** · Whitebox · Project |
-
-**Learning outcomes:** LO.2 (encryption, secure communication) · LO.4 (secure channel)
-
-### A short history — the tools for protecting data
-
-- **1976** Diffie–Hellman (public key) · **1977** **RSA** and **DES**
-- **2001** — **AES** (Rijndael) replaces DES
-- **2007** — **GCM** becomes a standard: the **AEAD** era (confidentiality + integrity together)
-- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
-
-> The rule follows from this: don't write your own crypto, use **AEAD**, and manage the **key** correctly.
-
-### How do the demos work?
-
-- One source, two platforms: **Windows (Visual Studio 2022)** and **WSL/Linux (GCC)**
-- Crypto from a shared header: **Linux → OpenSSL**, **Windows → BCrypt (CNG)** — no need to install OpenSSL
-- Build: Windows `.\build.ps1` · WSL `./build.sh`
-- Run: Windows `.\demo.ps1` · WSL `sh demo.sh`
-- Binaries live in each demo's `bin\windows` / `bin/linux` folder
-
-> ⚠️ **Ethics:** network only on `localhost`; the certificates are ours; only try the
-> techniques on your own machine.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| The three states of data | Across its lifecycle a secret exists in three states — in transit (on the network), at rest (on disk), and in use (in memory) — and each state has a different threat and defence. | [§1](#1-the-three-states-of-data-and-the-security-shell) |
+| Encryption | Encryption turns plaintext into unreadable ciphertext using a key; decryption reverses this with the same (or a matching) key, and security rests on the key's secrecy. | [§2](#2-encryption-fundamentals-which-tool-protects-what) |
+| AEAD | Authenticated encryption does two things in one call — encrypting the data and producing a tag that proves it hasn't changed — giving confidentiality and integrity together. | [§2.1](#21-authenticated-encryption-aead-confidentiality-integrity-in-one-call) |
+| Symmetric and asymmetric encryption | Symmetric encryption is fast with a single key shared by both sides; asymmetric encryption uses a public/private pair to make key distribution easy but is slow; real systems combine both (hybrid). | [§2.2](#22-symmetric-or-asymmetric-answer-both-hybrid) |
+| Hash | A hash is a fixed-size, one-way fingerprint computed from data; because it's keyless, it alone is not proof of integrity. | [§2.4](#24-hash-mac-and-signature-which-one-when) |
+| MAC and signature | A MAC proves, with a shared secret key, that a message hasn't changed; a digital signature does the same with a public/private pair and additionally provides non-repudiation. | [§2.4](#24-hash-mac-and-signature-which-one-when) |
+| Randomness and CSPRNG | A CSPRNG is the operating system's cryptographically secure random generator; every security-relevant value (key, IV, nonce, salt) must come from it, never from a statistical generator like `rand()`. | [§3](#3-random-numbers-the-invisible-foundation-of-cryptography) |
+| IV / nonce / salt | IV, nonce, and salt are not-secret starting values that must never repeat (or must be random); reusing a nonce with the same key leaks the keystream. | [§5](#5-ivnonce-and-salt-reusing-the-same-key) |
+| Key derivation (KDF) | A KDF generates new keys either from a password (PBKDF2/scrypt/Argon2id, salted and slow) or from a master secret (HKDF). | [§6](#6-key-derivation-from-a-password) |
+| Forward secrecy | Wiping a session's derived key after use means that even if today's key leaks, past sessions still can't be decrypted. | [§7.1](#71-forward-secrecy) |
+| Key hierarchy | A single key isn't used for everything; purpose-specific derived keys (a data key, a session key) come from a master key, each with its own crypto-period. | [§8](#8-dynamic-key-management-lifecycle-hierarchy-and-renewal) |
+| TLS | TLS is the protocol that combines key agreement, AEAD encryption, and certificate validation to provide secure communication over the network (the layer under HTTPS). | [§9](#9-data-in-transit-tls-13-certificate-validation-and-pinning) |
 
 ## 1. The three states of data and the security shell
 
@@ -261,7 +172,7 @@ states** across its lifecycle, and each state has a different threat and a diffe
     **every stage** of its lifecycle: on the outside, channel security (TLS); inside that, message-level
     encryption; inside that, storage encryption; and at the very centre, a device-bound key. To reach the secret,
     the attacker must break **all of them, in order**. This is the concrete form of the **defence in depth** we
-    introduced in Week 1; in Section 14 we'll wrap and unwrap a key with four shells.
+    introduced in [Week 1](../week-1/cen429-week-1.md); in Section 14 we'll wrap and unwrap a key with four shells.
 
 Recall the **example architecture** we use throughout the term (a mobile payment app plus a security library that
 handles its critical work). This week we fill in the three interfaces in that architecture: phone ↔ server (in
@@ -285,8 +196,10 @@ All example values are **synthetic** (made up); no real key, card number, device
 
 ## 2. Encryption fundamentals: which tool protects what?
 
-Cryptography isn't one single thing; there are **different tools for different goals**. Let's clarify the four
-families that get confused most often.
+**Encryption** turns readable data (**plaintext**) into unreadable data (**ciphertext**) using a **key**;
+**decryption** reverses this with the same (or a matching) key. Security rests on the secrecy of the **key**, not
+the algorithm. But cryptography isn't one single thing; there are **different tools for different goals**. Let's
+clarify the four families that get confused most often.
 
 ![The four families of cryptography](assets/h03-12-kripto-aileleri.svg)
 
@@ -296,7 +209,7 @@ families that get confused most often.
 | **Asymmetric encryption** | Confidentiality + key distribution | Public/private pair | RSA-OAEP, ECIES | Key setup, TLS |
 | **Hash** | Integrity fingerprint (keyless) | None | SHA-256, SHA-3 | Fingerprinting, HKDF/HMAC building block |
 | **MAC** | Integrity **+ identity** (shared key) | A single secret key | HMAC-SHA-256, CMAC | Proving a message hasn't changed |
-| **Digital signature** | Integrity + identity + **non-repudiation** | Public/private pair | Ed25519, RSA-PSS | Certificates, release signing (Week 10) |
+| **Digital signature** | Integrity + identity + **non-repudiation** | Public/private pair | Ed25519, RSA-PSS | Certificates, release signing ([Week 10](../week-10/cen429-week-10.md)) |
 | **AEAD** | Confidentiality **and** integrity **together** | A single secret key | AES-GCM, ChaCha20-Poly1305 | This week's main tool |
 
 !!! danger "The two most common mistakes"
@@ -362,8 +275,9 @@ Same result: **confidentiality + integrity in a single package.**
 
 These three belong to the **integrity** family but prove different things; mixing them up is a common mistake:
 
-- A **hash** is keyless. It only shows whether the data **has changed** (a fingerprint). But an attacker can
-  change the data and **recompute the hash too**; so a hash alone is **not proof** of integrity. Hashes are
+- A **hash** is a **fixed-size, one-way fingerprint** computed from data, and it's keyless. It only shows whether
+  the data **has changed**. But an attacker can change the data and **recompute the hash too**; so a hash alone is
+  **not proof** of integrity. Hashes are
   building blocks for constructions like HMAC and HKDF, and are used for fingerprinting/comparison. Old MD5/SHA-1
   are vulnerable to collisions; use SHA-256/SHA-3.
 - A **MAC** (e.g., HMAC-SHA-256) requires a **shared secret key**. It says "someone who knows the key sent this
@@ -496,6 +410,12 @@ part of it that still applies today, step by step.
 The rule is simple: **every security-relevant random value comes from a CSPRNG.** `rand()` and `mt19937` "look
 random" in a statistical sense, but from a security standpoint they are completely predictable. Anyone who sees
 624 consecutive outputs of a Mersenne Twister can compute every output that follows.
+
+This **unpredictability** is the other side of the **entropy** idea we saw in
+[Week 2](../week-2/cen429-week-2.md#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised): there we
+measured the disorder in a file's bytes to tell encrypted/packed content apart; here we need enough disorder
+**feeding** the generator to produce **unpredictable** output. If the generator's pool hasn't been seeded enough
+(as we'll see in Mistake 2 below), its output becomes predictable too.
 
 ### Mistake 1: seeding with the time
 
@@ -648,7 +568,7 @@ algorithm**, but calling a ready-made algorithm **correctly** is also a skill.
 ![AEAD's four inputs and two outputs](assets/h03-02-aead.svg)
 
 **AAD** (additional authenticated data) is information that isn't encrypted but that must be noticed if it's
-changed: a file header, a version number, a record ID. In the Week 1 password-vault example we made the
+changed: a file header, a version number, a record ID. In the [Week 1](../week-1/cen429-week-1.md) password-vault example we made the
 derivation parameters AAD; if someone changes the iteration count, the tag won't hold.
 
 ### Encrypting with OpenSSL EVP
@@ -1103,7 +1023,7 @@ history.
 !!! note "How it's done in the field"
     In the example architecture, from a master secret agreed with the server, an encryption key, a MAC key, and a
     separate session key for every session are derived with HKDF. We'll cover the key hierarchy (which key is
-    derived from which, how long each lives) in detail in Week 10; this week's principle is: **don't run a single
+    derived from which, how long each lives) in detail in [Week 10](../week-10/cen429-week-10.md); this week's principle is: **don't run a single
     key for every job.**
 
 !!! question "How does an evaluator test this?"
@@ -1204,7 +1124,7 @@ AAD, an attacker can't change the version field to redirect the app toward an ol
 
 | Option | Platform | Protection | Note |
 | --- | --- | --- | --- |
-| Embedded in source code | All | **None**: found with `strings` | Never (unless unavoidable; if unavoidable, obfuscate + split — Week 4) |
+| Embedded in source code | All | **None**: found with `strings` | Never (unless unavoidable; if unavoidable, obfuscate + split — [Week 4](../week-4/cen429-week-4.md)) |
 | Config file | All | File permissions | Leaks into backups, into the repository |
 | Environment variable | All | Weak | Leaks into subprocesses, crash reports |
 | DPAPI (`CryptProtectData`) | Windows | Tied to the user or machine account | Doesn't protect against malware running as the same user |
@@ -1235,11 +1155,11 @@ requirements:
 | Requirement (summary) | This week's counterpart |
 | --- | --- |
 | Industry-standard algorithms and protocols must be used, **configured securely** | Using crypto APIs correctly; wiring up TLS in code |
-| Keys' confidentiality and integrity must be protected, or the keys must be hidden | Security shells, whitebox (Week 11) |
+| Keys' confidentiality and integrity must be protected, or the keys must be hidden | Security shells, whitebox ([Week 11](../week-11/cen429-week-11.md)) |
 | Keys must be **installed and updated** securely, and **wiped** from memory and temporary storage once the job is done | Lifecycle; data in use |
 | Every key's **hierarchy, use, and crypto-period** must be defined; a key must be used **for a single purpose only** | Key hierarchy, key separation |
 | Random numbers with sufficient entropy, unpredictable, must be used (e.g., from the back end) | The random numbers section |
-| The call to the random number source **must not be hookable** | Week 6 (hook detection) |
+| The call to the random number source **must not be hookable** | [Week 6](../week-6/cen429-week-6.md) (hook detection) |
 | Data-encryption and limited-use keys must be protected with keys that are **bound to, and different per,** app and device | Device and version binding |
 
 The guide for a library that meets these requirements splits keys into four groups:
@@ -1286,7 +1206,7 @@ design were built today, the following improvements would be recommended:
 !!! tip "Critical reading is a skill"
     Reading a design written and certified a few years ago through today's lens is not the same as declaring it
     "wrong." The design met the requirements of its own time. The engineering skill is being able to say, with
-    reasoning, which choice needs to change **today** and why. In Week 12 we'll examine a security guide with
+    reasoning, which choice needs to change **today** and why. In [Week 12](../week-12/cen429-week-12.md) we'll examine a security guide with
     exactly this eye.
 
 !!! success "Rule"
@@ -1305,8 +1225,10 @@ design were built today, the following improvements would be recommended:
 
 ## 9. Data in transit: TLS 1.3, certificate validation, and pinning
 
-The standard that protects data in transit is **TLS** (formerly SSL). Today **TLS 1.3** is used; SSLv2/SSLv3 and
-TLS 1.0/1.1 are considered broken and have been retired (attacks like POODLE, BEAST).
+**TLS** (Transport Layer Security) is the protocol that combines **key agreement**, **AEAD encryption**, and
+**certificate validation** to provide secure communication over the network — the layer under HTTPS (formerly
+called SSL). It's the standard that protects data in transit. Today **TLS 1.3** is used; SSLv2/SSLv3 and TLS
+1.0/1.1 are considered broken and have been retired (attacks like POODLE, BEAST).
 
 ### 9.1 The TLS 1.3 handshake
 
@@ -1322,7 +1244,7 @@ consists of three questions:
 
 | Layer | Question | Tool |
 | --- | --- | --- |
-| **Chain validation** | Was the certificate signed by a trusted root (CA)? Is it expired/revoked? | CA store, CRL/OCSP (Week 10) |
+| **Chain validation** | Was the certificate signed by a trusted root (CA)? Is it expired/revoked? | CA store, CRL/OCSP ([Week 10](../week-10/cen429-week-10.md)) |
 | **Hostname** | Is the certificate **really for this server**? | SAN/CN comparison (`SSL_set1_host`) |
 | **Pinning** | Is it the **specific** key/certificate I expect? | SPKI SHA-256 comparison |
 
@@ -1567,7 +1489,7 @@ in mobile and desktop apps, though (OWASP MASVS-NETWORK). For sustainable pinnin
 !!! tip "Leaf certificate or intermediate CA?"
     Pinning the leaf certificate's key is the strictest option but requires the most maintenance. Pinning an
     intermediate CA's key accepts every certificate that CA signs; maintenance gets easier but assurance drops.
-    The choice gets written into the protection plan as a **trade-off record** (Week 1).
+    The choice gets written into the protection plan as a **trade-off record** ([Week 1](../week-1/cen429-week-1.md)).
 
 ### TLS on Windows: WinHTTP and Schannel
 
@@ -1673,7 +1595,7 @@ The correct design is **fail-closed**: if you can't determine a security check's
 !!! question "How does an evaluator test this?"
     They install their own root certificate on the test device and route traffic through a man-in-the-middle
     proxy. If the app can still connect under these conditions, pinning is absent or ineffective. They then try
-    to disable the pinning check at runtime by getting past the RASP and obfuscation layers (Week 6); how long
+    to disable the pinning check at runtime by getting past the RASP and obfuscation layers ([Week 6](../week-6/cen429-week-6.md)); how long
     this attempt takes shows how strong the protection is. They also scan the server side for TLS versions,
     cipher suites, and the certificate chain.
 
@@ -1708,7 +1630,7 @@ forms:
 - **Partial masking:** showing only part of a value, e.g., card number `**** **** **** 4242`, email
   `a***@ornek.com`. Used in the UI and on customer-service screens.
 - **Logging masks:** a sensitive field is **never** written to logs, or is written masked. (The data-side
-  counterpart of the "logging a secret" mistake we saw in Week 1.)
+  counterpart of the "logging a secret" mistake we saw in [Week 1](../week-1/cen429-week-1.md).)
 - **Tokenization:** replacing the real value with a meaningless "token," keeping the real value in a separate,
   secure vault. In payment systems a token travels in place of the card number; the actual number is decrypted
   from the vault only when needed.
@@ -1821,7 +1743,7 @@ approach is to send the client an already-masked value.
 
 The power of tokenization is that the real data is concentrated in **a single small, very well protected**
 system. The rest of the application, the databases, reports, and logs see only the token; even if these are
-compromised, the card data doesn't leak. This is the technical counterpart of Week 1's "transfer the threat"
+compromised, the card data doesn't leak. This is the technical counterpart of [Week 1](../week-1/cen429-week-1.md)'s "transfer the threat"
 response: never storing card data at all and using the payment provider's tokenization service dramatically
 shrinks the app's PCI DSS scope. In mobile payments, the card information downloaded to the phone also isn't the
 real card number, but a device-specific **token number**.
@@ -1862,7 +1784,7 @@ environments are less protected and accessed by more people. In order of prefere
 
 ### 5. Masking in logs and error messages
 
-In Week 2 we saw the audit log's "never log" list: password, PIN, token, key, full card number. A rule is one
+In [Week 2](../week-2/cen429-week-2.md) we saw the audit log's "never log" list: password, PIN, token, key, full card number. A rule is one
 thing; **guaranteeing** it is another. Two approaches are used together:
 
 - **Prevention at the source:** sensitive values are kept in a special type, and that type's print function
@@ -1923,8 +1845,12 @@ void gunluk_suz(char *satir)
 ## 13. Data in use: secure erasure in memory and device binding
 
 A secret eventually gets opened up in memory **in order to be used**. At that moment it's at risk: a memory
-dump, a debugger, swap space, other code that later reuses the same memory. In Week 1 we saw "dead-store
-elimination" with `explicit_bzero`; this week we build the additional layers for **data in use**.
+dump, a debugger, swap space, other code that later reuses the same memory. In
+[Week 1, §17](../week-1/cen429-week-1.md#erasing-secrets-from-memory-recipe-132) we saw "dead-store elimination"
+with `explicit_bzero` and wiping a secret from memory (Recipe 13.2), plus
+[preventing memory from being written to disk](../week-1/cen429-week-1.md#preventing-memory-from-being-written-to-disk-recipe-133)
+(Recipe 13.3); this week we build the additional layers — blocking dumps, memory locking, and **device binding** —
+for **data in use**.
 
 ![The layers that protect data in use](assets/h03-18-kullanimda-veri-katmanlari.svg)
 
@@ -1963,7 +1889,7 @@ Part of protecting data **in use** is **binding the key to a specific device/ver
 a value derived from the device's fingerprint (manufacturer, model, device ID, version string), the files can't
 be **opened** even if they're copied to another device. The correct approach: not XOR or an unsalted digest, but
 **salted derivation with HKDF** and wrapping with AEAD. This is exactly the innermost layer of the security
-shell in Section 14; we'll combine it with RASP in Week 6.
+shell in Section 14; we'll combine it with RASP in [Week 6](../week-6/cen429-week-6.md).
 
 !!! success "Rule"
     Open the secret **at the last possible moment**, keep it for **the shortest time**, don't **copy** it, and
@@ -2029,10 +1955,10 @@ In the normal flow, the four shells opened in sequence and the secret came back 
 tampered with, the outermost GCM tag held and was rejected at that layer. When the packet was moved to another
 device, the outer three shells (whose keys are portable) opened, but the **device-bound innermost shell** could
 not — the secret was never obtained. In real products this innermost shell is most often **whitebox crypto**
-(Week 11).
+([Week 11](../week-11/cen429-week-11.md)).
 
 This shell approach is a bridge to the rest of the term: native code hardening and RASP (Weeks 4, 6, 9) protect
-the shells **at runtime**; crypto and key hierarchy (Week 10) correctly generate and manage the shells' keys;
+the shells **at runtime**; crypto and key hierarchy ([Week 10](../week-10/cen429-week-10.md)) correctly generate and manage the shells' keys;
 whitebox (Week 11) strengthens the innermost shell; certification (Weeks 12–13) demands **proof** of all these
 layers. In other words, this week's data-security section is the backbone of your security guide (S5, S7), and
 every week ahead makes one more shell concrete.
@@ -2105,7 +2031,7 @@ How to read the matrix:
 ## 15. Introduction to whitebox cryptography (motivation)
 
 The hidden assumption behind this entire week is: **the key sits in the clear in memory the moment it's used.**
-In the "the device's owner is the attacker" scenario (Week 1, white box), the attacker can read memory and
+In the "the device's owner is the attacker" scenario ([Week 1](../week-1/cen429-week-1.md), white box), the attacker can read memory and
 attach a debugger; they can catch that moment and steal the key. Secure erasure and memory locking **narrow**
 this window but don't close it.
 
@@ -2118,13 +2044,14 @@ the real-world form of the **innermost** layer of the security shell from Sectio
 
 !!! note "This is only an introduction"
     We'll cover, in detail, how whitebox is built, its attacks (BGE, DFA, DCA), and why "every published design
-    has been broken" in **Week 11**. This week it's enough to know **why it exists**: the problem of the key
-    sitting in the clear in memory.
+    has been broken" in
+    [Week 11](../week-11/cen429-week-11.md#1-three-attacker-models-black-grey-white-box). This week it's enough
+    to know **why it exists**: the problem of the key sitting in the clear in memory.
 
 !!! warning "Whitebox isn't a magic wand"
     Whitebox crypto alone isn't sufficient: even if the attacker can't read the key, they can call the whitebox
     function **itself** like an "oracle" and use it, or copy the code (code lifting) and run it elsewhere.
-    That's why whitebox always comes **together with other shells**: device binding, RASP (Week 6), server-side
+    That's why whitebox always comes **together with other shells**: device binding, RASP ([Week 6](../week-6/cen429-week-6.md)), server-side
     risk checks, and key renewal. It's still a **security shell**.
 
 ---
@@ -2303,7 +2230,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     bound)?
 
 ??? question "Exercise 9 — Hard: the whitebox motivation"
-    While running Demo 8 (WSL), stop the program with `gdb` and inspect memory (the gcore method from Week 1
+    While running Demo 8 (WSL), stop the program with `gdb` and inspect memory (the gcore method from [Week 1](../week-1/cen429-week-1.md)
     Demo 2). Does the secret appear in memory **before** it's wiped? How does this explain which problem
     whitebox cryptography is trying to solve?
 
@@ -2568,4 +2495,11 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     | Tokenization | Tokenizasyon | Replacing the real value with a meaningless token and keeping it in a vault |
     | Constant-time compare | Sabit zamanlı karşılaştırma | Comparing secrets/MACs without leaking timing (`CRYPTO_memcmp`) |
     | AAD | İlişkili veri | Additional data in AEAD that isn't encrypted but is verified (bound) |
+
+!!! info "Next week"
+    **[Week 4](../week-4/cen429-week-4.md) — Code Hardening: C/C++.** This week we learned to protect data (keys, plaintext) with correct
+    encryption and key management; but the encryption code itself is also a C/C++ program, and a buffer overflow,
+    format-string bug, or integer error can leak the very key and plaintext we carefully protected this week.
+    Week 4 covers preventing exactly these mistakes with the SEI CERT C/C++ rules, and catching them with static
+    analysis and sanitizers.
 

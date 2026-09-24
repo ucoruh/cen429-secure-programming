@@ -100,147 +100,46 @@
     administrator rights, and changes no setting on your computer. Only try the techniques you learn **on your own
     computer and on the demos provided**. Trying them on someone else's system without permission is a crime.
 
+!!! info "How the course runs"
+    - **One term project:** a C/C++ application plus a **security guide** written "as if it were going through
+      certification"; the midterm check happens at the **[week 7](../week-7/cen429-week-7.md)** demo, the final check at the **[week 15](../week-15/cen429-week-15.md)** demo.
+    - **Two quizzes:** [week 8](../week-8/cen429-week-8.md) (weeks 1–6 material) · [week 16](../week-16/cen429-week-16.md) (weeks 9–14 material).
+    - Grade formula: `Midterm = 0.6·Project1 + 0.4·Quiz1` · `Final = 0.7·Project2 + 0.3·Quiz2`.
+    - Every week follows the same pattern: **buggy code → attack → fix**.
+
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you don't know a term, read this section first; the sections that follow build on it.
+This section prepares you for the week. As this is the first week of the course, it builds on no earlier topic: the
+concept map below defines each of this week's concepts in one sentence and links it to the section where it is
+explained in full.
 
-### Why this section?
+### This week's concept map
 
-This course is full of terms like "security," "vulnerability," and "threat model."
-
-We assume you know none of them.
-
-Let's define every one of them **one at a time** first.
-
-### What is security?
-
-- **Security:** protecting a system against someone who **wants to harm it**.
-- An ordinary bug: happens by accident.
-- Security: there is a **deliberate** attacker.
-
-### What is an asset?
-
-- **Asset:** anything worth protecting (data, a key, a function).
-- Example: a password, a credit card, a license, user data.
-- Security begins with "what are we protecting?"
-
-### Threat and vulnerability
-
-- **Threat:** a bad event that could happen (data being stolen).
-- **Vulnerability:** the **weak point** that makes it possible (unvalidated input).
-- Threat + vulnerability + attacker = risk.
-
-### The CIA triad
-
-The three core goals of security:
-
-- **Confidentiality (C):** only someone authorized can see it.
-- **Integrity (I):** it cannot be changed without authorization.
-- **Availability (A):** it works when it needs to.
-
-### Attacker model
-
-- **Attacker model:** "what can the attacker see/do?"
-- Are they connecting over the network, or do they own the device?
-- We design the defence accordingly.
-
-### White-box / MATE
-
-- **MATE (Man-At-The-End):** an attacker who **owns** the program.
-- Reads the code, sees the memory, modifies it.
-- The real situation for mobile/desktop applications (the main theme of this course).
-
-### Threat modelling
-
-- **Threat modelling:** systematically answering "what are we protecting, against whom, and how?"
-- It lists assets, threats, and countermeasures.
-- Today we'll do it with STRIDE and attack trees.
-
-### STRIDE
-
-- A method that classifies threats with six letters:
-- **Spoofing**, **Tampering**, **Repudiation**, **Information disclosure**, **Denial of service**, **Elevation of
-  privilege**.
-- It asks "which threat?" for every element.
-
-### Attack tree
-
-- **Attack tree:** a tree that breaks a goal (e.g. "steal the key") into **sub-steps**.
-- Root: the attacker's goal.
-- Branches: the ways to achieve it.
-
-### Data flow diagram (DFD)
-
-- **DFD:** a diagram showing **how data flows** through the system.
-- Process, data store, external entity, flow, trust boundary.
-- A map for finding threats.
-
-### Defence in depth
-
-- **Defence in depth:** not one countermeasure, but **many**.
-- If one is bypassed, another stops it.
-- A "security shell" is the combination of these layers.
-
-### Secure design principles
-
-- Saltzer & Schroeder (1975): least privilege, secure default, economy of mechanism, open design...
-- Still valid today.
-- The backbone of this course.
-
-### Trade-off
-
-- Every protection carries a **cost**: speed, complexity, expense.
-- Security is not "infinite protection," it is **balanced** protection.
-- We write the remaining risk down explicitly.
-
-### Now we're ready
-
-Terms:
-
-security · asset · threat/vulnerability · CIA · attacker model · MATE · threat modelling · STRIDE · attack tree ·
-DFD · defence in depth · design principles · trade-off
-
-Now: what security is, in depth.
-
-### Today's plan (3 hours)
-
-| Hour | Topic |
-| --- | --- |
-| 1 | Course introduction · What is security? · The attacker · Principles · **Overview of application protection** |
-| 2 | Protection plan · STRIDE and risk score · Attack tree · **Worked example "Vault"** · Class exercise |
-| 3 | **Demo 1–2** · Secure start-up · Overflows · **Demo 3–4** · Memory management · Partitioning · Secure process · Project |
-
-**Demos:** `code/week-01` — Windows `.\demo.ps1` · WSL / Linux `sh demo.sh` · Visual Studio: Open Folder → `code`
-
-### A short history — the idea of secure programming
-
-- **1975** — Saltzer & Schroeder: the **8 principles** of secure design (least privilege, defence in depth...)
-- **1970s–80s** — the **CIA triad** becomes a common language
-- **1998–99** — **STRIDE** at Microsoft; Schneier introduces **attack trees**
-- **2001–03** — *Building Secure Software* and the **Secure Programming Cookbook** (the course's main source)
-
-> Today's tools (CIA · attacker model · STRIDE · attack tree) are products of this lineage.
-
-### How the course runs
-
-- **One term project:** a C/C++ application plus a **security guide** written "as if it were going through
-  certification"
-    - Midterm check: **week 7** demo · Final check: **week 15** demo
-- **Two quizzes:** week 8 (weeks 1–6) · week 16 (weeks 9–14)
-- Grade: `Midterm = 0.6·Project1 + 0.4·Quiz1` · `Final = 0.7·Project2 + 0.3·Quiz2`
-- Every week: **buggy code → attack → fix**
-
-> ⚠️ **Ethics:** Only try these techniques on **your own computer**, on the demos provided.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Security | Security means protecting a system against a deliberate attacker who wants to harm it; unlike an ordinary bug, there is a conscious adversary on the other side. | [§1](#1-what-is-security) |
+| Asset | An asset is anything worth protecting — data, a key, a function — and security always begins with "what are we protecting?" | [§1](#1-what-is-security) |
+| Threat and vulnerability | A threat is a possible event or person that could harm an asset; a vulnerability is the weak point the threat can exploit; threat + vulnerability + attacker together make up risk. | [§1](#1-what-is-security) |
+| The CIA triad | Security's three core goals are confidentiality (only someone authorized can see it), integrity (it cannot be changed without authorization), and availability (it works when it needs to). | [§1](#the-three-goals-of-security-cia) |
+| Attacker model | An attacker model is a systematic answer to "what can the attacker see, what can they do?"; the defence is designed accordingly. | [§3](#3-who-is-the-attacker-and-what-can-they-reach) |
+| White-box / MATE | MATE (Man-At-The-End) is an attacker who **owns the program itself**: they can read the code, see the memory, and modify it — the real situation for mobile/desktop applications. | [§3](#3-who-is-the-attacker-and-what-can-they-reach) |
+| Secure design principles | The principles Saltzer and Schroeder wrote in 1975 — least privilege, secure default, open design, and others — are still the backbone of secure design today. | [§4](#4-the-basic-principles-of-secure-design) |
+| Defence in depth | Defence in depth means building many complementary protection layers instead of relying on a single countermeasure; if one is bypassed, the next one takes over. | [§5](#5-overview-of-application-protection-the-defence-in-depth-map) |
+| Trade-off | Every protection carries a cost (speed, complexity, expense); security is not "infinite protection" but balanced protection with an explicitly written-down remaining risk. | [§5](#the-cost-of-protection-every-layer-has-a-price) |
+| Threat modelling | Threat modelling is systematically answering "what are we protecting, against whom, and how?"; it lists assets, threats, and countermeasures. | [§7](#7-threat-modelling-stride-and-attack-trees) |
+| STRIDE | STRIDE is a method that classifies threats with six letters: spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege. | [§7](#7-threat-modelling-stride-and-attack-trees) |
+| Attack tree | An attack tree is a tree that breaks a goal down into the sub-steps an attacker could follow; the root is the attacker's goal, and the branches are the ways to reach it. | [§7](#attack-tree) |
+| Data flow diagram (DFD) | A DFD is a diagram that shows how data flows through a system via processes, data stores, external entities, flows, and trust boundaries; it is a map for finding threats. | [§8](#8-going-deeper-into-threat-modelling-the-data-flow-diagram-stride-in-detail-and-risk-scoring) |
 
 ## 1. What is security?
 
-Think of a bank's safe. The money inside the safe is the **asset**. Someone who wants to steal the money is the
-**threat**. The safe's lock being faulty is a **vulnerability**. The thief using that faulty lock is the
-**attack**. **Risk** is the answer to the question "how likely is this event, and how much damage does it cause if
-it happens?"
+**Security** means protecting a system against a deliberate attacker who wants to harm it; unlike an ordinary
+software bug, there is a **conscious adversary** on the other side. To make this concrete, think of a bank's safe.
+The money inside the safe is the **asset**. Someone who wants to steal the money is the **threat**. The safe's
+lock being faulty is a **vulnerability**. The thief using that faulty lock is the **attack**. **Risk** is the
+answer to the question "how likely is this event, and how much damage does it cause if it happens?"
 
 !!! note "A short history: where did the idea of secure programming come from?"
     - **1975** — Saltzer & Schroeder publish the **eight principles** of secure design (least privilege, defence in
@@ -270,7 +169,8 @@ Software has the same chain; only the program stands in for the safe, and data s
 
 ### The three goals of security: CIA
 
-When we talk about security, we are almost always trying to protect these three things:
+When we talk about security, we are almost always trying to protect these three things; together they are known
+as the **CIA triad** (confidentiality, integrity, availability):
 
 | Goal | Question | What happens if it breaks? | Typical countermeasure |
 | --- | --- | --- | --- |
@@ -371,7 +271,8 @@ mind with a one-sentence example:
 | **Psychological acceptability** | Security must be usable, or it gets bypassed | Asking for a password every 5 minutes leads to the password being written on paper |
 
 Let's add one modern principle to these: **defence in depth**. We don't rely on a single countermeasure; we build
-layers that complement each other. If one is bypassed, the next one takes over. In week 3 we will see how a
+layers that complement each other. If one is bypassed, the next one takes over.
+[In week 3](../week-3/cen429-week-3.md#14-security-shells-defence-in-depth-made-concrete) we will see how a
 sensitive key is carried inside exactly **four separate protection layers** (a security shell).
 
 ---
@@ -422,7 +323,8 @@ The diagram below orders the layers we will see this term from the **inside out*
     **several of these layers at once**: it is stored encrypted, decrypted only at the moment it is needed and
     only as much as needed, the code section where it is decrypted is obfuscated and integrity-checked, and the
     process it runs in has debugger detection. In this course we will call these nested layers a **security
-    shell**. In week 3 we will build a four-shell design step by step.
+    shell**. [In week 3](../week-3/cen429-week-3.md#14-security-shells-defence-in-depth-made-concrete) we will
+    build a four-shell design step by step.
 
 ### Which layer matters when? Choosing by attacker model
 
@@ -479,7 +381,9 @@ once the work is done. We will apply every one of these rules over the course of
 
 ### The cost of protection: every layer has a price
 
-Adding a layer is never free. When writing a protection plan, you weigh these four costs for every layer:
+Adding a layer is never free; security involves a constant **trade-off** between speed and complexity — the goal
+is not infinite protection but **balanced** protection, with the remaining risk written down explicitly. When
+writing a protection plan, you weigh these four costs for every layer:
 
 1. **Performance:** Obfuscated code runs slower (e.g. control-flow flattening can slow a function down several
    times over). Integrity checking and debugger detection also cost CPU time.
@@ -602,9 +506,9 @@ And a slice of the **asset table** (the values are synthetic):
 
 !!! tip "What comes after this method"
     Every week this term we will open up one of the methods that protect the assets in these tables: layered data
-    protection and security shells (week 3), hardening native code (weeks 4 and 9), hardening the Java side
-    (week 5), runtime self-protection (week 6), crypto methods and key hierarchy (week 10), white-box cryptography
-    (week 11), certification and requirement mapping (weeks 12–13).
+    protection and security shells ([week 3](../week-3/cen429-week-3.md)), hardening native code (weeks 4 and 9), hardening the Java side
+    ([week 5](../week-5/cen429-week-5.md)), runtime self-protection ([week 6](../week-6/cen429-week-6.md)), crypto methods and key hierarchy ([week 10](../week-10/cen429-week-10.md)), white-box cryptography
+    ([week 11](../week-11/cen429-week-11.md)), certification and requirement mapping (weeks 12–13).
 
 ---
 
@@ -637,8 +541,8 @@ cheapest path and the key points to defend fall out on their own.
 
 Two conclusions follow immediately from this tree: (1) Path C is expensive because it requires breaking two layers
 at once — that's defence in depth at work. (2) Path B has three alternatives; that means the key **in memory** is
-the weakest point, and it needs dedicated countermeasures (this week's Demo 2, runtime protection in week 6,
-white-box in week 11).
+the weakest point, and it needs dedicated countermeasures (this week's Demo 2, runtime protection in [week 6](../week-6/cen429-week-6.md),
+white-box in [week 11](../week-11/cen429-week-11.md)).
 
 !!! example "Class exercise (15 minutes, groups of 3–4)"
     Think of a "student grading system": the instructor enters grades, the student sees their grade, the data
@@ -707,7 +611,7 @@ crashed, its privilege can be abused.
 | --- | --- | --- | --- |
 | **S** | Is the other party really who they claim to be? Could someone else pose as them? | Authentication, mutual TLS, signature verification, certificate pinning | Weeks 3, 10 |
 | **T** | Can this data or code be altered in transit or on disk? Would I notice if it were? | MAC/HMAC, digital signature, integrity checking, read-only memory | Weeks 2, 3, 6 |
-| **R** | If a user says "I didn't do this," do I have proof? | Tamper-resistant audit log, signed transaction, timestamp | Week 2 |
+| **R** | If a user says "I didn't do this," do I have proof? | Tamper-resistant audit log, signed transaction, timestamp | [Week 2](../week-2/cen429-week-2.md) |
 | **I** | Can this data end up in the hands of someone unauthorized — on disk, on the network, in memory, in a log, in an error message? | Encryption, memory wiping, data minimization, masking | Weeks 1, 3, 11 |
 | **D** | Can this component be crashed, deadlocked, or have its resources exhausted? | Input limits, rate limiting, timeouts, resource quotas | Weeks 1, 4 |
 | **E** | Can someone less privileged get someone more privileged's work done? | Least privilege, complete mediation, memory safety, sandboxing | Weeks 1, 2, 4 |
@@ -740,7 +644,7 @@ financial or legal consequence?
     vulnerability from 0–10 using criteria such as attack vector, complexity, privileges required, user
     interaction, and impact on confidentiality/integrity/availability. In payment system certification, a scale
     called **"attack potential"** is used, which adds up the time required, expertise, knowledge of the target,
-    window of opportunity, and equipment (week 13). This week, the simple 3×3 matrix is enough.
+    window of opportunity, and equipment ([week 13](../week-13/cen429-week-13.md)). This week, the simple 3×3 matrix is enough.
 
 ### Four responses to a threat
 
@@ -861,7 +765,7 @@ test, it **counts as if it doesn't exist** in the evaluator's eyes.
 | T4 integrity | A random byte of the vault file is modified | The app says "file corrupted," refuses to open, does not crash |
 | T5 parameter | The iteration count in the header is set to 1 | The app rejects the file |
 | T6 signature | A package with a broken signature is presented | Installation is refused, the event is logged |
-| T8 parser | 24 hours of fuzzing (week 4) | No crashes; no sanitizer findings |
+| T8 parser | 24 hours of fuzzing ([week 4](../week-4/cen429-week-4.md)) | No crashes; no sanitizer findings |
 
 ### Step 7 — Residual risk
 
@@ -1110,7 +1014,7 @@ umask(077);     /* yeni dosyalar yalnız sahibine açık: rw------- */
 `umask` is a **mask**: the bits set in it are **subtracted** from the permissions you pass to `open()`. With
 `077`, no bits are left for group and others. Even so, write the permission **explicitly** when opening a
 sensitive file: `open(path, O_WRONLY | O_CREAT | O_EXCL, 0600)`. `O_EXCL` refuses to open the file if it already
-exists (e.g. if it's a link the attacker pre-created); recall the TOCTOU demo from week 2.
+exists (e.g. if it's a link the attacker pre-created); recall the TOCTOU demo from [week 2](../week-2/cen429-week-2.md).
 
 ### Step 4 — Disable crash dumps (Recipe 1.9)
 
@@ -1133,7 +1037,7 @@ text. Demo 2's password can be found in exactly this way.
     ```
 
     `PR_SET_DUMPABLE` provides a second benefit: another process running as the same user can no longer attach to
-    this process as a debugger, and cannot read its `/proc/<pid>/mem`. We'll return to this line in week 6 when
+    this process as a debugger, and cannot read its `/proc/<pid>/mem`. We'll return to this line in [week 6](../week-6/cen429-week-6.md) when
     we talk about debugger detection.
 
 === "Windows"
@@ -1192,7 +1096,7 @@ running every tab in an unprivileged "sandbox" process is today's version of thi
 
 | Wrong | Why? | Correct |
 | --- | --- | --- |
-| `system("convert " + dosya)` | The shell runs; a `;`, `&&`, `$(...)` in the file name becomes a command (week 5) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
+| `system("convert " + dosya)` | The shell runs; a `;`, `&&`, `$(...)` in the file name becomes a command ([week 5](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
 | `execvp("convert", ...)` | Searches `PATH` (Demo 1) | `execve` with an absolute path |
 | `CreateProcess(NULL, "C:\Program Files\Araç\a.exe", ...)` | An unquoted path with spaces: `C:\Program.exe` is tried first | Give `lpApplicationName` the full path, quote the command line |
 | `LoadLibrary("yardimci.dll")` | A fake DLL placed in the app's or the working directory can be loaded during the search | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` and an absolute path |
@@ -1416,7 +1320,7 @@ There are three cases:
 
 The last part of the third row is what makes an overflow this dangerous: whoever controls the return address
 controls **which code the program runs next**. This was the entry point for most outbreaks from the Morris worm
-in 1988 to Slammer in 2003 (week 2). Today's operating systems and compilers add protections that make this path
+in 1988 to Slammer in 2003 ([week 2](../week-2/cen429-week-2.md)). Today's operating systems and compilers add protections that make this path
 much harder (below), but the bug itself is **still in your code**, and the protections don't close every case. In
 this course we care about how the bug **happens, is found, and is prevented** — not about how to exploit it.
 
@@ -1543,7 +1447,9 @@ the damage** when a bug slips through:
 | Operating system | DEP/NX, ASLR | Blocks running code in a data region; changes addresses on every run | Release |
 | Hardware | Shadow stack (Intel CET, ARM PAC) | Keeps a separate, protected copy of the return address | Release (newer processors) |
 
-We will examine each of these protections in week 4 by turning them on and off one at a time. This week keep this
+We will examine each of these protections
+[in week 4](../week-4/cen429-week-4.md#12-compiler-and-operating-system-protections) by turning them on and off
+one at a time. This week keep this
 idea in mind: **a protection makes exploitation harder; it does not fix the bug.** When the canary is corrupted,
 it terminates the program — meaning the attacker can still crash the program even if they can't hijack control
 flow. That, too, is a denial of service.
@@ -1587,7 +1493,7 @@ that's why it is used in **test** builds, not in release builds.
     teams use their own versions of standard functions like `memcpy`, `memset`, `strcmp` instead of the
     originals. There are two reasons for this: to make it harder for an attacker to hook these well-known
     functions and read data in transit, and to bring the code of these functions itself inside the scope of
-    integrity checking (week 6).
+    integrity checking ([week 6](../week-6/cen429-week-6.md)).
 
 ---
 
@@ -1707,7 +1613,7 @@ snprintf(o.ad, sizeof(o.ad), "%s", argv[1]);  /* boyutu bilen kopya */
     after the local variables; if the overflow reaches that far, the attacker can redirect the program's control
     flow. Modern systems take layered countermeasures against this: the **stack canary** (a secret value placed
     before the return address that gets corrupted by an overflow), **DEP/NX** (forbids executing data on the
-    stack as code), and **ASLR** (changes addresses on every run). We'll cover these in detail in week 4; what
+    stack as code), and **ASLR** (changes addresses on every run). We'll cover these in detail in [week 4](../week-4/cen429-week-4.md); what
     matters here is knowing that they **don't fix the bug**, they only **make exploitation harder**.
 
 ---
@@ -1820,6 +1726,9 @@ static int uzunluk_oku(const char *metin, size_t *sonuc)
     **both a lower and an upper bound**. Use **`strtol`**, which reports errors, instead of `atoi`. Compile with
     `-Wall -Wextra -Wconversion -Wsign-conversion` turned on.
 
+We will go deeper into this wider family of integer bugs — overflow, sign conversion, boundary values — [in week 4's
+undefined-behaviour section](../week-4/cen429-week-4.md#7-integers-and-undefined-behaviour-recipe-35).
+
 ---
 
 ## 17. Memory management and security
@@ -1887,6 +1796,9 @@ rule**:
     block and never stores it anywhere that will outlive the owner. If ownership passes from one function to
     another, that is written explicitly in the function's name and documentation (e.g. `..._al()` (take) takes
     over ownership, `..._goster()` (show) only borrows it).
+
+We will exploit a UAF step by step in C/C++ and catch it with AddressSanitizer
+[in week 4](../week-4/cen429-week-4.md#6-use-after-free-and-double-free).
 
 ### Fixed versions of the other errors
 
@@ -2222,8 +2134,10 @@ The countermeasures, therefore, go beyond "hide the key":
 
 A sensitive piece of data exists in three states throughout its lifecycle: **at rest** (disk), **in transit**
 (network), and **in use** (memory, registers). Encrypting the first two is standard; the hard one is the
-**third**, because the data has to be decrypted at some point to be processed. The goal is to narrow this
-**window of exposure** as much as possible, in both time and space:
+**third**, because the data has to be decrypted at some point to be processed. (We will cover protecting data at
+rest and in transit in detail
+[in week 3](../week-3/cen429-week-3.md#1-the-three-states-of-data-and-the-security-shell).) The goal is to narrow
+this **window of exposure** as much as possible, in both time and space:
 
 ![Comparing how long the key stays exposed in memory across two designs](assets/h01-16-aciklik-penceresi.svg)
 
@@ -2239,7 +2153,7 @@ The techniques that achieve this:
    encrypted in the binary too; it is decrypted into memory at runtime, run, then **re-encrypted**. Details in
    weeks 4 and 9.
 5. **Processing without ever exposing the key:** in white-box cryptography, the key is embedded into computation
-   tables in such a way that it never exists in the clear in memory during the operation (week 11).
+   tables in such a way that it never exists in the clear in memory during the operation ([week 11](../week-11/cen429-week-11.md)).
 
 ```c title="Masking in memory: the key sits in two pieces"
 #include <stdint.h>
@@ -2286,7 +2200,8 @@ void imzala(const OrtuluAnahtar *o, const uint8_t *veri, size_t n, uint8_t etike
 - A module inside the same process provides **no real isolation** against an attacker who runs in that same
   process (e.g. a tool that hooks the program). In that case, the real protection is RASP and obfuscation.
 - At an inter-process or client–server boundary, **the communication channel itself** is a new attack surface; it
-  needs mutual authentication and integrity (week 3).
+  needs mutual authentication and integrity
+  ([week 3](../week-3/cen429-week-3.md#9-data-in-transit-tls-13-certificate-validation-and-pinning)).
 - Hardware isolation (TEE, secure element) is strong, but the code running inside it still has to be bug-free;
   buffer overflows have been found in TEE applications too.
 
@@ -2314,12 +2229,12 @@ SP 800-218) both say that security must be **spread across every stage** of soft
 
 | Stage | Security activity | Where it appears in this course |
 | --- | --- | --- |
-| Requirements | Write the security requirements (derived from standards) | Week 13 |
+| Requirements | Write the security requirements (derived from standards) | [Week 13](../week-13/cen429-week-13.md) |
 | Design | Threat model, protection plan, attack surface analysis | Weeks 1–2 |
 | Implementation | Coding rules, banned functions, static analysis, code review | Weeks 4–5 |
 | Verification | Sanitizers, fuzzing, penetration testing, security tests | Weeks 4, 12 |
-| Release | Signed build, unique version identity, incident response plan | This section, week 10 |
-| Response | Receiving vulnerability reports, the emergency update process | Week 12 |
+| Release | Signed build, unique version identity, incident response plan | This section, [week 10](../week-10/cen429-week-10.md) |
+| Response | Receiving vulnerability reports, the emergency update process | [Week 12](../week-12/cen429-week-12.md) |
 
 ### Unique version identity: "is what was reviewed the same as what shipped?"
 
@@ -2363,6 +2278,10 @@ if (argc > 1 && strcmp(argv[1], "--surum") == 0) {
     derivation**. That way, if a user rolls back to an old, vulnerable version (a downgrade attack), that version
     cannot decrypt the new version's keys. This is how version identity turns into a **security countermeasure**.
 
+The same discipline comes back at the end of the term: in [Week 14](../week-14/cen429-week-14.md#9-placing-obfuscation-into-the-build-and-deployment-pipeline-s15), once
+obfuscation enters the build pipeline, which version was produced with which transformation and seed is again
+tracked through this identity and its hash values.
+
 ### Change management: seven steps
 
 In a mature development team, no change goes **directly to the main branch**. The typical process, adapted from
@@ -2382,7 +2301,7 @@ The same discipline is applied in the source code repository:
 - Every change is reviewed by **at least one other developer**.
 - Releases are **tagged** (preferably with a signed tag).
 - External access to the repository requires **multi-factor authentication**.
-- The **build environment** is protected too: the supply-chain attacks we'll see in week 2 target code that gets
+- The **build environment** is protected too: the supply-chain attacks we'll see in [week 2](../week-2/cen429-week-2.md) target code that gets
   into the build server.
 
 ### The trade-off log: a record of conscious decisions
@@ -2410,7 +2329,7 @@ changes the program, which changes the hash. This loop is solved with a **multi-
 the hash, embed it obfuscated into the code, rebuild; the measured region is designed so it does not include the
 embedded value. In the field, five-pass signed builds are used, where values like the signing certificate's hash,
 the package hash, and the code hash are embedded one after another. Steps like this go wrong if done by hand, so
-they are turned into a **build script** and documented. In week 6 we will build this loop ourselves with a small
+they are turned into a **build script** and documented. In [week 6](../week-6/cen429-week-6.md) we will build this loop ourselves with a small
 example.
 
 ### Measuring the cost of protections
@@ -2756,3 +2675,11 @@ the `code/week-01` folder, and **only on your own computer**.
     | Core dump | Çökme dökümü | A copy of a crashed process's memory written to disk |
     | Least privilege | En az ayrıcalık | Every component running with only the privilege it needs |
     | Defence in depth | Derinlemesine savunma | Complementary layers of protection |
+
+---
+
+!!! info "Next week"
+    **[Week 2](../week-2/cen429-week-2.md) — Computer viruses and security models.** We will apply the threat-modelling tools we built this
+    week (STRIDE, attack trees) and the attacker model to a concrete class of threat — malware: how a virus
+    spreads, how it hides, and which access-control models (DAC/MAC/RBAC) stop it. The CWE classification we met
+    for this week's memory-safety bugs will deepen next week with CVE and CVSS.

@@ -34,7 +34,7 @@
     announced in class. This page is a **study guide**.
 
 !!! tip "The most effective way to study"
-    Answer each week's "Self-check" questions without looking at the answers; redo Week 10's OpenSSL steps and Week
+    Answer each week's "Self-check" questions without looking at the answers; redo [Week 10](../week-10/cen429-week-10.md)'s OpenSSL steps and Week
     13's compliance-matrix exercise yourself once more. What is measured is not memorization but the **why**.
 
 ---
@@ -43,12 +43,12 @@
 
 | Week | Topics (syllabus) | Focus while studying |
 | --- | --- | --- |
-| **9** Advanced code obfuscation and diversification | Obfuscation taxonomy; opaque predicates, bogus control flow, dead code; data encoding; virtualisation-based obfuscation; measuring obfuscation (potency, resilience, cost) | The purpose and cost of obfuscation; measurement metrics; the basic techniques from Week 4 |
-| **10** Certificates and cryptographic methods | Choosing algorithms and key lengths; modes and padding; HMAC, encrypt-then-MAC, replay; RSA-OAEP/PSS, Ed25519/X25519; digital signatures; Diffie–Hellman and man-in-the-middle; PKI, X.509, chains; CRL/OCSP; PKCS#11/SoftHSM; post-quantum | The security-level table; the correct mode and padding; pitfalls of signature verification; the four questions of chain validation |
-| **11** White-box cryptography | White-box and black-box attacker models; table-based implementation; key protection; known attack families and countermeasures; software security modules | Attacker models; where white-box fits in layered defence, and its limits |
-| **12** Certification and penetration-test planning | The 13 steps of independent assessment; the testing expectations of standards; vulnerability assessment; penetration test plan and reporting | Target of evaluation, requirement template, finding–action, impact analysis, delta assessment |
-| **13** Security requirements | What makes a good requirement; traceability and the compliance matrix; deferred requirements; Common Criteria, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | The requirement → control → verification → evidence chain; CC and FIPS concepts |
-| **14** Tigress and diversification | Source-to-source obfuscation; composing transformations; seed-based diversification; evaluating resilience | The purpose of diversification; measuring cost and effectiveness |
+| [**9** Advanced code obfuscation and diversification](../week-9/cen429-week-9.md) | Obfuscation taxonomy; opaque predicates, bogus control flow, dead code; data encoding; virtualisation-based obfuscation; measuring obfuscation (potency, resilience, cost) | The purpose and cost of obfuscation; measurement metrics; the basic techniques from [Week 4](../week-4/cen429-week-4.md) |
+| [**10** Certificates and cryptographic methods](../week-10/cen429-week-10.md) | Choosing algorithms and key lengths; modes and padding; HMAC, encrypt-then-MAC, replay; RSA-OAEP/PSS, Ed25519/X25519; digital signatures; Diffie–Hellman and man-in-the-middle; PKI, X.509, chains; CRL/OCSP; PKCS#11/SoftHSM; post-quantum | The security-level table; the correct mode and padding; pitfalls of signature verification; the four questions of chain validation |
+| [**11** White-box cryptography](../week-11/cen429-week-11.md) | White-box and black-box attacker models; table-based implementation; key protection; known attack families and countermeasures; software security modules | Attacker models; where white-box fits in layered defence, and its limits |
+| [**12** Certification and penetration-test planning](../week-12/cen429-week-12.md) | The 13 steps of independent assessment; the testing expectations of standards; vulnerability assessment; penetration test plan and reporting | Target of evaluation, requirement template, finding–action, impact analysis, delta assessment |
+| [**13** Security requirements](../week-13/cen429-week-13.md) | What makes a good requirement; traceability and the compliance matrix; deferred requirements; Common Criteria, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | The requirement → control → verification → evidence chain; CC and FIPS concepts |
+| [**14** Tigress and diversification](../week-14/cen429-week-14.md) | Source-to-source obfuscation; composing transformations; seed-based diversification; evaluating resilience | The purpose of diversification; measuring cost and effectiveness |
 
 ![Quiz-2 scope](assets/h16-01-kapsam.svg)
 
@@ -148,5 +148,5 @@
 
 !!! info "Weeks 9, 11 and 14"
     Sample questions for these weeks will be added to this section once their lecture notes are published. Until
-    then, review Week 4's "Introduction to code obfuscation" and "Control-flow flattening" sections, and Week 3's
+    then, review [Week 4](../week-4/cen429-week-4.md)'s "Introduction to code obfuscation" and "Control-flow flattening" sections, and [Week 3](../week-3/cen429-week-3.md)'s
     "Introduction to white-box cryptography" section for the related topics.

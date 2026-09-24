@@ -5,7 +5,7 @@
 | **Tarih** | 18.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Hafta 9'dan gizleme kuralları ve ölçüm çerçevesi; C'de derleme; Linux/WSL terminali (Tigress yalnız Linux'ta çalışır) |
+| **Ön bilgi** | [Hafta 9](../week-9/cen429-week-9.md)'dan gizleme kuralları ve ölçüm çerçevesi; C'de derleme; Linux/WSL terminali (Tigress yalnız Linux'ta çalışır) |
 | **Uygulamalar** | [`code/week-14`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-14) — 1 demo; WSL/Linux'ta `sh tigress-hatti.sh`; Tigress kurulu değilse betik temiz bir türevle aynı akışı gösterir |
 
 <!-- materyal:basla -->
@@ -81,101 +81,116 @@
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar. Önceki haftalarda görülmemiş
+temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 
-### Neden bu bölüm?
+### Önceki haftalardan gelenler
 
-Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terimler geçecek.
+- **Kaynak kod, derleyici ve ikili dosya** — insanın yazdığı program metninin (kaynak kod) bir derleyiciyle makine
+  koduna çevrilip çalıştırılabilir bir ikili dosyaya dönüşmesi
+  ([Hafta 9, Ön bilgi](../week-9/cen429-week-9.md#kaynak-koddan-ikiliye-derleyici-makine-kodu-ve-assembly)). Bu
+  hafta aynı zinciri, kaynağı önce gizleme aracından sonra derleyiciden geçirerek genişletiyoruz.
+- **Kod gizleme (obfuscation)** — davranışı değiştirmeden kodu insan için anlaşılması zor kılan, saldırı maliyetini
+  artıran karşı önlem ([Hafta 9, §1](../week-9/cen429-week-9.md#1-gizleme-neden-bir-guvenlik-kuralidir)). 9. hafta
+  bu kuralları **el ile** uyguladı; bu hafta aynı kuralların **otomatik** (Tigress) karşılığını görüyoruz.
+- **9. haftanın gizleme kuralları (K-01–K-12)** — opak yüklem, aritmetik kodlama, kontrol akışı düzleştirme, dize
+  kodlama, değişken bölme, sanallaştırma gibi el ile uygulanan kurallar
+  ([Hafta 9, §5](../week-9/cen429-week-9.md#5-kontrol-akisi-kurallari-ileri),
+  [§6](../week-9/cen429-week-9.md#6-veri-gizleme-kurallari),
+  [§7](../week-9/cen429-week-9.md#7-program-butunu-duzeyinde-kurallar)). Bölüm 3'te bunları Tigress'in
+  dönüşümleriyle tek tek eşliyoruz.
+- **Kontrol akışı grafiği (CFG)** — temel blokları düğüm, geçişleri kenar yapan şema
+  ([Hafta 9, Ön bilgi](../week-9/cen429-week-9.md#fonksiyon-dal-temel-blok-ve-kontrol-akisi-grafigi-cfg)). 9. hafta
+  bu grafiği kaynak koddan **elle** çizip düğüm/kenar saymıştı; bu hafta aynı sayımı `objdump` ile derlenmiş ikili
+  üzerinde **otomatikleştiriyoruz** (aşağıdaki "Ön bilgi").
+- **Sembolik yürütme** — program yollarını matematiksel kısıt olarak çözen otomatik analiz yöntemi (ör. KLEE)
+  ([Hafta 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-karsi-tarafin-araclari-ve-dayaniklilik-kurali)). Bu
+  hafta bölüm 7'de dayanıklılığı ölçmenin aracı olarak yeniden kullanıyoruz.
+- **Çeşitlendirme (diversification)** — aynı kaynaktan davranışça eş, yapıca farklı ikili dosyalar üretme fikri
+  ([Hafta 9, §8](../week-9/cen429-week-9.md#8-cesitlendirme-tek-kirik-her-yeri-acmasin)). Bu hafta bölüm 6'da
+  Tigress'in `--Seed` bayrağıyla otomatikleştiriyoruz.
+- **CI (sürekli entegrasyon) ve derleme hattı** — her kod değişikliğinde otomatik derleme/test adımlarını çalıştıran
+  sistem ve kaynaktan ürüne giden sıralı adımlar
+  ([Hafta 4, §13](../week-4/cen429-week-4.md#13-guvenli-derleme-hatti-hepsini-surekli-entegrasyonda-birlestirmek)).
+  Bu hafta bölüm 9'da gizleme ve çeşitlendirmeyi de bu hatta birer adım olarak ekliyoruz.
+- **Sürüm kimliği ve özet (hash) değeri** — bir yazılımın tam olarak hangi ikili/kaynak/özet üçlüsüyle
+  değerlendirildiğini/dağıtıldığını gösteren kayıt
+  ([Hafta 1, §19](../week-1/cen429-week-1.md#benzersiz-surum-kimligi-incelenen-ile-dagitilan-ayni-mi)). Bu hafta
+  bölüm 9'da bu kayda bir de **tohum** alanı ekliyoruz, çünkü çeşitlendirme aynı sürüm etiketiyle kasıtlı olarak
+  farklı ikililer üretebiliyor.
 
-Önce hepsini **tek tek** tanımlayalım.
+### Bu haftanın kavram haritası
 
-### Hatırlatma · kaynak, derleyici, ikili
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Kaynaktan kaynağa (source-to-source) gizleme | Bir aracın C kaynağını girdi alıp yine C kaynağı üretmesi; çıktı davranışça özdeştir ama okunması çok daha zordur ve normal derleyiciyle derlenir. | [§1](#1-kaynaktan-kaynaga-gizleme-nedir) |
+| Tigress | Arizona Üniversitesi'nden Christian Collberg ve ekibinin geliştirdiği, akademik kullanım için ücretsiz, kaynaktan kaynağa çalışan bir C gizleyici ve çeşitlendiricisi. | [§1](#1-kaynaktan-kaynaga-gizleme-nedir) |
+| Dönüşüm ve `--Functions` | `--Transform` bayrağı Tigress'e uygulanacak tek bir gizleme işlemini, `--Functions` bayrağı bu işlemin hangi fonksiyonlara uygulanacağını belirtir. | [§2](#2-temel-akis-bir-programi-adim-adim-gizlemek) |
+| Dönüşüm aileleri ve 9. hafta eşlemesi | Tigress'in Flatten, EncodeArithmetic, EncodeLiterals, Virtualize gibi dönüşümleri, 9. haftadaki K-01–K-12 kurallarının otomatikleştirilmiş karşılığıdır. | [§3](#3-donusum-aileleri-ve-9-hafta-kurallariyla-esleme) |
+| Dönüşüm hattı (pipeline) | Birden çok dönüşümün sırayla uygulanması; her dönüşüm bir öncekinin çıktısına uygulanır ve dönüşümlerin sırası sonucu ve maliyeti etkiler. | [§4](#4-donusum-hatti-birden-cok-donusumu-birlestirmek) |
+| Adım adım maliyet artışı | Bir dönüşüm hattına her yeni dönüşüm eklendikçe komut ve dal sayısı kümülatif olarak artar; artış her zaman bir önceki adımın mutlak sayısına göre hesaplanır. | [§5](#5-adim-adim-ornek-bir-denetimi-guclendirmek-sentetik) |
+| Çeşitlendirme aracı: tohum (seed) | Aynı dönüşüm hattını farklı bir `--Seed` değeriyle çalıştırarak davranışça özdeş ama yapıca farklı ikili dosyalar üretmek. | [§6](#6-cesitlendirme-ayni-kaynaktan-farkli-ikili-dosyalar) |
+| Gizleme ve çeşitlendirmeyi ölçmek | Güç, dayanıklılık, gizlilik ve maliyet ölçütlerinin her biri, gizlenmiş ikili üzerinde somut bir araç ve komutla ölçülüp raporlanır. | [§7](#7-gizlemeyi-ve-cesitlendirmeyi-olcmek) |
+| Sınıf içi yedi adımlık akış | Hazırla → gizle → doğrula → karşılaştır → ölç → çeşitlendir → raporla; her adım bir öncekinin çıktısını girdi olarak alır. | [§8](#8-sinif-ici-akis-gizle-karsilastir-olc-cesitlendir) |
+| S15 derleme ve dağıtım hattı | Gizleme, çeşitlendirme, imzalama ve sürüm kaydının CI içinde otomatik ve sıralı biçimde çalıştığı hat. | [§9](#9-gizlemeyi-derleme-ve-dagitim-hattina-yerlestirmek-s15) |
 
-- **Kaynak kod:** insanın yazdığı program metni (C dosyası).
-- **Derleyici:** kaynağı makine koduna çeviren program (gcc/clang).
-- **İkili dosya:** çalıştırılan sonuç.
+### Ön bilgi: Tigress'in kelime dağarcığı
 
-### Hatırlatma · gizleme
+Aşağıdaki terimlerin hiçbiri önceki haftalarda öğretilmedi; hepsi bu haftanın aracı olan Tigress'i ve onun komut
+satırını anlamak için gerekir. Tanımlar birbirinin üstüne kurulacak biçimde sırayla verilir.
 
-- **Kod gizleme (obfuscation):** davranışı değiştirmeden kodu **anlaşılması zor** hale getirmek.
-- Amaç: saldırgan için maliyeti artırmak (9. hafta).
+#### Kaynaktan kaynağa dönüşüm, hat ve tohum
 
-### Kaynaktan kaynağa (source-to-source)
-
-- Girdi: C kaynağı. Çıktı: **yine C kaynağı** — ama gizlenmiş.
-- Sonra normal derleyicinizle derlenir.
+Bu haftanın konusu **kaynaktan kaynağa** (source-to-source) gizlemedir: girdi olarak bir C kaynağı alınır, çıktı
+olarak **yine bir C kaynağı** üretilir — yalnız gizlenmiş hâliyle; bu yeni kaynak sonra normal derleyicinizle
+(gcc/clang) derlenir.
 
 ![Kaynaktan kaynağa gizleme hattı](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
-### Dönüşüm (transform) nedir?
+Kaynağa uygulanan tek bir gizleme işlemine **dönüşüm** (transform) denir (örneğin kontrol akışını düzleştirmek). Bir
+araç genelde birçok dönüşüm sunar; hangisinin hangi fonksiyona uygulanacağına siz karar verirsiniz. Birden çok
+dönüşümü **sırayla** uygulamaya **dönüşüm hattı** (pipeline) denir; her dönüşüm bir öncekinin ürettiği kaynağa
+uygulanır, bu yüzden sıra önemlidir (bölüm 4).
 
-- **Dönüşüm:** kaynağa uygulanan tek bir gizleme işlemi (ör. düzleştirme).
-- Araç birçok dönüşüm sunar; siz hangisini, nereye seçersiniz.
+Dönüşümlerin çoğu bir miktar rastgelelik içerir (ör. bir opak yüklemin hangi sabitle kurulacağı). Bu rastgeleliği
+yöneten başlangıç sayısına **tohum** (seed) denir: aynı dönüşüm hattı farklı bir tohumla çalıştırıldığında
+**farklı** bir gizlenmiş çıktı üretir — bölüm 6'daki çeşitlendirmenin (bkz. yukarıdaki "Önceki haftalardan
+gelenler") aracı tam olarak budur.
 
-### Dönüşüm hattı (pipeline)
+#### CLI ve birim testi ile çalışmak
 
-- **Hat:** birden çok dönüşümün **sırayla** uygulanması.
-- Her dönüşüm bir öncekinin çıktısına uygulanır.
-- Sıra önemlidir.
+Tigress, komutları yazarak çalıştırdığınız bir arayüz olan **CLI**'dan (Command-Line Interface, komut satırı
+arayüzü) çalışır: `tigress --Transform=... dosya.c` gibi bir satır yazarsınız, araç da gizlenmiş kaynağı üretir.
+Bir fonksiyonun doğru çalıştığını otomatik olarak denetleyen küçük bir teste **birim testi** (unit test) denir; bu
+haftanın kuralı, gizlemeden **önce** yazılmış birim testlerinin gizlemeden **sonra** da aynen geçmesi gerektiğidir —
+davranış korunmalıdır (bölüm 2).
 
-### Tohum (seed) nedir?
+#### Tigress'e özgü iki ayrıntı: ortam bayrağı ve dönüşüm bağımlılığı
 
-- **Tohum:** rastgeleliği yöneten bir başlangıç sayısı.
-- Aynı dönüşüm + farklı tohum = **farklı** gizlenmiş çıktı.
-- Çeşitlendirmenin anahtarı budur.
+`--Environment` bayrağı Tigress'e hedef platformu söyler: işlemci mimarisi, işletim sistemi ve derleyici sürümü
+(demo betiğinde `--Environment=x86_64:Linux:Gcc:11` → 64-bit Intel/AMD mimarisi, Linux, GCC sürüm 11). Bazı
+dönüşümler (özellikle sanallaştırma ve düşük seviyeli opak yüklem türleri) **derleyiciye özgü** ayrıntılar bilmek
+zorundadır; yanlış ortam bilgisiyle üretilen kaynak, hedef makinede **derlenemeyebilir** ya da yanlış davranabilir.
 
-### Çeşitlendirme (diversification)
+Bazı dönüşümlerin çalışabilmesi **önce başka bir dönüşümün** çalışmış olmasına bağlıdır; buna **dönüşüm bağımlılığı**
+denir (örnek: `AddOpaque`'in `InitOpaque`'e ihtiyaç duyması — bölüm 3'te ayrıntısıyla göreceğiz). Bu, bölüm 4'teki
+"sıra önemlidir" kuralının yalnız *sonucu iyileştirme* değil, bazen *çalışmanın önkoşulu* olduğu anlamına gelir.
 
-- **Çeşitlendirme:** aynı kaynaktan **davranışça eş, yapıca farklı** ikili dosyalar üretmek.
-- Bir kopyaya yazılan saldırı diğerinde çalışmaz (9. hafta Kural 2).
+#### Maliyeti ölçmek ve karşılaştırmak: `objdump`, `diff`, `cmp`
 
-### CLI (komut satırı) nedir?
+Bu haftanın demo betiği (`tigress-hatti.sh`), bir ikili dosyadaki **tek bir fonksiyonun** ne kadar büyüdüğünü ölçmek
+için `objdump` adlı bir araç kullanır: bir ikili dosyayı (`.exe`, ELF, ...) açıp içindeki **assembly komutlarını**
+insan tarafından okunabilir biçimde döken bir komut satırı aracıdır (GNU Binutils paketinin parçası; Linux/WSL'de
+hazır gelir). `objdump -d dosya` ("disassemble", tersine çöz) ikili dosyanın **kod bölümünü** makine kodundan
+assembly'ye çevirip yazdırır; buradaki **komut (instruction) sayısı**, bir fonksiyonun assembly çıktısında kaç
+**satır** komut olduğudur (her satır `mov`, `cmp`, `add` gibi tek bir işlemci komutu), **dal/çağrı (branch/call)
+sayısı** ise bu komutlardan kaçının **atlama** (`j` ile başlayan `jmp`, `je`, `jne`, ...) ya da **çağrı** (`call`)
+olduğu — yani programın "başka bir yere gitme" kararı aldığı kaç nokta olduğudur.
 
-- **CLI (Command-Line Interface):** komutları yazarak çalıştırdığınız arayüz.
-- Tigress bir CLI aracıdır: `tigress --Transform=... dosya.c`.
-
-### Birim testi (unit test)
-
-- **Birim testi:** bir fonksiyonun doğru çalıştığını otomatik denetleyen küçük test.
-- Gizlemeden **sonra** aynı testler geçmeli (davranış korunmalı).
-
-### CFG hatırlatma
-
-- **CFG (Control Flow Graph):** temel blokları düğüm, geçişleri kenar yapan şema.
-- Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz (9. hafta).
-
-![Kontrol akışı: düzleştirmeden önce ve sonra](assets/h14-10-cfg-once-sonra.svg)
-
-### Sembolik yürütme (kısaca)
-
-- **Sembolik yürütme:** program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE).
-- Gizlemeye karşı bir **deobfuscation** yöntemidir; dayanıklılığı bununla sınarız.
-
-### Şimdi hazırız
-
-Terimler:
-
-kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · birim testi · CFG · sembolik yürütme
-
-Şimdi: Tigress nedir ve nasıl çalışır?
-
-### `objdump` ve komut/dal sayımı nedir?
-
-Bu haftanın demo betiği (`tigress-hatti.sh`) bir ikili dosyadaki **tek bir fonksiyonun** ne kadar büyüdüğünü ölçmek
-için `objdump` adlı bir araç kullanır. Sıfırdan tanımlayalım:
-
-- **`objdump`:** bir ikili dosyayı (`.exe`, ELF, ...) açıp içindeki **assembly komutlarını** insan tarafından
-  okunabilir biçimde döken bir komut satırı aracı (GNU Binutils paketinin parçası; Linux/WSL'de hazır gelir).
-- **`objdump -d dosya`:** "disassemble" (tersine çöz) demektir; ikili dosyanın **kod bölümünü** makine kodundan
-  assembly'ye çevirip yazdırır.
-- **Komut (instruction) sayısı:** bir fonksiyonun assembly çıktısında kaç **satır** komut olduğu — her satır
-  `mov`, `cmp`, `add` gibi tek bir işlemci komutudur.
-- **Dal/çağrı (branch/call) sayısı:** bu komutlardan kaçının **atlama** (`j` ile başlayan `jmp`, `je`, `jne`, ...)
-  ya da **çağrı** (`call`) olduğu — yani programın "başka bir yere gitme" kararı aldığı kaç nokta olduğu.
-
-Demo betiğindeki ölçüm fonksiyonu tam olarak bunu yapar (`tigress-hatti.sh`, `olc()` fonksiyonu):
+Demo betiğindeki ölçüm fonksiyonu (`olc()`) tam olarak bunu yapar:
 
 ```sh title="Ölçüm mantığı (tigress-hatti.sh içinden, kısaltılmış)"
 objdump -d "$f" | awk '/<erisim_ver>:/{a=1;next} /^$/{a=0} a{n++; if($0 ~ /\t(j|call)/)b++} END{printf "%d komut, %d dal/cagri", n, b}'
@@ -186,10 +201,13 @@ başlayan bölümü (`a=1` bayrağı) okur, boş satıra (fonksiyonun sonu) geli
 sayacına ekler, satırda sekme sonrası `j...` ya da `call` görürse `b` sayacını da artırır. Sonuç: **o fonksiyona ait
 kaç komut, kaçının dal/çağrı olduğu.**
 
-Bu sayı, 9. haftada elle ölçtüğümüz "temel blok" ve "CFG düğüm/kenar" sayımının **otomatik ve daha ince taneli**
-karşılığıdır: 9. hafta CFG'yi kaynak koddan elle çizip düğüm/kenar sayardı (bkz. 9. hafta bölüm 0, `denetim`
+Bu sayı, 9. haftada elle ölçtüğümüz temel blok ve CFG düğüm/kenar sayımının **otomatik ve daha ince taneli**
+karşılığıdır: 9. hafta bu grafiği kaynak koddan elle çizip düğüm/kenar saymıştı
+([Hafta 9, Ön bilgi](../week-9/cen429-week-9.md#fonksiyon-dal-temel-blok-ve-kontrol-akisi-grafigi-cfg) — `denetim`
 fonksiyonu örneği: 3 düğüm, 2 kenar); burada aynı fikri **derlenmiş ikili üzerinde**, bir araçla otomatik sayıyoruz.
 İkisi de aynı soruyu sorar: *"bu fonksiyonu okumak/analiz etmek ne kadar iş?"*
+
+![Kontrol akışı: düzleştirmeden önce ve sonra](assets/h14-10-cfg-once-sonra.svg)
 
 !!! tip "Neden komut sayısı tek başına yetmez, dal sayısı da gerekir?"
     Bir fonksiyona yalnız **düz, dallanmayan** komutlar eklemek (ör. gereksiz birkaç `mov`) komut sayısını artırır
@@ -198,46 +216,13 @@ fonksiyonu örneği: 3 düğüm, 2 kenar); burada aynı fikri **derlenmiş ikili
     `dal_sayısı + 1` formülünü hatırlayın). Bu yüzden ölçüm her zaman **ikisini birden** raporlar; yalnız komut
     sayısı vermek eksik bir ölçümdür.
 
-### CI (sürekli entegrasyon) ve derleme hattı nedir?
-
-- **CI (Continuous Integration, sürekli entegrasyon):** her kod değişikliğinde **otomatik olarak** derleme, test ve
-  (bu ders bağlamında) gizleme adımlarını çalıştıran bir sistem (ör. GitHub Actions, GitLab CI, Jenkins).
-- **Derleme hattı (build pipeline):** kaynak koddan dağıtılabilir ürüne giden **sıralı adımlar** dizisi: derle →
-  test et → (varsa) gizle → imzala → paketle.
-
-Bu terim bölüm 9'da ("Gizlemeyi derleme ve dağıtım hattına yerleştirmek") tekrar karşımıza çıkacak: gizleme, elle
-çalıştırılan ayrı bir adım değil, **CI'nin bir parçası** olmalıdır — böylece her sürüm otomatik olarak gizlenir,
-test edilir ve ölçülür; hiçbiri unutulmaz.
-
-### Sürüm kimliği ve özet (hash) değeri (kısaca)
-
-- **Sürüm kimliği (version identity):** bir yazılımın **tam olarak hangi hâlinin** değerlendirildiğini/dağıtıldığını
-  gösteren etiket (ör. `v3.2.1`).
-- **Özet (hash) değeri:** bir dosyanın içeriğinden hesaplanan, o içeriğe **özgü** sabit uzunlukta bir sayı (ör.
-  SHA-256). İçerik bir bit bile değişse özet tamamen değişir.
-
-Bu iki kavram 12. haftadaki **TOE (Target of Evaluation — değerlendirme hedefi)** kimliğinin yapı taşlarıdır: 12.
-hafta bir ürünün TOE kimliğini "sürüm + ikili dosya + kaynak kod + özet değeri" dörtlüsüyle tanımlar ve yalnız
-"sürüm 3.2.0" demenin **yetmediğini** vurgular — çünkü aynı sürüm numarasıyla, farklı bir derleyici bayrağıyla
-derlenmiş iki ikili dosya **farklı** davranabilir. Bu hafta öğreneceğimiz gizleme + çeşitlendirme, tam olarak bu
-uyarıyı **daha da güçlendirir**: aynı kaynaktan, aynı sürüm etiketiyle, farklı tohumlarla üretilmiş iki ikili dosya
-**kasıtlı olarak farklıdır** — bu yüzden bölüm 9'da her sürümün tohumu ve özet değeri **ayrı ayrı** kaydedilecek.
-
-### Tigress ortamı (`--Environment`) nedir?
-
-- **`--Environment`:** Tigress'e hedef platformu söyleyen bayrak; işlemci mimarisi, işletim sistemi ve derleyici
-  sürümünü belirtir (demo betiğinde: `--Environment=x86_64:Linux:Gcc:11` → 64-bit Intel/AMD mimarisi, Linux,
-  GCC sürüm 11).
-- Neden gerekir? Bazı dönüşümler (özellikle sanallaştırma ve düşük seviyeli opak yüklem türleri) **derleyiciye özgü**
-  ayrıntılar bilmek zorundadır; yanlış ortam bilgisiyle üretilen kaynak, hedef makinede **derlenemeyebilir** ya da
-  yanlış davranabilir.
-
-### Dönüşüm bağımlılığı nedir (kısaca)?
-
-- **Dönüşüm bağımlılığı:** bazı dönüşümlerin çalışabilmesi için **önce başka bir dönüşümün** çalışmış olması
-  gerekmesi (ör. `AddOpaque`'in `InitOpaque`'e ihtiyaç duyması — bölüm 3'te ayrıntısıyla göreceğiz).
-- Bu, bölüm 4'teki "sıra önemlidir" kuralının yalnız *sonucu iyileştirme* değil, bazen *çalışmanın önkoşulu*
-  olduğu anlamına gelir.
+Ölçtüğümüz sayıları (temiz/gizli sürüm) karşılaştırmanın iki farklı yolu vardır: **`cmp`**, iki dosyayı **bayt
+bayt** karşılaştırır, yalnız "aynı mı, farklı mı" (ve isteğe bağlı olarak ilk farkın konumunu) söyler — bütün dosya
+için **tek** bir sonuç verir. **`diff`** ise iki metin/kaynak dosyasını **satır satır** karşılaştırır, hangi
+satırların eklendiğini/çıkarıldığını/değiştiğini ayrıntılı listeler; assembly çıktısı gibi satırlara ayrılmış
+metinlerde `cmp`'den daha **bilgilendiricidir**. Bölüm 6'daki "önce `cmp` ile kaba kontrol, sonra `objdump`+`diff`
+ile hedefe odaklı doğrulama" akışı, bu iki aracın **birbirini tamamladığı** fikrine dayanır: `cmp` hızlı ama kaba,
+`diff` yavaş ama ayrıntılıdır.
 
 ### Hızlı sözlük: bu haftanın yeni İngilizce terimleri
 
@@ -259,30 +244,9 @@ resmî belgelerinde ve komut satırında bu İngilizce adlarla karşılaşacaks�
 | Çalışma anında kod üretimi | Just-In-Time (Jit) |
 | Rastgele fonksiyon/parametre | Random functions / arguments |
 
-### `diff` ve `cmp` arasındaki fark nedir?
-
-Bölüm 6'da her ikisini de kullanacağız; farkı burada netleştirelim:
-
-- **`cmp`:** iki dosyayı **bayt bayt** karşılaştırır, yalnız "aynı mı, farklı mı" (ve isteğe bağlı olarak ilk farkın
-  konumunu) söyler. Bütün dosya için **tek** bir sonuç verir.
-- **`diff`:** iki metin/kaynak dosyasını **satır satır** karşılaştırır, hangi satırların eklendiğini/çıkarıldığını/
-  değiştiğini ayrıntılı listeler. Assembly çıktısı gibi satırlara ayrılmış metinlerde `cmp`'den daha **bilgilendiricidir**.
-
-Bölüm 6'daki "önce `cmp` ile kaba kontrol, sonra `objdump`+`diff` ile hedefe odaklı doğrulama" akışı, bu iki aracın
-**birbirini tamamladığı** fikrine dayanır: `cmp` hızlı ama kaba, `diff` yavaş ama ayrıntılıdır.
-
-### Ek terimler: pekiştirme
-
-Yukarıdaki tanımlarla birlikte, bu bölümde toplam terim listemiz şöyle genişledi:
-
-`objdump` · komut sayısı · dal/çağrı sayısı · CI (sürekli entegrasyon) · derleme hattı · sürüm kimliği · özet (hash)
-değeri · `--Environment` · dönüşüm bağımlılığı
-
-Bu terimleri bölüm 3, 7 (ölçüm) ve 9'da (S15 hattı) tekrar kullanacağız; takıldığınızda buraya dönün.
-
 ## 1. Kaynaktan kaynağa gizleme nedir?
 
-Dokuzuncu haftada gizleme kurallarını **el ile** uyguladık: opak yüklem, düzleştirme, dize kodlama, sahte dal. El ile
+[Dokuzuncu haftada](../week-9/cen429-week-9.md) gizleme kurallarını **el ile** uyguladık: opak yüklem, düzleştirme, dize kodlama, sahte dal. El ile
 gizleme öğreticidir ama üç sorunu vardır: (1) **hataya açıktır** — el ile yazılan gizleme kodu davranışı bozabilir;
 (2) **bakımı zordur** — kaynak okunamaz hale gelir; (3) **çeşitlendirilemez** — her kopyayı el ile farklılaştıramazsınız.
 Çözüm, gizlemeyi bir **araca** yaptırmaktır.
@@ -448,7 +412,7 @@ yöntemde bu risk `--Functions` listesinin kendisi bir **denetlenebilir belge** 
 !!! success "Kural: `--Functions` listesini kod incelemesinin bir parçası yapın"
     Yeni bir hassas fonksiyon eklendiğinde, kod incelemesi (code review) sürecinizde "bu fonksiyon `--Functions`
     listesine eklendi mi?" sorusu **açıkça sorulmalıdır** — tıpkı "bu fonksiyon için birim testi eklendi mi?"
-    sorusu gibi. Bu, 12. haftadaki "her değişiklik bir etki analizi gerektirir" kuralının gizleme özelindeki
+    sorusu gibi. Bu, [12. haftadaki](../week-12/cen429-week-12.md) "her değişiklik bir etki analizi gerektirir" kuralının gizleme özelindeki
     karşılığıdır.
 
 ## 2. Temel akış: bir programı adım adım gizlemek
@@ -468,7 +432,7 @@ cc -o program gizli.c
 
 Buradaki üç fikir, bütün Tigress kullanımının temelidir:
 
-1. **`--Transform=...`** hangi dönüşümün uygulanacağını söyler (Flatten = kontrol akışı düzleştirme, 9. hafta K-04).
+1. **`--Transform=...`** hangi dönüşümün uygulanacağını söyler (Flatten = kontrol akışı düzleştirme, [9. hafta](../week-9/cen429-week-9.md) K-04).
 2. **`--Functions=...`** dönüşümün **hangi fonksiyonlara** uygulanacağını söyler — çünkü gizlemeyi yalnız hassas
    fonksiyonlara uygularız (maliyet kuralı).
 3. Çıktı yine C'dir; **kendi derleyicinizle** derlersiniz. Gizleme, derleme hattına eklenen bir adımdır.
@@ -499,7 +463,7 @@ baştan sona, adım adım okuyalım. Betik dört adımdan oluşur; hiçbirini at
 
 **Adım 0 — Hazırlık.** Betik önce çalıştığı klasöre geçer (`cd "$(dirname "$0")"`) ve bir derleyici seçer (`CC=cc`,
 yoksa `gcc`'ye düşer). Bu, hangi makinede çalıştırılırsa çalıştırılsın betiğin **kendi kendine yeteceğini** garanti
-eder — 1. haftadan beri gördüğümüz "ortam farkını betikte çöz" alışkanlığının bir örneğidir.
+eder — [1. haftadan](../week-1/cen429-week-1.md) beri gördüğümüz "ortam farkını betikte çöz" alışkanlığının bir örneğidir.
 
 **ADIM 1 — Temiz sürümü derle ve çalıştır.**
 
@@ -638,10 +602,9 @@ farklar olabilir):
 
 Eşleme tablosunu soyut bırakmayalım; K-01'i (9. hafta, opak yüklem/döngü) uçtan uca Tigress'e bağlayalım.
 
-1. **9. haftadaki tanım:** K-01, doğruluğu **sabit** ama saldırgana **belirsiz görünen** bir koşulla (opak yüklem)
-   sahte bir dallanma eklemektir — örnek: `((x*(x+1)) & 1) == 0` ifadesi *her zaman* doğrudur (çünkü `x*(x+1)`
-   ardışık iki tam sayının çarpımıdır, bunlardan biri her zaman çifttir), ama bunu görmek insan için anında
-   değildir.
+1. **9. haftadaki tanım (hatırlatma):** K-01, doğruluğu **sabit** ama saldırgana **belirsiz görünen** bir koşulla
+   (opak yüklem) sahte bir dallanma eklemektir — `((x*(x+1)) & 1) == 0` örneği ve neden her zaman doğru olduğu
+   ([Hafta 9, §5](../week-9/cen429-week-9.md#kural-k-01-opak-yuklemler-ve-opak-donguler)) orada işlenmişti.
 2. **Tigress'teki karşılığı iki adımdır, tek değil:** demo betiğinin gerçek komutunda görüldüğü gibi önce
    `--Transform=InitOpaque --Functions=main` çalışır, **sonra** `--Transform=AddOpaque --Functions=erisim_ver
    --AddOpaqueKinds=call`. `InitOpaque`, opak yüklemlerin dayanacağı **gizli durum değişkenlerini** hazırlar (bölüm
@@ -663,9 +626,10 @@ Eşleme tablosunu soyut bırakmayalım; K-01'i (9. hafta, opak yüklem/döngü) 
 
 Aynı adımları K-07 (dize kodlama) için de tekrarlayalım, çünkü bu kural demo betiğinde de kullanılıyor:
 
-1. **9. haftadaki tanım:** K-07, `"CEN429-OK"` gibi bir dizgeyi ikili dosyada **düz metin olarak bırakmamak**;
-   XOR gibi tersine çevrilebilir bir kodlamayla saklamak ve yalnız kullanım anında çözmektir (bölüm 0'daki
-   `0x41 ^ 0x5A` örneğini hatırlayın — bkz. 9. hafta bölüm 0).
+1. **9. haftadaki tanım (hatırlatma):** K-07, `"CEN429-OK"` gibi bir dizgeyi ikili dosyada **düz metin olarak
+   bırakmamak**; XOR gibi tersine çevrilebilir bir kodlamayla saklamak ve yalnız kullanım anında çözmektir — bit bit
+   izlenen `0x41 ^ 0x5A` örneği
+   ([Hafta 9, §6](../week-9/cen429-week-9.md#kural-k-07-statik-dizgelerin-kodlanmasi)) orada işlenmişti.
 2. **Tigress'teki karşılığı:** `--Transform=EncodeLiterals --Functions=erisim_ver`. Bu dönüşüm, hedef fonksiyondaki
    sabit dizgeleri ve sayısal sabitleri kodlayıp, çalışma anında çözen kod üretir — K-07'nin "elle yazılan" hâlinin
    otomatikleştirilmiş karşılığı (bölüm 2'deki "ÖNCE/SONRA" örneği).
@@ -875,7 +839,7 @@ mı?" sorusunu tersinden zorlaştırır.
 
 ## 4. Dönüşüm hattı: birden çok dönüşümü birleştirmek
 
-Dokuzuncu haftanın en önemli kuralı "tek teknik değil, birlikte" idi. Tigress'te bu, dönüşümleri **sırayla** (bir hat olarak)
+[Dokuzuncu haftanın](../week-9/cen429-week-9.md) en önemli kuralı "tek teknik değil, birlikte" idi. Tigress'te bu, dönüşümleri **sırayla** (bir hat olarak)
 uygulamak demektir. Her `--Transform` bir öncekinin çıktısına uygulanır; sıra önemlidir.
 
 ![Dönüşüm hattında sıranın önemi](assets/h14-04-donusum-hatti.svg)
@@ -897,7 +861,7 @@ opak yüklemlerle güçlendirir. Sonuç, 9. haftada K-04'ün "güçlendirilmiş 
 !!! warning "Sıra ve test kuralı"
     Dönüşüm sırası sonucu etkiler ve bazı sıralar başarımı gereksiz bozar. **Kural:** her dönüşüm hattından sonra
     programın **birim testlerini** çalıştırın (davranış korunmuş mu?) ve boyut/hız ölçün. Gizleme, davranışı asla
-    değiştirmemelidir; değiştiriyorsa hat yanlıştır. Bu, 12. haftadaki "S16 test sonuçları"na doğrudan bağlanır.
+    değiştirmemelidir; değiştiriyorsa hat yanlıştır. Bu, [12. haftadaki](../week-12/cen429-week-12.md) "S16 test sonuçları"na doğrudan bağlanır.
 
 ### İki farklı sırayı somut karşılaştıralım
 
@@ -1022,7 +986,7 @@ göstermek içindir. Gerçek sayılar için `tigress-hatti.sh`'yi Tigress kurulu
    (`%36,4` sonra `%53,3` ekleyince toplam `%109,1` olur, `%36,4+%53,3=%89,7` değil). Bu, yüzde hesaplarken sık
    yapılan bir aritmetik hatadır; her satırı **kendi paydasıyla** (bir önceki adımın sayısıyla) hesaplayın.
 3. **%359 gibi büyük bir kümülatif sayı**, dört dönüşümü üst üste yığmanın **beklenen** sonucudur; tek bir
-   dönüşümün (9. haftadaki elle Flatten+AddOpaque örneğinde ölçülen gerçek **%82**) maliyetiyle karıştırılmamalıdır
+   dönüşümün ([9. haftadaki](../week-9/cen429-week-9.md) elle Flatten+AddOpaque örneğinde ölçülen gerçek **%82**) maliyetiyle karıştırılmamalıdır
    — burada dört dönüşüm birlikte sayılıyor.
 
 !!! danger "Sık yapılan hata: Adım 5'i (Virtualize) 'madem buradayım, hepsini ekleyeyim' diye uygulamak"
@@ -1059,7 +1023,7 @@ etkisiz kılar; saldırgan hâlâ kontrol akışını doğrudan okuyabilir. Dör
 
 ## 6. Çeşitlendirme: aynı kaynaktan farklı ikili dosyalar
 
-Dokuzuncu haftanın "Kural 2 — otomasyonu kır" ilkesini hatırlayın: bir saldırgan bir kopyayı kırıp saldırısını bütün
+[Dokuzuncu haftanın](../week-9/cen429-week-9.md) "Kural 2 — otomasyonu kır" ilkesini hatırlayın: bir saldırgan bir kopyayı kırıp saldırısını bütün
 kopyalara dağıtabiliyorsa, bir kırık her yeri açar. **Çeşitlendirme** (diversification), aynı kaynaktan **davranışça
 özdeş ama yapıca farklı** ikili dosyalar üretmektir. Tigress bunu bir **tohum** (seed) ile yapar: aynı dönüşümleri
 farklı tohumlarla çalıştırırsanız, opak yüklemler, sahte dallar ve düzleştirme durumları kopyadan kopyaya değişir.
@@ -1079,7 +1043,7 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 - **Uzayda çeşitlendirme:** farklı kullanıcılara/cihazlara farklı tohumla üretilmiş kopyalar dağıtmak. Bir kopyaya
   yazılan otomatik saldırı, başka kopyada çalışmaz.
 - **Zamanda çeşitlendirme:** her sürümü yeni bir tohumla üretmek. Eski sürüme karşı bulunan saldırı, yeni sürümde
-  bozulur. Bu, 10. haftadaki anahtar/sürüm yenileme politikanızla birlikte çalışır.
+  bozulur. Bu, [10. haftadaki](../week-10/cen429-week-10.md) anahtar/sürüm yenileme politikanızla birlikte çalışır.
 
 !!! note "İlgili dönüşümler"
     Tigress'te `RandomFuns` rastgele sahte fonksiyonlar, `RndArgs` sahte parametreler ekler; tohumla birleşince her
@@ -1157,7 +1121,7 @@ demo betiği anlatımını **tamamlar**.
 
 !!! success "Kural: iddia + doğrulama komutu birlikte yazılır"
     S9/S15'inizde "iki tohumla çeşitlendirdim" cümlesi tek başına yeterli değildir; yukarıdaki gibi **hangi komutla
-    doğruladığınızı** da yazın. Bu, 12. haftadaki "plan değil sonuç" kuralının bir başka somut uygulamasıdır: iddia,
+    doğruladığınızı** da yazın. Bu, [12. haftadaki](../week-12/cen429-week-12.md) "plan değil sonuç" kuralının bir başka somut uygulamasıdır: iddia,
     çalıştırılabilir bir komutla desteklenmelidir.
 
 ### Kaç kullanıcı, kaç tohum? Uzayda çeşitlendirmeyi ölçekte düşünelim (varsayımsal)
@@ -1202,12 +1166,12 @@ yapılsaydı, her ay yeniden elle gizleme yazmak gerekirdi — bu da pratikte hi
 !!! note "Zamanda çeşitlendirme tek başına yeterli mi?"
     Hayır — bölüm 1'deki "Kural 3" gizlemenin **diğer katmanlara zaman kazandırdığını** söyler, kalıcı bir çözüm
     olduğunu değil. Ay sonunda yeni sürüm çıkana kadar geçen sürede saldırgan hâlâ Şubat sürümünü kullanan
-    kullanıcılara zarar verebilir. Bu yüzden zamanda çeşitlendirme; RASP (6. hafta, çalışma anında sızma
+    kullanıcılara zarar verebilir. Bu yüzden zamanda çeşitlendirme; RASP ([6. hafta](../week-6/cen429-week-6.md), çalışma anında sızma
     girişimini algılama) ve sunucu tarafı denetimlerle (ör. eski/kırık sürümleri reddetme) **birlikte** kullanılır.
 
 ## 7. Gizlemeyi ve çeşitlendirmeyi ölçmek
 
-Dokuzuncu haftada gizlemeyi dört boyutta (güç, dayanıklılık, gizlilik, maliyet) ölçmeyi öğrendik. Tigress'in en büyük
+[Dokuzuncu haftada](../week-9/cen429-week-9.md) gizlemeyi dört boyutta (güç, dayanıklılık, gizlilik, maliyet) ölçmeyi öğrendik. Tigress'in en büyük
 öğretim değeri, bu ölçümleri **somut** yapabilmenizdir: aynı programı gizleyip önce/sonra ölçersiniz.
 
 ![Her hattan sonra test ve ölçüm](assets/h14-06-test-ve-olcum.svg)
@@ -1241,7 +1205,7 @@ Dokuzuncu haftada dayanıklılığın "bir iddia değil, ölçülen bir nicelik"
 !!! tip "Ölçüm kuralı (S9/S15)"
     Projenizde bir gizleme kararını "güçlü" diye değil, **ölçüyle** savunun: "Flatten + AddOpaque hattı ikili boyutu
     %X büyüttü, işlemi %Y yavaşlattı; buna karşılık hedef fonksiyonun temel blok sayısı Z katına çıktı." Ölçülmemiş
-    gizleme, 12. haftadaki değerlendiricinin gözünde bir iddiadır, kanıt değil.
+    gizleme, [12. haftadaki](../week-12/cen429-week-12.md) değerlendiricinin gözünde bir iddiadır, kanıt değil.
 
 ### Boyut ve süre ölçümünü tamamlayalım: bölüm 5'teki sayılara ekleyelim
 
@@ -1330,7 +1294,7 @@ koşullardan biri, kavramsal olarak) uygulayalım:
 
 ### 12. haftanın ölçüm/kanıt disipliniyle bağ
 
-On ikinci hafta, bir güvenlik iddiasının yalnız bir **test sonucuyla** (S16) desteklenmesi gerektiğini, "plan değil
+On [ikinci hafta](../week-2/cen429-week-2.md), bir güvenlik iddiasının yalnız bir **test sonucuyla** (S16) desteklenmesi gerektiğini, "plan değil
 **sonuç**" beklendiğini öğretmişti; aynı disiplin burada da geçerlidir. Bu haftaki dört ölçüt tablosu (güç,
 dayanıklılık, gizlilik, maliyet), S9/S15 belgenizde tek başına bir **iddia** değil, her biri kendi **kanıtına**
 (ölçüm tablosu, `cmp` çıktısı, sembolik yürütme denemesi) bağlı bir **sonuç** olarak yer almalıdır. 12. haftadaki
@@ -1460,9 +1424,9 @@ Yedi adımlık akışın "bir adımı atlamak zincirin geri kalanını anlamsız
 | --- | --- | --- |
 | 1. Hazırlık (test yok) | Davranışın **hiç** doğrulanabilir bir referansı yok | Adım 3 anlamsızlaşır: neye göre "aynı" denecek? |
 | 3. Davranışı doğrula | Bozuk bir gizleme fark edilmez | Adım 5'teki ölçüm, **bozuk** bir programı "başarılı" gösterir (yukarıdaki "sık yapılan hata") |
-| 5. Ölç | Maliyet bilinmez | S9/S15'te "kırılamaz" gibi ölçülmemiş iddialar ortaya çıkar (9. hafta bölüm 1) |
+| 5. Ölç | Maliyet bilinmez | S9/S15'te "kırılamaz" gibi ölçülmemiş iddialar ortaya çıkar ([9. hafta](../week-9/cen429-week-9.md) bölüm 1) |
 | 6. Çeşitlendir | Tek bir ikili herkese dağıtılır | Bölüm 6'daki "uzayda çeşitlendirme" örneğindeki %100 etki senaryosu gerçekleşir |
-| 7. Raporla | Yapılanlar belgelenmez | Bir değerlendirici (12. hafta) hiçbir şeyi doğrulayamaz; iddia kanıtsız kalır |
+| 7. Raporla | Yapılanlar belgelenmez | Bir değerlendirici ([12. hafta](../week-12/cen429-week-12.md)) hiçbir şeyi doğrulayamaz; iddia kanıtsız kalır |
 
 Bu tablo, yedi adımın **hiçbirinin isteğe bağlı olmadığını** gösterir: her satır, bir öncekinin atlanmasının
 **hangi sonraki adımı** anlamsızlaştırdığını işaret eder — tıpkı bölüm 4'teki dönüşüm hattında olduğu gibi, burada
@@ -1477,11 +1441,11 @@ bölümü tam olarak bunu belgeler:
 
 - **Yalnız hassas fonksiyonlar** gizlenir (`--Functions`); gerekçesi yazılır.
 - Her sürüm bir **tohumla** çeşitlendirilir; tohum ve sürüm kimliği kaydedilir.
-- Gizlemeden **sonra** imzalama yapılır; sürüm kimliği ve özet değerleri (12. haftadaki TOE kimliği) tutarlı olur.
+- Gizlemeden **sonra** imzalama yapılır; sürüm kimliği ve özet değerleri ([12. haftadaki](../week-12/cen429-week-12.md) TOE kimliği) tutarlı olur.
 - Hat, sürekli entegrasyonda (CI) çalışır; her sürümde birim testleri + boyut/hız ölçümü otomatik koşar.
 
 !!! note "9, 11 ve 14. haftalar birlikte"
-    Bu üç hafta bir bütündür: 9. hafta gizleme **kurallarını**, 11. hafta anahtar için **whitebox** sınırını, 14.
+    Bu üç hafta bir bütündür: [9. hafta](../week-9/cen429-week-9.md) gizleme **kurallarını**, [11. hafta](../week-11/cen429-week-11.md) anahtar için **whitebox** sınırını, 14.
     hafta bunların **otomatik ve çeşitlendirilmiş** uygulamasını verir. Üçünün ortak kuralı aynıdır: gizleme
     kırılamazlık vermez, maliyet yükseltir; gücü katmanlı savunmadan (RASP, anahtar yenileme, sunucu denetimi) ve
     ölçülmüş olmaktan gelir.
@@ -1580,7 +1544,7 @@ v1.2'ye ne değiştiğini bu tablodan **doğrudan** okuyabilir, kaynak kodu sat�
     - [ ] Çeşitlendirme uygulandıysa iki tohumla üretilen ikilinin **farklı olduğu kanıtı** (ör. `cmp` çıktısı) var
       mı? Uygulanmadıysa **gerekçesi** yazıldı mı? (bölüm 6)
     - [ ] S15 diyagramında gizleme, imzalama ve sürüm kimliği adımlarının **sırası** doğru mu (bölüm 9)?
-    - [ ] "Kırılamaz" gibi bir ifade **kullanılmadı** mı; bütün iddialar ölçülebilir cümlelerle mi yazıldı? (9. hafta
+    - [ ] "Kırılamaz" gibi bir ifade **kullanılmadı** mı; bütün iddialar ölçülebilir cümlelerle mi yazıldı? ([9. hafta](../week-9/cen429-week-9.md)
       bölüm 1)
 
 ### Doldurulmuş bir örnek: S9/S15 için "KURAL" şablonu
@@ -1697,7 +1661,7 @@ anlamını yitirir (tıpkı bölüm 4'teki dönüşüm hattında olduğu gibi).
     Koruma kırılamazlık değil **gecikme** sağlar; gücü **birliktelikten**, **çeşitlendirmeden** ve **ölçülmüş** olmaktan gelir.
 
 ??? question "13. objdump ile ölçülen 'komut sayısı' ve 'dal sayısı' neyi temsil eder; 9. haftadaki CFG düğüm/kenar sayımıyla ilişkisi nedir?"
-    `objdump -d`, bir ikili dosyayı assembly'ye çevirir; hedef fonksiyonun etiketinden (`<erisim_ver>:`) sonraki her satır **komut sayısını**, bunlardan `j...`/`call` ile başlayanlar **dal/çağrı sayısını** verir. Bu, 9. haftada kaynak koddan elle çizilen CFG düğüm/kenar sayımının **derlenmiş ikili üzerindeki otomatik, daha ince taneli** karşılığıdır; ikisi de "bu fonksiyonu analiz etmek ne kadar iş?" sorusunu ölçer.
+    `objdump -d`, bir ikili dosyayı assembly'ye çevirir; hedef fonksiyonun etiketinden (`<erisim_ver>:`) sonraki her satır **komut sayısını**, bunlardan `j...`/`call` ile başlayanlar **dal/çağrı sayısını** verir. Bu, [9. haftada](../week-9/cen429-week-9.md) kaynak koddan elle çizilen CFG düğüm/kenar sayımının **derlenmiş ikili üzerindeki otomatik, daha ince taneli** karşılığıdır; ikisi de "bu fonksiyonu analiz etmek ne kadar iş?" sorusunu ölçer.
 
 ??? question "14. `InitOpaque` ve `AddOpaque` neden ayrı iki dönüşümdür; hangisi önce çalıştırılmalıdır?"
     `InitOpaque`, opak yüklemlerin dayanacağı gizli durum değişkenlerini **hazırlar** (genelde `main` içinde); `AddOpaque` bu durumu kullanarak hedef fonksiyona gerçek opak koşulları **ekler**. `InitOpaque` atlanırsa `AddOpaque`'in dayanacağı altyapı eksik kalır; bu yüzden sıra **önce `InitOpaque`, sonra `AddOpaque`**'dır (demo betiğindeki gerçek sıra budur).
@@ -1757,7 +1721,7 @@ anlamını yitirir (tıpkı bölüm 4'teki dönüşüm hattında olduğu gibi).
     Hayır. Yalnız `EncodeLiterals`, saldırganın yalnız **bir** tekniğini (`strings` taraması) etkisiz kılar; kontrol akışı hâlâ doğrudan okunabilir. Dört dönüşümü birlikte uygulamak, saldırganın **aynı anda birden fazla** farklı analiz tekniğini (dize taraması + kalıp tanıma + MBA sadeleştirme + opak yüklem çözme) yenmesini gerektirir — asıl kazanç yalnız maliyetten değil, **kaç farklı tekniğin zorlandığından** gelir.
 
 ??? question "33. TOE kaydı tablosunda v1.1'den v1.2'ye dönüşüm hattı sütununda bir değişiklik (`RandomFuns` eklenmesi) neden ayrıca kaydedilir?"
-    12. haftadaki delta değerlendirme, yalnız değişen kısmın yeniden değerlendirilmesini ister; bir değerlendirici bu sütun sayesinde iki sürüm arasında **neyin** değiştiğini kaynak kodu satır satır karşılaştırmadan görebilir.
+    [12. haftadaki](../week-12/cen429-week-12.md) delta değerlendirme, yalnız değişen kısmın yeniden değerlendirilmesini ister; bir değerlendirici bu sütun sayesinde iki sürüm arasında **neyin** değiştiğini kaynak kodu satır satır karşılaştırmadan görebilir.
 
 ??? question "34. İmzalamayı gizlemeden önce yapıp sonra 'yalnız imzayı yeniden hesaplarım' diye düzeltmek neden yeterli bir çözüm değildir?"
     Teknik olarak yeni içerik yeni imzayla eşleşir, ama **süreç** hâlâ hatalıdır: doğru sıra insan hafızasına bırakılmış olur ve hata tekrarlanabilir. Kural, imzalamanın CI'de **yapısal olarak** gizleme ve ölçüm adımlarından sonra tanımlanmasıdır, böylece sıra hatası mümkün olmaz.
@@ -1799,10 +1763,10 @@ anlamını yitirir (tıpkı bölüm 4'teki dönüşüm hattında olduğu gibi).
 
 - **Tigress** resmî sitesi ve çalışma sayfaları (`tigress.wtf`) — dönüşümler, sözdizimi, güncel sürüm (v4) ve lisans.
   Öğrenciler güncel sürümü ve koşulları buradan doğrular.
-- C. Collberg, J. Nagra, *Surreptitious Software* — gizleme taksonomisi ve ölçme çerçevesi (9. haftayla ortak).
+- C. Collberg, J. Nagra, *Surreptitious Software* — gizleme taksonomisi ve ölçme çerçevesi ([9. haftayla](../week-9/cen429-week-9.md) ortak).
 - S. Banescu, C. Collberg vd. — Tigress dönüşümlerinin sembolik yürütmeye (KLEE) dayanıklılığının ölçülmesi.
 - Obfuscator-LLVM (O-LLVM) — derleyici tabanlı gizlemeye alternatif (9. hafta K-11).
 
 !!! info "Bir sonraki hafta"
-    **15. hafta — Final proje gösterimleri (RAP2).** Dönem içeriği tamamlandı; final raporunda bu haftanın hattı
-    (S15) ve ölçümleri (S9) beklenir. 16. haftada Quiz-2 (9–14. haftalar).
+    **[15. hafta](../week-15/cen429-week-15.md) — Final proje gösterimleri (RAP2).** Dönem içeriği tamamlandı; final raporunda bu haftanın hattı
+    (S15) ve ölçümleri (S9) beklenir. [16. haftada](../week-16/cen429-week-16.md) Quiz-2 (9–14. haftalar).

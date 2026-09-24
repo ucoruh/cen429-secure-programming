@@ -5,7 +5,7 @@
 | **Date** | 13.11.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | The white-box attacker model from Week 1; compilation, `objdump` and reverse engineering concepts from Week 4; control flow in C (`if`, `switch`, loops) |
+| **Prerequisites** | The white-box attacker model from [Week 1](../week-1/cen429-week-1.md); compilation, `objdump` and reverse engineering concepts from [Week 4](../week-4/cen429-week-4.md); control flow in C (`if`, `switch`, loops) |
 | **Labs** | [`code/week-09`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-09) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
@@ -89,56 +89,94 @@
     countermeasures in the guide are given here as **rules**, stripped of the product and of any real values; all
     code and values are **synthetic**. Week 4 introduced these techniques (symbol/string hiding, an introduction to
     flattening); this week treats the same techniques at an **advanced level** and adds **how to measure** them.
-    Week 14 shows their **automated** counterpart (Tigress).
+    [Week 14](../week-14/cen429-week-14.md) shows their **automated** counterpart (Tigress).
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you don't know a term, read this section first; the later sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
+Background knowledge not covered in earlier weeks is explained from scratch under the "Background" headings.
 
-### Why does this section exist?
+### What we bring from earlier weeks
 
-This week's subject is **code obfuscation**. But first let's pin down a few basic terms.
+- **The white-box / MATE attacker model** — the threat model in which the user who holds the device is also a
+  potential attacker, able to read memory and attach a debugger
+  ([Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach)). This week, in §1, we
+  reuse this model under the name **MATE** (Man-At-The-End) as the motivation for code obfuscation.
+- **Debugger** — a tool that runs a program step by step and shows its variables (gdb, lldb); we saw checking at
+  runtime whether a debugger is attached in the context of RASP
+  ([Week 6, §4](../week-6/cen429-week-6.md#4-debugger-detection)). This week it appears briefly in §1 as one of
+  the MATE attacker's tools.
+- **Entropy (randomness)** — a measure of how disordered/unpredictable a piece of data's bytes look; we met it in
+  week 2 for recognising encrypted/packed content
+  ([Week 2, §6](../week-2/cen429-week-2.md#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised)), and
+  in week 3 as the foundation of random-number generation
+  ([Week 3, §3](../week-3/cen429-week-3.md#3-random-numbers-the-invisible-foundation-of-cryptography)). This week
+  we deepen the same metric with a numeric example, in the context of an attacker telling apart high-entropy
+  blocks (keys, encrypted data) in a binary (see "Background" below).
+- **Compiler flag, `strings`, and the symbol table** — options passed to the compiler (`-O2`, `-Wall`, `-DGUNLUK_ACIK`; the same source can be built with or
+  without logging depending on the flag) and tools
+  that show a binary's readable text/name list; week 4 first defined these and showed the entry-level steps of
+  obfuscation ([Week 4, §15](../week-4/cen429-week-4.md#15-symbol-string-and-log-hiding)). This week K-06/K-07
+  close off the same hints at a more advanced level.
+- **Decompilation** — turning a binary/bytecode back into something close to readable code; we saw this over JVM
+  bytecode in week 5 ([Week 5, §10](../week-5/cen429-week-5.md#10-bytecode-and-decompilation)). This week we
+  extend the same idea to native (C/C++) binaries and tools such as Ghidra/IDA.
+- **XOR** — the operation that gives 1 if two bits differ and 0 if they match; thanks to the property
+  `a^b^b=a`, it undoes itself. We decoded XOR obfuscation by hand for a Java string in week 5
+  ([Week 5, §12](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation)). This week we
+  use the same mechanism as the foundation of rules K-02 and K-07, and retrace it step by step with a bit table
+  (see "Background" below).
+- **Log** — the informational messages a program writes while it runs; if sensitive data or internal state ends up
+  in the log, the attacker reads it. We covered what to log, what never to log,
+  and tamper-resistant logs in detail in week 2
+  ([Week 2, §9](../week-2/cen429-week-2.md#9-security-audit-logging-the-log-as-evidence)). This week it comes up
+  only briefly, in §2, as the layout rule of stripping logging from the release binary.
 
-Without these terms, the subject **stays up in the air**.
+### This week's concept map
 
-We assume you know nothing — that's a good starting point.
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Obfuscation as a security rule | Code obfuscation is a countermeasure that doesn't make an attack impossible but makes it expensive; its goals are pushing the cost above the asset's value, breaking automation, and buying time for the other layers. | [§1](#1-why-is-obfuscation-a-security-rule) |
+| Obfuscation taxonomy (five families) | Obfuscation techniques split into five families by what they hide — layout, data, control flow, anti-analysis, and virtualisation; the closer a family sits to the mechanism that produces the behaviour, the stronger but also the more expensive it is. | [§2](#2-obfuscation-taxonomy-five-families) |
+| The limit of obfuscation | Obfuscation delays static analysis and resists automated attack; it does not give a secret's mathematical secrecy (cryptography) or protection against reading a running program's memory (RASP/whitebox). | [§3](#3-what-does-obfuscation-give-and-what-does-it-not-give) |
+| The protection rule template | Every obfuscation technique is evaluated with the same six-line standard template: what it protects, against which threat, how, cost, limit, and measurement. | [§4](#4-the-protection-rule-template) |
+| Control-flow rules (K-01–K-06) | Opaque predicate/loop, arithmetic encoding, bogus operation/dead branch, control-flow flattening, random exit, and function/parameter hiding; rules that make the algorithm's CFG unreadable. | [§5](#5-control-flow-rules-advanced) |
+| Data obfuscation rules (K-07–K-09) | Static string encoding, opaque booleans, and variable splitting/merging; these hide the constants, strings, and variables the program processes. | [§6](#6-data-obfuscation-rules) |
+| Whole-program-level rules (K-10–K-12) | Virtualisation-based obfuscation, compiler-based obfuscation (O-LLVM), and self-modifying code; the most expensive and most powerful layer, changing the function's machine code itself or how it is produced. | [§7](#7-whole-program-level-rules) |
+| Diversification | Producing different-but-behaviourally-equivalent binaries from the same source, tied to a seed; it doesn't raise obfuscation's potency but prevents a crack from spreading (scaling) to other copies. | [§8](#8-diversification-one-crack-should-not-open-every-door) |
+| The four metrics of obfuscation | Potency (incomprehensibility to a human), resilience (resistance to automated tools), stealth (not standing out), and cost (size/speed/maintenance); a protection decision balances these four against the protected asset's value. | [§9](#9-measuring-obfuscation) |
+| Deobfuscation | The attacker's automated tools — symbolic execution, expression simplification, pattern recognition; the only way to measure resilience is to actually run these tools and observe the result. | [§10](#10-deobfuscation-the-other-sides-tools-and-the-resilience-rule) |
+| Obfuscation's place in layered defence | Obfuscation does not replace memory safety, RASP, whitebox cryptography, or crypto/key renewal; every layer's "delay time" is counted separately in attack-potential scoring. | [§11](#11-obfuscations-place-in-layered-defence) |
 
-### What is source code?
+### Background: binaries, reverse engineering, and the basic building blocks
 
-- The **human-readable** program text that you write (e.g., a C file).
-- Example: `int topla(int a, int b) { return a + b; }`
+This week's subject is **code obfuscation**; to understand it we first need to know how a binary is produced and
+how an attacker reads it. None of the concepts below were taught in earlier weeks; the worked examples that follow
+each definition are tools we will use constantly this week.
 
-Source code is **compiled** and turned into the form the machine runs.
+#### From source to binary: compiler, machine code, and assembly
 
-### Compiler and binary
-
-- **Compiler:** the program that translates source code into **machine code** (gcc, clang).
-- **Binary:** the result of compilation; the file the computer runs directly (`.exe`, `.so`).
+**Source code** is the human-readable program text you write (e.g., a C file):
+`int topla(int a, int b) { return a + b; }`. Source code is **compiled** and turned into the form the machine runs.
+The **compiler** is the program
+that translates source code into **machine code** (gcc, clang); the **binary** is the result of compilation, the
+file the computer runs directly (`.exe`, `.so`).
 
 ![What the compiler does: from source to binary](assets/h09-13-derleme-zinciri.svg)
 
-### Machine code and assembly
+**Machine code** is the numeric instructions the processor understands; **assembly** is a somewhat more
+human-readable form of machine code (`mov`, `cmp`, `jmp`). This is what you see when you open a binary file.
 
-- **Machine code:** the numeric instructions the processor understands.
-- **Assembly:** a somewhat more human-readable form of machine code (`mov`, `cmp`, `jmp`).
+#### Reverse engineering and the decompiler
 
-This is what you see when you open a binary file.
-
-### What is reverse engineering?
-
-**Reverse engineering:** looking at a binary file and trying to work out **what the program does**.
-
-This is the attacker's basic job.
-
-### Decompiler
-
-- **Decompiler:** a tool that turns a binary file back into a form close to readable code.
-- Examples: Ghidra, IDA.
-
-Goal: someone with no access to the source can infer the logic just by looking at the binary.
+**Reverse engineering** is looking at a binary file and trying to work out what the program does — this is the
+attacker's basic job. A **decompiler** is a tool that turns a binary file back into a form close to readable code
+(examples: Ghidra, IDA); its goal is to let someone with no access to the source infer the logic just by looking
+at the binary. (We saw the JVM-bytecode counterpart of this in week 5 — see "What we bring from earlier weeks"
+above; here we carry the same idea over to native binaries.)
 
 **What does decompiler output look like?** Imagine we only have a `.exe`/`.so` file and never saw the source code.
 When we open the function `int topla(int a, int b) { return a + b; }` in a decompiler, the typical output looks
@@ -151,39 +189,17 @@ undefined4 FUN_00401020(int param_1, int param_2)
 }
 ```
 
-Notice: meaningful names such as `topla`, `a`, `b` **have been lost** (they were never in the binary the compiler
-produced — the source-level names simply aren't stored there); the tool falls back on its own generated names,
-**generic** ones such as `FUN_00401020` (address-based) and `param_1`, `param_2`. But **the logic is preserved**:
-the addition is still plainly visible. This is concrete proof of why changing only **names** (the layout family) is
-not enough for obfuscation — a decompiler already operates having lost the names; the real fight is over making the
-**logic** (control flow and data) unreadable, which is what sections 5 and 6 are about.
+Notice: meaningful names such as `topla`, `a`, `b` **have been lost** (they were in the source file, but simply
+weren't stored in the binary the compiler produced); the tool falls back on its own generated names, **generic**
+ones such as `FUN_00401020` (address-based) and `param_1`, `param_2`. But **the logic is preserved**: the addition
+is still plainly visible. This is concrete proof of why changing only **names** (the layout family) is not enough
+for obfuscation — a decompiler already operates having lost the names; the real fight is over making the **logic**
+(control flow and data) unreadable, which is what sections 5 and 6 are about.
 
-### The `strings` command
+#### Bit, byte, hexadecimal
 
-- **`strings`:** a simple tool that lists the **readable text** inside a binary file.
-- `strings program` → text such as `"Lisans gecersiz"`, `"http://..."`.
-
-This is usually the attacker's **first step**.
-
-### Symbol and symbol table
-
-- **Symbol:** the **name** of a function or variable inside a binary file (e.g., `lisans_dogrula`).
-- **Symbol table:** the list of these names.
-
-If the name `lisans_dogrula` is visible, the attacker knows where to look.
-
-### Debugger
-
-- **Debugger:** a tool that runs a program **step by step** and shows its variables (gdb, lldb).
-- An attacker can stop the program, read memory, and change values.
-
-### Bit, byte, hexadecimal
-
-- **Bit:** 0 or 1.
-- **Byte:** 8 bits.
-- **Hexadecimal (hex):** written with a `0x` prefix; `0x2A` = 42.
-
-We will see values like `0x5A` in the code; these are just numbers.
+A **bit** is 0 or 1. A **byte** is 8 bits. **Hexadecimal (hex)** is written with a `0x` prefix; `0x2A` = 42. We
+will see values like `0x5A` in the code; these are just numbers.
 
 **Let's tie the hex-binary-decimal conversion together in one table.** Each hexadecimal digit corresponds to
 exactly **4 bits** (because `2⁴ = 16`); that's why a byte (8 bits) is always written with **two** hexadecimal
@@ -203,23 +219,22 @@ different way of writing the **same number** in these three notations (hex/binar
 hidden" than another, they only differ in how easy they are for a human to read (hex is short, binary shows bit
 operations explicitly).
 
-### What is XOR?
+#### XOR: the foundation of reversible obfuscation
 
-- **XOR** (`^`): 1 if the two bits differ, 0 if they are the same.
-- Property: `a ^ b ^ b == a` → **it undoes itself**.
+**XOR** (`^`) is the operation that gives 1 if the two bits differ, 0 if they are the same. Property:
+`a ^ b ^ b == a` → **it undoes itself**:
 
 ```c
 c = a ^ 0x5A;   /* encode */
 a = c ^ 0x5A;   /* decode */
 ```
 
-It is heavily used in obfuscation because it is reversible.
+It is heavily used in obfuscation because it is reversible (we decoded XOR obfuscation for a Java string by hand
+in week 5 — see "What we bring from earlier weeks" above; here we trace the same operation bit by bit).
 
-### Let's trace XOR step by step: hiding and recovering the byte `0x41`
-
-Let's not leave XOR's "self-undoing" property abstract; let's trace a single byte bit by bit. The letter `'A'` has
-the binary (ASCII) value `0x41` (hex) = 65 (decimal) = `0100 0001` (binary). Let's use `0x5A` = `0101 1010` as the
-key.
+**Let's trace XOR step by step: hiding and recovering the byte `0x41`.** Let's not leave XOR's "self-undoing"
+property abstract; let's trace a single byte bit by bit. The letter `'A'` has the binary (ASCII) value `0x41`
+(hex) = 65 (decimal) = `0100 0001` (binary). Let's use `0x5A` = `0101 1010` as the key.
 
 **Encoding:** `0x41 ^ 0x5A`
 
@@ -230,7 +245,7 @@ key.
 | XOR | 0 | 0 | 0 | 1 | 1 | 0 | 1 | 1 |
 
 Result: `0001 1011` = `0x1B`. The rule is simple: matching bits (`0^0=0`, `1^1=0`) give 0, differing bits
-(`0^1=1`, `1^0=1`) give 1 — exactly the bit-level counterpart of the "What is XOR?" definition above.
+(`0^1=1`, `1^0=1`) give 1 — exactly the bit-level counterpart of the "XOR" definition above.
 
 **Decoding:** XOR again with the same key: `0x1B ^ 0x5A`
 
@@ -245,10 +260,16 @@ Result: `0100 0001` = `0x41` — exactly the byte we started with. The algebraic
 rule K-07 in section 6 we will encode and decode a string using exactly this mechanism; there you will rebuild the
 same bit table, only for an array of bytes instead of a single byte.
 
-### A numeric entropy example
+#### Entropy: how "random" a piece of data looks
 
-Let's make "entropy" concrete. Shannon entropy, a simple metric, looks at the **probability of occurrence** of
-each distinct byte value in a sequence: `H = -Σ p(x) · log2 p(x)`. Let's work through two small examples by hand:
+**Entropy** is a measure of how "random" a piece of data looks; cryptographic keys look **high-entropy** (irregular
+bytes). If an attacker sees a high-entropy block in a binary, they say "there might be a key here." (This is the
+same metric we met in week 2 for recognising encrypted/packed content and in week 3 for random-number generation —
+see "What we bring from earlier weeks" above; here we deepen it with a numeric example.)
+
+**A numeric entropy example.** Let's make the definition above concrete. Shannon entropy, a simple metric, looks
+at the **probability of occurrence** of each distinct byte value in a sequence: `H = -Σ p(x) · log2 p(x)`. Let's
+work through two small examples by hand:
 
 - **Sequence A:** `[0x41, 0x41, 0x41, 0x41]` — all four bytes are identical. The probability of the single value is
   `p = 1`, `log2(1) = 0`, so `H = -(1 · 0) = 0` bits/symbol. Completely **predictable**: see the first byte and you
@@ -261,34 +282,16 @@ A real cryptographic key, at the scale of hundreds of bytes, looks like "sequenc
 pattern among the bytes, and every byte value occurs with almost equal probability. When an attacker scans a
 binary with a tool, they can statistically tell low-entropy blocks like "sequence A" (fixed text, zero padding,
 repeating structures) apart from high-entropy blocks like "sequence B" (keys, compressed or encrypted data) — this
-is precisely the numeric counterpart of the sentence in the "What is entropy (randomness)?" definition below: "if
-the attacker sees a high-entropy block, they say there might be a key here."
+is precisely the numeric counterpart of the sentence we just met: "if the attacker sees a high-entropy block, they
+say there might be a key here."
 
-### What is entropy (randomness)?
+#### Function, branch, basic block, and the control flow graph (CFG)
 
-- **Entropy:** how "random" a piece of data looks.
-- Cryptographic keys look **high-entropy** (irregular bytes).
-
-If an attacker sees a high-entropy block in a binary, they say "there might be a key here."
-
-### Function, branch, condition
-
-- **Function:** a block of code that does one job (`erisim_ver`).
-- **Branch:** a fork in the road, like an `if`.
-- **Condition:** the expression that decides which way the branch goes.
-
-### Basic block
-
-- **Basic block:** a sequence of instructions that runs straight through, with no branch.
-- When an `if` is reached the block ends, and two new blocks begin.
-
-Program = basic blocks wired together.
-
-### Control flow graph (CFG)
-
-- **CFG** (Control Flow Graph): a diagram that makes basic blocks its **nodes** and the transitions between them
-  its **edges**.
-- It is the program's "road map."
+A **function** is a block of code that does one job (`erisim_ver`); a **branch** is a fork in the road, like an
+`if`; a **condition** is the expression that decides which way the branch goes. A **basic block** is a sequence of
+instructions that runs straight through, with no branch — when an `if` is reached the block ends and two new
+blocks begin; a program is basic blocks wired together. The **CFG** (Control Flow Graph) is a diagram that makes
+basic blocks its **nodes** and the transitions between them its **edges** — it is the program's "road map."
 
 ![Basic structure of a control flow graph](assets/h09-12-cfg.svg)
 
@@ -322,25 +325,6 @@ greater than 10, otherwise return double it" — **within seconds**, because the
 direct, and the branching decision is a single comparison. In section 5, when we flatten this exact function with
 K-04, we will see through this same example how the node/edge count grows and how this readability is destroyed —
 here you learn the definition, there you learn "why it exhausts the attacker."
-
-### Compiler flag
-
-- **Compiler flag:** an option passed to the compiler (e.g., `-O2`, `-DGUNLUK_ACIK`).
-- The same source can be compiled differently with different flags (e.g., with logging / without logging).
-
-### What is a log?
-
-- **Log:** the informational messages a program writes while it runs (`printf("...")`).
-- Problem: if sensitive information or internal state ends up in the log, the attacker reads it.
-
-### Now we're ready
-
-We now know the following terms:
-
-source · compiler · binary · decompilation · `strings` · symbol · debugger · XOR · entropy · branch · basic block ·
-CFG · log
-
-We will use these **constantly** for the rest of the week. Come back to this section whenever you get stuck.
 
 ### Three frequently confused terms: "encoding," "encryption," "obfuscation"
 
@@ -394,7 +378,9 @@ Answer: **code obfuscation rules.** Let's begin.
 
 ## 1. Why is obfuscation a security rule?
 
-In the first week of the course we drew a line between attacker models. Against an attacker who sends input over
+In the first week of the course
+([Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach)) we drew a line between
+attacker models. Against an attacker who sends input over
 the network, our defence was input validation, memory safety, and cryptography. But once we **deliver** a mobile
 app, a desktop program, or an embedded library to the user, the attacker now owns the program itself. In the
 literature this threat model is called **MATE** (Man-At-The-End) or the **white-box** model: the attacker can open
@@ -407,8 +393,8 @@ server-side security check applies here, because the code runs on the attacker's
     - **1976** — Diffie & Hellman first discuss the idea of making a program "incomprehensible but working" (protection through **effort**, not through secrecy).
     - **1997** — Collberg, Thomborson, and Low publish the first **obfuscation taxonomy** (layout · data · control flow · anti-analysis) and the *potency–resilience–stealth–cost* framework. The **five families** in this lecture come from here.
     - **2001** — Barak et al. prove that "perfect (black-box) obfuscation is **impossible** in general" → obfuscation is therefore taught not as "unbreakability" but as **cost**.
-    - **2002** — Chow et al. launch the idea of embedding a key in software with **whitebox AES** (week 11).
-    - **2010s** — DRM, mobile banking, and the games industry make obfuscation mainstream; **Tigress** (Collberg) and **Obfuscator-LLVM** turn it into tooling (week 14).
+    - **2002** — Chow et al. launch the idea of embedding a key in software with **whitebox AES** ([week 11](../week-11/cen429-week-11.md)).
+    - **2010s** — DRM, mobile banking, and the games industry make obfuscation mainstream; **Tigress** (Collberg) and **Obfuscator-LLVM** turn it into tooling ([week 14](../week-14/cen429-week-14.md)).
 
     So obfuscation is a **practical delaying discipline** built on top of an academic **impossibility** result.
 
@@ -447,7 +433,7 @@ way of keeping a secret, but as a **cost-raising rule**:
 - **Rule 2 — Break automation.** Make sure an attack that works on one copy does not automatically work on every
   copy. This is called **diversification** (this week's section 5, tooled in week 14).
 - **Rule 3 — Buy time for the other layers.** Obfuscation is not a defence on its own; it is a layer that **buys
-  time** for RASP (week 6), integrity checks, server-side checks, and key rotation. It only has to hold until the
+  time** for RASP ([week 6](../week-6/cen429-week-6.md)), integrity checks, server-side checks, and key rotation. It only has to hold until the
   key is renewed or the version is updated.
 
 !!! quote "The source's own language"
@@ -483,7 +469,7 @@ reasoning:
     Concluding "the attacker's hour costs 500 TL, so we're safe" is wrong: a real attacker's skill, motivation
     (e.g., a competing company or a curious student), and available automated tools (section 10) radically change
     this time. **Rule:** use this calculation only to start the conversation about "which layers are worth adding";
-    never present it as a firm security guarantee. Week 13's attack-potential scoring turns this kind of estimate
+    never present it as a firm security guarantee. [Week 13](../week-13/cen429-week-13.md)'s attack-potential scoring turns this kind of estimate
     into something systematic.
 
 This reasoning also lines up with the **risk = probability × impact** framework from week 1: here, "raising the
@@ -492,8 +478,9 @@ cost" is a way of lowering the **probability** — the likelihood that a rationa
 ## 2. Obfuscation taxonomy: five families
 
 The classification we bring into this course from Collberg and colleagues' software-protection body of work
-divides obfuscation into five families by **what it hides**. This map was introduced in week 4; here we make clear
-when each family "becomes a rule."
+divides obfuscation into five families by **what it hides**. This map was introduced in
+[week 4](../week-4/cen429-week-4.md#14-introduction-to-code-obfuscation-recipe-121-123); here we make clear when
+each family "becomes a rule."
 
 ![The five families of obfuscation: layout, data, control flow, anti-analysis, virtualisation; potency and cost rise from bottom to top](assets/h09-01-bes-aile.svg)
 
@@ -502,8 +489,8 @@ when each family "becomes a rule."
 | **Layout** | Names, format, metadata | Hide symbols, obfuscate function/file names, strip logging from release | Week 4 (introduction), this week (depth) |
 | **Data** | Constants, strings, variables | String encoding, constant transforms, variable splitting/merging, opaque booleans | This week, section 6 |
 | **Control flow** | The algorithm's structure | Control-flow flattening, opaque predicates, bogus/dead branches, random exit | This week, section 5 |
-| **Anti-analysis** | The analysis tools' own work | Structures that mislead a decompiler, runtime code decoding | This week (concept), week 6 (RASP) |
-| **Virtualisation** | The machine code itself | Turning a function into a custom virtual machine's bytecode | This week (concept), week 14 (Tigress) |
+| **Anti-analysis** | The analysis tools' own work | Structures that mislead a decompiler, runtime code decoding | This week (concept), [week 6](../week-6/cen429-week-6.md) (RASP) |
+| **Virtualisation** | The machine code itself | Turning a function into a custom virtual machine's bytecode | This week (concept), [week 14](../week-14/cen429-week-14.md) (Tigress) |
 
 !!! note "In the field these families are used together"
     The code-hardening section of the source guide lists almost all of the families above **inside a single
@@ -574,15 +561,17 @@ reflection of the **potency ↔ cost trade-off**.
 
 ## 3. What does obfuscation give, and what does it not give?
 
-Applying a rule correctly requires knowing its limits. Here is what obfuscation gives, and what it does **not**
-give:
+Applying a rule correctly requires knowing its limits.
+[Week 4](../week-4/cen429-week-4.md#14-introduction-to-code-obfuscation-recipe-121-123) touched on this briefly;
+here we deepen it with the table and a timeline of an attacker's first ten minutes. Here is what obfuscation
+gives, and what it does **not** give:
 
 ![What obfuscation gives, and what it does not give](assets/h09-14-ne-verir-ne-vermez.svg)
 
 | What obfuscation **gives** | What obfuscation **does not give** |
 | --- | --- |
 | A delay against static analysis (`strings`, symbol table, decompilation) | The mathematical secrecy of a secret — a key needs **cryptography** |
-| Resistance against automated attack (via diversification) | Protection against reading a running program's memory — that needs **RASP** and **whitebox** (week 11) |
+| Resistance against automated attack (via diversification) | Protection against reading a running program's memory — that needs **RASP** and **whitebox** ([week 11](../week-11/cen429-week-11.md)) |
 | Time for the other layers | Permanent security — there is no such thing as "unbreakable" |
 | A measurable increase in cost | Free protection — every obfuscation comes with a **maintenance and performance** cost |
 
@@ -645,7 +634,7 @@ RULE K-xx: <name of the technique>
   Measurement           : how we verify its effectiveness (see section 5)
 ```
 
-The value of this template is this: obfuscation is not a "yes/no" attribute. An evaluator (week 13, attack
+The value of this template is this: obfuscation is not a "yes/no" attribute. An evaluator ([week 13](../week-13/cen429-week-13.md), attack
 potential scoring) asks **how much** each layer delays the attack. Without the "Measurement" line above, you
 cannot defend a protection decision.
 
@@ -747,7 +736,7 @@ if (opak_dogru(sayac)) {          /* real path: this is ALWAYS entered */
     changes.
 
     !!! warning "Know its limit too"
-        This is a **classic** pattern; modern tools recognise it in their libraries. That's why in week 14 we
+        This is a **classic** pattern; modern tools recognise it in their libraries. That's why in [week 14](../week-14/cen429-week-14.md) we
         generate opaque predicates that are **seed-diversified** with Tigress and harder to crack — repeating the
         same pattern in every build reduces resilience.
 
@@ -896,7 +885,9 @@ for (;;) {
 }
 ```
 
-We said back in week 4 that this template alone can be worked out fairly quickly by an experienced analyst. The
+We said back in
+[week 4](../week-4/cen429-week-4.md#16-control-flow-flattening-and-opaque-values-recipe-123-128) that this
+template alone can be worked out fairly quickly by an experienced analyst. The
 "on the native side this flattening is strengthened with several security features" the guide talks about is
 exactly the other rules:
 
@@ -981,6 +972,10 @@ check.
 
 ### RULE K-06 — Hiding function calls and external library dependencies
 
+[Week 4](../week-4/cen429-week-4.md#16-control-flow-flattening-and-opaque-values-recipe-123-128) briefly touched on
+hiding function names and memory-allocation hiding; here we deepen it with external library dependencies and bogus
+parameters.
+
 **What does it protect?** Hints like "this function calls `memcmp`, so it must be doing a comparison." Standard
 library calls tell the attacker directly what a function does. **How?** On critical paths, standard library
 functions are replaced with **your own internal versions** (e.g., your own constant-time `esit_mi` function), so
@@ -992,7 +987,7 @@ signature misleading to an attacker.
 it does; this is a **delaying** rule. **Measurement:** count of recognisable library calls in the binary.
 
 **Worked example: your own constant-time comparison instead of `memcmp`.** The rule tells us to replace the
-standard `memcmp` because it is recognisable; but the real payoff is closing a familiar side channel from week 3:
+standard `memcmp` because it is recognisable; but the real payoff is closing a familiar side channel from [week 3](../week-3/cen429-week-3.md):
 
 ```c title="Constant-time comparison (concept)"
 static int sabit_zamanli_esit_mi(const uint8_t *a, const uint8_t *b, size_t n) {
@@ -1045,6 +1040,10 @@ same rules here.
 
 ### RULE K-07 — Encoding static strings
 
+[Week 4](../week-4/cen429-week-4.md#15-symbol-string-and-log-hiding) introduced string hiding, and
+[week 5](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation) decoded it by hand with
+XOR on the Java side; here we deepen the same idea on the C/C++ side.
+
 **What does it protect?** The readable text inside a binary. The cheapest first step of reverse engineering is
 running `strings`; `"Lisans gecersiz"` or a URL tells the attacker exactly where to look. **How?** Sensitive
 strings are **encoded before compilation** (e.g., encrypted with an XOR key or a generation script), sit encoded in
@@ -1095,7 +1094,7 @@ the attacker's first and cheapest step (the "first 10 minutes" from section 3) c
 !!! danger "Rule: don't confuse string obfuscation with storing a key"
     String obfuscation stops static scans like `strings`; it is not meant to protect a **key**. This is the
     concrete form of the "obfuscation does not store keys" rule from section 1. For real keys, use whitebox
-    (week 11) or hardware.
+    ([week 11](../week-11/cen429-week-11.md)) or hardware.
 
 ### RULE K-08 — Constant transforms, opaque booleans, and function boolean returns
 
@@ -1205,7 +1204,7 @@ bytecode is embedded in the binary alongside it. The attacker no longer sees fam
 applied to the most critical, small, and rarely-changing functions. **Limit:** once the VM itself is solved, all
 the functions it protects can be unlocked; and if a single VM design is identical across every copy, there is no
 diversification. **Measurement:** the protected function's size/speed cost; how long it takes an analyst to work
-out the VM's instruction set. We'll see this conceptually in week 14 with Tigress's `Virtualize` transform.
+out the VM's instruction set. We'll see this conceptually in [week 14](../week-14/cen429-week-14.md) with Tigress's `Virtualize` transform.
 
 **Worked example: a small, conceptual bytecode and its interpreter.** Real virtualisation tools are far more
 complex; but to see the mechanism, let's build a tiny three-instruction "virtual machine" — our goal is to compute
@@ -1258,7 +1257,7 @@ aren't called thousands of times per second (e.g., a license key derivation step
 it is **not applied** to an image processing loop or a frequently called helper function.
 
 !!! warning "Two frequently confused ideas: 'virtualisation-based obfuscation' is not the same thing as a Java/CLR virtual machine"
-    In week 5 you saw that Java/Kotlin applications run on a **virtual machine** (JVM/ART), and that ProGuard/R8
+    In [week 5](../week-5/cen429-week-5.md) you saw that Java/Kotlin applications run on a **virtual machine** (JVM/ART), and that ProGuard/R8
     shrinks DEX bytecode. K-10's "virtualisation-based obfuscation" is **an entirely different** thing:
     - **JVM/ART:** a **general-purpose, universally known** virtual machine that the whole application runs on;
       its bytecode format (DEX) is standard and can be decoded by anyone with a public tool (`baksmali`, `jadx`).
@@ -1334,7 +1333,7 @@ the "exposure window" is no longer short as defined, but infinite.
 
 !!! warning "Rule: don't blindly disable a technique that conflicts with OS protections just for the sake of security"
     Self-modifying code requires making executable memory writable; this weakens the DEP/NX and W^X principles
-    from week 4. If adding one protection means turning off another, measure the net gain and record the
+    from [week 4](../week-4/cen429-week-4.md). If adding one protection means turning off another, measure the net gain and record the
     trade-off. In practice this technique is used very selectively, on small sections only.
 
 !!! note "The Java/managed side: ProGuard/R8 and DEX (a bridge from week 5)"
@@ -1342,7 +1341,7 @@ the "exposure window" is no longer short as defined, but infinite.
     is name obfuscation, dead code elimination, and shrinking with **ProGuard/R8**; `-keep` rules and APIs called
     via reflection were covered in week 5. The two sides are used together: the Java side is obfuscated with R8,
     the native side with this week's rules; the native side checks the Java side's integrity, the Java side checks
-    the native library's (cross-checking — week 6, RASP).
+    the native library's (cross-checking — [week 6](../week-6/cen429-week-6.md), RASP).
 
 ### Sections 5–7 summary table: twelve rules at a glance
 
@@ -1383,10 +1382,10 @@ attack developed against one copy does not work against the others.
 - **Diversification in space:** each build or each distribution is obfuscated with a different **seed**; opaque
   predicates, bogus blocks, and state values change from copy to copy.
 - **Diversification in time:** every release comes with a new arrangement; an attack found against an old release
-  breaks in the new one. This works together with your key/version renewal policy (week 10).
+  breaks in the new one. This works together with your key/version renewal policy ([week 10](../week-10/cen429-week-10.md)).
 
 Diversification does not raise obfuscation's **potency** — a single copy can still be broken — but it prevents
-**scaling**. In week 14 we'll produce this with tooling using Tigress's `RandomFuns`, `--Seed`, and
+**scaling**. In [week 14](../week-14/cen429-week-14.md) we'll produce this with tooling using Tigress's `RandomFuns`, `--Seed`, and
 transform-combination features.
 
 !!! example "A simple metric for diversification effectiveness"
@@ -1420,7 +1419,7 @@ proof of "Rule 2 — break automation" from section 1.
     switching between just two fixed configurations (`-O2` and `-O3`) gives you at most **two** fixed variants,
     which does not reach section 1's "break automation" goal.
 
-The diversification decision is thought about together with RASP (week 6) and key/version renewal (week 10): even
+The diversification decision is thought about together with RASP ([week 6](../week-6/cen429-week-6.md)) and key/version renewal (week 10): even
 if one copy is broken and a bypass script spreads, that script doesn't work on the other copies (diversification),
 and the old script also stops working in the next release (diversification in time + key renewal).
 
@@ -1437,7 +1436,7 @@ and the old script also stops working in the next release (diversification in ti
 ## 9. Measuring obfuscation
 
 Defending a protection decision requires **measuring** it. Collberg's framework evaluates obfuscation along four
-dimensions; these same four metrics are also the foundation of week 13's **attack potential** scoring ("time
+dimensions; these same four metrics are also the foundation of [week 13](../week-13/cen429-week-13.md)'s **attack potential** scoring ("time
 required," "expertise required").
 
 ![The four dimensions that measure obfuscation](assets/h09-08-dort-olcut.svg)
@@ -1551,7 +1550,7 @@ even (a standard solving strategy in integer arithmetic), and quickly proves bot
 In both cases the result is `0`; the solver reaches, **within seconds**, the conclusion "this predicate is always
 true, the second (bogus) branch never runs," and automatically eliminates the dead branch. That's why the warning
 box for K-01 doesn't consider this **particular** identity strong enough on its own, and recommends
-seed-diversified predicates in week 14 that tire the solver out more (e.g., based on factorization or on inverting
+seed-diversified predicates in [week 14](../week-14/cen429-week-14.md) that tire the solver out more (e.g., based on factorization or on inverting
 a hash function) — now we've also seen **why** that recommendation makes sense.
 
 ### How do MBA simplifiers undo K-02?
@@ -1620,22 +1619,22 @@ weeks:
 To make the connections between weeks concrete, let's follow the same imaginary function — a mobile payment app's
 `lisans_dogrula` function — through the eyes of different weeks across the term:
 
-- **Week 1:** the threat model is drawn up; `lisans_dogrula` is flagged as an asset that needs protecting against a
+- **[Week 1](../week-1/cen429-week-1.md):** the threat model is drawn up; `lisans_dogrula` is flagged as an asset that needs protecting against a
   **MATE** attacker (the user who holds the app).
-- **Week 3:** the keys the function uses are encrypted with **AEAD**, random numbers come from a **CSPRNG**; but
+- **[Week 3](../week-3/cen429-week-3.md):** the keys the function uses are encrypted with **AEAD**, random numbers come from a **CSPRNG**; but
   this is the security of **storing** the data, not the security of **reading** the code.
-- **Week 4:** the first obfuscation steps are taken: symbols are hidden, a basic flattening is tried.
-- **Week 6:** RASP is added; whether a debugger is attached is checked at runtime.
+- **[Week 4](../week-4/cen429-week-4.md):** the first obfuscation steps are taken: symbols are hidden, a basic flattening is tried.
+- **[Week 6](../week-6/cen429-week-6.md):** RASP is added; whether a debugger is attached is checked at runtime.
 - **Week 9 (this week):** K-01–K-12 are applied: control flow is flattened and reinforced (K-01, K-03, K-05), data
   is encoded (K-07, K-08, K-09), diversification is added (section 8), effectiveness is measured (section 9).
-- **Week 10:** the **lifecycle** (generation, distribution, renewal) of the keys the function uses is managed with
+- **[Week 10](../week-10/cen429-week-10.md):** the **lifecycle** (generation, distribution, renewal) of the keys the function uses is managed with
   PKI — obfuscation does **not store** the key, it only makes its surroundings harder (the rule from section 3).
-- **Week 11:** the most critical key-derivation step is protected with **whitebox cryptography** — the
+- **[Week 11](../week-11/cen429-week-11.md):** the most critical key-derivation step is protected with **whitebox cryptography** — the
   cryptographic counterpart of K-10's (virtualisation) "only apply it to the most critical small function"
   principle.
 - **Weeks 12–13:** an independent evaluator scores all of these layers with the attack potential framework; the
   "Measurement" lines from the protection rule template in section 4 are presented here as evidence.
-- **Week 14:** all this hand-done work is **automated** with Tigress; the same source is regenerated with a
+- **[Week 14](../week-14/cen429-week-14.md):** all this hand-done work is **automated** with Tigress; the same source is regenerated with a
   different seed on every release, with a single command.
 
 This chain shows which **different** threat a single function is protected against in each week of the term: no
@@ -1769,7 +1768,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
     It makes pattern-matching, automated scripting, and symbolic execution attacks harder (there is no single fixed exit pattern). Because there is no single fixed exit, a single byte patch cannot close off every path; the attacker has to deal with every path separately.
 
 ??? question "6. Does string obfuscation protect a key? Why or why not? Which weeks should you look at for protecting a key?"
-    No. String/table obfuscation only makes static `strings` scanning harder; the key is exposed **in memory while running**. Real key protection requires the methods from week 10 (PKI, HSM/PKCS#11) and week 11 (whitebox cryptography).
+    No. String/table obfuscation only makes static `strings` scanning harder; the key is exposed **in memory while running**. Real key protection requires the methods from [week 10](../week-10/cen429-week-10.md) (PKI, HSM/PKCS#11) and [week 11](../week-11/cen429-week-11.md) (whitebox cryptography).
 
 ??? question "7. What are the two biggest costs of virtualisation-based obfuscation? Why is it applied only to small, critical functions?"
     A large **performance** penalty (a virtual machine interpreting bytecode is slow) and a **size** increase (VM + bytecode). Because of this cost it is applied only to functions that are high-value, small, and critical; it cannot be applied to the entire codebase.
@@ -1817,7 +1816,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
     Before: `3+1=4`. After: `6+1=7`. Increase: `(7-4)/4×100=%75`. This represents **potency** among section 9's four metrics — a rough indicator of how many paths a human analyst has to trace to understand the function; the `%82` increase in instruction count in the same example represents the **cost** metric.
 
 ??? question "22. Why does symbolic execution make K-01's `((x*(x+1))&1)==0` opaque predicate 'classic and weak'? How does a solver prove it?"
-    Symbolic execution keeps `x` symbolic rather than concrete and asks a constraint solver "is this expression true for every `x`?" The solver splits `x` into even/odd (if even, `x=2k`; if odd, `x=2k+1`) and proves in both cases that `x*(x+1)` is a multiple of `2`, so `&1=0`. Because the proof takes seconds, the dead branch is eliminated automatically; that's why week 14 recommends predicates more resistant to solvers (based on factorization/hash values).
+    Symbolic execution keeps `x` symbolic rather than concrete and asks a constraint solver "is this expression true for every `x`?" The solver splits `x` into even/odd (if even, `x=2k`; if odd, `x=2k+1`) and proves in both cases that `x*(x+1)` is a multiple of `2`, so `&1=0`. Because the proof takes seconds, the dead branch is eliminated automatically; that's why [week 14](../week-14/cen429-week-14.md) recommends predicates more resistant to solvers (based on factorization/hash values).
 
 ??? question "23. In attack potential frameworks, which five factors are generally evaluated? Which of these does applying only string obfuscation (K-07) affect, and by how much?"
     Generally: **time required**, **expertise required**, **knowledge of the target**, **window of opportunity**, and **equipment required**. Applying only K-07 (string obfuscation) raises the required time by only a few minutes (searching for the string by hand in a decompiler instead of running `strings`), but barely changes the required expertise — it's a step anyone can do. Layers like control-flow flattening + opaque predicate + diversification raise time, expertise, and window of opportunity together.
@@ -1826,7 +1825,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
     If the code falls into an error outside the normal (successful) path, it stays **permanently exposed (decoded)** in memory; the "exposure window" is no longer short as defined, it becomes infinite, and a memory dump can catch it at any time. Rule: tie the re-encryption step to the language's "always runs" construct (`goto cleanup:` in C, RAII/a destructor in C++, `finally` in Java/Kotlin); don't handle success and error paths separately and forget one.
 
 ??? question "25. What is the difference between 'encoding,' 'encryption,' and 'obfuscation'? Which of these is K-07's 'string encoding'?"
-    **Encoding:** converts data into another representation, with no mathematical secrecy claim (e.g., XOR). **Encryption:** key-based, provides provable security (e.g., AES-GCM, week 3); cannot be broken without the correct key. **Obfuscation:** makes code harder for a human to understand, carries no mathematical security claim. K-07's "string encoding" is an **encoding** (via XOR); since the decoding key also sits in the binary, it is not **encryption**, it only slows down static scans like `strings`.
+    **Encoding:** converts data into another representation, with no mathematical secrecy claim (e.g., XOR). **Encryption:** key-based, provides provable security (e.g., AES-GCM, [week 3](../week-3/cen429-week-3.md)); cannot be broken without the correct key. **Obfuscation:** makes code harder for a human to understand, carries no mathematical security claim. K-07's "string encoding" is an **encoding** (via XOR); since the decoding key also sits in the binary, it is not **encryption**, it only slows down static scans like `strings`.
 
 ??? question "26. Why are the five families in the taxonomy ordered 'potency and cost rise from bottom to top'? Why is the layout family the weakest?"
     A family's potency is proportional to **how close it sits to the mechanism that produces the program's behaviour**. The layout family only changes names/metadata, touching nothing that produces the behaviour — that's why it's the cheapest but weakest layer (as we saw in section 0's decompiler example, names are already lost but the logic remains). Virtualisation, at the other end, changes the machine code itself, making it both the strongest and the most expensive.
@@ -1858,7 +1857,7 @@ numbers above come from this week's demo and should not be copy-pasted directly 
   framework.
 - S. Schrittwieser et al., "Protecting Software through Obfuscation: Can It Keep Pace with Progress in Code
   Analysis?" (ACM Computing Surveys, 2016) — an overview and deobfuscation tools.
-- S. Banescu et al., measuring transform resilience with Tigress + KLEE — a bridge to week 14.
+- S. Banescu et al., measuring transform resilience with Tigress + KLEE — a bridge to [week 14](../week-14/cen429-week-14.md).
 - Obfuscator-LLVM (O-LLVM) — an example of compiler-based obfuscation.
 
 ### Which source should you open, and when?
@@ -1876,6 +1875,6 @@ These sources don't replace each other; each answers a different question:
   week 14 will show this applied in practice through Tigress.
 
 !!! info "Next week"
-    **Week 10 — Certificates and cryptographic methods.** This week we said "obfuscation does not protect the
-    key"; week 10 covers choosing keys correctly, their lifecycle, and protecting them with PKI. Week 11 covers
+    **[Week 10](../week-10/cen429-week-10.md) — Certificates and cryptographic methods.** This week we said "obfuscation does not protect the
+    key"; week 10 covers choosing keys correctly, their lifecycle, and protecting them with PKI. [Week 11](../week-11/cen429-week-11.md) covers
     whitebox cryptography, and week 14 covers this week's rules' automated counterpart (Tigress).

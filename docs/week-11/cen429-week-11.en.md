@@ -5,7 +5,7 @@
 | **Date** | 27.11.2026 |
 | **Learning outcomes** | LO.2, 3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Symmetric encryption and key management from Week 3; obfuscation rules (K-01…K-12) from Week 9; arrays and the XOR operation in C |
+| **Prerequisites** | Symmetric encryption and key management from [Week 3](../week-3/cen429-week-3.md); obfuscation rules (K-01…K-12) from [Week 9](../week-9/cen429-week-9.md); arrays and the XOR operation in C |
 | **Labs** | [`code/week-11`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-11) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
@@ -94,229 +94,130 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you don't know a term, read this section first; later sections build on these.
+This section shows which foundations this week builds on: first it briefly reminds you of concepts carried over
+from earlier weeks, then it defines, from scratch, only the terms specific to this week (from S-box to GF(2));
+the sections in the body proceed assuming you already know these terms.
 
-### What is encryption?
-
-- **Encryption:** turning readable data (**plaintext**) into unreadable data (**ciphertext**) using a **key**.
-- **Decryption:** reversing it with the key.
+### What we bring from earlier weeks
 
 ![Encryption: a two-way, key-dependent transformation](assets/h11-10-sifreleme-temel.svg)
 
-### What is a key?
+- **Encryption, keys, and symmetric/asymmetric encryption** — encryption turns plaintext into unreadable
+  ciphertext using a key; symmetric encryption (e.g. AES) uses the same key and is fast, asymmetric (e.g. RSA)
+  uses a public/private key pair and is slow but makes key distribution easy; security depends on the secrecy of
+  the key, not the secrecy of the algorithm (Kerckhoffs's principle)
+  ([Week 3, §2](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what)). This week we
+  carry this principle into the white-box setting: here both the algorithm and the key are in the attacker's
+  hands (§1).
+- **AES and bit security level** — AES is the most widely used symmetric encryption algorithm; it operates on
+  16-byte blocks, mixing the data in rounds of byte substitution, row/column mixing, and key addition (the
+  details will not be asked in this week's exam; the idea is enough for whitebox). "n-bit security" means roughly
+  2ⁿ attempts are needed to break something; AES-128 provides 128-bit security
+  ([Week 10, §1](../week-10/cen429-week-10.md#1-the-map-of-cryptography-and-algorithm-selection)). This week
+  we mainly work with AES; we reuse the bit-security measure not for the key itself, but to estimate the
+  **size/speed cost** of whitebox tables (§3).
+- **XOR** — the operation that gives 1 if the bits differ and 0 if they're the same; reversible because
+  `a XOR b XOR b == a`
+  ([Week 5, §12](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation); [Week 9](../week-9/cen429-week-9.md) also
+  used it in string obfuscation). In AES, the "key addition" step is an XOR (`state XOR key`); this week it plays
+  a central role both in constructing Chow AES (§3) and in the worked numeric example showing why "mixing with
+  just XOR" fails (§2).
+- **Entropy** — a measure of how random/unpredictable a block of data appears; high-entropy blocks are usually
+  encrypted/random data, low-entropy blocks are ordinary text/data
+  ([Week 2, §6](../week-2/cen429-week-2.md#demo-02-entropy-meter-how-is-encryptedpacked-content-recognised);
+  Week 9 also used it in binary analysis). This week an **entropy scan** shows up as the static-analysis technique
+  that finds a key embedded in a fixed array within seconds (§1, §2).
+- **Debugger** — a tool that lets you run a program step by step and read every value currently in memory and the
+  processor's registers (e.g. `gdb`, `x64dbg`)
+  ([Week 6, §4](../week-6/cen429-week-6.md#4-debugger-detection)). This week the white-box attacker's
+  "observing execution" and "running only one round" capability is, concretely, exactly this (§1).
+- **Static and dynamic analysis** — static analysis examines a program without running it; dynamic analysis
+  examines it by running it
+  ([Week 4, §9](../week-4/cen429-week-4.md#9-static-analysis-finding-bugs-without-running-the-code)). This week
+  we use this distinction to classify attacks: entropy scanning and BGE are **static** (§2, §4), DCA and DFA are
+  **dynamic** (§3, §4).
+- **Instrumentation and an emulator** — instrumentation is equipping a program to automatically record what is
+  processed at specific points while it runs; an emulator is a tool that imitates the real processor in software
+  ([Week 6, §5](../week-6/cen429-week-6.md#5-environment-detection-virtual-machine-and-emulator)–[§6](../week-6/cen429-week-6.md#6-hook-and-instrumentation-detection-ld_preload-frida)).
+  This week these two tools are what let an attacker run a whitebox routine thousands of times automatically and
+  record every lookup-table access — the precondition for **DCA** (§1, §3–§4).
+- **HSM and SoftHSM** — an HSM is dedicated hardware that stores and operates on keys without the key ever
+  leaving it; SoftHSM emulates the same interface (PKCS#11) in software but provides no hardware protection
+  ([Week 10, §11](../week-10/cen429-week-10.md#11-storing-the-key-in-hardware-hsm-pkcs11-and-softhsm)). This
+  week we revisit these as whitebox's **server-side** counterpart, at the strongest end of the key-protection
+  options (§5).
 
-- **Key:** the secret number (a byte sequence) that governs the encryption.
-- Same algorithm + different key = different result.
-- **Security depends on the secrecy of the key**, not the secrecy of the algorithm (Kerckhoffs's principle).
+### Background: S-box and lookup table
 
-### Symmetric and asymmetric
+A **lookup table** is an array that gives a precomputed output for every input: instead of computing, you read
+`T[x]` straight from the table, which makes things faster. The **S-box (substitution box)** used in AES's "byte
+substitution" step is such a table: it replaces each byte with another according to a fixed rule — e.g. a
+256-entry mapping such as `S-box[0x53] = 0xED`. Keep this table in mind; it is the heart of whitebox.
 
-- **Symmetric:** encryption and decryption use the **same** key (e.g. **AES**). Fast.
-- **Asymmetric:** a public/private key pair (e.g. RSA). Slow, but key distribution is easy.
+### Background: side channel and DPA
 
-This week we will mainly work with **AES** (symmetric).
+A **side channel** is a type of attack that uses not the algorithm's mathematics but the physical/indirect
+information it leaks while running (elapsed time, power consumption, electromagnetic emission); it is classic
+against smart cards. **DPA (Differential Power Analysis)** is a concrete example: it applies statistics to a
+device's power-consumption measurements to extract the key without ever looking inside the device. Keep this idea
+in mind; whitebox's most powerful attack (DCA, §4) is the software form of DPA.
 
-### What is AES? (from a high level)
+### Background: bijection and permutation
 
-- **AES:** the most widely used symmetric encryption algorithm.
-- Operates on 16-byte **blocks**.
-- Mixes the data in **rounds**; each round: byte substitution, row/column mixing, key addition.
+A **bijection** (a one-to-one, onto mapping) is a transformation that maps every input to exactly one output and
+can be inverted; e.g. `f(x) = x ^ 0x5A` is a bijection (its own inverse). A **permutation** is a special kind of
+bijection that reorders the elements of a finite set: each element takes the place of exactly one other element,
+exactly once — e.g. on the set `{0,1,2,3}`, `0→2, 1→0, 2→3, 3→1` is a permutation, with no value skipped or
+repeated. An S-box is a permutation of a fixed-size set of byte values; the toy S-box we build in §3 is a small
+(4-element) example of the same idea. Whitebox wraps tables in exactly this kind of hidden bijection.
 
-The details will not be asked in this week's exam; the **idea** is enough.
+### Background: TEE and secure element (SE)
 
-### What is an S-box?
+**TEE (Trusted Execution Environment)** is a secure region of the phone's processor that is isolated from the
+operating system; **secure element (SE)** is a separate, tamper-resistant hardware chip that stores keys. Both are
+the strongest protection for a key; whitebox cryptography exists precisely for situations where they are
+**absent** (§5).
 
-- **S-box (substitution box):** a **fixed table** that replaces one byte with another.
-- This is AES's "byte substitution" step.
-- Example: a 256-entry mapping such as `S-box[0x53] = 0xED`.
+### Background: execution trace and correlation
 
-Keep this table in mind; it is the heart of whitebox.
+An **execution trace** is the sequence of intermediate values recorded over the course of one run — which memory
+address was read, which value was written, which instruction executed. In the black box the attacker sees only
+the final output; in the white box they can, if they wish, record the entire trace. **Correlation** is a measure
+of whether two variables (e.g. an observed value and a value predicted from a key hypothesis) change together,
+consistently; high correlation means the two variables appear linked. DPA and its software form DCA (§1, §3–§4)
+use exactly this pair to separate the correct key hypothesis from the wrong ones: many execution traces are
+collected, then for each hypothesis the correlation between predicted and observed values is measured.
 
-### Lookup table
+### Background: GF(2) and matrices
 
-- **Lookup table:** an array that gives "output for a given input".
-- `T[x]` = the precomputed result for x.
-- Instead of computing, **you read from the table**; it's fast.
+A **finite field** is a number system with addition and multiplication defined on it that has a limited number of
+elements. **GF(2)** is the smallest finite field, consisting only of the elements `{0, 1}`; in this field,
+addition is exactly **XOR** and multiplication is AND. A **matrix** is a rectangular arrangement of numbers (here,
+only 0s and 1s); "multiplying" the input bits by such a matrix is in practice XOR-ing selected bits together (a
+**linear transformation**). A matrix is **non-singular** if it has an inverse, i.e. the transformation it applies
+is reversible — information is not lost, only mixed; the measure of how many independent rows/columns a matrix has
+is its **rank**, and "full rank" means the matrix is non-singular. Whitebox's mixing matrices in §3 (Step 4) are
+always chosen to be non-singular; otherwise decryption would become impossible. Detailed finite-field arithmetic
+is outside the exam's scope; it's enough to remember GF(2) as "a world of reversible linear operations that work
+with XORs".
 
-Whitebox buries the computation inside tables.
-
-### XOR reminder
-
-- **XOR** (`^`): 1 if the bits differ, 0 if they're the same.
-- `a ^ b ^ b == a` → reversible.
-- In AES, the "key addition" step is an XOR: `state ^ key`.
-
-### Bit security level
-
-- "**n-bit security**" = roughly 2ⁿ attempts are needed to break it.
-- AES-128 → 128 bits; considered unbreakable today.
-- Higher number = stronger.
-
-### What is a side channel?
-
-- **Side channel:** an attack that uses not the algorithm's mathematics, but the **physical/indirect information
-  it leaks while running**.
-- Example: elapsed **time**, **power** consumption, electromagnetic emission.
-
-This is classic on smart cards; shortly we'll see its software counterpart in whitebox.
-
-### What is DPA?
-
-- **DPA (Differential Power Analysis):** a side-channel attack that applies statistics to a device's **power
-  consumption** measurements to extract the key.
-- It doesn't look inside the device; it measures from outside.
-
-Keep this idea in mind; whitebox's most powerful attack (DCA) is the software form of exactly this.
-
-### Bijection (a one-to-one, onto mapping)
-
-- **Bijection:** a transformation that maps every input to exactly one output, and that **can be inverted**.
-- Example: `f(x) = x ^ 0x5A` is a bijection (its inverse is itself).
-
-Whitebox wraps tables in **hidden bijections**.
-
-### TEE and secure element (SE)
-
-- **TEE (Trusted Execution Environment):** a secure region of the phone's processor that is **isolated** from the
-  operating system.
-- **Secure element (SE):** a separate, tamper-resistant **hardware** chip that stores keys.
-
-These are the strongest protection for a key; whitebox is for the situation where they are **absent**.
-
-### HSM and SoftHSM
-
-- **HSM (Hardware Security Module):** dedicated hardware on a server that stores/operates on keys; the key
-  **never leaves it**.
-- **SoftHSM:** a **software emulation** of an HSM; the same interface (PKCS#11), but no hardware protection (for
-  development/testing).
-
-### What is a debugger?
-
-- **Debugger:** a tool that lets you run a program **step by step**, read every value currently in memory, and
-  see the processor's registers (e.g. `gdb`, `x64dbg`, IDA/Ghidra's dynamic mode).
-- For a programmer we use this to **find bugs**; for a white-box attacker it turns into a tool for **observing
-  every step** of the program.
-
-The white-box attacker's "observing execution" and "running only one round" capability is, in practice, exactly
-sitting down with a debugger and setting a breakpoint.
-
-### Static analysis and dynamic analysis
-
-There are two fundamental ways to examine a program, and to understand which "box" a whitebox attack stands in, we
-need to distinguish between them:
-
-- **Static analysis:** analysis performed **without running** the program, examining only the binary (or source
-  code) (e.g. the `strings` command, reading instructions with a disassembler).
-- **Dynamic analysis:** analysis performed by **actually running** the program and observing it with a debugger
-  or the instrumentation we'll define below.
-
-The **entropy scan** in Section 2 is static (the program is never run); **DCA** in Section 4 is dynamic (the
-program is run and observed repeatedly). Both are available to the white-box attacker; the black-box attacker can
-do neither.
-
-### What are instrumentation and an emulator?
-
-- **Instrumentation:** modifying a program, or running it under a special tool, so that it **automatically records
-  what is processed at specific points** while it runs (e.g. adding a layer that logs every memory read/write).
-- **Emulator:** a tool that **imitates the real processor in software**; because it interprets each instruction
-  one by one, it can record **every step** of the running program without stopping it.
-
-If the attacker instruments the whitebox routine or runs it under an emulator, they can automatically collect the
-**value read/written** at every lookup-table access. They can repeat this **thousands of times** without having to
-manually single-step through a debugger — this is the precondition for the DCA attack we'll see shortly.
-
-### What is an execution trace?
-
-- **Execution trace:** the **sequence** of intermediate values recorded over the course of one run — which memory
-  address was read, which value was written, which instruction executed.
-- In the black box, the attacker sees only the **final output** (the ciphertext); in the white box, the attacker
-  can, if they wish, see and store the **entire trace** (every intermediate step of the algorithm).
-
-In Sections 3 and 4 we will always use the word "trace" in this sense: a list of the intermediate values read from
-whitebox tables, recorded over and over for different inputs.
-
-### What is correlation (a statistical relationship)?
-
-- **Correlation:** a measure of whether two variables (e.g. "an observed value" and "a predicted value computed
-  from a key hypothesis") **change together, consistently**.
-- High correlation → the two variables **appear linked**. Low/no correlation → there **appears to be no
-  relationship beyond chance**.
-
-Side-channel attacks (DPA, and its software form DCA) use exactly this to separate the **correct** key hypothesis
-from the incorrect ones: for the correct hypothesis, the predicted values turn out to be **correlated** with what
-is actually observed; for incorrect hypotheses, they don't.
-
-### What is a permutation?
-
-- **Permutation:** a special kind of one-to-one, onto (bijective) mapping that **reorders** the elements of a
-  finite set — each element takes the place of exactly one other element, exactly once.
-- Example: on the set `{0,1,2,3}`, `0→2, 1→0, 2→3, 3→1` is a permutation; every value is used exactly once, none
-  are skipped or repeated.
-
-An S-box is a permutation of a fixed-size set (byte values); the **toy S-box** we'll build shortly is a small
-(4-element) example of the same idea.
-
-### What is entropy (a measure of randomness)?
-
-- **Entropy:** a measure of how **random/unpredictable** a block of data appears to be.
-- Ordinary text (e.g. an English sentence) appears to have **low** entropy: some letters (e, t, a) occur very
-  often, others (q, z) very rarely; this uneven distribution increases predictability.
-- A randomly generated cryptographic key appears to have **high** entropy: all byte values (0x00–0xFF) appear at
-  almost equal frequency, with no pattern.
-- **Entropy scan:** a static-analysis technique that walks through a binary from start to end, looking for blocks
-  with **abnormally high entropy relative to their surroundings**; it is used to find embedded keys, compressed,
-  or encrypted data (Shamir–van Someren's observation).
-
-As we'll see in Section 2, this is exactly the tool that exposes the "embedding the key in a fixed array" mistake
-**within seconds**; the `--tara` option in this week's `02-gomulu-anahtar` demo applies the same idea.
-
-### The finite field GF(2) — very briefly
-
-- **Finite field:** a number system with addition and multiplication defined on it that has a **limited number**
-  of elements (unlike ordinary numbers, it doesn't "overflow"; it never leaves a fixed set).
-- **GF(2):** the **smallest** finite field, consisting only of the elements `{0, 1}`; in this field, addition is
-  exactly **XOR**, and multiplication is the **AND** operation.
-- AES's internal mathematics works on bytes in a larger finite field called GF(2⁸); whitebox's "mixing matrices",
-  which we'll see shortly, are built over GF(2), i.e. with **pure XOR-based linear algebra**.
-
-Detailed finite-field arithmetic is outside this week's scope and will not be asked in the exam; it's enough to
-carry the idea that "GF(2) = a world of reversible linear operations that work with XORs".
-
-### Matrix, linear transformation, non-singular matrix
-
-- **Matrix:** a rectangular arrangement of numbers (here, only 0s and 1s).
-- **Linear transformation:** a transformation that produces output bits by "multiplying" the input bits by a
-  fixed matrix (in practice, by XOR-ing selected bits).
-- **Non-singular matrix:** a matrix that **has an inverse** — i.e. the transformation it applies is
-  **reversible** and loses no information. Whitebox's mixing matrices are always chosen to be non-singular;
-  otherwise decryption would become impossible (the information could not be recovered).
-- **Rank:** a measure of how many **independent** rows/columns a matrix has; "full rank" means the matrix is
-  non-singular, i.e. its inverse exists.
-
-In Section 3, Step 4, we'll make this concrete with a **small, hand-solvable GF(2) matrix example**.
-
-### Now we're ready
-
-The terms we now know:
-
-encryption/decryption · key · symmetric/asymmetric · AES · S-box · lookup table · XOR · bit security · side channel · DPA · bijection · TEE/SE · HSM/SoftHSM · debugger · static/dynamic analysis · instrumentation/emulator · execution trace · correlation · permutation · entropy · GF(2) · non-singular matrix/rank
+### How do the concepts connect to each other?
 
 These terms will be used throughout the week not **in isolation**, but in **connected chains**. Let's look at the
 three main chains now, because as the sections progress we'll return to **every link** in these chains:
 
 - **Construction chain:** key → S-box → lookup table (partial evaluation) → bijection (internal/external
-  encoding) → GF(2) matrix (mixing). This chain will be built **by hand** in Section 3, with our toy S-box.
+  encoding) → GF(2) matrix (mixing). This chain will be built **by hand** in §3, with our toy S-box.
 - **Attack chain:** static/dynamic analysis → entropy scan / debugger → execution trace → correlation. This
-  chain will become **concrete** in Sections 1, 3, and 4 — first in the white-box attacker's session, then in the
+  chain will become **concrete** in §1, §3, and §4 — first in the white-box attacker's session, then in the
   DCA example.
 - **Defence chain:** TEE/SE/HSM → WBC (the product of the construction chain) → key rotation + device binding +
-  server auditing. This chain comes together in Sections 5 and 6.
+  server auditing. This chain comes together in §5 and §6.
 
 Instead of memorising a term in isolation, try to remember **which link of which chain** it belongs to; the
-glossary at the end of the lecture (Section 8) is organised with the same logic.
+glossary at the end of the lecture (§8) is organised with the same logic.
 
 Now to the real question: **what do we do when the key is in the attacker's hands?**
 
@@ -365,7 +266,7 @@ attacker has the following capabilities (read these as **what the defence has to
     The technical guide opens this section with a compliance statement: *"Cryptographic keys shall be secured
     and/or hidden to protect confidentiality and integrity."* But it immediately adds: what protects the
     application and its assets against these attacker capabilities is **not WBC alone, but code hardening (Week
-    9) and RASP (Week 6) methods together.** In other words, WBC is **not presented as a standalone solution**
+    9) and RASP ([Week 6](../week-6/cen429-week-6.md)) methods together.** In other words, WBC is **not presented as a standalone solution**
     even in its first sentence.
 
 ### A concrete example: a session of a white-box attacker (step-by-step narrative)
@@ -466,18 +367,19 @@ of DPA), is referred to as "whitebox's DPA" — DCA applies the grey box's stati
 This distinction doesn't come out of nowhere; it is the **natural continuation** of the rules we built in Weeks 3,
 9, and 10:
 
-- **Week 3 — Kerckhoffs's principle.** We had learned the principle "security must rest on the secrecy of the
-  key, not the secrecy of the algorithm". The white-box model takes this one step further: here **both the
-  algorithm and the key** are in the attacker's hands; all that's left is the question "how expensive can I make
-  extracting the key?"
-- **Week 9 — obfuscation rules (K-01…K-08).** That week we saw rules hiding control flow (K-04), constants
-  (K-02, K-07), and boolean values (K-08); all of them were **code hardening**, i.e. they made the white-box
-  attacker's **static analysis** harder. WBC is a cryptography-specific, much stronger version of this: it buries
-  not just the code, but the **key itself**, into the code's mathematics.
-- **Week 10 — algorithms and key management.** The security proofs of standard AES/RSA/HMAC are written in the
-  **black-box** model. What we'll learn this week is that when the same AES algorithm has to run in a
-  **white-box** environment, that black-box security proof **no longer holds** — WBC tries to close this gap
-  (partially, and expensively).
+- **[Week 3 — Kerckhoffs's principle](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what).**
+  We had learned the principle "security must rest on the secrecy of the key, not the secrecy of the algorithm".
+  The white-box model takes this one step further: here **both the algorithm and the key** are in the attacker's
+  hands; all that's left is the question "how expensive can I make extracting the key?"
+- **[Week 9 — obfuscation rules (K-01…K-08)](../week-9/cen429-week-9.md#5-control-flow-rules-advanced).** That
+  week we saw rules hiding control flow (K-04), constants (K-02, K-07), and boolean values (K-08); all of them
+  were **code hardening**, i.e. they made the white-box attacker's **static analysis** harder. WBC is a
+  cryptography-specific, much stronger version of this: it buries not just the code, but the **key itself**, into
+  the code's mathematics.
+- **[Week 10 — algorithms and key management](../week-10/cen429-week-10.md#1-the-map-of-cryptography-and-algorithm-selection).**
+  The security proofs of standard AES/RSA/HMAC are written in the **black-box** model. What we'll learn this week
+  is that when the same AES algorithm has to run in a **white-box** environment, that black-box security proof
+  **no longer holds** — WBC tries to close this gap (partially, and expensively).
 
 !!! tip "In one sentence"
     Black box = "you can't look inside". Grey box = "you can't look inside, but you can listen for leaks from the
@@ -519,7 +421,7 @@ Each one turns into a secure programming rule:
   `static const uint8_t k[16] = {0x00, 0x01, ...}`, or plaintext in a configuration file), and then **forgets to
   move it out** for production, or dismisses it as "temporary anyway". **Consequence:** this is **exactly the
   same** vulnerability as Section 2's first rule (a plain embedded key) — except the "test-only" label doesn't
-  **reduce** the real risk. An assessor (Week 12) scans test/debug paths with **the same rigour** as production
+  **reduce** the real risk. An assessor ([Week 12](../week-12/cen429-week-12.md)) scans test/debug paths with **the same rigour** as production
   code.
 
 !!! danger "This week's main rule, up front"
@@ -573,8 +475,9 @@ k = kodlanmis_k XOR m = 0x66 XOR 0x5A
 
 **Conclusion.** Masking changes the key's **bit pattern** in the binary but doesn't change the protection: if the
 program can undo the mask, so can an attacker who can read the same computation. This is exactly the same lesson
-as the limit of Week 9's **K-07 (static string/hard-coding)** rule — encoding alone gains nothing **if the
-decoding key sits right next to it**.
+as the limit of
+[Week 9's **K-07 (static string/hard-coding)**](../week-9/cen429-week-9.md#rule-k-07-encoding-static-strings)
+rule — encoding alone gains nothing **if the decoding key sits right next to it**.
 
 !!! danger "The rule this gives us"
     Carrying a secret value in the same binary **together with all the information needed to undo it** is not
@@ -599,9 +502,10 @@ is a serious threat:
 The reason this is specific to WBC is this: in a normal program (key in a plain variable), the attacker can
 already **extract** the key and use it wherever they like; there's no need for code lifting. In WBC, the key
 **may be unextractable** (if the external encodings are strong), but the tables still form **a working machine**
-— and copying a working machine is, most of the time, **much easier** than solving its mathematics. Week 9's
-**K-06 (call and dependency hiding)** rule helps a little here (it makes the routine harder to find), but **isn't
-sufficient on its own** — once the routine is found, it can still be copied. The real solution is **device/
+— and copying a working machine is, most of the time, **much easier** than solving its mathematics.
+[Week 9's **K-06 (call and dependency hiding)**](../week-9/cen429-week-9.md#rule-k-06-hiding-function-calls-and-external-library-dependencies)
+rule helps a little here (it makes the routine harder to find), but **isn't sufficient on its own** — once the
+routine is found, it can still be copied. The real solution is **device/
 version binding**, which we'll see in Section 5: the tables only produce a meaningful result in a specific
 context (e.g. an input/output mixed with a device identifier).
 
@@ -1089,7 +993,9 @@ literature):
 !!! note "A sense of scale for the exam"
     You should be able to estimate a table's size: e.g. 288 tables × 1 KB ≈ 294,912 bytes. The goal isn't an
     exact number, but seeing the **order of magnitude** and why this is exactly why it's used only for selected,
-    small, critical operations. This is the same cost logic as the virtualisation rule (K-10) from Week 9.
+    small, critical operations. This is the same cost logic as the
+    [virtualisation rule (K-10)](../week-9/cen429-week-9.md#rule-k-10-virtualisation-based-obfuscation-concept)
+    from Week 9.
 
 #### Exercise: make your own order-of-magnitude estimate
 
@@ -1223,7 +1129,7 @@ though the encodings stay fixed, AES's own mathematics (the S-box's non-linearit
 
     **Rule:** design WBC like **a defence with an expiry date**: with a key-rotation schedule, with monitoring/
     telemetry (is there a sign of attack?), and with a plan for "this design will fall one day too — what do we
-    do then?" This is Week 10's crypto-period idea applied to whitebox.
+    do then?" This is [Week 10](../week-10/cen429-week-10.md)'s crypto-period idea applied to whitebox.
 
 ### WhibOx: why does an independent trial matter?
 
@@ -1231,7 +1137,9 @@ WhibOx is a series of competitions in which academics and companies submit their
 and researchers from all over the world try to break them. Here's why this matters: a design that a company's
 **own internal team** tested and says "wasn't broken" is **not at the same level of trust** as a design placed in
 front of **independent, numerous, and motivated** attackers that says "wasn't broken". WhibOx provides the
-latter. This is the whitebox counterpart of the "independent evaluation" idea we'll see in Week 12.
+latter. This is the whitebox counterpart of the
+["independent evaluation"](../week-12/cen429-week-12.md#1-why-independent-evaluation) idea we'll see in
+Week 12.
 
 ### Three commonly confused abbreviations: BGE, DCA, DFA
 
@@ -1258,7 +1166,7 @@ of them **raise the cost**:
   correlation that DCA relies on.
 - **External encoding (F, G):** makes DCA/DFA/BGE harder — but with the limitation we saw: it breaks standard AES
   compatibility.
-- **Layered defence:** Week 9's obfuscation rules and Week 6's RASP (anti-debug, tamper and integrity checking)
+- **Layered defence:** [Week 9](../week-9/cen429-week-9.md)'s obfuscation rules and [Week 6](../week-6/cen429-week-6.md)'s RASP (anti-debug, tamper and integrity checking)
   are placed around WBC; the goal is to make it harder for the attacker to collect traces (DCA) and inject faults
   (DFA).
 - **Key rotation and short lifetime:** if the key is rotated often, the value of extracting any one key drops
@@ -1417,7 +1325,7 @@ when there is a TEE** — it may just apply them less heavily than in the pure-s
 
 ### SoftHSM and PKCS#11 (a server-side bridge, from Week 10)
 
-In Week 10 we mentioned PKCS#11 and SoftHSM for key storage. On the server side, the key is kept behind a
+In [Week 10](../week-10/cen429-week-10.md) we mentioned PKCS#11 and SoftHSM for key storage. On the server side, the key is kept behind a
 standard PKCS#11 interface; the application never sees the key's value, it only says "sign/encrypt this". SoftHSM
 is a software emulation of a real HSM; it offers **the same interface**, so it's used for development and
 testing, but it provides no real hardware protection. As a counterpart to WBC's problem at the endpoint (client),
@@ -1466,7 +1374,7 @@ Let's gather this week's rules into a single story (synthetic, for defensive pur
    confirms that this block is used as the key in the encryption call. The key comes out within minutes.
 3. **Protection (layered):**
    - Move the key to **TEE/SE** if possible; otherwise bury it in **WBC tables** (no plain byte array left).
-   - Wrap WBC in Week 9's **obfuscation** rules and Week 6's **RASP** (anti-debug, tamper detection); this makes
+   - Wrap WBC in [Week 9](../week-9/cen429-week-9.md)'s **obfuscation** rules and [Week 6](../week-6/cen429-week-6.md)'s **RASP** (anti-debug, tamper detection); this makes
      it harder for DCA to collect traces and for DFA to inject faults.
    - **Bind to the device/version:** so the tables don't work when copied to another device (code lifting).
    - **Rotate the key frequently** (a short crypto-period) and apply **risk auditing on the server**.
@@ -1540,7 +1448,7 @@ proceed with **different initial attacks** (entropy scan/algebraic solution vs. 
 in the same place**: a single technical layer (only WBC, only device binding, only server auditing) **is never
 enough on its own in either case**. This confirms the pattern the lecture has been working with from the start:
 
-- **Week 3:** "Confidentiality is cryptography's job, don't rely on the secrecy of the algorithm" (Kerckhoffs).
+- **[Week 3](../week-3/cen429-week-3.md):** "Confidentiality is cryptography's job, don't rely on the secrecy of the algorithm" (Kerckhoffs).
 - **Week 9:** "A single obfuscation rule isn't enough, layer K-01…K-08."
 - **Week 11 (this week):** "A single whitebox design isn't enough; layer it with key rotation + device binding +
   server auditing + (if possible) a hardware root."
@@ -1585,9 +1493,13 @@ remains).
 
 !!! info "Looking ahead: how will this knowledge be used in Weeks 12–13?"
     This week we assessed, conceptually and on our own, **how much** a protection (WBC) actually withstands. In
-    Week 12 we'll connect this to an **independent certification/penetration-testing process**, and in Week 13 to
-    **attack potential scoring** (a method for numerically rating how "easy" an attack is). The "attack access/
-    skill" table we built by hand today in Section 4 is a **simplified precursor** of that scoring logic.
+    [Week 12](../week-12/cen429-week-12.md#1-why-independent-evaluation) we'll connect this to an **independent
+    certification/penetration-testing process** and to the
+    [attack potential scoring](../week-12/cen429-week-12.md#5-attack-potential-and-finding-rating) that rates
+    findings (a method for numerically rating how "easy" an attack is); in
+    [Week 13](../week-13/cen429-week-13.md#4-common-criteria-isoiec-15408) we'll connect it to the standard form of
+    the same scoring in the Common Criteria (vulnerability assessment, AVA_VAN). The "attack access/skill" table we
+    built by hand today in Section 4 is a **simplified precursor** of that scoring logic.
 
 ## 7. Term project: this week (S8 — key-protection justification)
 
@@ -1607,7 +1519,7 @@ To make what you'll write concrete, let's show, step by step, how to fill out th
 
 !!! example "Example project: the 'Campus Wallet' mobile app (synthetic)"
     **Asset:** the `DEK` (data encryption key) that stores the user's balance information in the local database,
-    used with AES-256-GCM (Week 3).
+    used with AES-256-GCM ([Week 3](../week-3/cen429-week-3.md)).
 
     **1. Where does the key sit, how is it protected?**
     The DEK is kept in a TEE-backed key store on devices that support TEE. On older devices that don't support
@@ -1616,8 +1528,8 @@ To make what you'll write concrete, let's show, step by step, how to fill out th
 
     **2. If the protection isn't sufficient, which layers compensate?**
     For the pure-software whitebox path (TEE-less devices): the DEK is rotated **every 30 days** (crypto-period,
-    Week 10); the external encoding's parameters are derived from the device identity (device binding, Sections
-    4/5); the client is hardened with Week 9's K-04 (control-flow flattening) and K-06 (call hiding) rules; on
+    [Week 10](../week-10/cen429-week-10.md)); the external encoding's parameters are derived from the device identity (device binding, Sections
+    4/5); the client is hardened with [Week 9](../week-9/cen429-week-9.md)'s K-04 (control-flow flattening) and K-06 (call hiding) rules; on
     the server side, a request is flagged if an unexpected number of devices is making requests from the same
     account (server-side risk auditing).
 
@@ -1822,8 +1734,8 @@ category.
     **the same place** as the key.
 
 ??? question "26. What is the shared sentence that unites this week's two scenarios (Section 6) with the rules of Weeks 3 and 9?"
-    **"A single layer = a fragile layer."** Neither following Kerckhoffs's principle alone (Week 3), nor
-    obfuscation rules alone (Week 9, K-01…K-08), nor WBC alone (this week) is sufficient on its own; security
+    **"A single layer = a fragile layer."** Neither following Kerckhoffs's principle alone ([Week 3](../week-3/cen429-week-3.md)), nor
+    obfuscation rules alone ([Week 9](../week-9/cen429-week-9.md), K-01…K-08), nor WBC alone (this week) is sufficient on its own; security
     always comes from **the sum of the layers**.
 
 ??? question "27. In Section 3, Step 3's verification `G⁻¹(T'[x]) = T[x]`, show the computation for x=1."
@@ -1904,7 +1816,7 @@ go back to that section and read it **together with its context**.
 | WhibOx | A competition series in which whitebox designs are tested publicly and independently | Section 4 |
 | TEE / SE | An isolated, secure region of the processor/hardware, suitable for storing keys | Sections 0, 5 |
 | HSM / SoftHSM / PKCS#11 | Dedicated hardware that stores keys / its software emulation / the standard interface | Sections 0, 5 |
-| Crypto-period / key rotation | A key's usage lifetime; shortening it reduces the value of an extracted key | Week 10, Sections 4, 5 |
+| Crypto-period / key rotation | A key's usage lifetime; shortening it reduces the value of an extracted key | [Week 10](../week-10/cen429-week-10.md), Sections 4, 5 |
 | Device/version binding | Making the encodings device-specific, rendering code lifting useless | Sections 4, 5, 6 |
 
 !!! tip "How should you use the glossary?"
@@ -1937,4 +1849,5 @@ go back to that section and read it **together with its context**.
 !!! info "Next week"
     **Week 12 — Certification and penetration-test planning.** This week we saw the importance of measuring how
     much a protection "actually withstands"; in Week 12 we'll connect this to the process and reporting of an
-    independent evaluation (attack potential scoring, Week 13).
+    [independent evaluation](../week-12/cen429-week-12.md#1-why-independent-evaluation) and to
+    [attack potential scoring](../week-12/cen429-week-12.md#5-attack-potential-and-finding-rating).

@@ -47,58 +47,88 @@ Her gereksinimin yanında **hangi haftada işlendiği** ve **kılavuzda hangi b�
 Her maddeyi ya **karşılayın** ya da **gerekçeli olarak devredin/kapsam dışı bırakın** (13. hafta).
 
 ### 4.1 Geliştirme ortamı güvenliği · (Hafta 1, 12 · S13)
+İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 12](../week-12/cen429-week-12.md)
+
 - Yazılım geliştirme akışı ve **değişiklik yönetimi** (temel çizgi → talep → sınıflandırma → onay → yayın → doğrulama).
 - **Git** ile sürüm kontrolü; erişim kaydı; imzalı sürüm.
 - Geliştirme bilgisayarı/sunucu güvenliği (kısa politika).
 
 ### 4.2 Kullanımdaki veri güvenliği · (Hafta 3, 6 · S7)
+İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 6](../week-6/cen429-week-6.md)
+
 - Bellekteki hassas veri kullanımdan sonra **güvenli silinir** (`memset_s` benzeri).
 - Çalışma zamanı veri koruması (gölge kopya/bütünlük — 6. hafta).
 
 ### 4.3 Aktarımdaki veri güvenliği · (Hafta 3, 10 · S6, S11)
+İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md)
+
 - **TLS 1.3**; sertifika zinciri + **SAN** doğrulaması; **sabitleme (pinning)** + yedek pin.
 - Şifrelenmiş **oturum anahtarı**; **cihaz/sürüm bağlama**; bütünlük + kimlik doğrulama; sunucu doğrulama kodu.
 
 ### 4.4 Beklemedeki veri güvenliği · (Hafta 3, 10, 11 · S8)
+İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md) · [Hafta 11](../week-11/cen429-week-11.md)
+
 - Dosya/DB şifreleme **AEAD** (AES-GCM); nonce tekrarsız.
 - Hassas anahtarlar için **whitebox** ya da **SoftHSM/PKCS#11**; kararın **gerekçesi** (11. hafta).
 
 ### 4.5 Statik varlıkların korunması · (Hafta 1, 4, 9 · S5, S9)
+İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 4](../week-4/cen429-week-4.md) · [Hafta 9](../week-9/cen429-week-9.md)
+
 - Gizli anahtarlar, özet değerleri, kaynak kodu, kaynaklar: şifreleme + erişim kontrolü + gizleme.
 
 ### 4.6 Dinamik varlıkların korunması · (Hafta 3, 6 · S5, S8)
+İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 6](../week-6/cen429-week-6.md)
+
 - Cihaz/uygulama parmak izleri, oturum verileri, dinamik anahtarlar şifrelenir.
 
 ### 4.7 Varlık yönetimi · (Hafta 1, 3, 13 · S5)
+İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 13](../week-13/cen429-week-13.md)
+
 Her varlık için: **ad, açıklama, konum (tablo/sütun), kaynak, boyut, oluşturma/silme zamanı, varsayılan,
 koruma şeması (C/I/I+)**.
 
 ### 4.8 Arayüz tanımları ve korunması · (Hafta 1, 4 · S3, S6)
+İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 4](../week-4/cen429-week-4.md)
+
 - Tüm arayüzler erişim kontrolü + kimlik doğrulama ile korunur; girdi **güven sınırında** doğrulanır.
 
 ### 4.9 Kod sağlamlaştırma · (Hafta 4, 9, 14 · S9)
+İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md) · [Hafta 9](../week-9/cen429-week-9.md) · [Hafta 14](../week-14/cen429-week-14.md)
+
 - Opak döngü/yüklem, ad/dosya/dize/aritmetik gizleme, opak boolean, sahte işlem/ölü dal, **kontrol akışı düzleştirme**
   + rastgele çıkış, sürümde **log kapalı**. Maliyeti **ölçün** (9/14. hafta demoları).
 
 ### 4.10 RASP · (Hafta 6 · S10)
+İlgili haftalar: [Hafta 6](../week-6/cen429-week-6.md)
+
 - Checksum bütünlük denetimi, çağıran uygulama hash/imza doğrulaması, kök/emülatör tespiti, **hook/anti-debug**,
   tamper tespiti + yanıt, kontrol akışı sayacı.
 
 ### 4.11 Bellek koruması · (Hafta 4 · S9)
+İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md)
+
 - Derleyici/OS korumaları (yığın koruyucu, PIE, RELRO, NX, CFI); hassas veri kullanım sonrası temizlenir.
 
 ### 4.12 Kriptografi ve sertifikalar · (Hafta 3, 10 · S8, S11)
+İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md)
+
 - Doğru algoritma/kip/dolgu; imza doğrulaması (`==1`, sürüm kapsamı); SSL/TLS + pinning + karşılıklı kimlik doğrulama.
 
 ### 4.13 Sertifikasyon ve sızma testi planı · (Hafta 12, 13 · S16, S14, S17)
+İlgili haftalar: [Hafta 12](../week-12/cen429-week-12.md) · [Hafta 13](../week-13/cen429-week-13.md)
+
 - Standart eşlemesi (ETSI/EMVCo/GSMA/PCI/MASVS); **sızma testi planı** (kapsam, kurallar, yöntem, test kartı) ve
   **sonuçları**; saldırı potansiyeli + CVSS.
 
 ### 4.14 İkili uygulama koruması · (Hafta 6, 9, 11, 14 · S9, S10, S15)
+İlgili haftalar: [Hafta 6](../week-6/cen429-week-6.md) · [Hafta 9](../week-9/cen429-week-9.md) · [Hafta 11](../week-11/cen429-week-11.md) · [Hafta 14](../week-14/cen429-week-14.md)
+
 - **Tespit** (checksum, anti-debug, emülatör), **savunma** (gizleme, dize/kaynak şifreleme, çağrı gizleme),
   **caydırma** (yanıt/kapanma politikası).
 
 ### 4.15 OWASP ve derleme/dağıtım hattı · (Hafta 5, 14 · S13, S15)
+İlgili haftalar: [Hafta 5](../week-5/cen429-week-5.md) · [Hafta 14](../week-14/cen429-week-14.md)
+
 - OWASP MASVS/ASVS ilkeleri; **SBOM** (CycloneDX) + bağımlılık taraması; gizleme+imzalama içeren derleme hattı.
 
 ## 5. Teslim edilecekler

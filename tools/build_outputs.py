@@ -242,6 +242,12 @@ def sunum_html(oge, dil='tr'):
     hedef = oge.dosya('sunum_html', dil)
     if calistir([marp, str(kaynak), '--config-file', str(SLIDES / 'marp.config.yml'),
                  '--theme-set', str(TEMA / 'cen429.css'), '--html', '-o', str(hedef)]):
+        # Sunum sayfada iframe içinde gösterilir; içindeki bağlantı iframe'de açılmaya çalışır ve çoğu site
+        # (GitHub vb.) buna izin vermez. Deste içi "#" atlamaları dışındaki bağlantılar yeni sekmede açılır.
+        html = hedef.read_text(encoding='utf-8')
+        html = re.sub(r'<a\s(?![^>]*\btarget=)([^>]*\bhref="(?!#)[^"]*"[^>]*)>',
+                      r'<a target="_blank" rel="noopener" \1>', html)
+        hedef.write_text(html, encoding='utf-8')
         # İngilizce deste yoksa Türkçesi İngilizce sitede de görünsün.
         if dil == 'tr' and not oge.en_sunum_var():
             oge.en_kopya('sunum_html')

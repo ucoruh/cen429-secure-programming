@@ -48,10 +48,10 @@
 
 | Kriter | Öğrenme çıktısı | Kılavuzda nerede? | Hangi haftalar? |
 | --- | --- | --- | --- |
-| **Güvenlik analizi** | ÖÇ.1 | S2 ürün genel bakışı · S3 mimari ve arayüz tablosu · S4 tehdit ve saldırgan modeli | 1, 2 |
-| **Veri güvenliği** | ÖÇ.2 | S5 varlık listesi (taslak) · S7 veri güvenliği ve güvenlik kabuğu matrisi | 1, 3 |
-| **C/C++ kod sağlamlaştırma ve RASP** | ÖÇ.3 | S9 kod sağlamlaştırma (temel) · S10 RASP ve tepki politikası | 4, 6 |
-| **Proje yönetimi** | ÖÇ.5 | S13 geliştirme ortamı ve süreci, SBOM, değişiklik yönetimi · GitHub deposu ve plan | 1, 5 |
+| **Güvenlik analizi** | ÖÇ.1 | S2 ürün genel bakışı · S3 mimari ve arayüz tablosu · S4 tehdit ve saldırgan modeli | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [2](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4) |
+| **Veri güvenliği** | ÖÇ.2 | S5 varlık listesi (taslak) · S7 veri güvenliği ve güvenlik kabuğu matrisi | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [3](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta) |
+| **C/C++ kod sağlamlaştırma ve RASP** | ÖÇ.3 | S9 kod sağlamlaştırma (temel) · S10 RASP ve tepki politikası | [4](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta), [6](../week-6/cen429-week-6.md#12-donem-projesi-bu-hafta) |
+| **Proje yönetimi** | ÖÇ.5 | S13 geliştirme ortamı ve süreci, SBOM, değişiklik yönetimi · GitHub deposu ve plan | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [5](../week-5/cen429-week-5.md#15-donem-projesi-bu-hafta) |
 | **Ara rapor** | ÖÇ.7 | Vize sütunundaki bütün bölümler; belge düzeni, kaynaklar | Tümü |
 
 ### Ara raporda bulunması gereken bölümler
@@ -87,6 +87,8 @@ kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
 ![RAP1 teslim içeriği](assets/h07-02-rap1.svg)
 
 ??? success "1. hafta — Proje planı ve ilk bölümler"
+    Kaynak: [Hafta 1 · Dönem projesi](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta)
+
     - [ ] GitHub deposu, README, proje planı (iş paketleri, takvim, görev dağılımı) onaylatıldı.
     - [ ] S0 kapak ve sürüm geçmişi.
     - [ ] S2 ürün genel bakışı: uygulama ne yapıyor, kim kullanıyor?
@@ -95,27 +97,37 @@ kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
     - [ ] S5 varlık listesi taslağı: konum, oluşma → silinme, C/I/I+.
 
 ??? success "2. hafta — Tehdit tablosu ve sınıflandırma"
+    Kaynak: [Hafta 2 · Dönem projesi](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4)
+
     - [ ] S4 tehdit tablosunda her tehdit bir **CWE** ile eşleşiyor ve **CVSS v3.1** vektörü var.
     - [ ] Saldırı ağacı bir aracın girdi biçiminde ya da çizim olarak ekli.
     - [ ] Tehditler arayüz tablosundaki satırlardan çıkarıldı; her varlık en az bir tehditte geçiyor.
 
 ??? success "3. hafta — Veri güvenliği"
+    Kaynak: [Hafta 3 · Dönem projesi](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta)
+
     - [ ] S7 aktarımda, beklemede ve kullanımda veri için hangi algoritma, hangi anahtar, hangi bağlama?
     - [ ] En hassas varlık için **güvenlik kabuğu matrisi** (aşama × kabuk).
     - [ ] Rastgele değerler CSPRNG'den; AEAD etiketi açık metin kullanılmadan önce doğrulanıyor.
     - [ ] TLS kullanılıyorsa doğrulama + ana makine adı denetimi (+ varsa sabitleme) gösterilebiliyor.
 
 ??? success "4. hafta — C/C++ sağlamlaştırma"
+    Kaynak: [Hafta 4 · Dönem projesi](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta)
+
     - [ ] S9: derleyici koruma tablosu (`checksec` / `dumpbin`); kapalı kalan koruma varsa gerekçesi.
     - [ ] CERT kurallarına göre tarama; en az beş bulgu düzeltildi ve kural kimliğiyle belgelendi.
     - [ ] Testler ASan + UBSan ile çalıştı; en az bir fuzz hedefi ve sonucu.
     - [ ] Sürümde günlük yok, hassas dizge `strings` çıktısında yok.
 
 ??? success "5. hafta — Bağımlılıklar ve girdi doğrulama"
+    Kaynak: [Hafta 5 · Dönem projesi](../week-5/cen429-week-5.md#15-donem-projesi-bu-hafta)
+
     - [ ] S13: CycloneDX biçiminde SBOM ve zafiyet taraması sonucu.
     - [ ] Girdi doğrulama tablosu: her giriş noktası için biçim, uzunluk sınırı, doğrulayan fonksiyon.
 
 ??? success "6. hafta — RASP"
+    Kaynak: [Hafta 6 · Dönem projesi](../week-6/cen429-week-6.md#12-donem-projesi-bu-hafta)
+
     - [ ] S10: her kritik işlem için hangi RASP denetimleri, ne zaman, nerede çalışıyor?
     - [ ] Tepki politikası: hangi sır silinir, fail-closed mı, decoy mu, olay nereye bildirilir?
     - [ ] En az bir denetimin atlatma denemesi ve sonucu (S16 planına da yazılır).
@@ -178,7 +190,7 @@ olmalısınız. Gösterimde takımın her üyesine soru sorulabilir.
 ## 5. Gösterimden sonra
 
 - Aldığınız geri bildirimleri bir **bulgu listesi** olarak yazın (bulgu, önem, düzeltme planı, hedef tarih). Bu liste,
-  12. haftada göreceğimiz değerlendirme sürecinin küçük bir modelidir.
+  [12. haftada](../week-12/cen429-week-12.md) göreceğimiz değerlendirme sürecinin küçük bir modelidir.
 - Final kontrolünde beklenen bölümler (S6 kimlik doğrulama ve bağlama, S8 kripto ve anahtar yaşam döngüsü, S11 güvenli
   iletişim, S14 varsayımlar ve devredilen gereksinimler, S15 derleme ve dağıtım hattı, S16 test sonuçları, S17 uyum
   matrisi) 9–14. haftaların konularıyla doldurulacak.

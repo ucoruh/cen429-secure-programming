@@ -5,7 +5,7 @@
 | **Tarih** | 27.11.2026 |
 | **Öğrenme çıktıları** | ÖÇ.2, 3 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Hafta 3'ten simetrik şifreleme ve anahtar yönetimi; Hafta 9'dan gizleme kuralları (K-01…K-12); C'de dizi ve XOR işlemi |
+| **Ön bilgi** | [Hafta 3](../week-3/cen429-week-3.md)'ten simetrik şifreleme ve anahtar yönetimi; [Hafta 9](../week-9/cen429-week-9.md)'dan gizleme kuralları (K-01…K-12); C'de dizi ve XOR işlemi |
 | **Uygulamalar** | [`code/week-11`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-11) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
@@ -92,209 +92,114 @@
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm, bu haftayı hangi temeller üzerine kurduğumuzu gösterir: önce önceki haftalardan getirdiğimiz kavramları
+kısaca hatırlatır, sonra yalnız bu haftaya özgü yeni terimleri (S-box'tan GF(2)'ye) sıfırdan tanımlar; gövdedeki
+bölümler bu terimleri artık bildiğinizi varsayarak ilerler.
 
-### Şifreleme nedir?
-
-- **Şifreleme (encryption):** okunur veriyi (**açık metin**), bir **anahtar** kullanarak okunamaz hale (**şifreli metin**) getirmek.
-- **Çözme (decryption):** anahtarla geri açmak.
+### Önceki haftalardan gelenler
 
 ![Şifreleme: iki yönlü, anahtara bağlı dönüşüm](assets/h11-10-sifreleme-temel.svg)
 
-### Anahtar nedir?
+- **Şifreleme, anahtar ve simetrik/asimetrik şifreleme** — açık metni bir anahtarla okunamaz şifreli metne
+  dönüştürmek şifrelemedir; simetrik şifreleme (ör. AES) aynı anahtarı kullanıp hızlı çalışır, asimetrik (ör. RSA)
+  açık/gizli anahtar çiftiyle yavaş ama anahtar dağıtımı kolay çalışır; güvenlik anahtarın gizliliğine dayanır,
+  algoritmanın gizliliğine değil (Kerckhoffs ilkesi)
+  ([Hafta 3, §2](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur)). Bu hafta bu ilkeyi beyaz
+  kutu ortamına taşıyoruz: burada algoritma da anahtar da saldırganın elindedir (§1).
+- **AES ve bit güvenlik düzeyi** — AES en yaygın simetrik şifreleme algoritmasıdır; 16 baytlık bloklar üzerinde,
+  turlar hâlinde bayt değiştirme, satır/sütun karıştırma ve anahtar ekleme adımlarıyla çalışır (ayrıntı bu hafta
+  sınavda sorulmayacak, whitebox için gereken fikir düzeyi yeterlidir). "n-bit güvenlik", bir anahtarı kırmak için
+  kabaca 2ⁿ deneme gerektiği anlamına gelir; AES-128, 128 bit güvenlik sağlar
+  ([Hafta 10, §1](../week-10/cen429-week-10.md#1-kriptografinin-haritasi-ve-algoritma-secimi)). Bu hafta ağırlıklı
+  AES üstünden gideceğiz; bit-güvenlik ölçüsünü ise anahtarın kendisi için değil, whitebox tablolarının
+  **boyut/hız maliyetini** tahmin etmek için yeniden kullanacağız (§3).
+- **XOR** — bitler farklıysa 1, aynıysa 0 veren işlem; `a XOR b XOR b == a` olduğu için geri alınabilirdir
+  ([Hafta 5, §12](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi); [9. haftada](../week-9/cen429-week-9.md) dize gizlemede
+  de kullanılmıştı). AES'te "anahtar ekleme" adımı bir XOR'dur (`durum XOR anahtar`); bu hafta hem Chow AES'in
+  kurulumunda (§3) hem de "yalnız XOR ile karıştırmanın neden işe yaramadığını" gösteren sayısal örnekte (§2)
+  merkezî rol oynar.
+- **Entropi** — bir veri bloğunun ne kadar rastgele/öngörülemez göründüğünün ölçüsü; yüksek entropili bloklar
+  genelde şifreli/rastgele veri, düşük entropili bloklar sıradan metin/veridir
+  ([Hafta 2, §6](../week-2/cen429-week-2.md#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir); 9.
+  haftada ikili dosya analizinde de görmüştük). Bu hafta **entropi taraması**, sabit bir diziye gömülmüş bir
+  anahtarı saniyeler içinde bulan statik analiz tekniği olarak karşımıza çıkıyor (§1, §2).
+- **Hata ayıklayıcı (debugger)** — bir programı adım adım çalıştırmanıza, o an bellekte olan her değeri ve işlemci
+  kayıtlarını okumanıza izin veren araç (ör. `gdb`, `x64dbg`)
+  ([Hafta 6, §4](../week-6/cen429-week-6.md#4-hata-ayiklayici-debugger-algilama)). Bu hafta beyaz kutu saldırganın
+  "çalışmayı gözlemleme" ve "yalnız bir turu çalıştırma" yeteneğinin somut karşılığı tam olarak budur (§1).
+- **Statik ve dinamik analiz** — statik analiz programı çalıştırmadan, dinamik analiz çalıştırarak yapılan
+  incelemedir ([Hafta 4, §9](../week-4/cen429-week-4.md#9-statik-analiz-kodu-calistirmadan-hata-aramak)). Bu hafta
+  bu ayrımı saldırıları sınıflamak için kullanıyoruz: entropi taraması ve BGE **statiktir** (§2, §4), DCA ve DFA
+  **dinamiktir** (§3, §4).
+- **Enstrümantasyon ve emülatör** — enstrümantasyon bir programı çalışırken belirli noktalarda neyin işlendiğini
+  otomatik kaydedecek şekilde donatmaktır; emülatör gerçek işlemciyi yazılımla taklit eden bir araçtır
+  ([Hafta 6, §5](../week-6/cen429-week-6.md#5-ortam-algilama-sanal-makine-ve-emulator)–[§6](../week-6/cen429-week-6.md#6-kanca-ve-enstrumantasyon-algilama-ld_preload-frida)).
+  Bu hafta bir saldırganın whitebox rutinini binlerce kez otomatik çalıştırıp her arama tablosu erişimini
+  kaydetmesinin — yani **DCA**'nın ön koşulunun — aracı bu ikisidir (§1, §3–§4).
+- **HSM ve SoftHSM** — HSM, anahtarları saklayıp işleyen, anahtarın hiç dışarı çıkmadığı özel donanımdır; SoftHSM
+  aynı arayüzü (PKCS#11) yazılımla taklit eder ama donanım koruması sağlamaz
+  ([Hafta 10, §11](../week-10/cen429-week-10.md#11-anahtari-donanimda-saklamak-hsm-pkcs11-ve-softhsm)). Bu hafta
+  bunları whitebox'ın **sunucu tarafı** karşılığı olarak, anahtar koruma seçeneklerinin en güçlü ucunda yeniden ele
+  alıyoruz (§5).
 
-- **Anahtar (key):** şifrelemeyi yöneten gizli sayı (bir bayt dizisi).
-- Aynı algoritma + farklı anahtar = farklı sonuç.
-- **Güvenlik anahtarın gizliliğine bağlıdır**, algoritmanın gizliliğine değil (Kerckhoffs ilkesi).
+### Ön bilgi: S-box ve arama tablosu
 
-### Simetrik ve asimetrik
+Bir **arama tablosu (lookup table)**, her girdiye karşılık önceden hesaplanmış bir çıktı veren bir dizidir:
+`T[x]` biçiminde hesap yapmak yerine doğrudan tablodan okursunuz, bu da işlemi hızlandırır. AES'in "bayt değiştirme"
+adımında kullanılan **S-box (substitution box)** böyle bir tablodur: her baytı sabit bir kurala göre başka bir
+baytla değiştirir — ör. `S-box[0x53] = 0xED` gibi 256 girişli bir eşleme. Bu tabloyu aklınızda tutun; whitebox'ın
+kalbi budur.
 
-- **Simetrik:** şifreleme ve çözme **aynı** anahtar (ör. **AES**). Hızlı.
-- **Asimetrik:** açık ve gizli anahtar çifti (ör. RSA). Yavaş ama anahtar dağıtımı kolay.
+### Ön bilgi: yan kanal ve DPA
 
-Bu hafta ağırlıklı **AES** (simetrik) üstünden gideceğiz.
+Bir **yan kanal (side channel)**, algoritmanın matematiğini değil, çalışırken sızdırdığı fiziksel/dolaylı bilgiyi
+(harcanan zaman, güç tüketimi, elektromanyetik yayım) kullanan bir saldırı türüdür; akıllı kartlara karşı klasik
+bir tekniktir. **DPA (Differential Power Analysis)** bunun somut bir örneğidir: bir cihazın güç tüketimi
+ölçümlerine istatistik uygulayarak, cihazın içine hiç bakmadan anahtarı çıkarır. Bu fikri aklınızda tutun;
+whitebox'ın en güçlü saldırısı (DCA, §4) DPA'nın yazılım hâlidir.
 
-### AES nedir? (yüksekten)
+### Ön bilgi: bijeksiyon ve permütasyon
 
-- **AES:** en yaygın simetrik şifreleme algoritması.
-- 16 baytlık **bloklar** üzerinde çalışır.
-- Veriyi **turlar** (rounds) halinde karıştırır; her turda: bayt değiştirme, satır/sütun karıştırma, anahtar ekleme.
+Bir **bijeksiyon (birebir-örten eşleme)**, her girdiyi tam bir çıktıya eşleyen ve tersi alınabilen bir dönüşümdür;
+ör. `f(x) = x ^ 0x5A` bir bijeksiyondur (tersi yine kendisidir). Bir **permütasyon**, sonlu bir kümenin elemanlarını
+yeniden sıralayan özel bir bijeksiyondur: her eleman tam olarak bir kez, başka bir elemanın yerine geçer — ör.
+`{0,1,2,3}` kümesi üzerinde `0→2, 1→0, 2→3, 3→1` bir permütasyondur, hiçbir değer atlanmamış ya da tekrar
+edilmemiştir. S-box, sabit boyutlu bayt değerleri kümesinin bir permütasyonudur; §3'te kuracağımız oyuncak S-box da
+aynı fikrin küçük (4 elemanlı) bir örneğidir. Whitebox, tabloları tam olarak bu tür gizli bijeksiyonlarla sarar.
 
-Ayrıntı bu hafta sınavda sorulmayacak; **fikir** yeter.
+### Ön bilgi: TEE ve güvenli öğe (SE)
 
-### S-box nedir?
+**TEE (Trusted Execution Environment)**, telefon işlemcisinin işletim sisteminden yalıtılmış güvenli bölgesidir;
+**güvenli öğe (SE)** ise anahtarları saklayan, ayrı ve kurcalamaya dirençli bir donanım çipidir. İkisi de anahtar
+için en güçlü korumadır; whitebox kriptografi tam olarak bunların **bulunmadığı** durumlar için geliştirilmiştir
+(§5).
 
-- **S-box (substitution box):** bir baytı başka bir baytla değiştiren **sabit bir tablo**.
-- AES'in "bayt değiştirme" adımı budur.
-- Örnek: `S-box[0x53] = 0xED` gibi 256 girişli bir eşleme.
+### Ön bilgi: yürütme izi ve korelasyon
 
-Bu tabloyu aklınızda tutun; whitebox'ın kalbi budur.
+Bir **yürütme izi (execution trace)**, bir çalıştırma boyunca kaydedilen ara değerler dizisidir — hangi bellek
+adresi okundu, hangi değer yazıldı, hangi komut çalıştı. Kara kutuda saldırgan yalnız son çıktıyı görürken, beyaz
+kutuda isterse tüm izi kaydedebilir. **Korelasyon**, iki değişkenin (ör. gözlenen bir değer ile bir anahtar
+hipoteziyle hesaplanan tahmini değer) birlikte, tutarlı biçimde değişip değişmediğinin ölçüsüdür; yüksek korelasyon
+iki değişkenin birbirine bağlı olduğunu gösterir. DPA ve onun yazılım hâli DCA (§1, §3–§4), doğru anahtar
+hipotezini yanlışlarından ayırmak için tam olarak bu ikisini birlikte kullanır: çok sayıda yürütme izi toplanır,
+sonra her hipotez için gözlenenle tahmin edilen arasındaki korelasyon ölçülür.
 
-### Arama tablosu (lookup table)
+### Ön bilgi: GF(2) ve matris
 
-- **Arama tablosu:** "girdiye karşılık çıktı" veren dizi.
-- `T[x]` = x için önceden hesaplanmış sonuç.
-- Hesap yapmak yerine **tablodan okursunuz**; hızlıdır.
+Bir **sonlu cisim (finite field)**, üzerinde toplama ve çarpma tanımlı, sınırlı sayıda elemanı olan bir sayı
+sistemidir. **GF(2)**, yalnız `{0, 1}` elemanlarından oluşan en küçük sonlu cisimdir; bu cisimde toplama tam olarak
+**XOR**, çarpma ise AND işlemidir. Bir **matris**, sayıların (burada yalnız 0 ve 1'lerin) dikdörtgen bir düzende
+dizilişidir; girdinin bitlerini böyle bir matrisle "çarpmak" aslında seçili bitleri XOR'lamaktır (**doğrusal
+dönüşüm**). Bir matris **tekil değilse (non-singular)**, yani tersi varsa, uyguladığı dönüşüm geri alınabilirdir —
+bilgi kaybolmaz, yalnız karışır; bir matrisin kaç bağımsız satır/sütuna sahip olduğunun ölçüsüne **rank** denir,
+"tam rank" bir matrisin tekil olmadığı anlamına gelir. Whitebox'ın §3'te (Adım 4) göreceğimiz karıştırıcı
+matrisleri her zaman tekil olmayan seçilir; aksi hâlde şifre çözülemez hale gelirdi. Ayrıntılı sonlu cisim
+aritmetiği sınav kapsamı dışıdır; GF(2)'yi yalnız "XOR'larla çalışan, geri alınabilir bir doğrusal işlem dünyası"
+olarak hatırlamanız yeterlidir.
 
-Whitebox, hesabı tablolara gömer.
-
-### XOR hatırlatma
-
-- **XOR** (`^`): bitler farklıysa 1, aynıysa 0.
-- `a ^ b ^ b == a` → geri alınabilir.
-- AES'te "anahtar ekleme" adımı bir XOR'dur: `durum ^ anahtar`.
-
-### Bit güvenlik düzeyi
-
-- "**n-bit güvenlik**" = kırmak için kabaca 2ⁿ deneme gerekir.
-- AES-128 → 128 bit; bugün kırılamaz sayılır.
-- Yüksek sayı = daha güçlü.
-
-### Yan kanal (side channel) nedir?
-
-- **Yan kanal:** algoritmanın matematiğini değil, çalışırken **sızdırdığı fiziksel/dolaylı bilgiyi** kullanan saldırı.
-- Örnek: harcanan **zaman**, **güç** tüketimi, elektromanyetik yayım.
-
-Kartlarda klasiktir; birazdan whitebox'ta yazılım karşılığını göreceğiz.
-
-### DPA nedir?
-
-- **DPA (Differential Power Analysis):** bir cihazın **güç tüketimi** ölçümlerine istatistik uygulayıp anahtarı çıkaran yan kanal saldırısı.
-- Cihazın içine bakmaz; dışarıdan ölçer.
-
-Bu fikri aklınızda tutun; whitebox'ın en güçlü saldırısı (DCA) bunun yazılım hâlidir.
-
-### Bijeksiyon (birebir-örten eşleme)
-
-- **Bijeksiyon:** her girdiyi tam bir çıktıya eşleyen, **tersi alınabilen** dönüşüm.
-- Örnek: `f(x) = x ^ 0x5A` bir bijeksiyondur (tersi yine kendisi).
-
-Whitebox, tabloları **gizli bijeksiyonlarla** sarar.
-
-### TEE ve güvenli öğe (SE)
-
-- **TEE (Trusted Execution Environment):** telefon işlemcisinin, işletim sisteminden **yalıtılmış** güvenli bölgesi.
-- **Güvenli öğe (SE):** anahtarları saklayan ayrı, kurcalamaya dirençli **donanım** çip.
-
-Anahtar için en güçlü koruma bunlardır; whitebox bunların **olmadığı** durum içindir.
-
-### HSM ve SoftHSM
-
-- **HSM (Hardware Security Module):** sunucuda anahtarları saklayan/işleten özel donanım; anahtar **dışarı çıkmaz**.
-- **SoftHSM:** HSM'in **yazılım benzetimi**; aynı arayüz (PKCS#11), ama donanım koruması yok (geliştirme/test için).
-
-### Hata ayıklayıcı (debugger) nedir?
-
-- **Hata ayıklayıcı (debugger):** bir programı **adım adım** çalıştırmanıza, o an bellekte olan her değeri okumanıza,
-  işlemcinin kayıtlarını (register) görmenize izin veren araç (ör. `gdb`, `x64dbg`, IDA/Ghidra'nın dinamik modu).
-- Programcı için bunu **hata bulmak** için kullanırız; beyaz kutu saldırgan için bu, programın **her adımını
-  gözlemleme** aracına dönüşür.
-
-Beyaz kutu saldırganın "çalışmayı gözlemleme" ve "yalnız bir turu çalıştırma" yeteneği, pratikte tam olarak bir hata
-ayıklayıcıyla oturup kesme noktası (breakpoint) koymaktır.
-
-### Statik analiz ve dinamik analiz
-
-Bir programı incelemenin iki temel yolu vardır ve whitebox saldırılarının hangi "kutuda" durduğunu anlamak için
-bu ikisini ayırt etmek gerekir:
-
-- **Statik analiz:** programı **çalıştırmadan**, yalnız ikili dosyayı (ya da kaynak kodu) inceleyerek yapılan analiz
-  (ör. `strings` komutu, bir ayrıştırıcı/disassembler ile komutları okumak).
-- **Dinamik analiz:** programı **gerçekten çalıştırarak**, bir hata ayıklayıcı ya da aşağıda tanımlayacağımız
-  enstrümantasyonla izleyerek yapılan analiz.
-
-Bölüm 2'deki **entropi taraması** statiktir (program hiç çalıştırılmaz); Bölüm 4'teki **DCA** dinamiktir (program
-defalarca çalıştırılıp izlenir). İkisi de beyaz kutu saldırganın elindedir; kara kutu saldırgan hiçbirini yapamaz.
-
-### Enstrümantasyon (instrumentation) ve emülatör nedir?
-
-- **Enstrümantasyon:** bir programı, çalışırken **belirli noktalarda neyin işlendiğini otomatik olarak kaydedecek**
-  şekilde değiştirmek ya da özel bir araç altında çalıştırmak (ör. her bellek okuma/yazmasını loglayan bir katman
-  eklemek).
-- **Emülatör:** gerçek işlemciyi **yazılımla taklit eden** bir araç; her komutu tek tek yorumladığı için, çalışan
-  programın **her adımını** durdurmadan kaydedebilir.
-
-Saldırgan whitebox rutinini enstrümante ederse ya da bir emülatör altında çalıştırırsa, her arama tablosu
-erişiminde **okunan/yazılan değeri** otomatik olarak toplayabilir. Bunu elle, tek tek hata ayıklayıcı adımlamaya
-gerek kalmadan **binlerce kez** tekrarlayabilir — birazdan göreceğimiz DCA saldırısının ön koşulu budur.
-
-### Yürütme izi (execution trace) nedir?
-
-- **Yürütme izi (trace):** bir çalıştırma boyunca kaydedilen ara değerler **dizisi** — hangi bellek adresi okundu,
-  hangi değer yazıldı, hangi komut çalıştı.
-- Kara kutuda saldırgan yalnız **son çıktıyı** (şifreli metni) görür; beyaz kutuda saldırgan, isterse **tüm izi**
-  (algoritmanın her ara adımını) görebilir ve saklayabilir.
-
-Bölüm 3 ve 4'te, "iz" kelimesini hep bu anlamda kullanacağız: whitebox tablolarından okunan ara değerlerin, farklı
-girdiler için tekrar tekrar kaydedilmiş listesi.
-
-### Korelasyon (istatistiksel ilişki) nedir?
-
-- **Korelasyon:** iki değişkenin (ör. "gözlenen bir değer" ile "bir anahtar hipoteziyle hesaplanan tahmini değer")
-  **birlikte, tutarlı biçimde değişip değişmediğinin** ölçüsü.
-- Yüksek korelasyon → iki değişken **birbirine bağlı görünüyor**. Düşük/yok korelasyon → aralarında **tesadüften
-  öte bir ilişki yok** görünüyor.
-
-Yan kanal saldırıları (DPA, ve yazılım hâli DCA), **doğru** anahtar hipotezini yanlışlarından ayırmak için tam olarak
-bunu kullanır: doğru hipotez için tahmin edilen değerler, gerçekten gözlenenlerle **korele** çıkar; yanlış hipotezler
-için çıkmaz.
-
-### Permütasyon nedir?
-
-- **Permütasyon:** sonlu bir kümenin elemanlarını **yeniden sıralayan**, birebir-örten (bijeksiyon) özel bir eşleme
-  türü — her eleman tam olarak bir kez, başka bir elemanın yerine geçer.
-- Örnek: `{0,1,2,3}` kümesi üzerinde `0→2, 1→0, 2→3, 3→1` bir permütasyondur; her değer tam bir kez kullanılmıştır,
-  hiçbiri atlanmamış ya da tekrar edilmemiştir.
-
-S-box, sabit boyutlu bir kümenin (bayt değerlerinin) permütasyonudur; birazdan kuracağımız **oyuncak S-box** da
-aynı fikrin küçük (4 elemanlı) bir örneğidir.
-
-### Entropi (rastgelelik ölçüsü) nedir?
-
-- **Entropi:** bir veri bloğunun ne kadar **rastgele/öngörülemez** göründüğünün ölçüsü.
-- Sıradan bir metin (ör. bir Türkçe cümle) **düşük** entropili görünür: bazı harfler (a, e, n) çok sık, bazıları
-  (j, w) çok nadir geçer; bu düzensiz dağılım tahmin edilebilirliği artırır.
-- Rastgele üretilmiş bir kriptografik anahtar **yüksek** entropili görünür: bütün bayt değerleri (0x00–0xFF) hemen
-  hemen eşit sıklıkta görünür, hiçbir örüntü yoktur.
-- **Entropi taraması:** ikili dosyayı baştan sona gezip, **çevresine göre anormal yüksek entropili** blokları
-  arayan statik analiz tekniği; gömülü anahtarları, sıkıştırılmış ya da şifrelenmiş verileri bulmakta kullanılır
-  (Shamir–van Someren'in gözlemi).
-
-Bölüm 2'de göreceğimiz gibi, "anahtarı sabit bir diziye gömme" hatasını **saniyeler içinde** açığa çıkaran araç
-tam olarak budur; bu haftanın `02-gomulu-anahtar` demosundaki `--tara` seçeneği de aynı fikri uygular.
-
-### Sonlu cisim GF(2) — çok kısaca
-
-- **Sonlu cisim (finite field):** üzerinde toplama ve çarpma tanımlı, **sınırlı sayıda** elemanı olan bir sayı
-  sistemi (normal sayılardan farklı olarak "taşma" yaşamaz; belirli bir kümenin dışına çıkmaz).
-- **GF(2):** yalnız `{0, 1}` elemanlarından oluşan **en küçük** sonlu cisim; bu cisimde toplama tam olarak **XOR**,
-  çarpma ise **AND** işlemidir.
-- AES'in iç matematiği baytlar üzerinde GF(2⁸) denen daha büyük bir sonlu cisimde çalışır; whitebox'ın birazdan
-  göreceğimiz "karıştırıcı matrisleri" ise GF(2) üzerinde, yani **saf XOR tabanlı doğrusal cebir** ile kurulur.
-
-Ayrıntılı sonlu cisim aritmetiği bu haftanın kapsamı dışıdır ve sınavda sorulmayacaktır; yalnız "GF(2) = XOR'larla
-çalışan, geri alınabilir bir doğrusal işlem dünyası" fikrini taşımanız yeterlidir.
-
-### Matris, doğrusal dönüşüm, tekil olmayan (non-singular) matris
-
-- **Matris:** sayıların (burada yalnız 0 ve 1'lerin) dikdörtgen bir düzende dizilişi.
-- **Doğrusal dönüşüm:** girdinin bitlerini sabit bir matrisle "çarparak" (aslında seçili bitleri XOR'layarak) çıktı
-  bitleri üreten dönüşüm.
-- **Tekil olmayan (non-singular) matris:** **tersi olan** matris — yani uyguladığı dönüşüm **geri alınabilir**dir,
-  bilgi kaybetmez. Whitebox'ın karıştırıcı matrisleri her zaman tekil olmayan seçilir; aksi halde şifre çözülemez
-  hale gelirdi (bilgi geri döndürülemezdi).
-- **Rank:** bir matrisin kaç **bağımsız** satır/sütuna sahip olduğunun ölçüsü; "tam rank" bir matrisin tekil
-  olmadığı, yani tersinin var olduğu anlamına gelir.
-
-Bölüm 3, Adım 4'te bu fikri **küçük, elle çözülebilir bir GF(2) matris örneğiyle** somutlaştıracağız.
-
-### Şimdi hazırız
-
-Bildiğimiz terimler:
-
-şifreleme/çözme · anahtar · simetrik/asimetrik · AES · S-box · arama tablosu · XOR · bit güvenlik · yan kanal · DPA · bijeksiyon · TEE/SE · HSM/SoftHSM · hata ayıklayıcı · statik/dinamik analiz · enstrümantasyon/emülatör · yürütme izi · korelasyon · permütasyon · entropi · GF(2) · tekil olmayan matris/rank
+### Kavramlar birbirine nasıl bağlanır?
 
 Bu terimler hafta boyunca **tek başlarına** değil, birbirine **bağlı zincirler** halinde kullanılacak. Üç ana
 zinciri şimdiden görelim, çünkü bölümler ilerledikçe bu zincirlerin **her halkasına** döneceğiz:
@@ -347,7 +252,7 @@ inceler. Kaynağın diliyle: WBC saldırgan modeli Chow ve arkadaşları tarafı
 !!! quote "Kaynağın gereksinimi"
     Teknik kılavuz bu bölümü bir uyum maddesiyle açar: *"Kriptografik anahtarlar, gizlilik ve bütünlüğü korumak için
     güvence altına alınmalı ve/veya gizlenmelidir."* Ama hemen ekler: bu saldırgan yeteneklerine karşı uygulamayı ve
-    varlıkları koruyan şey **yalnız WBC değil, kod sağlamlaştırma (9. hafta) ve RASP (6. hafta) yöntemleridir.** Yani
+    varlıkları koruyan şey **yalnız WBC değil, kod sağlamlaştırma (9. hafta) ve RASP ([6. hafta](../week-6/cen429-week-6.md)) yöntemleridir.** Yani
     WBC daha ilk cümlede **tek başına bir çözüm olarak sunulmaz.**
 
 ### Somut örnek: bir beyaz kutu saldırganın bir oturumu (adım adım anlatı)
@@ -440,17 +345,18 @@ izlerine uygular; fiziksel bir ölçüm düzeneğine hiç ihtiyaç duymaz.
 
 Bu ayrım havadan gelmiyor; 3., 9. ve 10. haftalarda kurduğumuz kuralların **doğal devamıdır**:
 
-- **3. hafta — Kerckhoffs ilkesi.** "Güvenlik anahtarın gizliliğine dayanmalı, algoritmanın gizliliğine değil"
-  ilkesini öğrenmiştik. Beyaz kutu modeli bunu bir adım öteye taşır: burada **algoritma da anahtar da** saldırganın
-  elindedir; geriye yalnız "anahtarı çıkarmayı ne kadar pahalılaştırabilirim" sorusu kalır.
-- **9. hafta — gizleme kuralları (K-01…K-08).** O hafta kontrol akışını (K-04), sabitleri (K-02, K-07) ve
-  boole değerlerini (K-08) gizleyen kuralları görmüştük; hepsi **kod sağlamlaştırma**ydı, yani beyaz kutu
-  saldırganın **statik analizini** zorlaştırıyordu. WBC bunun kriptografiye özel, çok daha güçlü bir türüdür: yalnız
-  kodu değil, **anahtarı** kodun matematiğine gömer.
-- **10. hafta — algoritmalar ve anahtar yönetimi.** Standart AES/RSA/HMAC'ın güvenlik kanıtları **kara kutu**
-  modelinde yazılır. Bu hafta öğreneceğimiz şey, aynı AES algoritmasının **beyaz kutu** bir ortamda çalıştırılması
-  gerektiğinde, o kara kutu güvenlik kanıtının **artık geçerli olmadığıdır** — WBC, bu boşluğu (kısmen ve pahalı bir
-  şekilde) kapatmaya çalışır.
+- **[3. hafta — Kerckhoffs ilkesi](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur).**
+  "Güvenlik anahtarın gizliliğine dayanmalı, algoritmanın gizliliğine değil" ilkesini öğrenmiştik. Beyaz kutu modeli
+  bunu bir adım öteye taşır: burada **algoritma da anahtar da** saldırganın elindedir; geriye yalnız "anahtarı
+  çıkarmayı ne kadar pahalılaştırabilirim" sorusu kalır.
+- **[9. hafta — gizleme kuralları (K-01…K-08)](../week-9/cen429-week-9.md#5-kontrol-akisi-kurallari-ileri).** O
+  hafta kontrol akışını (K-04), sabitleri (K-02, K-07) ve boole değerlerini (K-08) gizleyen kuralları görmüştük;
+  hepsi **kod sağlamlaştırma**ydı, yani beyaz kutu saldırganın **statik analizini** zorlaştırıyordu. WBC bunun
+  kriptografiye özel, çok daha güçlü bir türüdür: yalnız kodu değil, **anahtarı** kodun matematiğine gömer.
+- **[10. hafta — algoritmalar ve anahtar yönetimi](../week-10/cen429-week-10.md#1-kriptografinin-haritasi-ve-algoritma-secimi).**
+  Standart AES/RSA/HMAC'ın güvenlik kanıtları **kara kutu** modelinde yazılır. Bu hafta öğreneceğimiz şey, aynı AES
+  algoritmasının **beyaz kutu** bir ortamda çalıştırılması gerektiğinde, o kara kutu güvenlik kanıtının **artık
+  geçerli olmadığıdır** — WBC, bu boşluğu (kısmen ve pahalı bir şekilde) kapatmaya çalışır.
 
 !!! tip "Bir cümlede özet"
     Kara kutu = "içeri bakamazsın". Gri kutu = "içeri bakamazsın ama dışarıdan sızıntı dinleyebilirsin". Beyaz kutu
@@ -490,7 +396,7 @@ gerekir. Her biri bir güvenli programlama kuralına dönüşür:
   uint8_t k[16] = {0x00, 0x01, ...}` gibi, ya da bir yapılandırma dosyasında düz metin) ve bunu üretime **taşımayı
   unutur** ya da "zaten geçici" diye önemsemez. **Sonuç:** Bu, Bölüm 2'nin ilk kuralıyla (düz gömülü anahtar)
   **birebir aynı** zafiyettir — yalnız "test amaçlı" etiketi, gerçek riskini **azaltmaz**. Bir değerlendirici
-  (12. hafta) test/hata ayıklama yollarını da üretim koduyla **aynı ciddiyette** tarar.
+  ([12. hafta](../week-12/cen429-week-12.md)) test/hata ayıklama yollarını da üretim koduyla **aynı ciddiyette** tarar.
 
 !!! danger "Bu haftanın ana kuralı, baştan"
     Yayımlanmış hiçbir saf yazılım whitebox tasarımı bugüne kadar kırılmadan kalmamıştır. O yüzden WBC'yi **"anahtarı
@@ -543,9 +449,10 @@ k = kodlanmis_k XOR m = 0x66 XOR 0x5A
 ```
 
 **Sonuç.** Maskeleme, anahtarın ikilideki **bit örüntüsünü** değiştirir ama korumayı değiştirmez: program maskeyi
-çözebiliyorsa, aynı hesabı okuyabilen saldırgan da çözer. Bu, tam olarak 9. haftanın **K-07 (statik dizge/sabit
-kodlama)** kuralının sınırıyla aynı derstir — kodlama tek başına, **çözme anahtarı da yanında duruyorsa**, hiçbir
-şey kazandırmaz.
+çözebiliyorsa, aynı hesabı okuyabilen saldırgan da çözer. Bu, tam olarak
+[9. haftanın **K-07 (statik dizge/sabit kodlama)**](../week-9/cen429-week-9.md#kural-k-07-statik-dizgelerin-kodlanmasi)
+kuralının sınırıyla aynı derstir — kodlama tek başına, **çözme anahtarı da yanında duruyorsa**, hiçbir şey
+kazandırmaz.
 
 !!! danger "Çıkarılan kural"
     Bir gizli değeri, **çözülmesi için gereken bütün bilgiyle birlikte** aynı ikilide taşımak, gizleme değildir —
@@ -569,8 +476,9 @@ somutlaştıralım:
 Bunun WBC'ye özgü olmasının nedeni şudur: normal bir programda (anahtar apaçık bir değişkende) saldırgan zaten
 anahtarı **çıkarıp** istediği yerde kullanabilir; kod taşımaya gerek yoktur. WBC'de ise anahtar **çıkarılamıyor
 olabilir** (dış kodlamalar güçlüyse), ama tablolar yine de **çalışan bir makine** oluşturur — ve çalışan bir
-makineyi kopyalamak, onun matematiğini çözmekten çoğu zaman **çok daha kolaydır**. 9. haftanın **K-06 (çağrı ve
-bağımlılık gizleme)** kuralı burada kısmen yardımcı olur (rutini bulmayı zorlaştırır) ama **tek başına yetmez** —
+makineyi kopyalamak, onun matematiğini çözmekten çoğu zaman **çok daha kolaydır**.
+[9. haftanın **K-06 (çağrı ve bağımlılık gizleme)**](../week-9/cen429-week-9.md#kural-k-06-fonksiyon-cagrilarinin-ve-dis-kutuphane-bagimliliginin-gizlenmesi)
+kuralı burada kısmen yardımcı olur (rutini bulmayı zorlaştırır) ama **tek başına yetmez** —
 rutin bulunduktan sonra kopyalanması hâlâ mümkündür. Asıl çözüm Bölüm 5'te göreceğimiz **cihaz/sürüm bağlamadır**:
 tablolar yalnız belirli bir bağlamda (ör. cihaz kimliğiyle karıştırılmış girdi/çıktıyla) anlamlı sonuç verir.
 
@@ -1039,8 +947,9 @@ Kavramı bir kural olarak bitirelim: WBC'nin maliyeti yüksektir. Chow AES'in ti
 
 !!! note "Sınav için ölçü hissi"
     Bir tabloların boyutunu tahmin edebilmelisiniz: ör. 288 tablo × 1 KB ≈ 294.912 bayt. Amaç kesin sayı değil,
-    **mertebeyi** ve bunun neden yalnız seçili, küçük ve kritik işlemler için kullanıldığını görmektir. Bu, 9.
-    haftadaki sanallaştırma kuralının (K-10) maliyet mantığının aynısıdır.
+    **mertebeyi** ve bunun neden yalnız seçili, küçük ve kritik işlemler için kullanıldığını görmektir. Bu,
+    [9. haftadaki sanallaştırma kuralının (K-10)](../week-9/cen429-week-9.md#kural-k-10-sanallastirma-tabanli-gizleme-kavram)
+    maliyet mantığının aynısıdır.
 
 #### Alıştırma: kendi mertebe tahmininizi yapın
 
@@ -1171,15 +1080,16 @@ kaldırmaz** — çünkü kodlamalar sabit kalsa da AES'in kendi matematiği (S-
 
     **Kural:** WBC'yi **süresi olan bir savunma** gibi tasarlayın: anahtar yenileme takvimiyle, izleme/telemetriyle
     (saldırı belirtisi var mı?) ve "bir gün bu tasarım da düşecek, o zaman ne yaparız?" planıyla birlikte. Bu,
-    10. haftanın kripto-periyodu fikrinin whitebox'a uygulanmış hâlidir.
+    [10. haftanın](../week-10/cen429-week-10.md) kripto-periyodu fikrinin whitebox'a uygulanmış hâlidir.
 
 ### WhibOx: bağımsız bir sınav neden önemli?
 
 WhibOx, akademisyenlerin ve şirketlerin kendi WB-AES tasarımlarını **herkese açık** olarak gönderip, dünyanın
 her yerinden araştırmacının bunları kırmaya çalıştığı bir yarışma dizisidir. Bunun önemi şudur: bir şirketin **kendi
 iç ekibiyle** test ettiği bir tasarımın "kırılmadı" demesiyle, **bağımsız, çok sayıda ve motivasyonlu** saldırganın
-önüne konmuş bir tasarımın "kırılmadı" demesi **aynı güven düzeyinde değildir**. WhibOx ikincisini sağlar. 12.
-haftada göreceğimiz "bağımsız değerlendirme" fikrinin whitebox'taki karşılığı budur.
+önüne konmuş bir tasarımın "kırılmadı" demesi **aynı güven düzeyinde değildir**. WhibOx ikincisini sağlar.
+[12. haftada](../week-12/cen429-week-12.md#1-neden-bagimsiz-degerlendirme) göreceğimiz "bağımsız değerlendirme"
+fikrinin whitebox'taki karşılığı budur.
 
 ### Sıkça karıştırılan üç kısaltma: BGE, DCA, DFA
 
@@ -1205,7 +1115,7 @@ artırır**:
 - **Statik rastgelelik ve doğrusal olmayan maskeleme** (ör. Biryukov–Udovenko 2018): DCA'nın dayandığı doğrusal
   korelasyonu bozmaya çalışır.
 - **Dış kodlama (F, G):** DCA/DFA/BGE'yi zorlaştırır — ama gördüğümüz sınırla: standart AES uyumluluğunu kırar.
-- **Katmanlı savunma:** WBC'nin çevresine 9. haftanın gizleme kuralları, 6. haftanın RASP'ı (anti-debug, kurcalama
+- **Katmanlı savunma:** WBC'nin çevresine [9. haftanın](../week-9/cen429-week-9.md) gizleme kuralları, [6. haftanın](../week-6/cen429-week-6.md) RASP'ı (anti-debug, kurcalama
   ve bütünlük denetimi) konur; amaç, saldırganın izleri toplamasını (DCA) ve hata enjekte etmesini (DFA)
   zorlaştırmaktır.
 - **Anahtar yenileme ve kısa ömür:** Anahtar sık yenilenirse, bir anahtarı çıkarmanın değeri düşer (10. hafta,
@@ -1362,7 +1272,7 @@ donanım köküne bile uygulanmasıdır.
 
 ### SoftHSM ve PKCS#11 (sunucu tarafı köprü, 10. haftadan)
 
-Onuncu haftada anahtar saklama için PKCS#11 ve SoftHSM'den söz etmiştik. Sunucu tarafında anahtar, standart bir PKCS#11
+[Onuncu haftada](../week-10/cen429-week-10.md) anahtar saklama için PKCS#11 ve SoftHSM'den söz etmiştik. Sunucu tarafında anahtar, standart bir PKCS#11
 arayüzü ardında tutulur; uygulama anahtarın değerini hiç görmez, yalnız "şunu imzala/şifrele" der. SoftHSM, gerçek
 bir HSM'in yazılım benzetimidir; **aynı arayüzü** sunar, bu yüzden geliştirme ve test için kullanılır ama gerçek
 donanım koruması sağlamaz. WBC'nin uçtaki (istemci) problemine karşılık, bu sunucudaki anahtar problemine yanıttır.
@@ -1411,7 +1321,7 @@ Bu haftanın kurallarını tek bir hikâyede toplayalım (sentetik, savunma ama�
    çıkar.
 3. **Koruma (katmanlı):**
    - Anahtarı mümkünse **TEE/SE**'ye taşı; değilse **WBC tablolarına** göm (düz bayt dizisi kalmasın).
-   - WBC'yi 9. haftanın **gizleme** kurallarıyla ve 6. haftanın **RASP**'ıyla (anti-debug, kurcalama tespiti) sar;
+   - WBC'yi [9. haftanın](../week-9/cen429-week-9.md) **gizleme** kurallarıyla ve [6. haftanın](../week-6/cen429-week-6.md) **RASP**'ıyla (anti-debug, kurcalama tespiti) sar;
      böylece DCA izleri toplamak ve DFA hata enjekte etmek zorlaşır.
    - **Cihaz/sürüm bağla:** tablolar başka cihaza kopyalanınca (code lifting) işe yaramasın.
    - **Anahtarı sık yenile** (kısa kripto-periyot) ve **sunucuda risk denetimi** uygula.
@@ -1483,7 +1393,7 @@ saldırılarla** ilerliyor (entropi taraması/cebirsel çözüm vs. doğrudan ko
 tek bir teknik katman (yalnız WBC, yalnız cihaz bağlama, yalnız sunucu denetimi) **hiçbirinde tek başına
 yetmiyor**. Bu, dersin baştan beri işlediği örüntüyü doğrular:
 
-- **3. hafta:** "Gizlilik kriptografinin işidir, algoritmanın gizliliğine güvenmeyin" (Kerckhoffs).
+- **[3. hafta](../week-3/cen429-week-3.md):** "Gizlilik kriptografinin işidir, algoritmanın gizliliğine güvenmeyin" (Kerckhoffs).
 - **9. hafta:** "Tek bir gizleme kuralı yetmez, K-01…K-08'i katmanlayın."
 - **11. hafta (bu hafta):** "Tek bir whitebox tasarımı yetmez; anahtar yenileme + cihaz bağlama + sunucu denetimi +
   (mümkünse) donanım köküyle katmanlayın."
@@ -1525,11 +1435,14 @@ aynı zinciri (varlık değeri → tehdit modeli → seçilen katmanlar → dür
 yazacaksınız.
 
 !!! info "İleriye bakış: bu bilgi 12–13. haftada nasıl kullanılacak?"
-    Bu hafta bir korumanın (WBC) **ne kadar dayandığını** kendi başımıza, kavramsal olarak değerlendirdik. 12.
-    haftada bunu **bağımsız bir sertifikasyon/sızma testi sürecine**, 13. haftada ise **saldırı potansiyeli
-    puanlamasına** (bir saldırının ne kadar "kolay" olduğunu sayısal olarak derecelendiren bir yönteme)
-    bağlayacağız. Bugün Bölüm 4'te elle kurduğumuz "saldırı erişim/beceri" tablosu, o puanlama mantığının
-    **basitleştirilmiş bir öncüsüdür**.
+    Bu hafta bir korumanın (WBC) **ne kadar dayandığını** kendi başımıza, kavramsal olarak değerlendirdik.
+    [12. haftada](../week-12/cen429-week-12.md#1-neden-bagimsiz-degerlendirme) bunu **bağımsız bir
+    sertifikasyon/sızma testi sürecine** ve bulguları derecelendiren
+    [saldırı potansiyeli puanlamasına](../week-12/cen429-week-12.md#5-saldiri-potansiyeli-ve-bulgu-derecelendirme)
+    (bir saldırının ne kadar "kolay" olduğunu sayısal olarak derecelendiren bir yönteme),
+    [13. haftada](../week-13/cen429-week-13.md#4-ortak-kriterler-isoiec-15408) ise aynı puanlamanın Ortak
+    Kriterler'deki standart hâline (zafiyet değerlendirmesi, AVA_VAN) bağlayacağız. Bugün Bölüm 4'te elle
+    kurduğumuz "saldırı erişim/beceri" tablosu, o puanlama mantığının **basitleştirilmiş bir öncüsüdür**.
 
 ## 7. Dönem projesi: bu hafta (S8 — anahtar koruma gerekçesi)
 
@@ -1549,7 +1462,7 @@ adım adım gösterelim (bu metni birebir kopyalamayın; kendi projenizin varlı
 
 !!! example "Örnek proje: 'Kampüs Cüzdan' mobil uygulaması (sentetik)"
     **Varlık:** Kullanıcının bakiye bilgisini yerel veritabanında saklayan `DEK` (veri şifreleme anahtarı),
-    AES-256-GCM ile kullanılıyor (3. hafta).
+    AES-256-GCM ile kullanılıyor ([3. hafta](../week-3/cen429-week-3.md)).
 
     **1. Anahtar nerede duruyor, nasıl korunuyor?**
     DEK, cihazda TEE desteği varsa TEE destekli anahtar deposunda tutuluyor. TEE'nin desteklenmediği eski
@@ -1712,7 +1625,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
     `kodlanmis_k = 0x3C XOR 0x5A = 0x66`. Saldırgan ikilide hem `0x66`'yı hem maske `0x5A`'yı bulur; `0x66 XOR 0x5A = 0x3C` hesaplayarak anahtarı geri çıkarır — çünkü çözme bilgisi (maske) anahtarla **aynı yerde** duruyordu.
 
 ??? question "26. Bu haftanın iki senaryosunu (Bölüm 6) ve 3./9. haftaların kurallarını birleştiren ortak cümle nedir?"
-    **"Tek katman = kırılgan katman."** Ne yalnız Kerckhoffs ilkesine uymak (3. hafta), ne yalnız gizleme kuralları (9. hafta, K-01…K-08), ne de yalnız WBC (bu hafta) tek başına yeterlidir; güvenlik her zaman **katmanların toplamından** gelir.
+    **"Tek katman = kırılgan katman."** Ne yalnız Kerckhoffs ilkesine uymak ([3. hafta](../week-3/cen429-week-3.md)), ne yalnız gizleme kuralları ([9. hafta](../week-9/cen429-week-9.md), K-01…K-08), ne de yalnız WBC (bu hafta) tek başına yeterlidir; güvenlik her zaman **katmanların toplamından** gelir.
 
 ??? question "27. Bölüm 3, Adım 3'teki `G⁻¹(T'[x]) = T[x]` doğrulamasında x=1 için işlemi gösterin."
     `T'[1] = 0` → `G⁻¹[0] = 2` → sonuç `2`. Gerçek değer `T[1] = 2`. Eşleşiyor (`2 == 2`); bu, Tablo 2'nin kodlamayı geri alıp doğru ara değeri geri kazandığını doğrular.
@@ -1770,7 +1683,7 @@ terim olursa o bölüme dönüp **bağlamıyla birlikte** okuyun.
 | WhibOx | Whitebox tasarımlarının halka açık, bağımsız sınandığı yarışma dizisi | Bölüm 4 |
 | TEE / SE | İşlemcinin/donanımın yalıtılmış, anahtar saklamaya uygun güvenli bölgesi | Bölüm 0, 5 |
 | HSM / SoftHSM / PKCS#11 | Anahtar saklayan özel donanım / onun yazılım benzetimi / standart arayüz | Bölüm 0, 5 |
-| Kripto-periyot / anahtar yenileme | Bir anahtarın kullanım ömrü; kısaltmak çıkarılan anahtarın değerini düşürür | 10. hafta, Bölüm 4, 5 |
+| Kripto-periyot / anahtar yenileme | Bir anahtarın kullanım ömrü; kısaltmak çıkarılan anahtarın değerini düşürür | [10. hafta](../week-10/cen429-week-10.md), Bölüm 4, 5 |
 | Cihaz/sürüm bağlama | Kodlamaları cihaza özgü hale getirip kod taşımayı işe yaramaz kılma | Bölüm 4, 5, 6 |
 
 !!! tip "Sözlüğü nasıl kullanmalısınız?"
@@ -1799,6 +1712,6 @@ terim olursa o bölüme dönüp **bağlamıyla birlikte** okuyun.
     olacak şekilde yazılmıştır.
 
 !!! info "Bir sonraki hafta"
-    **12. hafta — Sertifikasyon ve sızma testi planlaması.** Bu hafta bir korumanın "ne kadar dayandığını" ölçmenin
+    **[12. hafta](../week-12/cen429-week-12.md) — Sertifikasyon ve sızma testi planlaması.** Bu hafta bir korumanın "ne kadar dayandığını" ölçmenin
     önemini gördük; 12. haftada bunu bağımsız bir değerlendirmenin süreç ve raporlamasına bağlayacağız (saldırı
-    potansiyeli puanlaması, 13. hafta).
+    potansiyeli puanlaması, [13. hafta](../week-13/cen429-week-13.md)).

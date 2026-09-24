@@ -5,7 +5,7 @@
 | **Date** | 18.12.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Obfuscation rules and the measurement framework from Week 9; compiling C; a Linux/WSL terminal (Tigress runs on Linux only) |
+| **Prerequisites** | Obfuscation rules and the measurement framework from [Week 9](../week-9/cen429-week-9.md); compiling C; a Linux/WSL terminal (Tigress runs on Linux only) |
 | **Labs** | [`code/week-14`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-14) — 1 demos; on WSL/Linux `sh tigress-hatti.sh`; if Tigress is not installed the script shows the same flow with a clean derivative |
 
 <!-- materyal:basla -->
@@ -81,104 +81,117 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use for the rest of the
-week. If you don't know a term, read this section first; later sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
+Background knowledge not covered in earlier weeks is explained from scratch under the "Background" headings.
 
-### Why does this section exist?
+### What we bring from earlier weeks
 
-Today terms such as "source-to-source," "transform," "seed," and "build pipeline" will come up.
+- **Source code, compiler, and binary file** — the program text a human writes (source code) being translated by a
+  compiler into machine code and turned into an executable binary
+  ([Week 9, Background](../week-9/cen429-week-9.md#from-source-to-binary-compiler-machine-code-and-assembly)).
+  This week we extend the same chain by passing the source through an obfuscation tool first, then the compiler.
+- **Code obfuscation** — a countermeasure that makes code hard for a human to understand without changing its
+  behaviour, raising the attacker's cost
+  ([Week 9, §1](../week-9/cen429-week-9.md#1-why-is-obfuscation-a-security-rule)). Week 9 applied these rules
+  **by hand**; this week we see the **automatic** (Tigress) counterpart of the same rules.
+- **Week 9's obfuscation rules (K-01–K-12)** — opaque predicates, arithmetic encoding, control-flow flattening,
+  string encoding, variable splitting, virtualisation, and the other hand-applied rules
+  ([Week 9, §5](../week-9/cen429-week-9.md#5-control-flow-rules-advanced),
+  [§6](../week-9/cen429-week-9.md#6-data-obfuscation-rules),
+  [§7](../week-9/cen429-week-9.md#7-whole-program-level-rules)). Section 3 maps each of them onto a Tigress
+  transform.
+- **Control flow graph (CFG)** — a diagram that turns basic blocks into nodes and transitions into edges
+  ([Week 9, Background](../week-9/cen429-week-9.md#function-branch-basic-block-and-the-control-flow-graph-cfg)).
+  Week 9 drew this graph from source code **by hand** and counted nodes/edges; this week we **automate** the same
+  count with `objdump` on a compiled binary (see "Background" below).
+- **Symbolic execution** — automated analysis that solves program paths as mathematical constraints (e.g., KLEE)
+  ([Week 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-the-other-sides-tools-and-the-resilience-rule)).
+  This week we reuse it in section 7 as the tool for measuring resilience.
+- **Diversification** — the idea of producing behaviourally equivalent, structurally different binaries from the
+  same source ([Week 9, §8](../week-9/cen429-week-9.md#8-diversification-one-crack-should-not-open-every-door)).
+  This week we automate it in section 6 with Tigress's `--Seed` flag.
+- **CI (continuous integration) and the build pipeline** — the system that runs build/test steps automatically on
+  every code change, and the ordered sequence of steps from source to product
+  ([Week 4, §13](../week-4/cen429-week-4.md#13-secure-build-pipeline-bringing-it-all-together-in-continuous-integration)).
+  This week, section 9 adds obfuscation and diversification as further steps in that same pipeline.
+- **Build identity and the hash value** — the record of exactly which binary/source/hash triple was
+  evaluated/deployed
+  ([Week 1, §19](../week-1/cen429-week-1.md#unique-version-identity-is-what-was-reviewed-the-same-as-what-shipped)).
+  This week, section 9 adds a **seed** field to that record, because diversification can deliberately produce
+  different binaries under the same version label.
 
-Let's first define all of them **one by one**.
+### This week's concept map
 
-### Reminder · source, compiler, binary
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Source-to-source obfuscation | A tool takes C source as input and produces C source again as output; the output is behaviourally identical but far harder to read, and is compiled with your normal compiler. | [§1](#1-what-is-source-to-source-obfuscation) |
+| Tigress | A source-to-source C obfuscator and diversifier built by Christian Collberg and his team at the University of Arizona, free for academic use. | [§1](#1-what-is-source-to-source-obfuscation) |
+| Transform and `--Functions` | The `--Transform` flag names a single obfuscation operation for Tigress to apply; the `--Functions` flag names which functions it applies to. | [§2](#2-basic-flow-obfuscating-a-program-step-by-step) |
+| Transform families and the week 9 mapping | Tigress transforms such as Flatten, EncodeArithmetic, EncodeLiterals, and Virtualize are the automated counterpart of week 9's K-01–K-12 rules. | [§3](#3-transform-families-and-mapping-onto-week-9s-rules) |
+| Transform pipeline | Applying several transforms in sequence; each transform is applied to the output of the previous one, and the order affects both the result and the cost. | [§4](#4-transform-pipeline-combining-several-transforms) |
+| Step-by-step cost growth | Each transform added to a pipeline increases instruction and branch counts cumulatively; the increase is always computed against the absolute number from the previous step. | [§5](#5-step-by-step-example-reinforcing-a-check-synthetic) |
+| The diversification tool: the seed | Running the same transform pipeline with a different `--Seed` value to produce behaviourally identical but structurally different binaries. | [§6](#6-diversification-different-binaries-from-the-same-source) |
+| Measuring obfuscation and diversification | Each of potency, resilience, stealth, and cost is measured on the obfuscated binary with a concrete tool and command, and reported. | [§7](#7-measuring-obfuscation-and-diversification) |
+| The seven-step classroom flow | Prepare → obfuscate → verify → compare → measure → diversify → report; each step takes the previous one's output as its input. | [§8](#8-in-class-flow-obfuscate-compare-measure-diversify) |
+| The S15 build and deployment pipeline | The pipeline in which obfuscation, diversification, signing, and build-identity logging run automatically and in order inside CI. | [§9](#9-placing-obfuscation-into-the-build-and-deployment-pipeline-s15) |
 
-- **Source code:** the program text a human writes (a C file).
-- **Compiler:** the program that translates source into machine code (gcc/clang).
-- **Binary file:** the resulting executable.
+### Background: Tigress's vocabulary
 
-### Reminder · obfuscation
+None of the terms below were taught in earlier weeks; all of them are needed to understand this week's tool,
+Tigress, and its command line. The definitions are given in an order that builds on itself.
 
-- **Code obfuscation:** making code **hard to understand** without changing its behaviour.
-- Goal: raise the cost for the attacker (week 9).
+#### Source-to-source transforms, pipelines, and seeds
 
-### Source-to-source
-
-- Input: C source. Output: **C source again** — but obfuscated.
-- It is then compiled with your normal compiler.
+This week's subject is **source-to-source** obfuscation: the input is a C source file, and the output is **C
+source again** — just obfuscated; this new source is then compiled with your normal compiler (gcc/clang).
 
 ![Source-to-source obfuscation pipeline](assets/h14-01-kaynaktan-kaynaga-hat.svg)
 
-### What is a transform?
+A single obfuscation operation applied to the source is called a **transform** (for example, flattening control
+flow). A tool usually offers many transforms; you decide which one applies to which function. Applying several
+transforms **in sequence** is called a **transform pipeline**; each transform is applied to the source the
+previous one produced, which is why order matters (section 4).
 
-- **Transform:** a single obfuscation operation applied to the source (e.g., flattening).
-- The tool offers many transforms; you choose which one, and where.
+Most transforms include some amount of randomness (e.g., which constant an opaque predicate is built from). The
+starting number that governs this randomness is called a **seed**: running the same transform pipeline with a
+different seed produces a **different** obfuscated output — this is exactly the tool behind section 6's
+diversification (see "What we bring from earlier weeks" above).
 
-### Transform pipeline
+#### Working with a CLI and unit tests
 
-- **Pipeline:** applying several transforms **in sequence**.
-- Each transform is applied to the output of the previous one.
-- Order matters.
+Tigress runs from a **CLI** (Command-Line Interface), an interface where you run things by typing commands: you
+type a line such as `tigress --Transform=... file.c`, and the tool produces the obfuscated source. A small,
+automated test that checks a function works correctly is called a **unit test**; this week's rule is that unit
+tests written **before** obfuscation must still pass **after** it — behaviour must be preserved (section 2).
 
-### What is a seed?
+#### Two Tigress-specific details: the environment flag and transform dependency
 
-- **Seed:** a starting number that governs randomness.
-- Same transform + different seed = **different** obfuscated output.
-- This is the key to diversification.
+The `--Environment` flag tells Tigress the target platform: processor architecture, operating system, and
+compiler version (in the demo script, `--Environment=x86_64:Linux:Gcc:11` → 64-bit Intel/AMD, Linux, GCC 11). Some
+transforms (especially virtualisation and low-level opaque-predicate kinds) must know **compiler-specific**
+details; source generated with the wrong environment information may **fail to compile** on the target machine,
+or may behave incorrectly.
 
-### Diversification
+Some transforms can only run if **another transform has already run first**; this is called a **transform
+dependency** (example: `AddOpaque` needs `InitOpaque` — we will see this in detail in section 3). This means
+section 4's "order matters" rule is sometimes not just about *improving the result*, but about being a
+*precondition for the transform to work at all*.
 
-- **Diversification:** producing **behaviourally equivalent, structurally different** binaries from the same
-  source.
-- An attack written against one copy does not work on another (week 9, Rule 2).
-
-### What is a CLI (command line)?
-
-- **CLI (Command-Line Interface):** an interface where you run things by typing commands.
-- Tigress is a CLI tool: `tigress --Transform=... dosya.c`.
-
-### Unit test
-
-- **Unit test:** a small test that automatically checks that a function works correctly.
-- The same tests must pass **after** obfuscation (behaviour must be preserved).
-
-### CFG reminder
-
-- **CFG (Control Flow Graph):** a diagram that turns basic blocks into nodes and transitions into edges.
-- We measure the **potency** of obfuscation by the number of nodes/edges (week 9).
-
-![Control flow: before and after flattening](assets/h14-10-cfg-once-sonra.svg)
-
-### Symbolic execution (briefly)
-
-- **Symbolic execution:** automated analysis that solves program paths as mathematical constraints (e.g., KLEE).
-- It is a **deobfuscation** method used against obfuscation; we test resilience with it.
-
-### Now we're ready
-
-Terms:
-
-source-to-source · transform · pipeline · seed · diversification · CLI · unit test · CFG · symbolic execution
-
-Now: what is Tigress, and how does it work?
-
-### What are `objdump` and instruction/branch counting?
+#### Measuring and comparing cost: `objdump`, `diff`, `cmp`
 
 This week's demo script (`tigress-hatti.sh`) uses a tool called `objdump` to measure how much **a single function**
-inside a binary has grown. Let's define it from scratch:
+inside a binary has grown: a command-line tool that opens a binary file (`.exe`, ELF, ...) and dumps the
+**assembly instructions** inside it in human-readable form (part of the GNU Binutils package; comes preinstalled
+on Linux/WSL). `objdump -d file` ("disassemble") converts the binary's **code section** from machine code to
+assembly and prints it; the **instruction count** is how many **lines** of instructions appear in a function's
+assembly output (each line is a single processor instruction such as `mov`, `cmp`, or `add`), and the
+**branch/call count** is how many of those instructions are a **jump** (`jmp`, `je`, `jne`, ... starting with `j`)
+or a **call** — that is, how many points exist where the program decides to "go somewhere else."
 
-- **`objdump`:** a command-line tool that opens a binary file (`.exe`, ELF, ...) and dumps the **assembly
-  instructions** inside it in human-readable form (part of the GNU Binutils package; comes preinstalled on
-  Linux/WSL).
-- **`objdump -d file`:** means "disassemble"; it converts the binary's **code section** from machine code to
-  assembly and prints it.
-- **Instruction count:** how many **lines** of instructions appear in a function's assembly output — each line is
-  a single processor instruction such as `mov`, `cmp`, or `add`.
-- **Branch/call count:** how many of these instructions are a **jump** (`jmp`, `je`, `jne`, ... starting with `j`)
-  or a **call** — that is, how many points exist where the program decides to "go somewhere else."
-
-The measurement function in the demo script does exactly this (`tigress-hatti.sh`, the `olc()` function):
+The measurement function in the demo script (`olc()`) does exactly this:
 
 ```sh title="Measurement logic (from tigress-hatti.sh, abbreviated)"
 objdump -d "$f" | awk '/<erisim_ver>:/{a=1;next} /^$/{a=0} a{n++; if($0 ~ /\t(j|call)/)b++} END{printf "%d komut, %d dal/cagri", n, b}'
@@ -190,11 +203,13 @@ the section that begins with the `<erisim_ver>:` label (the `a=1` flag), and sto
 `call` after a tab, it also increments the `b` counter. Result: **how many instructions belong to that function,
 and how many of them are branches/calls.**
 
-This number is the **automatic and finer-grained** counterpart of the "basic block" and "CFG node/edge" count we
-measured by hand in week 9: week 9 drew the CFG from source code by hand and counted nodes/edges (see week 9,
-section 0, the `denetim` function example: 3 nodes, 2 edges); here we count the same idea **on the compiled
-binary**, automatically, with a tool. Both ask the same question: *"how much work is it to read/analyse this
-function?"*
+This number is the **automatic, finer-grained** counterpart of the basic-block and CFG node/edge count we measured
+by hand in week 9: week 9 drew this graph from source code by hand and counted nodes/edges
+([Week 9, Background](../week-9/cen429-week-9.md#function-branch-basic-block-and-the-control-flow-graph-cfg) —
+the `denetim` function example: 3 nodes, 2 edges); here we count the same idea **on the compiled binary**,
+automatically, with a tool. Both ask the same question: *"how much work is it to read/analyse this function?"*
+
+![Control flow: before and after flattening](assets/h14-10-cfg-once-sonra.svg)
 
 !!! tip "Why isn't instruction count enough on its own — why do we also need the branch count?"
     Adding only **plain, non-branching** instructions to a function (e.g., a few unnecessary `mov`s) increases the
@@ -203,47 +218,13 @@ function?"*
     to trace (recall section 7's cyclomatic complexity formula, `branch_count + 1`). This is why the measurement
     always reports **both together**; giving only the instruction count is an incomplete measurement.
 
-### What are CI (continuous integration) and the build pipeline?
-
-- **CI (Continuous Integration):** a system that runs build, test, and (in this course's context) obfuscation
-  steps **automatically** on every code change (e.g., GitHub Actions, GitLab CI, Jenkins).
-- **Build pipeline:** the **sequence of ordered steps** from source code to a deployable product: build → test →
-  obfuscate (if applicable) → sign → package.
-
-This term comes up again in section 9 ("Placing obfuscation into the build and deployment pipeline"): obfuscation
-should not be a separate, manually run step, but **part of CI** — so that every release is automatically
-obfuscated, tested, and measured; nothing gets forgotten.
-
-### Build identity and the hash value (briefly)
-
-- **Build identity (version identity):** a label that shows **exactly which state** of a piece of software is
-  being evaluated/deployed (e.g., `v3.2.1`).
-- **Hash value:** a fixed-length number computed from a file's content, **unique** to that content (e.g.,
-  SHA-256). If the content changes by even one bit, the hash changes completely.
-
-These two concepts are the building blocks of week 12's **TOE (Target of Evaluation)** identity: week 12 defines a
-product's TOE identity as the quadruple "version + binary + source code + hash value" and stresses that just
-saying "version 3.2.0" is **not enough** — because two binaries compiled with the same version number but a
-different compiler flag can behave **differently**. The obfuscation + diversification we learn this week **makes
-this warning even stronger**: two binaries produced from the same source, with the same version label, but
-different seeds, are **deliberately different** — which is why section 9 will record each release's seed and hash
-value **separately**.
-
-### What is the Tigress environment (`--Environment`)?
-
-- **`--Environment`:** the flag that tells Tigress the target platform; it specifies the processor architecture,
-  operating system, and compiler version (in the demo script: `--Environment=x86_64:Linux:Gcc:11` → 64-bit
-  Intel/AMD architecture, Linux, GCC version 11).
-- Why is it needed? Some transforms (especially virtualisation and low-level opaque-predicate kinds) must know
-  **compiler-specific** details; source generated with the wrong environment information may **fail to compile**
-  on the target machine, or may behave incorrectly.
-
-### What is a transform dependency (briefly)?
-
-- **Transform dependency:** the fact that some transforms can only run if **another transform has already run
-  first** (e.g., `AddOpaque` needing `InitOpaque` — we'll see this in detail in section 3).
-- This means that section 4's "order matters" rule is sometimes not just about *improving the result*, but about
-  being a *precondition for the transform to work at all*.
+There are two different ways to compare the numbers we measure (clean/obfuscated version): **`cmp`** compares two
+files **byte by byte**, and only tells you "same or different" (and, optionally, the location of the first
+difference) — it gives a **single** result for the whole file. **`diff`** compares two text/source files **line by
+line**, and lists in detail which lines were added/removed/changed; for text broken into lines, such as assembly
+output, it is more **informative** than `cmp`. Section 6's flow of "a coarse check with `cmp` first, then a
+targeted verification with `objdump`+`diff`" rests on the idea that these two tools **complement each other**:
+`cmp` is fast but coarse, `diff` is slow but detailed.
 
 ### Quick glossary: this week's new English terms
 
@@ -265,32 +246,9 @@ will meet these terms by these English names in Tigress's official documentation
 | Just-in-time code generation | Just-In-Time (Jit) |
 | Random function/argument | Random functions / arguments |
 
-### What is the difference between `diff` and `cmp`?
-
-We'll use both in section 6; let's clarify the difference here:
-
-- **`cmp`:** compares two files **byte by byte**, and only tells you "same or different" (and, optionally, the
-  location of the first difference). It gives a **single** result for the whole file.
-- **`diff`:** compares two text/source files **line by line**, and lists in detail which lines were
-  added/removed/changed. For text broken into lines, such as assembly output, it is more **informative** than
-  `cmp`.
-
-Section 6's flow of "a coarse check with `cmp` first, then a targeted verification with `objdump`+`diff`" rests on
-the idea that these two tools **complement each other**: `cmp` is fast but coarse, `diff` is slow but detailed.
-
-### Additional terms: reinforcement
-
-Together with the definitions above, our full term list for this section has now grown to:
-
-`objdump` · instruction count · branch/call count · CI (continuous integration) · build pipeline · build identity ·
-hash value · `--Environment` · transform dependency
-
-We will use these terms again in sections 3, 7 (measurement), and 9 (the S15 pipeline); come back here if you get
-stuck.
-
 ## 1. What is source-to-source obfuscation?
 
-In week 9 we applied obfuscation rules **by hand**: opaque predicates, flattening, string encoding, dead branches.
+In [week 9](../week-9/cen429-week-9.md) we applied obfuscation rules **by hand**: opaque predicates, flattening, string encoding, dead branches.
 Manual obfuscation is instructive, but it has three problems: (1) it is **error-prone** — hand-written obfuscation
 code can break behaviour; (2) it is **hard to maintain** — the source becomes unreadable; (3) it **cannot be
 diversified** — you cannot differentiate every copy by hand. The solution is to have a **tool** do the obfuscation.
@@ -465,7 +423,7 @@ itself an **auditable document**.
 !!! success "Rule: make the `--Functions` list part of code review"
     When a new sensitive function is added, your code review process must **explicitly ask** "was this function
     added to the `--Functions` list?" — just like "was a unit test added for this function?" This is the
-    obfuscation-specific counterpart of week 12's rule that "every change requires an impact analysis."
+    obfuscation-specific counterpart of [week 12](../week-12/cen429-week-12.md)'s rule that "every change requires an impact analysis."
 
 ## 2. Basic flow: obfuscating a program step by step
 
@@ -484,7 +442,7 @@ cc -o program gizli.c
 
 The three ideas here are the foundation of all Tigress usage:
 
-1. **`--Transform=...`** says which transform to apply (Flatten = control-flow flattening, week 9 K-04).
+1. **`--Transform=...`** says which transform to apply (Flatten = control-flow flattening, [week 9](../week-9/cen429-week-9.md) K-04).
 2. **`--Functions=...`** says **which functions** the transform applies to — because we apply obfuscation only to
    sensitive functions (the cost rule).
 3. The output is C again; you compile it **with your own compiler**. Obfuscation is a step added to the build
@@ -518,7 +476,7 @@ four steps; let's go through all of them without skipping any.
 **Step 0 — Setup.** The script first moves into the folder it's running from (`cd "$(dirname "$0")"`) and picks a
 compiler (`CC=cc`, falling back to `gcc` if not found). This guarantees that the script will be **self-sufficient**
 no matter which machine it runs on — an example of the "resolve environment differences inside the script" habit
-we have seen since week 1.
+we have seen since [week 1](../week-1/cen429-week-1.md).
 
 **STEP 1 — Build and run the clean version.**
 
@@ -662,10 +620,10 @@ official documentation; there may be small differences between versions):
 Let's not leave the mapping table abstract; let's connect K-01 (week 9, opaque predicate/loop) end to end to
 Tigress.
 
-1. **Week 9's definition:** K-01 is adding a bogus branch with a condition (opaque predicate) whose truth value is
-   **constant** but **looks uncertain** to the attacker — example: the expression `((x*(x+1)) & 1) == 0` is
-   *always* true (because `x*(x+1)` is the product of two consecutive integers, one of which is always even), but
-   seeing this is not instant for a human.
+1. **Week 9's definition (reminder):** K-01 is adding a bogus branch with a condition (opaque predicate) whose
+   truth value is **constant** but **looks uncertain** to the attacker — the `((x*(x+1)) & 1) == 0` example and why
+   it is always true were worked through in
+   [Week 9, §5](../week-9/cen429-week-9.md#rule-k-01-opaque-predicates-and-opaque-loops).
 2. **Its counterpart in Tigress is two steps, not one:** as seen in the demo script's real command, first
    `--Transform=InitOpaque --Functions=main` runs, **then** `--Transform=AddOpaque --Functions=erisim_ver
    --AddOpaqueKinds=call`. `InitOpaque` prepares the **hidden state variables** the opaque predicates will rely on
@@ -689,9 +647,10 @@ Tigress.
 
 Let's repeat the same steps for K-07 (string encoding), since this rule is also used in the demo script:
 
-1. **Week 9's definition:** K-07 means **not leaving** a string like `"CEN429-OK"` as **plain text** in the
-   binary; storing it with a reversible encoding such as XOR and decoding it only at the moment of use (recall the
-   `0x41 ^ 0x5A` example from section 0 — see week 9, section 0).
+1. **Week 9's definition (reminder):** K-07 means **not leaving** a string like `"CEN429-OK"` as **plain text** in
+   the binary; storing it with a reversible encoding such as XOR and decoding it only at the moment of use — the
+   `0x41 ^ 0x5A` example, traced bit by bit, was worked through in
+   [Week 9, §6](../week-9/cen429-week-9.md#rule-k-07-encoding-static-strings).
 2. **Its Tigress counterpart:** `--Transform=EncodeLiterals --Functions=erisim_ver`. This transform encodes the
    constant strings and numeric constants in the target function, and generates code that decodes them at run
    time — the automated counterpart of K-07's "hand-written" form (the "BEFORE/AFTER" example in section 2).
@@ -900,7 +859,7 @@ the sum of several?" harder in the reverse direction.
 
 ## 4. Transform pipeline: combining several transforms
 
-Week 9's most important rule was "not a single technique, but together." In Tigress this means applying transforms
+[Week 9](../week-9/cen429-week-9.md)'s most important rule was "not a single technique, but together." In Tigress this means applying transforms
 **in sequence** (as a pipeline). Every `--Transform` is applied to the previous one's output; order matters.
 
 ![The importance of order in a transform pipeline](assets/h14-04-donusum-hatti.svg)
@@ -924,7 +883,7 @@ K-04 called "reinforced flattening."
 !!! warning "Order and test rule"
     Transform order affects the result, and some orders unnecessarily hurt performance. **Rule:** after every
     transform pipeline, run the program's **unit tests** (was the behaviour preserved?) and measure size/speed.
-    Obfuscation must never change behaviour; if it does, the pipeline is wrong. This connects directly to week 12's
+    Obfuscation must never change behaviour; if it does, the pipeline is wrong. This connects directly to [week 12](../week-12/cen429-week-12.md)'s
     "S16 test results."
 
 ### Let's concretely compare two different orders
@@ -1057,7 +1016,7 @@ Three observations:
    common arithmetic mistake when computing percentages; compute each row with **its own denominator** (the
    previous step's number).
 3. **A large cumulative number like 359%** is the **expected** result of stacking four transforms on top of each
-   other; it should not be confused with the cost of a **single** transform (the real **82%** measured in week 9's
+   other; it should not be confused with the cost of a **single** transform (the real **82%** measured in [week 9](../week-9/cen429-week-9.md)'s
    hand-applied Flatten+AddOpaque example) — here four transforms are counted together.
 
 !!! danger "Common mistake: applying Step 5 (Virtualise) on the logic 'since I'm here, let's add everything'"
@@ -1096,7 +1055,7 @@ attacker to defeat **four different** analysis techniques **at the same time** a
 
 ## 6. Diversification: different binaries from the same source
 
-Recall week 9's "Rule 2 — break automation" principle: if an attacker can crack one copy and distribute the attack
+Recall [week 9](../week-9/cen429-week-9.md)'s "Rule 2 — break automation" principle: if an attacker can crack one copy and distribute the attack
 to every copy, one crack opens everything. **Diversification** means producing **behaviourally identical but
 structurally different** binaries from the same source. Tigress does this with a **seed**: if you run the same
 transforms with different seeds, the opaque predicates, bogus branches, and flattening states vary from copy to
@@ -1117,7 +1076,7 @@ Two kinds of diversification (from week 9):
 - **Diversification in space:** distributing copies produced with different seeds to different users/devices. An
   automated attack written against one copy does not work on another.
 - **Diversification in time:** producing every release with a new seed. An attack found against an old release
-  breaks on the new one. This works together with your week 10 key/version renewal policy.
+  breaks on the new one. This works together with your [week 10](../week-10/cen429-week-10.md) key/version renewal policy.
 
 !!! note "Related transforms"
     In Tigress, `RandomFuns` adds random bogus functions and `RndArgs` adds bogus parameters; combined with a seed,
@@ -1199,7 +1158,7 @@ with `objdump`+`diff`) **completes** the demo-script account at the start of sec
 
 !!! success "Rule: write the claim and the verification command together"
     In your S9/S15, the sentence "I diversified with two seeds" is not enough on its own; also write, as above,
-    **which command you verified it with**. This is another concrete application of week 12's "result, not plan"
+    **which command you verified it with**. This is another concrete application of [week 12](../week-12/cen429-week-12.md)'s "result, not plan"
     rule: a claim must be backed by a runnable command.
 
 ### How many users, how many seeds? Let's think about diversification in space at scale (hypothetical)
@@ -1245,12 +1204,12 @@ sustainable in practice at all.
 !!! note "Is diversification in time enough on its own?"
     No — section 1's "Rule 3" says obfuscation **buys the other layers time**, not that it is a permanent solution.
     In the time it takes for the new release to ship at the end of the month, the attacker can still harm users who
-    are on the February release. This is why diversification in time is used **together with** RASP (week 6,
+    are on the February release. This is why diversification in time is used **together with** RASP ([week 6](../week-6/cen429-week-6.md),
     detecting an intrusion attempt at run time) and server-side checks (e.g., rejecting old/cracked releases).
 
 ## 7. Measuring obfuscation and diversification
 
-In week 9 we learned to measure obfuscation along four dimensions (potency, resilience, stealth, cost). Tigress's
+In [week 9](../week-9/cen429-week-9.md) we learned to measure obfuscation along four dimensions (potency, resilience, stealth, cost). Tigress's
 greatest teaching value is that it lets you make these measurements **concrete**: you obfuscate the same program
 and measure it before/after.
 
@@ -1285,7 +1244,7 @@ this: the study by Banescu and colleagues measures how much Tigress's transforms
 !!! tip "Measurement rule (S9/S15)"
     Defend an obfuscation decision in your project not by calling it "strong," but **with a measurement**: "The
     Flatten + AddOpaque pipeline grew the binary size by X%, slowed the operation down by Y%; in return, the
-    target function's basic block count rose Z-fold." Unmeasured obfuscation is, in the eyes of week 12's
+    target function's basic block count rose Z-fold." Unmeasured obfuscation is, in the eyes of [week 12](../week-12/cen429-week-12.md)'s
     evaluator, a claim, not evidence.
 
 ### Let's complete the size and time measurement: adding to section 5's numbers
@@ -1511,9 +1470,9 @@ with a table:
 | --- | --- | --- |
 | 1. Setup (no tests) | There is **no** verifiable reference for behaviour at all | Step 3 becomes meaningless: "same" compared to what? |
 | 3. Verify behaviour | A broken obfuscation goes unnoticed | The measurement in step 5 shows a **broken** program as "successful" (the "common mistake" above) |
-| 5. Measure | Cost is unknown | Unmeasured claims like "unbreakable" appear in S9/S15 (week 9, section 1) |
+| 5. Measure | Cost is unknown | Unmeasured claims like "unbreakable" appear in S9/S15 ([week 9](../week-9/cen429-week-9.md), section 1) |
 | 6. Diversify | A single binary is distributed to everyone | The 100% impact scenario from section 6's "diversification in space" example plays out |
-| 7. Report | What was done goes undocumented | An evaluator (week 12) cannot verify anything; the claim stays unsupported |
+| 7. Report | What was done goes undocumented | An evaluator ([week 12](../week-12/cen429-week-12.md)) cannot verify anything; the claim stays unsupported |
 
 This table shows that **none** of the seven steps is optional: each row points to **which later step** is made
 meaningless by skipping the one before it — just like in section 4's transform pipeline, here too the idea of a
@@ -1528,13 +1487,13 @@ project's S15 section, after the midterm, documents exactly this:
 
 - **Only sensitive functions** are obfuscated (`--Functions`); the rationale is written down.
 - Every release is diversified with a **seed**; the seed and the build identity are recorded.
-- Signing happens **after** obfuscation; the build identity and hash values (week 12's TOE identity) stay
+- Signing happens **after** obfuscation; the build identity and hash values ([week 12](../week-12/cen429-week-12.md)'s TOE identity) stay
   consistent.
 - The pipeline runs in continuous integration (CI); unit tests + size/speed measurement run automatically on every
   release.
 
 !!! note "Weeks 9, 11, and 14 together"
-    These three weeks form a whole: week 9 gives obfuscation's **rules**, week 11 gives the **whitebox** limit for
+    These three weeks form a whole: [week 9](../week-9/cen429-week-9.md) gives obfuscation's **rules**, [week 11](../week-11/cen429-week-11.md) gives the **whitebox** limit for
     keys, week 14 gives their **automatic and diversified** application. Their shared rule is the same: obfuscation
     does not grant unbreakability, it raises cost; its strength comes from layered defence (RASP, key renewal,
     server-side checks) and from being measured.
@@ -1637,7 +1596,7 @@ changed from v1.1 to v1.2, without having to compare the source code line by lin
       different** (e.g., `cmp` output)? If it wasn't applied, was the **rationale** written down? (section 6)
     - [ ] In the S15 diagram, is the **order** of the obfuscation, signing, and build-identity steps correct?
       (section 9)
-    - [ ] Was a phrase like "unbreakable" **avoided**; are all claims written as measurable statements? (week 9,
+    - [ ] Was a phrase like "unbreakable" **avoided**; are all claims written as measurable statements? ([week 9](../week-9/cen429-week-9.md),
       section 1)
 
 ### A filled-in example: the "RULE" template for S9/S15
@@ -1775,7 +1734,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     `objdump -d` converts a binary into assembly; every line after the target function's label (`<erisim_ver>:`)
     gives the **instruction count**, and the ones among them starting with `j...`/`call` give the **branch/call
     count**. This is the **automatic, finer-grained, compiled-binary** counterpart of the CFG node/edge count drawn
-    by hand from source code in week 9; both measure the question 'how much work is it to analyse this function?'
+    by hand from source code in [week 9](../week-9/cen429-week-9.md); both measure the question 'how much work is it to analyse this function?'
 
 ??? question "14. Why are `InitOpaque` and `AddOpaque` two separate transforms; which one must run first?"
     `InitOpaque` **prepares** the hidden state variables the opaque predicates will rely on (usually inside
@@ -1885,7 +1844,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     different techniques are challenged**.
 
 ??? question "33. Why is a change in the transform pipeline column from v1.1 to v1.2 (adding `RandomFuns`) also recorded in the TOE record table?"
-    Week 12's delta evaluation asks for re-evaluating only the changed part; this column lets an evaluator see
+    [Week 12](../week-12/cen429-week-12.md)'s delta evaluation asks for re-evaluating only the changed part; this column lets an evaluator see
     **what** changed between the two releases without comparing the source code line by line.
 
 ??? question "34. Why isn't it a sufficient fix to sign before obfuscating and then say 'I'll just recompute the signature'?"
@@ -1967,10 +1926,10 @@ missing, the rest loses its meaning too — just like in section 4's transform p
 - The **Tigress** official site and worksheets (`tigress.wtf`) — transforms, syntax, current version (v4), and
   license. Students verify the current version and terms here.
 - C. Collberg, J. Nagra, *Surreptitious Software* — the obfuscation taxonomy and measurement framework (shared with
-  week 9).
+  [week 9](../week-9/cen429-week-9.md)).
 - S. Banescu, C. Collberg et al. — measuring the resilience of Tigress transforms to symbolic execution (KLEE).
 - Obfuscator-LLVM (O-LLVM) — an alternative to compiler-based obfuscation (week 9, K-11).
 
 !!! info "Next week"
-    **Week 15 — Final project presentations (RAP2).** The term's content is complete; the final report is expected
-    to include this week's pipeline (S15) and measurements (S9). Quiz 2 (weeks 9–14) is in week 16.
+    **[Week 15](../week-15/cen429-week-15.md) — Final project presentations (RAP2).** The term's content is complete; the final report is expected
+    to include this week's pipeline (S15) and measurements (S9). Quiz 2 (weeks 9–14) is in [week 16](../week-16/cen429-week-16.md).

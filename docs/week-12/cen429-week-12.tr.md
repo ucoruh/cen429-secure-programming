@@ -5,7 +5,7 @@
 | **Tarih** | 04.12.2026 |
 | **Öğrenme çıktıları** | ÖÇ.5, 6, 7 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | Hafta 2'den CVSS ve zafiyet sınıflandırma; Hafta 9'dan gizleme kurallarının maliyet/kazanç çerçevesi; birim testi kavramı |
+| **Ön bilgi** | [Hafta 2](../week-2/cen429-week-2.md)'den CVSS ve zafiyet sınıflandırma; [Hafta 9](../week-9/cen429-week-9.md)'dan gizleme kurallarının maliyet/kazanç çerçevesi; birim testi kavramı |
 | **Uygulamalar** | [`code/week-12`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-12) — 2 demo; `code` klasöründe bir kez derleyin, sonra `bin/linux` (Windows'ta `bin\windows`) altından çalıştırın |
 
 <!-- materyal:basla -->
@@ -89,136 +89,60 @@
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar.
 
-### Neden bu bölüm?
+### Önceki haftalardan gelenler
 
-Bu hafta "değerlendirme", "sertifikasyon", "sızma testi" gibi terimler geçecek.
+- **Zafiyet (vulnerability)** — bir sistemde kötüye kullanılabilecek zayıf bir nokta, ör. sınır denetimsiz bir
+  tampon ([Hafta 1, §1](../week-1/cen429-week-1.md#1-guvenlik-nedir)). Bu hafta bu kavramı **bulgu** ve **risk**
+  kavramlarından tek tek ayırıyoruz ve üçünü bağımsız bir değerlendirmenin diliyle yeniden kuruyoruz (§0 sonu, §6).
+- **Kerckhoffs ilkesi** — bir sistemin güvenliğinin tasarımın gizli kalmasına değil, yalnızca anahtarın gizli
+  kalmasına dayanması gerektiği ilke
+  ([Hafta 3, §2](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur)). Bu hafta bu ilke,
+  değerlendiricinin "saldırgan sistemi tam bilir" varsayımının ve beyaz kutu çalışma biçiminin gerekçesi olarak
+  geri dönüyor (§0 sonu).
+- **Statik ve dinamik analiz** — kodu çalıştırmadan (statik) ya da çalıştırırken sanitizer'larla (dinamik) hata
+  arama yöntemleri ([Hafta 4, §9](../week-4/cen429-week-4.md#9-statik-analiz-kodu-calistirmadan-hata-aramak);
+  dinamik taraf için [§10](../week-4/cen429-week-4.md#10-sanitizerlar-hatalari-calisma-aninda-yakalamak)). Bu
+  hafta bu ikisini bağımsız değerlendirmenin resmi adlarıyla **SAST** ve **DAST** olarak kullanıp zafiyet
+  değerlendirme sırasına yerleştiriyoruz (§3).
+- **Fuzzing** — bir programa beklenmeyen/rastgele girdiler vererek çökme ya da bozulma arama tekniği
+  ([Hafta 4, §11](../week-4/cen429-week-4.md#11-fuzzinge-giris)). Bu hafta fuzzing'i zafiyet değerlendirme
+  sırasının dördüncü adımı olarak, süresi ve ulaştığı kod kapsamıyla birlikte raporlanması gereken bir yöntem
+  olarak görüyoruz (§3).
+- **CVSS** — bir zafiyetin etkisini standart bir puanla (0–10) ifade eden Ortak Zafiyet Puanlama Sistemi
+  ([Hafta 2, §15](../week-2/cen429-week-2.md#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi)). Bu hafta CVSS'i
+  **saldırı potansiyeliyle** karşılaştırıp ikisinin neden farklı sorulara cevap verdiğini görüyoruz (§5).
 
-Önce hepsini **tek tek** tanımlayalım ki konu havada kalmasın.
+### Bu haftanın kavram haritası
 
-### Güvenlik değerlendirmesi nedir?
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| Güvenlik değerlendirmesi | Bir ürünün güvenlik iddialarının bağımsız bir taraf tarafından kanıta dayalı olarak sınanmasıdır; "ben güvenliyim" demek tek başına yeterli değildir. | [§1](#1-neden-bagimsiz-degerlendirme) |
+| Sertifikasyon | Bir ürünün ya da kurumun belirli bir standarda uyduğunun, yetkili bir sertifikasyon otoritesince belgelenmesidir; değerlendirme başarılıysa verilir. | [§1](#1-neden-bagimsiz-degerlendirme) |
+| Standart | Neyin nasıl yapılacağını (ör. ISO/IEC 27001, Ortak Kriterler, FIPS 140-3, PCI, OWASP MASVS) belirleyen, her biri farklı bir şeyi ölçen ortak kurallar bütünüdür. | [§1](#standartlar-ve-sertifikasyon-manzarasi) |
+| Değerlendirme laboratuvarı | Ürünü sınayan, geliştiriciden bağımsız ve akredite kuruluştur; bütün kaynak koda ve belgeye erişir ama sertifikayı kendisi vermez. | [§2](#surecteki-roller-kim-kimdir) |
+| TOE (Target of Evaluation) | Değerlendirilen ürünün, tek bir sürüm numarasıyla değil sürüm etiketi + ikili dosya + kaynak kod + özet değeriyle benzersiz tanımlanmasıdır. | [§2](#toe-kimligi-neden-surum-320-yetmez) |
+| Beyaz kutu vs kara kutu test | Beyaz kutu testte inceleyen kaynak koda ve belgeye sahiptir, kara kutu testte yalnız dışarıdan (kullanıcı gibi) erişir; değerlendirici genelde beyaz kutu çalışır. | [§0 sonu](#beyaz-kutu-neden-tercih-edilir-kisa-bir-karsilastirma) |
+| Saldırı potansiyeli | Bir saldırıyı gerçekleştirmenin geçen süre, uzmanlık, hedef bilgisi, fırsat ve ekipman gibi beş faktörle ölçülen zorluğudur; düşük puan ciddi bir bulgu demektir. | [§5](#5-saldiri-potansiyeli-ve-bulgu-derecelendirme) |
+| Bulgu (finding) | Değerlendirmede kanıtla tespit edilen bir sorun ya da iyileştirme noktasıdır; her bulgu bir öneri ve bir aksiyonla ilerler. | [§6](#6-bulgu-oneri-aksiyon-ve-etki-analizi) |
+| Güvenlik etki analizi ve delta değerlendirme | Etki analizi, geliştiricinin bir değişikliğin güvenlik etkisini belgelediği rapordur; delta değerlendirme, laboratuvarın yalnız değişen kısmı yeniden incelemesidir. | [§6](#guvenlik-etki-analizi-ve-delta-degerlendirme) |
+| Risk | Bir zafiyetin sömürülme olasılığı ile sömürüldüğünde oluşacak etkinin birlikte değerlendirilmesidir; aynı zafiyet farklı bağlamlarda farklı risk taşıyabilir. | [§6](#kalan-risk-her-sey-kapanmaz-kapanmayan-acikca-yazilir) |
+| Sızma testi (pentest) | Bir saldırganın bakışıyla, izinli ve planlı olarak sistemi aşmayı deneyen, önceki yöntemleri birleştiren en pahalı ve en son adımdır. | [§7](#7-sizma-testi-plani) |
 
-- **Güvenlik değerlendirmesi:** bir ürünün güvenlik iddialarının **bağımsız** biri tarafından **sınanması**.
-- "Ben güvenliyim" demek yetmez; **kanıt** ve **test** gerekir.
+Risk kavramını biraz daha açalım: risk, bir zafiyetin **sömürülme olasılığı** ile sömürüldüğünde oluşacak
+**etkinin** birlikte değerlendirilmesidir — kabaca "ne kadar olası × ne kadar kötü". Her zafiyet aynı riski taşımaz:
+sömürülmesi neredeyse imkânsızsa (örn. kilitli bir odadaki, ağa hiç bağlı olmayan bir sunucu) risk düşüktür; aynı
+zafiyet internete açık bir sunucuda ise risk yüksektir — **zafiyet aynı, risk farklı.** Bütün önlemlerden sonra hâlâ
+kapatılamayan risk **kalan risk (residual risk)** olarak adlandırılır; iyi bir rapor bunu **açıkça** yazar, saklamaz
+(§6'da örneğini göreceğiz). Kısacası: **zafiyet** teknik bir zayıflıktır, **bulgu** bu zayıflığın değerlendirmede
+kanıtla belgelenmesidir, **risk** ise "bu zayıflık gerçekten ne kadar tehlikeli" sorusuna verilen bağlamsal yanıttır.
 
-### Sertifikasyon nedir?
-
-- **Sertifikasyon:** bir ürünün/kurumun belirli bir **standarda** uyduğunun, yetkili bir tarafça **belgelenmesi**.
-- Değerlendirme başarılıysa bir **sertifika** verilir.
-
-### Laboratuvar (değerlendirici) kim?
-
-- **Değerlendirme laboratuvarı:** ürünü sınayan bağımsız, akredite kuruluş.
-- Ürünü geliştiren **değildir** (tarafsızlık için).
-- Bütün kaynak koda ve belgeye erişir.
-
-### Standart nedir?
-
-- **Standart:** neyin nasıl yapılacağını belirleyen ortak kurallar bütünü.
-- Örnek: ISO/IEC 27001, Ortak Kriterler, FIPS 140-3, PCI, OWASP MASVS.
-- Her biri farklı şeyi ölçer (birazdan).
-
-### Zafiyet (vulnerability) nedir?
-
-- **Zafiyet:** bir sistemde kötüye kullanılabilecek **zayıf nokta** (ör. sınır denetimsiz tampon).
-- Zafiyet + kötüye kullanım = güvenlik olayı.
-
-### Bulgu (finding) nedir?
-
-- **Bulgu:** değerlendirmede tespit edilen bir sorun ya da iyileştirme noktası.
-- Her bulgu için: kanıt, ciddiyet, **öneri**.
-
-### Beyaz kutu vs kara kutu test
-
-- **Beyaz kutu test:** test eden **kaynak koda + belgeye** sahip.
-- **Kara kutu test:** test eden yalnız dışarıdan (kullanıcı gibi) erişir.
-- Değerlendirici genelde **beyaz kutu** çalışır (her şeyi görür).
-
-### SAST nedir?
-
-- **SAST (Static Application Security Testing):** kaynağı **çalıştırmadan** analiz eden araç.
-- Tehlikeli kalıpları, olası bellek hatalarını bulur.
-- Hızlı ve geniş; ama **yanlış pozitif** üretir.
-
-*(4. haftada "statik analiz" olarak gördük.)*
-
-### DAST nedir?
-
-- **DAST (Dynamic Application Security Testing):** programı **çalıştırırken** sınar.
-- Bellek erişim hataları, tanımsız davranışları yakalar (ör. sanitizer'lar).
-
-*(4. haftada ASan/UBSan.)*
-
-### Fuzzing nedir?
-
-- **Fuzzing:** programa **beklenmeyen/rastgele girdiler** verip çökme/bozulma aramak.
-- İnsanın aklına gelmeyen girdileri bulur.
-
-*(4. haftada libFuzzer/AFL kavramı.)*
-
-### Sızma testi (pentest) nedir?
-
-- **Sızma testi (penetration test):** bir saldırganın bakışıyla, **izinli** ve **planlı** olarak sistemi aşmayı denemek.
-- Yukarıdaki yöntemleri **birleştirir**; en son ve en pahalı adımdır.
-
-### TOE nedir?
-
-- **TOE (Target of Evaluation):** değerlendirilen **tam olarak ne**?
-- Ortak Kriterler terimidir.
-- Benzersiz tanımlanır: sürüm + ikili + kaynak + özet değeri.
-
-### CVSS nedir?
-
-- **CVSS (Common Vulnerability Scoring System):** bir zafiyetin **etkisini** standart bir puanla (0–10) ifade eder.
-- Yüksek puan = daha ciddi etki.
-- Önceliklendirmede kullanılır.
-
-### Saldırı potansiyeli nedir?
-
-- **Saldırı potansiyeli:** bir saldırıyı gerçekleştirmenin **ne kadar zor** olduğu.
-- Süre, uzmanlık, ekipman gibi faktörlerle puanlanır.
-- Düşük potansiyel (kolay saldırı) = ciddi bulgu.
-
-### Saldırı potansiyeli — beş faktör
-
-Puan beş faktörün toplamından çıkar; her faktör "saldırganın işini ne kadar zorlaştırıyor?" sorusunu ölçer:
-
-| Faktör | Neyi ölçer? |
-| --- | --- |
-| **Geçen zaman** | Saldırı ne kadar sürüyor (saatler mi, aylar mı)? |
-| **Uzmanlık** | Sıradan bir kullanıcı mı, alan uzmanı mı gerekiyor? |
-| **Hedef bilgisi** | Kamuya açık bilgi mi, iç tasarım belgesi mi gerekiyor? |
-| **Fırsat (erişim)** | Cihaza ne kadar süre, ne kadar yakından erişmek gerekiyor? |
-| **Ekipman** | Sıradan bilgisayar mı, özel laboratuvar donanımı mı? |
-
-Toplam puan bir **direnç düzeyine** çevrilir. Dikkat: **düşük** puan, saldırının **kolay** olduğu anlamına gelir; yani
-düşük puan ciddi bir bulgudur. Beş faktörün tam tablosunu ve iki işlenmiş hesabı 5. bölümde göreceğiz.
-
-### Etki analizi ve delta değerlendirme
-
-- **Güvenlik etki analizi:** bir değişikliğin güvenlik etkisini **belgeleyen** rapor.
-- **Delta değerlendirme:** yalnız **değişen kısmın** yeniden değerlendirilmesi.
-
-Bunları 5. bölümde ayrıntılı göreceğiz.
-
-### Risk nedir? (zafiyet, bulgu, risk aynı şey değildir)
-
-Yukarıdaki tanımlarda geçen üç kelime — zafiyet, bulgu, risk — günlük dilde birbirinin yerine kullanılır ama
-değerlendirmede **üçü ayrı şeydir**:
-
-- **Risk:** bir zafiyetin **sömürülme olasılığı** ile sömürüldüğünde oluşacak **etkinin** birlikte
-  değerlendirilmesi — kabaca "ne kadar olası × ne kadar kötü".
-- Her zafiyet aynı riski taşımaz: sömürülmesi neredeyse imkânsızsa (örn. kilitli bir odadaki, ağa hiç bağlı olmayan
-  bir sunucu) risk düşüktür; aynı zafiyet internete açık bir sunucuda ise risk yüksektir — **zafiyet aynı, risk
-  farklı.**
-- **Kalan risk (residual risk):** bütün önlemlerden sonra hâlâ kapatılamayan risktir; iyi bir rapor bunu **açıkça**
-  yazar, saklamaz (bölüm 6 ve 12'de örneğini göreceğiz).
-
-*(Kısaca: **zafiyet** teknik bir zayıflıktır, **bulgu** bu zayıflığın değerlendirmede kanıtla belgelenmesidir, **risk**
-ise "bu zayıflık gerçekten ne kadar tehlikeli" sorusuna verilen bağlamsal yanıttır.)*
+Bu üç terimi ve beyaz kutu/kara kutu ayrımını, aşağıda tek bir örnek ve bir karşılaştırma tablosuyla
+somutlaştırıyoruz; bu iki parça, bu haftanın kavramlarını gövdeye taşımadan önceki son bağlayıcı adımdır.
 
 ### Terimleri birbirinden ayırmak: uçtan uca küçük bir örnek
 
@@ -277,18 +201,13 @@ bu, bölüm 3'teki "hangi yöntem ne bulur" sorusunun ilk somut örneğidir:
     sertifika değildir. Sertifika, bağımsız bir laboratuvarın bu iddiayı **test ederek doğrulamasından** sonra
     verilir. **Kural:** "standarda uygun tasarlandı" ile "standarda göre sertifikalandı" cümlelerini net ayırın.
 
-### Kerckhoffs ilkesi: değerlendiricinin varsayımı nereden geliyor?
-
-İlerideki bölümlerde "değerlendirici, saldırganın sistemi tam bildiğini varsayar" cümlesini sık göreceğiz. Bu
-varsayımın bir adı var:
-
-- **Kerckhoffs ilkesi:** bir sistemin güvenliği, **tasarımın gizli kalmasına değil**, yalnızca **anahtarın** gizli
-  kalmasına dayanmalıdır. Yani "algoritmamızı kimse bilmiyor, o yüzden güvenliyiz" savunması **geçersizdir** —
-  saldırganın kaynak kodu, tasarımı, hatta kılavuzu bildiğini varsayarak tasarlamak gerekir.
-- Değerlendiricinin **beyaz kutu** çalışması (aşağıda) tam olarak bu ilkenin doğal sonucudur: madem gerçek bir
-  saldırgan er ya da geç tasarımı öğrenebilir, değerlendirici de baştan her şeyi görsün.
-
 ### Beyaz kutu neden tercih edilir? Kısa bir karşılaştırma
+
+İlerideki bölümlerde "değerlendirici, saldırganın sistemi tam bildiğini varsayar" cümlesini sık göreceğiz — bu
+varsayımın kaynağı Hafta 3'ten hatırladığımız **Kerckhoffs ilkesi**dir: bir sistemin güvenliği tasarımın gizli
+kalmasına değil, yalnızca anahtarın gizli kalmasına dayanmalıdır; "algoritmamızı kimse bilmiyor, o yüzden
+güvenliyiz" savunması geçersizdir. Değerlendiricinin **beyaz kutu** çalışması (aşağıda) tam olarak bu ilkenin doğal
+sonucudur: madem gerçek bir saldırgan er ya da geç tasarımı öğrenebilir, değerlendirici de baştan her şeyi görsün.
 
 | | Beyaz kutu | Kara kutu |
 | --- | --- | --- |
@@ -316,15 +235,8 @@ kalanının **tek cümlelik özetidir**:
 > otoritesi, belirli bir **TOE** kimliği için sertifikayı verir.
 
 Bu tek paragrafı okuyup her terimi tanıyabiliyorsanız, bölüm 1'den 9'a kadar göreceğimiz her şeyin **iskeletini**
-zaten kurmuşsunuz demektir; geri kalan bölümler bu iskeletin **etini** dolduracak.
-
-### Şimdi hazırız
-
-Bildiğimiz terimler:
-
-değerlendirme · sertifikasyon · laboratuvar · standart · zafiyet · bulgu · risk · beyaz/kara kutu · Kerckhoffs ilkesi · SAST · DAST · fuzzing · sızma testi · TOE · CVSS · saldırı potansiyeli · etki analizi/delta
-
-Şimdi: **neden bağımsız değerlendirme?**
+zaten kurmuşsunuz demektir; geri kalan bölümler bu iskeletin **etini** dolduracak. Şimdi: **neden bağımsız
+değerlendirme?**
 
 ## 1. Neden bağımsız değerlendirme?
 
@@ -338,7 +250,7 @@ demez, "bu ürün şu standardın şu gereksinimlerini, şu saldırgan modeline 
 !!! note "Kısa tarihçe: güvenlik değerlendirmesi ve sertifikasyon"
     - **1985** — ABD **TCSEC** ("Orange Book"): ilk resmi güvenlik değerlendirme ölçütleri.
     - **1991–1993** — Avrupa **ITSEC** ve Kanada **CTCPEC**.
-    - **1999** — bunlar **Ortak Kriterler (ISO/IEC 15408)** altında birleşir; **EAL** güvence ölçeği buradan gelir (13. hafta).
+    - **1999** — bunlar **Ortak Kriterler (ISO/IEC 15408)** altında birleşir; **EAL** güvence ölçeği buradan gelir ([13. hafta](../week-13/cen429-week-13.md)).
     - **2001** — **OWASP** kurulur (uygulama güvenliği testi kültürü); sonra **PTES** ve **NIST SP 800-115** sızma testi metodolojilerini standartlaştırır.
     - **2005 → 2023** — **CVSS** zafiyet ciddiyet puanı (v2 → v3.1 → v4.0).
     - **2010'lar** — mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**.
@@ -358,7 +270,7 @@ değerlendiricinin gözünden, adım adım işliyoruz.
 | **PCI** standartları (DSS, PIN, MPoC, SSF) | Kart verisi işleyen kurum ve yazılımlar | Kart verisinin korunması; yazılımın güvenli geliştirilmesi; test ve tarama gereksinimleri | Bu hafta |
 | **ISO/IEC 27001** | Kurumun bilgi güvenliği yönetim sistemi | Süreçler, risk yönetimi, kontroller (Ek A); ürün değil **kurum** sertifikalanır | Bu hafta |
 | **ETSI** (EN 303 645, TS 103 732 vb.) | Tüketici IoT, telekom, mobil | Cihaz güvenliği temel gereksinimleri, test belirtimleri | 13. hafta |
-| **OWASP ASVS / MASVS** | Web ve mobil uygulamalar | Uygulama güvenliği doğrulama düzeyleri (sertifika değil, test çerçevesi) | 5, 6. haftalar |
+| **OWASP ASVS / MASVS** | Web ve mobil uygulamalar | Uygulama güvenliği doğrulama düzeyleri (sertifika değil, test çerçevesi) | 5, [6. haftalar](../week-6/cen429-week-6.md) |
 
 !!! info "Ürün mü, süreç mi?"
     ISO/IEC 27001 bir **kurumu** (onun bilgi güvenliği yönetim sistemini) sertifikalar; Ortak Kriterler, FIPS 140-3 ve
@@ -381,7 +293,8 @@ aslında dört şeyi **birlikte** söyler; dördünden biri eksikse cümle anlam
     Bir proje sunumunda "kütüphanemiz Ortak Kriterler sertifikalı" demek eksik ve yanıltıcıdır: **hangi sürüm**,
     **hangi güvence düzeyi**, **hangi saldırgan modeline karşı** belirtilmeden bu cümle bir pazarlama iddiasından
     farksızdır. **Kural:** sertifika iddiası her zaman sürüm numarası + standart adı + (varsa) güvence düzeyiyle
-    birlikte yazılır; 1. haftadaki sürüm kimliği disiplini tam olarak bu yüzden gerekir.
+    birlikte yazılır; [Hafta 1, §19](../week-1/cen429-week-1.md#19-guvenli-gelistirme-sureci-plani-yasatmak)'daki
+    sürüm kimliği disiplini tam olarak bu yüzden gerekir.
 
 ### Neden geliştirici kendi ürününü onaylayamaz?
 
@@ -431,7 +344,8 @@ soruyu sorar: "bu sertifikanın **maliyeti**, sağladığı **güven**e değer m
   (kod incelemesi + SAST + temel sızma testi) tercih edilir.
 
 !!! tip "Ödünleşim burada da geçerli"
-    1. haftadaki ödünleşim (trade-off) disiplini sertifikasyon kararında da işler: "tam kapsamlı sertifika" her
+    [Hafta 1, §19](../week-1/cen429-week-1.md#19-guvenli-gelistirme-sureci-plani-yasatmak)'daki ödünleşim
+    (trade-off) disiplini sertifikasyon kararında da işler: "tam kapsamlı sertifika" her
     zaman doğru cevap değildir. Doğru soru "hedef pazarımız, varlığımızın değeri ve saldırgan modelimiz göz önüne
     alındığında, hangi **derinlikte** bir doğrulama yeterli?" sorusudur — bu, bölüm 4'teki "test derinliği"
     tablosunun kararı nasıl etkilediğini gösterir.
@@ -446,7 +360,7 @@ cevaptır:
 - Ortak Kriterler (1999), ABD/Avrupa/Kanada'nın **ayrı ayrı** ölçütlerinin (TCSEC/ITSEC/CTCPEC) birbiriyle
   **karşılaştırılamaz** olmasının doğurduğu bir sorunu çözmek için birleştirildi — uluslararası ticarette aynı
   ürünün her ülkede yeniden değerlendirilmesi gerekmesin diye.
-- CVE/CWE/CVSS (2. haftada gördüğümüz gibi) 1999→2006 arasında, güvenlik açıklarının **isimsiz** ve
+- CVE/CWE/CVSS ([Hafta 2, §15](../week-2/cen429-week-2.md#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi)'te gördüğümüz gibi) 1999→2006 arasında, güvenlik açıklarının **isimsiz** ve
   **karşılaştırılamaz** biçimde raporlanmasının yarattığı kargaşaya cevap olarak doğdu.
 
 !!! success "Kural: her standart bir gerçek soruna cevaptır"
@@ -515,13 +429,13 @@ aşamasının sonunda verilir; ama Süreklilik aşaması ürünün ömrü boyunc
 | --- | --- | --- | --- |
 | **1. Değerlendirme hedefi** | Değerlendirilecek şey **benzersiz** tanımlanır: sürüm numarası yetmez; ikili dosya + kaynak kod + özet değeri ya da sürüm etiketi. Kapsam dışı bileşenler yazılır. Varsayım: **platform güvenilmez** | TOE tanımı | S0, S1 (1. hafta sürüm kimliği) |
 | **2. Belgelerin teslimi** | Kaynak kod, API belgesi, **güvenlik kılavuzu**, hata ayıklama ve sürüm derlemeleri güvenli bir kanalla teslim edilir | Teslim listesi | Deponuz + kılavuz |
-| **3. Gereksinim şablonu** | Standardın numaralı gereksinimleri; her biri için gereksinim metni, **test kapsamı**, geliştiricinin **uyum gerekçesi ve belge referansı**; durum: karşılandı / devredildi / karşılanmadı | Doldurulmuş şablon | S17 uyum matrisi (13. hafta) |
+| **3. Gereksinim şablonu** | Standardın numaralı gereksinimleri; her biri için gereksinim metni, **test kapsamı**, geliştiricinin **uyum gerekçesi ve belge referansı**; durum: karşılandı / devredildi / karşılanmadı | Doldurulmuş şablon | S17 uyum matrisi ([13. hafta](../week-13/cen429-week-13.md)) |
 | **4. Atölye** | Hangi önlemin hangi gereksinimi karşıladığı, eksiklerin nasıl kapatılacağı planlanır | Belge güncelleme planı | — |
-| **5. Kaynak kod incelemesi** | Bütün kaynak, laboratuvarda **beyaz kutu** bağlamında incelenir: tehlikeli kalıplar, yanlış kripto, sızıntı noktaları | Kod inceleme bulguları | 4. hafta CERT, statik analiz |
+| **5. Kaynak kod incelemesi** | Bütün kaynak, laboratuvarda **beyaz kutu** bağlamında incelenir: tehlikeli kalıplar, yanlış kripto, sızıntı noktaları | Kod inceleme bulguları | [H4 §2](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi), [§9](../week-4/cen429-week-4.md#9-statik-analiz-kodu-calistirmadan-hata-aramak) |
 | **6. Zafiyet analizi** | Varlıklar ve anahtar hiyerarşisi çıkarılır; her varlık için "nerede, hangi halde açığa çıkıyor?" sorulur | Bulgu listesi + **sızma testi planı** | S4, S5, S16 |
 | **7. Sızma testi** | Plandaki her test, sekiz başlıklı şablonla yürütülür ve **saldırı potansiyeliyle** derecelendirilir | Test sonuç tabloları | S16 |
 | **8. İşlevsel uygunluk** | Ürünün standart işlevleri (ör. ödeme akışları) şemanın test paketiyle sınanır | Yürütme raporu | Birim testleri |
-| **9. Bulgular ve düzeltmeler** | Her bulgu için laboratuvar öneri, geliştirici aksiyon üretir; bazı bulgular "güvenlik sorunu değil, iyi uygulama önerisi" olarak kapanır | Bulgu–aksiyon tablosu | 7. hafta bulgu listesi |
+| **9. Bulgular ve düzeltmeler** | Her bulgu için laboratuvar öneri, geliştirici aksiyon üretir; bazı bulgular "güvenlik sorunu değil, iyi uygulama önerisi" olarak kapanır | Bulgu–aksiyon tablosu | [7. hafta](../week-7/cen429-week-7.md) bulgu listesi |
 | **10. Güvenlik etki analizi** | Düzeltmeler yeni sürüm doğurunca: değişiklik dizini (yeni özellik / iyileştirme / hata düzeltme), etkilenen dosyalar, güvenlik etkisi | Etki analizi belgesi | S13, 1. hafta değişiklik yönetimi |
 | **11. Delta değerlendirme** | Yalnız değişen kısım yeniden değerlendirilir; laboratuvar işaretlenmiş belgeler, etki analizi, dosya listesi ve yeni TOE kimliğini ister | Delta raporu | — |
 | **12. Ödünleşim ve kalan risk** | Her korumanın maliyeti ölçülür, kararlar gerekçelendirilir, kalan risk açıkça yazılır | Ödünleşim kaydı | 1. hafta |
@@ -539,7 +453,7 @@ Tablodaki "güvenli bir kanalla teslim edilir" ifadesi boşuna değildir: kaynak
 sertifikalanmamış bir ürünün **en hassas** bilgileridir. Bunları e-posta ekiyle ya da genel bir dosya paylaşım
 bağlantısıyla göndermek, değerlendirme başlamadan önce ürünün gizliliğini zedeler.
 
-- **Şifreli aktarım:** dosyalar AEAD (hafta 3) ile şifrelenip, anahtar ayrı bir kanaldan paylaşılır; ya da
+- **Şifreli aktarım:** dosyalar AEAD ([Hafta 3, §2](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur)) ile şifrelenip, anahtar ayrı bir kanaldan paylaşılır; ya da
   uçtan uca şifreli bir kurumsal dosya paylaşım sistemi kullanılır.
 - **Bütünlük kontrolü:** teslim edilen paketin bir özet değeri (hash) ayrıca iletilir; laboratuvar dosyayı
   aldığında hash'i **doğrular** — aktarımda bozulma ya da kurcalama olup olmadığını anlamak için (hafta 3'teki
@@ -550,7 +464,8 @@ bağlantısıyla göndermek, değerlendirme başlamadan önce ürünün gizlili�
 !!! note "Sahada nasıl uygulanır?"
     Ders projenizde bu kadar ağır bir güvenli kanal kurmanız beklenmez; ama depo erişiminizi **yalnız** takım
     üyeleri ve öğretim üyesiyle sınırlı tutmak, gerçek bir sır (API anahtarı, şifre) asla commit etmemek
-    (hafta 1, 10'daki sır yönetimi kuralları) aynı ilkenin ders ölçeğindeki karşılığıdır.
+    ([Hafta 1, §17](../week-1/cen429-week-1.md#17-bellek-yonetimi-ve-guvenlik) ve hafta 10'daki sır yönetimi
+    kuralları) aynı ilkenin ders ölçeğindeki karşılığıdır.
 
 ### Uçtan uca örnek: "GüvenPay Cüzdan SDK v3.2.0" bir laboratuvardan geçiyor
 
@@ -583,7 +498,7 @@ katmanını **satır satır** okur (beyaz kutu). Bir mühendis, anahtar türetme
 eder — bu, zafiyet analizi adımına geçmeden **ilk bulgu adayı** olarak not edilir.
 
 **Adım 6 — Zafiyet analizi.** Laboratuvar, GüvenPay'in varlık listesini (kart numarası, CVV, oturum anahtarı; bu
-varlık kavramını 1. haftada tanımlamıştık) çıkarır ve her biri için "bu varlık nerede, hangi durumda
+varlık kavramını [Hafta 1, §6](../week-1/cen429-week-1.md#6-uygulama-koruma-plani)'da tanımlamıştık) çıkarır ve her biri için "bu varlık nerede, hangi durumda
 (bellekte/diskte/ağda) açığa çıkabilir?" sorusunu sorar. Sonuç: bir **sızma testi planı** (bölüm 7) hazırlanır;
 sabit tuz bulgusu da plana bir test maddesi olarak eklenir.
 
@@ -597,7 +512,7 @@ sınar: ödeme akışı doğru tutarı mı gönderiyor, hatalı PIN girişinde d
 testinden ayrı ama tamamlayıcı bir adımdır — güvenli ama **çalışmayan** bir ürün de sertifikalanamaz.
 
 **Adım 9 — Bulgular ve düzeltmeler.** Laboratuvar raporu: "Bulgu F-03: anahtar türetmede sabit tuz kullanılıyor,
-kanıt: iki cihazdan aynı anahtar. Öneri: cihaz başına rastgele tuz (hafta 3'teki CSPRNG kuralı) + KDF." GüvenPay
+kanıt: iki cihazdan aynı anahtar. Öneri: cihaz başına rastgele tuz ([Hafta 3, §3](../week-3/cen429-week-3.md#3-rastgele-sayilar-kriptografinin-gorunmez-temeli)'teki CSPRNG kuralı) + KDF." GüvenPay
 yanıt verir: "Kabul, v3.2.1'de düzeltilecek." Bazı küçük bulgular (ör. "günlük mesajları İngilizce değil") ise
 "güvenlik sorunu değil, iyi uygulama önerisi" diye kapanır.
 
@@ -611,7 +526,7 @@ iki cihazdan **farklı** anahtar çıktığı doğrulanır → bulgu kapanır.
 
 **Adım 12 — Ödünleşim ve kalan risk.** Rapor kalan bir riski açıkça yazar: "Anahtar rotasyon sıklığı yılda birdir;
 daha sık rotasyon önerilir ama performans maliyeti nedeniyle GüvenPay bu riski **kabul ettiğini** gerekçeleriyle
-belgelemiştir." Bu, 1. haftadaki ödünleşim (trade-off) disiplininin sertifikasyondaki karşılığıdır.
+belgelemiştir." Bu, [Hafta 1, §19](../week-1/cen429-week-1.md#19-guvenli-gelistirme-sureci-plani-yasatmak)'daki ödünleşim (trade-off) disiplininin sertifikasyondaki karşılığıdır.
 
 **Adım 13 — Değişiklik yönetimi.** GüvenPay'in v3.2.1'i yayınlaması, kendi temel çizgisine (baseline) göre
 sınıflandırılır, onaylanır, test edilir, yayınlanır ve laboratuvarca doğrulanır; bu döngü ürünün **hayatı boyunca**
@@ -684,17 +599,17 @@ alıyoruz. Sıralama önemlidir: ucuz ve geniş kapsamlı yöntemlerle başlanı
 
 | Sıra | Yöntem | Ne bulur? | Bu dersteki yeri |
 | --- | --- | --- | --- |
-| 1 | **Kaynak kod incelemesi** (el ile) | Tasarım ve mantık hataları, yanlış kripto kullanımı, sızıntı noktaları | 4. hafta CERT/CWE |
-| 2 | **Statik analiz (SAST)** | Kaynağı çalıştırmadan: bellek hataları, tehlikeli çağrılar, kalıplar | 4. hafta (statik analiz) |
-| 3 | **Dinamik analiz (DAST) + sanitizer'lar** | Çalışırken: bellek erişim hataları, UB, sızıntılar | 4. hafta (ASan/UBSan) |
-| 4 | **Fuzzing** | Beklenmeyen girdilerle çökme/bozulma yolları | 4. hafta (libFuzzer/AFL kavramı) |
+| 1 | **Kaynak kod incelemesi** (el ile) | Tasarım ve mantık hataları, yanlış kripto kullanımı, sızıntı noktaları | [H4 §2](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi) |
+| 2 | **Statik analiz (SAST)** | Kaynağı çalıştırmadan: bellek hataları, tehlikeli çağrılar, kalıplar | [H4 §9](../week-4/cen429-week-4.md#9-statik-analiz-kodu-calistirmadan-hata-aramak) |
+| 3 | **Dinamik analiz (DAST) + sanitizer'lar** | Çalışırken: bellek erişim hataları, UB, sızıntılar | [H4 §10](../week-4/cen429-week-4.md#10-sanitizerlar-hatalari-calisma-aninda-yakalamak) |
+| 4 | **Fuzzing** | Beklenmeyen girdilerle çökme/bozulma yolları | [H4 §11](../week-4/cen429-week-4.md#11-fuzzinge-giris) |
 | 5 | **Sızma testi** | Yukarıdakilerin birleştirilmesiyle, saldırgan bakışıyla aşılabilirlik | Bu hafta bölüm 6 |
 
 !!! tip "Neden bu sıra?"
     Statik analiz ucuzdur ve geniş tarar ama **yanlış pozitif** üretir; el ile inceleme pahalıdır ama bağlamı görür;
     fuzzing çalıştırma gerektirir ama insanın aklına gelmeyen girdileri bulur; sızma testi en pahalısıdır ve en son
     gelir. Önce ucuz yöntemlerle "kolay" bulguları temizlemek, sızma testinin zamanını gerçek, birleşik sorunlara
-    ayırır. Bu, 4. haftadaki "güvenli derleme hattı"nın (CI'da SAST + sanitizer + fuzz) değerlendirmedeki karşılığıdır.
+    ayırır. Bu, [Hafta 4, §13](../week-4/cen429-week-4.md#13-guvenli-derleme-hatti-hepsini-surekli-entegrasyonda-birlestirmek)'teki "güvenli derleme hattı"nın (CI'da SAST + sanitizer + fuzz) değerlendirmedeki karşılığıdır.
 
 ### Kod incelemesi: değerlendiricinin baktığı yerler
 
@@ -702,19 +617,20 @@ Kod incelemesi, otomatik araçların kaçırdığı **mantık** hatalarını bul
 (hepsi önceki haftalardan):
 
 - **Kripto kullanımı:** doğru algoritma/kip/dolgu mu? Anahtar nereden geliyor, nereye yazılıyor, ne zaman siliniyor?
-  (3, 10, 11. haftalar)
-- **Girdi doğrulama ve bellek:** sınır denetimi, tamsayı taşması, biçim dizisi, UAF (4. hafta CERT).
-- **Hata ve sır sızıntısı:** günlükte hassas veri, hata iletilerinde iç durum (4, 6. haftalar).
+  (3, 10, [11. haftalar](../week-11/cen429-week-11.md))
+- **Girdi doğrulama ve bellek:** sınır denetimi, tamsayı taşması, biçim dizisi, UAF ([4. hafta CERT](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi)).
+- **Hata ve sır sızıntısı:** günlükte hassas veri, hata iletilerinde iç durum (4, [6. haftalar](../week-6/cen429-week-6.md)).
 - **Denetim atlama yolları:** bir güvenlik denetiminin tek bir dalla ya da tek bir dönüş değeriyle atlanabilmesi
-  (9. hafta opak boolean, rastgele çıkış).
+  ([Hafta 9, §6](../week-9/cen429-week-9.md#6-veri-gizleme-kurallari) opak boolean,
+  [§5](../week-9/cen429-week-9.md#5-kontrol-akisi-kurallari-ileri) rastgele çıkış).
 
 Her madde neden bu listede? Çünkü hepsi **otomatik araçların gözden kaçırdığı** hatalardır: bir SAST aracı "burada
-`AES_encrypt` çağrılıyor" diyebilir ama "doğru **kip** kullanılmış mı" (bölüm 3'ün haftası olan 3. haftadaki
+`AES_encrypt` çağrılıyor" diyebilir ama "doğru **kip** kullanılmış mı" (bölüm 3'ün haftası olan [3. haftadaki](../week-3/cen429-week-3.md)
 AES-GCM/CBC/CTR ayrımı) sorusuna genellikle cevap veremez — bu, bağlamı anlayan bir **insanın** işidir.
 
 !!! note "Sahada nasıl uygulanır?"
     Gerçek bir değerlendirmede kod incelemesi, SAST ve sanitizer'lar genellikle geliştiricinin **CI/CD hattına**
-    (4. haftadaki güvenli derleme hattı) zaten gömülüdür; laboratuvar önce bu hattın **çıktılarını** (geçmiş
+    ([4. haftadaki güvenli derleme hattı](../week-4/cen429-week-4.md#13-guvenli-derleme-hatti-hepsini-surekli-entegrasyonda-birlestirmek)) zaten gömülüdür; laboratuvar önce bu hattın **çıktılarını** (geçmiş
     çalıştırma kayıtları) ister, sonra kendi bağımsız taramasını yapar. İki sonucun **tutarlı** olması (laboratuvarın
     bulduğu ile geliştiricinin kendi CI'ının bulduğu) ek bir güven işaretidir; tutarsızlık varsa (laboratuvar bir
     şey buluyor ama CI hiç bulmuyor) CI yapılandırması sorgulanır.
@@ -746,9 +662,9 @@ void isle(const char *disaridan_gelen)
 
 | Sıra | Yöntem | Bu hatayı bulur mu? | Neden |
 | --- | --- | --- | --- |
-| 1 | Kod incelemesi | Deneyimli bir inceleyici **evet** bulur | `strcpy` + sabit boyutlu tampon deseni, CERT kurallarını (hafta 4) bilen biri için tanıdıktır |
+| 1 | Kod incelemesi | Deneyimli bir inceleyici **evet** bulur | `strcpy` + sabit boyutlu tampon deseni, CERT kurallarını ([hafta 4](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi)) bilen biri için tanıdıktır |
 | 2 | SAST | Çoğunlukla **evet** | `strcpy`, `sprintf`, `gets` gibi "tehlikeli fonksiyon" kalıpları SAST kural kümelerinde neredeyse her zaman vardır |
-| 3 | DAST + sanitizer | **Evet, kanıtla** | Program 65+ baytlık bir girdiyle **çalıştırılırsa** ASan taşmayı anında yakalar ve tam olarak hangi satırda olduğunu gösterir (hafta 4) |
+| 3 | DAST + sanitizer | **Evet, kanıtla** | Program 65+ baytlık bir girdiyle **çalıştırılırsa** ASan taşmayı anında yakalar ve tam olarak hangi satırda olduğunu gösterir ([hafta 4](../week-4/cen429-week-4.md#10-sanitizerlar-hatalari-calisma-aninda-yakalamak)) |
 | 4 | Fuzzing | **Evet, çoğunlukla en güçlü yöntem burada** | Fuzzing rastgele uzunlukta girdiler dener; bir bellek hatası genellikle **birkaç dakika–saat** içinde tetiklenir — bu tür hatalarda fuzzing SQLi'den çok daha etkilidir |
 | 5 | Sızma testi | **Evet ama en pahalı yol** | Saldırgan uzun bir girdiyle programı çökertip devamında **çalıştırılabilir kod enjeksiyonuna** çevirip çeviremediğini araştırır |
 
@@ -836,7 +752,7 @@ testleri önceliklendireceğinizi belirler.
 | Standart / çerçeve | Ağırlıklı beklediği test | Kısa not |
 | --- | --- | --- |
 | **ISO/IEC 27001** | Süreç ve yönetim denetimi | Ürünü değil, **kurumu** sertifikalar; test yerine kontrol kanıtı |
-| **Ortak Kriterler (ISO/IEC 15408)** | Kaynak inceleme + zafiyet analizi + sızma testi; **saldırı potansiyeli** derecelendirme | Derinlik EAL ile artar (13. hafta) |
+| **Ortak Kriterler (ISO/IEC 15408)** | Kaynak inceleme + zafiyet analizi + sızma testi; **saldırı potansiyeli** derecelendirme | Derinlik EAL ile artar ([13. hafta](../week-13/cen429-week-13.md)) |
 | **FIPS 140-3** | Kriptografik modül testleri (algoritma doğrulama, kendini test) | Yalnız modülü kapsar (13. hafta) |
 | **ETSI EN 303 645** | Temel IoT güvenlik gereksinimlerinin doğrulanması | Hafif, geniş kapsamlı |
 | **EMVCo / PCI** | İşlevsel uygunluk + laboratuvar sızma testi + saldırı potansiyeli | Ödeme alanı; sıkı |
@@ -953,7 +869,7 @@ yarayacak:
 
 Zayıf bir öğrencinin sık sorduğu, ama nadiren yanıtlanan bir soru: "bu standartları kim uyduruyor?" Kısa cevap:
 hiçbiri tek bir kişinin ya da şirketin ürünü değildir; her biri, o alandaki **birçok kurumun ortak çalışmasıyla**
-oluşturulur ve düzenli olarak (genelde birkaç yılda bir) güncellenir — tıpkı 2. haftada gördüğümüz CVSS'in v2'den
+oluşturulur ve düzenli olarak (genelde birkaç yılda bir) güncellenir — tıpkı [2. haftada](../week-2/cen429-week-2.md) gördüğümüz CVSS'in v2'den
 v3.1'e, v4.0'a evrilmesi gibi. Bu güncellemelerin nedeni genelde ya (a) yeni bir saldırı tekniğinin ortaya çıkması
 ya da (b) önceki sürümün belirsiz/tutarsız bulunan bir maddesinin netleştirilmesidir.
 
@@ -968,7 +884,7 @@ ya da (b) önceki sürümün belirsiz/tutarsız bulunan bir maddesinin netleşti
 
 Bir korumanın "var olması" yetmediğini, "ne kadar kolay aşıldığının" ölçülmesi gerektiğini söylemiştik. Ortak
 Kriterler ve ödeme şemaları bu ölçüyü **saldırı potansiyeli** (attack potential) puanlamasıyla yapar. Bir bulgunun
-ciddiyeti, "kırmak için ne gerekti?" sorusuna verilen yanıtla belirlenir. Bu, 9. haftadaki "gizlemenin ölçülmesi"
+ciddiyeti, "kırmak için ne gerekti?" sorusuna verilen yanıtla belirlenir. Bu, [Hafta 9, §9](../week-9/cen429-week-9.md#9-gizlemenin-olculmesi)'daki "gizlemenin ölçülmesi"
 (güç, dayanıklılık) çerçevesinin değerlendirmedeki resmî halidir.
 
 ![Saldırı potansiyelinin beş faktörü ve düzeyleri](assets/h12-03-saldiri-potansiyeli.svg)
@@ -989,7 +905,7 @@ toplam bir dirençlik düzeyine (ör. "temel / orta / yüksek / çok yüksek") e
 | **Ekipman (equipment)** | Hangi araçlar gerekti? | Standart, ücretsiz | Özel, pahalı |
 
 **Yorum:** Toplam puan **yüksekse**, saldırı zor demektir; koruma iyidir. Puan **düşükse** (ör. sıradan kullanıcı, bir
-saatte, ücretsiz araçla), bu ciddi bir bulgudur. Buradaki mantık 9. haftadaki dört ölçütle aynıdır: bir savunmanın
+saatte, ücretsiz araçla), bu ciddi bir bulgudur. Buradaki mantık [Hafta 9, §9](../week-9/cen429-week-9.md#9-gizlemenin-olculmesi)'daki dört ölçütle aynıdır: bir savunmanın
 gücü, onu aşmanın maliyetiyle ölçülür.
 
 ### Her faktör neden orada? Tek tek gerekçesi
@@ -1172,7 +1088,7 @@ etkisi ne kadar büyük?" sorusuna standart bir puan verir. İki ölçü birbiri
 Şimdi **aynı** bulguyu (Senaryo B — güvenli öğeden anahtar çıkarma) hem saldırı potansiyeliyle (yukarıda: **55,
 ÖTESİ**) hem de CVSS ile puanlayalım; ikisinin **neden aynı sayıyı vermediğini** adım adım görelim.
 
-CVSS v3.1 taban puanı, sekiz metrikten hesaplanır (2. haftada tanıtıldı); burada ilgili dördünü kullanıyoruz:
+CVSS v3.1 taban puanı, sekiz metrikten hesaplanır ([Hafta 2, §15](../week-2/cen429-week-2.md#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi)'te tanıtıldı); burada ilgili dördünü kullanıyoruz:
 
 - **Saldırı vektörü (AV):** saldırgan nereden erişiyor? Ağ (N) · Bitişik (A) · Yerel (L) · **Fiziksel (P)**.
   Senaryo B fiziksel erişim istiyor → **AV:P**.
@@ -1272,7 +1188,7 @@ Değerlendirme bir "geçti/kaldı" damgası değil, bir **iyileştirme döngüs�
 3. **Aksiyon:** geliştiricinin ne yaptığı (ya da neden yapmadığı — gerekçeli kabul de bir aksiyondur).
 4. **Kapanış:** bazı bulgular "güvenlik açığı değil, iyi uygulama önerisi" olarak da kapanabilir.
 
-Bu döngü, vize sonrası projenizde beklediğimiz **bulgu–aksiyon listesinin** (7. hafta) kaynağıdır.
+Bu döngü, vize sonrası projenizde beklediğimiz **bulgu–aksiyon listesinin** ([7. hafta](../week-7/cen429-week-7.md)) kaynağıdır.
 
 ### Güvenlik etki analizi ve delta değerlendirme
 
@@ -1373,7 +1289,7 @@ bu, bir bulgunun **baştan sona** nasıl izlendiğinin tam resmidir:
     Dikkat edin: F-03'ün hikâyesi tek bir dosyada değil, **birbirine referans veren** birden fazla belgede
     (sızma testi planı, test kartları, bulgu raporu, etki analizi belgesi, kaynak kod geçmişi) yaşıyor. Bu
     izlenebilirlik zinciri kopmadan tutulursa, bir yıl sonra bile "bu bulgu neden, nasıl kapandı?" sorusu
-    saniyeler içinde yanıtlanabilir — 13. haftadaki izlenebilirlik/uyum matrisi tam olarak bu disiplinin
+    saniyeler içinde yanıtlanabilir — [13. haftadaki](../week-13/cen429-week-13.md) izlenebilirlik/uyum matrisi tam olarak bu disiplinin
     genelleştirilmiş hâlidir.
 
 ### Delta değerlendirmede kapsam kayması (scope creep)
@@ -1484,7 +1400,7 @@ bir soruyu yanıtlar:
 
 ### Doldurulmuş bir test kartı örneği
 
-Aşağıda, sekiz başlıklı şablonun **gerçekten doldurulmuş** hâlini görüyoruz — hafta 3'teki AES-GCM/AEAD demosuyla
+Aşağıda, sekiz başlıklı şablonun **gerçekten doldurulmuş** hâlini görüyoruz — [Hafta 3, §2](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur)'deki AES-GCM/AEAD demosuyla
 doğrudan bağlantılı bir test:
 
 | Alan | İçerik |
@@ -1551,7 +1467,7 @@ sık yaptığı hata, yalnız geçen testleri göstermektir. Aynı GüvenPay'in 
 
 !!! tip "Eleştirel okuma alıştırması"
     Size verilen kısa bir bulgu metnini birlikte okuyun: bu bulgunun saldırı potansiyeli doğru mu derecelendirilmiş?
-    Öneri uygulanabilir mi? "Karşılandı" diyen bir satırın kanıtı var mı? Bu okuma, 13. haftadaki uyum matrisi
+    Öneri uygulanabilir mi? "Karşılandı" diyen bir satırın kanıtı var mı? Bu okuma, [13. haftadaki](../week-13/cen429-week-13.md) uyum matrisi
     okumasının provasıdır.
 
 ### Bir rapor, birden çok okuyucuya hizmet eder
@@ -1743,7 +1659,7 @@ kendi projenize uygulayın:
     Bir düzeltme/güncelleme yeni bir sürüm doğurduğunda gerekir. Tüm ürünü baştan değerlendirmek yerine, laboratuvar yalnız **değişen kısmı** (etki analizi belgesine, değişen dosyalara ve yeni TOE kimliğine dayanarak) yeniden değerlendirir; bu hem hızlı hem de her sürümde tam bir sertifikasyon döngüsü gerektirmeden **sürekliliği** sağlar.
 
 ??? question "23. Bir standardın (ör. Ortak Kriterler) test derinliği neye göre değişir?"
-    Hedeflenen varlığın **değerine** ve varsayılan **saldırgan modeline** göre değişir: bir IoT ampulün temel güvenliği ile bir ödeme kartının anahtar hiyerarşisi aynı titizlikte test edilmez, çünkü kırılmalarının sonucu aynı ölçekte değildir. Bu derinlik farkı Ortak Kriterler'de güvence düzeyleriyle (13. hafta) resmîleştirilir.
+    Hedeflenen varlığın **değerine** ve varsayılan **saldırgan modeline** göre değişir: bir IoT ampulün temel güvenliği ile bir ödeme kartının anahtar hiyerarşisi aynı titizlikte test edilmez, çünkü kırılmalarının sonucu aynı ölçekte değildir. Bu derinlik farkı Ortak Kriterler'de güvence düzeyleriyle ([13. hafta](../week-13/cen429-week-13.md)) resmîleştirilir.
 
 ??? question "24. Bir rapor satırında 'F-03 kapandı' yazmak neden tek başına yetersizdir?"
     Hangi testin bu kapanışı **doğruladığı** (ör. "PT-07 ile doğrulandı") belirtilmezse okuyucu iddiaya güvenemez. Kural: her 'kapandı' kaydı, onu doğrulayan test kimliğine veya kanıta açıkça bağlanmalıdır — aksi hâlde bir sonraki değerlendirici (ya da öğretim üyesi) aynı testi baştan yapmak zorunda kalır.
@@ -1777,7 +1693,7 @@ Bu haftanın en sık karıştırılan beş terim çiftini, sınava girmeden önc
 - **OWASP MASVS** ve **MASTG** — mobil uygulama güvenlik gereksinimleri ve test rehberi.
 - **OWASP WSTG** — web uygulama güvenlik testi rehberi.
 - **PTES** (Penetration Testing Execution Standard) ve **NIST SP 800-115** — sızma testi süreç metodolojileri.
-- **Ortak Kriterler (ISO/IEC 15408)** ve ilgili saldırı potansiyeli kılavuzları — 13. haftaya köprü.
+- **Ortak Kriterler (ISO/IEC 15408)** ve ilgili saldırı potansiyeli kılavuzları — [13. haftaya](../week-13/cen429-week-13.md) köprü.
 - **CVSS** — zafiyet ciddiyet puanlaması; taban puan formülünün ayrıntılı hesaplama adımları CVSS v3.1
   Belirtimi'nde (FIRST.org) yayımlanır.
 

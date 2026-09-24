@@ -34,7 +34,7 @@
     **çalışma rehberidir**.
 
 !!! tip "En verimli çalışma yolu"
-    Her haftanın "Kendini sınama" sorularını cevaplara bakmadan cevaplayın; 10. haftanın OpenSSL adımlarını ve 13. haftanın
+    Her haftanın "Kendini sınama" sorularını cevaplara bakmadan cevaplayın; [10. haftanın](../week-10/cen429-week-10.md) OpenSSL adımlarını ve [13. haftanın](../week-13/cen429-week-13.md)
     uyum matrisi etkinliğini bir kez daha kendiniz yapın. Ezber değil, **neden** sorusu ölçülür.
 
 ---
@@ -43,12 +43,12 @@
 
 | Hafta | Konular (izlence) | Çalışırken odaklanın |
 | --- | --- | --- |
-| **9** Gelişmiş kod gizleme ve çeşitlendirme | Gizleme taksonomisi; opak yüklemler, sahte akış, ölü kod; veri kodlama; sanallaştırma tabanlı gizleme; gizlemenin ölçülmesi (güç, dayanıklılık, maliyet) | Gizlemenin amacı ve maliyeti; ölçme ölçütleri; 4. haftadaki temel teknikler |
-| **10** Sertifikalar ve kriptografik yöntemler | Algoritma ve anahtar uzunluğu seçimi; kipler ve dolgu; HMAC, şifrele-sonra-MAC, yeniden oynatma; RSA-OAEP/PSS, Ed25519/X25519; dijital imza; Diffie–Hellman ve araya girme; PKI, X.509, zincir; CRL/OCSP; PKCS#11/SoftHSM; kuantum sonrası | Güvenlik düzeyi tablosu; doğru kip ve dolgu; imza doğrulamasının tuzakları; zincir doğrulamanın dört sorusu |
-| **11** Whitebox kriptografi | Beyaz kutu ve kara kutu saldırgan modelleri; tablo tabanlı gerçekleştirim; anahtar koruması; bilinen saldırı aileleri ve karşı önlemler; yazılımsal güvenlik modülleri | Saldırgan modelleri; whitebox'ın katmanlı savunmadaki yeri ve sınırları |
-| **12** Sertifikasyon ve sızma testi planlaması | Bağımsız değerlendirmenin 13 adımı; standartların test beklentileri; zafiyet değerlendirmesi; sızma testi planı ve raporlama | Değerlendirme hedefi, gereksinim şablonu, bulgu–aksiyon, etki analizi, delta değerlendirme |
-| **13** Güvenlik gereksinimleri | İyi gereksinim; izlenebilirlik ve uyum matrisi; devredilen gereksinimler; Ortak Kriterler, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | Gereksinim → önlem → doğrulama → kanıt zinciri; CC ve FIPS kavramları |
-| **14** Tigress ve çeşitlendirme | Kaynaktan kaynağa gizleme; dönüşümleri birleştirme; tohumla çeşitlendirme; dayanıklılığın değerlendirilmesi | Çeşitlendirmenin amacı; maliyet ve etkinlik ölçümü |
+| [**9** Gelişmiş kod gizleme ve çeşitlendirme](../week-9/cen429-week-9.md) | Gizleme taksonomisi; opak yüklemler, sahte akış, ölü kod; veri kodlama; sanallaştırma tabanlı gizleme; gizlemenin ölçülmesi (güç, dayanıklılık, maliyet) | Gizlemenin amacı ve maliyeti; ölçme ölçütleri; [4. haftadaki](../week-4/cen429-week-4.md) temel teknikler |
+| [**10** Sertifikalar ve kriptografik yöntemler](../week-10/cen429-week-10.md) | Algoritma ve anahtar uzunluğu seçimi; kipler ve dolgu; HMAC, şifrele-sonra-MAC, yeniden oynatma; RSA-OAEP/PSS, Ed25519/X25519; dijital imza; Diffie–Hellman ve araya girme; PKI, X.509, zincir; CRL/OCSP; PKCS#11/SoftHSM; kuantum sonrası | Güvenlik düzeyi tablosu; doğru kip ve dolgu; imza doğrulamasının tuzakları; zincir doğrulamanın dört sorusu |
+| [**11** Whitebox kriptografi](../week-11/cen429-week-11.md) | Beyaz kutu ve kara kutu saldırgan modelleri; tablo tabanlı gerçekleştirim; anahtar koruması; bilinen saldırı aileleri ve karşı önlemler; yazılımsal güvenlik modülleri | Saldırgan modelleri; whitebox'ın katmanlı savunmadaki yeri ve sınırları |
+| [**12** Sertifikasyon ve sızma testi planlaması](../week-12/cen429-week-12.md) | Bağımsız değerlendirmenin 13 adımı; standartların test beklentileri; zafiyet değerlendirmesi; sızma testi planı ve raporlama | Değerlendirme hedefi, gereksinim şablonu, bulgu–aksiyon, etki analizi, delta değerlendirme |
+| [**13** Güvenlik gereksinimleri](../week-13/cen429-week-13.md) | İyi gereksinim; izlenebilirlik ve uyum matrisi; devredilen gereksinimler; Ortak Kriterler, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | Gereksinim → önlem → doğrulama → kanıt zinciri; CC ve FIPS kavramları |
+| [**14** Tigress ve çeşitlendirme](../week-14/cen429-week-14.md) | Kaynaktan kaynağa gizleme; dönüşümleri birleştirme; tohumla çeşitlendirme; dayanıklılığın değerlendirilmesi | Çeşitlendirmenin amacı; maliyet ve etkinlik ölçümü |
 
 ![Quiz-2 kapsamı](assets/h16-01-kapsam.svg)
 
@@ -147,5 +147,5 @@
 
 !!! info "9, 11 ve 14. haftalar"
     Bu haftaların örnek soruları, haftaların ders notları yayımlandığında bu bölüme eklenecektir. O zamana kadar ilgili
-    konular için 4. haftanın "Kod gizlemeye giriş" ve "Kontrol akışı düzleştirme" bölümlerini ve 3. haftanın "Whitebox
+    konular için [4. haftanın](../week-4/cen429-week-4.md) "Kod gizlemeye giriş" ve "Kontrol akışı düzleştirme" bölümlerini ve [3. haftanın](../week-3/cen429-week-3.md) "Whitebox
     kriptografiye giriş" bölümünü tekrar edin.

@@ -46,58 +46,88 @@ Each requirement notes **which week it is taught** and **which guide section (S)
 or **defer/scope-out with justification** (Week 13).
 
 ### 4.1 Development environment security · (Weeks 1, 12 · S13)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 12](../week-12/cen429-week-12.md)
+
 - Software development flow and **change management** (baseline → request → classify → approve → release → verify).
 - Version control with **Git**; access logging; signed releases.
 - Development host/server security (short policy).
 
 ### 4.2 Data-in-use security · (Weeks 3, 6 · S7)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 6](../week-6/cen429-week-6.md)
+
 - Sensitive data in memory is **wiped securely** after use (`memset_s`-like).
 - Runtime data protection (shadow copy / integrity — Week 6).
 
 ### 4.3 Data-in-transit security · (Weeks 3, 10 · S6, S11)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md)
+
 - **TLS 1.3**; certificate chain + **SAN** validation; **pinning** + backup pin.
 - Encrypted **session key**; **device/version binding**; integrity + authentication; server verification code.
 
 ### 4.4 Data-at-rest security · (Weeks 3, 10, 11 · S8)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md) · [Week 11](../week-11/cen429-week-11.md)
+
 - File/DB encryption with **AEAD** (AES-GCM); non-repeating nonce.
 - For sensitive keys, **whitebox** or **SoftHSM/PKCS#11**; **justify** the choice (Week 11).
 
 ### 4.5 Static asset protection · (Weeks 1, 4, 9 · S5, S9)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 4](../week-4/cen429-week-4.md) · [Week 9](../week-9/cen429-week-9.md)
+
 - Secret keys, digests, source code, resources: encryption + access control + obfuscation.
 
 ### 4.6 Dynamic asset protection · (Weeks 3, 6 · S5, S8)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 6](../week-6/cen429-week-6.md)
+
 - Device/app fingerprints, session data, dynamic keys are encrypted.
 
 ### 4.7 Asset management · (Weeks 1, 3, 13 · S5)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 3](../week-3/cen429-week-3.md) · [Week 13](../week-13/cen429-week-13.md)
+
 Per asset: **name, description, location (table/column), source, size, creation/destruction time, default,
 protection scheme (C/I/I+)**.
 
 ### 4.8 Interface definitions and protection · (Weeks 1, 4 · S3, S6)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 4](../week-4/cen429-week-4.md)
+
 - All interfaces protected with access control + authentication; input validated at the **trust boundary**.
 
 ### 4.9 Code hardening · (Weeks 4, 9, 14 · S9)
+Related weeks: [Week 4](../week-4/cen429-week-4.md) · [Week 9](../week-9/cen429-week-9.md) · [Week 14](../week-14/cen429-week-14.md)
+
 - Opaque loops/predicates, name/file/string/arithmetic obfuscation, opaque booleans, bogus ops/dead branches,
   **control-flow flattening** + random exit, logging **off** in release. **Measure** the cost (Week 9/14 demos).
 
 ### 4.10 RASP · (Week 6 · S10)
+Related weeks: [Week 6](../week-6/cen429-week-6.md)
+
 - Checksum integrity, caller hash/signature verification, root/emulator detection, **hook/anti-debug**, tamper
   detection + response, control-flow counter.
 
 ### 4.11 Memory protection · (Week 4 · S9)
+Related weeks: [Week 4](../week-4/cen429-week-4.md)
+
 - Compiler/OS protections (stack canary, PIE, RELRO, NX, CFI); sensitive memory cleared after use.
 
 ### 4.12 Cryptography and certificates · (Weeks 3, 10 · S8, S11)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md)
+
 - Correct algorithm/mode/padding; signature verification (`==1`, version coverage); SSL/TLS + pinning + mutual auth.
 
 ### 4.13 Certification and penetration test plan · (Weeks 12, 13 · S16, S14, S17)
+Related weeks: [Week 12](../week-12/cen429-week-12.md) · [Week 13](../week-13/cen429-week-13.md)
+
 - Standards mapping (ETSI/EMVCo/GSMA/PCI/MASVS); **penetration test plan** (scope, rules, methodology, test card) and
   its **results**; attack potential + CVSS.
 
 ### 4.14 Binary application protection · (Weeks 6, 9, 11, 14 · S9, S10, S15)
+Related weeks: [Week 6](../week-6/cen429-week-6.md) · [Week 9](../week-9/cen429-week-9.md) · [Week 11](../week-11/cen429-week-11.md) · [Week 14](../week-14/cen429-week-14.md)
+
 - **Detection** (checksum, anti-debug, emulator), **defence** (obfuscation, string/resource encryption, call hiding),
   **deterrence** (response/shutdown policy).
 
 ### 4.15 OWASP and build/deploy pipeline · (Weeks 5, 14 · S13, S15)
+Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen429-week-14.md)
+
 - OWASP MASVS/ASVS principles; **SBOM** (CycloneDX) + dependency scan; build pipeline with obfuscation + signing.
 
 ## 5. Deliverables

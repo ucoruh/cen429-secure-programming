@@ -5,7 +5,7 @@
 | **Date** | 23.10.2026 |
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
-| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from Week 1; AES-GCM/HMAC/HKDF and the security shell from Week 3; patching and reverse engineering concepts from Week 4 |
+| **Prerequisites** | Pointers, arrays and files in C; memory layout and secure erasure from [Week 1](../week-1/cen429-week-1.md); AES-GCM/HMAC/HKDF and the security shell from [Week 3](../week-3/cen429-week-3.md); patching and reverse engineering concepts from [Week 4](../week-4/cen429-week-4.md) |
 | **Labs** | [`code/week-06`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-06) — 8 demos; on Windows `.\demo.ps1`, on WSL/Linux `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -104,100 +104,52 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we will use throughout the rest of
-the week. If you don't know a term, read this section first; the later sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### What is runtime?
+### What we bring from earlier weeks
 
-- **Runtime:** the moment the program is **executing** (not compile time).
-- RASP protections kick in here: the program watches itself **while it runs**.
+- **The white-box attacker model** — the user who owns the device is also a potential attacker; they can read
+  memory, attach a debugger, and modify code
+  ([Week 1, §3](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach); see also the "white-box
+  attacker's six paths" table: [Week 1, §5](../week-1/cen429-week-1.md#the-white-box-attackers-six-paths)). This
+  week we turn this model into RASP's single attacker model under the name **MATE** (§1.1).
+- **Digest, MAC, and HMAC** — a digest is a fixed-size, one-way fingerprint computed from data; a MAC/HMAC proves
+  a message hasn't changed using a shared secret key
+  ([Week 3, §2.4](../week-3/cen429-week-3.md#24-hash-mac-and-signature-which-one-when)). This week we use
+  HMAC-SHA-256 to verify the application's own code (§3) and to build a control-flow chain (§9).
+- **Deriving keys from a master secret (HKDF)** — RFC 5869 HKDF is a function that derives new keys from a master
+  secret through Extract and Expand steps
+  ([Week 3, §7](../week-3/cen429-week-3.md#7-deriving-keys-from-a-master-secret-session-keys-and-forward-secrecy)).
+  This week we trace the same two steps by hand, deriving a key from a **device fingerprint** instead of a master
+  secret (§10.1).
+- **Device binding** — a secret being meaningful only on a specific device is the innermost layer of the security
+  shell ([Week 3, §13.1](../week-3/cen429-week-3.md#131-device-binding)). This week we make that layer part of a
+  RASP response policy (§10).
 
-### What is RASP?
+### This week's concept map
 
-- **RASP (Runtime Application Self-Protection):** an application protecting itself while it runs.
-- It **detects** threats such as tampering, debugging, and a fake environment, and **responds**.
-
-### Debugger
-
-- **Debugger:** a tool that runs a program step by step, pauses it, and reads memory (gdb, lldb).
-- An attacker uses it to trace the flow and change values.
-- RASP asks: "is a debugger attached to me?"
-
-### Emulator and virtual machine
-
-- **Emulator/VM:** a software environment that **imitates** a device (Android emulator, QEMU).
-- An attacker does their analysis here instead of on a real device (it's easier).
-- RASP tries to sense a fake environment.
-
-### Hook and instrumentation
-
-- **Hook:** intercepting and changing a function's call.
-- **Instrumentation:** injecting code into a running program to observe/change its behaviour.
-- Tool: **Frida** (a very common dynamic instrumentation tool).
-
-### LD_PRELOAD
-
-- **LD_PRELOAD:** a way on Linux to load a library **before** the program and replace its functions.
-- An attacker can use it to **hook** critical functions.
-- RASP tries to detect this.
-
-### Integrity and self-hashing
-
-- **Integrity:** the code/file has **not changed**.
-- **Self-hashing:** the program computes a digest of **its own code** and compares it against the expected value.
-- If it's been tampered with, the digest won't match.
-
-### Digest (checksum/hash)
-
-- **Digest:** a fixed-size **fingerprint** computed from data (SHA-256).
-- If the data changes, the digest changes.
-- The foundation of integrity checking.
-
-### Root / jailbreak
-
-- **Root:** full privilege on a device (normally restricted).
-- On a rooted device the protections weaken; the attacker can access everything.
-- RASP asks: "is the device rooted?"
-
-### Signature verification
-
-- Application packages are signed with a **digital signature**.
-- **Signature verification:** checking whether the calling/loaded component's signature is the expected one.
-- It catches a fake/modified component.
-
-### Control-flow integrity (counter)
-
-- If critical checks are done with **a single `if`**, one patch at that single point skips them.
-- **Control-flow counter:** verifying by counting that the checks passed in the correct **order**.
-- A single patch is no longer enough.
-
-### Response policy
-
-- **Response policy:** what does RASP **do** once it sees a threat?
-- Quietly shut down, restrict functionality, notify the server, delay the response...
-- "Crash immediately" is not always the best option.
-
-### Device binding and deterrence
-
-- **Device binding:** data/keys are only meaningful on **a specific device**.
-- **Deterrence:** making an attack costly/risky enough that the attacker gives up.
-- RASP's ultimate goal: raise the cost.
-
-### Now we're ready
-
-Terms:
-
-runtime · RASP · debugger · emulator/VM · hook/Frida · LD_PRELOAD · integrity/self-hashing · digest · root ·
-signature verification · control-flow counter · response policy · device binding · deterrence
-
-Now: what is RASP, what does it do?
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| RASP (detect/defend/deter) | RASP is a set of protections embedded inside an application that watch themselves at runtime and respond to an attack through detection, defence, and deterrence. | [§1](#1-what-is-rasp-detect-defend-deter) |
+| MATE attacker model | MATE ("Man-At-The-End") is an attacker model where the attacker owns the device/endpoint the application runs on, can read memory, modify code, and attach a debugger. | [§1.1](#11-the-attacker-model-mate-man-at-the-end) |
+| RASP architecture | RASP checks run at load time, right before a sensitive operation, and in the background at irregular intervals, at many points in the code, and tie the result to a data dependency rather than an `if`. | [§2](#2-rasp-architecture-when-where-and-how-do-checks-work) |
+| Integrity / self-hashing | Self-hashing is the application computing an HMAC digest of its own code/file at runtime and comparing it against a known golden value to catch a patch/tamper. | [§3](#3-integrity-checking-the-application-verifies-itself-self-hashing) |
+| Debugger detection | Anti-debug is reading information the kernel/OS already keeps (TracerPid on Linux, PEB on Windows) to work out whether a debugger is attached to the process. | [§4](#4-debugger-detection) |
+| Emulator/VM detection | Environment detection is trying to sense, from clues like the CPUID hypervisor bit, the vendor signature, and timing measurements, whether the application is running on a virtual machine/emulator or on real hardware. | [§5](#5-environment-detection-virtual-machine-and-emulator) |
+| Hook / LD_PRELOAD detection | Hook detection is checking which shared object (`.so`) a critical function actually resolves from, using `dlsym`+`dladdr`, to find out whether it's been replaced by a tool like LD_PRELOAD/Frida. | [§6](#6-hook-and-instrumentation-detection-ld_preload-frida) |
+| Dynamic memory protection | Dynamic memory protection is the whole set of measures that make it harder to read (disabling dumps, locking) and to silently modify (shadow copy + digest) sensitive data in a running program's memory. | [§7](#7-dynamic-memory-protection-and-memory-monitoring-detection) |
+| Root indicator | A root indicator is a signal — never treated as proof on its own — that points to a device's/process's security restrictions having been removed (root/jailbreak) or to it running with elevated privilege. | [§8.1](#81-root-privileged-environment-indicator) |
+| Component signature verification | Component signature verification is checking whether a dynamically loaded module/package carries the expected signature/digest before it's loaded, to catch repackaging. | [§8.2](#82-componentpackage-signature-and-digest-verification-the-general-form-of-apk-signature-verification) |
+| Control-flow counter | A control-flow counter is a technique that ties security checkpoints to a key chain (`acc = HMAC(acc, stage)`) so that being passed in the correct order matters, making patching a single check useless. | [§9](#9-control-flow-integrity-why-a-single-if-isnt-enough) |
+| Response policy and device binding | A response policy is choosing, once a threat is detected, among options like erasing the secret, returning a decoy, binding to the device/version, and notifying the server, the response that gives the attacker the least information. | [§10](#10-response-policy-device-binding-and-deterrence) |
 
 ### How do the concepts connect to each other?
 
-The terms above are not a random list; each one builds on the previous one. If you forget a term further along,
-go back to the "prerequisite" column of the table below and refresh it first.
+The concepts above are not a random list; each one builds on the previous one. If you forget a concept further
+along, go back to the "prerequisite" column of the table below and refresh it first.
 
 | Term | Prerequisite | Which section goes deeper? |
 | --- | --- | --- |
@@ -224,10 +176,11 @@ go back to the "prerequisite" column of the table below and refresh it first.
 ## 1. What is RASP? Detect → defend → deter
 
 Over the first five weeks we hardened the application **statically**: we validated input (Weeks 1, 4), encrypted
-data (Week 3), obscured the code (Weeks 4, 5). But all of that rested on one assumption: **the program will run as
-written.** This week we drop that assumption. While it runs, the application may be in a hostile environment: the
-user owns the device, may have rooted it, may have attached a debugger, may have patched pieces of code, may have
-hooked functions.
+data ([Week 3](../week-3/cen429-week-3.md)), obscured the code (Weeks 4, 5). But all of that rested on one assumption: **the program will run as
+written.** This week we drop that assumption and look at **runtime** — not the moment the program is compiled and
+sitting on disk, but the moment it is actually **executing**. While it runs, the application may be in a hostile
+environment: the user owns the device, may have rooted it, may have attached a debugger, may have patched pieces of
+code, may have hooked functions.
 
 ![The difference between a WAF and RASP](assets/h06-06-waf-rasp.svg)
 
@@ -237,7 +190,7 @@ hooked functions.
       (the device is no longer trusted).
     - **2012** — Gartner coins the term **RASP** (Runtime Application Self-Protection): the protection runs
       **inside** the application.
-    - **2010s–today** — **OWASP MASVS-RESILIENCE** turns these expectations into auditable requirements (Week 13).
+    - **2010s–today** — **OWASP MASVS-RESILIENCE** turns these expectations into auditable requirements ([Week 13](../week-13/cen429-week-13.md)).
 
     In short, RASP isn't a new idea; it's the name of the corporate answer to the **MATE attacker**.
 
@@ -264,14 +217,14 @@ RASP does three jobs; this triad is the backbone of the week:
   (fail-closed), bind the key to the device, tie a critical operation to the control flow.
 - **Deterrence:** making the attacker's job **expensive** — return a fake (decoy) result instead of crashing, delay
   the response, report the event to the server. The goal is not unbreakability; it is **slowing the attack down
-  enough** (the RASP-flavoured version of Week 4's "obscurity delays, it does not block" principle).
+  enough** (the RASP-flavoured version of [Week 4](../week-4/cen429-week-4.md)'s "obscurity delays, it does not block" principle).
 
 ### 1.1 The attacker model: MATE ("Man-At-The-End")
 
-In Week 1 we saw three attacker types. RASP's world is entirely **MATE**: the attacker **owns the endpoint** where
+In [Week 1](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach) we saw three attacker types. RASP's world is entirely **MATE**: the attacker **owns the endpoint** where
 the application runs. Against a server, the attacker is outside (and TLS, authentication protect it); but inside
 the client application, the attacker **sees everything**: they can read memory, modify code, step through it with
-a debugger. This is the same assumption as the **white-box** model in Week 11.
+a debugger. This is the same assumption as the **white-box** model in [Week 11](../week-11/cen429-week-11.md).
 
 What sets the MATE attacker apart from the other attacker types we saw in Week 1 is **position**, not capability:
 
@@ -352,15 +305,15 @@ attaches **after** the app has started.
 - **Multiplicity:** the same check isn't done in one function; it's done, each time slightly differently, in
   **many places** in the code. When the attacker patches one point, the others still run.
 - **Mutual checking:** the managed layer (Java) and the native layer check each other's integrity; if one is
-  modified, the other notices ("mutual integrity checking" in the split fingerprint of Week 5 and the interface
-  table of Week 1).
+  modified, the other notices ("mutual integrity checking" in the split fingerprint of [Week 5](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation) and the
+  [interface table of Week 1](../week-1/cen429-week-1.md#the-plans-two-core-tools-the-interface-table-and-the-asset-table)).
 - **Inside the protected function itself:** a valuable function (e.g., string decryption or key derivation) does
   several checks **itself**, at its own entry point. In the field, a single such function is often protected with
   close to fifteen checks of its own (code integrity, debugger, environment, root, control-flow counter), in
   addition to the checks already done at load time. For performance reasons, only the internal-use builds push
   some of these checks down to the entry point.
 - **Decoy parameters:** at the entry points of sensitive functions there can be extra parameters, hidden behind a
-  macro for the programmer's readability, that trigger an integrity check ("decoy parameters" in Week 4).
+  macro for the programmer's readability, that trigger an integrity check ("decoy parameters" in [Week 4](../week-4/cen429-week-4.md)).
 
 ### How does it decide? Not centralized, data-dependent
 
@@ -433,7 +386,7 @@ few seconds and the response policy kicks in (Section 10).
 ## 3. Integrity checking: the application verifies itself (self-hashing)
 
 RASP's first and most basic step: **"Have I been modified?"** An attacker tries to bypass a license check, an
-`if (odendi)` (if paid) branch, or a crypto call by **patching** it (the `je → jmp` patch we saw in Week 4). The
+`if (odendi)` (if paid) branch, or a crypto call by **patching** it (the `je → jmp` patch we saw in [Week 4](../week-4/cen429-week-4.md)). The
 defence: the application computes a **digest** of its own binary (or of a protected code/data region) at runtime
 and compares it against a known-in-advance **golden** value. If even a single byte has changed, the patch is
 caught.
@@ -441,7 +394,8 @@ caught.
 !!! info "The book's recipe and an update"
     The textbook (Viega & Messier) does this in **Recipe 12.2 (Detecting Modification)** with **CRC32**. CRC32 is
     **not cryptographic**: an attacker can patch the code and easily arrange for the same CRC to come out. We
-    update this to **HMAC-SHA-256** (see Week 3): producing the correct HMAC requires the secret key. There's a
+    update this to **HMAC-SHA-256** (see [Week 3, §2.4](../week-3/cen429-week-3.md#24-hash-mac-and-signature-which-one-when)):
+    producing the correct HMAC requires the secret key. There's a
     reason the author chose CRC: the real attack is already patching the **checker code itself** — that's the main
     discussion of this section.
 
@@ -487,7 +441,8 @@ SONUC: YAMA ALGILANDI - hedef degistirilmis! (tamper)   (cikis kodu 3)
 
 While unpatched, the digest was **exactly** the same as the golden value. Changing a single byte completely
 changed the digest (the avalanche effect), and the patch was caught. The comparison is done in **constant time**
-(not `memcmp`), because as we saw in Week 3, a plain `memcmp` stops at the first differing byte and leaks timing.
+(not `memcmp`), because as we saw in [Week 3](../week-3/cen429-week-3.md#constant-time-comparison), a plain `memcmp`
+stops at the first differing byte and leaks timing.
 
 ### 3.1 Worked example: which bytes does the HMAC digest, and how does a patch break it?
 
@@ -714,7 +669,10 @@ these three bits. The line `(ntglobal & 0x70) != 0` in Demo 2's Windows code rea
 ## 5. Environment detection: virtual machine and emulator
 
 An attacker most often runs the application in a controlled **analysis environment** — a virtual machine, an
-emulator, or a sandbox. RASP tries to sense this from environmental clues.
+emulator, or a sandbox. An **emulator** is a software environment that **imitates** a device (an Android emulator,
+QEMU); a **virtual machine (VM)** abstracts real hardware to run another operating system on top of it. The attacker
+does their analysis here instead of on a real device, because it's easier. RASP tries to sense this from
+environmental clues.
 
 ![The risk of false positives in emulator detection](assets/h06-09-emulator.svg)
 
@@ -805,9 +763,11 @@ trade-off of "how many legitimate users am I willing to block, in exchange for h
 
 ## 6. Hook and instrumentation detection (LD_PRELOAD, Frida)
 
-A sneakier threat than a debugger: **function hooking** and **dynamic instrumentation**. Without stopping the
-program, the attacker **replaces the functions it calls — including our own anti-debug/anti-root checks — with
-their own version**. This lets them make Demo 2's checks lie and always return "clean."
+A sneakier threat than a debugger: **function hooking** and **dynamic instrumentation**. A hook is intercepting and
+changing a function's call; instrumentation is injecting code into a running program to observe or change its
+behaviour (the most common tool for this is **Frida**). Without stopping the program, the attacker **replaces the
+functions it calls — including our own anti-debug/anti-root checks — with their own version**. This lets them make
+Demo 2's checks lie and always return "clean."
 
 !!! note "A short history: from static patching to dynamic instrumentation"
     - **1990s** — hooking techniques were **hand-written**, target-specific tools operating on the IAT (Import
@@ -928,10 +888,12 @@ the running **code itself**, which is why it doesn't rely on `getenv` faking.
 ## 7. Dynamic memory protection and memory-monitoring detection
 
 One of the items the syllabus puts in this week is **dynamic memory protection**: measures taken, while the
-program runs, against sensitive data in memory being read and modified. In Week 1 we saw erasing secrets from
-memory and preventing them from being swapped out; in Week 3, the "data in use" layers. This section asks the same
-question again, from the runtime attacker's angle: what can we do if the attacker is **watching** or
-**modifying** memory?
+program runs, against sensitive data in memory being read and modified. In
+[Week 1](../week-1/cen429-week-1.md#erasing-secrets-from-memory-recipe-132) we saw erasing secrets from
+memory and preventing them from being swapped out; in
+[Week 3](../week-3/cen429-week-3.md#13-data-in-use-secure-erasure-in-memory-and-device-binding), the "data in use"
+layers. This section asks the same question again, from the runtime attacker's angle: what can we do if the
+attacker is **watching** or **modifying** memory?
 
 ![The layers of dynamic memory protection](assets/h06-13-bellek-koruma-katmanlari.svg)
 
@@ -959,7 +921,7 @@ The most effective memory protection is **leaving nothing to read** in memory:
    doesn't even leave the trace "a secret was just here." In the field, on the native side, this is the one place
    a random generator is used.
 4. **Never unwrap it at all:** in whitebox cryptography, the key is never in the clear in memory at any point
-   (Week 11). In the field's shell matrix, this is the only shell left on the native side during a payment.
+   ([Week 11](../week-11/cen429-week-11.md)). In the field's shell matrix, this is the only shell left on the native side during a payment.
 
 ### Countermeasure 2: make memory harder for the OS to read
 
@@ -1011,8 +973,8 @@ int sayac_oku(const KorunanSayac *s, uint32_t *cikti)
 
 If the attacker changes only the `deger` (value) field in memory, the shadow copy and the digest no longer match.
 To change all three consistently, they'd also need to find the mask and the digest key; this raises the cost of
-the attack. The same idea appears in Week 5's device fingerprint being stored **with two different digests in two
-different places**, and in Week 2's tamper-resistant log.
+the attack. The same idea appears in [Week 5](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation)'s device fingerprint being stored **with two different digests in two
+different places**, and in [Week 2's](../week-2/cen429-week-2.md#tamper-resistant-logging) tamper-resistant log.
 
 ### 7.1 Worked example: how does `KorunanSayac` catch an attack?
 
@@ -1070,8 +1032,10 @@ response policy.
 
 ### 8.1 Root / privileged environment indicator
 
-On a rooted (or jailbroken) device, an application's security assumptions collapse: any process can read memory,
-file-system protections are bypassed. RASP looks at root indicators (Catalogue K4/K5): the presence of the `su`
+**Root** is full privilege on a device, normally restricted; **jailbreak** is the name for forcing that same
+privilege open on a closed system like iOS. On a rooted (or jailbroken) device, an application's security
+assumptions collapse: any process can read memory, file-system protections are bypassed. RASP looks at root
+indicators (Catalogue K4/K5): the presence of the `su`
 binary, dangerous packages, writable system paths, root-hiding frameworks. The desktop counterpart: is the
 application running with **elevated privilege** (Linux `geteuid()==0`, an elevated token on Windows)?
 
@@ -1152,11 +1116,13 @@ Yukleme REDDEDILDI.   (cikis kodu 3)
 ```
 
 !!! info "An important difference: HMAC vs. asymmetric signature"
-    APK v2/v3 uses an **asymmetric (public-key)** signature (see the digital signature in Week 3): the verifier
+    APK v2/v3 uses an **asymmetric (public-key)** signature (see the digital signature in
+    [Week 3](../week-3/cen429-week-3.md#24-hash-mac-and-signature-which-one-when)): the verifier
     needs only the **public key**, not the signing key. In this demo we use **shared-key HMAC** for teaching
     purposes (simple and ready-made in `cen429_kripto.h`); we'll cover asymmetric signatures (Ed25519 / RSA-PSS)
-    and certificate chains **in Week 10**. The principle is the same: **integrity + source** verification before
-    loading.
+    and certificate chains in
+    [Week 10](../week-10/cen429-week-10.md#5-digital-signature-creation-verification-and-where-its-used). The
+    principle is the same: **integrity + source** verification before loading.
 
 ### 8.2.1 Worked example: how is repackaging caught by adding a single byte?
 
@@ -1330,14 +1296,17 @@ A good response policy **slows the attacker down and misleads them**:
 | **Device/version binding** | Bind the secret to the device/version; even if the keys are copied, they won't open on another device | L1/L2 |
 | **Telemetry/attestation** | Report the event to the server; let a server-side risk engine decide | K5 |
 
-**Device binding** (the innermost shell of Week 3 Demo 9) becomes part of RASP here: the valuable secret is
-wrapped with a key derived, via **HKDF**, from the device fingerprint and the version string. Even if the phone is
-cloned and the files copied to another device, the key comes out different and the secret **can't be opened**.
+**Device binding** ([Week 3, §13.1](../week-3/cen429-week-3.md#131-device-binding), the innermost shell of Demo 9)
+becomes part of RASP here: the valuable secret is wrapped with a key derived, via **HKDF**, from the device
+fingerprint and the version string. Even if the phone is cloned and the files copied to another device, the key
+comes out different and the secret **can't be opened**.
 
 ### 10.1 Worked example: deriving a key from a device fingerprint (HKDF step by step)
 
 Let's trace Demo 8's "device/version binding" step by hand with **real values**. `kripto_hkdf_sha256` implements
-the two steps (Extract, Expand) of the **RFC 5869 HKDF** we saw in Week 3; here `ikm` (input key material) is the
+the two steps (Extract, Expand) of the **RFC 5869 HKDF** we saw in
+[Week 3](../week-3/cen429-week-3.md#7-deriving-keys-from-a-master-secret-session-keys-and-forward-secrecy); here
+`ikm` (input key material) is the
 device fingerprint, `tuz` (salt) is the version string, and `info` is a fixed context label:
 
 | Parameter | Value (Demo 8's `normal` scenario) |
@@ -1477,7 +1446,7 @@ too.
 
 !!! failure "'RASP is worth any amount of slowdown.'"
     RASP has a **cost** (CPU, battery, complexity, false positives). Scale the protection to **the value of the
-    asset**: put it on critical operations (payment, key use), not on every function. This is Week 1's "plan
+    asset**: put it on critical operations (payment, key use), not on every function. This is [Week 1](../week-1/cen429-week-1.md)'s "plan
     protection around the asset" principle.
 
 !!! failure "'I'll tune the risk-score threshold once and forget about it.'"
@@ -1491,7 +1460,7 @@ too.
 ## 12. Term project: this week
 
 This week you will write the **RASP (self-protection)** sections of your security guide and add your first RASP
-check to your project. This is the direct subject of the **midterm project demo** (Week 7) and **Quiz-1** (Week 8,
+check to your project. This is the direct subject of the **midterm project demo** ([Week 7](../week-7/cen429-week-7.md)) and **Quiz-1** ([Week 8](../week-8/cen429-week-8.md),
 weeks 1–6); it is graded as **A2.4 RASP Techniques (15p → LO.3)** in the midterm rubric and **F2.4 Binary
 Application Protections (15p → LO.3)** in the final rubric.
 
@@ -1673,7 +1642,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 
 ??? question "3. What is the MATE attacker model?"
     "Man-At-The-End": the attacker owns the endpoint the application runs on; they can read memory, modify code,
-    attach a debugger. The same assumption as white box (Week 11).
+    attach a debugger. The same assumption as white box ([Week 11](../week-11/cen429-week-11.md)).
 
 ??? question "4. What is self-hashing? Why HMAC instead of CRC?"
     The application computing a digest of its own code/file at runtime and comparing it against a golden value.
@@ -1716,7 +1685,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 
 ??? question "14. What does device binding add to RASP?"
     Keys/files can't be opened on another device even if copied (against cloning). Built with
-    HKDF(device fingerprint)+AES-GCM; the innermost layer of Week 3's security shell.
+    HKDF(device fingerprint)+AES-GCM; the innermost layer of [Week 3](../week-3/cen429-week-3.md)'s security shell.
 
 ??? question "15. Is RASP unbreakable? Then why use it?"
     If the device's owner is the attacker, it can ultimately be broken. The goal isn't unbreakability; it's making
@@ -1806,7 +1775,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 
 - Recipe 12.2 (Detecting Modification — updated from CRC to HMAC/signature)
 - Recipes 12.12–12.15 (Detecting Debuggers — Unix/Windows; SoftICE → modern tools)
-- Chapter 12 (Anti-Tampering) overall is the core of this week and of Week 9.
+- Chapter 12 (Anti-Tampering) overall is the core of this week and of [Week 9](../week-9/cen429-week-9.md).
 
 **Open standards and resources**
 
@@ -1847,3 +1816,10 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     | HKDF Extract / Expand | Sıkıştırma / genişletme | HKDF's two steps: compressing an irregular input into a PRK, deriving a key of the requested length from the PRK |
     | Avalanche effect (çığ etkisi) | Çığ etkisi | A single bit change in the input changing, on average, half the output; a fundamental property of cryptographic digests/MACs |
     | `PR_SET_DUMPABLE` | Dökülebilirlik bayrağı | On Linux, the flag controlling whether a process can be watched by another process via `ptrace` and whether it produces a core dump |
+
+!!! info "Next week"
+    **[Week 7](../week-7/cen429-week-7.md) — Midterm project demos.** You will present this week's RASP checks (integrity checking,
+    debugger/environment/hook detection, the control-flow counter, the response policy) live in your project.
+    **[Week 8](../week-8/cen429-week-8.md)** is **Quiz-1**, covering weeks 1–6. Then **Week 9 — Advanced obfuscation and diversification**
+    continues by deepening this week's debugger/environment detection ideas and its "obscurity/deterrence is not
+    unbreakability" theme on the code-obfuscation side.

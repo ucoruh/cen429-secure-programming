@@ -5,7 +5,7 @@
 | **Tarih** | 09.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | C'de işaretçi, dizi, dinamik bellek (`malloc`/`free`); Hafta 1'den bellek düzeni, yığın ve öbek; Linux/WSL terminalinde derleme ve `gdb` ile temel adımlar |
+| **Ön bilgi** | C'de işaretçi, dizi, dinamik bellek (`malloc`/`free`); [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni, yığın ve öbek; Linux/WSL terminalinde derleme ve `gdb` ile temel adımlar |
 | **Uygulamalar** | [`code/week-04`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-04) — 7 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -89,132 +89,69 @@
 
 ---
 
-## 0. Temel kavramlar (sıfırdan)
+## 0. Başlamadan önce
 
-Bu bölüm **hiçbir ön bilgi varsaymaz**. Haftanın geri kalanında kullanacağımız terimleri sıfırdan tanımlıyoruz. Bir terimi bilmiyorsanız önce burayı okuyun; sonraki bölümler bunların üzerine kurulur.
+Bu bölüm haftaya hazırlık içindir. Önce bu haftanın dayandığı önceki konuları kısaca hatırlatır; sonra bu haftanın
+kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldığı bölüme bağlar. Önceki haftalarda görülmemiş
+temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 
 ![Yığın ve öbek belleğin karşılaştırması](assets/h04-13-yigin-obek.svg)
 
-### Bellek: yığın ve öbek
+### Önceki haftalardan gelenler
 
-- **Yığın (stack):** fonksiyon çağrılarının yerel değişkenlerini tuttuğu, otomatik yönetilen bellek.
-- **Öbek (heap):** `malloc`/`new` ile **elle** ayrılan, `free`/`delete` ile bırakılan bellek.
+- **Süreç belleği: yığın ve öbek** — bir programın çalışırken kullandığı bellek; yığın (stack) fonksiyon
+  çağrılarının yerel değişkenlerini otomatik yönetir, öbek (heap) `malloc`/`new` ile elle ayrılıp `free`/`delete`
+  ile bırakılır ([Hafta 1, §13](../week-1/cen429-week-1.md#13-surec-bellegi-verileriniz-nerede-duruyor)). Bu hafta
+  §6'da öbeğin yeniden tahsisini (serbest bırakılmış belleğin kullanımı), §12'de yığın çerçevesinin korunmasını
+  (kanarya) bu temel üzerine kuruyoruz.
+- **Arabellek taşması** — bir programın bir diziye, ayrılan boyuttan fazla veri yazması; taşan baytlar dizinin
+  hemen yanındaki belleğe, başka değişkenlerin ya da dönüş adresinin üzerine yazılır
+  ([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)). Bu hafta bu
+  hatayı biçim dizisi açığıyla (§5) ve tamsayı kaynaklı taşmalarla (§7) genişletiyoruz.
+- **Yığın çerçevesi ve dönüş adresi** — bir fonksiyon çağrıldığında yığında ona ayrılan, yerel değişkenleri ve
+  fonksiyon bitince nereye döneceğini gösteren dönüş adresini tutan bölüm
+  ([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)). Bu hafta §5'te
+  biçim dizisi açığının yığından nasıl okuduğunu, §12'de yığın kanaryasının bu çerçeveyi nasıl koruduğunu adım
+  adım izliyoruz; ayrıca **ofset** terimini (bir başlangıç noktasına bayt cinsinden uzaklık) sıkça kullanacağız.
+- **Beyaz kutu saldırgan modeli** — cihazın sahibi olan kullanıcının aynı zamanda potansiyel saldırgan olduğu,
+  belleği okuyup hata ayıklayıcı bağlayabildiği model
+  ([Hafta 1, §3](../week-1/cen429-week-1.md#3-saldirgan-kim-neye-erisebiliyor); Hafta 1 §5'teki "beyaz kutu
+  saldırganın altı yolu" tablosuna da bakınız). Bu hafta §14'te kod gizlemenin motivasyonunu bu modelle kuruyoruz.
+- **CWE** — yazılım zayıflıklarının MITRE tarafından yürütülen, numaralı kataloğu
+  ([Hafta 2, §13](../week-2/cen429-week-2.md#13-yazilim-guvenlik-aciklarinin-siniflandirilmasi-cwe)). Bu hafta
+  neredeyse her bölümde bulguları CWE numarasıyla adlandırıyoruz.
 
-İkisi de taşma ve hata kaynağı olabilir.
+### Bu haftanın kavram haritası
 
-### İşaretçi (pointer)
+| Kavram | Bir cümlede | Ayrıntısı |
+| --- | --- | --- |
+| CERT | SEI CERT C/C++, gerçek zafiyetlerden çıkarılan; her kuralı hatalı örnek, uyumlu çözüm, risk değerlendirmesi ve CWE bağıyla veren güvenli kodlama kurallarının kataloğudur. | [§2](#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi) |
+| Tanımsız davranış (UB) | C/C++ standardının sonucunu tanımlamadığı işlemdir (ör. işaretli tamsayı taşması); derleyici bu durumun hiç oluşmayacağını varsayıp ona dayanan denetimi silebilir. | [§7](#7-tamsayilar-ve-tanimsiz-davranis-tarif-35) |
+| Statik ve dinamik analiz | Statik analiz kodu **çalıştırmadan** (derleyici uyarıları, `clang-tidy`), dinamik analiz kodu **çalıştırırken** (sanitizer'lar) hata arar; ikisi birbirini tamamlar. | [§9](#9-statik-analiz-kodu-calistirmadan-hata-aramak) |
+| Sanitizer | Derleyicinin programa eklediği, her bellek erişimini ya da tanımsız davranışı çalışma anında denetleyip ilk hatada ayrıntılı rapor veren bir araçtır (ör. AddressSanitizer). | [§10](#10-sanitizerlar-hatalari-calisma-aninda-yakalamak) |
+| Fuzzing | Bir programı çok sayıda otomatik üretilmiş, çoğu bozuk girdiyle çalıştırıp çöktüğü ya da bir sanitizer'ın hata bildirdiği girdileri arama tekniğidir. | [§11](#11-fuzzinge-giris) |
+| ASLR / NX / kanarya | Derleyici ve işletim sisteminin, bir hata kaçtığında sömürülmesini zorlaştırmak için eklediği korumalardır: ASLR adresleri rastgeleleştirir, NX/DEP veri sayfalarında kod çalıştırmayı engeller, yığın kanaryası dönüş adresine ulaşan taşmayı yakalar. | [§12](#12-derleyici-ve-isletim-sistemi-korumalari) |
+| CI | Her kod değişikliğinde otomatik derleme, statik analiz, sanitizer'lı test ve fuzzing çalıştıran sürekli entegrasyon sistemidir. | [§13](#13-guvenli-derleme-hatti-hepsini-surekli-entegrasyonda-birlestirmek) |
 
-- **İşaretçi:** bir bellek **adresini** tutan değişken.
-- `p` bir adres; `*p` o adresteki değer.
-- Yanlış adres → çökme ya da yanlış veri.
+### Ön bilgi: işaretçiler ve derleme seçenekleri
 
-### Tampon (buffer) ve taşma
+Bu ikisi önceki haftalarda öğretilmedi ama bu haftanın hemen her örneğinde kullanılır; kısaca tanımlayalım.
 
-- **Tampon:** ardışık bellek bloğu (ör. `char ad[16]`).
-- **Taşma (buffer overflow):** tampona **sığmayan** kadar veri yazmak → komşu belleği bozar.
-- Klasik ve tehlikeli bir hata sınıfı.
+**İşaretçi (pointer).** Bir işaretçi, bir bellek **adresini** tutan değişkendir. `p` bir adresi tutar; `*p` o
+adresteki değeri okur ya da yazar (dereferans). Bir işaretçi geçersiz ya da yanlış bir adresi gösteriyorsa, program
+çöker ya da yanlış veriyi okuyup yazar — bu haftanın hatalarının çoğu, sonunda bir işaretçinin yanlış bir yeri
+göstermesine dayanır.
 
-### Neden taşma tehlikeli?
-
-- Komşu değişkenleri, dönüş adresini bozabilir.
-- Saldırgan bunu **denetim akışını** ele geçirmek için kullanabilir.
-- Bu yüzden **sınır denetimi** hayatidir.
-
-### Tanımsız davranış (UB) nedir?
-
-- **Tanımsız davranış (undefined behavior):** C/C++ standardının "sonucu belirsiz" dediği durumlar.
-- Örnek: işaretli tamsayı taşması, dizinin dışına erişim.
-- Derleyici bunu **istediği gibi** ele alabilir — hatta ilgili denetimi **silebilir**.
-
-### Derleyici bayrağı (flag)
-
-- **Bayrak:** derleyiciye verilen seçenek.
-- Örnek: `-O2` (optimizasyon), `-Wall` (uyarılar), `-fsanitize=address`.
-- Doğru bayraklar birçok hatayı **derleme anında** yakalar.
-
-### Uyarı (warning) vs hata (error)
-
-- **Hata:** derleme durur.
-- **Uyarı:** derleme sürer ama bir sorun bildirilir.
-- Kural: uyarıları **hataya çevir** (`-Werror`) — görmezden gelinen uyarı, gelecekteki açıktır.
-
-### CWE nedir?
-
-- **CWE (Common Weakness Enumeration):** yazılım zayıflıklarının numaralı kataloğu.
-- Örnek: CWE-416 = "use-after-free".
-- Bir bulguyu CWE numarasıyla adlandırmak, onu **aranabilir** yapar.
-
-### CERT nedir?
-
-- **SEI CERT C/C++:** güvenli kodlamanın **kural kitabı**.
-- Her kural: hatalı örnek + uyumlu çözüm + risk + CWE bağı.
-- Örnek: `STR31-C` = dizgeye yeterli yer ayır.
-
-### Statik vs dinamik analiz
-
-- **Statik analiz:** kodu **çalıştırmadan** inceleme (derleyici uyarıları, clang-tidy).
-- **Dinamik analiz:** kodu **çalıştırırken** izleme (sanitizer'lar).
-- İkisi birbirini tamamlar.
-
-### Sanitizer nedir?
-
-- **Sanitizer:** programı çalıştırırken bellek/UB hatalarını yakalayan derleyici aracı.
-- Örnek: **ASan** (adres), **UBSan** (tanımsız davranış).
-- Sürüme gitmez; **test/CI**'da kullanılır.
-
-### Fuzzing nedir?
-
-- **Fuzzing:** programa **rastgele/beklenmeyen** girdiler verip çökme aramak.
-- İnsanın düşünmediği girdileri bulur.
-- Sanitizer'la birlikte çok güçlü.
-
-### ASLR, NX/DEP, kanarya
-
-- **ASLR:** bellek adreslerini **rastgeleleştirir** (saldırgan adresi tahmin edemesin).
-- **NX/DEP:** veri bölgesindeki baytları **kod olarak çalıştırmayı** engeller.
-- **Yığın kanaryası:** dönüş adresinden önce bir **nöbetçi değer**; taşma onu bozarsa program durur.
-
-### Beyaz kutu saldırgan (hatırlatma)
-
-- Programa sahip saldırgan (1. hafta MATE).
-- Dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
-- Gizleme bölümünde (bugün sonunda) buna döneceğiz.
-
-### Yığın çerçevesi, dönüş adresi ve ofset
-
-Bu haftanın "bellek düzeyinde adım adım" örneklerinde (biçim dizisi, use-after-free, kanarya) sürekli
-kullanacağımız üç terim daha var; şimdiden tanımlayalım ki örnekler geldiğinde durup sözlüğe bakmayalım:
-
-- **Yığın çerçevesi (stack frame):** bir fonksiyon çağrıldığında yığında ona ayrılan bölüm. Fonksiyonun yerel
-  değişkenlerini, kaydedilmiş çerçeve işaretçisini ve dönüş adresini tutar. Fonksiyon her çağrıldığında yeni bir
-  çerçeve açılır; fonksiyon bitince çerçeve **söner** (yığın işaretçisi geri alınır), içindeki baytlar silinmez,
-  yalnız "artık kullanılmıyor" işaretlenir — bir sonraki çağrı aynı baytları üzerine yazana kadar eski değerler
-  orada **durmaya devam eder**. (Bu, ileride göreceğimiz bazı bellek hatalarının neden "çalışıyormuş gibi"
-  görünebildiğinin bir nedenidir.)
-- **Dönüş adresi (return address):** bir fonksiyon çağrıldığında, işlemci "bu fonksiyon bitince hangi komuta geri
-  döneceğimi" yığına otomatik olarak yazar. Fonksiyonun sonunda bu adres okunur ve program oraya atlar. Dönüş
-  adresini değiştirebilen bir saldırgan, programın **nereye devam edeceğini** seçebilir — bu yüzden dönüş adresi
-  yığındaki en kıymetli hedeflerden biridir.
-- **Ofset (offset):** bir başlangıç noktasına göre uzaklık, bayt cinsinden. "Tampondan 8 bayt sonra", "dosyanın
-  16. baytından itibaren" gibi ifadeler ofset anlatır. Bir taşmanın "kaç bayt fazladan yazarsa dönüş adresine
-  ulaşır" sorusunun cevabı bir ofsettir.
-
-### CI (sürekli entegrasyon)
-
-- **CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
-- Güvenlik araçlarını (uyarı, statik analiz, sanitizer, fuzzing) **her birleştirmede** koşturur.
-
-### Şimdi hazırız
-
-Terimler:
-
-yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · CWE · CERT · statik/dinamik · sanitizer · fuzzing · ASLR/NX/kanarya · CI
-
-Şimdi: kod sağlamlaştırmanın katmanları.
+**Derleyici bayrağı, uyarı ve hata.** Bir bayrak (flag), derleyiciye komut satırında verilen bir seçenektir; ör.
+`-O2` derleyiciye kodu iyileştirmesini, `-Wall` bütün uyarıları açmasını, `-fsanitize=address` denetim kodu
+eklemesini söyler. Derleyici, kodda şüpheli bir yapı gördüğünde iki türden bir bildirim verir: bir **hata** (error)
+derlemeyi durdurur; bir **uyarı** (warning) derlemeyi durdurmaz, yalnız bir sorunu bildirir. Bu ayrım bu haftanın
+kuralı için önemlidir: doğru bayraklarla (`-Werror`) uyarılar hataya çevrilmelidir, çünkü görmezden gelinen bir
+uyarı yarının açığıdır.
 
 ## 1. Kod sağlamlaştırma nedir?
 
-Birinci haftada uygulama korumasının yedi katmanını gördük. Bu hafta bunlardan üçünü, C ve C++ kodu özelinde açıyoruz:
+[Birinci haftada](../week-1/cen429-week-1.md) uygulama korumasının yedi katmanını gördük. Bu hafta bunlardan üçünü, C ve C++ kodu özelinde açıyoruz:
 
 ![Kod sağlamlaştırmanın üç katmanı](assets/h04-05-uc-katman.svg)
 
@@ -317,7 +254,7 @@ sonlandırma).
 
 | Kural | Özet | Nerede gördük? |
 | --- | --- | --- |
-| STR31-C | Dizge için yeterli yer | 1. hafta Demo 3 |
+| STR31-C | Dizge için yeterli yer | [1. hafta](../week-1/cen429-week-1.md) Demo 3 |
 | INT31-C | Tamsayı dönüşümleri veri kaybetmemeli | 1. hafta Demo 4 |
 | MSC06-C | Derleyici iyileştirmesinin güvenlik kodunu silmesine dikkat | 1. hafta Demo 2 |
 | ENV33-C | `system()` çağırma | 1. hafta Demo 1 |
@@ -399,7 +336,7 @@ geçerlidir; bunları C/C++ programcısının günlük kontrol listesine çevire
 | Kaynak | Örnek | Sık unutulan nokta |
 | --- | --- | --- |
 | Komut satırı | `argv` | `argv[0]` bile saldırganın seçtiği bir değer olabilir |
-| Ortam değişkenleri | `PATH`, `HOME`, `LANG` | 1. haftadaki güvenli başlatma |
+| Ortam değişkenleri | `PATH`, `HOME`, `LANG` | [1. haftadaki](../week-1/cen429-week-1.md) güvenli başlatma |
 | Dosyalar | Yapılandırma, belge, resim | Dosya biçimindeki uzunluk alanları |
 | Ağ | Protokol iletisi, HTTP başlığı | İstemci "bu ileti 16 bayt" diyebilir, 1 bayt gönderebilir |
 | Süreçler arası iletişim | Soket, adlandırılmış kanal, paylaşılan bellek | Aynı makinedeki başka bir süreç de güvenilmezdir |
@@ -658,7 +595,7 @@ return sonuc;
 ```
 
 İlklendirilmemiş bir yerel değişken, yığında daha önce duran değeri taşır; bu bir önceki fonksiyonun **sırrı** bile
-olabilir. Güvenlik açısından varsayılan değer, "izin yok" ya da "hata" anlamına gelmelidir (1. haftadaki güvenli
+olabilir. Güvenlik açısından varsayılan değer, "izin yok" ya da "hata" anlamına gelmelidir ([1. haftadaki](../week-1/cen429-week-1.md) güvenli
 varsayılan ilkesi).
 
 ### ERR33-C: kütüphane hatalarını algıla
@@ -710,7 +647,7 @@ printf("%s", kullanici_girdisi);     /* DOĞRU: girdi yalnız veri */
 
 Ne kadar zararlı olduğu platforma ve korumalara göre değişir; ama en hafif sonucu bile bir **bilgi sızıntısıdır**:
 yığında duran bir anahtar, bir adres (ASLR'yi zayıflatır) ya da bir kanarya değeri okunabilir. Aynı hata `syslog`,
-`fprintf`, `snprintf`, `err`/`warn` ve bir biçim dizgesi alan her fonksiyonda ortaya çıkar; 2. haftada denetim
+`fprintf`, `snprintf`, `err`/`warn` ve bir biçim dizgesi alan her fonksiyonda ortaya çıkar; [2. haftada](../week-2/cen429-week-2.md) denetim
 kaydının `syslog(LOG_INFO, kullanici_girdisi)` hatasını görmüştük.
 
 ### İşlenmiş örnek: `%x` yığından ne okur? Adım adım
@@ -790,9 +727,9 @@ sömürü adımına **girmiyoruz** — mekanizmayı anlamak, savunmayı (biçim 
     Kural tek cümledir ve istisnasızdır: **biçim dizgesi her zaman sabit bir metin sabiti olmalı, kullanıcı verisi
     yalnız `%s` gibi bir belirtecin argümanı olarak geçmelidir.** `printf("%s", girdi)` — asla `printf(girdi)`.
 
-Bu mekanizma, 1. haftada gördüğümüz "bellek okuma/yazma sınırlarının ihlali" hata ailesinin somut bir örneğidir:
+Bu mekanizma, [1. haftada](../week-1/cen429-week-1.md) gördüğümüz "bellek okuma/yazma sınırlarının ihlali" hata ailesinin somut bir örneğidir:
 `%x` bir **sınır dışı okuma**, `%n` bir **sınır dışı yazma** yapar — farkı, sınırı aşan tarafın bir dizi indeksi
-değil, biçim dizgesindeki belirteç sayısı olmasıdır. 5. haftada göreceğimiz enjeksiyon saldırılarıyla da aynı
+değil, biçim dizgesindeki belirteç sayısı olmasıdır. [5. haftada](../week-5/cen429-week-5.md) göreceğimiz enjeksiyon saldırılarıyla da aynı
 kökten gelir: **veri, komut yerine geçmiştir** — SQL enjeksiyonunda veri bir sorgu parçası, burada veri bir
 biçim komutu olarak yorumlanmıştır.
 
@@ -860,8 +797,10 @@ gunluk_yaz(1, "%s", kullanici);    /* doğru */
 
 ## 6. Serbest bırakılmış belleğin kullanımı ve çift serbest bırakma
 
-Birinci haftada bellek yönetimi hatalarının kuramını ve sahiplik kuralını gördük. Bu bölümde aynı hatayı çalışan bir
-programda izliyoruz ve C++'ın bu hataların çoğunu nasıl **tasarımla** ortadan kaldırdığını görüyoruz.
+[Birinci haftada, §17](../week-1/cen429-week-1.md#17-bellek-yonetimi-ve-guvenlik)'de bellek yönetimi hatalarının
+kuramını, sahiplik kuralını ve serbest bıraktıktan sonra kullanmanın (use-after-free) neden tehlikeli olduğunu
+temel düzeyde gördük. Bu bölümde aynı hatayı çalışan bir programda bayt bayt izliyoruz ve C++'ın bu hataların
+çoğunu nasıl **tasarımla** ortadan kaldırdığını görüyoruz.
 
 ![Use-after-free zinciri](assets/h04-08-uaf.svg)
 
@@ -1030,7 +969,7 @@ if (auto o = onbellek.lock()) {                // nesne hâlâ yaşıyor mu?
 
 ## 7. Tamsayılar ve tanımsız davranış (Tarif 3.5)
 
-Birinci haftada işaretli bir uzunluğun `size_t`'ye dönüşünce dev bir sayıya dönüştüğünü gördük. Bu bölümde tamsayı
+[Birinci haftada](../week-1/cen429-week-1.md#16-tamsayilar-ve-isaretli-uzunluk-hatasi) işaretli bir uzunluğun `size_t`'ye dönüşünce dev bir sayıya dönüştüğünü gördük. Bu bölümde tamsayı
 hatalarının bütün ailesini ve C'nin en şaşırtıcı kavramlarından birini, **tanımsız davranışı** işliyoruz.
 
 ![İşaretli -1 değerinin SIZE_MAX'e dönüşmesi](assets/h04-09-tamsayi.svg)
@@ -1257,9 +1196,9 @@ programın **yanlış bir varsayımla** devam etmesi demektir:
 | Çağrı | Başarısız olursa | Denetlenmezse |
 | --- | --- | --- |
 | `malloc` | `NULL` | NULL işaretçiye yazma, çökme |
-| `setuid` / `setresuid` | `-1` | Program yetkili kalır ama bıraktığını sanır (1. hafta) |
+| `setuid` / `setresuid` | `-1` | Program yetkili kalır ama bıraktığını sanır ([1. hafta](../week-1/cen429-week-1.md)) |
 | `fopen` | `NULL` | Sonraki `fread` çöker ya da boş veriyle işlem yapılır |
-| `RAND_bytes` / `getrandom` | `!= 1` / `-1` | "Rastgele" anahtar sıfırlardan oluşur (3. hafta) |
+| `RAND_bytes` / `getrandom` | `!= 1` / `-1` | "Rastgele" anahtar sıfırlardan oluşur ([3. hafta](../week-3/cen429-week-3.md)) |
 | `EVP_DecryptFinal_ex` | `!= 1` | Kurcalanmış veri doğrulanmış sanılır (3. hafta) |
 | `snprintf` | Dönüş ≥ boyut | Çıktı kesilmiştir; yol ya da komut anlamını değiştirebilir |
 
@@ -1390,6 +1329,11 @@ Statik analiz yanlış alarm verir; bunları yönetmek de sürecin bir parçası
 ---
 
 ## 10. Sanitizer'lar: hataları çalışma anında yakalamak
+
+Birinci haftada AddressSanitizer'ı ilk kez, bir taşmayı yakalarken kısaca görmüştük
+([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)). Bu hafta bütün
+sanitizer ailesini, ASan'ın iç mekanizmasını (gölge bellek) ve bir raporu satır satır nasıl okuyacağımızı
+derinlemesine işliyoruz.
 
 **Sanitizer**, derleyicinin programa eklediği bir denetim katmanıdır: her bellek erişiminin, her tamsayı işleminin ya
 da her iş parçacığı erişiminin geçerli olup olmadığını çalışma anında denetler ve ilk hatada ayrıntılı bir rapor
@@ -1586,9 +1530,12 @@ yine ASan'lı yeniden oynatıcıyla gösterir. Windows'ta libFuzzer, Visual Stud
 
 ## 12. Derleyici ve işletim sistemi korumaları
 
-Güvenli kodlama hataları **önler**; derleyici ve işletim sistemi korumaları ise bir hata kaçtığında **sömürülmesini
-zorlaştırır**. Kitap bunlardan yalnız yığın koruyucuyu (StackGuard, ProPolice, MSVC `/GS`) anar (Tarif 3.3); ASLR,
-DEP/NX, RELRO ve kontrol akışı bütünlüğü kitabın yazılmasından sonra yaygınlaştı.
+Birinci haftada "Taşmayı kim yakalar?" bölümünde bu korumaların listesini kısaca görmüştük
+([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)); bu hafta her
+birinin iç mekanizmasını, neyi durdurup neyi durdurmadığını tek tek açıyoruz. Güvenli kodlama hataları **önler**;
+derleyici ve işletim sistemi korumaları ise bir hata kaçtığında **sömürülmesini zorlaştırır**. Kitap bunlardan
+yalnız yığın koruyucuyu (StackGuard, ProPolice, MSVC `/GS`) anar (Tarif 3.3); ASLR, DEP/NX, RELRO ve kontrol akışı
+bütünlüğü kitabın yazılmasından sonra yaygınlaştı.
 
 ![Derleyici ve işletim sistemi koruma katmanları](assets/h04-02-derleyici-os-korumalari.svg)
 
@@ -1832,7 +1779,7 @@ yalnız Demo 5'in `giris_sert` hedefinde açıktır:
 | Kip | Amaç | Bayraklar (özet) |
 | --- | --- | --- |
 | `korumasiz` | Hatayı "çıplak" göstermek | İyileştirme kapalı (`-O0` / `/Od`) |
-| `optimize` | Derleyici iyileştirmesinin etkisini göstermek (1. hafta Demo 2) | `-O2` / `/O2` |
+| `optimize` | Derleyici iyileştirmesinin etkisini göstermek ([1. hafta](../week-1/cen429-week-1.md) Demo 2) | `-O2` / `/O2` |
 | `asan` | Bellek hatalarını yakalamak | `-O1 -fsanitize=address` / `/fsanitize=address`; Linux'ta FORTIFY kapatılır ki yalnız ASan görülsün |
 | `denetimli` | Kütüphanenin çalışma anı denetimleri | `-O2 -D_FORTIFY_SOURCE=2` (Windows'ta `KUTUPHANE_DENETIMI` tanımı) |
 | `guvenli` | Düzeltilmiş kaynak kod | `-O2` / `/O2`; asıl fark kodun kendisindedir |
@@ -1845,7 +1792,7 @@ sürüm için korumalar açık ve günlük kapalı.
 İkinci haftada gördüğümüz gibi, saldırgan bazen kodu değil **derleme ortamını** hedef alır. Derleme hattının güvenliği için:
 
 - Derleme sunucusuna erişim sınırlı ve kayıt altında olmalı.
-- Bağımlılıklar sürüm ve özet değeriyle sabitlenmeli (5. haftada SBOM).
+- Bağımlılıklar sürüm ve özet değeriyle sabitlenmeli ([5. haftada](../week-5/cen429-week-5.md) SBOM).
 - Sürüm ikilileri imzalanmalı ve özet değerleri yayımlanmalı (1. haftada benzersiz sürüm kimliği).
 - Mümkünse **yeniden üretilebilir derleme** (reproducible build): aynı kaynaktan her zaman bit bit aynı ikili.
 
@@ -1853,11 +1800,16 @@ sürüm için korumalar açık ve günlük kapalı.
 
 ## 14. Kod gizlemeye giriş (Tarif 12.1, 12.3)
 
-Buraya kadar anlattıklarımız, uzaktan girdi gönderen bir saldırgana karşı yeterlidir. Ama 1. haftada gördüğümüz
+Buraya kadar anlattıklarımız, uzaktan girdi gönderen bir saldırgana karşı yeterlidir. Ama [1. haftada](../week-1/cen429-week-1.md) gördüğümüz
 **beyaz kutu saldırgan** programın kendisine sahiptir: ikili dosyayı bir tersine derleyicide açabilir, dizgelerini
 okuyabilir, fonksiyonlarını adlarıyla bulabilir. Kodunuzda bir lisans denetimi, bir anahtarın parçası ya da bir güvenlik
 denetimi varsa, bunları okumak onu atlatmanın ilk adımıdır. **Kod gizleme** (obfuscation), programın davranışını
 değiştirmeden **anlaşılmasını zorlaştıran** dönüşümlerin genel adıdır.
+
+Bu hafta gizlemeye yalnız **giriş** yapıyoruz: ne verdiğini, ne vermediğini ve üç basit önlemi görüyoruz. Gizleme
+kurallarının tam kataloğu ve ölçülmesi [9. haftada](../week-9/cen429-week-9.md#3-gizleme-ne-verir-ne-vermez), aynı
+kuralların bir araçla otomatik uygulanması [14. haftada](../week-14/cen429-week-14.md#1-kaynaktan-kaynaga-gizleme-nedir)
+işlenir.
 
 ![Uzak saldırgan ile cihazın sahibi arasındaki fark](assets/h04-17-iki-saldirgan-modeli.svg)
 
@@ -1931,7 +1883,7 @@ saldırgan bayrağı değiştirerek günlüğü yeniden açabilir. Sahada tek is
 !!! warning "Dize gizleme bir anahtar saklama yöntemi değildir"
     Şifrelenmiş bir dizge, program çalışırken kullanım anında çözülür; o anda bellekte açıktır ve çözme anahtarı da
     programın içindedir. Dize gizleme `strings` gibi **statik** taramaları durdurur; programı çalışırken inceleyen
-    saldırgana karşı RASP (6. hafta), gerçek anahtarlar için ise whitebox kriptografi (11. hafta) gerekir. Sahada dize
+    saldırgana karşı RASP ([6. hafta](../week-6/cen429-week-6.md)), gerçek anahtarlar için ise whitebox kriptografi ([11. hafta](../week-11/cen429-week-11.md)) gerekir. Sahada dize
     gizleme anahtarı bu yüzden kendisi de parçalanıp gizlenir ve çözme fonksiyonu ek denetimlerle korunur.
 
 ### Demo 6 — Sembol ve dize sızıntısı
@@ -1969,7 +1921,9 @@ saldırgan bayrağı değiştirerek günlüğü yeniden açabilir. Sahada tek is
 Derlenmiş bir fonksiyonun kontrol akışı grafiği (CFG), algoritmanın iskeletini gösterir: hangi denetimin hangi sırayla
 yapıldığı, hangi dalın başarıya gittiği. **Kontrol akışı düzleştirme** (control-flow flattening), fonksiyonun bütün
 temel bloklarını tek bir döngünün içindeki bir `switch` dağıtıcısına taşır. Bloklar arasındaki doğal komşuluk kaybolur;
-hangi bloğun hangisinden sonra geldiği yalnız bir **durum değişkeninin** değerinden anlaşılır.
+hangi bloğun hangisinden sonra geldiği yalnız bir **durum değişkeninin** değerinden anlaşılır. Burada tekniğin fikrini ve
+küçük bir demosunu görüyoruz; derin hâli [9. haftada kural K-04](../week-9/cen429-week-9.md#5-kontrol-akisi-kurallari-ileri)
+olarak gelir.
 
 ![Düzleştirme öncesi ve sonrası kontrol akışı](assets/h04-19-duzlestirme-giris.svg)
 
@@ -2026,7 +1980,7 @@ birleştirilir:
 | 2 | `objdump` / `dumpbin` ile `pin_dogrula`'nın makine kodu karşılaştırılır: düzleştirilmiş sürümde çok daha fazla dal |
 | 3 | Süre ölçümü: düzleştirilmiş sürüm yavaştır |
 
-Bu demo, 14. haftada Tigress'in `--Transform=Flatten` dönüşümüyle **otomatik** yapacağımız işin el ile karşılığıdır.
+Bu demo, [14. haftada](../week-14/cen429-week-14.md) Tigress'in `--Transform=Flatten` dönüşümüyle **otomatik** yapacağımız işin el ile karşılığıdır.
 Gizlemenin etkinliğini nasıl ölçeceğimizi (güç, dayanıklılık, maliyet) 9. haftada işleyeceğiz.
 
 ### Fonksiyon adı, bellek ayırma gizleme ve dinamik şifreleme: kavram
@@ -2048,7 +2002,7 @@ Gizlemenin etkinliğini nasıl ölçeceğimizi (güç, dayanıklılık, maliyet)
     Gizlemeyi "var/yok" diye değil, **zaman** ölçüsüyle değerlendirir: ikili dosyada hassas bir fonksiyonu bulmak,
     mantığını anlamak ve bir denetimi atlatmak ne kadar sürdü? Önce `strings` ve sembol taramasıyla başlar, sonra bir
     tersine derleyiciyle kontrol akışını inceler. Raporda her koruma katmanının saldırıyı ne kadar geciktirdiği
-    yazılır; saldırı potansiyeli puanlamasında (13. hafta) "gereken süre" ve "gereken uzmanlık" ölçütleri buradan gelir.
+    yazılır; saldırı potansiyeli puanlamasında ([13. hafta](../week-13/cen429-week-13.md)) "gereken süre" ve "gereken uzmanlık" ölçütleri buradan gelir.
 
 ---
 
@@ -2254,7 +2208,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
 - MITRE CWE: CWE-134 (denetlenmeyen biçim dizgesi), CWE-190 (tamsayı taşması), CWE-252 (denetlenmeyen dönüş değeri),
   CWE-415, CWE-416, CWE-479 (sinyal işleyicide güvensiz fonksiyon), CWE-758 (tanımsız davranışa dayanma), CWE-215
   (hata ayıklama kodunda bilgi), CWE-200.
-- C. Collberg, J. Nagra, *Surreptitious Software*, Addison-Wesley, 2009 (gizleme taksonomisi; 9. haftada ayrıntılı).
+- C. Collberg, J. Nagra, *Surreptitious Software*, Addison-Wesley, 2009 (gizleme taksonomisi; [9. haftada](../week-9/cen429-week-9.md) ayrıntılı).
 
 ??? abstract "Sözlük"
     | Terim | Türkçe | Kısa tanım |
@@ -2274,3 +2228,10 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     | Obfuscation | Gizleme | Davranışı değiştirmeden anlaşılmayı zorlaştıran dönüşüm |
     | Control-flow flattening | Kontrol akışı düzleştirme | Blokları tek bir döngü + `switch` dağıtıcısına taşıma |
     | Opaque predicate | Opak yüklem | Değeri programcıca bilinen ama analizle zor çıkarılan koşul |
+
+!!! info "Bir sonraki hafta"
+    **[5. hafta](../week-5/cen429-week-5.md) — Java ve yorumlanan diller.** Bu hafta C/C++'ta elle yönetilen bellek ile derleyici ve işletim
+    sistemi korumalarıyla uğraştık; 5. hafta, Java'nın çalışma zamanının (JVM) bu hafta gördüğümüz bellek
+    hatalarının çoğunu (taşma, serbest bırakılmış belleğin kullanımı, tanımsız davranış) nasıl ortadan kaldırdığını,
+    ama enjeksiyon gibi yeni bir hata sınıfını nasıl açtığını gösterir. SEI CERT Java kuralları, bugün işlediğimiz
+    SEI CERT C/C++ kurallarıyla karşılaştırılacak.

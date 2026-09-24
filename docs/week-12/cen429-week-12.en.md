@@ -5,7 +5,7 @@
 | **Date** | 04.12.2026 |
 | **Learning outcomes** | LO.5, 6, 7 |
 | **Duration** | 3 hours |
-| **Prerequisites** | CVSS and vulnerability classification from Week 2; the cost/benefit framework of the obfuscation rules from Week 9; the idea of a unit test |
+| **Prerequisites** | CVSS and vulnerability classification from [Week 2](../week-2/cen429-week-2.md); the cost/benefit framework of the obfuscation rules from [Week 9](../week-9/cen429-week-9.md); the idea of a unit test |
 | **Labs** | [`code/week-12`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-12) — 2 demos; build once in the `code` folder, then run from `bin/linux` (`bin\windows` on Windows) |
 
 <!-- materyal:basla -->
@@ -95,140 +95,62 @@
 
 ---
 
-## 0. Basic concepts (from scratch)
+## 0. Before we start
 
-This section **assumes no prior knowledge**. We define, from scratch, the terms we'll use for the rest of the week.
-If you don't know a term, read this section first; the following sections build on it.
+This section prepares you for the week. It first briefly recalls the earlier topics this week builds on; it then
+defines each of this week's concepts in one sentence and links it to the section where it is explained in full.
 
-### Why this section?
+### What we bring from earlier weeks
 
-This week terms such as "evaluation," "certification," "penetration test" will come up.
+- **Vulnerability** — a weak point in a system that can be abused, e.g. an unbounded buffer
+  ([Week 1, §1](../week-1/cen429-week-1.md#1-what-is-security)). This week we separate this concept from
+  **finding** and **risk** one by one, and rebuild all three in the language of an independent evaluation
+  (end of §0, §6).
+- **Kerckhoffs's principle** — the principle that a system's security must rest not on the design staying secret,
+  but only on the key staying secret
+  ([Week 3, §2](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what)). This week this
+  principle returns as the reason behind the evaluator's assumption that "the attacker fully knows the system" and
+  behind working white-box (end of §0).
+- **Static and dynamic analysis** — finding bugs without running the code (static) or while running it with
+  sanitizers (dynamic) ([Week 4, §9](../week-4/cen429-week-4.md#9-static-analysis-finding-bugs-without-running-the-code);
+  for the dynamic side, [§10](../week-4/cen429-week-4.md#10-sanitizers-catching-bugs-at-runtime)). This week we use
+  these two under evaluation's official names, **SAST** and **DAST**, and place them in the vulnerability-assessment
+  order (§3).
+- **Fuzzing** — feeding a program unexpected/random inputs to look for crashes or corruption
+  ([Week 4, §11](../week-4/cen429-week-4.md#11-introduction-to-fuzzing)). This week we treat fuzzing as the fourth
+  step of the vulnerability-assessment order, a method that must be reported together with its duration and the
+  code coverage it reached (§3).
+- **CVSS** — the Common Vulnerability Scoring System, which expresses a vulnerability's impact as a standard score
+  (0–10) ([Week 2, §15](../week-2/cen429-week-2.md#15-cve-and-cvss-which-flaw-how-severe)). This week we compare
+  CVSS with **attack potential** and see why the two answer different questions (§5).
 
-Let's first define all of them, **one by one**, so the topic doesn't stay abstract.
+### This week's concept map
 
-### What is a security evaluation?
+| Concept | In one sentence | Detail |
+| --- | --- | --- |
+| Security evaluation | An independent party testing a product's security claims on the basis of evidence; saying "I am secure" is not enough on its own. | [§1](#1-why-independent-evaluation) |
+| Certification | An authorized certification authority documenting that a product or organisation complies with a given standard; issued when the evaluation succeeds. | [§1](#1-why-independent-evaluation) |
+| Standard | A common set of rules (e.g. ISO/IEC 27001, Common Criteria, FIPS 140-3, PCI, OWASP MASVS) defining what should be done and how, each measuring something different. | [§1](#the-standards-and-certification-landscape) |
+| Evaluation laboratory | The independent, accredited organisation that tests a product; it has access to all source code and documentation but does not issue the certificate itself. | [§2](#roles-in-the-process-who-is-who) |
+| TOE (Target of Evaluation) | The product being evaluated, identified uniquely not by a single version number but by version label + binary + source code + hash value. | [§2](#toe-identity-why-doesnt-version-320-suffice) |
+| White-box vs. black-box testing | In white-box testing the tester has access to source code and documentation; in black-box testing the tester accesses the system only from the outside, like a user; the evaluator usually works white-box. | [end of §0](#why-is-white-box-preferred-a-short-comparison) |
+| Attack potential | How difficult it is to carry out an attack, scored by five factors — elapsed time, expertise, knowledge of the target, opportunity, and equipment; a low score means a serious finding. | [§5](#5-attack-potential-and-finding-rating) |
+| Finding | A problem or improvement point identified during evaluation with evidence; every finding proceeds through a recommendation and an action. | [§6](#6-finding-recommendation-action-and-impact-analysis) |
+| Security impact analysis and delta assessment | Impact analysis is the developer's report documenting a change's security impact; delta assessment is the laboratory's re-examination of only the changed part. | [§6](#security-impact-analysis-and-delta-assessment) |
+| Risk | The joint assessment of a vulnerability's probability of being exploited and the impact that would result if it were; the same vulnerability can carry different risk in different contexts. | [§6](#residual-risk-not-everything-closes-what-doesnt-close-is-written-explicitly) |
+| Penetration test (pentest) | Attempting to break into a system from an attacker's point of view, with permission and in a planned way, combining the earlier methods; the last and most expensive step. | [§7](#7-penetration-test-plan) |
 
-- **Security evaluation:** an **independent** party **testing** a product's security claims.
-- Saying "I am secure" is not enough; **evidence** and **testing** are required.
+Let's open up the idea of risk a little further: risk is the joint assessment of a vulnerability's **probability of
+being exploited** and the **impact** that would result if it were — roughly "how likely × how bad." Not every
+vulnerability carries the same risk: if exploiting it is nearly impossible (e.g., a server in a locked room, never
+connected to a network), the risk is low; the same vulnerability on a server exposed to the internet carries high
+risk — **same vulnerability, different risk.** The risk that still cannot be closed after all mitigations is called
+**residual risk**; a good report writes this **explicitly**, it does not hide it (we'll see an example in §6). In
+short: a **vulnerability** is a technical weakness, a **finding** is that weakness documented with evidence during
+an evaluation, and **risk** is the contextual answer to the question "how dangerous is this weakness, really?"
 
-### What is certification?
-
-- **Certification:** an authorized party **documenting** that a product/organisation complies with a given
-  **standard**.
-- If the evaluation succeeds, a **certificate** is issued.
-
-### Who is the laboratory (evaluator)?
-
-- **Evaluation laboratory:** the independent, accredited organisation that tests the product.
-- It is **not** the organisation that develops the product (for impartiality).
-- It has access to all source code and documentation.
-
-### What is a standard?
-
-- **Standard:** a common set of rules defining what should be done and how.
-- Examples: ISO/IEC 27001, Common Criteria, FIPS 140-3, PCI, OWASP MASVS.
-- Each measures something different (more on this shortly).
-
-### What is a vulnerability?
-
-- **Vulnerability:** a **weak point** in a system that can be abused (e.g., an unbounded buffer).
-- Vulnerability + abuse = security incident.
-
-### What is a finding?
-
-- **Finding:** a problem or improvement point identified during evaluation.
-- Every finding needs: evidence, severity, a **recommendation**.
-
-### White-box vs. black-box testing
-
-- **White-box testing:** the tester has access to **source code + documentation**.
-- **Black-box testing:** the tester accesses the system only from the outside (like a user).
-- The evaluator usually works **white-box** (sees everything).
-
-### What is SAST?
-
-- **SAST (Static Application Security Testing):** a tool that analyses source **without running it**.
-- Finds dangerous patterns and possible memory errors.
-- Fast and broad; but produces **false positives**.
-
-*(We saw this in week 4 as "static analysis.")*
-
-### What is DAST?
-
-- **DAST (Dynamic Application Security Testing):** tests the program **while running it**.
-- Catches memory-access errors and undefined behaviour (e.g., with sanitizers).
-
-*(ASan/UBSan in week 4.)*
-
-### What is fuzzing?
-
-- **Fuzzing:** feeding a program **unexpected/random inputs** to look for crashes/corruption.
-- Finds inputs a human would never think of.
-
-*(The libFuzzer/AFL concept in week 4.)*
-
-### What is a penetration test (pentest)?
-
-- **Penetration test:** attempting to break into a system from an attacker's point of view, **with permission** and
-  **in a planned way**.
-- **Combines** the methods above; the last and the most expensive step.
-
-### What is a TOE?
-
-- **TOE (Target of Evaluation):** **exactly what** is being evaluated?
-- A Common Criteria term.
-- Identified uniquely: version + binary + source + hash value.
-
-### What is CVSS?
-
-- **CVSS (Common Vulnerability Scoring System):** expresses a vulnerability's **impact** as a standard score (0–10).
-- Higher score = more severe impact.
-- Used for prioritization.
-
-### What is attack potential?
-
-- **Attack potential:** **how difficult** it is to carry out an attack.
-- Scored with factors such as time, expertise, and equipment.
-- Low potential (an easy attack) = a serious finding.
-
-### Attack potential — five factors
-
-The score is the sum of five factors; each one measures "how much harder does this make the attacker's job?":
-
-| Factor | What it measures |
-| --- | --- |
-| **Elapsed time** | How long does the attack take (hours or months)? |
-| **Expertise** | Is an ordinary user enough, or is a domain expert needed? |
-| **Knowledge of the target** | Is public information enough, or are internal design documents needed? |
-| **Opportunity (access)** | How long and how closely must the attacker reach the device? |
-| **Equipment** | An ordinary computer, or specialised laboratory hardware? |
-
-The total is mapped to a **resistance level**. Note the direction: a **low** score means the attack is **easy**, so a
-low score is a serious finding. Section 5 gives the full factor table and two worked calculations.
-
-### Impact analysis and delta assessment
-
-- **Security impact analysis:** a report **documenting** the security impact of a change.
-- **Delta assessment:** re-evaluating **only the changed part**.
-
-We'll see these in detail in section 5.
-
-### What is risk? (vulnerability, finding, and risk are not the same thing)
-
-The three words used in the definitions above — vulnerability, finding, risk — are used interchangeably in everyday
-language, but in evaluation **they are three separate things**:
-
-- **Risk:** a joint assessment of a vulnerability's **probability of being exploited** and the **impact** that would
-  result if it were — roughly "how likely × how bad."
-- Not every vulnerability carries the same risk: if exploiting it is nearly impossible (e.g., a server in a locked
-  room, never connected to a network), the risk is low; the same vulnerability on a server exposed to the internet
-  carries high risk — **same vulnerability, different risk.**
-- **Residual risk:** the risk that still cannot be closed after all mitigations; a good report writes this
-  **explicitly**, it does not hide it (we'll see an example in sections 6 and 12).
-
-*(In short: a **vulnerability** is a technical weakness, a **finding** is that weakness documented with evidence
-during an evaluation, and **risk** is the contextual answer to the question "how dangerous is this weakness,
-really?")*
+Let's now ground these three terms and the white-box/black-box distinction in a single example and a comparison
+table; these two pieces are the last connecting step before we carry this week's concepts into the body.
 
 ### Telling the terms apart: a small end-to-end example
 
@@ -288,18 +210,13 @@ single bug — this is the first concrete example of section 3's "which method f
     **Rule:** keep the sentences "designed to comply with the standard" and "certified against the standard"
     clearly separate.
 
-### The Kerckhoffs principle: where does the evaluator's assumption come from?
-
-In the coming sections we'll often see the sentence "the evaluator assumes the attacker fully knows the system."
-This assumption has a name:
-
-- **Kerckhoffs's principle:** a system's security must rest **not on the design staying secret**, but only on the
-  **key** staying secret. In other words, the defence "nobody knows our algorithm, so we're secure" is **invalid**
-  — you must design assuming the attacker knows the source code, the design, even the manual.
-- The evaluator's working **white-box** (below) is exactly a natural consequence of this principle: since a real
-  attacker can sooner or later learn the design, the evaluator should see everything from the start too.
-
 ### Why is white-box preferred? A short comparison
+
+In the coming sections we'll often see the sentence "the evaluator assumes the attacker fully knows the system" —
+this assumption comes from **Kerckhoffs's principle**, which we met in Week 3: a system's security must rest not on
+the design staying secret, but only on the key staying secret; the defence "nobody knows our algorithm, so we're
+secure" is invalid. The evaluator's working **white-box** is exactly a natural consequence of this principle: since
+a real attacker can sooner or later learn the design, the evaluator should see everything from the start too.
 
 | | White-box | Black-box |
 | --- | --- | --- |
@@ -327,17 +244,8 @@ summary** of the rest of the week:
 > assessment**; in the end, a **certification** authority issues the certificate for a specific **TOE** identity.
 
 If you can read this single paragraph and recognise every term, you've already built the **skeleton** of everything
-we'll see from section 1 through 9; the remaining sections will fill in this skeleton's **flesh**.
-
-### Now we're ready
-
-The terms we know:
-
-evaluation · certification · laboratory · standard · vulnerability · finding · risk · white/black box ·
-Kerckhoffs's principle · SAST · DAST · fuzzing · penetration test · TOE · CVSS · attack potential · impact
-analysis/delta
-
-Now: **why independent evaluation?**
+we'll see from section 1 through 9; the remaining sections will fill in this skeleton's **flesh**. Now: **why
+independent evaluation?**
 
 ## 1. Why independent evaluation?
 
@@ -354,7 +262,7 @@ such-and-such date."
     - **1985** — the US **TCSEC** ("Orange Book"): the first formal security-evaluation criteria.
     - **1991–1993** — European **ITSEC** and Canadian **CTCPEC**.
     - **1999** — these merge under **Common Criteria (ISO/IEC 15408)**; the **EAL** assurance scale comes from here
-      (week 13).
+      ([week 13](../week-13/cen429-week-13.md)).
     - **2001** — **OWASP** is founded (application security testing culture); **PTES** and **NIST SP 800-115**
       later standardize penetration-testing methodologies.
     - **2005 → 2023** — the **CVSS** vulnerability severity score (v2 → v3.1 → v4.0).
@@ -403,7 +311,7 @@ meaningless:
     without stating **which version**, **which assurance level**, and **against which attacker model**, this
     sentence is no different from a marketing claim. **Rule:** a certification claim is always written together
     with a version number + standard name + (if any) assurance level; this is exactly why the version-identity
-    discipline from week 1 is needed.
+    discipline from [Week 1, §19](../week-1/cen429-week-1.md#19-secure-development-process-keeping-the-plan-alive) is needed.
 
 ### Why can't the developer approve its own product?
 
@@ -458,7 +366,9 @@ standard; a team asks the question: "is this certificate's **cost** worth the **
   basic penetration test) is preferred instead.
 
 !!! tip "The trade-off applies here too"
-    The trade-off discipline from week 1 also operates in the certification decision: "a fully-scoped certificate"
+    The trade-off discipline from
+    [Week 1, §19](../week-1/cen429-week-1.md#19-secure-development-process-keeping-the-plan-alive) also operates in
+    the certification decision: "a fully-scoped certificate"
     is not always the right answer. The right question is "given our target market, the value of our assets, and
     our attacker model, what **depth** of verification is enough?" — this is exactly what section 4's "test depth"
     table shows deciding.
@@ -473,7 +383,7 @@ actually a response to a real **trust crisis**:
 - Common Criteria (1999) was created to solve a problem caused by the US/European/Canadian criteria
   (TCSEC/ITSEC/CTCPEC) being **separately** developed and **incomparable** with each other — so that the same
   product would not need to be re-evaluated in every country for international trade.
-- CVE/CWE/CVSS (as we saw in week 2), between 1999 and 2006, arose as a response to the chaos created by
+- CVE/CWE/CVSS (as we saw in [Week 2, §15](../week-2/cen429-week-2.md#15-cve-and-cvss-which-flaw-how-severe)), between 1999 and 2006, arose as a response to the chaos created by
   vulnerabilities being reported in **unnamed** and **incomparable** ways.
 
 !!! success "Rule: every standard is an answer to a real problem"
@@ -525,7 +435,8 @@ presence of some security checks) can differ. That is why a TOE identity consist
     A developer might say "nothing has changed, it's still 3.2.0," but if the build environment (compiler version,
     optimisation flag) has changed, the **binary is different**, and the previous certificate no longer covers that
     binary. **Rule:** TOE identity is always verified with a hash value, never trusted to a version number — this is
-    exactly what the "version identity" practice from week 1 is for.
+    exactly what the "version identity" practice from
+    [Week 1, §19](../week-1/cen429-week-1.md#19-secure-development-process-keeping-the-plan-alive) is for.
 
 ![The three phases and 13 steps of evaluation](assets/h12-01-degerlendirme-sureci.svg)
 
@@ -541,13 +452,13 @@ for the life of the product.
 | --- | --- | --- | --- |
 | **1. Target of evaluation** | What is to be evaluated is defined **uniquely**: a version number is not enough; binary + source code + hash value or version label. Out-of-scope components are written down. Assumption: **the platform is untrusted** | TOE definition | S0, S1 (week 1 version identity) |
 | **2. Delivery of documents** | Source code, API documentation, the **security guide**, debug and release builds are delivered over a secure channel | Delivery list | Your repo + guide |
-| **3. Requirement template** | The standard's numbered requirements; for each: the requirement text, **test coverage**, the developer's **compliance rationale and document reference**; status: met / transferred / not met | Filled-in template | S17 compliance matrix (week 13) |
+| **3. Requirement template** | The standard's numbered requirements; for each: the requirement text, **test coverage**, the developer's **compliance rationale and document reference**; status: met / transferred / not met | Filled-in template | S17 compliance matrix ([week 13](../week-13/cen429-week-13.md)) |
 | **4. Workshop** | It is planned which control meets which requirement, and how gaps will be closed | Document-update plan | — |
-| **5. Source code review** | All source is reviewed at the laboratory in a **white-box** context: dangerous patterns, incorrect crypto, leak points | Code-review findings | Week 4 CERT, static analysis |
+| **5. Source code review** | All source is reviewed at the laboratory in a **white-box** context: dangerous patterns, incorrect crypto, leak points | Code-review findings | [W4 §2](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding), [§9](../week-4/cen429-week-4.md#9-static-analysis-finding-bugs-without-running-the-code) |
 | **6. Vulnerability analysis** | Assets and key hierarchy are extracted; for every asset the question "where, in what state, is it exposed?" is asked | Finding list + **penetration test plan** | S4, S5, S16 |
 | **7. Penetration test** | Every item in the plan is carried out with the eight-field template and rated with **attack potential** | Test result tables | S16 |
 | **8. Functional conformance** | The product's standard functions (e.g., payment flows) are tested with the scheme's test suite | Execution report | Unit tests |
-| **9. Findings and fixes** | For every finding, the laboratory produces a recommendation, the developer produces an action; some findings are closed as "not a security issue, a good-practice suggestion" | Finding–action table | Week 7 finding list |
+| **9. Findings and fixes** | For every finding, the laboratory produces a recommendation, the developer produces an action; some findings are closed as "not a security issue, a good-practice suggestion" | Finding–action table | [Week 7](../week-7/cen429-week-7.md) finding list |
 | **10. Security impact analysis** | When fixes produce a new version: change category (new feature / improvement / bug fix), affected files, security impact | Impact-analysis document | S13, week 1 change management |
 | **11. Delta assessment** | Only the changed part is re-evaluated; the laboratory asks for the marked-up documents, the impact analysis, the file list, and the new TOE identity | Delta report | — |
 | **12. Trade-off and residual risk** | The cost of every protection is measured, decisions are justified, residual risk is written explicitly | Trade-off record | Week 1 |
@@ -566,7 +477,7 @@ guide are the **most sensitive** pieces of information for a product that isn't 
 email attachment or a generic file-sharing link damages the product's confidentiality before the evaluation even
 begins.
 
-- **Encrypted transfer:** files are encrypted with AEAD (week 3) and the key is shared over a separate channel; or
+- **Encrypted transfer:** files are encrypted with AEAD ([Week 3, §2](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what)) and the key is shared over a separate channel; or
   an end-to-end encrypted enterprise file-sharing system is used.
 - **Integrity check:** a hash value of the delivered package is also communicated separately; when the laboratory
   receives the file it **verifies** the hash — to detect any corruption or tampering in transit (the enterprise
@@ -577,7 +488,7 @@ begins.
 !!! note "How it's done in the field"
     Your course project isn't expected to set up such a heavy secure channel; but restricting your repo access to
     **only** team members and the instructor, and never committing a real secret (API key, password) (the secret
-    management rules from weeks 1 and 10), is the course-scale counterpart of the same principle.
+    management rules from [Week 1, §17](../week-1/cen429-week-1.md#17-memory-management-and-security) and [week 10](../week-10/cen429-week-10.md)), is the course-scale counterpart of the same principle.
 
 ### End-to-end example: "GüvenPay Wallet SDK v3.2.0" goes through a laboratory
 
@@ -611,7 +522,7 @@ the network layer **line by line** (white-box). One engineer notices a fixed sal
 noted as the **first finding candidate** before moving on to the vulnerability-analysis step.
 
 **Step 6 — Vulnerability analysis.** The laboratory extracts GüvenPay's asset list (card number, CVV, session key;
-we defined this asset concept in week 1) and asks, for each one, "where, in what state (in memory/on disk/on the
+we defined this asset concept in [Week 1, §6](../week-1/cen429-week-1.md#6-the-application-protection-plan)) and asks, for each one, "where, in what state (in memory/on disk/on the
 network), can it be exposed?" Result: a **penetration test plan** (section 7) is prepared; the fixed-salt finding is
 also added to the plan as a test item.
 
@@ -627,7 +538,7 @@ step separate from, but complementary to, security testing — a product that is
 be certified either.
 
 **Step 9 — Findings and fixes.** The laboratory report: "Finding F-03: key derivation uses a fixed salt, evidence:
-the same key from two devices. Recommendation: a random salt per device (the CSPRNG rule from week 3) + KDF."
+the same key from two devices. Recommendation: a random salt per device (the CSPRNG rule from [Week 3, §3](../week-3/cen429-week-3.md#3-random-numbers-the-invisible-foundation-of-cryptography)) + KDF."
 GüvenPay responds: "Accepted, will be fixed in v3.2.1." Some minor findings (e.g., "log messages aren't in English")
 are closed as "not a security issue, a good-practice suggestion."
 
@@ -643,7 +554,7 @@ closed.
 **Step 12 — Trade-off and residual risk.** The report writes one remaining risk explicitly: "Key rotation frequency
 is once a year; more frequent rotation is recommended, but GüvenPay has documented, with its reasons, that it
 **accepts** this risk because of the performance cost." This is the certification counterpart of the trade-off
-discipline from week 1.
+discipline from [Week 1, §19](../week-1/cen429-week-1.md#19-secure-development-process-keeping-the-plan-alive).
 
 **Step 13 — Change management.** GüvenPay's release of v3.2.1 is classified, approved, tested, released, and
 verified by the laboratory according to its own baseline; this cycle repeats with **every version, for the life**
@@ -717,17 +628,18 @@ deliver it?" Order matters: you start with cheap, broad-coverage methods and mov
 
 | Order | Method | What does it find? | Where it appears in this course |
 | --- | --- | --- | --- |
-| 1 | **Source code review** (manual) | Design and logic errors, incorrect crypto use, leak points | Week 4 CERT/CWE |
-| 2 | **Static analysis (SAST)** | Without running the source: memory errors, dangerous calls, patterns | Week 4 (static analysis) |
-| 3 | **Dynamic analysis (DAST) + sanitizers** | While running: memory-access errors, UB, leaks | Week 4 (ASan/UBSan) |
-| 4 | **Fuzzing** | Crash/corruption paths through unexpected inputs | Week 4 (libFuzzer/AFL concept) |
+| 1 | **Source code review** (manual) | Design and logic errors, incorrect crypto use, leak points | [W4 §2](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding) |
+| 2 | **Static analysis (SAST)** | Without running the source: memory errors, dangerous calls, patterns | [W4 §9](../week-4/cen429-week-4.md#9-static-analysis-finding-bugs-without-running-the-code) |
+| 3 | **Dynamic analysis (DAST) + sanitizers** | While running: memory-access errors, UB, leaks | [W4 §10](../week-4/cen429-week-4.md#10-sanitizers-catching-bugs-at-runtime) |
+| 4 | **Fuzzing** | Crash/corruption paths through unexpected inputs | [W4 §11](../week-4/cen429-week-4.md#11-introduction-to-fuzzing) |
 | 5 | **Penetration test** | Exploitability from an attacker's viewpoint, combining the above | This week, section 6 |
 
 !!! tip "Why this order?"
     Static analysis is cheap and scans broadly but produces **false positives**; manual review is expensive but
     sees context; fuzzing requires running the program but finds inputs a human would never think of; a
     penetration test is the most expensive and comes last. Clearing "easy" findings with cheap methods first frees
-    up the penetration test's time for real, combined problems. This is the evaluation counterpart of week 4's
+    up the penetration test's time for real, combined problems. This is the evaluation counterpart of
+    [Week 4, §13](../week-4/cen429-week-4.md#13-secure-build-pipeline-bringing-it-all-together-in-continuous-integration)'s
     "secure build pipeline" (SAST + sanitizer + fuzz in CI).
 
 ### Code review: where the evaluator looks
@@ -737,19 +649,21 @@ previous weeks):
 
 - **Crypto usage:** is the right algorithm/mode/padding used? Where does the key come from, where is it written,
   when is it erased? (weeks 3, 10, 11)
-- **Input validation and memory:** bounds checking, integer overflow, format string, UAF (week 4 CERT).
+- **Input validation and memory:** bounds checking, integer overflow, format string, UAF ([week 4 CERT](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding)).
 - **Error and secret leakage:** sensitive data in logs, internal state in error messages (weeks 4, 6).
 - **Control-bypass paths:** a security check that can be bypassed with a single branch or a single return value
-  (week 9 opaque boolean, random exit).
+  ([Week 9, §6](../week-9/cen429-week-9.md#6-data-obfuscation-rules) opaque boolean,
+  [§5](../week-9/cen429-week-9.md#5-control-flow-rules-advanced) random exit).
 
 Why is each item on this list? Because they're all bugs that **automated tools miss**: a SAST tool can say "here
 `AES_encrypt` is being called," but it generally can't answer "was the right **mode** used" (the AES-GCM/CBC/CTR
-distinction from week 3, which is the week for section 3's material) — that's a job for a **human** who
+distinction from [week 3](../week-3/cen429-week-3.md), which is the week for section 3's material) — that's a job for a **human** who
 understands context.
 
 !!! note "How it's done in the field"
     In a real evaluation, code review, SAST, and sanitizers are usually already embedded in the developer's
-    **CI/CD pipeline** (the secure build pipeline from week 4); the laboratory first asks for this pipeline's
+    **CI/CD pipeline** (the secure build pipeline from
+    [Week 4, §13](../week-4/cen429-week-4.md#13-secure-build-pipeline-bringing-it-all-together-in-continuous-integration)); the laboratory first asks for this pipeline's
     **outputs** (historical run logs), then does its own independent scan. The two results being **consistent**
     (what the laboratory finds matching what the developer's own CI finds) is an additional trust signal; if there
     is inconsistency (the laboratory finds something the CI never found), the CI configuration is questioned.
@@ -781,9 +695,9 @@ void isle(const char *disaridan_gelen)
 
 | Order | Method | Does it find this bug? | Why |
 | --- | --- | --- | --- |
-| 1 | Code review | An experienced reviewer **yes**, finds it | The `strcpy` + fixed-size-buffer pattern is familiar to anyone who knows the CERT rules (week 4) |
+| 1 | Code review | An experienced reviewer **yes**, finds it | The `strcpy` + fixed-size-buffer pattern is familiar to anyone who knows the CERT rules ([week 4](../week-4/cen429-week-4.md#2-sei-cert-cc-the-rulebook-for-secure-coding)) |
 | 2 | SAST | Mostly **yes** | "Dangerous function" patterns like `strcpy`, `sprintf`, `gets` are in almost every SAST rule set |
-| 3 | DAST + sanitizer | **Yes, with evidence** | If the program is **run** with an input of 65+ bytes, ASan instantly catches the overflow and shows exactly which line it's on (week 4) |
+| 3 | DAST + sanitizer | **Yes, with evidence** | If the program is **run** with an input of 65+ bytes, ASan instantly catches the overflow and shows exactly which line it's on ([week 4](../week-4/cen429-week-4.md#10-sanitizers-catching-bugs-at-runtime)) |
 | 4 | Fuzzing | **Yes, often the strongest method here** | Fuzzing tries inputs of random length; a memory bug is usually triggered within **minutes to hours** — fuzzing is far more effective at this class of bug than at SQLi |
 | 5 | Penetration test | **Yes, but the most expensive route** | The attacker investigates whether crashing the program with a long input can be turned into **executable code injection** |
 
@@ -875,7 +789,7 @@ to determines which tests you'll prioritise.
 | Standard / framework | Test it primarily expects | Short note |
 | --- | --- | --- |
 | **ISO/IEC 27001** | Process and management audit | Certifies the **organisation**, not the product; control evidence instead of testing |
-| **Common Criteria** (ISO/IEC 15408) | Source review + vulnerability analysis + penetration test; rating by **attack potential** | Depth increases with EAL (week 13) |
+| **Common Criteria** (ISO/IEC 15408) | Source review + vulnerability analysis + penetration test; rating by **attack potential** | Depth increases with EAL ([week 13](../week-13/cen429-week-13.md)) |
 | **FIPS 140-3** | Cryptographic module tests (algorithm validation, self-test) | Covers only the module (week 13) |
 | **ETSI EN 303 645** | Verifying baseline IoT security requirements | Light, broad coverage |
 | **EMVCo / PCI** | Functional conformance + laboratory penetration test + attack potential | The payment domain; strict |
@@ -993,7 +907,7 @@ matrix in week 13:
 A question weaker students often ask but rarely get an answer to: "who's making up these standards?" Short answer:
 none of them is the product of a single person or company; each is created through the **joint work of many
 organisations** in that field and is regularly updated (usually every few years) — much like CVSS, which we saw in
-week 2, evolving from v2 to v3.1 to v4.0. The reason for these updates is usually either (a) a new attack technique
+[week 2](../week-2/cen429-week-2.md), evolving from v2 to v3.1 to v4.0. The reason for these updates is usually either (a) a new attack technique
 emerging, or (b) clarifying an item in the previous version that was found ambiguous or inconsistent.
 
 !!! info "Why does this matter?"
@@ -1008,7 +922,7 @@ emerging, or (b) clarifying an item in the previous version that was found ambig
 We said a control's mere "existing" isn't enough, that "how easily it's bypassed" must be measured. Common
 Criteria and payment schemes make this measurement with **attack potential** scoring. A finding's severity is
 determined by the answer to the question "what did it take to break it?" This is the formal, evaluation-side version
-of week 9's "measuring obfuscation" (strength, resilience) framework.
+of [Week 9, §9](../week-9/cen429-week-9.md#9-measuring-obfuscation)'s "measuring obfuscation" (strength, resilience) framework.
 
 ![The five factors and levels of attack potential](assets/h12-03-saldiri-potansiyeli.svg)
 
@@ -1029,7 +943,7 @@ the total maps to a resistance level (e.g., "basic / moderate / high / very high
 
 **Interpretation:** if the total score is **high**, the attack is hard; the control is good. If the score is **low**
 (e.g., an ordinary user, in an hour, with free tools), this is a serious finding. The logic here is the same as
-week 9's four criteria: the strength of a defence is measured by the cost of overcoming it.
+[Week 9, §9](../week-9/cen429-week-9.md#9-measuring-obfuscation)'s four criteria: the strength of a defence is measured by the cost of overcoming it.
 
 ### Why does each factor exist? The reasoning, one by one
 
@@ -1215,7 +1129,7 @@ availability). A finding report usually gives both; prioritization is done accor
 Let's now score the **same** finding (Scenario B — extracting a key from a secure element) both with attack
 potential (above: **55, BEYOND**) and with CVSS, and see step by step **why** the two don't give the same number.
 
-The CVSS v3.1 base score is computed from eight metrics (introduced in week 2); here we use the relevant four:
+The CVSS v3.1 base score is computed from eight metrics (introduced in [Week 2, §15](../week-2/cen429-week-2.md#15-cve-and-cvss-which-flaw-how-severe)); here we use the relevant four:
 
 - **Attack vector (AV):** where does the attacker access from? Network (N) · Adjacent (A) · Local (L) ·
   **Physical (P)**. Scenario B requires physical access → **AV:P**.
@@ -1318,7 +1232,7 @@ Evaluation is not a "pass/fail" stamp, it's an **improvement cycle**. For every 
 3. **Action:** what the developer did (or why they didn't — a justified acceptance is also an action).
 4. **Closure:** some findings can also close as "not a security vulnerability, a good-practice suggestion."
 
-This cycle is the source of the **finding–action list** (week 7) expected in your post-midterm project.
+This cycle is the source of the **finding–action list** ([week 7](../week-7/cen429-week-7.md)) expected in your post-midterm project.
 
 ### Security impact analysis and delta assessment
 
@@ -1347,7 +1261,7 @@ filled in.
    produced the **same** 64-byte key (screen output attached). Attack potential: time < 1 day (visible in the
    source code), expertise ordinary, knowledge public, opportunity unlimited, equipment free → **total 0, BASIC**
    (using section 5's score table)."
-2. **Recommendation (laboratory, same report):** "Use a unique salt generated from a CSPRNG (week 3) for every
+2. **Recommendation (laboratory, same report):** "Use a unique salt generated from a CSPRNG ([week 3](../week-3/cen429-week-3.md)) for every
    device; store the salt in the device's secure storage; derive the key with HKDF."
 3. **Action (GüvenPay, November 15):** "Accepted. In `anahtar_yonetimi.c`, a 32-byte random salt is now generated
    with the operating system's CSPRNG (week 3) and written to the device's secure storage. The change went into
@@ -1420,7 +1334,7 @@ single timeline; this is the complete picture of how a finding is traced **from 
     Notice: F-03's story doesn't live in a single file, it lives across multiple **cross-referencing** documents
     (the penetration test plan, test cards, the finding report, the impact analysis document, source code history).
     If this traceability chain is kept unbroken, even a year later the question "why and how was this finding
-    closed?" can be answered in seconds — week 13's traceability/compliance matrix is exactly this discipline,
+    closed?" can be answered in seconds — [week 13](../week-13/cen429-week-13.md)'s traceability/compliance matrix is exactly this discipline,
     generalized.
 
 ### Scope creep in delta assessment
@@ -1534,7 +1448,7 @@ and **debatable**:
 
 ### An example of a filled-in test card
 
-Below is a **truly filled-in** version of the eight-field template — a test directly tied to week 3's AES-GCM/AEAD
+Below is a **truly filled-in** version of the eight-field template — a test directly tied to [Week 3, §2](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what)'s AES-GCM/AEAD
 demo:
 
 | Field | Content |
@@ -1604,7 +1518,7 @@ A good security report is not a "you failed" list, it's a **decision-ready** doc
 !!! tip "Critical-reading exercise"
     Read a short finding text given to you as a class together: was this finding's attack potential rated
     correctly? Is the recommendation actionable? Does a line that says "met" have evidence? This reading is a
-    rehearsal for week 13's compliance-matrix reading.
+    rehearsal for [week 13](../week-13/cen429-week-13.md)'s compliance-matrix reading.
 
 ### A report serves multiple readers
 
@@ -1799,7 +1713,7 @@ this week's four-step cycle (section 6) directly to your own project:
     It's needed when a fix/update produces a new version. Instead of evaluating the whole product from scratch, the laboratory re-evaluates only the **changed part** (based on the impact analysis document, the changed files, and the new TOE identity); this is both fast and ensures **continuity** without requiring a full certification cycle for every version.
 
 ??? question "23. What does a standard's (e.g., Common Criteria's) test depth depend on?"
-    It depends on the targeted asset's **value** and the assumed **attacker model**: the baseline security of an IoT light bulb and the key hierarchy of a payment card are not tested with the same rigor, because the consequences of their being broken are not on the same scale. This depth difference is formalized in Common Criteria through assurance levels (week 13).
+    It depends on the targeted asset's **value** and the assumed **attacker model**: the baseline security of an IoT light bulb and the key hierarchy of a payment card are not tested with the same rigor, because the consequences of their being broken are not on the same scale. This depth difference is formalized in Common Criteria through assurance levels ([week 13](../week-13/cen429-week-13.md)).
 
 ??? question "24. Why is writing 'F-03 closed' in a report line alone insufficient?"
     If it doesn't state **which test verified** this closure (e.g., "verified with PT-07"), the reader can't trust the claim. Rule: every 'closed' record must be explicitly tied to the test ID or evidence that verifies it — otherwise the next evaluator (or the instructor) has to redo the same test from scratch.
@@ -1834,7 +1748,7 @@ Let's put the five most commonly confused term pairs from this week side by side
 - **OWASP WSTG** — web application security testing guide.
 - **PTES** (Penetration Testing Execution Standard) and **NIST SP 800-115** — penetration-testing process
   methodologies.
-- **Common Criteria (ISO/IEC 15408)** and related attack-potential guides — a bridge to week 13.
+- **Common Criteria (ISO/IEC 15408)** and related attack-potential guides — a bridge to [week 13](../week-13/cen429-week-13.md).
 - **CVSS** — vulnerability severity scoring; the detailed calculation steps of the base-score formula are published
   in the CVSS v3.1 Specification (FIRST.org).
 

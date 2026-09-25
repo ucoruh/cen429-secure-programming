@@ -196,6 +196,7 @@ plugins:
             Resume: "Özgeçmiş"
             Changelog: "Revizyonlar"
             "Project Guide": "Proje Rehberi"
+            Prerequisites: "Ön Gereksinimler"
             "Week-1 (Introduction and Application Protection Plan)": "Hafta-1 (Giriş ve Uygulama Koruma Planı)"
             "Week-2 (Computer Viruses and Security Models)": "Hafta-2 (Bilgisayar Virüsleri ve Güvenlik Modelleri)"
             "Week-3 (Data Security: In Transit, At Rest, In Use)": "Hafta-3 (Veri Güvenliği: Aktarımda, Beklemede, Kullanımda)"
@@ -237,6 +238,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Syllabus: syllabus/syllabus.md
+  - Prerequisites: prerequisites/index.md
   - Project Guide: project-guide/index.md
   - Course Modules:
     - "Week-1 (Introduction and Application Protection Plan)": week-1/cen429-week-1.md

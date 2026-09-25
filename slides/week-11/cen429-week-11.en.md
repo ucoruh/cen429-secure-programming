@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -29,30 +27,18 @@ Speaker note: This week we treat whitebox cryptography as a security layer. Core
 
 # Today's Plan (3 Hours)
 
-| Hour | Section | Topic |
+| Time | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–1 | Basic concepts · black/grey/white box · WBC attacker · naive solutions |
-| 2 | 2 | Table-based WBC (Chow AES) step by step · cost |
-| 3 | 3–4 | Attack history · countermeasures · layered placement · hardware · project |
+| 0:00–0:25 | 1 | Black/grey/white box models; WBC attacker capabilities |
+| 0:25–0:50 | 2 | Why the problem is hard; naive solutions: embedded key, XOR, code lifting |
+| 0:55–1:40 | 3 | Table-based WBC (Chow AES): encoding, bijections, table size/speed |
+| 1:45–2:20 | 4 | Attack history: BGE, DFA, DCA, WhibOx; "all broken" and countermeasures |
+| 2:20–2:45 | 5 | Its place in layered defence; hardware alternatives (TEE/SE, HSM/SoftHSM) |
+| 2:45–3:00 | 6–7 | Flawed→attack→protection; project S8; self-check |
 
 <!-- Speaker note: This week is whitebox cryptography. Students saw crypto in Weeks 3 and 10, but here we recap it from scratch. The main message is given up front: every published pure-software WBC has been broken; WBC is a layer, not magic. -->
 
 ---
-
-<!-- _class: yogun -->
-
-# A Brief History — Whitebox Cryptography
-
-- **1883** — **Kerckhoffs**: security must lie in the **key**, not in the secrecy of the system
-- **2002** — Chow et al. publish the first **whitebox AES/DES** (for DRM) — the birth of WBC
-- **2004** — the **BGE attack** breaks the first WB-AES
-- **2016** — **DCA** (Bos et al.): hardware DPA moves into software, breaks it automatically
-- **2017–2024** — **WhibOx**: every published pure-software candidate is broken
-
-> Today's rule: WBC is a **delaying layer**; prefer **hardware** (TEE/SE/HSM) where possible.
-
----
-
 
 # Where Does This Week Fit?
 
@@ -88,51 +74,53 @@ We'll say: whitebox is a layer that **delays** key extraction — and it is not 
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Basic Concepts (From Scratch)
+# What We Bring from Earlier Weeks (1)
 
-<!-- Speaker note: We assume no prior knowledge. We recap as much crypto as we need here. -->
+![w:520](assets/h11-10-sifreleme-temel.svg)
 
----
+- **Encryption, key, symmetric/asymmetric** — turning plaintext into unreadable ciphertext with a key; security rests on the key's secrecy, not the algorithm's **(Week 3)**
+- **AES and bit security level** — the most widely used symmetric algorithm, 16-byte blocks, rounds; "n-bit security" ≈ 2ⁿ attempts **(Week 10)**
+- **XOR** — 1 if the bits differ, 0 if they match; reversible via `a^b^b=a`; AES's key-addition step is a XOR **(Week 5)**
+- **Entropy** — a measure of how random a data's bytes look; encrypted/random blocks look high-entropy **(Week 2)**
 
-# What Is Encryption?
-
-- **Encryption:** turning readable data (**plaintext**) into unreadable data (**ciphertext**) using a **key**.
-- **Decryption:** reversing it with the key.
-
-![w:900](assets/h11-10-sifreleme-temel.svg)
+This week we reuse these tools in the **whitebox** context.
 
 ---
 
-# What Is a Key?
+<!-- _class: yogun -->
 
-- **Key:** the secret number (a byte sequence) that governs encryption.
-- Same algorithm + different key = different result.
-- **Security depends on the secrecy of the key**, not the secrecy of the algorithm (Kerckhoffs's principle).
+# What We Bring from Earlier Weeks (2)
 
----
+- **Debugger** — a tool that runs a program step by step and reads memory/registers (gdb, x64dbg) **(Week 6)**
+- **Static and dynamic analysis** — inspection without running / by running; we'll use this to classify attacks **(Week 4)**
+- **Instrumentation and emulator** — tools that automatically trace a program and that emulate a real processor in software **(Week 6)**
+- **HSM and SoftHSM** — dedicated hardware that never lets the key out, and its software emulation **(Week 10)**
 
-# Symmetric and Asymmetric
-
-- **Symmetric:** encryption and decryption use the **same** key (e.g. **AES**). Fast.
-- **Asymmetric:** a public/private key pair (e.g. RSA). Slow but easy key distribution.
-
-This week we'll mostly work with **AES** (symmetric).
+This week we meet these again as the whitebox attacker's toolbox and our defence options.
 
 ---
 
-# What Is AES? (From a High Level)
+<!-- _class: yogun -->
 
-- **AES:** the most widely used symmetric encryption algorithm.
-- It works on 16-byte **blocks**.
-- It mixes data in **rounds**; each round: byte substitution, row/column mixing, key addition.
+# This Week's Concepts
 
-The details won't be on this week's exam; the **idea** is enough.
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Black/grey/white box, the WBC attacker model | Section 1 |
+| Why the problem is hard; naive solutions (embedded key, XOR, code lifting) | Section 2 |
+| Table-based WBC: partial evaluation, internal/external encoding, bijection | Section 3 |
+| Attack history: BGE, DFA, DCA, WhibOx | Section 4 |
+| Its place in layered defence; TEE/SE, HSM/SoftHSM | Section 5 |
+| The flawed → attack → protection scenario | Section 6 |
+| Project S8, self-check | Section 7 |
 
 ---
 
-# What Is an S-box?
+# Background · What Is an S-box?
 
 - **S-box (substitution box):** a **fixed table** that replaces one byte with another.
 - This is AES's "byte substitution" step.
@@ -152,23 +140,7 @@ Whitebox buries computation inside tables.
 
 ---
 
-# XOR Reminder
-
-- **XOR** (`^`): 1 if the bits differ, 0 if they're the same.
-- `a ^ b ^ b == a` → reversible.
-- In AES, the "key addition" step is a XOR: `state ^ key`.
-
----
-
-# Bit Security Level
-
-- "**n-bit security**" = roughly 2ⁿ attempts are needed to break it.
-- AES-128 → 128 bits; considered unbreakable today.
-- Higher number = stronger.
-
----
-
-# What Is a Side Channel?
+# Background · What Is a Side Channel?
 
 - **Side channel:** an attack that uses not the algorithm's math but the **physical/indirect information it leaks** while running.
 - Examples: elapsed **time**, **power** consumption, electromagnetic emission.
@@ -186,7 +158,7 @@ Keep this idea in mind; whitebox's strongest attack (DCA) is the software form o
 
 ---
 
-# Bijection (a One-to-One, Onto Mapping)
+# Background · Bijection (a One-to-One, Onto Mapping)
 
 - **Bijection:** a transformation that maps every input to exactly one output and is **invertible**.
 - Example: `f(x) = x ^ 0x5A` is a bijection (its own inverse).
@@ -195,19 +167,12 @@ Whitebox wraps tables in **secret bijections**.
 
 ---
 
-# TEE and Secure Element (SE)
+# Background · TEE and Secure Element (SE)
 
 - **TEE (Trusted Execution Environment):** a phone processor's secure region, **isolated** from the operating system.
 - **Secure element (SE):** a separate, tamper-resistant **hardware** chip that stores keys.
 
 These are the strongest protection for a key; whitebox is for the case **when they aren't available**.
-
----
-
-# HSM and SoftHSM
-
-- **HSM (Hardware Security Module):** dedicated hardware on a server that stores/processes keys; the key **never leaves**.
-- **SoftHSM:** a **software emulation** of an HSM; same interface (PKCS#11), but no hardware protection (for development/testing).
 
 ---
 
@@ -224,6 +189,20 @@ Now to the real question: **what do we do while the key is in the attacker's han
 <!-- _class: bolum -->
 
 # 1. Three Attacker Models
+
+---
+
+<!-- _class: yogun -->
+
+# A Brief History — Whitebox Cryptography
+
+- **1883** — **Kerckhoffs**: security must lie in the **key**, not in the secrecy of the system
+- **2002** — Chow et al. publish the first **whitebox AES/DES** (for DRM) — the birth of WBC
+- **2004** — the **BGE attack** breaks the first WB-AES
+- **2016** — **DCA** (Bos et al.): hardware DPA moves into software, breaks it automatically
+- **2017–2024** — **WhibOx**: every published pure-software candidate is broken
+
+> Today's rule: WBC is a **delaying layer**; prefer **hardware** (TEE/SE/HSM) where possible.
 
 ---
 
@@ -284,7 +263,6 @@ Crypto was designed for **black box**; we're in **white box**.
 ![w:1000](assets/h11-01-saldirgan-modelleri.svg)
 
 ---
-
 
 # Here's the Problem
 
@@ -352,6 +330,12 @@ The guide says that WBC is **not the only** thing protecting against these attac
 > What protects the application and its assets is **code hardening (Week 9) and RASP (Week 6)** methods.
 
 WBC is never presented **alone**, from the very first sentence.
+
+---
+
+<!-- _class: bolum -->
+
+# 2. The Problem and Naive Solutions
 
 ---
 
@@ -478,7 +462,7 @@ Countering code lifting needs **device/version binding** (Section 3, shortly): t
 
 ---
 
-# Section 1 — Quick Check
+# Section 1–2 — Quick Check
 
 1. The difference between black, grey, white box?
 2. AES is strong, so what's the problem in white box?
@@ -490,7 +474,7 @@ Countering code lifting needs **device/version binding** (Section 3, shortly): t
 
 <!-- _class: yogun -->
 
-# Section 1 — Answers
+# Section 1–2 — Answers
 
 1. **Black:** input/output only · **Grey:** + side channels (time/power) · **White:** everything + modifies.
 2. The key sits **in memory** at some point; the white-box attacker sees it. AES's strength rests on the **black box** assumption.
@@ -500,7 +484,7 @@ Countering code lifting needs **device/version binding** (Section 3, shortly): t
 
 <!-- _class: bolum -->
 
-# 2. Table-Based WBC (Step by Step)
+# 3. Table-Based WBC (Step by Step)
 
 <!-- Speaker note: We build up Chow AES's idea step by step. We'll teach the logic and the cost, not the math. Go slowly. -->
 
@@ -557,6 +541,79 @@ The key seems to have disappeared. But...
 
 ---
 
+# Why a Toy Example?
+
+Real AES works with 256-entry tables; that won't fit on a board.
+
+We'll see the idea with a tiny **4-value** example instead.
+
+Goal: see by hand what "baking the key into a table" means.
+
+---
+
+# Defining the Tiny S-box
+
+Say we have 2-bit values (0,1,2,3) and this fixed S-box:
+
+```text
+x:        0  1  2  3
+S-box[x]: 3  2  0  1
+```
+
+This table is **public** (part of the algorithm, not a secret).
+
+---
+
+# Key and Operation
+
+- Key `k = 1` (secret).
+- Operation (a mini version of one AES round): `output = S-box[x ^ k]`.
+
+`^` = XOR. `x ^ 1`: 0↔1, 2↔3 (flips the last bit).
+
+---
+
+# Step by Step: Normal Operation
+
+```text
+x=0 → x^1=1 → S-box[1]=2
+x=1 → x^1=0 → S-box[0]=3
+x=2 → x^1=3 → S-box[3]=1
+x=3 → x^1=2 → S-box[2]=0
+```
+
+Here `k=1` is used **explicitly** in the code. The attacker sees it.
+
+---
+
+# "Bake" the Key Into a Table
+
+Let's precompute `T[x] = S-box[x ^ 1]` as a table:
+
+```text
+x:    0  1  2  3
+T[x]: 2  3  1  0
+```
+
+There's no `k` in the code anymore; only `T`. The key seems to have disappeared.
+
+---
+
+# But the Key Leaks! (Without Encoding)
+
+The attacker compares `T` with the known `S-box`:
+
+```text
+S-box: 3 2 0 1
+T:     2 3 1 0
+```
+
+Knowing that `T[x] = S-box[x ^ k]`, they try which `k` fits: `k=1` fits.
+
+> **Result:** an unencoded table gives the key away. This is exactly why internal/external encoding exists.
+
+---
+
 # Step 2 · Grow the Tables (T-box)
 
 - Instead of a single-byte mapping, combine the S-box with AES's **mixing** step (MixColumns)
@@ -594,6 +651,29 @@ But **intermediate values look scrambled**.
 It aims to stop an attacker examining a table **on its own**.
 
 Because that table's input/output has been scrambled by a secret encoding.
+
+---
+
+# The Idea of Encoding (Tiny)
+
+Apply a secret mapping `E` to the output: `T'[x] = E(T[x])`.
+
+```text
+E: 0→1, 1→3, 2→0, 3→2   (gizli bijeksiyon)
+T':  E(2) E(3) E(1) E(0) = 0 2 3 1
+```
+
+Now `T'` doesn't resemble `S-box`; a simple comparison doesn't give up `k`.
+
+---
+
+# The Price of Encoding
+
+- The next step must apply `E`'s **inverse** for the result to come out right.
+- In real AES this is done by **chaining** tables (internal encodings).
+- Every encoding means an extra table and more size → **cost**.
+
+Even the tiny example shows the idea: secrecy isn't cheap.
 
 ---
 
@@ -654,6 +734,16 @@ Result: no explicit key; everything lives in encoded tables.
 
 ---
 
+# The Lesson From the Tiny Example
+
+1. Baking the key into a table doesn't make it **invisible** (encoding is required)
+2. Encoding solves the problem but adds **size/complexity**
+3. In reality the tables run to hundreds of KB
+
+This is the **intuition** behind the five steps in Section 2.
+
+---
+
 <!-- _class: bolum -->
 
 # The Cost of WBC
@@ -690,7 +780,7 @@ Example: 288 tables × 1 KB ≈ **294,912 bytes** (~288 KB).
 
 ---
 
-# Section 2 — Quick Check
+# Section 3 — Quick Check
 
 1. Why is `T[x] = S-box[x ^ k]` insecure on its own?
 2. The difference between internal and external encoding?
@@ -703,7 +793,7 @@ Example: 288 tables × 1 KB ≈ **294,912 bytes** (~288 KB).
 
 <!-- _class: yogun -->
 
-# Section 2 — Answers
+# Section 3 — Answers
 
 1. `T` is the known S-box shifted by `x^k`; comparing the two tables **recovers k**.
 2. **Internal:** scrambles the intermediate values between tables · **External (F,G):** wraps the whole cipher (`G∘AES∘F⁻¹`).
@@ -714,7 +804,7 @@ Example: 288 tables × 1 KB ≈ **294,912 bytes** (~288 KB).
 
 <!-- _class: bolum -->
 
-# 3. Attack History and Countermeasures
+# 4. Attack History and Countermeasures
 
 <!-- Speaker note: We tell this history not to teach attacks, but to answer "how much can I trust this protection?" -->
 
@@ -789,6 +879,32 @@ Every row is an **inference** for the defender.
 # The DCA Attack — Diagram
 
 ![w:950](assets/h11-05-dca.svg)
+
+---
+
+# Intuition: What Is It Tracking?
+
+- While WBC runs, it reads **intermediate values** from the tables.
+- These intermediate values change **depending on** the secret key.
+- DCA collects a trace of these values.
+
+---
+
+# How Does Statistics Give Up the Key?
+
+- The attacker makes a **guess** for one key byte.
+- From the guess, they compute how the intermediate value **should** behave.
+- Among the collected traces, the guess that **fits best** is the correct byte.
+
+This is the **software** form of DPA (power analysis).
+
+---
+
+# Why Doesn't Internal Encoding Stop DCA?
+
+- Internal encoding **scrambles** the intermediate value but is a **one-to-one** mapping (bijection)
+- Statistical correlation often **survives** it
+- This is why WBC designs remained vulnerable to DCA after 2016
 
 ---
 
@@ -903,7 +1019,7 @@ The right statement: "I'm delaying key extraction by this much; my real assuranc
 
 ---
 
-# Section 3 — Quick Check
+# Section 4 — Quick Check
 
 1. How does "all of them were broken" affect your decision?
 2. Which classic attack does DCA resemble?
@@ -916,7 +1032,7 @@ The right statement: "I'm delaying key extraction by this much; my real assuranc
 
 <!-- _class: yogun -->
 
-# Section 3 — Answers
+# Section 4 — Answers
 
 1. WBC is **not** assurance on its own; combine with key rotation + device binding + server checking + obfuscation; move to **hardware** where possible.
 2. **DPA** (power analysis) — DCA is its software form.
@@ -927,7 +1043,7 @@ The right statement: "I'm delaying key extraction by this much; my real assuranc
 
 <!-- _class: bolum -->
 
-# 4. Layered Placement, Hardware, Project
+# 5. WBC's Place in Layered Defence
 
 ---
 
@@ -1003,6 +1119,51 @@ In order, from weakest to strongest.
 
 ---
 
+# "How Do I Protect This Key?" — 1
+
+**Question 1:** Does the device have a TEE/secure element?
+
+- **Yes** → put the key there. **Done** (strongest).
+- **No** → continue.
+
+---
+
+# "How Do I Protect This Key?" — 2
+
+**Question 2:** Is this a server-side key?
+
+- **Yes** → HSM/PKCS#11 (HSM in production, SoftHSM in testing).
+- **No (client, no hardware)** → continue.
+
+---
+
+# "How Do I Protect This Key?" — 3
+
+**Question 3:** Does the asset's value justify the cost of protection?
+
+- **Low** → light hiding + a short lifetime is enough.
+- **High** → WBC + layered defence + rotation + device binding + server checking.
+
+---
+
+# "How Do I Protect This Key?" — 4
+
+**In every case:**
+
+- Don't embed the key **plainly**
+- Write the decision and its rationale **into S8**
+- State the remaining risk explicitly
+
+---
+
+<!-- _class: yogun -->
+
+# Decision Flow · at a Glance
+
+![w:900](assets/h11-07-anahtar-koruma.svg)
+
+---
+
 # SoftHSM and PKCS#11 (Server-Side Bridge)
 
 - **PKCS#11:** the standard interface for talking to key modules
@@ -1015,7 +1176,7 @@ WBC is a client-side (edge) problem; this is the answer to the server's key prob
 
 <!-- _class: bolum -->
 
-# Flawed → Attack → Protection
+# 6. Flawed → Attack → Protection
 
 <!-- Speaker note: A synthetic, defence-oriented example that ties the whole week together in one scenario. -->
 
@@ -1081,9 +1242,64 @@ A client embeds a data-encryption key in a fixed array.
 
 ---
 
+# Case · Setup
+
+A mobile app encrypts local data with a **session key** it downloads from the server.
+
+- Some devices have a TEE, some don't.
+- The key rotates once a day.
+
+How do we protect it?
+
+---
+
+# Case · Devices With a TEE
+
+- Put the key **in the TEE**.
+- The app never sees the key; encryption happens inside the TEE.
+- The strongest solution; extra WBC is unnecessary.
+
+---
+
+# Case · Devices Without a TEE
+
+- Bake the key into **WBC tables** (no plain array).
+- Wrap it with Week 9 obfuscation + Week 6 RASP.
+- **Bind to the device:** the tables shouldn't work on another device.
+
+---
+
+# Case · Shared Layers
+
+- The key **rotates once a day** → a short lifetime for anything extracted.
+- The **server** catches abnormal use (too many requests, an odd location).
+- So even if one device gets broken, the damage is limited.
+
+---
+
+# Case · Remaining Risk (Honest)
+
+- On a device without a TEE, a determined attacker can extract the key.
+- But: limited to one device + 24-hour lifetime + server checking.
+- This trade-off is **written explicitly into S8**.
+
+---
+
+# Case · Takeaway
+
+There is no single "magic" protection.
+
+Strength comes from the **combination of layers** and an **honest analysis of the remaining risk**.
+
+This is exactly what the evaluator (Week 12) looks for.
+
+> To **understand** WBC is to **put it in its right place**.
+
+---
+
 <!-- _class: bolum -->
 
-# Project and Closing
+# 7. Project and Closing
 
 ---
 
@@ -1179,7 +1395,6 @@ Write a protection decision and its **rationale** for at least one sensitive key
 
 ---
 
-
 <!-- _class: yogun -->
 
 # Self-Check (7–12)
@@ -1197,7 +1412,7 @@ Write a protection decision and its **rationale** for at least one sensitive key
 
 # Self-Check — Answers (7–12)
 
-7. Tables run to **MB order of magnitude** and are tens-to-hundreds of times **slower** than the black box → applied only to **selected/critical** operations.
+7. Tables run to **hundreds of KB** (standard AES key: 16–32 bytes) and are **~50× slower** → applied only to **selected/critical** operations.
 8. We don't count WBC alone as key protection; we use it as a **delaying layer**, together with rotation + binding + server checking (hardware where possible).
 9. **DPA** (Differential Power Analysis); DCA replaces the power trace with a **software trace** (memory access/intermediate value).
 10. (weak→strong) plain embedded key < encoded table (pure-software WBC) < WBC+binding/rotation < **TEE/SE** < **HSM/hardware**. Cost rises in the same direction.
@@ -1205,7 +1420,6 @@ Write a protection decision and its **rationale** for at least one sensitive key
 12. Example: "The DEK protects data at rest with AES-256-GCM. It is generated/stored in an HSM, never kept in plain memory. Hardware was chosen because pure-software whitebox has been broken and the asset's value is high."
 
 ---
-
 
 # Summary: This Week in One Sentence
 
@@ -1224,7 +1438,7 @@ Write a protection decision and its **rationale** for at least one sensitive key
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
 # Next Week
 
@@ -1232,468 +1446,6 @@ Write a protection decision and its **rationale** for at least one sensitive key
 
 Measuring how much a protection "actually withstands" → the independent-evaluation process and reporting.
 
----
+- **Week 9:** obfuscation rules (code) · **Week 11:** whitebox (key) — today · **Week 14:** automation (Tigress)
 
-<!-- _class: bolum -->
-
-# Appendix A · A Tiny Numeric Example
-
-<!-- Speaker note: It's hard to show Chow AES at real scale. Instead we make the idea of "baking the key into a table" concrete with a 4-value toy S-box. Can be done on the board. -->
-
----
-
-# Why a Toy Example?
-
-Real AES works with 256-entry tables; that won't fit on a board.
-
-We'll see the idea with a tiny **4-value** example instead.
-
-Goal: see by hand what "baking the key into a table" means.
-
----
-
-# Defining the Tiny S-box
-
-Say we have 2-bit values (0,1,2,3) and this fixed S-box:
-
-```text
-x:        0  1  2  3
-S-box[x]: 3  2  0  1
-```
-
-This table is **public** (part of the algorithm, not a secret).
-
----
-
-# Key and Operation
-
-- Key `k = 1` (secret).
-- Operation (a mini version of one AES round): `output = S-box[x ^ k]`.
-
-`^` = XOR. `x ^ 1`: 0↔1, 2↔3 (flips the last bit).
-
----
-
-# Step by Step: Normal Operation
-
-```text
-x=0 → x^1=1 → S-box[1]=2
-x=1 → x^1=0 → S-box[0]=3
-x=2 → x^1=3 → S-box[3]=1
-x=3 → x^1=2 → S-box[2]=0
-```
-
-Here `k=1` is used **explicitly** in the code. The attacker sees it.
-
----
-
-# "Bake" the Key Into a Table
-
-Let's precompute `T[x] = S-box[x ^ 1]` as a table:
-
-```text
-x:    0  1  2  3
-T[x]: 2  3  1  0
-```
-
-There's no `k` in the code anymore; only `T`. The key seems to have disappeared.
-
----
-
-# But the Key Leaks! (Without Encoding)
-
-The attacker compares `T` with the known `S-box`:
-
-```text
-S-box: 3 2 0 1
-T:     2 3 1 0
-```
-
-Knowing that `T[x] = S-box[x ^ k]`, they try which `k` fits: `k=1` fits.
-
-> **Result:** an unencoded table gives the key away. This is exactly why internal/external encoding exists.
-
----
-
-# The Idea of Encoding (Tiny)
-
-Apply a secret mapping `E` to the output: `T'[x] = E(T[x])`.
-
-```text
-E: 0→1, 1→3, 2→0, 3→2   (gizli bijeksiyon)
-T':  E(2) E(3) E(1) E(0) = 0 2 3 1
-```
-
-Now `T'` doesn't resemble `S-box`; a simple comparison doesn't give up `k`.
-
----
-
-# The Price of Encoding
-
-- The next step must apply `E`'s **inverse** for the result to come out right.
-- In real AES this is done by **chaining** tables (internal encodings).
-- Every encoding means an extra table and more size → **cost**.
-
-Even the tiny example shows the idea: secrecy isn't cheap.
-
----
-
-# The Lesson From the Tiny Example
-
-1. Baking the key into a table doesn't make it **invisible** (encoding is required)
-2. Encoding solves the problem but adds **size/complexity**
-3. In reality the tables run to hundreds of KB
-
-This is the **intuition** behind the five steps in Section 2.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · Why Does DCA Work? (Intuition)
-
----
-
-# Intuition: What Is It Tracking?
-
-- While WBC runs, it reads **intermediate values** from the tables.
-- These intermediate values change **depending on** the secret key.
-- DCA collects a trace of these values.
-
----
-
-# How Does Statistics Give Up the Key?
-
-- The attacker makes a **guess** for one key byte.
-- From the guess, they compute how the intermediate value **should** behave.
-- Among the collected traces, the guess that **fits best** is the correct byte.
-
-This is the **software** form of DPA (power analysis).
-
----
-
-# Why Doesn't Internal Encoding Stop DCA?
-
-- Internal encoding **scrambles** the intermediate value but is a **one-to-one** mapping (bijection)
-- Statistical correlation often **survives** it
-- This is why WBC designs remained vulnerable to DCA after 2016
-
----
-
-# Countermeasure Intuition
-
-- **Non-linear masking:** hides intermediate values in a way that breaks the correlation
-- **External encoding:** takes the input/output the attacker sees out of being standard
-- **RASP:** makes trace collection (attaching tools) harder
-
-None is a definitive fix; all of them are **cost + delay**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Decision Flow
-
----
-
-# "How Do I Protect This Key?" — 1
-
-**Question 1:** Does the device have a TEE/secure element?
-
-- **Yes** → put the key there. **Done** (strongest).
-- **No** → continue.
-
----
-
-# "How Do I Protect This Key?" — 2
-
-**Question 2:** Is this a server-side key?
-
-- **Yes** → HSM/PKCS#11 (HSM in production, SoftHSM in testing).
-- **No (client, no hardware)** → continue.
-
----
-
-# "How Do I Protect This Key?" — 3
-
-**Question 3:** Does the asset's value justify the cost of protection?
-
-- **Low** → light hiding + a short lifetime is enough.
-- **High** → WBC + layered defence + rotation + device binding + server checking.
-
----
-
-# "How Do I Protect This Key?" — 4
-
-**In every case:**
-
-- Don't embed the key **plainly**
-- Write the decision and its rationale **into S8**
-- State the remaining risk explicitly
-
----
-
-<!-- _class: yogun -->
-
-# Decision Flow · at a Glance
-
-![w:900](assets/h11-07-anahtar-koruma.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Mini Case (Synthetic)
-
----
-
-# Case · Setup
-
-A mobile app encrypts local data with a **session key** it downloads from the server.
-
-- Some devices have a TEE, some don't.
-- The key rotates once a day.
-
-How do we protect it?
-
----
-
-# Case · Devices With a TEE
-
-- Put the key **in the TEE**.
-- The app never sees the key; encryption happens inside the TEE.
-- The strongest solution; extra WBC is unnecessary.
-
----
-
-# Case · Devices Without a TEE
-
-- Bake the key into **WBC tables** (no plain array).
-- Wrap it with Week 9 obfuscation + Week 6 RASP.
-- **Bind to the device:** the tables shouldn't work on another device.
-
----
-
-# Case · Shared Layers
-
-- The key **rotates once a day** → a short lifetime for anything extracted.
-- The **server** catches abnormal use (too many requests, an odd location).
-- So even if one device gets broken, the damage is limited.
-
----
-
-# Case · Remaining Risk (Honest)
-
-- On a device without a TEE, a determined attacker can extract the key.
-- But: limited to one device + 24-hour lifetime + server checking.
-- This trade-off is **written explicitly into S8**.
-
----
-
-# Case · Takeaway
-
-There is no single "magic" protection.
-
-Strength comes from the **combination of layers** and an **honest analysis of the remaining risk**.
-
-This is exactly what the evaluator (Week 12) looks for.
-
----
-
-# Appendix — Closing Note
-
-These appendices aren't separately asked on the exam; but:
-
-- The tiny example gave the "baking + encoding" intuition
-- The DCA intuition explained "why all of them were broken"
-- The decision flow + case help you write S8
-
-> To **understand** WBC is to **put it in its right place**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix E · Solved Self-Check
-
-<!-- Speaker note: We go through the questions one by one with their answers. Ask the student first, then open the answer. -->
-
----
-
-# Question 1
-
-**Distinguish the black, grey, and white box models in one sentence. Which one does the AES proof assume?**
-
----
-
-# Answer 1
-
-- **Black:** input/output only.
-- **Grey:** + side channels (time, power).
-- **White:** everything + can modify.
-
-AES's security proof assumes **black box**; in deployment we're in white box.
-
----
-
-# Question 2
-
-**Which attacks do the WBC attacker's abilities to "run a single round" and "inject a fault" set up?**
-
----
-
-# Answer 2
-
-- Running a single round + collecting a trace → **DCA**.
-- Injecting a fault → **DFA**.
-
-Both work without knowing the design's internal math.
-
----
-
-# Question 3
-
-**Why isn't embedding the key in a fixed array protection? What does an entropy scan do here?**
-
----
-
-# Answer 3
-
-- The program uses the key while running; the block sits in memory/the binary.
-- The **entropy scan** finds the high-entropy (random-looking) block → "the key is here."
-- Confirmed in minutes with `strings` + gdb.
-
----
-
-# Question 4
-
-**What is code lifting? Which countermeasure closes it?**
-
----
-
-# Answer 4
-
-- The attacker copies the encrypting code (tables + interpreter) **without extracting** the key.
-- They steal the function without knowing the key.
-- Countermeasure: **device/version binding** — the tables are only meaningful on that device.
-
----
-
-# Question 5
-
-**Why is `T[x] = S-box[x ^ k]` insecure on its own?**
-
----
-
-# Answer 5
-
-- `T` is the known `S-box` shifted by `x ^ k`.
-- The attacker compares the two tables and recovers `k` from the shift amount.
-- This is why internal/external **encoding** is needed.
-
----
-
-# Question 6
-
-**The difference between internal encoding and external encoding (F, G)? External encoding's biggest limit?**
-
----
-
-# Answer 6
-
-- **Internal:** between tables, scrambles the intermediate values.
-- **External (F, G):** wraps the whole cipher (`G ∘ AES ∘ F⁻¹`).
-- **Limit:** it's no longer **standard AES**; the other side has to know F/G → may not be usable in standards like EMV.
-
----
-
-# Question 7
-
-**Approximate table-size and speed cost? Why only on selected operations?**
-
----
-
-# Answer 7
-
-- Table: **hundreds of KB** (standard AES key is 16–32 bytes).
-- Speed: **~50× slower**.
-- This cost limits WBC to **small and critical** operations only.
-
----
-
-# Question 8
-
-**How does "every published pure-software WBC has been broken" affect your project decision?**
-
----
-
-# Answer 8
-
-- You can't count WBC as key assurance **on its own**.
-- If you use it: with rotation + device binding + server checking + obfuscation/RASP.
-- Move to hardware (TEE/SE) where possible.
-
----
-
-# Question 9
-
-**Which classic hardware attack does DCA resemble? Why don't internal encodings always stop it?**
-
----
-
-# Answer 9
-
-- Resembles **DPA** (power analysis) — its software form.
-- Internal encoding scrambles the intermediate value but is a one-to-one mapping; statistical correlation often survives it.
-
----
-
-# Question 10
-
-**Rank the key-protection options along the strength/cost axis.**
-
----
-
-# Answer 10
-
-Plain array (none) → hidden/split (very low) → **WBC + layers** (medium) → **TEE/SE** (high) → **HSM** (high, server).
-
-Rule: if you don't have to put it in software, don't.
-
----
-
-# Question 11
-
-**If you use WBC, what are at least three layers so it isn't left alone?**
-
----
-
-# Answer 11
-
-1. Obfuscation (Week 9) + RASP (Week 6)
-2. Key rotation (short crypto-period)
-3. Device/version binding + server-side risk checking
-
----
-
-# Question 12
-
-**Write the S8 rationale for a key in your project, in three sentences (example).**
-
----
-
-# Answer 12 (Example)
-
-> "The session key is kept in WBC tables on devices without a TEE and wrapped with obfuscation+RASP. It's
-> bound to the device against code lifting; the key rotates every 24 hours. Remaining risk: it can be extracted
-> on a single device, but server-side risk checking and its short lifetime limit the damage."
-
----
-
-# Closing · Three Weeks Together
-
-- **Week 9:** obfuscation rules (code)
-- **Week 11:** whitebox (key) — today
-- **Week 14:** automation (Tigress)
-
-Common rule: protection is **not unbreakability, it's delay**; strength comes from layers and measurement.
+> Shared rule: protection is **not unbreakability, it's delay**; strength comes from layers and measurement.

@@ -1,0 +1,21 @@
+% Hafta 5 — Komut çalıştırma: kabuk var mı yok mu?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-04-komut-enjeksiyon.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Komut çalıştırma: kabuk var mı yok mu?};
+  \node[altbaslik] at (b.south west) {komut enjeksiyonunun tek kaynağı: araya giren kabuk};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{Kabuklu (tehlikeli)}\\[2mm]
+     \kod{Runtime.exec("sh -c ...")}\\[3mm]
+     kabuk ; | \&\& > yorumlar\\girdi KOMUT olur};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{ProcessBuilder (güvenli)}\\[2mm]
+     \kod{new ProcessBuilder(}\\\kod{\ \ "prog", arg1, arg2)}\\[3mm]
+     argümanlar AYRI geçer\\kabuk hiç çalışmaz};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Yine de argüman enjeksiyonuna dikkat: \kod{-{}-} ile seçenek/değer sınırını işaretleyin.};
+\end{tikzpicture}
+\end{document}

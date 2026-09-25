@@ -1,0 +1,19 @@
+% Hafta 10 — X.509 sertifikasında ne var?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-11-x509.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 10mm]
+  \node[baslik] (b) at (0,0) {X.509 sertifikasında ne var?};
+  \node[altbaslik, text width=170mm] at (b.south west) {doğrulama bu alanların HEPSİNİ denetler};
+
+  \node[kutu=170mm, below=9mm of b.south west, anchor=north west] (k1) {\kb{Konu (Subject) + SAN} --- kime ait --- ad denetimi SAN'a bakar, CN'e değil};
+  \node[kutu=170mm, below=4mm of k1.south west, anchor=north west] (k2) {\kb{Açık anahtar (SPKI)} --- pinning bunu sabitler};
+  \node[kutu=170mm, below=4mm of k2.south west, anchor=north west] (k3) {\kb{Geçerlilik aralığı} --- notBefore / notAfter};
+  \node[uyarikutu=170mm, below=4mm of k3.south west, anchor=north west] (k4) {\kb{Uzantılar} --- basicConstraints (CA:TRUE), KeyUsage, EKU};
+  \node[koyukutu=170mm, below=4mm of k4.south west, anchor=north west] (k5) {\kb{CA imzası} --- zincirin bir üst halkası tarafından};
+
+  \node[dip, text width=170mm, below=9mm of k5.south west, anchor=north west] {%
+    Yalnız ``imza geçerli'' demek yetmez: ad, süre, amaç ve iptal de denetlenir.};
+\end{tikzpicture}
+\end{document}

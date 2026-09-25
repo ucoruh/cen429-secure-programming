@@ -1,0 +1,21 @@
+% Hafta 5 — -keep dengesi
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-09-keep-dengesi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {-keep dengesi};
+  \node[altbaslik] at (b.south west) {doğrusu: yalnız dışarıdan erişilen giriş noktalarını keep et};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{ÇOK keep}\\[2mm]
+     reflection, serileştirme,\\tüm public API korunur\\[3mm]
+     $\rightarrow$ adlar değişmez\\$\rightarrow$ gizleme ANLAMSIZ};
+  \node[uyarikutu=70mm, right=14mm of sol] (sag)
+    {\kb{AZ keep}\\[2mm]
+     yalnız dış giriş noktaları\\[3mm]
+     $\rightarrow$ adlar kısalır\\$\rightarrow$ ama reflection KIRILIR\\(çalışma anı hatası)};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Her -keep kuralı bir gizleme boşluğudur; en dar kuralı yazın ve test edin.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,37 @@
+% Hafta 1 — Değişiklik yönetimi: yedi adım
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-11-degisiklik-yonetimi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Değişiklik yönetimi: yedi adım};
+  \node[altbaslik] (alt) at (b.south west) {her değişiklik izlenebilir ve geri alınabilir olmalı};
+
+  \node[koyukutu=30mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k1) {\kb{1 · Temel çizgi}\\onaylı sürüm};
+  \node[kutu=30mm, right=of k1] (k2) {\kb{2 · Değişiklik talebi}};
+  \node[kutu=30mm, right=of k2] (k3) {\kb{3 · Sınıflandırma}\\öncelik, kategori};
+  \node[uyarikutu=30mm, right=of k3] (k4) {\kb{4 · Onay ve planlama}};
+
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+
+  \node[kutu=30mm, below=24mm of k1] (k5) {\kb{5 · Geliştirme ve test}};
+  \node[iyikutu=30mm, right=of k5] (k6) {\kb{6 · Yayın}\\imzalı sürüm};
+  \node[iyikutu=30mm, right=of k6] (k7) {\kb{7 · Doğrulama}\\gözden geçirme};
+
+  \draw[ok, draw=soluk] (k5.east) -- (k6.west);
+  \draw[ok, draw=soluk] (k6.east) -- (k7.west);
+  \draw[ok, draw=soluk] (k4.south) -- ++(0,-8mm) -| (k5.north);
+
+  \coordinate (lowY) at ($(k7.south)+(0,-9mm)$);
+  \coordinate (leftX) at ($(k1.west)+(-12mm,0)$);
+  \draw[ok, draw=iyi, dashed]
+    (k7.south) -- (lowY) -- (leftX |- lowY) -- (leftX) -- (k1.west);
+  \node[etiket, text=iyi, rotate=90, anchor=south] at ($(leftX)!0.5!(leftX |- lowY)$)
+    {7 $\rightarrow$ yeni temel çizgi $\rightarrow$ 1};
+
+  \node[dip, text width=160mm, below=17mm of k7.south -| k4, anchor=north]
+    {Sertifikasyonda ``hangi sürüm onaylandı?'' sorusunun cevabı bu döngüdür (12. hafta).};
+\end{tikzpicture}
+\end{document}

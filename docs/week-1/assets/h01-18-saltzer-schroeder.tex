@@ -1,0 +1,30 @@
+% Hafta 1 — Saltzer ve Schroeder (1975): güvenli tasarımın omurgası
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-18-saltzer-schroeder.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Saltzer ve Schroeder (1975): güvenli tasarımın omurgası};
+  \node[altbaslik] (alt) at (b.south west) {elli yıl sonra hâlâ geçerli sekiz ilke};
+
+  \node[kutu=68mm, below=8mm of alt.south west, anchor=north west, xshift=2mm, text width=60mm] (i1)
+    {\kb{En az ayrıcalık}\\işini yapacak kadar yetki};
+  \node[kutu=68mm, right=of i1, text width=60mm] (i2)
+    {\kb{Güvenli varsayılan}\\varsayılan: izin YOK};
+  \node[kutu=68mm, below=of i1, text width=60mm] (i3)
+    {\kb{Tam aracılık}\\her erişim her seferinde denetlenir};
+  \node[kutu=68mm, right=of i3, text width=60mm] (i4)
+    {\kb{Açık tasarım}\\gizlilik anahtarda, tasarımda değil};
+  \node[kutu=68mm, below=of i3, text width=60mm] (i5)
+    {\kb{Mekanizma ekonomisi}\\basit tasarım = az hata};
+  \node[kutu=68mm, right=of i5, text width=60mm] (i6)
+    {\kb{Ortak mekanizmayı azalt}\\paylaşılan yol = paylaşılan risk};
+  \node[kutu=68mm, below=of i5, text width=60mm] (i7)
+    {\kb{Yetki ayrımı}\\tek onay yetmez};
+  \node[kutu=68mm, right=of i7, text width=60mm] (i8)
+    {\kb{Kullanılabilirlik}\\zor gelen güvenlik atlanır};
+
+  \node[dip, text width=155mm, below=9mm of i7.south -| i5, anchor=north]
+    {Bu ilkeler bir denetim listesi değil, tasarım kararlarını tartarken kullanılan ölçülerdir.};
+\end{tikzpicture}
+\end{document}

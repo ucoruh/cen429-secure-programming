@@ -35,6 +35,12 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
+# RAP2 teslimi — şema
+
+![w:950](assets/h15-01-rap2.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Final rubriği
@@ -48,12 +54,6 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 | Güvenlik testi ve birim testleri | 6 | S16 **sonuçlar** |
 | Standartlar | 7 | S1 · S14 · S17 |
 | Final rapor ve sunum | 7 | Tümü |
-
----
-
-# Kılavuz haritası S0–S17 — şema
-
-![w:950](assets/h15-02-kilavuz-haritasi.svg)
 
 ---
 
@@ -71,9 +71,9 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
-# RAP2 teslimi — şema
+# Kılavuz haritası S0–S17 — şema
 
-![w:950](assets/h15-01-rap2.svg)
+![w:950](assets/h15-02-kilavuz-haritasi.svg)
 
 ---
 
@@ -94,8 +94,8 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 # Önerilen gösterim akışı
 
 1. **Özet:** ürün, mimari, en kritik üç varlık
-2. **Vizeden bu yana:** bulgu–aksiyon listesi
-3. **Canlı gösterim:** kripto, güvenli iletişim, bir koruma katmanı **çalışırken**
+2. **Vizeden bu yana:** bulgu–aksiyon listesi (bulgu → aksiyon → kapanış; değerlendirici bu döngüyü arar)
+3. **Canlı gösterim:** kripto, güvenli iletişim, bir koruma katmanı **çalışırken** (ör. kurcalanmış dosyanın reddi)
 4. **Kanıt:** testler, koruma tablosu, SBOM, uyum matrisi
 5. **Kalan risk:** bilerek kapsam dışı olanlar ve nedenleri
 
@@ -109,11 +109,11 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 # Örnek sorular
 
-- Bu anahtar nereden türetiliyor, nerede duruyor, ne zaman siliniyor?
-- Zincir ve ad doğrulaması nerede?
+- Bu anahtar hangi anahtardan türetiliyor, nerede duruyor, ne zaman siliniyor?
+- Sertifika zincirinizi nasıl doğruluyorsunuz? Ad denetimi nerede yapılıyor?
 - İmza doğrulaması başarısızsa ne oluyor? Eski imzalı sürüm yüklenebilir mi?
-- Gizlemenin maliyetini ölçtünüz mü?
-- Şu "karşılandı" satırının kanıtı nerede?
+- Gizlemenin maliyetini ölçtünüz mü? Hangi fonksiyonu neden gizlediniz?
+- Uyum matrisinde şu "karşılandı" satırının kanıtı nerede?
 - Hangi gereksinimi devrettiniz, karşı taraf nasıl karşılayacak?
 
 ---
@@ -133,7 +133,9 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
-# S16: plan değil sonuç — şema
+# Akademik dürüstlük
+
+İzlencenin "Akademik Dürüstlük" bölümü projede de geçerlidir; teslim edilen her satır açıklanabilmeli, gösterimde takımın her üyesine soru sorulabilir.
 
 ![w:950](assets/h15-04-s16.svg)
 
@@ -142,189 +144,15 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 # Dönem sonunda
 
 - Kılavuzunuz = sertifikasyon belgelerinin küçük bir modeli → **portfolyo** (gizli bilgi içermediğinden emin olun)
-- Teslim edilen her satır açıklanabilmeli; her takım üyesine soru sorulabilir
-
----
-
-# Final dönemi
-
-**Hafta 16 — Quiz-2**
-
-- Kapsam: 9–14. haftalar
-- Çalışma rehberi: 16. hafta sayfası
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Final rubriği madde madde
-
-<!-- Konuşma notu: Final gösteriminde (RAP2) tüm bölümler TAM beklenir; her maddeyi ne kanıtlayacağınızı açıklıyoruz. -->
-
----
-
-# Final neyi ölçer?
-
-Final gösterimi projenizin **tamamını** ölçer:
-
-- kripto, güvenli iletişim
-- varlık yönetimi (tam)
-- ileri ikili korumalar
-- test **sonuçları**, standartlar
-
----
-
-# Madde · kriptografi
-
-- Algoritma envanteri, anahtar yaşam döngüsü.
-- **Kanıt:** S8 + testler.
-
----
-
-# Madde · güvenli iletişim
-
-- TLS, sabitleme, mesaj düzeyi.
-- **Kanıt:** S6, S11 + test.
-
----
-
-# Madde · ileri ikili korumalar
-
-- Gizleme (S9 ileri), derleme hattı (S15).
-- **Kanıt:** ölçüm tablosu + imzalama.
-
----
-
-# Madde · test ve doğrulama
-
-- Test **sonuçları** (plan değil).
-- **Kanıt:** S16.
-
----
-
-# Madde · standartlar ve uyum
-
-- Uyum matrisi (S17), devredilenler (S14).
-- **Kanıt:** S14, S17.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Vizeden finale
-
----
-
-# Yeni bölümler
-
-- S6 kimlik/bağlama
-- S8 kripto/anahtarlar
-- S11 güvenli iletişim
-- S14 varsayımlar/devredilenler
-- S15 derleme/dağıtım hattı
-
----
-
-# Tamamlanacaklar
-
-- S5 varlıklar (tam)
-- S9 sağlamlaştırma (ileri)
-- S12 raporlama (tam)
-- S16 **sonuçlar**
-- S17 tam matris
-
----
-
-# Bulgu–aksiyon (vizeden)
-
-- Vize geri bildirimleri bir tabloya:
-  - bulgu → aksiyon → kapanış.
-- Değerlendirici bu döngüyü arar.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Gösterim akışı
-
----
-
-# Akış · özet + vizeden bu yana
-
-- Ürün, mimari, en kritik üç varlık.
-- Bulgu–aksiyon listesi.
-
----
-
-# Akış · canlı gösterim
-
-- Kripto, güvenli iletişim ve **bir koruma katmanı** çalışırken.
-- Ör. kurcalanmış dosyanın reddi.
-
----
-
-# Akış · kanıt + kalan risk
-
-- Testler, koruma tablosu, SBOM, uyum matrisi.
-- Kalan risk: bilerek kapsam dışı olanlar.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Örnek sorular
-
----
-
-# Soru 1
-
-**Bu anahtar hangi anahtardan türetiliyor, nerede duruyor, ne zaman siliniyor?**
-
----
-
-# Soru 2
-
-**Sertifika zinciri ve ad denetimi nerede yapılıyor?**
-
----
-
-# Soru 3
-
-**İmza doğrulaması başarısızsa ne oluyor? Eski imzalı sürüm yüklenebilir mi?**
-
----
-
-# Soru 4
-
-**Gizlemenin maliyetini ölçtünüz mü? Hangi fonksiyonu neden gizlediniz?**
-
----
-
-# Soru 5
-
-**Uyum matrisinde şu "karşılandı" satırının kanıtı nerede?**
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Sık yapılan hatalar
-
----
-
-# Hata listesi
-
-- Test planı var, **sonuç** yok.
-- Kanıtsız "karşılandı".
-- Kılavuz ile kod sürümü farklı.
-- Kalan risk boş.
-- Vize geri bildirimi yok sayılmış.
-- Depoda gerçek sır/kişisel veri.
-
----
-
-# Son söz (RAP2)
 
 > Finalde **sonuç** beklenir: her koruma çalışırken gösterilir, her gereksinim kanıtla bağlanır.
 
-Kılavuzunuz sertifikasyon belgelerinin küçük bir modelidir; bir **portfolyo** öğesidir.
+---
+
+<!-- _class: baslik -->
+
+# Bir sonraki hafta
+
+**Hafta 16 — Quiz-2**
+
+Final gösteriminden (RAP2) sonra sıra Quiz-2'ye gelir; kapsam 9–14. haftalardır. Çalışma rehberi 16. hafta sayfasındadır.

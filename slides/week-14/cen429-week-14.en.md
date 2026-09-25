@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -31,9 +29,9 @@ Speaker note: This week Tigress automates week 9's manual obfuscation rules usin
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–1 | Basic concepts · source-to-source obfuscation · Tigress · license · basic flow |
+| 1 | 1 | Source-to-source obfuscation · Tigress · license · basic flow |
 | 2 | 2 | Transform families · week 9 mapping · transform pipeline · step-by-step example |
-| 3 | 3–4 | Diversification · measurement · in-class flow · build pipeline (S15) · project |
+| 3 | 3–5 | Diversification · measurement · in-class flow · build pipeline (S15) · project |
 
 <!-- Speaker note: This week we automate week 9's manual obfuscation rules with a tool (Tigress). The main message is the same: obfuscation does not grant unbreakability, it raises cost; combine, diversify, measure. -->
 
@@ -52,7 +50,6 @@ Speaker note: This week Tigress automates week 9's manual obfuscation rules usin
 > Main rule: **resilience ↔ cost**; protection is chosen in proportion to the value of the asset.
 
 ---
-
 
 # Where Does This Week Fit?
 
@@ -87,34 +84,37 @@ Tigress is not **magic**; it automates what we did by hand and makes **diversifi
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Basic Concepts (From Scratch)
+# What We Bring from Earlier Weeks
 
-<!-- Speaker note: We assume no prior knowledge; we briefly remind ourselves of week 9's terms and add new ones. -->
-
----
-
-# Why This Section?
-
-Today terms such as "source-to-source," "transform," "seed," and "build pipeline" will come up.
-
-Let's first define all of them **one by one**.
-
----
-
-# Reminder · Source, Compiler, Binary
-
-- **Source code:** the program text a human writes (a C file).
-- **Compiler:** the program that translates source into machine code (gcc/clang).
-- **Binary file:** the resulting executable.
+- **Source code, compiler, binary** — a human-written program text turned into an executable binary by a compiler **(Week 9)**
+- **Code obfuscation** — a countermeasure that makes code hard for a human to understand without changing its behaviour, raising the attacker's cost **(Week 9)**
+- **Week 9's obfuscation rules (K-01–K-12)** — manually applied rules such as opaque predicates, arithmetic encoding, control-flow flattening, string encoding, variable splitting, virtualization; this week we map these one by one to Tigress's transforms **(Week 9)**
+- **CFG (control-flow graph)** — a diagram where basic blocks are nodes and transitions are edges **(Week 9)**
+- **Symbolic execution** — an automatic analysis method that solves program paths as mathematical constraints (e.g. KLEE) **(Week 9)**
+- **Diversification** — producing binaries that are behaviourally equivalent but structurally different from the same source; this week we automate it with Tigress's `--Seed` flag **(Week 9)**
+- **CI and build pipeline** — a system that runs automatic build/test steps on every code change **(Week 4)**
+- **Version identity and digest (hash) value** — a record showing which binary/source/digest triple a piece of software was distributed with; this week we add a seed field to it too **(Week 1)**
 
 ---
 
-# Reminder · Obfuscation
+<!-- _class: yogun -->
 
-- **Code obfuscation:** making code **hard to understand** without changing its behaviour.
-- Goal: raise the cost for the attacker (week 9).
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Source-to-source obfuscation, Tigress and its licence | Section 1 |
+| Transform (`--Transform`) and targeting (`--Functions`) | Section 1 |
+| Transform families and the week 9 mapping | Section 2 |
+| Transform pipeline and the step-by-step cost increase | Section 2 |
+| Diversification tool: seed (`--Seed`) | Section 3 |
+| Measuring obfuscation and diversification | Section 3 |
+| The seven-step in-class flow | Section 4 |
+| S15 build and deployment pipeline, term project | Section 5 |
 
 ---
 
@@ -150,13 +150,6 @@ Let's first define all of them **one by one**.
 
 ---
 
-# Diversification
-
-- **Diversification:** producing **behaviourally equivalent, structurally different** binaries from the same source.
-- An attack written against one copy does not work on another (week 9 Rule 2).
-
----
-
 # What Is a CLI (Command Line)?
 
 - **CLI (Command-Line Interface):** an interface where you run things by typing commands.
@@ -168,30 +161,6 @@ Let's first define all of them **one by one**.
 
 - **Unit test:** a small test that automatically checks that a function works correctly.
 - The same tests must pass **after** obfuscation (behaviour must be preserved).
-
----
-
-# CFG Reminder
-
-- **CFG (Control Flow Graph):** a diagram that turns basic blocks into nodes and transitions into edges.
-- We measure the **potency** of obfuscation by the number of nodes/edges (week 9).
-
----
-
-# Symbolic Execution (Briefly)
-
-- **Symbolic execution:** automated analysis that solves program paths as mathematical constraints (e.g., KLEE).
-- It is a **deobfuscation** method against obfuscation; we test resilience with it.
-
----
-
-# Now We're Ready
-
-Terms:
-
-source-to-source · transform · pipeline · seed · diversification · CLI · unit test · CFG · symbolic execution
-
-Now: what is Tigress and how does it work?
 
 ---
 
@@ -227,12 +196,11 @@ The maintenance cost stays with the **readable source**; the distributed source 
 
 ---
 
-# Transform Pipeline — Diagram
+# Sequenced Transforms — Diagram
 
 ![w:950](assets/h14-04-donusum-hatti.svg)
 
 ---
-
 
 # What Is Tigress?
 
@@ -321,6 +289,43 @@ cc -o program gizli.c
 
 ---
 
+# "Should I Obfuscate This Function?" — 1
+
+**Question 1:** Is this function sensitive? (license, key, integrity, check)
+
+- **No** → don't obfuscate; don't waste the cost.
+- **Yes** → continue.
+
+---
+
+# "Should I Obfuscate This Function?" — 2
+
+**Question 2:** Is its value high?
+
+- **Medium** → EncodeLiterals + EncodeArithmetic + Flatten + AddOpaque.
+- **High and small** → the above + Virtualize.
+
+---
+
+# "Should I Obfuscate This Function?" — 3
+
+**Question 3:** In every case:
+
+- Diversify (seed)
+- Measure (size, time, blocks)
+- Verify behaviour with unit tests
+- Write it into S9/S15
+
+---
+
+<!-- _class: yogun -->
+
+# Decision Flow · At a Glance
+
+![w:900](assets/h14-09-karar-akisi.svg)
+
+---
+
 # Section 1 — Quick Check
 
 1. What is source-to-source obfuscation?
@@ -339,7 +344,6 @@ cc -o program gizli.c
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 2. Transform Families and Pipeline
@@ -350,7 +354,7 @@ cc -o program gizli.c
 
 # Transforms = Week 9's Rules
 
-Tigress transforms correspond to week 9's obfuscation families.
+Tigress transforms correspond to the obfuscation families **we saw in week 9** (K-01–K-12).
 
 Let's look at them group by group; we'll tie each one to a K-rule.
 
@@ -366,13 +370,14 @@ Let's look at them group by group; we'll tie each one to a K-rule.
 
 - **Flatten:** flattens control flow → **K-04**
 - **InitOpaque / AddOpaque / UpdateOpaque:** opaque predicate + bogus branch → **K-01, K-03**
+- Order: **InitOpaque** first, then **AddOpaque**.
 
 ---
 
 # Data Transforms
 
 - **EncodeArithmetic:** arithmetic into an equivalent complex expression (MBA) → **K-02**
-- **EncodeLiterals:** encodes constants and strings → **K-07, K-08**
+- **EncodeLiterals:** encodes constants and strings (cheap, applied almost always) → **K-07, K-08**
 - **EncodeData:** encodes variable representation → **K-09**
 
 ---
@@ -381,7 +386,7 @@ Let's look at them group by group; we'll tie each one to a K-rule.
 
 - **Split / Merge:** splits/merges functions → **K-06**
 - **Virtualize:** turns the function into custom VM bytecode → **K-10**
-- **Jit:** generates code at run time → **K-12 (dynamic)**
+- **Jit:** generates code at run time; use carefully alongside OS protections → **K-12 (dynamic)**
 
 ---
 
@@ -432,7 +437,7 @@ That's why Virtualize is targeted only at **small, critical** functions; via `--
 
 <!-- _class: bolum -->
 
-# Transform Pipeline
+# Combining Transforms in Sequence
 
 ---
 
@@ -548,6 +553,32 @@ is the direct counterpart of your project's **S9 protection table**.
 
 ---
 
+# O-LLVM (Compiler-Based)
+
+- **Obfuscator-LLVM:** applies transforms **at compile time**.
+- Not source-to-source; on top of the LLVM intermediate representation.
+- Week 9 K-11. An alternative to Tigress.
+
+---
+
+# Tigress or O-LLVM?
+
+| | Tigress | O-LLVM |
+| --- | --- | --- |
+| Where | Source (C→C) | Compiler (IR) |
+| Visibility | You can see the obfuscated source | A build step |
+| Transform richness | Many (including Virtualize) | More limited |
+
+---
+
+# Shared Limit
+
+- Both are well known → their patterns can become recognisable.
+- Both require **diversification** and **layered defence**.
+- Neither one grants unbreakability.
+
+---
+
 # Section 2 — Quick Check
 
 1. Which K-rules do Flatten, EncodeArithmetic, Virtualize correspond to?
@@ -565,7 +596,6 @@ is the direct counterpart of your project's **S9 protection table**.
 3. (1) **Test behaviour** (unit tests must pass), (2) **measure cost** (size/speed/instruction count, before-after).
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -671,15 +701,44 @@ Simple, but it produces **evidence**.
 
 <!-- _class: yogun -->
 
-# Cost · Example Table
+# Cost · Example Table (Pipeline A and B)
 
-| Metric | Before | After |
-| --- | --- | --- |
-| Size | 100 KB | 130 KB |
-| Time | 1.0× | 1.8× |
-| Basic blocks (target fn.) | 5 | 40 |
+**Pipeline A:** EncodeLiterals + EncodeArithmetic (light) · **Pipeline B:** Pipeline A + Flatten + AddOpaque (heavy)
+
+| Metric | Clean | Pipeline A | Pipeline B |
+| --- | --- | --- | --- |
+| Size | 100 KB | 103 KB | 131 KB |
+| Time | 1.00× | 1.05× | 1.80× |
+| Blocks (target fn.) | 5 | 7 | 40 |
+| Sensitive strings | 3 | 0 | 0 |
 
 The figures are an example; you write **your own** measurements.
+
+---
+
+<!-- _class: yogun -->
+
+# Cost · Raw Measurement Output
+
+```text
+program_temiz:
+  boyut: 100 KB
+  işlem süresi: 1.00× (referans)
+  erisim_ver temel blok: 5
+```
+
+```text
+boyut: 103 KB   (+%3)
+süre:  1.05×
+blok:  7
+strings hassas dize: 0  (öncesi 3)
+```
+
+```text
+boyut: 131 KB   (+%31)
+süre:  1.80×
+blok:  40
+```
 
 ---
 
@@ -725,6 +784,23 @@ Unmeasured obfuscation = a **claim** for the evaluator (week 12).
 
 ---
 
+# Decision
+
+- Asset value **low** → Pipeline A is enough.
+- Asset value **high** → Pipeline B (accept the cost) + diversification.
+
+> The decision rests on numbers, not a feeling.
+
+---
+
+# Diversification Measurement (Example)
+
+- Produce Pipeline B with seed 1001 and 2002.
+- Byte difference of the protected function: **92%**.
+- Comment: a patch written for one copy most likely won't work on the other.
+
+---
+
 # Section 3 — Quick Check
 
 1. How does a seed provide diversification?
@@ -742,7 +818,6 @@ Unmeasured obfuscation = a **claim** for the evaluator (week 12).
 3. Stronger obfuscation means more **resilience** but more **cost**; protection is chosen **in proportion to the value** of the asset.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -866,6 +941,101 @@ Don't say "strong" without measuring.
 
 ---
 
+# New Example · Integrity Check
+
+```c
+int dosya_saglam(const uint8_t *veri, size_t n,
+                 const uint8_t *beklenen) {
+    uint8_t ozet[32];
+    ozet_hesapla(veri, n, ozet);        /* SHA-256 benzeri */
+    return sabit_zamanli_esit(ozet, beklenen, 32);
+}
+```
+
+A synthetic function that checks version integrity.
+
+---
+
+# Why Obfuscate This?
+
+- An attacker wants to find this check and **bypass** it (to get a tampered file to pass).
+- The check's return point and comparison are the target.
+- Week 9: opaque boolean + random exit are critical here.
+
+---
+
+# Pipeline Choice
+
+```bash
+tigress \
+  --Transform=EncodeLiterals \
+  --Transform=EncodeArithmetic \
+  --Transform=Flatten \
+  --Transform=AddOpaque \
+  --Functions=dosya_saglam \
+  --out=gizli.c temiz.c
+```
+
+---
+
+# Step by Step · What Happens?
+
+- EncodeLiterals: `32` and any strings are no longer plain.
+- EncodeArithmetic: the comparison becomes complex.
+- Flatten: the single return point is not visible.
+- AddOpaque: bogus branches; the "success" branch isn't in one place.
+
+---
+
+# Behaviour Verification (Mandatory)
+
+- A file with the correct hash → **passes**.
+- A file with a corrupted hash → **rejected**.
+- The obfuscated version gives the same result → pipeline correct.
+
+---
+
+# CFG Before/After (Concept)
+
+![w:900](assets/h14-10-cfg-once-sonra.svg)
+
+Where the check passes/fails can no longer be read from the flow.
+
+---
+
+# ⚠️ Constant-Time Behaviour Must Be Preserved
+
+- Even obfuscated, `sabit_zamanli_esit` must **stay constant time**.
+- If an early exit is added for the sake of obfuscation, a side channel opens (week 3).
+- **Test** that the transforms don't break this.
+
+---
+
+# Measurement (Example)
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Size | 100 KB | 128 KB |
+| Time | 1.0× | 1.7× |
+| Blocks (dosya_saglam) | 4 | 33 |
+
+---
+
+# Diversification
+
+- Produce with two seeds → two different binaries.
+- A "skip the integrity check" patch that works on one copy won't work on the other, even if it succeeds once.
+
+---
+
+# Second Example · Takeaway
+
+- Obfuscation is valuable on functions that are a **bypass target**, like integrity checks.
+- But the real strength: obfuscation + RASP (week 6) + server-side checking.
+- Obfuscation alone **delays** bypass, it doesn't prevent it.
+
+---
+
 # Section 4 — Quick Check
 
 1. The first thing you **must always** do after obfuscating?
@@ -883,7 +1053,6 @@ Don't say "strong" without measuring.
 3. **S9** (code hardening) and **S15** (build/deployment pipeline); before/after measurement as evidence.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -981,6 +1150,47 @@ Common rule: protection = **delay**; strength comes from layers and measurement.
 
 ---
 
+# Case · Setup
+
+A synthetic application has a **license check** and a **key derivation** function.
+
+Should we heavily obfuscate both?
+
+---
+
+# Case · Decision
+
+- **License check:** medium value → Pipeline B (Flatten + AddOpaque).
+- **Key derivation:** high value → Pipeline B + **Virtualize** (acceptable cost because it's small).
+- The rest: not obfuscated (unnecessary cost).
+
+---
+
+# Case · Diversification + Pipeline
+
+- Each version, a different seed.
+- Build pipeline: obfuscate → sign → build identity.
+- Unit tests + measurement automatic in CI.
+
+---
+
+# Case · S9/S15 Output
+
+| Function | Pipeline | Size/Time | Rationale |
+| --- | --- | --- | --- |
+| lisans_dogrula | B | +31% / 1.8× | medium value |
+| anahtar_turet | B+Virtualize | +60% / 3× | high value, small fn. |
+
+---
+
+# Case · Residual Risk
+
+- A sufficiently determined attacker can still solve a single copy.
+- Mitigation: diversification + a short-lived key + server-side checking.
+- **Written down explicitly.**
+
+---
+
 # Section 5 — Quick Check
 
 1. Why is signing **after** obfuscation?
@@ -998,7 +1208,6 @@ Common rule: protection = **delay**; strength comes from layers and measurement.
 3. Source → (static analysis) → build → **obfuscate** → diversify (seed) → package/SBOM → **sign** → deploy (all recorded in CI).
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1114,165 +1323,18 @@ All one framework: cost + layers + measurement.
 
 ---
 
-<!-- _class: bolum -->
-
-# Appendix A · A Worked Measurement
-
-<!-- Speaker note: A measurement pass with concrete, synthetic numbers; can be done on the board. -->
-
----
-
-# Scenario
-
-Let's obfuscate the `erisim_ver` function with two pipelines and measure:
-
-- **Pipeline A:** EncodeLiterals + EncodeArithmetic (light)
-- **Pipeline B:** Pipeline A + Flatten + AddOpaque (heavy)
-
----
-
-# Before · Baseline
-
-```text
-program_temiz:
-  boyut: 100 KB
-  işlem süresi: 1.00× (referans)
-  erisim_ver temel blok: 5
-```
-
----
-
-# Pipeline A · Measurement (Example)
-
-```text
-boyut: 103 KB   (+%3)
-süre:  1.05×
-blok:  7
-strings hassas dize: 0  (öncesi 3)
-```
-
-Cheap; string obfuscation gives a big return.
-
----
-
-# Pipeline B · Measurement (Example)
-
-```text
-boyut: 131 KB   (+%31)
-süre:  1.80×
-blok:  40
-```
-
-Potency increased (blocks 5→40); cost increased too.
-
----
-
 <!-- _class: yogun -->
 
-# Comparison Table
+# Common Mistakes — Summary
 
-| Metric | Clean | Pipeline A | Pipeline B |
-| --- | --- | --- | --- |
-| Size | 100 KB | 103 KB | 131 KB |
-| Time | 1.00× | 1.05× | 1.80× |
-| Blocks | 5 | 7 | 40 |
-| Sensitive strings | 3 | 0 | 0 |
-
----
-
-# Decision
-
-- Asset value **low** → Pipeline A is enough.
-- Asset value **high** → Pipeline B (accept the cost) + diversification.
-
-> The decision rests on numbers, not a feeling.
-
----
-
-# Diversification Measurement (Example)
-
-- Produce Pipeline B with seed 1001 and 2002.
-- Byte difference of the protected function: **92%**.
-- Comment: a patch written for one copy most likely won't work on the other.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · Mini Case
-
----
-
-# Case · Setup
-
-A synthetic application has a **license check** and a **key derivation** function.
-
-Should we heavily obfuscate both?
-
----
-
-# Case · Decision
-
-- **License check:** medium value → Pipeline B (Flatten + AddOpaque).
-- **Key derivation:** high value → Pipeline B + **Virtualize** (acceptable cost because it's small).
-- The rest: not obfuscated (unnecessary cost).
-
----
-
-# Case · Diversification + Pipeline
-
-- Each version, a different seed.
-- Build pipeline: obfuscate → sign → build identity.
-- Unit tests + measurement automatic in CI.
-
----
-
-# Case · S9/S15 Output
-
-| Function | Pipeline | Size/Time | Rationale |
-| --- | --- | --- | --- |
-| lisans_dogrula | B | +31% / 1.8× | medium value |
-| anahtar_turet | B+Virtualize | +60% / 3× | high value, small fn. |
-
----
-
-# Case · Residual Risk
-
-- A sufficiently determined attacker can still solve a single copy.
-- Mitigation: diversification + a short-lived key + server-side checking.
-- **Written down explicitly.**
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Alternatives and Limits
-
----
-
-# O-LLVM (Compiler-Based)
-
-- **Obfuscator-LLVM:** applies transforms **at compile time**.
-- Not source-to-source; on top of the LLVM intermediate representation.
-- Week 9 K-11. An alternative to Tigress.
-
----
-
-# Tigress or O-LLVM?
-
-| | Tigress | O-LLVM |
-| --- | --- | --- |
-| Where | Source (C→C) | Compiler (IR) |
-| Visibility | You can see the obfuscated source | A build step |
-| Transform richness | Many (including Virtualize) | More limited |
-
----
-
-# Shared Limit
-
-- Both are well known → their patterns can become recognisable.
-- Both require **diversification** and **layered defence**.
-- Neither one grants unbreakability.
+| Mistake | Where It Was Covered |
+| --- | --- |
+| Obfuscating everything | Section 1 (`--Functions`), Section 2 (cost) |
+| Obfuscating without tests | Section 2 (order and testing rule) |
+| Saying "strong" without measuring | Section 3 (measurement rule) |
+| Skipping diversification | Section 3 (Rule 2) |
+| Signing before obfuscating | Section 5 (Pipeline Rule 3) |
+| Using an old/distributed Tigress | Section 1 (licence) |
 
 ---
 
@@ -1287,355 +1349,6 @@ Should we heavily obfuscate both?
 | Pipeline | The ordered whole of the transforms |
 | Seed | A number that governs randomness (diversification) |
 | Symbolic execution | Path-solving automated analysis (KLEE) |
-
----
-
-# Sources
-
-- The **Tigress** official site/worksheets (`tigress.wtf`) — transforms, syntax, v4, license
-- Collberg & Nagra, *Surreptitious Software* — taxonomy, measurement
-- Banescu et al. — Tigress + KLEE resilience measurement
-- Obfuscator-LLVM — a compiler-based alternative
-
----
-
-# Summary: This Week in One Sentence
-
-> Tigress applies week 9's obfuscation rules **automatically** and **diversified**; but the rule is the same: obfuscation
-> is **not unbreakability but delay**; combine, diversify, **measure**.
-
----
-
-<!-- _class: bolum -->
-
-# Next Week
-
-**Week 15 — Final Project Demonstrations (RAP2)**
-
-The semester's content is complete. The final report is expected to include this week's **pipeline (S15)** and **measurements (S9)**. Week 16: Quiz-2.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Transform by Transform
-
-<!-- Speaker note: We go through the most-used transforms one by one, with what it does/when/cost. -->
-
----
-
-# Why One by One?
-
-When building a pipeline, you need to know **which transform, and why**.
-
-For every transform: what it does · when · cost.
-
----
-
-# Flatten
-
-- **What it does:** moves control flow into a single switch (K-04).
-- **When:** to hide the algorithm's structure; in most pipelines.
-- **Cost:** moderate.
-
----
-
-# AddOpaque / InitOpaque
-
-- **What it does:** adds opaque predicates and bogus branches (K-01, K-03).
-- **When:** to strengthen Flatten.
-- **Cost:** moderate.
-
----
-
-# EncodeArithmetic
-
-- **What it does:** replaces arithmetic with an equivalent complex expression (K-02).
-- **When:** in functions with calculations/comparisons.
-- **Cost:** low.
-
----
-
-# EncodeLiterals
-
-- **What it does:** encodes constants and strings (K-07, K-08).
-- **When:** almost always (cheap, high return).
-- **Cost:** very low.
-
----
-
-# EncodeData
-
-- **What it does:** encodes the representation of variables (K-09).
-- **When:** to hide sensitive variables.
-- **Cost:** low–moderate.
-
----
-
-# Split / Merge
-
-- **What it does:** splits/merges functions; blurs structure (K-06).
-- **When:** to hide function boundaries.
-- **Cost:** low–moderate.
-
----
-
-# Virtualize
-
-- **What it does:** turns the function into custom VM bytecode (K-10).
-- **When:** only the most critical, **small** functions.
-- **Cost:** **high** (tens of times slower).
-
----
-
-# Jit
-
-- **What it does:** generates code at run time (dynamic, K-12).
-- **When:** very selective; advanced use.
-- **Cost:** high; take care with OS protections.
-
----
-
-# AntiBranchAnalysis / AntiAliasAnalysis / AntiTaintAnalysis
-
-- **What it does:** makes the corresponding static analysis technique harder (preventive family).
-- **When:** against a specific analysis threat.
-- **Cost:** variable.
-
----
-
-# RandomFuns / RndArgs
-
-- **What it does:** adds random bogus functions/parameters.
-- **When:** to strengthen diversification (with a seed).
-- **Cost:** low–moderate.
-
----
-
-<!-- _class: yogun -->
-
-# Which Transform First?
-
-Typical order (conceptual):
-
-1. EncodeLiterals (cheap cleanup)
-2. EncodeArithmetic
-3. Flatten
-4. AddOpaque
-5. (if needed) Virtualize
-6. RandomFuns/RndArgs (diversification)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix E · Obfuscation Decision Flow
-
----
-
-# "Should I Obfuscate This Function?" — 1
-
-**Question 1:** Is this function sensitive? (license, key, integrity, check)
-
-- **No** → don't obfuscate; don't waste the cost.
-- **Yes** → continue.
-
----
-
-# "Should I Obfuscate This Function?" — 2
-
-**Question 2:** Is its value high?
-
-- **Medium** → EncodeLiterals + EncodeArithmetic + Flatten + AddOpaque.
-- **High and small** → the above + Virtualize.
-
----
-
-# "Should I Obfuscate This Function?" — 3
-
-**Question 3:** In every case:
-
-- Diversify (seed)
-- Measure (size, time, blocks)
-- Verify behaviour with unit tests
-- Write it into S9/S15
-
----
-
-<!-- _class: yogun -->
-
-# Decision Flow · At a Glance
-
-![w:900](assets/h14-09-karar-akisi.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix F · Common Mistakes
-
----
-
-# Mistake · Obfuscating Everything
-
-- Obfuscating all functions slows down/bloats the program a lot.
-- Only sensitive and valuable functions.
-
----
-
-# Mistake · Obfuscating Without Tests
-
-- If unit tests aren't run after obfuscation, broken behaviour goes unnoticed.
-- Testing after every pipeline is **mandatory**.
-
----
-
-# Mistake · Saying "Strong" Without Measuring
-
-- Without measurement, the evaluator (week 12) treats it as a **claim**.
-- Write down size/time/block numbers.
-
----
-
-# Mistake · Skipping Diversification
-
-- Uniform obfuscation → one crack opens every copy.
-- A different seed for every version/deployment.
-
----
-
-# Mistake · Signing Before Obfuscating
-
-- The signature must cover the **final** distributed binary.
-- Obfuscate first, then sign.
-
----
-
-# Mistake · Using an Old/Distributed Tigress
-
-- The binary isn't distributed in class; download the current version from the official site.
-- Verify the license terms.
-
----
-
-# Appendix · Closing Note
-
-These appendices gave you a concrete template for building **your own pipeline**:
-
-- transform-by-transform selection
-- decision flow
-- mistakes to avoid
-
-> The right tool + the right measurement + diversification = a defensible S9/S15.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix G · A Second Worked Pipeline
-
-<!-- Speaker note: We reinforce the pipeline with a second synthetic example; a different kind of function. -->
-
----
-
-# New Example · Integrity Check
-
-```c
-int dosya_saglam(const uint8_t *veri, size_t n,
-                 const uint8_t *beklenen) {
-    uint8_t ozet[32];
-    ozet_hesapla(veri, n, ozet);        /* SHA-256 benzeri */
-    return sabit_zamanli_esit(ozet, beklenen, 32);
-}
-```
-
-A synthetic function that checks version integrity.
-
----
-
-# Why Obfuscate This?
-
-- An attacker wants to find this check and **bypass** it (to get a tampered file to pass).
-- The check's return point and comparison are the target.
-- Week 9: opaque boolean + random exit are critical here.
-
----
-
-# Pipeline Choice
-
-```bash
-tigress \
-  --Transform=EncodeLiterals \
-  --Transform=EncodeArithmetic \
-  --Transform=Flatten \
-  --Transform=AddOpaque \
-  --Functions=dosya_saglam \
-  --out=gizli.c temiz.c
-```
-
----
-
-# Step by Step · What Happens?
-
-- EncodeLiterals: `32` and any strings are no longer plain.
-- EncodeArithmetic: the comparison becomes complex.
-- Flatten: the single return point is not visible.
-- AddOpaque: bogus branches; the "success" branch isn't in one place.
-
----
-
-# Behaviour Verification (Mandatory)
-
-- A file with the correct hash → **passes**.
-- A file with a corrupted hash → **rejected**.
-- The obfuscated version gives the same result → pipeline correct.
-
----
-
-# CFG Before/After (Concept)
-
-![w:900](assets/h14-10-cfg-once-sonra.svg)
-
-Where the check passes/fails can no longer be read from the flow.
-
----
-
-# ⚠️ Constant-Time Behaviour Must Be Preserved
-
-- Even obfuscated, `sabit_zamanli_esit` must **stay constant time**.
-- If an early exit is added for the sake of obfuscation, a side channel opens (week 3).
-- **Test** that the transforms don't break this.
-
----
-
-# Measurement (Example)
-
-| Metric | Before | After |
-| --- | --- | --- |
-| Size | 100 KB | 128 KB |
-| Time | 1.0× | 1.7× |
-| Blocks (dosya_saglam) | 4 | 33 |
-
----
-
-# Diversification
-
-- Produce with two seeds → two different binaries.
-- A "skip the integrity check" patch that works on one copy won't work on the other, even if it succeeds once.
-
----
-
-# Second Example · Takeaway
-
-- Obfuscation is valuable on functions that are a **bypass target**, like integrity checks.
-- But the real strength: obfuscation + RASP (week 6) + server-side checking.
-- Obfuscation alone **delays** bypass, it doesn't prevent it.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix H · Quick Reference
 
 ---
 
@@ -1668,8 +1381,28 @@ Where the check passes/fails can no longer be read from the flow.
 
 ---
 
-# Final Word (Week 14)
+# Sources
 
-> The tool is powerful, but the **decision is yours**: what, why, at what cost are you obfuscating?
+- The **Tigress** official site/worksheets (`tigress.wtf`) — transforms, syntax, v4, license
+- Collberg & Nagra, *Surreptitious Software* — taxonomy, measurement
+- Banescu et al. — Tigress + KLEE resilience measurement
+- Obfuscator-LLVM — a compiler-based alternative
 
-Measure, diversify, layer. Obfuscation is not unbreakability, it is **time bought**.
+---
+
+# Summary: This Week in One Sentence
+
+> Tigress applies week 9's obfuscation rules **automatically** and **diversified**; but the rule is the same: obfuscation
+> is **not unbreakability but delay**; combine, diversify, **measure**.
+
+The tool is powerful, but the **decision is yours**: what, why, at what cost are you obfuscating?
+
+---
+
+<!-- _class: baslik -->
+
+# Next Week
+
+**Week 15 — Final Project Demonstrations (RAP2)**
+
+The semester's content is complete. The final report is expected to include this week's **pipeline (S15)** and **measurements (S9)**. Week 16: Quiz-2.

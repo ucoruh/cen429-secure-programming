@@ -1,0 +1,21 @@
+% Hafta 6 — WAF ile RASP farkı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-06-waf-rasp.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {WAF ile RASP farkı};
+  \node[altbaslik] at (b.south west) {``kurcalandım mı, beni kim izliyor, hangi cihazdayım?''};
+  \node[kutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{WAF}\\[2mm]
+     uygulamanın ÖNÜNDE\\HTTP isteklerini süzer\\[3mm]
+     uygulamanın içini bilmez\\sunucu tarafı};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{RASP}\\[2mm]
+     uygulamanın İÇİNDE\\kendi kodunu, belleğini,\\ortamını izler\\[3mm]
+     MATE saldırganına cevap};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {RASP, cihazın güvenilmez olduğu durumlar için tasarlanmıştır.};
+\end{tikzpicture}
+\end{document}

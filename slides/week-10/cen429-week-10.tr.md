@@ -10,8 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -31,11 +29,62 @@ Konuşma notu: Bu hafta kriptografinin yapı taşlarını ve PKI'yi uçtan uca k
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 0–3 | Temel kavramlar · algoritma/anahtar seçimi · kipler/dolgu · MAC/HMAC |
-| 2 | 4–7 | RSA/ECC · OAEP/PSS · dijital imza · Diffie–Hellman · PKI |
-| 3 | 8–13 | X.509 · zincir · CRL/OCSP · HSM/PKCS#11 · kuantum sonrası · proje |
+| 1 | 1–3 | Algoritma/anahtar seçimi · blok şifre kipleri/dolgu · MAC/HMAC |
+| 2 | 4–6 | RSA/ECC (OAEP/PSS) · dijital imza · Diffie–Hellman |
+| 3 | 7–13 | PKI · X.509 · OpenSSL ile zincir kurma · CRL/OCSP · HSM/PKCS#11 · kuantum sonrası · proje |
+
+**Öğrenme çıktıları (ÖÇ.2 / ÖÇ.4):** doğru algoritma, kip, dolgu ve anahtar uzunluğu seçmek · imza ve anahtar
+değişiminin tuzaklarını görmek · bir sertifika zincirini doğru doğrulamak
+
+> Kriptoda hatalar genelde algoritmada değil, **kullanımdadır**: yanlış kip, yanlış dolgu, doğrulanmayan imza,
+> denetlenmeyen zincir.
 
 <!-- Konuşma notu: Bu hafta kriptonun doğru kullanımı ve PKI. Öğrenciler 3. haftada girişi gördü; burada sıfırdan hatırlatıp derinleştiriyoruz. Vurgu: doğru algoritma değil, doğru KULLANIM. -->
+
+---
+
+# Önceki haftalardan gelenler
+
+- **Simetrik ve asimetrik şifreleme** — simetrik tek paylaşılan anahtarla hızlı çalışır; asimetrik açık/özel anahtar
+  çiftiyle anahtar dağıtımını kolaylaştırır ama yavaştır **(Hafta 3)**
+- **AEAD** — şifreleme ve bütünlüğü tek çağrıda birlikte veren kimlik doğrulamalı şifreleme **(Hafta 3)**
+- **Özet, MAC ve dijital imza** — özet tek yönlü parmak izidir; MAC paylaşılan anahtarla, imza açık/özel anahtar
+  çiftiyle mesajın değişmediğini kanıtlar **(Hafta 3)**
+- **İleri gizlilik (forward secrecy)** — oturum anahtarının kullanımdan sonra silinmesiyle, bugünkü anahtar sızsa
+  bile geçmiş oturumların çözülememesi **(Hafta 3)**
+- **TLS sertifika doğrulama** — istemcinin sunucu sertifikasını zincir, geçerlilik, kullanım amacı ve ad açısından
+  denetlemesi **(Hafta 3)**
+
+Bu hafta: asimetrik matematiği ve doğru kip/dolgu (Bölüm 2, 4) · HMAC iç yapısı ve imza tuzakları (Bölüm 3, 5) ·
+DH ve kimlik doğrulaması (Bölüm 6) · PKI, X.509 ve iptal (Bölüm 7–10) derinleşiyor.
+
+---
+
+<!-- _class: yogun -->
+
+# Bu haftanın kavramları
+
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Blok şifre kipleri, dolgu | Bölüm 2 |
+| MAC, HMAC | Bölüm 3 |
+| RSA, eliptik eğri (ECC) | Bölüm 4 |
+| Dijital imza | Bölüm 5 |
+| Diffie–Hellman (DH) | Bölüm 6 |
+| PKI, CA | Bölüm 7 |
+| Sertifika, X.509 | Bölüm 8 |
+| OpenSSL ile zincir kurma | Bölüm 9 |
+| CRL, OCSP | Bölüm 10 |
+| HSM, PKCS#11, SoftHSM | Bölüm 11 |
+| Kuantum sonrası (PQC) | Bölüm 12 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Algoritma ve anahtar seçimi
 
 ---
 
@@ -49,184 +98,6 @@ Konuşma notu: Bu hafta kriptografinin yapı taşlarını ve PKI'yi uçtan uca k
 - **2014** Heartbleed · **2015** Let's Encrypt · **2018** TLS 1.3 · **2022–24** **PQC** (Kyber/Dilithium)
 
 > Bugünkü kurallar (doğru kip/dolgu, zincir doğrulama, iptal) bu acı derslerden çıktı.
-
----
-
-
-# Bu hafta nereye oturuyor?
-
-- **3. hafta:** kriptoya giriş (gizlilik, bütünlük).
-- **Bu hafta (10):** doğru **algoritma/kip/dolgu seçimi**, anahtar yaşam döngüsü, **PKI**.
-- **11. hafta:** anahtar yazılımda korunuyorsa → whitebox.
-
----
-
-# Öğrenme çıktısı
-
-Bu hafta **ÖÇ.2 / ÖÇ.4** üstünedir.
-
-Sonunda yapabileceğiniz:
-
-- Doğru algoritma, kip, dolgu ve anahtar uzunluğu seçmek
-- İmza ve anahtar değişiminin **tuzaklarını** görmek
-- Bir sertifika **zincirini** doğru doğrulamak
-
----
-
-# Ana fikir
-
-> Kriptoda hatalar genelde algoritmada değil, **kullanımdadır**: yanlış kip, yanlış dolgu, doğrulanmayan imza,
-> denetlenmeyen zincir.
-
-Bugün doğru **kullanımı** öğreneceğiz.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: Kripto terimlerini sıfırdan tanımlıyoruz; 3. haftadan hatırlatma + yeni terimler. -->
-
----
-
-# Simetrik vs asimetrik (hatırlatma)
-
-- **Simetrik:** tek anahtar, şifrele ve çöz (AES). Hızlı.
-- **Asimetrik:** açık + gizli anahtar çifti (RSA, ECC). Yavaş ama anahtar dağıtımı kolay.
-- Pratikte **birlikte**: asimetrik ile anahtar taşı, simetrik ile veri şifrele.
-
----
-
-# Blok şifre ve kip
-
-- **Blok şifre:** sabit boyutlu bloğu şifreler (AES: 16 bayt).
-- **Kip (mode):** blokları **nasıl** zincirleyeceğimiz (CBC, GCM…).
-- Kip seçimi güvenliğin **kalbidir**.
-
----
-
-# Dolgu (padding)
-
-- **Dolgu:** veri blok boyutunun katı değilse tamamlama.
-- Bazı kiplerde gerekir (CBC), bazılarında **yok** (GCM).
-- Yanlış dolgu işleme → **dolgu kâhini** saldırısı.
-
----
-
-# AEAD nedir?
-
-- **AEAD (Authenticated Encryption with Associated Data):** gizlilik **+** bütünlüğü **birlikte** veren şifreleme.
-- Örnek: AES-GCM, ChaCha20-Poly1305.
-- Modern tercih: ayrı MAC uğraşma, AEAD kullan.
-
----
-
-# MAC ve HMAC
-
-- **MAC (Message Authentication Code):** bir mesajın **değişmediğini** ve doğru taraftan geldiğini kanıtlayan etiket (simetrik).
-- **HMAC:** özet fonksiyonuna dayalı yaygın bir MAC.
-- Bütünlük için.
-
----
-
-# Encrypt-then-MAC — şema
-
-![w:950](assets/h10-01-encrypt-then-mac.svg)
-
----
-
-# Özet (hash)
-
-- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
-- Tek yönlü: özetten veri geri gelmez.
-- İmza ve MAC'in yapı taşı.
-
----
-
-# Dijital imza
-
-- **İmza:** asimetrik; **gizli** anahtarla imzala, **açık** anahtarla doğrula.
-- Sağlar: bütünlük + **inkâr edilemezlik** (kim imzaladı).
-- MAC'ten farkı: asimetrik, herkes doğrulayabilir.
-
----
-
-# RSA ve eliptik eğri (ECC)
-
-- **RSA:** klasik asimetrik; büyük anahtarlar (2048+ bit).
-- **ECC:** eliptik eğri; aynı güvenlik **daha küçük** anahtarla (Ed25519, X25519).
-- Modern tercih giderek ECC.
-
----
-
-# Diffie–Hellman (DH)
-
-- **DH:** iki tarafın, gizli anahtar **paylaşmadan** ortak bir sır türetmesi.
-- Ağ üzerinden anahtar anlaşması.
-- Kimlik doğrulanmazsa **araya girme** (MITM) riski.
-
----
-
-# Kimliksiz DH ve MITM — şema
-
-![w:950](assets/h10-02-dh-mitm.svg)
-
----
-
-# PKI ve CA
-
-- **PKI (Public Key Infrastructure):** "hangi açık anahtar kime ait?" sorusunu çözen güven sistemi.
-- **CA (Certificate Authority):** sertifikaları imzalayan güvenilir taraf.
-- Kök CA → ara CA → sunucu sertifikası.
-
----
-
-# Sertifika ve X.509
-
-- **Sertifika:** bir açık anahtarı bir kimliğe (alan adı) bağlayan, CA'nın imzaladığı belge.
-- **X.509:** sertifikaların standart biçimi.
-- İçinde: konu, açık anahtar, geçerlilik, imza, SAN.
-
----
-
-# CRL ve OCSP
-
-- **CRL (Certificate Revocation List):** iptal edilmiş sertifikaların **listesi**.
-- **OCSP:** bir sertifikanın iptal durumunu **anlık** sorma.
-- "Bu sertifika hâlâ geçerli mi?" sorusu.
-
----
-
-# HSM, PKCS#11, SoftHSM
-
-- **HSM:** anahtarları saklayan/işleten özel **donanım**; anahtar dışarı çıkmaz.
-- **PKCS#11:** anahtar modülleriyle konuşmanın standart arayüzü.
-- **SoftHSM:** HSM'in yazılım benzetimi (test için).
-
----
-
-# Kuantum sonrası (PQC)
-
-- **PQC (Post-Quantum Cryptography):** kuantum bilgisayara dayanıklı algoritmalar.
-- Bugünkü RSA/ECC gelecekte tehdit altında.
-- Standartlaşma sürüyor (ör. ML-KEM).
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · imza · RSA/ECC · DH · PKI/CA · sertifika/X.509 · CRL/OCSP · HSM/PKCS#11 · PQC
-
-Şimdi: doğru algoritma ve anahtar seçimi.
-
----
-
-<!-- _class: bolum -->
-
-# 1. Algoritma ve anahtar seçimi
 
 ---
 
@@ -269,15 +140,43 @@ simetrik/asimetrik · blok şifre/kip · dolgu · AEAD · MAC/HMAC · özet · i
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 2. Blok şifre kipleri ve dolgu
+# Hangi kip?
+
+| İhtiyaç | Seçim |
+| --- | --- |
+| Gizlilik + bütünlük | AES-GCM / ChaCha20-Poly1305 |
+| Yalnız hız (donanım AES yok) | ChaCha20-Poly1305 |
+| Asla | ECB |
+| Eski sistem CBC | + encrypt-then-MAC, tek hata |
 
 ---
 
-# OAEP / PSS — şema
+<!-- _class: yogun -->
 
-![w:950](assets/h10-09-oaep-pss.svg)
+# Hangi asimetrik?
+
+| İhtiyaç | Seçim |
+| --- | --- |
+| İmza (modern) | Ed25519 |
+| Anahtar anlaşması | X25519 |
+| RSA şifreleme | RSA-OAEP (≥3072) |
+| RSA imza | RSA-PSS |
+
+---
+
+# Karar kuralı
+
+- Modern, standart, iyi kullanılan seç.
+- AEAD öncelikli; ECC öncelikli.
+- Kararı ve gerekçesini **S8**'e yaz.
+
+---
+
+<!-- _class: bolum -->
+
+# 2. Blok şifre kipleri ve dolgu
 
 ---
 
@@ -368,13 +267,7 @@ Son üç bayt **`03 03 03`**: eksik bayt sayısı (16 − 13 = 3) kadar, o sayı
 
 ---
 
-<!-- _class: bolum -->
-
-# Dolgu kâhini (padding oracle)
-
----
-
-# Sorun · adım adım
+# Dolgu kâhini (padding oracle) · sorun adım adım
 
 1. Sunucu, CBC çözerken **dolgu geçersiz** ve **MAC geçersiz** için **farklı** yanıt/zaman verir.
 2. Saldırgan şifreli metni değiştirip yanıtlara bakar.
@@ -424,7 +317,6 @@ Dolgu kâhini, "kullanım hatası"nın klasik örneğidir.
 4. **AEAD** önce etiketi doğrular, yanlış etiketli metni **çözmeden reddeder** → dolgu hatası için **oracle** kalmaz.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -498,11 +390,9 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 
 ---
 
-# Bu bölümün kuralı · MAC/HMAC
+# Encrypt-then-MAC — şema
 
-- Bütünlüğü **HMAC** ile sağlayın; düz `H(K‖m)` değil (uzunluk uzatma riski).
-- Şifreleme + MAC birleşiminde sıra **şifrele-sonra-MAC**'tir.
-- Etiket/imza karşılaştırması **sabit zamanlı** olmalı; erken çıkışlı fonksiyon kullanmayın.
+![w:950](assets/h10-01-encrypt-then-mac.svg)
 
 ---
 
@@ -543,6 +433,14 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 
 ---
 
+# Bu bölümün kuralı · MAC/HMAC
+
+- Bütünlüğü **HMAC** ile sağlayın; düz `H(K‖m)` değil (uzunluk uzatma riski).
+- Şifreleme + MAC birleşiminde sıra **şifrele-sonra-MAC**'tir.
+- Etiket/imza karşılaştırması **sabit zamanlı** olmalı; erken çıkışlı fonksiyon kullanmayın.
+
+---
+
 <!-- _class: bolum -->
 
 # 4. Asimetrik: RSA ve ECC
@@ -552,6 +450,12 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 # Simetrik ↔ asimetrik — şema
 
 ![w:950](assets/h10-05-simetrik-asimetrik.svg)
+
+---
+
+# OAEP / PSS — şema
+
+![w:950](assets/h10-09-oaep-pss.svg)
 
 ---
 
@@ -679,7 +583,6 @@ gömülü flash'ta ya da blok zincirinde bu fark birikerek büyür.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. Dijital imza ve tuzakları
@@ -805,6 +708,12 @@ olarak kullanılmaz; önce bir **KDF**'den (HKDF) geçirilip oturum anahtarları
 
 ---
 
+# Kimliksiz DH · MITM — şema
+
+![w:950](assets/h10-02-dh-mitm.svg)
+
+---
+
 # MITM · şema
 
 ```text
@@ -852,7 +761,6 @@ Her iki taraf "güvenli kanal kurdum" sanır.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 7. Açık anahtar altyapısı (PKI)
@@ -881,7 +789,6 @@ Her seviye bir alttakini **imzalar**.
 
 ---
 
-
 # Kök ve ara CA
 
 - **Kök CA:** çevrimdışı, kendini imzalar, çok korunur.
@@ -895,78 +802,6 @@ Her seviye bir alttakini **imzalar**.
 - İşletim sistemi/tarayıcı, güvenilen **kök CA'ları** taşır.
 - Bir zincir bu köklerden birine ulaşırsa güvenilir.
 - Ulaşamıyorsa → güvenilmez.
-
----
-
-<!-- _class: bolum -->
-
-# 8. X.509 sertifikası
-
----
-
-# X.509 alanları — şema
-
-![w:950](assets/h10-11-x509.svg)
-
----
-
-# İçinde ne var?
-
-- **Konu (subject):** kime ait (alan adı).
-- **Açık anahtar.**
-- **Geçerlilik:** başlangıç/bitiş.
-- **Veren (issuer):** hangi CA imzaladı.
-- **İmza.**
-
----
-
-# SAN · ad denetimi
-
-- **SAN (Subject Alternative Name):** sertifikanın geçerli olduğu **alan adları**.
-- Ad denetimi **CN'e değil, SAN'a** yapılır.
-- `example.com` için sertifika `baska.com`'da geçerli olmamalı.
-
----
-
-<!-- _class: yogun -->
-
-# Gerçek sertifika · üst alanlar
-
-```text
-Version: 3 (0x2)
-Serial Number: 35:e2:f6:8d:...:76:e7
-Signature Algorithm: ecdsa-with-SHA256
-Issuer: CN=CEN429 Lab Ara CA
-Validity: Sep 23 2026 – Dec 22 2026
-Subject: CN=localhost
-Subject Public Key Info: 256 bit, NIST CURVE: P-256
-```
-
-Gerçek `openssl x509 -text` çıktısı; her alan "dört soru"dan (bir sonraki bölüm) birinin cevabını taşır.
-
----
-
-<!-- _class: yogun -->
-
-# Gerçek sertifika · uzantılar
-
-```text
-X509v3 Basic Constraints: CA:FALSE
-X509v3 Key Usage: critical, Digital Signature
-X509v3 Extended Key Usage: TLS Web Server Authentication
-X509v3 Subject Alternative Name:
-    DNS:localhost, IP Address:127.0.0.1
-X509v3 Authority Key Identifier: F5:BA:39:86:...
-```
-
-`Authority Key Identifier`, sertifikayı imzalayan CA'nın **parmak izidir**; zinciri
-kurarken "aynı isimli ama farklı anahtarlı sahte ara CA" karışıklığını bununla önler.
-
----
-
-<!-- _class: bolum -->
-
-# 9. Zincir doğrulama
 
 ---
 
@@ -1058,14 +893,6 @@ openssl verify -CAfile kok.crt \
 
 ---
 
-# Sık hata · eksik ara sertifika
-
-- Sunucu **ara** sertifikayı göndermezse zincir köke ulaşmaz.
-- `verify` başarısız olur; `-untrusted ara.crt` ile geçer.
-- Sahada çok yaygın yapılandırma hatası.
-
----
-
 # SPKI sabitleme (pinning)
 
 - Uygulama, beklenen sunucu anahtarının **özetini** gömer.
@@ -1079,6 +906,190 @@ openssl verify -CAfile kok.crt \
 - Zincir doğrulamanın **dört sorusundan** (imza, süre, kullanım, ad) hiçbirini atlamayın.
 - `verify` ad denetlemez — **SAN** denetimi ayrıca yapılmalı.
 - Sunucu **ara sertifikayı** göndermezse, kriptografik olarak doğru zincir bile bağlanamaz.
+
+---
+
+<!-- _class: bolum -->
+
+# 8. X.509 sertifikası
+
+---
+
+# X.509 alanları — şema
+
+![w:950](assets/h10-11-x509.svg)
+
+---
+
+# İçinde ne var?
+
+- **Konu (subject):** kime ait (alan adı).
+- **Açık anahtar.**
+- **Geçerlilik:** başlangıç/bitiş.
+- **Veren (issuer):** hangi CA imzaladı.
+- **İmza.**
+
+---
+
+# SAN · ad denetimi
+
+- **SAN (Subject Alternative Name):** sertifikanın geçerli olduğu **alan adları**.
+- Ad denetimi **CN'e değil, SAN'a** yapılır.
+- `example.com` için sertifika `baska.com`'da geçerli olmamalı.
+
+---
+
+<!-- _class: yogun -->
+
+# Gerçek sertifika · üst alanlar
+
+```text
+Version: 3 (0x2)
+Serial Number: 35:e2:f6:8d:...:76:e7
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN=CEN429 Lab Ara CA
+Validity: Sep 23 2026 – Dec 22 2026
+Subject: CN=localhost
+Subject Public Key Info: 256 bit, NIST CURVE: P-256
+```
+
+Gerçek `openssl x509 -text` çıktısı; her alan "dört soru"dan (bir sonraki bölüm) birinin cevabını taşır.
+
+---
+
+<!-- _class: yogun -->
+
+# Gerçek sertifika · uzantılar
+
+```text
+X509v3 Basic Constraints: CA:FALSE
+X509v3 Key Usage: critical, Digital Signature
+X509v3 Extended Key Usage: TLS Web Server Authentication
+X509v3 Subject Alternative Name:
+    DNS:localhost, IP Address:127.0.0.1
+X509v3 Authority Key Identifier: F5:BA:39:86:...
+```
+
+`Authority Key Identifier`, sertifikayı imzalayan CA'nın **parmak izidir**; zinciri
+kurarken "aynı isimli ama farklı anahtarlı sahte ara CA" karışıklığını bununla önler.
+
+---
+
+<!-- _class: bolum -->
+
+# 9. OpenSSL ile sertifika zinciri kurmak
+
+---
+
+# Amaç
+
+Küçük bir zincir kuralım:
+
+Kök CA → Ara CA → Sunucu sertifikası.
+
+Sonra `verify` ile doğrulayalım ve tipik hatayı görelim.
+
+---
+
+# Adım 1 · kök CA (kendini imzalar)
+
+```bash
+openssl req -x509 -newkey ed25519 \
+  -keyout kok.key -out kok.crt \
+  -subj "/CN=Ders Kok CA" -days 3650 -nodes
+```
+
+Kök kendini imzalar; çevrimdışı tutulur.
+
+---
+
+# Adım 2 · ara CA (kök imzalar)
+
+```bash
+openssl req -newkey ed25519 -keyout ara.key \
+  -out ara.csr -subj "/CN=Ders Ara CA" -nodes
+openssl x509 -req -in ara.csr -CA kok.crt -CAkey kok.key \
+  -CAcreateserial -out ara.crt -days 1825
+```
+
+---
+
+# Adım 3 · sunucu sertifikası (ara imzalar)
+
+```bash
+openssl req -newkey ed25519 -keyout sunucu.key \
+  -out sunucu.csr -subj "/CN=ornek.test" -nodes
+openssl x509 -req -in sunucu.csr -CA ara.crt -CAkey ara.key \
+  -CAcreateserial -out sunucu.crt -days 365
+```
+
+---
+
+# Adım 4 · doğrula (eksik ara)
+
+```bash
+openssl verify -CAfile kok.crt sunucu.crt
+# HATA: unable to get local issuer certificate
+```
+
+Zincir köke ulaşamıyor: **ara sertifika eksik**.
+
+---
+
+# Adım 5 · doğrula (ara ile)
+
+```bash
+openssl verify -CAfile kok.crt \
+  -untrusted ara.crt sunucu.crt
+# OK
+```
+
+Ara sertifikayı verince zincir tamamlanır.
+
+---
+
+# Ders
+
+- Sunucu, **ara** sertifikayı da göndermeli.
+- Eksikse istemci "issuer bulunamadı" der.
+- Sahadaki en yaygın TLS yapılandırma hatası.
+
+---
+
+# Zincirdeki dört soru · uygulaması
+
+- **İmza:** her seviye üsttekince imzalı ✓
+- **Kök:** `-CAfile kok.crt` güven deposu ✓
+- **Süre:** `-days` içinde ✓
+- **Ad:** uygulamada SAN denetimi (verify ad denetlemez!)
+
+---
+
+# Sertifika doğrulamayı kapatma
+
+```c
+/* ASLA: */
+SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+```
+
+Bu, MITM'e kapıyı açar. "Test için" diye bırakılan bu satır sahada felakettir.
+
+---
+
+# Ad denetimini atlamak
+
+- Zincir geçerli ama **ad** doğrulanmıyorsa, saldırganın geçerli sertifikası kabul edilir.
+- Ana bilgisayar adı (SAN) mutlaka denetlenir.
+
+---
+
+# Eleştirel okuma kuralı
+
+Bir TLS kurulum kodunu okurken sorun:
+
+- Doğrulama açık mı?
+- Ad denetleniyor mu?
+- Hata durumunda **fail-closed** mı?
 
 ---
 
@@ -1183,7 +1194,6 @@ iptal denetimi, süre denetiminden **bağımsız** çalışır.
 4. **Fail-open:** hata/erişilemezlikte "geçti" saymak. Azaltma: **fail-closed**, OCSP stapling / must-staple, hatayı reddet.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1329,207 +1339,7 @@ ML-DSA-65: açık anahtar Ed25519'dan **~24 kat**, imza **~52 kat** büyük. TLS
 
 ---
 
-<!-- _class: bolum -->
-
-# Çözümlü kendini sınama
-
----
-
-# Soru 1
-
-**RSA-2048 + AES-256 sisteminin güvenlik düzeyi?**
-
-**Cevap:** ~112 bit (en zayıf halka RSA-2048). 128 bit için RSA-3072 ya da ECC.
-
----
-
-# Soru 2
-
-**"Dolgu geçersiz" ve "MAC geçersiz" ayrı iletiler: risk?**
-
-**Cevap:** Dolgu kâhini; saldırgan yanıtlara bakıp mesajı çözebilir. Tek ve aynı hata; tercihen AEAD.
-
----
-
-# Soru 3
-
-**`if (EVP_DigestVerify(...))` neden hatalı?**
-
-**Cevap:** Negatif hata değeri de doğru sayılır; denetim `== 1` olmalı. Ayrıca imzalı içerik sürümü kapsamalı.
-
----
-
-# Soru 4
-
-**`verify` ara sertifika olmadan neden başarısız?**
-
-**Cevap:** Zincir köke ulaşamaz; ara sertifika eksik. Sahada sunucu ara sertifikayı göndermiyordur.
-
----
-
-# Soru 5
-
-**OCSP'ye ulaşılamayınca kabul: hangi örüntü, nasıl azaltılır?**
-
-**Cevap:** Fail-open (yumuşak başarısızlık). Must-Staple ya da kısa ömürlü sertifikalar.
-
----
-
-# Soru 6
-
-**Kimliksiz DH'ye MITM nasıl engellenir?**
-
-**Cevap:** DH değerleri kimliği bilinen anahtarla imzalanır (TLS 1.3 CertificateVerify) ve karşı taraf doğrular.
-
----
-
-# Soru 7
-
-**Zincir doğrulamanın dört sorusu?**
-
-**Cevap:** İmza geçerli mi, güvenilir köke ulaşıyor mu, süre dolmamış mı, ad (SAN) eşleşiyor mu.
-
----
-
-# Soru 8
-
-**Anahtarı neden yazılıma koymamalı? Alternatif?**
-
-**Cevap:** Beyaz kutu saldırgan yazılımdaki anahtarı çıkarabilir. Alternatif: HSM/TEE (PKCS#11); yoksa whitebox + katman (11. hafta).
-
----
-
-<!-- _class: yogun -->
-
-# Sözlük
-
-| Terim | Anlam |
-| --- | --- |
-| AEAD | Şifreleme + bütünlük birlikte |
-| Encrypt-then-MAC | Doğru sıra |
-| OAEP/PSS | RSA şifre/imza dolgusu |
-| Ed25519/X25519 | İmza / anahtar anlaşması |
-| SAN | Sertifika ad denetimi |
-| CRL/OCSP | İptal listesi / anlık sorgu |
-
----
-
-# Özet: bu haftanın tek cümlesi
-
-> Kriptoda güvenlik doğru algoritmadan çok doğru **kullanımdadır**: AEAD, doğru dolgu, doğrulanan imza, denetlenen
-> zincir ve iyi yönetilen anahtar.
-
----
-
-<!-- _class: bolum -->
-
-# Gelecek hafta
-
-**11. hafta — Whitebox kriptografi**
-
-Anahtar yazılımda korunuyorsa ne olur? Beyaz kutu saldırgan, tablo tabanlı WBC ve sınırları.
-
----
-
-<!-- _class: bolum -->
-
-# Ek A · OpenSSL ile zincir (adım adım)
-
-<!-- Konuşma notu: Sentetik bir kök→ara→sunucu zinciri kurup doğruluyoruz. Değerler örnektir. -->
-
----
-
-# Amaç
-
-Küçük bir zincir kuralım:
-
-Kök CA → Ara CA → Sunucu sertifikası.
-
-Sonra `verify` ile doğrulayalım ve tipik hatayı görelim.
-
----
-
-# Adım 1 · kök CA (kendini imzalar)
-
-```bash
-openssl req -x509 -newkey ed25519 \
-  -keyout kok.key -out kok.crt \
-  -subj "/CN=Ders Kok CA" -days 3650 -nodes
-```
-
-Kök kendini imzalar; çevrimdışı tutulur.
-
----
-
-# Adım 2 · ara CA (kök imzalar)
-
-```bash
-openssl req -newkey ed25519 -keyout ara.key \
-  -out ara.csr -subj "/CN=Ders Ara CA" -nodes
-openssl x509 -req -in ara.csr -CA kok.crt -CAkey kok.key \
-  -CAcreateserial -out ara.crt -days 1825
-```
-
----
-
-# Adım 3 · sunucu sertifikası (ara imzalar)
-
-```bash
-openssl req -newkey ed25519 -keyout sunucu.key \
-  -out sunucu.csr -subj "/CN=ornek.test" -nodes
-openssl x509 -req -in sunucu.csr -CA ara.crt -CAkey ara.key \
-  -CAcreateserial -out sunucu.crt -days 365
-```
-
----
-
-# Adım 4 · doğrula (eksik ara)
-
-```bash
-openssl verify -CAfile kok.crt sunucu.crt
-# HATA: unable to get local issuer certificate
-```
-
-Zincir köke ulaşamıyor: **ara sertifika eksik**.
-
----
-
-# Adım 5 · doğrula (ara ile)
-
-```bash
-openssl verify -CAfile kok.crt \
-  -untrusted ara.crt sunucu.crt
-# OK
-```
-
-Ara sertifikayı verince zincir tamamlanır.
-
----
-
-# Ders
-
-- Sunucu, **ara** sertifikayı da göndermeli.
-- Eksikse istemci "issuer bulunamadı" der.
-- Sahadaki en yaygın TLS yapılandırma hatası.
-
----
-
-# Zincirdeki dört soru · uygulaması
-
-- **İmza:** her seviye üsttekince imzalı ✓
-- **Kök:** `-CAfile kok.crt` güven deposu ✓
-- **Süre:** `-days` içinde ✓
-- **Ad:** uygulamada SAN denetimi (verify ad denetlemez!)
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Kripto tasarım vakası
-
----
-
-# Kurgu
+# Uçtan uca: bir kripto tasarım vakası
 
 Bir mobil uygulama:
 
@@ -1575,168 +1385,113 @@ Kripto tasarımını yapalım.
 
 ---
 
+<!-- _class: yogun -->
+
+# Klasik kripto hataları — özet
+
+| Hata | Bölüm | Doğrusu |
+| --- | --- | --- |
+| Kendi kriptonu yazmak | 1 | Denenmiş kütüphane, standart algoritma |
+| ECB kipi | 2 | AEAD (GCM / ChaCha20-Poly1305) |
+| IV/nonce tekrarı | 2 | Benzersiz, tekrarsız nonce |
+| Şifreleme var, bütünlük yok | 3 | AEAD ya da encrypt-then-MAC |
+| Ham RSA / yanlış dolgu | 4 | OAEP (şifre), PSS (imza) |
+| Zayıf özet | 5 | SHA-256+ |
+| İmza dönüşünü denetlememek | 5 | `== 1` ve sürüm kapsanır |
+| Zincir/ad denetlememek | 7 | Dört soru + SAN denetimi |
+| Fail-open iptal | 10 | Must-Staple, kısa ömür |
+| Anahtarı düz gömmek | 11 | HSM/TEE; yoksa whitebox + katman (11. hafta) |
+
+On hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
+
+---
+
 <!-- _class: bolum -->
 
-# Ek C · Karar tabloları
+# Çözümlü kendini sınama
+
+---
+
+# Soru 1
+
+**RSA-2048 + AES-256 sisteminin güvenlik düzeyi?**
+
+**Cevap:** ~112 bit (en zayıf halka RSA-2048). 128 bit için RSA-3072 ya da ECC.
+
+---
+
+# Soru 2
+
+**"Dolgu geçersiz" ve "MAC geçersiz" ayrı iletiler: risk?**
+
+**Cevap:** Dolgu kâhini; saldırgan yanıtlara bakıp mesajı çözebilir. Tek ve aynı hata; tercihen AEAD.
+
+---
+
+# Soru 3
+
+**`if (EVP_DigestVerify(...))` neden hatalı?**
+
+**Cevap:** Negatif hata değeri de doğru sayılır; denetim `== 1` olmalı. Ayrıca imzalı içerik sürümü kapsamalı.
+
+---
+
+# Soru 4
+
+**`verify` ara sertifika olmadan neden başarısız?**
+
+**Cevap:** Zincir köke ulaşamaz; ara sertifika eksik. Sahada sunucu ara sertifikayı göndermiyordur.
+
+---
+
+# Soru 5
+
+**`openssl verify` komutuna hem doğru hem alakasız bir ara sertifika verildiğinde ne olur?**
+
+**Cevap:** OpenSSL zinciri kurabildiği herhangi bir geçerli yoldan kurar (ör. doğrudan köke); alakasız sertifika
+yalnızca kullanılmayan bir aday olarak kalır, doğrulama yine de başarılı olabilir. Bu kriptografik değil
+operasyonel bir durumdur.
+
+---
+
+# Soru 6
+
+**ECDSA'da aynı rastgele değerin iki imzada kullanılması neden felakettir?**
+
+**Cevap:** İki imzadan özel anahtar hesaplanabilir. Ed25519 ya da deterministik ECDSA (RFC 6979) bu riski ortadan
+kaldırır.
+
+---
+
+# Soru 7
+
+**Kök CA neden çevrimdışı tutulur ve ara CA neden vardır?**
+
+**Cevap:** Kök anahtarın ele geçirilmesi bütün zinciri çökertir ve kökü güven depolarından çıkarmak yıllar sürer.
+Günlük işi ara CA yapar; ele geçirilirse yalnız o iptal edilir.
+
+---
+
+# Soru 8
+
+**Anahtarı neden yazılıma koymamalı? Alternatif?**
+
+**Cevap:** Beyaz kutu saldırgan yazılımdaki anahtarı çıkarabilir. Alternatif: HSM/TEE (PKCS#11); yoksa whitebox + katman (11. hafta).
 
 ---
 
 <!-- _class: yogun -->
 
-# Hangi kip?
+# Sözlük
 
-| İhtiyaç | Seçim |
+| Terim | Anlam |
 | --- | --- |
-| Gizlilik + bütünlük | AES-GCM / ChaCha20-Poly1305 |
-| Yalnız hız (donanım AES yok) | ChaCha20-Poly1305 |
-| Asla | ECB |
-| Eski sistem CBC | + encrypt-then-MAC, tek hata |
-
----
-
-<!-- _class: yogun -->
-
-# Hangi asimetrik?
-
-| İhtiyaç | Seçim |
-| --- | --- |
-| İmza (modern) | Ed25519 |
-| Anahtar anlaşması | X25519 |
-| RSA şifreleme | RSA-OAEP (≥3072) |
-| RSA imza | RSA-PSS |
-
----
-
-# Karar kuralı
-
-- Modern, standart, iyi kullanılan seç.
-- AEAD öncelikli; ECC öncelikli.
-- Kararı ve gerekçesini **S8**'e yaz.
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · On sık kripto hatası
-
-<!-- Konuşma notu: Her biri bir slayt: hata → doğrusu. Hızlı geçilebilir. -->
-
----
-
-# Hata 1 · kendi kriptonu yazmak
-
-- **Yanlış:** kendi "şifreleme" algoritman.
-- **Doğru:** denenmiş kütüphane, standart algoritma.
-
----
-
-# Hata 2 · ECB kipi
-
-- **Yanlış:** ECB (desen sızar).
-- **Doğru:** AEAD (GCM / ChaCha20-Poly1305).
-
----
-
-# Hata 3 · IV/nonce tekrarı
-
-- **Yanlış:** sabit ya da tekrar eden nonce.
-- **Doğru:** benzersiz, tekrarsız nonce.
-
----
-
-# Hata 4 · şifreleme ama bütünlük yok
-
-- **Yanlış:** yalnız CBC, MAC yok.
-- **Doğru:** AEAD ya da encrypt-then-MAC.
-
----
-
-# Hata 5 · ham RSA / yanlış dolgu
-
-- **Yanlış:** ham RSA, PKCS#1 v1.5.
-- **Doğru:** OAEP (şifre), PSS (imza).
-
----
-
-# Hata 6 · zayıf özet
-
-- **Yanlış:** MD5, SHA-1.
-- **Doğru:** SHA-256+.
-
----
-
-# Hata 7 · imza dönüşünü denetlememek
-
-- **Yanlış:** `if (verify(...))`.
-- **Doğru:** `== 1` ve sürüm kapsanır.
-
----
-
-# Hata 8 · zincir/ad denetlememek
-
-- **Yanlış:** yalnız imzaya bakmak.
-- **Doğru:** dört soru + SAN denetimi.
-
----
-
-# Hata 9 · fail-open iptal
-
-- **Yanlış:** OCSP'ye ulaşılamayınca kabul.
-- **Doğru:** Must-Staple, kısa ömür.
-
----
-
-# Hata 10 · anahtarı düz gömmek
-
-- **Yanlış:** `static uint8_t k[16]`.
-- **Doğru:** HSM/TEE; yoksa whitebox + katman (11).
-
----
-
-<!-- _class: bolum -->
-
-# Ek E · TLS'i kodda kurmak (eleştirel)
-
----
-
-# Sertifika doğrulamayı kapatma
-
-```c
-/* ASLA: */
-SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-```
-
-Bu, MITM'e kapıyı açar. "Test için" diye bırakılan bu satır sahada felakettir.
-
----
-
-# Ad denetimini atlamak
-
-- Zincir geçerli ama **ad** doğrulanmıyorsa, saldırganın geçerli sertifikası kabul edilir.
-- Ana bilgisayar adı (SAN) mutlaka denetlenir.
-
----
-
-# Sabitleme · dikkatli
-
-- SPKI sabitleme güçlüdür ama **yedek pin** olmadan anahtar değişince kilitlenirsiniz.
-- En az bir yedek pin.
-
----
-
-# Eleştirel okuma kuralı
-
-Bir TLS kurulum kodunu okurken sorun:
-
-- Doğrulama açık mı?
-- Ad denetleniyor mu?
-- Hata durumunda **fail-closed** mı?
-
----
-
-<!-- _class: bolum -->
-
-# Ek F · Hızlı başvuru
+| AEAD | Şifreleme + bütünlük birlikte |
+| Encrypt-then-MAC | Doğru sıra |
+| OAEP/PSS | RSA şifre/imza dolgusu |
+| Ed25519/X25519 | İmza / anahtar anlaşması |
+| SAN | Sertifika ad denetimi |
+| CRL/OCSP | İptal listesi / anlık sorgu |
 
 ---
 
@@ -1755,21 +1510,17 @@ Bir TLS kurulum kodunu okurken sorun:
 
 ---
 
-<!-- _class: yogun -->
+<!-- _class: baslik -->
 
-# Kripto kontrol listesi
+# Bir sonraki hafta
 
-- [ ] AEAD (GCM), nonce tekrarsız
-- [ ] Bütünlük var (AEAD/EtM)
-- [ ] RSA-OAEP/PSS ya da Ed25519/X25519
-- [ ] İmza `==1` + sürüm kapsar
-- [ ] Zincir + SAN doğrulanıyor, fail-closed
-- [ ] Anahtar yaşam döngüsü + saklama belgeli
+**11. hafta — Whitebox kriptografi**
 
----
+Bu hafta anahtarı korumanın "donanıma emanet et" yolunu (HSM, PKCS#11, `CKA_EXTRACTABLE=false`, Bölüm 11) gördük.
+11. hafta aynı soruyu donanım yokken sorar: bir anahtar, hiçbir HSM'e erişimi olmayan, tamamen yazılımdan ibaret
+bir uygulamanın içinde nasıl korunur? Tablo tabanlı whitebox AES ve ona karşı geliştirilen saldırılar (BGE, DCA,
+DFA), bu haftaki "anahtar hiç açığa çıkmasın" ilkesinin yazılım tarafındaki karşılığıdır.
 
-# Son söz (10. hafta)
-
-> Kriptoyu "açık/kapalı" değil, **doğru kullanılıp kullanılmadığıyla** değerlendirin.
-
-Doğru kip, doğru dolgu, doğrulanan imza, denetlenen zincir, iyi yönetilen anahtar.
+> Bu haftanın özeti: Kriptoda güvenlik doğru algoritmadan çok doğru **kullanımdadır** — AEAD, doğru dolgu,
+> doğrulanan imza, denetlenen zincir, iyi yönetilen anahtar. Kriptoyu "açık/kapalı" değil, doğru kullanılıp
+> kullanılmadığıyla değerlendirin.

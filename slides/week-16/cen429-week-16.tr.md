@@ -26,17 +26,17 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
-# Final ve başarı notu — şema
-
-![w:950](assets/h16-02-final-hesabi.svg)
-
----
-
 # Quiz-2: ne, ne zaman?
 
 - Kapsam: **9–14. haftalar** · finalin **%30**'u
 - Tarih, saat, yer, süre, biçim: **ders sınıfında**
 - En iyi hazırlık: Kendini sınama soruları · 10. hafta OpenSSL adımları · 13. hafta uyum matrisi
+
+---
+
+# Final ve başarı notu — şema
+
+![w:950](assets/h16-02-final-hesabi.svg)
 
 ---
 
@@ -58,6 +58,62 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 # Quiz-2 kapsamı — şema
 
 ![w:950](assets/h16-01-kapsam.svg)
+
+---
+
+# 9. hafta · anahtar noktalar
+
+- Gizleme: kırılamazlık değil **maliyet**.
+- Kurallar: opak yüklem, düzleştirme, sahte/ölü, veri kodlama.
+- Ölçme: güç, dayanıklılık, gizlilik, maliyet.
+- Çeşitlendirme.
+
+<!-- Konuşma notu: Quiz-2 kapsamı 9-14. hafta. Artık 9, 11, 14. haftalar yayımlandı; örnek soruları eklendi. -->
+
+---
+
+# 10. hafta · anahtar noktalar
+
+- Güvenlik düzeyi; en zayıf halka.
+- Kip ve dolgu; dolgu kâhini → AEAD.
+- HMAC, encrypt-then-MAC, replay.
+- OAEP/PSS, Ed25519/X25519; PKI, X.509, CRL/OCSP.
+
+---
+
+# 11. hafta · anahtar noktalar
+
+- Kara/gri/beyaz kutu.
+- Tablo tabanlı WBC; iç/dış kodlama.
+- "Hepsi kırıldı" → WBC bir katman.
+- Anahtar yenileme + cihaz bağlama + sunucu.
+
+---
+
+# 12. hafta · anahtar noktalar
+
+- 13 adım değerlendirme.
+- Saldırı potansiyeli + CVSS.
+- Sızma testi planı; test kartı.
+- Etki analizi vs delta.
+
+---
+
+# 13. hafta · anahtar noktalar
+
+- İyi gereksinim; izlenebilirlik.
+- Uyum matrisi; devredilenler.
+- CC (TOE/ST/PP/SFR/SAR/EAL); FIPS 140-3.
+- ETSI/EMVCo/PCI/MASVS.
+
+---
+
+# 14. hafta · anahtar noktalar
+
+- Kaynaktan kaynağa (Tigress).
+- Dönüşüm hattı; tohumla çeşitlendirme.
+- Maliyet + dayanıklılık ölçümü.
+- Derleme hattı (S15).
 
 ---
 
@@ -120,93 +176,6 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 - Cevapları 16. hafta sayfasında
 - Kılavuzunuz bir **portfolyo** öğesidir (gizli bilgi içermediğinden emin olun)
-
----
-
-# Dönemin tek cümlesi — şema
-
-![w:950](assets/h16-04-donem-ozeti.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Hafta hafta konu haritası (9–14)
-
-<!-- Konuşma notu: Quiz-2 kapsamı 9-14. hafta. Artık 9, 11, 14. haftalar yayımlandı; örnek soruları eklendi. -->
-
----
-
-# 9. hafta · anahtar noktalar
-
-- Gizleme: kırılamazlık değil **maliyet**.
-- Kurallar: opak yüklem, düzleştirme, sahte/ölü, veri kodlama.
-- Ölçme: güç, dayanıklılık, gizlilik, maliyet.
-- Çeşitlendirme.
-
----
-
-# 10. hafta · anahtar noktalar
-
-- Güvenlik düzeyi; en zayıf halka.
-- Kip ve dolgu; dolgu kâhini → AEAD.
-- HMAC, encrypt-then-MAC, replay.
-- OAEP/PSS, Ed25519/X25519; PKI, X.509, CRL/OCSP.
-
----
-
-# 11. hafta · anahtar noktalar
-
-- Kara/gri/beyaz kutu.
-- Tablo tabanlı WBC; iç/dış kodlama.
-- "Hepsi kırıldı" → WBC bir katman.
-- Anahtar yenileme + cihaz bağlama + sunucu.
-
----
-
-# 12. hafta · anahtar noktalar
-
-- 13 adım değerlendirme.
-- Saldırı potansiyeli + CVSS.
-- Sızma testi planı; test kartı.
-- Etki analizi vs delta.
-
----
-
-# 13. hafta · anahtar noktalar
-
-- İyi gereksinim; izlenebilirlik.
-- Uyum matrisi; devredilenler.
-- CC (TOE/ST/PP/SFR/SAR/EAL); FIPS 140-3.
-- ETSI/EMVCo/PCI/MASVS.
-
----
-
-# 14. hafta · anahtar noktalar
-
-- Kaynaktan kaynağa (Tigress).
-- Dönüşüm hattı; tohumla çeşitlendirme.
-- Maliyet + dayanıklılık ölçümü.
-- Derleme hattı (S15).
-
----
-
-# Sık karıştırılanlar
-
-| A | B | Fark |
-| --- | --- | --- |
-| CBC | GCM | Dolgu / AEAD |
-| OAEP | PSS | Şifre / imza |
-| Ed25519 | X25519 | İmza / anahtar |
-| EAL | Saldırı potansiyeli | Derinlik / saldırgan kaynağı |
-| Karşılandı | Devredildi | Ürün / başka taraf |
-| Etki analizi | Delta | Belgeler / yalnız değişeni değerlendirir |
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Çözümlü pratik (9, 11, 14)
 
 ---
 
@@ -287,6 +256,12 @@ A) Çok yavaş B) **Standart AES değil** ✓ C) Tablo küçük D) Anahtar açı
 - 9, 11, 14. hafta sayfalarındaki çözümlü sınamaları yap.
 - 10. haftanın OpenSSL adımlarını tekrar et.
 - 13. haftanın uyum matrisi etkinliğini kendin doldur.
+
+---
+
+# Dönemin tek cümlesi — şema
+
+![w:950](assets/h16-04-donem-ozeti.svg)
 
 ---
 

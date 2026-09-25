@@ -1,0 +1,25 @@
+% Hafta 4 — Use-after-free zinciri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-08-uaf.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 12mm]
+  \node[baslik] (b) at (0,0) {Use-after-free zinciri};
+  \node[altbaslik] at (b.south west) {ASan raporundaki üç iz bu zincirin üç noktasıdır};
+
+  \node[kutu=28mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{malloc}\\blok ayrıldı};
+  \node[iyikutu=28mm, right=of n1] (n2) {\kb{kullan}\\geçerli};
+  \node[uyarikutu=28mm, right=of n2] (n3) {\kb{free(p)}\\blok geri verildi};
+  \node[kotukutu=28mm, right=of n3] (n4) {\kb{p SARKAN}\\eski adresi gösteriyor};
+  \node[kotukutu=28mm, right=of n4] (n5) {\kb{*p $\rightarrow$ UAF}\\CWE-416};
+
+  \draw[ok] (n1) -- (n2);
+  \draw[ok] (n2) -- (n3);
+  \draw[ok] (n3) -- (n4);
+  \draw[ok] (n4) -- (n5);
+
+  \node[fit=(n1)(n2)(n3)(n4)(n5), inner sep=0] (satirfit) {};
+  \node[kotudip, text width=175mm, below=10mm of satirfit.south, anchor=north]
+    {Düzeltme free ile use ARASINDADIR: p = NULL ve tek sahiplik kuralı.};
+\end{tikzpicture}
+\end{document}

@@ -30,14 +30,9 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 
 - Scope: **weeks 1–6** · **40%** of the midterm
 - Date, time, place, duration, question format: announced **in class**
-- What's measured: not memorization, but the **why** question
-- Best preparation: each week's **Self-check** questions + rerunning the demos
-
----
-
-# Midterm Grade Calculation — Diagram
-
-![w:950](assets/h08-03-vize-hesabi.svg)
+- What's measured: not memorization, but the **why** question — learn frequently confused concepts by their reason too
+- Best preparation: work through each week's **Self-check** questions without looking at the answers, then rerun the demos
+- Review the **Week 3 and Week 4** demos once more in particular
 
 ---
 
@@ -51,11 +46,7 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 | 2 | Virus/worm/trojan · outbreak · rule-based detection · integrity monitoring · BLP, Biba, Clark–Wilson · Unix/Windows ACL · RBAC · CWE, OWASP, CVE, CVSS · log injection |
 | 3 | AEAD · digest/MAC/signature · CSPRNG · nonce/IV/salt · ECB · Argon2id · HKDF · key lifecycle · TLS 1.3 · pinning · fail-open · masking · shells |
 
----
-
-# Quiz-1 Scope — Diagram
-
-![w:950](assets/h08-01-kapsam.svg)
+*Note: Week 2 — trust boundary and the least-privilege principle.*
 
 ---
 
@@ -69,11 +60,13 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 | 5 | Managed language · CERT Java · injection root cause · SQL/command/path · deserialisation · XXE/XSS · Python/JS, ReDoS · bytecode · ProGuard/R8 · SBOM, VEX |
 | 6 | Detection–defence–deterrence · MATE · RASP architecture · integrity · debugger/environment/hook · memory protection · root/signature · flow counter · response, decoy, device binding |
 
+*Note: Week 4 — three layers (code → compiler/OS → obfuscation); Week 5 — a managed language solves memory errors, not injection.*
+
 ---
 
-# Question Types — Diagram
+# Quiz-1 Scope — Diagram
 
-![w:950](assets/h08-02-soru-tipleri.svg)
+![w:950](assets/h08-01-kapsam.svg)
 
 ---
 
@@ -112,6 +105,25 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 
 <!-- _class: yogun -->
 
+# Frequently Confused (3)
+
+| A | B | Difference |
+| --- | --- | --- |
+| Bug | Vulnerability | An exploitable bug |
+| Black-box | White-box (MATE) | Has the program |
+| Symmetric | Asymmetric | Single / paired key |
+| AEAD | Encryption only | + integrity |
+
+---
+
+# Question Types — Diagram
+
+![w:950](assets/h08-02-soru-tipleri.svg)
+
+---
+
+<!-- _class: yogun -->
+
 # A One-Week Plan
 
 | Day | What to do |
@@ -126,9 +138,103 @@ Speaker note: Quiz-1 week: we review the concepts of weeks 1-6; this deck is a s
 
 ---
 
+# Midterm Grade Calculation — Diagram
+
+![w:950](assets/h08-03-vize-hesabi.svg)
+
+---
+
 # Study Plan — Diagram
 
 ![w:950](assets/h08-04-calisma-plani.svg)
+
+---
+
+# Question 1
+
+**Why does a MATE attacker make cryptography alone insufficient?**
+
+**Answer:** The key sits in memory; the attacker can run the program and read it. Cryptography provides confidentiality, but in a white-box setting the key is not protected; RASP/obfuscation/white-box cryptography is needed.
+
+---
+
+# Question 2
+
+**What happens if the same nonce is used twice in AES-GCM?**
+
+**Answer:** Confidentiality and integrity collapse; the keystream and data can leak. The nonce must always be unique.
+
+---
+
+# Question 3
+
+**Which overflow can ASan not see?**
+
+**Answer:** A field-to-field overflow within the same structure (there is no poisoned region in between).
+
+---
+
+# Question 4
+
+**What does a canary stop, and what does it not stop?**
+
+**Answer:** Stops: a stack overflow that reaches the return address. Does not stop: heap overflow, variables before the canary, a leaked canary.
+
+---
+
+# Question 5
+
+**Why is RASP self-hashing not enough on its own?**
+
+**Answer:** The attacker can find the digest function and bypass it. Obfuscation + cross-checking + overlapping checks are needed.
+
+---
+
+# Question 6
+
+**Why a KDF and a salt when deriving a key from a password?**
+
+**Answer:** A password has low entropy; the KDF slows down guessing, and the salt stops identical passwords from producing the same key (rainbow table).
+
+---
+
+# Question 7
+
+**An example of the least-privilege principle?**
+
+**Answer:** The application's DB user should only be able to `SELECT`; it should not have `DROP` privilege. Excess privilege = greater damage.
+
+---
+
+# Question 8
+
+**What is the "E" in STRIDE, and one control for it?**
+
+**Answer:** Elevation of privilege. Control: least privilege, authorization checks, secure defaults.
+
+---
+
+# Question 9
+
+**Why is deserialisation dangerous, and what is the fix?**
+
+**Answer:** Code can execute during extraction (a gadget chain). Fix: a data format + schema; an allowlist filter if unavoidable.
+
+---
+
+# Example · Multiple Choice
+
+**Which of the following is an AEAD mode?**
+
+A) ECB B) CBC C) **GCM** ✓ D) Raw RSA
+
+---
+
+# Example · True/False
+
+- Obfuscation fixes the bug. **(F)**
+- The nonce must be secret. **(F — must be unique, not secret)**
+- A parameterised query prevents SQL injection. **(T)**
 
 ---
 
@@ -171,7 +277,7 @@ EVP_DecryptFinal_ex(ctx, acik + n, &m);
 try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 ```
 
-<!-- Speaker note: 1) SQL injection → use a PreparedStatement. 2) The plaintext is used before the tag is verified, and the return value of Final is never checked. 3) Fail-open: the error is swallowed and the connection is accepted. -->
+<!-- Speaker note: 1) SQL injection; the definitive fix is a parameterised query (PreparedStatement) — data is never interpreted as a command, no string concatenation. 2) The plaintext is used before the tag is verified, and the return value of Final is never checked. 3) Fail-open: the error is swallowed and the connection is accepted. -->
 
 ---
 
@@ -188,6 +294,14 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 
 ---
 
+# Final Word (Quiz-1 Prep)
+
+> Not memorization — what's measured is the **why**: "why this mode?", "why this check?", "what doesn't it protect?"
+
+Good luck.
+
+---
+
 # Next Week
 
 **Week 9 — Advanced Code Obfuscation and Diversification**
@@ -195,192 +309,3 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 - Obfuscation taxonomy, opaque predicates, data encoding
 - Virtualisation and compiler-based obfuscation (concept)
 - Measuring obfuscation: potency, resilience, cost
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Week-by-Week Topic Map (1–6)
-
-<!-- Speaker note: Quiz-1 covers weeks 1-6. We review each week's key points and the most commonly confused distinctions. -->
-
----
-
-# Week 1 · Key Points
-
-- CIA triad; a bug ≠ a vulnerability.
-- MATE (white-box) attacker.
-- STRIDE, attack tree, DFD.
-- Layered defence; design principles.
-
----
-
-# Week 2 · Key Points
-
-- Threat modelling steps.
-- Trust boundary; least privilege.
-- Asset list and C/I/I+ labels.
-
----
-
-# Week 3 · Key Points
-
-- The three states of data.
-- AEAD; nonce reuse is catastrophic.
-- CSPRNG; KDF (password → key).
-- Key hierarchy; forward secrecy.
-
----
-
-# Week 4 · Key Points
-
-- Three layers: code → compiler/OS → obfuscation.
-- CERT/CWE; UAF; integer/UB.
-- Sanitizers (ASan/UBSan), fuzzing.
-- Compiler protections (canary, ASLR, NX).
-
----
-
-# Week 5 · Key Points
-
-- A managed language solves memory errors, not injection.
-- SQL/command/path injection → parameterization/argument array.
-- Deserialisation; ProGuard/R8; SBOM.
-
----
-
-# Week 6 · Key Points
-
-- RASP: detect, defend, deter.
-- Integrity (self-hashing), anti-debug, hook detection.
-- Cross-checking; response policy; device binding.
-
----
-
-# Frequently Confused
-
-| A | B | Difference |
-| --- | --- | --- |
-| Bug | Vulnerability | An exploitable bug |
-| Black-box | White-box (MATE) | Has the program |
-| Symmetric | Asymmetric | Single / paired key |
-| AEAD | Encryption only | + integrity |
-| Obfuscation | Secure code | Does not fix the bug |
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Solved Practice Questions
-
----
-
-# Question 1
-
-**Why does a MATE attacker make cryptography alone insufficient?**
-
-**Answer:** The key sits in memory; the attacker can run the program and read it. Cryptography provides confidentiality, but in a white-box setting the key is not protected; RASP/obfuscation/white-box cryptography is needed.
-
----
-
-# Question 2
-
-**What happens if the same nonce is used twice in AES-GCM?**
-
-**Answer:** Confidentiality and integrity collapse; the keystream and data can leak. The nonce must always be unique.
-
----
-
-# Question 3
-
-**What definitively prevents SQL injection?**
-
-**Answer:** A parameterised query (prepared statement); data is never interpreted as a command. No string concatenation.
-
----
-
-# Question 4
-
-**Which overflow can ASan not see?**
-
-**Answer:** A field-to-field overflow within the same structure (there is no poisoned region in between).
-
----
-
-# Question 5
-
-**What does a canary stop, and what does it not stop?**
-
-**Answer:** Stops: a stack overflow that reaches the return address. Does not stop: heap overflow, variables before the canary, a leaked canary.
-
----
-
-# Question 6
-
-**Why is RASP self-hashing not enough on its own?**
-
-**Answer:** The attacker can find the digest function and bypass it. Obfuscation + cross-checking + overlapping checks are needed.
-
----
-
-# Question 7
-
-**Why a KDF and a salt when deriving a key from a password?**
-
-**Answer:** A password has low entropy; the KDF slows down guessing, and the salt stops identical passwords from producing the same key (rainbow table).
-
----
-
-# Question 8
-
-**An example of the least-privilege principle?**
-
-**Answer:** The application's DB user should only be able to `SELECT`; it should not have `DROP` privilege. Excess privilege = greater damage.
-
----
-
-# Question 9
-
-**What is the "E" in STRIDE, and one control for it?**
-
-**Answer:** Elevation of privilege. Control: least privilege, authorization checks, secure defaults.
-
----
-
-# Question 10
-
-**Why is deserialisation dangerous, and what is the fix?**
-
-**Answer:** Code can execute during extraction (a gadget chain). Fix: a data format + schema; an allowlist filter if unavoidable.
-
----
-
-# Example · Multiple Choice
-
-**Which of the following is an AEAD mode?**
-
-A) ECB B) CBC C) **GCM** ✓ D) Raw RSA
-
----
-
-# Example · True/False
-
-- Obfuscation fixes the bug. **(F)**
-- The nonce must be secret. **(F — must be unique, not secret)**
-- A parameterised query prevents SQL injection. **(T)**
-
----
-
-# Study Plan
-
-- Do each week's "Self-check" without looking at the answers.
-- Learn frequently confused pairs by their **reason**, not by rote.
-- Review the Week 3 and Week 4 demos once more.
-
----
-
-# Final Word (Quiz-1 Prep)
-
-> Not memorization — what's measured is the **why**: "why this mode?", "why this check?", "what doesn't it protect?"
-
-Good luck.

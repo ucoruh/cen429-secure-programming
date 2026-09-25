@@ -10,8 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -31,28 +29,15 @@ Konuşma notu: Bu hafta bir ürünün bağımsız bir laboratuvarda nasıl değe
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 0–1 | Temel kavramlar · neden bağımsız değerlendirme · standartlar · 13 adım |
-| 2 | 2–3 | Zafiyet değerlendirmesi yöntemleri · standart testleri · saldırı potansiyeli |
-| 3 | 4–5 | Sızma testi planı · test kartı · raporlama · proje S16 |
+| 1 | 1–2 | Neden bağımsız değerlendirme · standartlar manzarası · değerlendirme süreci (13 adım) |
+| 2 | 3–5 | Zafiyet değerlendirmesi yöntemleri · standartların istediği testler · saldırı potansiyeli ve derecelendirme |
+| 3 | 6–9 | Bulgu→öneri→aksiyon ve etki analizi · sızma testi planı · raporlama · proje (S16) |
+
+**Öğrenme çıktısı (ÖÇ.6 / ÖÇ.7):** bağımsız değerlendirmenin adımlarını anlatmak · bir **sızma testi planı** yazmak · bir bulguyu **derecelendirmek** (saldırı potansiyeli, CVSS)
 
 <!-- Konuşma notu: Bu hafta bir ürünün bağımsız bir laboratuvarda nasıl değerlendirildiğini ve kendi ürünümüzün sızma testini nasıl planladığımızı öğreniyoruz. Etik çerçeveyi baştan koyacağız. -->
 
 ---
-
-<!-- _class: yogun -->
-
-# Kısa tarihçe — değerlendirme ve sertifikasyon
-
-- **1985** — **TCSEC** ("Orange Book"): ilk resmi değerlendirme ölçütleri
-- **1991–93** — Avrupa **ITSEC**, Kanada **CTCPEC**
-- **1999** — **Ortak Kriterler (ISO/IEC 15408)**; **EAL** ölçeği buradan
-- **2001** **OWASP** · **PTES/NIST SP 800-115** · **2005→2023** **CVSS** (v2→v4.0)
-- **2010'lar** — **MASVS/MASTG** (mobil), **ETSI EN 303 645** (IoT)
-
-> Tek cümle: **üretici kendi ürününü onaylayamaz** — bağımsız, **kanıta dayalı** değerlendirme.
-
----
-
 
 # Bu hafta nereye oturuyor?
 
@@ -61,18 +46,6 @@ Konuşma notu: Bu hafta bir ürünün bağımsız bir laboratuvarda nasıl değe
 - **13. hafta:** güvenlik gereksinimleri ve uyum matrisi
 
 Bugün: bağımsız değerlendirme + sızma testi planlama.
-
----
-
-# Öğrenme çıktısı
-
-Bu hafta **ÖÇ.6 / ÖÇ.7** (test/doğrulama, standartlar) üstünedir.
-
-Sonunda yapabileceğiniz:
-
-- Bağımsız değerlendirmenin adımlarını anlatmak
-- Bir **sızma testi planı** yazmak
-- Bir bulguyu **derecelendirmek** (saldırı potansiyeli, CVSS)
 
 ---
 
@@ -88,19 +61,43 @@ Sonunda yapabileceğiniz:
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Temel kavramlar (sıfırdan)
+# Önceki haftalardan gelenler
 
-<!-- Konuşma notu: Hiçbir ön bilgi varsaymıyoruz. Bu bölümdeki terimleri tüm hafta kullanacağız. -->
+- **Zafiyet (vulnerability)** — kötüye kullanılabilecek zayıf bir nokta, ör. sınır denetimsiz bir tampon **(Hafta 1)**
+- **Kerckhoffs ilkesi** — güvenlik tasarımın gizli kalmasına değil, yalnız anahtarın gizli kalmasına dayanmalı **(Hafta 3)**
+- **Statik ve dinamik analiz** — kodu çalıştırmadan (statik) ya da sanitizer'larla çalışırken (dinamik) hata arama **(Hafta 4)**
+- **Fuzzing** — beklenmeyen/rastgele girdilerle çökme arama **(Hafta 4)**
+- **CVSS** — bir zafiyetin etkisini standart bir puanla (0–10) ifade eden puanlama sistemi **(Hafta 2)**
+
+Bu hafta: bu kavramları bağımsız bir **değerlendirmenin** diliyle yeniden kuruyoruz.
 
 ---
 
-# Neden bu bölüm?
+<!-- _class: yogun -->
 
-Bu hafta "değerlendirme", "sertifikasyon", "sızma testi" gibi terimler geçecek.
+# Bu haftanın kavramları
 
-Önce hepsini **tek tek** tanımlayalım ki konu havada kalmasın.
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Güvenlik değerlendirmesi, sertifikasyon, standart, laboratuvar | Bölüm 1 |
+| TOE, beyaz/kara kutu, 13 adımlık değerlendirme süreci | Bölüm 2 |
+| Zafiyet, değerlendirme yöntemleri (kod inceleme, SAST, DAST, fuzzing) | Bölüm 3 |
+| Standartların istediği testler | Bölüm 4 |
+| Saldırı potansiyeli, CVSS | Bölüm 5 |
+| Bulgu, öneri, aksiyon, güvenlik etki analizi, delta değerlendirme | Bölüm 6 |
+| Sızma testi, sızma testi planı, test kartı | Bölüm 7 |
+
+Şimdi: **neden bağımsız değerlendirme?**
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Neden bağımsız değerlendirme?
 
 ---
 
@@ -134,119 +131,6 @@ Bu hafta "değerlendirme", "sertifikasyon", "sızma testi" gibi terimler geçece
 
 ---
 
-# Zafiyet (vulnerability) nedir?
-
-- **Zafiyet:** bir sistemde kötüye kullanılabilecek **zayıf nokta** (ör. sınır denetimsiz tampon).
-- Zafiyet + kötüye kullanım = güvenlik olayı.
-
----
-
-# Bulgu (finding) nedir?
-
-- **Bulgu:** değerlendirmede tespit edilen bir sorun ya da iyileştirme noktası.
-- Her bulgu için: kanıt, ciddiyet, **öneri**.
-
----
-
-# Beyaz kutu vs kara kutu test
-
-- **Beyaz kutu test:** test eden **kaynak koda + belgeye** sahip.
-- **Kara kutu test:** test eden yalnız dışarıdan (kullanıcı gibi) erişir.
-- Değerlendirici genelde **beyaz kutu** çalışır (her şeyi görür).
-
----
-
-# SAST nedir?
-
-- **SAST (Static Application Security Testing):** kaynağı **çalıştırmadan** analiz eden araç.
-- Tehlikeli kalıpları, olası bellek hatalarını bulur.
-- Hızlı ve geniş; ama **yanlış pozitif** üretir.
-
-*(4. haftada "statik analiz" olarak gördük.)*
-
----
-
-# DAST nedir?
-
-- **DAST (Dynamic Application Security Testing):** programı **çalıştırırken** sınar.
-- Bellek erişim hataları, tanımsız davranışları yakalar (ör. sanitizer'lar).
-
-*(4. haftada ASan/UBSan.)*
-
----
-
-# Fuzzing nedir?
-
-- **Fuzzing:** programa **beklenmeyen/rastgele girdiler** verip çökme/bozulma aramak.
-- İnsanın aklına gelmeyen girdileri bulur.
-
-*(4. haftada libFuzzer/AFL kavramı.)*
-
----
-
-# Sızma testi (pentest) nedir?
-
-- **Sızma testi (penetration test):** bir saldırganın bakışıyla, **izinli** ve **planlı** olarak sistemi aşmayı denemek.
-- Yukarıdaki yöntemleri **birleştirir**; en son ve en pahalı adımdır.
-
----
-
-# TOE nedir?
-
-- **TOE (Target of Evaluation):** değerlendirilen **tam olarak ne**?
-- Ortak Kriterler terimidir.
-- Benzersiz tanımlanır: sürüm + ikili + kaynak + özet değeri.
-
----
-
-# CVSS nedir?
-
-- **CVSS (Common Vulnerability Scoring System):** bir zafiyetin **etkisini** standart bir puanla (0–10) ifade eder.
-- Yüksek puan = daha ciddi etki.
-- Önceliklendirmede kullanılır.
-
----
-
-# Saldırı potansiyeli nedir?
-
-- **Saldırı potansiyeli:** bir saldırıyı gerçekleştirmenin **ne kadar zor** olduğu.
-- Süre, uzmanlık, ekipman gibi faktörlerle puanlanır.
-- Düşük potansiyel (kolay saldırı) = ciddi bulgu.
-
----
-
-# Saldırı potansiyeli — beş faktör
-
-![w:1000](assets/h12-03-saldiri-potansiyeli.svg)
-
----
-
-
-# Etki analizi ve delta değerlendirme
-
-- **Güvenlik etki analizi:** bir değişikliğin güvenlik etkisini **belgeleyen** rapor.
-- **Delta değerlendirme:** yalnız **değişen kısmın** yeniden değerlendirilmesi.
-
-Bunları 5. bölümde ayrıntılı göreceğiz.
-
----
-
-# Şimdi hazırız
-
-Bildiğimiz terimler:
-
-değerlendirme · sertifikasyon · laboratuvar · standart · zafiyet · bulgu · beyaz/kara kutu · SAST · DAST · fuzzing · sızma testi · TOE · CVSS · saldırı potansiyeli · etki analizi/delta
-
-Şimdi: **neden bağımsız değerlendirme?**
-
----
-
-<!-- _class: bolum -->
-
-# 1. Neden bağımsız değerlendirme?
-
----
-
 # Bağımsız değerlendirme — şema
 
 ![w:950](assets/h12-04-bagimsiz-degerlendirme.svg)
@@ -269,10 +153,32 @@ değerlendirme · sertifikasyon · laboratuvar · standart · zafiyet · bulgu �
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — değerlendirme ve sertifikasyon
+
+- **1985** — **TCSEC** ("Orange Book"): ilk resmi değerlendirme ölçütleri
+- **1991–93** — Avrupa **ITSEC**, Kanada **CTCPEC**
+- **1999** — **Ortak Kriterler (ISO/IEC 15408)**; **EAL** ölçeği buradan
+- **2001** **OWASP** · **PTES/NIST SP 800-115** · **2005→2023** **CVSS** (v2→v4.0)
+- **2010'lar** — **MASVS/MASTG** (mobil), **ETSI EN 303 645** (IoT)
+
+> Tek cümle: **üretici kendi ürününü onaylayamaz** — bağımsız, **kanıta dayalı** değerlendirme.
+
+---
+
 # Değerlendiricinin iki varsayımı
 
 1. **Beyaz kutu:** tüm kaynak koda ve belgelere erişimi var.
 2. **Platform güvenilmez:** ürünün çalıştığı ortam saldırgana açık.
+
+---
+
+# Beyaz kutu vs kara kutu test
+
+- **Beyaz kutu test:** test eden **kaynak koda + belgeye** sahip.
+- **Kara kutu test:** test eden yalnız dışarıdan (kullanıcı gibi) erişir.
+- Değerlendirici genelde **beyaz kutu** çalışır (her şeyi görür).
 
 ---
 
@@ -408,7 +314,6 @@ Bir kurum 27001'li olabilir ama ürünü değerlendirilmemiş olabilir; tersi de
 3. **ISO 27001 kurumu/süreci** (bilgi güvenliği yönetimi), **Ortak Kriterler ürünü** (TOE) belli güvence düzeyinde sertifikalar.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -622,6 +527,100 @@ Temel çizgi → talep → sınıflandırma → onay → geliştirme ve test →
 
 ---
 
+<!-- _class: bolum -->
+
+# Uçtan uca örnek · NotKasa v1.0.0
+
+Sentetik bir mobil uygulama: **"NotKasa"** (yerel şifreli not tutar).
+
+- Notları AES ile şifreliyor.
+- Anahtarı sunucudan indiriyor.
+- Sürüm derlemesinde günlük kapalı.
+
+Bu ürünü baştan sona değerlendireceğiz.
+
+---
+
+# Adım 1 uygulaması · TOE
+
+- **TOE:** NotKasa v1.0.0, `notkasa-1.0.0.apk`
+- Özet (SHA-256): `a1b2…` (sentetik)
+- Kaynak: `notkasa/` deposu, etiket `v1.0.0`
+- Kapsam dışı: sunucu altyapısı
+
+---
+
+# Adım 2–3 · Belge ve gereksinim şablonu
+
+- Teslim: kaynak, güvenlik kılavuzu, hem hata ayıklama hem sürüm APK.
+- Gereksinim şablonu: MASVS maddeleri numaralı; her biri için durum + kanıt referansı.
+
+---
+
+# Adım 5 · Kod incelemesi bulguları (sentetik)
+
+- **B-01:** anahtar bir ara değişkende siliniyor ama `tmp` tampon **silinmemiş** (bellekte kalıyor).
+- **B-02:** hata iletisi çözme hatasında iç ayrıntı sızdırıyor.
+
+---
+
+# Adım 6 · Zafiyet analizi
+
+- Varlıklar: not içeriği (C/I), veri anahtarı (C/I), sunucu jetonu.
+- Soru: her varlık **nerede** açığa çıkıyor?
+- Çıktı: bir sızma testi planı (aşağıda).
+
+---
+
+# Adım 7 · Sızma testi kartı (özet)
+
+- **T-01** düz metin diskte? → geçti (şifreli)
+- **T-02** anahtar bellekte kalıyor mu? → **kaldı** (B-01 doğrulandı)
+- **T-03** hata iletisi sızdırıyor mu? → **kaldı** (B-02)
+
+---
+
+# Adım 7 · T-02 derecelendirme
+
+- Süre: düşük · uzmanlık: orta · bilgi: kamuya açık · ekipman: ücretsiz (bellek dökümü)
+- → **orta-düşük saldırı potansiyeli**
+- CVSS: orta (gizlilik etkisi)
+
+---
+
+# Adım 9 · Bulgu–aksiyon
+
+| Bulgu | Öneri | Aksiyon |
+| --- | --- | --- |
+| B-01 anahtar kalıntısı | `tmp`'yi kullanınca sil | Eklendi (memset benzeri) |
+| B-02 hata sızıntısı | Tek genel hata dön | Düzeltildi |
+
+---
+
+# Adım 10–11 · Etki analizi + delta
+
+- Düzeltmeler v1.0.1 doğurdu.
+- **Etki analizi:** 2 dosya değişti, ikisi de bellek/hata yolu; kripto akışı değişmedi.
+- **Delta:** yalnız bu iki dosya + yeni TOE kimliği (`notkasa-1.0.1.apk`) yeniden değerlendirildi.
+
+---
+
+# Adım 12 · Kalan risk
+
+- Cihaz köklü ise bellek dökümü hâlâ mümkün.
+- Telafi: anahtar kısa ömürlü + sunucu risk denetimi.
+- **Açıkça yazıldı.**
+
+---
+
+# Vaka · çıkarım
+
+- 13 adım soyut değil; küçük bir üründe **somut**.
+- Değerlendirme bir **döngü**: bul → düzelt → yeniden değerlendir.
+- Projeniz bunun küçültülmüş hâli.
+
+---
+
 # Kılavuz nereye oturuyor?
 
 - Bu dersin "Sahada nasıl?" notlarının kaynağı olan güvenlik kılavuzu = **2. adımda teslim edilen belge**.
@@ -649,12 +648,18 @@ Temel çizgi → talep → sınıflandırma → onay → geliştirme ve test →
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 3. Zafiyet değerlendirmesi yöntemleri
 
 <!-- Konuşma notu: Bunları savunmacı gözüyle, "kendi ürünümü teslim etmeden nasıl sınarım?" diye ele alıyoruz. -->
+
+---
+
+# Zafiyet (vulnerability) nedir?
+
+- **Zafiyet:** bir sistemde kötüye kullanılabilecek **zayıf nokta** (ör. sınır denetimsiz tampon).
+- Zafiyet + kötüye kullanım = güvenlik olayı.
 
 ---
 
@@ -758,46 +763,33 @@ Bu, 4. haftadaki **güvenli derleme hattının** (CI'da SAST + sanitizer + fuzz)
 
 ---
 
+# Bölüm 3 — kısa sınama
+
+1. Yöntemleri neden ucuzdan pahalıya sıralarız?
+2. SAST'ın zayıf yanı ne?
+3. Geliştiricinin önce kendi test etmesi neden önemli?
+
+<!-- Konuşma notu: Sonra saldırı potansiyeli ve derecelendirme. -->
+
+---
+
+# Bölüm 3 — cevaplar
+
+1. Ucuz/otomatik yöntemler (SAST/DAST) kolay bulguları **erken eler**; pahalı el emeği yalnız kalanlar için harcanır → verimli.
+2. **SAST** kodu çalıştırmaz → yüksek **yanlış pozitif**, çalışma-anı/yapılandırma/iş-mantığı açığını göremez, bağlamı bilmez.
+3. Kolay bulguları **ucuza** kapatır (değerlendiriciye temiz gider), maliyeti/gecikmeyi düşürür → değerlendirme derin sorunlara odaklanır.
+
+---
+
 <!-- _class: bolum -->
 
-# Standartların istediği testler
+# 4. Standartların istediği testler
 
 ---
 
 # Her standart farklı test vurgular
 
 Projeniz hangi aileye yakınsa, önce onun beklediği testleri yapın.
-
----
-
-# Ortak Kriterler
-
-- Kaynak inceleme + zafiyet analizi + sızma testi.
-- **Saldırı potansiyeli** derecelendirme.
-- Derinlik EAL ile artar.
-
----
-
-# FIPS 140-3
-
-- Kriptografik **modül** testleri.
-- Algoritma doğrulama, kendini test.
-- Yalnız modülü kapsar.
-
----
-
-# EMVCo / PCI
-
-- İşlevsel uygunluk + laboratuvar **sızma testi**.
-- Saldırı potansiyeli puanlaması.
-- Ödeme alanı; sıkı.
-
----
-
-# OWASP MASVS / MASTG
-
-- Mobil uygulama: statik + dinamik test.
-- Projeniz için **en uygulanabilir** rehber.
 
 ---
 
@@ -828,28 +820,17 @@ Bunlar "saldırı tarifi" değil, **metodoloji** — sonucu tekrarlanabilir/kar�
 
 ---
 
-# Bölüm 3 — kısa sınama
-
-1. Yöntemleri neden ucuzdan pahalıya sıralarız?
-2. SAST'ın zayıf yanı ne?
-3. Geliştiricinin önce kendi test etmesi neden önemli?
-
-<!-- Konuşma notu: Sonra saldırı potansiyeli ve derecelendirme. -->
-
----
-
-# Bölüm 3 — cevaplar
-
-1. Ucuz/otomatik yöntemler (SAST/DAST) kolay bulguları **erken eler**; pahalı el emeği yalnız kalanlar için harcanır → verimli.
-2. **SAST** kodu çalıştırmaz → yüksek **yanlış pozitif**, çalışma-anı/yapılandırma/iş-mantığı açığını göremez, bağlamı bilmez.
-3. Kolay bulguları **ucuza** kapatır (değerlendiriciye temiz gider), maliyeti/gecikmeyi düşürür → değerlendirme derin sorunlara odaklanır.
-
----
-
-
 <!-- _class: bolum -->
 
-# 4. Saldırı potansiyeli ve derecelendirme
+# 5. Saldırı potansiyeli ve bulgu derecelendirme
+
+---
+
+# Saldırı potansiyeli nedir?
+
+- **Saldırı potansiyeli:** bir saldırıyı gerçekleştirmenin **ne kadar zor** olduğu.
+- Süre, uzmanlık, ekipman gibi faktörlerle puanlanır.
+- Düşük potansiyel (kolay saldırı) = ciddi bulgu.
 
 ---
 
@@ -945,9 +926,17 @@ Mantık 9. haftadaki dört ölçütle aynı.
 
 ---
 
-<!-- _class: bolum -->
+# Saldırı potansiyeli — beş faktör
 
-# CVSS
+![w:1000](assets/h12-03-saldiri-potansiyeli.svg)
+
+---
+
+# CVSS nedir?
+
+- **CVSS (Common Vulnerability Scoring System):** bir zafiyetin **etkisini** standart bir puanla (0–10) ifade eder.
+- Yüksek puan = daha ciddi etki.
+- Önceliklendirmede kullanılır.
 
 ---
 
@@ -974,9 +963,32 @@ Mantık 9. haftadaki dört ölçütle aynı.
 
 ---
 
+# Bölüm 5 — kısa sınama
+
+1. Saldırı potansiyelinin beş faktörü?
+2. Düşük saldırı potansiyeli neden ciddi bulgu?
+3. Saldırı potansiyeli ile CVSS neyi ölçer?
+
+---
+
+# Bölüm 5 — cevaplar
+
+1. **Geçen zaman · uzmanlık · hedef bilgisi · fırsat (erişim) · ekipman.**
+2. **Az** zaman/beceri/araçla sömürülebilir demektir → çok saldırgan yapabilir → geniş, olası tehdit → yüksek risk.
+3. **Saldırı potansiyeli** saldırının **zorluğu/maliyetini**, **CVSS** açığın **ciddiyet/etkisini** ölçer. Farklı eksenler, birlikte kullanılır.
+
+---
+
 <!-- _class: bolum -->
 
-# Bulgu → öneri → aksiyon
+# 6. Bulgu → öneri → aksiyon ve etki analizi
+
+---
+
+# Bulgu (finding) nedir?
+
+- **Bulgu:** değerlendirmede tespit edilen bir sorun ya da iyileştirme noktası.
+- Her bulgu için: kanıt, ciddiyet, **öneri**.
 
 ---
 
@@ -996,12 +1008,6 @@ Her bulgu için dört adım:
 4. **Kapanış:** kimi bulgu "açık değil, iyi uygulama önerisi" olarak kapanır.
 
 Bu döngü → vize sonrası **bulgu–aksiyon listesinin** kaynağı (7. hafta).
-
----
-
-<!-- _class: bolum -->
-
-# Etki analizi ve delta değerlendirme
 
 ---
 
@@ -1041,30 +1047,23 @@ Sürüm kimliği/özet tutarsızsa delta **yapılamaz** (değerlendirilen ürün
 
 ---
 
-# Bölüm 4 — kısa sınama
+# Bölüm 6 — kısa sınama
 
-1. Saldırı potansiyelinin beş faktörü?
-2. Düşük saldırı potansiyeli neden ciddi bulgu?
-3. Saldırı potansiyeli ile CVSS neyi ölçer?
-4. Etki analizi kimin, delta kimin işi?
+1. Etki analizi kimin, delta kimin işi?
 
 <!-- Konuşma notu: Ara sonrası sızma testi planı. -->
 
 ---
 
-# Bölüm 4 — cevaplar
+# Bölüm 6 — cevaplar
 
-1. **Geçen zaman · uzmanlık · hedef bilgisi · fırsat (erişim) · ekipman.**
-2. **Az** zaman/beceri/araçla sömürülebilir demektir → çok saldırgan yapabilir → geniş, olası tehdit → yüksek risk.
-3. **Saldırı potansiyeli** saldırının **zorluğu/maliyetini**, **CVSS** açığın **ciddiyet/etkisini** ölçer. Farklı eksenler, birlikte kullanılır.
-4. **Etki analizi geliştiricinin** (değişikliğin etkisini o başlatır), **delta değerlendirme değerlendiricinin** (bağımsız yeniden inceler) işi.
+1. **Etki analizi geliştiricinin** (değişikliğin etkisini o başlatır), **delta değerlendirme değerlendiricinin** (bağımsız yeniden inceler) işi.
 
 ---
 
-
 <!-- _class: bolum -->
 
-# 5. Sızma testi planı
+# 7. Sızma testi planı
 
 <!-- Konuşma notu: "Planlı" ve "izinli" vurgusu isteğe bağlı değil. Kapsamı/kuralı yazılı olmayan test meşru değildir. -->
 
@@ -1189,9 +1188,67 @@ Bu kart, projenizin **S16** iskeletidir. Şimdi alanları görelim.
 
 ---
 
+# Kart · kripto doğrulama
+
+- **Amaç:** notlar gerçekten AEAD ile mi şifreli?
+- **Adım:** şifreli blobun başlığını/etiketini incele; bozuk etiketli veri reddediliyor mu?
+- **Beklenen:** bozuk etiket → çözme reddi.
+
+---
+
+# Kart · anahtar yaşam döngüsü
+
+- **Amaç:** anahtar iş bitince siliniyor mu?
+- **Adım:** işlem sonrası bellek taraması.
+- **Beklenen:** anahtar baytları bulunmuyor.
+
+---
+
+# Kart · sürüm/hata ayıklama ayrımı
+
+- **Amaç:** sürüm derlemesinde günlük gerçekten kapalı mı?
+- **Adım:** sürüm APK'da `strings` ile günlük dizgesi ara.
+- **Beklenen:** günlük dizgesi yok.
+
+---
+
+# Kart · yükseltme güvenliği
+
+- **Amaç:** eski imzalı sürüm geri yüklenebilir mi?
+- **Adım:** düşük sürümü yüklemeyi dene.
+- **Beklenen:** sürüm düşürme reddi.
+
+---
+
+# Kartları yazarken kural
+
+- Her kart **tekrarlanabilir** olmalı (başkası aynı adımı izleyebilmeli).
+- Her kart bir **gereksinime** bağlı (S17).
+- "Gözlenen" alanı **kanıtla** dolu.
+
+---
+
+# Bölüm 7 — kısa sınama
+
+1. Planın dört başlığı?
+2. "Durdurma koşulu" neden var?
+3. Test kartının hangi alanı S17'ye bağlanır?
+
+<!-- Konuşma notu: Sonra proje ve çözümlü sınama. -->
+
+---
+
+# Bölüm 7 — cevaplar
+
+1. **Kapsam · kurallar (RoE) · yöntem/metodoloji · test kartları** (+ durdurma koşulu, raporlama).
+2. Gerçek **zarar/veri kaybı/kesinti** riskini sınırlamak; belirli bir eşikte test **durur** → güvenli ve etik yürütme.
+3. Test kartının **sonuç/karşılanan gereksinim** alanı → **S17 uyum matrisine** kanıt olarak bağlanır.
+
+---
+
 <!-- _class: bolum -->
 
-# Raporlama
+# 8. Raporlama
 
 ---
 
@@ -1236,28 +1293,9 @@ Bu, 13. haftadaki uyum matrisi okumasının provası.
 
 ---
 
-# Bölüm 5 — kısa sınama
-
-1. Planın dört başlığı?
-2. "Durdurma koşulu" neden var?
-3. Test kartının hangi alanı S17'ye bağlanır?
-
-<!-- Konuşma notu: Sonra proje ve çözümlü sınama. -->
-
----
-
-# Bölüm 5 — cevaplar
-
-1. **Kapsam · kurallar (RoE) · yöntem/metodoloji · test kartları** (+ durdurma koşulu, raporlama).
-2. Gerçek **zarar/veri kaybı/kesinti** riskini sınırlamak; belirli bir eşikte test **durur** → güvenli ve etik yürütme.
-3. Test kartının **sonuç/karşılanan gereksinim** alanı → **S17 uyum matrisine** kanıt olarak bağlanır.
-
----
-
-
 <!-- _class: bolum -->
 
-# 6. Proje ve kapanış
+# 9. Dönem projesi: bu hafta (S16)
 
 ---
 
@@ -1297,9 +1335,26 @@ Bu, 13. haftadaki uyum matrisi okumasının provası.
 
 ---
 
+<!-- _class: yogun -->
+
+# Klasik hatalar · özet
+
+| Hata | Bölüm |
+| --- | --- |
+| Plan var, **sonuç yok** — "test edeceğiz" yeter sanmak | 9 (S16) |
+| Kanıtsız **"karşılandı"** — uyum matrisinde kanıt referansı yok | 2 (S17) |
+| **Sürüm tutarsızlığı** — kılavuz ve kod farklı sürümde | 2 (TOE) |
+| **Kalan risk boş** bırakılmış | 6 |
+| Vize geri bildirimi **yok sayılmış** | 6 / 9 |
+| Depoda **gerçek** sır/kişisel veri | Etik çerçeve |
+
+Her satır, o bölümdeki disiplinin **ihlalidir** — kaynağına dönüp tekrar okuyun.
+
+---
+
 <!-- _class: bolum -->
 
-# Çözümlü kendini sınama
+# 10. Kendini sınama
 
 <!-- Konuşma notu: Soruları tek tek, önce öğrenciye sordurup sonra cevabı açın. -->
 
@@ -1434,6 +1489,14 @@ Bu, 13. haftadaki uyum matrisi okumasının provası.
 > Güvenlik bir iddia değil, **bağımsız olarak sınanan ve ölçülen** bir niteliktir; korumanın var olması yetmez,
 > **ne kadar dayandığı** planlı, izinli ve tekrarlanabilir biçimde ölçülür.
 
+> İyi bir test planı, güveni **iddiadan kanıta** taşır.
+
+---
+
+<!-- _class: bolum -->
+
+# 11. Kaynaklar ve ileri okuma
+
 ---
 
 # Kaynaklar
@@ -1447,216 +1510,12 @@ Bu, 13. haftadaki uyum matrisi okumasının provası.
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
-# Sonraki hafta
+# Bir sonraki hafta
 
 **13. hafta — Güvenlik gereksinimleri**
 
-İyi gereksinim · izlenebilirlik/uyum matrisi · devredilen gereksinimler · CC, FIPS 140-3, ETSI, EMVCo, PCI, MASVS.
-
----
-
-<!-- _class: bolum -->
-
-# Ek A · Uçtan uca mini vaka
-
-<!-- Konuşma notu: Sentetik bir "oyuncak ürün"ü baştan sona değerlendiriyoruz; 13 adımı somutlaştırır. -->
-
----
-
-# Vaka · kurgu
-
-Sentetik bir mobil uygulama: **"NotKasa"** (yerel şifreli not tutar).
-
-- Notları AES ile şifreliyor.
-- Anahtarı sunucudan indiriyor.
-- Sürüm derlemesinde günlük kapalı.
-
-Bu ürünü baştan sona değerlendireceğiz.
-
----
-
-# Adım 1 uygulaması · TOE
-
-- **TOE:** NotKasa v1.0.0, `notkasa-1.0.0.apk`
-- Özet (SHA-256): `a1b2…` (sentetik)
-- Kaynak: `notkasa/` deposu, etiket `v1.0.0`
-- Kapsam dışı: sunucu altyapısı
-
----
-
-# Adım 2–3 · Belge ve gereksinim şablonu
-
-- Teslim: kaynak, güvenlik kılavuzu, hem hata ayıklama hem sürüm APK.
-- Gereksinim şablonu: MASVS maddeleri numaralı; her biri için durum + kanıt referansı.
-
----
-
-# Adım 5 · Kod incelemesi bulguları (sentetik)
-
-- **B-01:** anahtar bir ara değişkende siliniyor ama `tmp` tampon **silinmemiş** (bellekte kalıyor).
-- **B-02:** hata iletisi çözme hatasında iç ayrıntı sızdırıyor.
-
----
-
-# Adım 6 · Zafiyet analizi
-
-- Varlıklar: not içeriği (C/I), veri anahtarı (C/I), sunucu jetonu.
-- Soru: her varlık **nerede** açığa çıkıyor?
-- Çıktı: bir sızma testi planı (aşağıda).
-
----
-
-# Adım 7 · Sızma testi kartı (özet)
-
-- **T-01** düz metin diskte? → geçti (şifreli)
-- **T-02** anahtar bellekte kalıyor mu? → **kaldı** (B-01 doğrulandı)
-- **T-03** hata iletisi sızdırıyor mu? → **kaldı** (B-02)
-
----
-
-# Adım 7 · T-02 derecelendirme
-
-- Süre: düşük · uzmanlık: orta · bilgi: kamuya açık · ekipman: ücretsiz (bellek dökümü)
-- → **orta-düşük saldırı potansiyeli**
-- CVSS: orta (gizlilik etkisi)
-
----
-
-# Adım 9 · Bulgu–aksiyon
-
-| Bulgu | Öneri | Aksiyon |
-| --- | --- | --- |
-| B-01 anahtar kalıntısı | `tmp`'yi kullanınca sil | Eklendi (memset benzeri) |
-| B-02 hata sızıntısı | Tek genel hata dön | Düzeltildi |
-
----
-
-# Adım 10–11 · Etki analizi + delta
-
-- Düzeltmeler v1.0.1 doğurdu.
-- **Etki analizi:** 2 dosya değişti, ikisi de bellek/hata yolu; kripto akışı değişmedi.
-- **Delta:** yalnız bu iki dosya + yeni TOE kimliği (`notkasa-1.0.1.apk`) yeniden değerlendirildi.
-
----
-
-# Adım 12 · Kalan risk
-
-- Cihaz köklü ise bellek dökümü hâlâ mümkün.
-- Telafi: anahtar kısa ömürlü + sunucu risk denetimi.
-- **Açıkça yazıldı.**
-
----
-
-# Vaka · çıkarım
-
-- 13 adım soyut değil; küçük bir üründe **somut**.
-- Değerlendirme bir **döngü**: bul → düzelt → yeniden değerlendir.
-- Projeniz bunun küçültülmüş hâli.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Daha çok test kartı örneği
-
----
-
-# Kart · kripto doğrulama
-
-- **Amaç:** notlar gerçekten AEAD ile mi şifreli?
-- **Adım:** şifreli blobun başlığını/etiketini incele; bozuk etiketli veri reddediliyor mu?
-- **Beklenen:** bozuk etiket → çözme reddi.
-
----
-
-# Kart · anahtar yaşam döngüsü
-
-- **Amaç:** anahtar iş bitince siliniyor mu?
-- **Adım:** işlem sonrası bellek taraması.
-- **Beklenen:** anahtar baytları bulunmuyor.
-
----
-
-# Kart · sürüm/hata ayıklama ayrımı
-
-- **Amaç:** sürüm derlemesinde günlük gerçekten kapalı mı?
-- **Adım:** sürüm APK'da `strings` ile günlük dizgesi ara.
-- **Beklenen:** günlük dizgesi yok.
-
----
-
-# Kart · yükseltme güvenliği
-
-- **Amaç:** eski imzalı sürüm geri yüklenebilir mi?
-- **Adım:** düşük sürümü yüklemeyi dene.
-- **Beklenen:** sürüm düşürme reddi.
-
----
-
-# Kartları yazarken kural
-
-- Her kart **tekrarlanabilir** olmalı (başkası aynı adımı izleyebilmeli).
-- Her kart bir **gereksinime** bağlı (S17).
-- "Gözlenen" alanı **kanıtla** dolu.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Sık yapılan hatalar
-
----
-
-# Hata · plan var, sonuç yok
-
-- Finalde (S16) **sonuç** beklenir.
-- "Şunu test edeceğiz" yetmez; "şunu test ettik, şu çıktı".
-
----
-
-# Hata · kanıtsız "karşılandı"
-
-- Uyum matrisinde kanıtsız "karşılandı" = değerlendiricide **karşılanmamış** sayılır.
-- Her satıra kanıt referansı.
-
----
-
-# Hata · sürüm tutarsızlığı
-
-- Kılavuz v1.0, kod v1.1 → değerlendirilen ürün belirsiz.
-- Sürüm kimliği + özet **tutarlı** olmalı.
-
----
-
-# Hata · kalan risk boş
-
-- Hiçbir ürünün kalan riski sıfır değildir.
-- Boş "kalan risk" = eksik analiz.
-
----
-
-# Hata · vize geri bildirimini yok saymak
-
-- Bulgu–aksiyon döngüsü sürecin parçası.
-- Vize bulguları finalde kapatılmış olmalı.
-
----
-
-# Hata · depoda gerçek veri
-
-- Gerçek sır/kişisel veri = ağır bulgu.
-- Her şey **sentetik**.
-
----
-
-# Ek · kapanış
-
-Bu ekler size **kendi S16'nızı** yazmanın somut kalıbını verdi:
-
-- uçtan uca vaka
-- kart örnekleri
-- kaçınılacak hatalar
-
-> İyi bir test planı, güveni **iddiadan kanıta** taşır.
+Bu hafta "gereksinim şablonu" ve "uyum matrisi"ni süreç içinde gördük; 13. haftada iyi bir gereksinimin nasıl
+yazıldığını, izlenebilirlik/uyum matrisini ve Ortak Kriterler, FIPS 140-3, ETSI, EMVCo, PCI, MASVS gereksinim
+setlerini ayrıntılı işleyeceğiz.

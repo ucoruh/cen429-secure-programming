@@ -1,0 +1,21 @@
+% Hafta 5 — Bayt kod neden makine kodundan kolay okunur?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-08-bayt-kod.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Bayt kod neden makine kodundan kolay okunur?};
+  \node[altbaslik] at (b.south west) {bu yüzden Java'da gizleme (ProGuard/R8) daha kritik};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{Java bayt kodu}\\[2mm]
+     sınıf/metot/alan ADLARI durur\\tipler durur\\yapı korunur\\[3mm]
+     decompiler $\approx$ kaynağı verir};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{C/C++ makine kodu}\\[2mm]
+     adlar atılır\\tipler kaybolur\\optimizasyon yapıyı bozar\\[3mm]
+     disassembler $\approx$ ham komut};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Gizleme hatayı düzeltmez; yalnız ``kolayca okunma'' avantajını geri alır.};
+\end{tikzpicture}
+\end{document}

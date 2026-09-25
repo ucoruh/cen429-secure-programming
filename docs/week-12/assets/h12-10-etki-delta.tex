@@ -1,0 +1,21 @@
+% Hafta 12 — Etki analizi ↔ delta değerlendirme
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-10-etki-delta.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 24mm]
+  \node[baslik] (b) at (0,0) {Etki analizi $\leftrightarrow$ delta değerlendirme};
+  \node[altbaslik] at (b.south west) {her değişiklikte tüm ürün baştan değerlendirilmez};
+
+  \node[kutu=62mm, below=16mm of b.south west, anchor=north west] (sol)
+    {\kb{ETKİ ANALİZİ}\\GELİŞTİRİCİNİN çıktısı\\[3mm]bu değişiklik güvenliği\\ya da TOE'yi etkiler mi?};
+  \node[iyikutu=62mm, right=of sol] (sag)
+    {\kb{DELTA DEĞERLENDİRME}\\LABORATUVARIN işi\\[3mm]etkilenen kısmı bağımsız\\yeniden değerlendirir};
+
+  \coordinate (orta) at ($(sol.east)!0.5!(sag.west)$);
+  \draw[cizgi, line width=1pt] (orta |- sol.north) -- (orta |- sol.south);
+
+  \node[dip, text width=150mm, below=8mm of sol.south -| orta, anchor=north] {%
+    Sertifikanın sürdürülmesi bu iki adıma bağlıdır.};
+\end{tikzpicture}
+\end{document}

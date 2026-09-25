@@ -10,9 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -30,30 +27,18 @@ Konuşma notu: Bu hafta whitebox kriptografiyi bir güvenlik katmanı olarak iş
 
 # Bugünün planı (3 saat)
 
-| Saat | Bölüm | Konu |
+| Zaman | Bölüm | Ne yapılıyor |
 | --- | --- | --- |
-| 1 | 0–1 | Temel kavramlar · kara/gri/beyaz kutu · WBC saldırgan · naif çözümler |
-| 2 | 2 | Tablo tabanlı WBC (Chow AES) adım adım · maliyet |
-| 3 | 3–4 | Saldırı geçmişi · karşı önlemler · katmanlı yer · donanım · proje |
+| 0:00–0:25 | 1 | Kara/gri/beyaz kutu modelleri; WBC saldırgan yetenekleri |
+| 0:25–0:50 | 2 | Problem neden zor; naif çözümler: gömülü anahtar, XOR, code lifting |
+| 0:55–1:40 | 3 | Tablo tabanlı WBC (Chow AES): kodlama, bijeksiyonlar, tablo boyutu/hız |
+| 1:45–2:20 | 4 | Saldırı geçmişi: BGE, DFA, DCA, WhibOx; "hepsi kırıldı" ve karşı önlemler |
+| 2:20–2:45 | 5 | Katmanlı savunmadaki yeri; donanım alternatifleri (TEE/SE, HSM/SoftHSM) |
+| 2:45–3:00 | 6–7 | Hatalı→saldırı→koruma; proje S8; kendini sınama |
 
 <!-- Konuşma notu: Bu hafta whitebox kriptografi. Öğrenciler kriptoyu 3 ve 10. haftada gördü ama burada sıfırdan hatırlatacağız. Ana mesaj baştan verilecek: yayımlanmış saf-yazılım WBC'lerin hepsi kırıldı; WBC bir katmandır, sihir değil. -->
 
 ---
-
-<!-- _class: yogun -->
-
-# Kısa tarihçe — whitebox kriptografi
-
-- **1883** — **Kerckhoffs**: güvenlik **anahtarda** olmalı, sistemin gizliliğinde değil
-- **2002** — Chow vd. ilk **whitebox AES/DES** (DRM için) — WBC'nin doğuşu
-- **2004** — **BGE saldırısı** ilk WB-AES'i kırar
-- **2016** — **DCA** (Bos vd.): donanım DPA'sı yazılıma taşınır, otomatik kırar
-- **2017–2024** — **WhibOx**: yayımlanan tüm saf-yazılım adaylar kırıldı
-
-> Bugünkü kural: WBC bir **geciktirme katmanı**; mümkünse **donanım** (TEE/SE/HSM).
-
----
-
 
 # Bu hafta nereye oturuyor?
 
@@ -89,51 +74,53 @@ Diyeceğiz ki: whitebox, anahtar çıkarmayı **geciktiren bir katmandır** — 
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Temel kavramlar (sıfırdan)
+# Önceki haftalardan gelenler (1)
 
-<!-- Konuşma notu: Hiçbir ön bilgi varsaymıyoruz. Kriptonun gerektiğimiz kadarını burada hatırlatıyoruz. -->
+![w:520](assets/h11-10-sifreleme-temel.svg)
 
----
+- **Şifreleme, anahtar, simetrik/asimetrik** — açık metni bir anahtarla okunamaz hale getirmek; güvenlik anahtarın gizliliğine dayanır, algoritmanın gizliliğine değil **(Hafta 3)**
+- **AES ve bit güvenlik düzeyi** — en yaygın simetrik algoritma, 16 baytlık bloklar, turlar; "n-bit güvenlik" ≈ 2ⁿ deneme **(Hafta 10)**
+- **XOR** — bitler farklıysa 1, aynıysa 0; `a^b^b=a` ile geri alınabilir; AES'te anahtar ekleme adımı budur **(Hafta 5)**
+- **Entropi** — bir verinin baytlarının ne kadar rastgele göründüğünün ölçüsü; şifreli/rastgele bloklar yüksek entropili görünür **(Hafta 2)**
 
-# Şifreleme nedir?
-
-- **Şifreleme (encryption):** okunur veriyi (**açık metin**), bir **anahtar** kullanarak okunamaz hale (**şifreli metin**) getirmek.
-- **Çözme (decryption):** anahtarla geri açmak.
-
-![w:900](assets/h11-10-sifreleme-temel.svg)
+Bu hafta bu araçları **whitebox** bağlamında yeniden kullanıyoruz.
 
 ---
 
-# Anahtar nedir?
+<!-- _class: yogun -->
 
-- **Anahtar (key):** şifrelemeyi yöneten gizli sayı (bir bayt dizisi).
-- Aynı algoritma + farklı anahtar = farklı sonuç.
-- **Güvenlik anahtarın gizliliğine bağlıdır**, algoritmanın gizliliğine değil (Kerckhoffs ilkesi).
+# Önceki haftalardan gelenler (2)
 
----
+- **Hata ayıklayıcı (debugger)** — bir programı adım adım çalıştırıp bellek/kayıtları okuyan araç (gdb, x64dbg) **(Hafta 6)**
+- **Statik ve dinamik analiz** — çalıştırmadan / çalıştırarak yapılan inceleme; saldırıları sınıflamakta kullanacağız **(Hafta 4)**
+- **Enstrümantasyon ve emülatör** — bir programı otomatik izleyen ve gerçek işlemciyi yazılımla taklit eden araçlar **(Hafta 6)**
+- **HSM ve SoftHSM** — anahtarı hiç dışarı çıkarmadan işleyen özel donanım ve onun yazılım benzetimi **(Hafta 10)**
 
-# Simetrik ve asimetrik
-
-- **Simetrik:** şifreleme ve çözme **aynı** anahtar (ör. **AES**). Hızlı.
-- **Asimetrik:** açık ve gizli anahtar çifti (ör. RSA). Yavaş ama anahtar dağıtımı kolay.
-
-Bu hafta ağırlıklı **AES** (simetrik) üstünden gideceğiz.
+Bu hafta bunları whitebox saldırganının araç kutusu ve savunma seçenekleri olarak yeniden görüyoruz.
 
 ---
 
-# AES nedir? (yüksekten)
+<!-- _class: yogun -->
 
-- **AES:** en yaygın simetrik şifreleme algoritması.
-- 16 baytlık **bloklar** üzerinde çalışır.
-- Veriyi **turlar** (rounds) halinde karıştırır; her turda: bayt değiştirme, satır/sütun karıştırma, anahtar ekleme.
+# Bu haftanın kavramları
 
-Ayrıntı bu hafta sınavda sorulmayacak; **fikir** yeter.
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Kara/gri/beyaz kutu, WBC saldırgan modeli | Bölüm 1 |
+| Problem neden zor; naif çözümler (gömülü anahtar, XOR, code lifting) | Bölüm 2 |
+| Tablo tabanlı WBC: kısmi değerlendirme, iç/dış kodlama, bijeksiyon | Bölüm 3 |
+| Saldırı geçmişi: BGE, DFA, DCA, WhibOx | Bölüm 4 |
+| Katmanlı savunmadaki yer; TEE/SE, HSM/SoftHSM | Bölüm 5 |
+| Hatalı → saldırı → koruma senaryosu | Bölüm 6 |
+| Proje S8, kendini sınama | Bölüm 7 |
 
 ---
 
-# S-box nedir?
+# Ön bilgi · S-box nedir?
 
 - **S-box (substitution box):** bir baytı başka bir baytla değiştiren **sabit bir tablo**.
 - AES'in "bayt değiştirme" adımı budur.
@@ -153,23 +140,7 @@ Whitebox, hesabı tablolara gömer.
 
 ---
 
-# XOR hatırlatma
-
-- **XOR** (`^`): bitler farklıysa 1, aynıysa 0.
-- `a ^ b ^ b == a` → geri alınabilir.
-- AES'te "anahtar ekleme" adımı bir XOR'dur: `durum ^ anahtar`.
-
----
-
-# Bit güvenlik düzeyi
-
-- "**n-bit güvenlik**" = kırmak için kabaca 2ⁿ deneme gerekir.
-- AES-128 → 128 bit; bugün kırılamaz sayılır.
-- Yüksek sayı = daha güçlü.
-
----
-
-# Yan kanal (side channel) nedir?
+# Ön bilgi · Yan kanal (side channel) nedir?
 
 - **Yan kanal:** algoritmanın matematiğini değil, çalışırken **sızdırdığı fiziksel/dolaylı bilgiyi** kullanan saldırı.
 - Örnek: harcanan **zaman**, **güç** tüketimi, elektromanyetik yayım.
@@ -187,7 +158,7 @@ Bu fikri aklınızda tutun; whitebox'ın en güçlü saldırısı (DCA) bunun ya
 
 ---
 
-# Bijeksiyon (birebir-örten eşleme)
+# Ön bilgi · Bijeksiyon (birebir-örten eşleme)
 
 - **Bijeksiyon:** her girdiyi tam bir çıktıya eşleyen, **tersi alınabilen** dönüşüm.
 - Örnek: `f(x) = x ^ 0x5A` bir bijeksiyondur (tersi yine kendisi).
@@ -196,19 +167,12 @@ Whitebox, tabloları **gizli bijeksiyonlarla** sarar.
 
 ---
 
-# TEE ve güvenli öğe (SE)
+# Ön bilgi · TEE ve güvenli öğe (SE)
 
 - **TEE (Trusted Execution Environment):** telefon işlemcisinin, işletim sisteminden **yalıtılmış** güvenli bölgesi.
 - **Güvenli öğe (SE):** anahtarları saklayan ayrı, kurcalamaya dirençli **donanım** çip.
 
 Anahtar için en güçlü koruma bunlardır; whitebox bunların **olmadığı** durum içindir.
-
----
-
-# HSM ve SoftHSM
-
-- **HSM (Hardware Security Module):** sunucuda anahtarları saklayan/işleten özel donanım; anahtar **dışarı çıkmaz**.
-- **SoftHSM:** HSM'in **yazılım benzetimi**; aynı arayüz (PKCS#11), ama donanım koruması yok (geliştirme/test için).
 
 ---
 
@@ -225,6 +189,20 @@ Bildiğimiz terimler:
 <!-- _class: bolum -->
 
 # 1. Üç saldırgan modeli
+
+---
+
+<!-- _class: yogun -->
+
+# Kısa tarihçe — whitebox kriptografi
+
+- **1883** — **Kerckhoffs**: güvenlik **anahtarda** olmalı, sistemin gizliliğinde değil
+- **2002** — Chow vd. ilk **whitebox AES/DES** (DRM için) — WBC'nin doğuşu
+- **2004** — **BGE saldırısı** ilk WB-AES'i kırar
+- **2016** — **DCA** (Bos vd.): donanım DPA'sı yazılıma taşınır, otomatik kırar
+- **2017–2024** — **WhibOx**: yayımlanan tüm saf-yazılım adaylar kırıldı
+
+> Bugünkü kural: WBC bir **geciktirme katmanı**; mümkünse **donanım** (TEE/SE/HSM).
 
 ---
 
@@ -285,7 +263,6 @@ Kripto **kara kutu** için tasarlandı; biz **beyaz kutudayız**.
 ![w:1000](assets/h11-01-saldirgan-modelleri.svg)
 
 ---
-
 
 # Sorun burada
 
@@ -353,6 +330,12 @@ Kılavuz, bu saldırgan yeteneklerine karşı koruyanın **yalnız WBC olmadığ
 > Uygulamayı ve varlıkları koruyan şey, **kod sağlamlaştırma (9. hafta) ve RASP (6. hafta)** yöntemleridir.
 
 WBC ilk cümleden itibaren **tek başına** sunulmaz.
+
+---
+
+<!-- _class: bolum -->
+
+# 2. Problem ve naif çözümler
 
 ---
 
@@ -479,7 +462,7 @@ Kod taşımaya karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm):
 
 ---
 
-# Bölüm 1 — kısa sınama
+# Bölüm 1–2 — kısa sınama
 
 1. Kara, gri, beyaz kutu farkı?
 2. AES güçlüyken beyaz kutuda sorun ne?
@@ -491,7 +474,7 @@ Kod taşımaya karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm):
 
 <!-- _class: yogun -->
 
-# Bölüm 1 — cevaplar
+# Bölüm 1–2 — cevaplar
 
 1. **Kara:** yalnız girdi/çıktı · **Gri:** + yan kanallar (zaman/güç) · **Beyaz:** her şey + değiştirir.
 2. Anahtar bir noktada **bellekte**; beyaz kutu saldırgan onu görür. AES'in gücü **kara kutu** varsayımına dayanır.
@@ -501,7 +484,7 @@ Kod taşımaya karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm):
 
 <!-- _class: bolum -->
 
-# 2. Tablo tabanlı WBC (adım adım)
+# 3. Tablo tabanlı WBC (adım adım)
 
 <!-- Konuşma notu: Chow AES'in fikrini adım adım kuruyoruz. Matematiği değil, mantığı ve maliyeti öğreteceğiz. Yavaş gidin. -->
 
@@ -558,6 +541,79 @@ Görünüşte anahtar kayboldu. Ama...
 
 ---
 
+# Neden oyuncak örnek?
+
+Gerçek AES 256 girişli tablolarla çalışır; tahtaya sığmaz.
+
+Fikri **4 değerli** minik bir örnekle göreceğiz.
+
+Amaç: "anahtarı tabloya pişirmek" ne demek, **elle** görmek.
+
+---
+
+# Minik S-box tanımı
+
+Diyelim 2 bitlik değerlerimiz var (0,1,2,3) ve şu sabit S-box:
+
+```text
+x:        0  1  2  3
+S-box[x]: 3  2  0  1
+```
+
+Bu tablo **herkese açık** (algoritmanın parçası, sır değil).
+
+---
+
+# Anahtar ve işlem
+
+- Anahtar `k = 1` (gizli).
+- İşlem (bir AES turunun mini hâli): `çıktı = S-box[x ^ k]`.
+
+`^` = XOR. `x ^ 1`: 0↔1, 2↔3 (son biti çevirir).
+
+---
+
+# Adım adım: normal işlem
+
+```text
+x=0 → x^1=1 → S-box[1]=2
+x=1 → x^1=0 → S-box[0]=3
+x=2 → x^1=3 → S-box[3]=1
+x=3 → x^1=2 → S-box[2]=0
+```
+
+Burada `k=1` kodda **açıkça** kullanılıyor. Saldırgan görür.
+
+---
+
+# Anahtarı tabloya "pişir"
+
+`T[x] = S-box[x ^ 1]` diye **önceden** hesaplayıp tablo yapalım:
+
+```text
+x:    0  1  2  3
+T[x]: 2  3  1  0
+```
+
+Artık kodda `k` **yok**; sadece `T` var. Görünüşte anahtar kayboldu.
+
+---
+
+# Ama anahtar sızıyor! (kodlama yoksa)
+
+Saldırgan `T`'yi bilinen `S-box` ile karşılaştırır:
+
+```text
+S-box: 3 2 0 1
+T:     2 3 1 0
+```
+
+`T[x] = S-box[x ^ k]` olduğunu bilerek hangi `k` uyuyor diye dener: `k=1` uyar.
+
+> **Sonuç:** kodlanmamış tablo anahtarı ele verir. İşte bu yüzden iç/dış kodlama var.
+
+---
+
 # Adım 2 · Tabloları büyüt (T-box)
 
 - Tek bayt eşlemesi yerine, S-box ile AES'in **karıştırma** adımını (MixColumns) birleştir
@@ -595,6 +651,29 @@ Ama **ara değerler karışık** görünür.
 Bir tabloyu **tek başına** inceleyen saldırganı durdurmayı amaçlar.
 
 Çünkü o tablonun girişi/çıkışı, gizli bir kodlamayla bozulmuştur.
+
+---
+
+# Kodlama fikri (minik)
+
+Çıkışa gizli bir eşleme `E` uygula: `T'[x] = E(T[x])`.
+
+```text
+E: 0→1, 1→3, 2→0, 3→2   (gizli bijeksiyon)
+T':  E(2) E(3) E(1) E(0) = 0 2 3 1
+```
+
+Artık `T'`, `S-box`'a benzemez; basit karşılaştırma `k`'yı vermez.
+
+---
+
+# Kodlamanın bedeli
+
+- Bir sonraki adım `E`'nin **tersini** uygulamalı ki sonuç doğru çıksın.
+- Gerçek AES'te bu, tabloları **zincirleyerek** yapılır (iç kodlamalar).
+- Her kodlama fazladan tablo ve boyut demektir → **maliyet**.
+
+Minik örnek bile fikri gösteriyor: gizlilik ucuz değil.
 
 ---
 
@@ -655,6 +734,16 @@ Sonuç: anahtar açıkça yok; her şey kodlanmış tablolarda.
 
 ---
 
+# Minik örnekten çıkan ders
+
+1. Anahtarı tabloya gömmek onu **görünmez** yapmaz (kodlama şart)
+2. Kodlama işi çözer ama **boyut/karmaşıklık** ekler
+3. Gerçekte tablolar yüzlerce KB olur
+
+Bu, bölüm 2'deki beş adımın **sezgisidir**.
+
+---
+
 <!-- _class: bolum -->
 
 # WBC'nin maliyeti
@@ -691,7 +780,7 @@ Anahtarı tablolara gömmenin bedeli: **kocaman tablolar**.
 
 ---
 
-# Bölüm 2 — kısa sınama
+# Bölüm 3 — kısa sınama
 
 1. `T[x] = S-box[x ^ k]` tek başına neden güvensiz?
 2. İç kodlama ile dış kodlama farkı?
@@ -704,7 +793,7 @@ Anahtarı tablolara gömmenin bedeli: **kocaman tablolar**.
 
 <!-- _class: yogun -->
 
-# Bölüm 2 — cevaplar
+# Bölüm 3 — cevaplar
 
 1. `T`, bilinen S-box'ın `x^k` ile ötelenmişidir; iki tablo karşılaştırılıp **k geri çıkar**.
 2. **İç:** tablolar arası ara değerleri karıştırır · **Dış (F,G):** tüm şifreyi sarar (`G∘AES∘F⁻¹`).
@@ -715,7 +804,7 @@ Anahtarı tablolara gömmenin bedeli: **kocaman tablolar**.
 
 <!-- _class: bolum -->
 
-# 3. Saldırı geçmişi ve karşı önlemler
+# 4. Saldırı geçmişi ve karşı önlemler
 
 <!-- Konuşma notu: Bu geçmişi saldırı öğretmek için değil, "bu korumaya ne kadar güvenebilirim?" sorusunu yanıtlamak için anlatıyoruz. -->
 
@@ -790,6 +879,32 @@ Her satır, savunmacı için bir **çıkarım**dır.
 # DCA saldırısı — şema
 
 ![w:950](assets/h11-05-dca.svg)
+
+---
+
+# Sezgi: neyi izliyor?
+
+- WBC çalışırken tablolardan **ara değerler** okur.
+- Bu ara değerler, gizli anahtara **bağlı** değişir.
+- DCA bu değerlerin izini toplar.
+
+---
+
+# İstatistik nasıl anahtarı verir?
+
+- Saldırgan bir anahtar baytı için **tahmin** yapar.
+- Tahmine göre ara değerin nasıl davranması gerektiğini hesaplar.
+- Toplanan izlerle **en iyi uyan** tahmin, doğru bayttır.
+
+Bu, DPA'nın (güç analizi) **yazılım** hâlidir.
+
+---
+
+# İç kodlama neden DCA'yı durdurmaz?
+
+- İç kodlama ara değeri **karıştırır** ama **birebir** eşlemedir (bijeksiyon)
+- İstatistiksel korelasyon çoğu zaman **hayatta kalır**
+- Bu yüzden 2016'dan sonra WBC'ler DCA'ya karşı savunmasız kaldı
 
 ---
 
@@ -904,7 +1019,7 @@ Doğru ifade: "anahtar çıkarmayı şu kadar geciktiriyorum; asıl güvencem an
 
 ---
 
-# Bölüm 3 — kısa sınama
+# Bölüm 4 — kısa sınama
 
 1. "Hepsi kırıldı" ifadesi kararınızı nasıl etkiler?
 2. DCA hangi klasik saldırıya benzer?
@@ -917,7 +1032,7 @@ Doğru ifade: "anahtar çıkarmayı şu kadar geciktiriyorum; asıl güvencem an
 
 <!-- _class: yogun -->
 
-# Bölüm 3 — cevaplar
+# Bölüm 4 — cevaplar
 
 1. WBC **tek başına** güvence değil; anahtar yenileme + cihaz bağlama + sunucu denetimi + gizleme ile; mümkünse **donanıma** taşı.
 2. **DPA**'ya (güç analizi) — DCA onun yazılım hâlidir.
@@ -928,7 +1043,7 @@ Doğru ifade: "anahtar çıkarmayı şu kadar geciktiriyorum; asıl güvencem an
 
 <!-- _class: bolum -->
 
-# 4. Katmanlı yer, donanım, proje
+# 5. WBC'nin katmanlı savunmadaki yeri
 
 ---
 
@@ -1004,6 +1119,51 @@ Sırayla, en zayıftan en güçlüye.
 
 ---
 
+# "Bu anahtarı nasıl korurum?" — 1
+
+**Soru 1:** Cihazda TEE/güvenli öğe var mı?
+
+- **Evet** → anahtarı oraya koy. **Bitti** (en güçlü).
+- **Hayır** → devam.
+
+---
+
+# "Bu anahtarı nasıl korurum?" — 2
+
+**Soru 2:** Bu sunucu tarafı bir anahtar mı?
+
+- **Evet** → HSM/PKCS#11 (üretimde HSM, testte SoftHSM).
+- **Hayır (istemci, donanım yok)** → devam.
+
+---
+
+# "Bu anahtarı nasıl korurum?" — 3
+
+**Soru 3:** Varlık değeri koruma maliyetini haklı çıkarıyor mu?
+
+- **Düşük** → hafif gizleme + kısa ömür yeter.
+- **Yüksek** → WBC + katmanlı savunma + yenileme + cihaz bağlama + sunucu denetimi.
+
+---
+
+# "Bu anahtarı nasıl korurum?" — 4
+
+**Her durumda:**
+
+- Anahtarı **düz gömme**
+- Kararı ve gerekçesini **S8'e yaz**
+- Kalan riski açıkça belirt
+
+---
+
+<!-- _class: yogun -->
+
+# Karar akışı · tek bakış
+
+![w:900](assets/h11-07-anahtar-koruma.svg)
+
+---
+
 # SoftHSM ve PKCS#11 (sunucu köprüsü)
 
 - **PKCS#11:** anahtar modülleriyle konuşmanın standart arayüzü
@@ -1016,7 +1176,7 @@ WBC uçtaki (istemci) problem; bu sunucudaki anahtar problemine yanıt.
 
 <!-- _class: bolum -->
 
-# Hatalı → saldırı → koruma
+# 6. Hatalı → saldırı → koruma
 
 <!-- Konuşma notu: Bütün haftayı tek senaryoda toplayan sentetik, savunma amaçlı bir örnek. -->
 
@@ -1082,9 +1242,64 @@ Bir istemci, bir veri şifreleme anahtarını sabit diziye gömer.
 
 ---
 
+# Vaka · kurgu
+
+Bir mobil uygulama, sunucudan indirdiği **oturum anahtarıyla** yerel veriyi şifreliyor.
+
+- Cihazların bir kısmında TEE var, bir kısmında yok.
+- Anahtar günde bir yenileniyor.
+
+Nasıl koruruz?
+
+---
+
+# Vaka · TEE olan cihazlar
+
+- Anahtarı **TEE'ye** koy.
+- Uygulama anahtarı hiç görmez; TEE içinde şifreleme yapılır.
+- En güçlü çözüm; ek WBC gereksiz.
+
+---
+
+# Vaka · TEE olmayan cihazlar
+
+- Anahtarı **WBC tablolarına** göm (düz dizi yok).
+- 9. hafta gizleme + 6. hafta RASP ile sar.
+- **Cihaz bağla:** tablolar başka cihazda çalışmasın.
+
+---
+
+# Vaka · ortak katmanlar
+
+- Anahtar **günde bir yenileniyor** → çıkarılanın ömrü kısa.
+- **Sunucu**, anormal kullanımı (çok istek, tuhaf konum) yakalıyor.
+- Böylece bir cihaz kırılsa bile hasar sınırlı.
+
+---
+
+# Vaka · kalan risk (dürüst)
+
+- TEE'siz cihazda kararlı saldırgan anahtarı çıkarabilir.
+- Ama: tek cihazla sınırlı + 24 saat ömür + sunucu denetimi.
+- Bu ödünleşim **S8'de açıkça yazılır**.
+
+---
+
+# Vaka · çıkarım
+
+Tek bir "sihirli" koruma yok.
+
+Güç, **katmanların birleşiminden** ve **dürüst kalan risk analizinden** geliyor.
+
+Değerlendirici (12. hafta) tam da bunu arıyor.
+
+> WBC'yi **anlamak**, onu **doğru yere koymak** demektir.
+
+---
+
 <!-- _class: bolum -->
 
-# Proje ve kapanış
+# 7. Proje ve kapanış
 
 ---
 
@@ -1180,7 +1395,6 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 
 ---
 
-
 <!-- _class: yogun -->
 
 # Kendini sınama (7–12)
@@ -1198,7 +1412,7 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 
 # Kendini sınama — cevaplar (7–12)
 
-7. Tablolar **MB mertebesinde** ve kara kutuya göre onlarca-yüzlerce kat **yavaş** → yalnız **seçili/kritik** işlemlere uygulanır.
+7. Tablolar **yüzlerce KB** (std AES anahtarı 16–32 bayt) ve **~50× yavaş** → yalnız **seçili/kritik** işlemlere uygulanır.
 8. WBC'yi tek başına anahtar koruması saymayız; **geciktirici katman** olarak yenileme + bağlama + sunucu denetimiyle kullanırız (mümkünse donanım).
 9. **DPA'ya** (Differential Power Analysis); DCA güç izinin yerine **yazılım izini** (bellek erişimi/ara değer) koyar.
 10. (zayıf→güçlü) düz gömülü anahtar < kodlanmış tablo (saf-yazılım WBC) < WBC+bağlama/yenileme < **TEE/SE** < **HSM/donanım**. Maliyet aynı yönde artar.
@@ -1206,7 +1420,6 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 12. Örnek: "DEK, beklemedeki veriyi AES-256-GCM ile korur. HSM'de üretilir/saklanır, düz bellekte tutulmaz. Saf-yazılım whitebox'lar kırıldığı ve varlık değeri yüksek olduğu için **donanım** seçildi."
 
 ---
-
 
 # Özet: bu haftanın tek cümlesi
 
@@ -1225,476 +1438,14 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
-# Sonraki hafta
+# Bir sonraki hafta
 
 **12. hafta — Sertifikasyon ve sızma testi planlaması**
 
 Bir korumanın "ne kadar dayandığını" ölçmek → bağımsız değerlendirme süreci ve raporlama.
 
----
+- **9. hafta:** gizleme kuralları (kod) · **11. hafta:** whitebox (anahtar) — bugün · **14. hafta:** otomasyon (Tigress)
 
-<!-- _class: bolum -->
-
-# Ek A · Minik sayısal örnek
-
-<!-- Konuşma notu: Chow AES'i gerçek boyutta göstermek zor. Onun yerine 4 değerli oyuncak bir S-box'la "anahtarı tabloya pişirme" fikrini somutlaştırıyoruz. Tahtada yapılabilir. -->
-
----
-
-# Neden oyuncak örnek?
-
-Gerçek AES 256 girişli tablolarla çalışır; tahtaya sığmaz.
-
-Fikri **4 değerli** minik bir örnekle göreceğiz.
-
-Amaç: "anahtarı tabloya pişirmek" ne demek, **elle** görmek.
-
----
-
-# Minik S-box tanımı
-
-Diyelim 2 bitlik değerlerimiz var (0,1,2,3) ve şu sabit S-box:
-
-```text
-x:        0  1  2  3
-S-box[x]: 3  2  0  1
-```
-
-Bu tablo **herkese açık** (algoritmanın parçası, sır değil).
-
----
-
-# Anahtar ve işlem
-
-- Anahtar `k = 1` (gizli).
-- İşlem (bir AES turunun mini hâli): `çıktı = S-box[x ^ k]`.
-
-`^` = XOR. `x ^ 1`: 0↔1, 2↔3 (son biti çevirir).
-
----
-
-# Adım adım: normal işlem
-
-```text
-x=0 → x^1=1 → S-box[1]=2
-x=1 → x^1=0 → S-box[0]=3
-x=2 → x^1=3 → S-box[3]=1
-x=3 → x^1=2 → S-box[2]=0
-```
-
-Burada `k=1` kodda **açıkça** kullanılıyor. Saldırgan görür.
-
----
-
-# Anahtarı tabloya "pişir"
-
-`T[x] = S-box[x ^ 1]` diye **önceden** hesaplayıp tablo yapalım:
-
-```text
-x:    0  1  2  3
-T[x]: 2  3  1  0
-```
-
-Artık kodda `k` **yok**; sadece `T` var. Görünüşte anahtar kayboldu.
-
----
-
-# Ama anahtar sızıyor! (kodlama yoksa)
-
-Saldırgan `T`'yi bilinen `S-box` ile karşılaştırır:
-
-```text
-S-box: 3 2 0 1
-T:     2 3 1 0
-```
-
-`T[x] = S-box[x ^ k]` olduğunu bilerek hangi `k` uyuyor diye dener: `k=1` uyar.
-
-> **Sonuç:** kodlanmamış tablo anahtarı ele verir. İşte bu yüzden iç/dış kodlama var.
-
----
-
-# Kodlama fikri (minik)
-
-Çıkışa gizli bir eşleme `E` uygula: `T'[x] = E(T[x])`.
-
-```text
-E: 0→1, 1→3, 2→0, 3→2   (gizli bijeksiyon)
-T':  E(2) E(3) E(1) E(0) = 0 2 3 1
-```
-
-Artık `T'`, `S-box`'a benzemez; basit karşılaştırma `k`'yı vermez.
-
----
-
-# Kodlamanın bedeli
-
-- Bir sonraki adım `E`'nin **tersini** uygulamalı ki sonuç doğru çıksın.
-- Gerçek AES'te bu, tabloları **zincirleyerek** yapılır (iç kodlamalar).
-- Her kodlama fazladan tablo ve boyut demektir → **maliyet**.
-
-Minik örnek bile fikri gösteriyor: gizlilik ucuz değil.
-
----
-
-# Minik örnekten çıkan ders
-
-1. Anahtarı tabloya gömmek onu **görünmez** yapmaz (kodlama şart)
-2. Kodlama işi çözer ama **boyut/karmaşıklık** ekler
-3. Gerçekte tablolar yüzlerce KB olur
-
-Bu, bölüm 2'deki beş adımın **sezgisidir**.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · DCA neden çalışır? (sezgi)
-
----
-
-# Sezgi: neyi izliyor?
-
-- WBC çalışırken tablolardan **ara değerler** okur.
-- Bu ara değerler, gizli anahtara **bağlı** değişir.
-- DCA bu değerlerin izini toplar.
-
----
-
-# İstatistik nasıl anahtarı verir?
-
-- Saldırgan bir anahtar baytı için **tahmin** yapar.
-- Tahmine göre ara değerin nasıl davranması gerektiğini hesaplar.
-- Toplanan izlerle **en iyi uyan** tahmin, doğru bayttır.
-
-Bu, DPA'nın (güç analizi) **yazılım** hâlidir.
-
----
-
-# İç kodlama neden DCA'yı durdurmaz?
-
-- İç kodlama ara değeri **karıştırır** ama **birebir** eşlemedir (bijeksiyon)
-- İstatistiksel korelasyon çoğu zaman **hayatta kalır**
-- Bu yüzden 2016'dan sonra WBC'ler DCA'ya karşı savunmasız kaldı
-
----
-
-# Karşı önlem sezgisi
-
-- **Doğrusal olmayan maskeleme:** korelasyonu bozacak biçimde ara değerleri gizler
-- **Dış kodlama:** saldırganın gördüğü giriş/çıkışı standart olmaktan çıkarır
-- **RASP:** iz toplamayı (araç bağlamayı) zorlaştırır
-
-Hiçbiri kesin çözüm değil; hepsi **maliyet + gecikme**.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Karar akışı
-
----
-
-# "Bu anahtarı nasıl korurum?" — 1
-
-**Soru 1:** Cihazda TEE/güvenli öğe var mı?
-
-- **Evet** → anahtarı oraya koy. **Bitti** (en güçlü).
-- **Hayır** → devam.
-
----
-
-# "Bu anahtarı nasıl korurum?" — 2
-
-**Soru 2:** Bu sunucu tarafı bir anahtar mı?
-
-- **Evet** → HSM/PKCS#11 (üretimde HSM, testte SoftHSM).
-- **Hayır (istemci, donanım yok)** → devam.
-
----
-
-# "Bu anahtarı nasıl korurum?" — 3
-
-**Soru 3:** Varlık değeri koruma maliyetini haklı çıkarıyor mu?
-
-- **Düşük** → hafif gizleme + kısa ömür yeter.
-- **Yüksek** → WBC + katmanlı savunma + yenileme + cihaz bağlama + sunucu denetimi.
-
----
-
-# "Bu anahtarı nasıl korurum?" — 4
-
-**Her durumda:**
-
-- Anahtarı **düz gömme**
-- Kararı ve gerekçesini **S8'e yaz**
-- Kalan riski açıkça belirt
-
----
-
-<!-- _class: yogun -->
-
-# Karar akışı · tek bakış
-
-![w:900](assets/h11-07-anahtar-koruma.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · Mini vaka (sentetik)
-
----
-
-# Vaka · kurgu
-
-Bir mobil uygulama, sunucudan indirdiği **oturum anahtarıyla** yerel veriyi şifreliyor.
-
-- Cihazların bir kısmında TEE var, bir kısmında yok.
-- Anahtar günde bir yenileniyor.
-
-Nasıl koruruz?
-
----
-
-# Vaka · TEE olan cihazlar
-
-- Anahtarı **TEE'ye** koy.
-- Uygulama anahtarı hiç görmez; TEE içinde şifreleme yapılır.
-- En güçlü çözüm; ek WBC gereksiz.
-
----
-
-# Vaka · TEE olmayan cihazlar
-
-- Anahtarı **WBC tablolarına** göm (düz dizi yok).
-- 9. hafta gizleme + 6. hafta RASP ile sar.
-- **Cihaz bağla:** tablolar başka cihazda çalışmasın.
-
----
-
-# Vaka · ortak katmanlar
-
-- Anahtar **günde bir yenileniyor** → çıkarılanın ömrü kısa.
-- **Sunucu**, anormal kullanımı (çok istek, tuhaf konum) yakalıyor.
-- Böylece bir cihaz kırılsa bile hasar sınırlı.
-
----
-
-# Vaka · kalan risk (dürüst)
-
-- TEE'siz cihazda kararlı saldırgan anahtarı çıkarabilir.
-- Ama: tek cihazla sınırlı + 24 saat ömür + sunucu denetimi.
-- Bu ödünleşim **S8'de açıkça yazılır**.
-
----
-
-# Vaka · çıkarım
-
-Tek bir "sihirli" koruma yok.
-
-Güç, **katmanların birleşiminden** ve **dürüst kalan risk analizinden** geliyor.
-
-Değerlendirici (12. hafta) tam da bunu arıyor.
-
----
-
-# Ek — kapanış notu
-
-Bu ekler sınavda ayrıca sorulmaz; ama:
-
-- Minik örnek "pişirme + kodlama" sezgisini verdi
-- DCA sezgisi "neden hepsi kırıldı"yı açıkladı
-- Karar akışı + vaka, S8'i yazmanıza yardım eder
-
-> WBC'yi **anlamak**, onu **doğru yere koymak** demektir.
-
----
-
-<!-- _class: bolum -->
-
-# Ek E · Çözümlü kendini sınama
-
-<!-- Konuşma notu: Soruları tek tek, cevabıyla birlikte işliyoruz. Önce öğrenciye sordurun, sonra cevabı açın. -->
-
----
-
-# Soru 1
-
-**Kara, gri ve beyaz kutu modellerini bir cümleyle ayırın. AES kanıtı hangisini varsayar?**
-
----
-
-# Cevap 1
-
-- **Kara:** yalnız girdi/çıktı.
-- **Gri:** + yan kanallar (zaman, güç).
-- **Beyaz:** her şey + değiştirebilir.
-
-AES'in güvenlik kanıtı **kara kutu** varsayar; teslimde biz beyaz kutudayız.
-
----
-
-# Soru 2
-
-**WBC saldırganın "tek turu çalıştırma" ve "hata enjekte etme" yetenekleri hangi saldırılara zemin hazırlar?**
-
----
-
-# Cevap 2
-
-- Tek turu çalıştırma + iz toplama → **DCA**.
-- Hata enjekte etme → **DFA**.
-
-İkisi de tasarımın iç matematiğini bilmeden çalışır.
-
----
-
-# Soru 3
-
-**Anahtarı sabit diziye gömmek neden koruma değildir? Entropi taraması burada ne işe yarar?**
-
----
-
-# Cevap 3
-
-- Program çalışırken anahtarı kullanır; blok bellekte/ikili dosyada durur.
-- **Entropi taraması** yüksek entropili (rastgele görünen) bloğu bulur → "anahtar burada".
-- `strings` + gdb ile dakikalar içinde doğrulanır.
-
----
-
-# Soru 4
-
-**Kod taşıma (code lifting) nedir? Hangi önlem kapatır?**
-
----
-
-# Cevap 4
-
-- Saldırgan anahtarı **çıkarmadan**, şifreleme yapan kodu (tablolar + yorumlayıcı) kopyalar.
-- İşlevi anahtarı bilmeden çalar.
-- Önlem: **cihaz/sürüm bağlama** — tablolar yalnız o cihazda anlamlı.
-
----
-
-# Soru 5
-
-**`T[x] = S-box[x ^ k]` tek başına neden güvensiz?**
-
----
-
-# Cevap 5
-
-- `T`, bilinen `S-box`'ın `x ^ k` ile ötelenmişidir.
-- Saldırgan iki tabloyu karşılaştırıp öteleme miktarından `k`'yı çıkarır.
-- Bu yüzden iç/dış **kodlama** gerekir.
-
----
-
-# Soru 6
-
-**İç kodlama ile dış kodlama (F, G) farkı? Dış kodlamanın en büyük sınırı?**
-
----
-
-# Cevap 6
-
-- **İç:** tablolar arası, ara değerleri karıştırır.
-- **Dış (F, G):** tüm şifreyi sarar (`G ∘ AES ∘ F⁻¹`).
-- **Sınır:** artık **standart AES değil**; karşı taraf F/G'yi bilmeli → EMV gibi standartlarda kullanılamayabilir.
-
----
-
-# Soru 7
-
-**Yaklaşık tablo boyutu ve hız maliyeti? Neden yalnız seçili işlemlerde?**
-
----
-
-# Cevap 7
-
-- Tablo: **yüzlerce KB** (std AES anahtarı 16–32 bayt).
-- Hız: **~50× yavaş**.
-- Bu maliyet, WBC'yi yalnız **küçük ve kritik** işlemlere sınırlar.
-
----
-
-# Soru 8
-
-**"Yayımlanmış bütün saf-yazılım WBC kırıldı" ifadesi projedeki kararınızı nasıl etkiler?**
-
----
-
-# Cevap 8
-
-- WBC'yi **tek başına** anahtar güvencesi sayamazsınız.
-- Kullanırsanız: yenileme + cihaz bağlama + sunucu denetimi + gizleme/RASP ile.
-- Mümkünse donanıma (TEE/SE) taşıyın.
-
----
-
-# Soru 9
-
-**DCA klasik hangi donanım saldırısına benzer? İç kodlamalar onu neden her zaman durdurmaz?**
-
----
-
-# Cevap 9
-
-- **DPA**'ya (güç analizi) benzer — yazılım hâli.
-- İç kodlama ara değeri karıştırır ama birebir eşlemedir; istatistiksel korelasyon çoğu zaman hayatta kalır.
-
----
-
-# Soru 10
-
-**Anahtar koruma seçeneklerini güç/maliyet ekseninde sıralayın.**
-
----
-
-# Cevap 10
-
-Düz dizi (yok) → gizli/parçalı (çok düşük) → **WBC + katman** (orta) → **TEE/SE** (yüksek) → **HSM** (yüksek, sunucu).
-
-Kural: yazılıma koymak zorunda değilsen koyma.
-
----
-
-# Soru 11
-
-**WBC kullanıyorsanız, tek başına bırakmamak için en az üç katman?**
-
----
-
-# Cevap 11
-
-1. Gizleme (9. hafta) + RASP (6. hafta)
-2. Anahtar yenileme (kısa kripto-periyot)
-3. Cihaz/sürüm bağlama + sunucu risk denetimi
-
----
-
-# Soru 12
-
-**Projenizdeki bir anahtar için S8 gerekçesini üç cümleyle yazın (örnek).**
-
----
-
-# Cevap 12 (örnek)
-
-> "Oturum anahtarı TEE'siz cihazlarda WBC tablolarında tutulur ve gizleme+RASP ile sarılır. Kod taşımaya karşı
-> cihaza bağlanır; anahtar 24 saatte bir yenilenir. Kalan risk: tek cihazda çıkarılabilir, ama sunucu risk
-> denetimi ve kısa ömür hasarı sınırlar."
-
----
-
-# Kapanış · üç hafta bir arada
-
-- **9. hafta:** gizleme kuralları (kod)
-- **11. hafta:** whitebox (anahtar) — bugün
-- **14. hafta:** otomasyon (Tigress)
-
-Ortak kural: koruma **kırılamazlık değil, gecikme**; güç katmanlardan ve ölçümden gelir.
+> Ortak kural: koruma **kırılamazlık değil, gecikme**; güç katmanlardan ve ölçümden gelir.

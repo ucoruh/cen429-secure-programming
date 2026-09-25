@@ -1,0 +1,21 @@
+% Hafta 8 — Quiz öncesi çalışma planı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-8/assets/h08-04-calisma-plani.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Quiz öncesi çalışma planı};
+  \node[altbaslik] at (b.south west) {ezber değil, gerekçe ezberi};
+
+  \node[kutu=36mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{1 · Kendini sınama}\\cevaba bakmadan};
+  \node[uyarikutu=36mm, right=of n1] (n2) {\kb{2 · Yanlışları ayır}\\neden yanlış?};
+  \node[iyikutu=36mm, right=of n2] (n3) {\kb{3 · Demoları tekrar}\\3 ve 4. hafta};
+  \node[morkutu=36mm, right=of n3] (n4) {\kb{4 · Kuralları özetle}\\tek sayfa};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[dip, text width=175mm, below=8mm of n4.south -| n2, anchor=north] {%
+    Bir kuralı ``kendi cümlelerinizle'' anlatabiliyorsanız öğrenmişsinizdir.};
+\end{tikzpicture}
+\end{document}

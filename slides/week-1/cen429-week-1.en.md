@@ -10,7 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -26,146 +25,6 @@ Speaker note: Introduce yourself and the course. This course is about "learning 
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Basic concepts (from scratch)
-
-<!-- Speaker note: This section assumes no prior knowledge; since it's the first day of the course, we define every basic term here. We will use them in the sections that follow. -->
-
----
-
-# Why this section?
-
-This course is full of terms like "security," "vulnerability," "threat model."
-
-We assume you know none of them.
-
-Let's define every one of them **one at a time** first.
-
----
-
-# What is security?
-
-- **Security:** protecting a system against someone who **wants to harm** it.
-- An ordinary bug: happens by accident.
-- Security: there is a **deliberate** attacker.
-
----
-
-# What is an asset?
-
-- **Asset:** anything worth protecting (data, a key, a function).
-- Example: a password, a credit card, a license, user data.
-- Security begins with "what are we protecting?"
-
----
-
-# Threat and vulnerability
-
-- **Threat:** a bad event that could happen (data being stolen).
-- **Vulnerability:** the **weak point** that makes it possible (unvalidated input).
-- Threat + vulnerability + attacker = risk.
-
----
-
-# Threat · vulnerability · asset — diagram
-
-![w:950](assets/h01-01-tehdit-zafiyet-varlik.svg)
-
----
-
-# The CIA triad
-
-The three core goals of security:
-
-- **Confidentiality (C):** only authorized parties can see it.
-- **Integrity (I):** cannot be changed without authorization.
-- **Availability (A):** works when it needs to.
-
----
-
-# Attacker model
-
-- **Attacker model:** "what can the attacker see/do?"
-- Are they connecting over the network, or do they own the device?
-- We design the defence accordingly.
-
----
-
-# White-box / MATE
-
-- **MATE (Man-At-The-End):** an attacker who **owns** the program.
-- Reads the code, sees the memory, modifies it.
-- The real situation for mobile/desktop applications (this course's main theme).
-
----
-
-# Threat modelling
-
-- **Threat modelling:** systematically answering "what will we protect, against whom, and how?"
-- It lists assets, threats, and countermeasures.
-- Today we'll do it with STRIDE and attack trees.
-
----
-
-# STRIDE
-
-- A method that classifies threats with six letters:
-- **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, **E**levation of privilege.
-- It asks "which threat?" for every element.
-
----
-
-# Attack tree
-
-- **Attack tree:** a tree that breaks a goal (e.g. "steal the key") into **sub-steps**.
-- Root: the attacker's goal.
-- Branches: the ways to achieve it.
-
----
-
-# Data flow diagram (DFD)
-
-- **DFD:** a diagram showing **how data flows** through the system.
-- Process, data store, external entity, flow, trust boundary.
-- A map for finding threats.
-
----
-
-# Defence in depth
-
-- **Defence in depth:** not a single countermeasure, but **many**.
-- If one is bypassed, another stops it.
-- A "security shell" is the combination of these layers.
-
----
-
-# Secure design principles
-
-- Saltzer & Schroeder (1975): least privilege, secure default, economy, open design…
-- Still valid today.
-- The backbone of this course.
-
----
-
-# Trade-off
-
-- Every protection carries a **cost**: speed, complexity, expense.
-- Security is not "infinite protection," it is **balanced** protection.
-- We write the remaining risk down explicitly.
-
----
-
-# Now we're ready
-
-Terms:
-
-security · asset · threat/vulnerability · CIA · attacker model · MATE · threat modelling · STRIDE · attack tree · DFD · defence in depth · design principles · trade-off
-
-Now: what security is, in depth.
-
----
-
 # Today's plan (3 hours)
 
 | Hour | Topic |
@@ -174,11 +33,56 @@ Now: what security is, in depth.
 | 2 | Protection plan · STRIDE and risk score · Attack tree · **Worked example "Vault"** · Class exercise |
 | 3 | **Demo 1–2** · Secure start-up · Overflows · **Demo 3–4** · Memory management · Partitioning · Secure process · Project |
 
-**Demos:** `code/week-01` — Windows `.\demo.ps1` · WSL / Linux `sh demo.sh` · Visual Studio: Open Folder → `code`
+**Learning outcomes:** LO.1 (identifies and classifies vulnerabilities) · LO.5 (produces a software plan using secure design principles)
 
 <!--
 Speaker note: Build the demos once beforehand (Windows: `.\build.ps1` inside code, WSL: `./build.sh`), so there's no waiting in class. Show students that both environments give the same result; in Visual Studio, Open Folder on the `code` folder is enough.
 -->
+
+---
+
+# How We're Starting This Course
+
+- This is the course's **first week**; we don't build on a previous week.
+- Assumed prior knowledge: functions, arrays, and pointers in C; `cd` and `ls` in a terminal (PowerShell or Linux).
+- The **"This Week's Concepts"** table below does not define this week's terms one by one — it shows **which section** teaches each one.
+- The pattern we'll follow all term: **buggy code → attack → fix.**
+
+---
+
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Security | Section 1 |
+| Asset | Section 1 |
+| Threat and vulnerability | Section 1 |
+| The CIA triad | Section 1 |
+| Attacker model | Section 1 |
+| White-box / MATE | Section 1 |
+| Secure design principles | Section 1 |
+| Defence in depth | Section 2 |
+| Trade-off | Section 2 |
+| Threat modelling | Section 3 |
+| STRIDE | Section 3 |
+| Attack tree | Section 3 |
+| Data flow diagram (DFD) | Section 3 |
+
+---
+
+# How the Demos Work
+
+- One source, two/three environments: **Windows** (Visual Studio 2022 Community or PowerShell), **WSL**, and **Linux**
+- Build: Windows `.\build.ps1` · WSL/Linux `./build.sh` — build once before class
+- Run: Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- Visual Studio: **File > Open > Folder** → `code` → configuration **Windows (MSVC)** → **Build > Build All**
+- 4 demos this week, under `code/week-01`
+
+> ⚠️ **Ethics:** Every demo runs only inside its own folder and asks for no administrator rights. Only try these techniques on **your own computer**.
 
 ---
 
@@ -200,7 +104,6 @@ Speaker note: Build the demos once beforehand (Windows: `.\build.ps1` inside cod
 ![w:900](assets/h01-17-bes-karar.svg)
 
 ---
-
 
 # How the course runs
 
@@ -234,6 +137,12 @@ Speaker note: Build the demos once beforehand (Windows: `.\build.ps1` inside cod
 <!--
 Speaker note: Ask students for their own examples: "For your Instagram account, what are the asset, the threat, the vulnerability?"
 -->
+
+---
+
+# Threat · vulnerability · asset — diagram
+
+![w:950](assets/h01-01-tehdit-zafiyet-varlik.svg)
 
 ---
 
@@ -301,6 +210,14 @@ Speaker note: In Demo 4 we'll see a bug from the same family (a length check) wi
 <!--
 Speaker note: Examples: mobile payment, DRM, game cheats, license checks. "Just hide the key" isn't enough; the attacker can read memory.
 -->
+
+---
+
+# White-box / MATE
+
+- **MATE (Man-At-The-End):** an attacker who **owns** the program.
+- Reads the code, sees the memory, modifies it.
+- The real situation for mobile/desktop applications (this course's main theme).
 
 ---
 
@@ -381,6 +298,14 @@ Unusable security is **bypassed** security.
 <!-- _class: bolum -->
 
 # 2. Overview of application protection
+
+---
+
+# Defence in depth
+
+- **Defence in depth:** not a single countermeasure, but **many**.
+- If one is bypassed, another stops it.
+- A "security shell" is the combination of these layers.
 
 ---
 
@@ -512,6 +437,14 @@ This table is the starting point for the **threats** section of a protection pla
 
 ---
 
+# Trade-off
+
+- Every protection carries a **cost**: speed, complexity, expense.
+- Security is not "infinite protection," it is **balanced** protection.
+- We write the remaining risk down explicitly.
+
+---
+
 # The cost of protection
 
 | Cost | Example |
@@ -562,6 +495,14 @@ Every step that **isn't** stopped becomes a finding in the report
 <!-- _class: bolum -->
 
 # 3. The application protection plan and threat modelling
+
+---
+
+# Threat modelling
+
+- **Threat modelling:** systematically answering "what will we protect, against whom, and how?"
+- It lists assets, threats, and countermeasures.
+- Today we'll do it with STRIDE and attack trees.
 
 ---
 
@@ -732,6 +673,87 @@ Draw the data flow diagram → ask the six letters for **every arrow that crosse
 
 ---
 
+# Example system
+
+A mobile banking application:
+
+- user login
+- balance display
+- money transfer
+
+Let's apply every STRIDE letter to this system.
+
+---
+
+# S · Spoofing
+
+- **Threat:** acting as someone else (a fake user/server).
+- **Example:** a fake server, a stolen session.
+- **Countermeasure:** strong authentication, TLS + certificate checking.
+
+---
+
+# T · Tampering
+
+- **Threat:** modifying data/code without authorization.
+- **Example:** changing the transfer amount.
+- **Countermeasure:** integrity (MAC/signature), integrity checking (RASP).
+
+---
+
+# R · Repudiation
+
+- **Threat:** denying what you did.
+- **Example:** "I didn't make that transfer."
+- **Countermeasure:** secure log, signature, audit trail.
+
+---
+
+# I · Information disclosure
+
+- **Threat:** confidential data leaking.
+- **Example:** a balance/password leak.
+- **Countermeasure:** encryption, least privilege, leak-free error messages.
+
+---
+
+# D · Denial of service
+
+- **Threat:** making the service unavailable.
+- **Example:** excessive requests, resource exhaustion.
+- **Countermeasure:** rate limiting, resource quotas, input limits.
+
+---
+
+# E · Elevation of privilege
+
+- **Threat:** gaining unauthorized privilege.
+- **Example:** an ordinary user becomes administrator.
+- **Countermeasure:** least privilege, privilege checking, secure default.
+
+---
+
+# STRIDE Summary for the Banking Example
+
+| Letter | Countermeasure in this system |
+| --- | --- |
+| S | TLS + authentication |
+| T | MAC/signature + RASP |
+| R | Secure log |
+| I | Encryption + least privilege |
+| D | Rate limiting |
+| E | Privilege checking |
+
+---
+
+# Root · goal
+
+![w:900](assets/h01-06-saldiri-agaci.svg)
+
+The attacker's ultimate goal. Now let's break down the paths.
+
+---
+
 # Attack tree: "Capture the payment key"
 
 **GOAL: Payment key** — *OR* (one is enough)
@@ -782,14 +804,16 @@ Both layers must be broken **at once** → an expensive path.
 
 ---
 
-# Conclusions from the attack tree
+# Attack tree — mapping to countermeasures
 
-- The "eavesdrop on traffic" path requires breaking **two layers at once** → expensive → **defence in depth** is working
-- The "read from memory" path has **three alternatives** → the weakest point is **the key in memory**
-  - This week: **Demo 2** (a secret left in memory)
-  - Week 6: runtime protection (debugger, hook detection)
-  - Week 11: white-box cryptography (the key is never exposed in memory)
-- The defender's goal: force the attacker into **AND** nodes
+Let's map the attack tree's leaves directly onto a defence layer:
+
+| Leaf | Countermeasure |
+| --- | --- |
+| Debugger | Anti-debug (6) |
+| Memory dump | Short lifetime + protection (6, 10) |
+| Extract from binary | Obfuscation + white-box (9, 11) |
+| Leak over the network | TLS + pinning (10) |
 
 ---
 
@@ -1036,20 +1060,6 @@ The T9 example matters: not every threat needs a countermeasure **added**, somet
 - **A countermeasure with no test:** saying "we erase it" without noticing the compiler removed the erasure (Demo 2)
 
 <!-- Speaker note: These seven steps are the skeleton of the term project's security guide. This week, steps 0-4 are expected. -->
-
----
-
-# Class exercise (15 min)
-
-**Student grading system:** the instructor enters grades, the student sees them, the data lives on a server.
-
-1. Data flow diagram + trust boundaries
-2. **One** threat from each STRIDE letter
-3. Attack tree for "raise my grade from 45 to 85" — which is the **cheapest** path?
-
-<!--
-Speaker note: Groups of 3-4 people. 10 minutes of work, 5 minutes for two groups to present. Hint: for E, a direct URL to a grade-entry page; for R, no record of the change.
--->
 
 ---
 
@@ -1932,7 +1942,51 @@ An unwritten trade-off is an **error** in an evaluator's eyes
 
 ---
 
-# Try it yourself (not graded)
+# Class exercise (15 min)
+
+**Student grading system:** the instructor enters grades, the student sees them, the data lives on a server.
+
+1. Data flow diagram + trust boundaries
+2. **One** threat from each STRIDE letter
+3. Attack tree for "raise my grade from 45 to 85" — which is the **cheapest** path?
+
+<!--
+Speaker note: Groups of 3-4 people. 10 minutes of work, 5 minutes for two groups to present. Hint: for E, a direct URL to a grade-entry page; for R, no record of the change.
+-->
+
+---
+
+# End to End: Finishing the Vault's Defence
+
+Section 4's threat table for the "Vault" had two open items; the rest of this week closes them with **actual code**:
+
+| Vault's threat | This week's answer |
+| --- | --- |
+| T2 — password/key left in memory | Section 5: `explicit_bzero`/`SecureZeroMemory`, `mlock`, disabling core dumps (Demo 2) |
+| T8 — a memory bug in the parser | Sections 6–7: bounds checking, ASan, the safe pattern (Demo 3–4) |
+
+> Security is not a **feeling**, it's a **process:** know the asset, model the threat, protect it in layers, write down the residual risk. We'll use this framework all term.
+
+---
+
+<!-- _class: yogun -->
+
+# Classic Mistakes — Summary
+
+| Mistake | Section | Rule |
+| --- | --- | --- |
+| Trusting PATH/the environment (CWE-426) | 5 | Absolute path + a clean environment + no shell |
+| A secret left in memory (CWE-14) | 5 | `explicit_bzero`/`SecureZeroMemory`, in a way the compiler can't remove |
+| A buffer overflow (CWE-121/787) | 6 | Validate first, then copy with a bound; avoid dangerous functions |
+| The off-by-one bug (CWE-193) | 6 | Use `<`, not `<=`; always leave room for the terminator |
+| A signed/unsigned integer bug (CWE-195) | 6 | Keep sizes as `size_t`; check both a lower **and** an upper bound |
+| A leak, double free, or UAF (CWE-401/415/416) | 7 | Give every block a single owner; set the pointer to `NULL` after `free` |
+
+All six mistakes were covered earlier in this deck with a demo or code example; here they are gathered in one glance.
+
+---
+
+# On Your Own (Not Graded)
 
 1. The PATH trap: repeat with `ls` (Linux) / `whoami` (Windows), fix with a full path
 2. In Demo 2, `MOD optimize` → `MOD korumasiz`: does `memset` work now?
@@ -1979,7 +2033,6 @@ Details and hints: course site → Week 1 → "Try it yourself"
 
 ---
 
-
 # Self-check (continued)
 
 1. Why is **S** never asked of a data flow?
@@ -2001,7 +2054,6 @@ Details and hints: course site → Week 1 → "Try it yourself"
 5. Heartbleed only **read**; the memory it read was the process's own **valid** memory → it leaked without crashing.
 
 ---
-
 
 # Self-check (continued)
 
@@ -2025,349 +2077,6 @@ Details and hints: course site → Week 1 → "Try it yourself"
 
 ---
 
-
-<!-- _class: baslik -->
-
-# Next week
-
-**Week 2 — Computer Viruses and Security Models**
-
-Malware types · Bell–LaPadula, Biba, Clark–Wilson · CWE, OWASP, CVSS
-
-Source: Viega & Messier, Recipes 1, 3, 12.1, 13.2–13.3
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Applying STRIDE step by step
-
-<!-- Speaker note: We apply every letter of STRIDE to a synthetic example, one at a time. -->
-
----
-
-# Example system
-
-A mobile banking application:
-
-- user login
-- balance display
-- money transfer
-
-Let's apply every STRIDE letter to this system.
-
----
-
-# S · Spoofing
-
-- **Threat:** acting as someone else (a fake user/server).
-- **Example:** a fake server, a stolen session.
-- **Countermeasure:** strong authentication, TLS + certificate checking.
-
----
-
-# T · Tampering
-
-- **Threat:** modifying data/code without authorization.
-- **Example:** changing the transfer amount.
-- **Countermeasure:** integrity (MAC/signature), integrity checking (RASP).
-
----
-
-# R · Repudiation
-
-- **Threat:** denying what you did.
-- **Example:** "I didn't make that transfer."
-- **Countermeasure:** secure log, signature, audit trail.
-
----
-
-# I · Information disclosure
-
-- **Threat:** confidential data leaking.
-- **Example:** a balance/password leak.
-- **Countermeasure:** encryption, least privilege, leak-free error messages.
-
----
-
-# D · Denial of service
-
-- **Threat:** making the service unavailable.
-- **Example:** excessive requests, resource exhaustion.
-- **Countermeasure:** rate limiting, resource quotas, input limits.
-
----
-
-# E · Elevation of privilege
-
-- **Threat:** gaining unauthorized privilege.
-- **Example:** an ordinary user becomes administrator.
-- **Countermeasure:** least privilege, privilege checking, secure default.
-
----
-
-# STRIDE · summary application
-
-| Letter | Countermeasure in this system |
-| --- | --- |
-| S | TLS + authentication |
-| T | MAC/signature + RASP |
-| R | Secure log |
-| I | Encryption + least privilege |
-| D | Rate limiting |
-| E | Privilege checking |
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Attack tree step by step
-
----
-
-# Root · goal
-
-![w:900](assets/h01-06-saldiri-agaci.svg)
-
-The attacker's ultimate goal. Now let's break down the paths.
-
----
-
-# Branches · how?
-
-The question to ask after the root: **"By which paths is this goal reached?"**
-
-- Every branch is **one way** to reach the goal
-- **AND**: all of the branch is needed · **OR**: one is enough
-- Next step: break the most likely branch into **sub-branches**
-
----
-
-# Sub-branches · read from memory
-
-**Read from memory** — three ways:
-
-- Attach a debugger
-- Take a memory dump
-- Catch it with a hook
-
-Every leaf is one attack step.
-
----
-
-# Prioritising from the tree
-
-- The **easiest** leaf is the biggest risk.
-- Close it first (e.g. RASP + short lifetime).
-- The tree shows the defence priority.
-
----
-
-# Mapping the tree to countermeasures
-
-| Leaf | Countermeasure |
-| --- | --- |
-| Debugger | Anti-debug (6) |
-| Memory dump | Short lifetime + protection (6, 10) |
-| Extract from binary | Obfuscation + white-box (9, 11) |
-| Leak over the network | TLS + pinning (10) |
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Going deeper on secure design principles
-
----
-
-# Least privilege
-
-- Every component can only do what's needed.
-- Excess privilege = a larger attack surface.
-- Example: a DB user with only `SELECT`.
-
----
-
-# Secure default (fail-safe)
-
-- If something goes wrong, fall to the **safe** side.
-- Error → access is **denied** (fail-closed).
-- Default: closed, restricted.
-
----
-
-# Economy and open design
-
-- **Economy:** a simple design, fewer bugs.
-- **Open design:** security rests on the **key**, not secrecy (Kerckhoffs).
-- Complexity is the enemy.
-
----
-
-# Complete mediation and separation of privilege
-
-- **Complete mediation:** every access is checked (don't skip it by trusting a cache).
-- **Separation of privilege:** more than one condition for a critical operation.
-- The foundation of defence in depth.
-
----
-
-# Principles → this course
-
-- These principles will repeat every week this term.
-- Code, crypto, RASP, requirements — all rest on them.
-- The principles don't change; the techniques do.
-
----
-
-# Appendix · summary
-
-- STRIDE asks six questions of every element.
-- An attack tree breaks the goal into paths and prioritizes them.
-- Design principles are the compass for every decision.
-
-> **Model** the threat, then protect it with **layers**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Solved self-check
-
-<!-- Speaker note: Ask the students first, then reveal the answer. -->
-
----
-
-# Question 1
-
-**Explain the CIA triad with an example.**
-
-**Answer:** Confidentiality: only the owner sees the password. Integrity: a bank balance can't be changed without authorization. Availability: the app works when needed.
-
----
-
-# Question 2
-
-**What is the difference between a bug and a vulnerability?**
-
-**Answer:** Every vulnerability is a bug, but not every bug is a vulnerability. A vulnerability is a bug an attacker can **exploit**.
-
----
-
-# Question 3
-
-**How does a MATE (white-box) attacker differ from a network attacker?**
-
-**Answer:** MATE owns the program: reads the code, sees the memory, modifies it. A network attacker only connects from outside.
-
----
-
-# Question 4
-
-**What does STRIDE provide?**
-
-**Answer:** A systematic search for threats in six classes: spoofing, tampering, repudiation, information disclosure, denial of service, elevation of privilege.
-
----
-
-# Question 5
-
-**What is an attack tree for?**
-
-**Answer:** It breaks an attack goal into sub-steps; it shows the easiest/most likely path and helps prioritise.
-
----
-
-# Question 6
-
-**Why isn't a single countermeasure enough?**
-
-**Answer:** Every countermeasure can be bypassed; in layered defence, if one is bypassed, another stops it. Strength comes from combination.
-
----
-
-# Question 7
-
-**"Does obfuscation replace correct code?"**
-
-**Answer:** No. Obfuscation makes reading harder but doesn't fix the bug. Secure code first, then obfuscation.
-
----
-
-# Question 8
-
-**What is the principle of least privilege?**
-
-**Answer:** Every component should have only the **necessary** privilege; more than that enlarges the attack surface.
-
----
-
-# Question 9
-
-**What is a trust boundary?**
-
-**Answer:** The place where trusted and untrusted zones are separated; input validation is done here at the earliest point.
-
----
-
-# Question 10
-
-**Why is residual risk written down?**
-
-**Answer:** No system is 100% secure; known, accepted risks are documented explicitly.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · A worked mini threat model
-
----
-
-# Product · synthetic
-
-A "password vault" application:
-
-- stores passwords locally
-- opens with a master password
-
-Let's build a quick threat model.
-
----
-
-# Step · assets
-
-- Master password (C/I)
-- Stored passwords (C/I)
-- Encryption key (C/I)
-
----
-
-# Step · threats (STRIDE)
-
-- **I** (information disclosure): if the device is stolen, passwords can be read.
-- **T** (tampering): the vault file is modified.
-- **E** (privilege): memory access on a rooted device.
-
----
-
-# Step · countermeasures
-
-- Passwords encrypted with AEAD (I → C).
-- A key from the master password via KDF.
-- An integrity tag (T).
-- Short-lived memory + RASP (E).
-
----
-
-# Step · residual risk
-
-- While the master password is being typed on a rooted device, it may be exposed in memory.
-- Mitigation: fast erasure, device binding.
-- **Written down explicitly.**
-
----
-
 <!-- _class: yogun -->
 
 # Glossary
@@ -2383,16 +2092,12 @@ Let's build a quick threat model.
 
 ---
 
-# From this week to the project
+<!-- _class: baslik -->
 
-- **S2–S5:** product, architecture, asset list, threat model.
-- **S1:** scope, sources.
-- Every asset labelled C/I/I+; a countermeasure for every threat.
+# Next Week
 
----
+**Week 2 — Computer Viruses and Security Models**
 
-# Final word (week 1)
+We will apply the threat-modelling tools we built this week (STRIDE, attack trees) and the attacker model to a concrete class of threat — malware: how a virus spreads, how it hides, and which access-control models (DAC/MAC/RBAC) stop it.
 
-> Security is not a "feeling," it's a **process**: know the asset, model the threat, protect with layers, write down the residual risk.
-
-We'll use this framework all term.
+The CWE classification we met for this week's memory-safety bugs will deepen next week with CVE and CVSS.

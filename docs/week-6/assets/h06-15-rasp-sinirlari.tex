@@ -1,0 +1,19 @@
+% Hafta 6 — RASP'in sınırları: ne vaat eder, ne etmez?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-15-rasp-sinirlari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {RASP'in sınırları: ne vaat eder, ne etmez?};
+  \node[altbaslik] at (b.south west) {cihazın sahibi saldırgansa yeterli zamanla her katman aşılır};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{ETMEZ}\\[2mm]
+     kırılmazlık\\MATE'ye karşı kalıcı engel\\kötü mimariyi kurtarma\\meşru kullanıcıyı ayırt etme garantisi};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{EDER}\\[2mm]
+     saldırıyı geciktirir\\toplu kırılmayı zorlaştırır\\telemetriyle görünürlük\\riskli ortamda kapsamı daraltır};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Etik sınır: kullanıcının cihazına zarar vermeyin, veri toplamayı şeffaf ve ölçülü tutun.};
+\end{tikzpicture}
+\end{document}

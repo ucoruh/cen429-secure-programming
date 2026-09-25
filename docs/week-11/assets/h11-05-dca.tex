@@ -1,0 +1,21 @@
+% Hafta 11 — DCA: donanım yan kanalının yazılım hâli
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-05-dca.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {DCA: donanım yan kanalının yazılım hâli};
+  \node[altbaslik] at (b.south west) {güç izi yerine YAZILIM izi kullanılır};
+
+  \node[kutu=38mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Programı çalıştır}\\bellek erişim izini kaydet};
+  \node[kutu=38mm, right=of n1] (n2) {\kb{Çok sayıda girdi}\\izleri topla};
+  \node[uyarikutu=38mm, right=of n2] (n3) {\kb{İstatistiksel korelasyon}\\tahmin edilen ara değerle};
+  \node[kotukutu=38mm, right=of n3] (n4) {\kb{ANAHTAR}\\kodlamayı bilmeden};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[kotudip, text width=160mm, below=8mm of n4.south -| n2, anchor=north] {%
+    Klasik DPA'nın kardeşi. İç kodlama zayıfsa korelasyon kodlamayı aşar.};
+\end{tikzpicture}
+\end{document}

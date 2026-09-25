@@ -36,9 +36,11 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 0–2 | Temel kavramlar · sağlamlaştırma katmanları · SEI CERT · girdi doğrulama |
-| 2 | 3–4 | Biçim dizisi · UAF · tamsayı/UB · hata/sinyal · statik analiz · sanitizer · fuzzing |
-| 3 | 5–7 | Derleyici/OS korumaları · güvenli derleme hattı · kod gizlemeye giriş · proje |
+| 1 | 1 | Sağlamlaştırma katmanları · SEI CERT · girdi doğrulama ilkeleri · CERT çiftleri |
+| 2 | 2–4 | Biçim dizisi **Demo 1** · UAF **Demo 2** · tamsayı/UB **Demo 3** · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing **Demo 4** |
+| 3 | 5–7 | Derleyici/OS korumaları **Demo 5** · güvenli derleme hattı (CI) · kod gizleme **Demo 6–7** · uçtan uca · proje |
+
+**Öğrenme çıktısı:** ÖÇ.3 (ikili uygulama korumaları)
 
 <!-- Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz. Öğrenciler C'yi biliyor ama güvenlik terimlerini bilmiyor varsayıyoruz; her terimi tanımlayacağız. Demolar code/week-04 altında. -->
 
@@ -57,24 +59,76 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 ---
 
+# Önceki haftalardan gelenler
 
-# Bu hafta nereye oturuyor?
+- **Süreç belleği: yığın ve öbek** — yığın (stack) fonksiyon çağrılarının yerel değişkenlerini otomatik yönetir, öbek (heap) `malloc`/`free` ile elle yönetilir **(Hafta 1)**
+- **Arabellek taşması** — bir diziye ayrılan boyuttan fazla veri yazmak; taşan baytlar komşu belleğe yazılır **(Hafta 1)**
+- **Yığın çerçevesi ve dönüş adresi** — bir fonksiyon çağrısının yerel değişkenlerini ve dönüş adresini tuttuğu bölüm **(Hafta 1)**
+- **Beyaz kutu saldırgan modeli** — cihazın sahibi aynı zamanda olası saldırgandır; belleği okuyabilir, hata ayıklayıcı bağlayabilir **(Hafta 1)**
+- **CWE** — yazılım zayıflıklarının numaralı kataloğu **(Hafta 2)**
 
-- **1–3. hafta:** güvenlik ilkeleri, tehdit modeli, kripto.
-- **Bu hafta (4):** C/C++ kodunu **sağlamlaştırmak** — hatasız yaz, hata kaçarsa zararı sınırla, okumayı zorlaştır.
-- **5. hafta:** aynı konu Java/yorumlanan diller.
+Bu hafta: 1–3. haftanın ilke/tehdit modeli/kripto temeli üzerine SEI CERT kuralları, sanitizer'lar ve derleyici/OS korumalarını kuruyoruz.
 
 ---
 
-# Öğrenme çıktısı
+<!-- _class: yogun -->
 
-Bu hafta **ÖÇ.3** (ikili uygulama korumaları) üstünedir.
+# Bu haftanın kavramları
 
-Sonunda yapabileceğiniz:
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
 
-- Yaygın C/C++ zafiyetlerini tanımak ve düzeltmek
-- Statik analiz, sanitizer, fuzzing kullanmak
-- Derleyici/OS korumalarını açmak ve doğrulamak
+| Kavram | Nerede |
+| --- | --- |
+| Sağlamlaştırma katmanları · SEI CERT | Bölüm 1 |
+| Girdi doğrulama ilkeleri | Bölüm 1 |
+| Biçim dizisi açığı | Bölüm 2 |
+| Serbest bırakılmış bellek (UAF) | Bölüm 3 |
+| Tanımsız davranış (UB) | Bölüm 3 |
+| Hata işleme, sinyaller | Bölüm 3 |
+| Statik analiz · sanitizer · fuzzing | Bölüm 4 |
+| Derleyici/OS korumaları · CI | Bölüm 5 |
+| Kod gizleme | Bölüm 6 |
+
+---
+
+# İşaretçi (pointer)
+
+- **İşaretçi:** bir bellek **adresini** tutan değişken.
+- `p` bir adres; `*p` o adresteki değer.
+- Yanlış adres → çökme ya da yanlış veri.
+
+---
+
+# Derleyici bayrağı (flag)
+
+- **Bayrak:** derleyiciye verilen seçenek.
+- Örnek: `-O2` (optimizasyon), `-Wall` (uyarılar), `-fsanitize=address`.
+- Doğru bayraklar birçok hatayı **derleme anında** yakalar.
+
+---
+
+# Uyarı (warning) vs hata (error)
+
+- **Hata:** derleme durur.
+- **Uyarı:** derleme sürer ama bir sorun bildirilir.
+- Kural: uyarıları **hataya çevir** (`-Werror`) — görmezden gelinen uyarı, gelecekteki açıktır.
+
+---
+
+# Demolar nasıl çalışıyor?
+
+- Demolar `code/week-04` altında; **Windows (Visual Studio 2022)** ve **WSL/Linux**'ta çalışır.
+- Derle: Windows `.\build.ps1` · WSL/Linux `./build.sh`
+- Çalıştır: her demo klasöründe Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- **Fuzzing (Demo 4)** Linux/WSL'de **clang** ister (`sudo apt install -y clang`); Windows'ta VS'nin "C++ AddressSanitizer" bileşeni gerekir.
+
+> ⚠️ **Etik:** demolar yalnız **kendi küçük programlarımızda**; başka bir programa/sisteme dokunmaz.
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Katmanlar ve SEI CERT
 
 ---
 
@@ -98,157 +152,9 @@ Kod sağlamlaştırma üç katmandır. Sıra önemli:
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: C sözdizimini bildiklerini varsayıyoruz ama bellek/güvenlik kavramlarını sıfırdan tanımlıyoruz. -->
-
----
-
-# Bellek: yığın ve öbek
-
-- **Yığın (stack):** fonksiyon çağrılarının yerel değişkenlerini tuttuğu, otomatik yönetilen bellek.
-- **Öbek (heap):** `malloc`/`new` ile **elle** ayrılan, `free`/`delete` ile bırakılan bellek.
-
-İkisi de taşma ve hata kaynağı olabilir.
-
----
-
-# İşaretçi (pointer)
-
-- **İşaretçi:** bir bellek **adresini** tutan değişken.
-- `p` bir adres; `*p` o adresteki değer.
-- Yanlış adres → çökme ya da yanlış veri.
-
----
-
-# Tampon (buffer) ve taşma
-
-- **Tampon:** ardışık bellek bloğu (ör. `char ad[16]`).
-- **Taşma (buffer overflow):** tampona **sığmayan** kadar veri yazmak → komşu belleği bozar.
-- Klasik ve tehlikeli bir hata sınıfı.
-
----
-
-# Neden taşma tehlikeli?
-
-- Komşu değişkenleri, dönüş adresini bozabilir.
-- Saldırgan bunu **denetim akışını** ele geçirmek için kullanabilir.
-- Bu yüzden **sınır denetimi** hayatidir.
-
----
-
-# Tanımsız davranış (UB) nedir?
-
-- **Tanımsız davranış (undefined behavior):** C/C++ standardının "sonucu belirsiz" dediği durumlar.
-- Örnek: işaretli tamsayı taşması, dizinin dışına erişim.
-- Derleyici bunu **istediği gibi** ele alabilir — hatta ilgili denetimi **silebilir**.
-
----
-
-# Derleyici bayrağı (flag)
-
-- **Bayrak:** derleyiciye verilen seçenek.
-- Örnek: `-O2` (optimizasyon), `-Wall` (uyarılar), `-fsanitize=address`.
-- Doğru bayraklar birçok hatayı **derleme anında** yakalar.
-
----
-
-# Uyarı (warning) vs hata (error)
-
-- **Hata:** derleme durur.
-- **Uyarı:** derleme sürer ama bir sorun bildirilir.
-- Kural: uyarıları **hataya çevir** (`-Werror`) — görmezden gelinen uyarı, gelecekteki açıktır.
-
----
-
-# CWE nedir?
-
-- **CWE (Common Weakness Enumeration):** yazılım zayıflıklarının numaralı kataloğu.
-- Örnek: CWE-416 = "use-after-free".
-- Bir bulguyu CWE numarasıyla adlandırmak, onu **aranabilir** yapar.
-
----
-
-# CERT nedir?
-
-- **SEI CERT C/C++:** güvenli kodlamanın **kural kitabı**.
-- Her kural: hatalı örnek + uyumlu çözüm + risk + CWE bağı.
-- Örnek: `STR31-C` = dizgeye yeterli yer ayır.
-
----
-
-# Statik vs dinamik analiz
-
-- **Statik analiz:** kodu **çalıştırmadan** inceleme (derleyici uyarıları, clang-tidy).
-- **Dinamik analiz:** kodu **çalıştırırken** izleme (sanitizer'lar).
-- İkisi birbirini tamamlar.
-
----
-
-# Sanitizer nedir?
-
-- **Sanitizer:** programı çalıştırırken bellek/UB hatalarını yakalayan derleyici aracı.
-- Örnek: **ASan** (adres), **UBSan** (tanımsız davranış).
-- Sürüme gitmez; **test/CI**'da kullanılır.
-
----
-
-# Fuzzing nedir?
-
-- **Fuzzing:** programa **rastgele/beklenmeyen** girdiler verip çökme aramak.
-- İnsanın düşünmediği girdileri bulur.
-- Sanitizer'la birlikte çok güçlü.
-
----
-
-# ASLR, NX/DEP, kanarya
-
-- **ASLR:** bellek adreslerini **rastgeleleştirir** (saldırgan adresi tahmin edemesin).
-- **NX/DEP:** veri bölgesindeki baytları **kod olarak çalıştırmayı** engeller.
-- **Yığın kanaryası:** dönüş adresinden önce bir **nöbetçi değer**; taşma onu bozarsa program durur.
-
----
-
-# Beyaz kutu saldırgan (hatırlatma)
-
-- Programa sahip saldırgan (1. hafta MATE).
-- Dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
-- Gizleme bölümünde (bugün sonunda) buna döneceğiz.
-
----
-
-# İki saldırgan modeli — şema
-
-![w:900](assets/h04-17-iki-saldirgan-modeli.svg)
-
----
-
-# CI (sürekli entegrasyon)
-
-- **CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
-- Güvenlik araçlarını (uyarı, statik analiz, sanitizer, fuzzing) **her birleştirmede** koşturur.
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-yığın/öbek · işaretçi · tampon/taşma · UB · bayrak · uyarı/hata · CWE · CERT · statik/dinamik · sanitizer · fuzzing · ASLR/NX/kanarya · CI
-
-Şimdi: kod sağlamlaştırmanın katmanları.
-
----
-
-<!-- _class: bolum -->
-
-# 1. Katmanlar ve SEI CERT
-
----
-
 # CERT kuralının anatomisi — şema
+
+**SEI CERT C/C++:** gerçek zafiyetlerden çıkarılan, güvenli kodlamanın kural kitabı.
 
 ![w:900](assets/h04-15-cert-kural-anatomisi.svg)
 
@@ -780,6 +686,8 @@ Küçük ayrılan bloğa çok yazmak = taşma.
 
 # UB · derleyici denetimi silebilir
 
+**Tanımsız davranış (UB):** C/C++ standardının sonucunu tanımlamadığı işlem (ör. işaretli tamsayı taşması).
+
 ```c
 if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
     return -1;     /* işaretli taşma UB → derleyici bu dalı SİLEBİLİR */
@@ -918,7 +826,7 @@ static void isleyici(int s){ (void)s; durdur = 1; }  /* YALNIZ bayrak */
 
 ---
 
-# Statik analiz nedir? (hatırlatma)
+# Statik analiz nedir?
 
 Kodu **çalıştırmadan** inceleyip hata arama.
 
@@ -959,7 +867,7 @@ Araç, **doğrulanmamış** verinin tehlikeli bir yere aktığını görür.
 
 ---
 
-# Sanitizer nedir? (hatırlatma)
+# Sanitizer nedir?
 
 Programı **çalıştırırken** bellek/UB hatalarını yakalayan araç.
 
@@ -1016,6 +924,8 @@ gcc -g -O1 -fno-omit-frame-pointer \
 ---
 
 # Fuzzing nedir? · kapsam güdümlü
+
+**Fuzzing:** bir programı çok sayıda otomatik üretilmiş, çoğu bozuk girdiyle çalıştırıp çökme arama tekniği.
 
 ![w:900](assets/h04-01-fuzzing-dongusu.svg)
 
@@ -1239,6 +1149,8 @@ readelf -s p | grep __stack_chk   # kanarya
 
 # Güvenli derleme hattı (CI)
 
+**CI (Continuous Integration):** her kod değişikliğinde otomatik derleme + test çalıştıran sistem.
+
 ![w:900](assets/h04-03-ci-hatti.svg)
 
 Her hatalı adım birleştirmeyi **durdurur**.
@@ -1313,6 +1225,12 @@ Koruma bayraklarının çoğu: Demo 5 `giris_sert`.
 
 - Beyaz kutu saldırgan: dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
 - Gizleme: davranış aynı, **anlaşılması zor**.
+
+---
+
+# İki saldırgan modeli — şema
+
+![w:900](assets/h04-17-iki-saldirgan-modeli.svg)
 
 ---
 
@@ -1495,6 +1413,91 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 
 <!-- _class: bolum -->
 
+# Uçtan uca: bir taşmayı üç katmanda kapatmak
+
+<!-- Konuşma notu: Tek bir taşmayı hatalı koddan saldırıya, oradan düzeltmeye kadar izliyoruz; bu haftanın üç katmanının (kodlama, derleyici/OS, gizleme değil düzeltme) hepsini aynı örnekte görüyoruz. Tahtada yapılabilir. -->
+
+---
+
+# Hatalı kod
+
+```c
+void selamla(const char *ad) {
+    char tampon[16];
+    strcpy(tampon, ad);          /* sınır yok */
+    printf("Merhaba %s\n", tampon);
+}
+```
+
+`ad` 16 bayttan uzunsa ne olur?
+
+---
+
+# Ne oluyor? · adım adım
+
+- `tampon` yığında 16 bayt.
+- `strcpy` `ad`'ı **sonuna kadar** kopyalar, sınıra bakmaz.
+- 16'dan uzun `ad` → komşu bellek (dönüş adresi dahil) bozulur.
+
+---
+
+# Saldırı · sonuç
+
+- Kısa taşma: komşu değişken bozulur (mantık hatası).
+- Uzun taşma: **dönüş adresi** bozulur → çökme ya da denetim ele geçirme.
+- Korumasızsa: ciddi açık (CWE-121).
+
+---
+
+# Düzeltme 1 · sınırlı kopyalama
+
+```c
+int n = snprintf(tampon, sizeof tampon, "%s", ad);
+if (n < 0 || (size_t)n >= sizeof tampon) {
+    /* ad kesildi: reddet ya da işaretle */
+}
+```
+
+`snprintf` boyutu bilir ve **kesilmeyi bildirir**.
+
+---
+
+# Düzeltme 2 · katmanlar
+
+- **Kodlama:** `snprintf` (STR31-C).
+- **Derleyici:** `-fstack-protector-strong` (kanarya).
+- **FORTIFY:** `-D_FORTIFY_SOURCE=2` kütüphane çağrısını denetler.
+- **Test:** ASan uzun girdiyle taşmayı yakalar.
+
+---
+
+# Ders: tek satır, çok katman
+
+- Bir hata: `strcpy`.
+- Savunma: doğru fonksiyon + derleyici koruması + sanitizer testi.
+- Ama **asıl** çözüm ilk satırda: sınırlı kopyalama.
+
+---
+
+<!-- _class: yogun -->
+
+# Klasik hatalar — özet
+
+| Hata | Bölüm | Kural |
+| --- | --- | --- |
+| Uyarıları görmezden gelmek | 1 | `-Werror` ile hataya çevir; CERT taraması temiz olsun |
+| Girdiyi "temizleyip" kullanmak | 1 | Tehlikeli girdiyi reddet; beyaz liste + red en güvenlisi |
+| Dönüş değerini denetlememek | 2–3 | Her dönüşü denetle (ERR33-C); `fopen`/`malloc` NULL dönebilir |
+| `-fwrapv` ile UB'yi gizlemek | 2–3 | Taşmayı "tanımlı" yapmak mantık hatasını gizler; UBSan ile tanı koy |
+| Sanitizer'ı sürüme koymak | 4 | Yalnız test/CI'da; sürüm derlemesinde kapalı |
+| Gizlemeyle hatayı örtmek | 6 | Gizleme düzeltmez, yalnız saklar; önce düzelt, sonra gizle |
+
+Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
+
+---
+
+<!-- _class: bolum -->
+
 # 7. Proje ve kapanış
 
 ---
@@ -1511,6 +1514,7 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 - [ ] Testleri ASan + UBSan ile çalıştır.
 - [ ] En az bir fuzz hedefi, ≥ 10 dk.
 - [ ] Sürümde günlük yok; hassas dizge `strings` çıktısında yok.
+- [ ] Her dönüş değeri denetli (ERR33-C); `-Werror` ile derleniyor.
 
 **Önlem kartı:** Açıklama → Uygulama → Doğrulama → Kalan risk.
 
@@ -1621,140 +1625,8 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 # Özet: bu haftanın tek cümlesi
 
 > Önce **hatasız kod** (CERT + sanitizer + fuzzing), sonra **zararı sınırla** (derleyici/OS korumaları), en son **okumayı zorlaştır** (gizleme) — ve hiçbir koruma güvenli kodlamanın yerini tutmaz.
-
----
-
-<!-- _class: bolum -->
-
-# Gelecek hafta
-
-**5. hafta — Kod sağlamlaştırma: Java ve yorumlanan diller**
-
-Enjeksiyon (SQL, komut, yol), ProGuard/R8 ile gizleme, bağımlılık güvenliği ve SBOM.
-
-Hazırlık: JDK 17+, Maven · `code/week-05`.
-
----
-
-<!-- _class: bolum -->
-
-# Ek A · Baştan sona bir açık
-
-<!-- Konuşma notu: Tek bir taşmayı hatalı koddan saldırıya, oradan düzeltmeye kadar izliyoruz. Tahtada yapılabilir. -->
-
----
-
-# Hatalı kod
-
-```c
-void selamla(const char *ad) {
-    char tampon[16];
-    strcpy(tampon, ad);          /* sınır yok */
-    printf("Merhaba %s\n", tampon);
-}
-```
-
-`ad` 16 bayttan uzunsa ne olur?
-
----
-
-# Ne oluyor? · adım adım
-
-- `tampon` yığında 16 bayt.
-- `strcpy` `ad`'ı **sonuna kadar** kopyalar, sınıra bakmaz.
-- 16'dan uzun `ad` → komşu bellek (dönüş adresi dahil) bozulur.
-
----
-
-# Saldırı · sonuç
-
-- Kısa taşma: komşu değişken bozulur (mantık hatası).
-- Uzun taşma: **dönüş adresi** bozulur → çökme ya da denetim ele geçirme.
-- Korumasızsa: ciddi açık (CWE-121).
-
----
-
-# Düzeltme 1 · sınırlı kopyalama
-
-```c
-int n = snprintf(tampon, sizeof tampon, "%s", ad);
-if (n < 0 || (size_t)n >= sizeof tampon) {
-    /* ad kesildi: reddet ya da işaretle */
-}
-```
-
-`snprintf` boyutu bilir ve **kesilmeyi bildirir**.
-
----
-
-# Düzeltme 2 · katmanlar
-
-- **Kodlama:** `snprintf` (STR31-C).
-- **Derleyici:** `-fstack-protector-strong` (kanarya).
-- **FORTIFY:** `-D_FORTIFY_SOURCE=2` kütüphane çağrısını denetler.
-- **Test:** ASan uzun girdiyle taşmayı yakalar.
-
----
-
-# Ders: tek satır, çok katman
-
-- Bir hata: `strcpy`.
-- Savunma: doğru fonksiyon + derleyici koruması + sanitizer testi.
-- Ama **asıl** çözüm ilk satırda: sınırlı kopyalama.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Sık yapılan hatalar
-
----
-
-# Hata · uyarıları görmezden gelmek
-
-- "Sadece uyarı" diye geçilen şey, yarınki açıktır.
-- `-Werror` ile uyarıyı hataya çevir.
-
----
-
-# Hata · dönüş değerini denetlememek
-
-- `malloc`, `fread`, `RAND_bytes` NULL/hata dönebilir.
-- Denetlenmezse sessiz felaket (ERR33-C).
-
----
-
-# Hata · sanitizer'ı sürüme koymak
-
-- Sanitizer test/CI içindir; yavaş ve bilgi sızdırır.
-- Sürüm derlemesinde **kapalı**.
-
----
-
-# Hata · `-fwrapv` ile UB'yi gizlemek
-
-- Taşmayı "tanımlı" yapmak mantık hatasını **gizler**.
-- Tanı için UBSan kullan, düzelt.
-
----
-
-# Hata · gizlemeyle hatayı örtmek
-
-- Gizleme hatayı **düzeltmez**, sadece saklar.
-- Önce düzelt, sonra gizle.
-
----
-
-# Hata · girdiyi "temizleyip" kullanmak
-
-- Tehlikeli girdiyi düzeltmeye çalışmak yerine **reddet**.
-- Beyaz liste + reddetme en güvenlisi.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Hızlı başvuru
+>
+> Güvenli kod bir kez yazılmaz; **her derlemede** araçlarla denetlenir.
 
 ---
 
@@ -1773,21 +1645,16 @@ if (n < 0 || (size_t)n >= sizeof tampon) {
 
 ---
 
-<!-- _class: yogun -->
+<!-- _class: baslik -->
 
-# Sağlamlaştırma kontrol listesi
+# Bir sonraki hafta
 
-- [ ] `-Werror` ve CERT taraması temiz
-- [ ] Her dönüş değeri denetli
-- [ ] Testler ASan + UBSan ile geçiyor
-- [ ] En az bir fuzz hedefi çalıştı
-- [ ] Sürüm bayrakları açık (koruma tablosu)
-- [ ] Sürümde günlük/hassas dize yok
+**5. hafta — Java ve yorumlanan diller**
 
----
+Bu hafta C/C++'ta elle yönetilen bellek ile derleyici/OS korumalarıyla uğraştık; 5. hafta JVM'in bu hataların (taşma, UAF, UB) çoğunu nasıl ortadan kaldırdığını, ama enjeksiyon (SQL, komut, yol) gibi yeni bir hata sınıfını nasıl açtığını gösterir.
 
-# Son söz (4. hafta)
+SEI CERT Java kuralları bugünün SEI CERT C/C++ kurallarıyla karşılaştırılacak; ayrıca ProGuard/R8 ile gizleme, bağımlılık güvenliği ve SBOM işlenecek.
 
-> Güvenli kod bir kez yazılmaz; **her derlemede** araçlarla denetlenir.
+Hazırlık: JDK 17+, Maven · `code/week-05`.
 
 Önce doğru kod, sonra koruma, en son gizleme. Sıra önemlidir.

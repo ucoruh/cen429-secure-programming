@@ -1,0 +1,19 @@
+% Hafta 11 — Üç saldırgan modeli: ne görüyor?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-01-saldirgan-modelleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Üç saldırgan modeli: ne görüyor?};
+  \node[altbaslik] at (b.south west) {soldan sağa görünürlük artar};
+
+  \node[kutu=42mm, below=14mm of b.south west, anchor=north west] (kk) {\kb{KARA KUTU}\\yalnız giriş/çıkış\\AES kanıtı bunu varsayar};
+  \node[uyarikutu=42mm, right=of kk] (gk) {\kb{GRİ KUTU}\\+ yan kanal\\güç / zaman (DPA)};
+  \node[kotukutu=42mm, right=of gk] (bk) {\kb{BEYAZ KUTU}\\+ bellek, kod, ara değer\\MATE --- WBC burada savaşır};
+  \draw[ok, draw=soluk] (kk.east) -- (gk.west);
+  \draw[ok, draw=soluk] (gk.east) -- (bk.west);
+
+  \node[dip, text width=150mm, below=8mm of bk.south -| gk, anchor=north] {%
+    WBC en zor modelde anahtar çıkarmayı GECİKTİRMEYE çalışır; imkânsız kılmaz.};
+\end{tikzpicture}
+\end{document}

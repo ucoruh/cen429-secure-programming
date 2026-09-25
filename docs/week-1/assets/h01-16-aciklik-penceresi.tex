@@ -1,0 +1,26 @@
+% Hafta 1 — Açıklık penceresi: sır ne kadar süre açık?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-16-aciklik-penceresi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Açıklık penceresi: sır ne kadar süre açık?};
+  \node[altbaslik] (alt) at (b.south west) {aynı işi yapan iki tasarım, çok farklı risk};
+
+  \node[etiket, font=\sffamily\bfseries, text=kotu, below=10mm of alt.south west, anchor=north west, xshift=2mm] (t1) {KÖTÜ};
+  \node[kutu=140mm, fill=kotu, draw=kotu, minimum height=9mm, right=4mm of t1, anchor=west] (bar1) {};
+  \node[etiket, text=kotu, text width=140mm, below=3mm of bar1] {anahtar açılışta çözülür ve kapanana kadar bellekte AÇIK kalır};
+
+  \node[etiket, font=\sffamily\bfseries, text=iyi, below=20mm of t1, anchor=north west] (t2) {İYİ};
+  \node[kutu=140mm, fill=iyibg, draw=iyibg, minimum height=9mm, right=4mm of t2, anchor=west] (bar2) {};
+  \foreach \i in {0,1,2,3} {
+    \node[kutu=22mm, fill=iyi, draw=iyi, minimum height=9mm] at ($(bar2.west)+(20mm+\i*34mm,0)$) {};
+  }
+  \node[etiket, text=iyi, text width=140mm, below=3mm of bar2] {anahtar yalnız her işlemin birkaç milisaniyesinde açık, sonra hemen silinir};
+
+  \draw[ok, draw=soluk] (bar1.north west) -- node[oketiket, above=3pt] {zaman} (bar1.north west -| bar1.north east);
+
+  \node[dip, text width=160mm, below=14mm of bar2, anchor=north]
+    {Bellek dökümü alan saldırgan için önemli olan tek şey: o anda anahtar açık mıydı?};
+\end{tikzpicture}
+\end{document}

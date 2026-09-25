@@ -1,0 +1,19 @@
+% Hafta 14 — El ile gizleme vs araçla gizleme
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-02-el-ile-vs-arac.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {El ile gizleme vs araçla gizleme};
+  \node[altbaslik, text width=150mm] at (b.south west) {9. haftada el ile yaptığımızı 14. haftada araç yapıyor};
+
+  \node[kotukutu=62mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{EL İLE}\\[2mm]
+    her sürümde tekrar yaz\\kaynak okunamaz hale gelir\\hata riski yüksek\\çeşitlendirilemez};
+  \node[iyikutu=62mm, right=of sol] (sag) {\kb{ARAÇLA (Tigress)}\\[2mm]
+    her derlemede otomatik\\kaynak TEMİZ kalır\\tutarlı ve ölçekli\\tohumla çeşitlendirilir};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=160mm, below=8mm of sol.south -| sag, anchor=north] {%
+    Kaynağı siz korursunuz; gizleme derleme hattının bir adımıdır.};
+\end{tikzpicture}
+\end{document}

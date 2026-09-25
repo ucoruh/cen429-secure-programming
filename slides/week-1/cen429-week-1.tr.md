@@ -10,7 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -26,146 +25,6 @@ Konuşma notu: Kendinizi ve dersi tanıtın. Bu ders "saldırıyı görerek savu
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: Bu bölüm hiçbir ön bilgi varsaymaz; dersin ilk günü olduğu için her temel terimi tanımlıyoruz. Sonraki bölümlerde bunları kullanacağız. -->
-
----
-
-# Neden bu bölüm?
-
-Bu ders "güvenlik", "zafiyet", "tehdit modeli" gibi terimlerle dolu.
-
-Hiçbirini bilmediğinizi varsayıyoruz.
-
-Önce hepsini **tek tek** tanımlayalım.
-
----
-
-# Güvenlik nedir?
-
-- **Güvenlik:** bir sistemi, ona **zarar vermek isteyen** birine karşı korumak.
-- Normal hata: yanlışlıkla olur.
-- Güvenlik: **kasıtlı** bir saldırgan var.
-
----
-
-# Varlık (asset) nedir?
-
-- **Varlık:** korumaya değer her şey (veri, anahtar, işlev).
-- Örnek: parola, kredi kartı, lisans, kullanıcı verisi.
-- Güvenlik "neyi koruyoruz?" ile başlar.
-
----
-
-# Tehdit ve zafiyet
-
-- **Tehdit:** olabilecek kötü bir olay (veri çalınması).
-- **Zafiyet:** bunu mümkün kılan **zayıf nokta** (denetimsiz girdi).
-- Tehdit + zafiyet + saldırgan = risk.
-
----
-
-# Tehdit · zafiyet · varlık — şema
-
-![w:950](assets/h01-01-tehdit-zafiyet-varlik.svg)
-
----
-
-# CIA üçlüsü
-
-Güvenliğin üç temel hedefi:
-
-- **Gizlilik (C):** yalnız yetkili görsün.
-- **Bütünlük (I):** izinsiz değişmesin.
-- **Erişilebilirlik (A):** gerektiğinde çalışsın.
-
----
-
-# Saldırgan modeli
-
-- **Saldırgan modeli:** "saldırgan neyi görebilir/yapabilir?"
-- Ağdan mı bağlanıyor, cihaza mı sahip?
-- Savunmayı buna göre tasarlarız.
-
----
-
-# Beyaz kutu / MATE
-
-- **MATE (Man-At-The-End):** programa **sahip** saldırgan.
-- Kodu okur, belleği görür, değiştirir.
-- Mobil/masaüstü uygulamanın gerçek durumu (bu dersin ana teması).
-
----
-
-# Tehdit modelleme
-
-- **Tehdit modelleme:** "neyi, kime karşı, nasıl koruyacağız?" sorusunu **sistemli** yanıtlamak.
-- Varlıkları, tehditleri, önlemleri listeler.
-- Bugün STRIDE ve saldırı ağaçlarıyla yapacağız.
-
----
-
-# STRIDE
-
-- Tehditleri altı harfle sınıflandıran yöntem:
-- **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, **E**levation of privilege.
-- Her öğe için "hangi tehdit?" diye sorar.
-
----
-
-# Saldırı ağacı
-
-- **Saldırı ağacı:** bir hedefi (ör. "anahtarı çal") **alt adımlara** bölen ağaç.
-- Kök: saldırganın amacı.
-- Dallar: bunu başarmanın yolları.
-
----
-
-# Veri akış diyagramı (DFD)
-
-- **DFD:** verinin sistemde **nasıl aktığını** gösteren şema.
-- Süreç, veri deposu, dış varlık, akış, güven sınırı.
-- Tehditleri bulmak için harita.
-
----
-
-# Katmanlı savunma
-
-- **Katmanlı savunma (defense in depth):** tek önlem değil, **birçok** önlem.
-- Biri aşılırsa diğeri durdurur.
-- "Güvenlik kabuğu" bu katmanların birleşimi.
-
----
-
-# Güvenli tasarım ilkeleri
-
-- Saltzer & Schroeder (1975): en az yetki, güvenli varsayılan, ekonomi, açık tasarım…
-- Bugün hâlâ geçerli.
-- Bu dersin omurgası.
-
----
-
-# Ödünleşim (trade-off)
-
-- Her koruma bir **bedel** getirir: hız, karmaşıklık, maliyet.
-- Güvenlik "sonsuz koruma" değil, **dengeli** koruma.
-- Kalan riski açıkça yazarız.
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-güvenlik · varlık · tehdit/zafiyet · CIA · saldırgan modeli · MATE · tehdit modelleme · STRIDE · saldırı ağacı · DFD · katmanlı savunma · tasarım ilkeleri · ödünleşim
-
-Şimdi: güvenlik nedir, derinlemesine.
-
----
-
 # Bugünün planı (3 saat)
 
 | Saat | Konu |
@@ -174,11 +33,56 @@ güvenlik · varlık · tehdit/zafiyet · CIA · saldırgan modeli · MATE · te
 | 2 | Koruma planı · STRIDE ve risk puanı · Saldırı ağacı · **Uygulamalı örnek "Kasa"** · Sınıf alıştırması |
 | 3 | **Demo 1–2** · Güvenli başlatma · Taşmalar · **Demo 3–4** · Bellek yönetimi · Bölümleme · Güvenli süreç · Proje |
 
-**Demolar:** `code/week-01` — Windows `.\demo.ps1` · WSL / Linux `sh demo.sh` · Visual Studio: Klasör Aç → `code`
+**Öğrenme çıktıları:** ÖÇ.1 (zafiyetleri tanır ve sınıflandırır) · ÖÇ.5 (güvenli tasarım ilkeleriyle yazılım planı oluşturur)
 
 <!--
 Konuşma notu: Demoları önceden bir kez derleyin (Windows: code içinde .\build.ps1, WSL: ./build.sh) ki derste bekleme olmasın. Öğrencilere iki ortamın da aynı sonucu verdiğini gösterin; Visual Studio'da Klasör Aç ile code klasörünü açmak yeterli.
 -->
+
+---
+
+# Bu derse nasıl başlıyoruz
+
+- Bu, dersin **ilk haftası**; önceki bir haftaya dayanmıyoruz.
+- Varsayılan ön bilgi: C'de fonksiyon, dizi, işaretçi; terminalde `cd`, `ls` (PowerShell ya da Linux).
+- Aşağıdaki **"Bu haftanın kavramları"** tablosu, bu haftanın terimlerini birer cümleyle tanımlamak yerine, her birinin **hangi bölümde** öğretileceğini gösterir.
+- Dönem boyunca izleyeceğimiz kalıp: **hatalı kod → saldırı → düzeltme.**
+
+---
+
+<!-- _class: yogun -->
+
+# Bu haftanın kavramları
+
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Güvenlik | Bölüm 1 |
+| Varlık (asset) | Bölüm 1 |
+| Tehdit ve zafiyet | Bölüm 1 |
+| CIA üçlüsü | Bölüm 1 |
+| Saldırgan modeli | Bölüm 1 |
+| Beyaz kutu / MATE | Bölüm 1 |
+| Güvenli tasarım ilkeleri | Bölüm 1 |
+| Katmanlı savunma | Bölüm 2 |
+| Ödünleşim (trade-off) | Bölüm 2 |
+| Tehdit modelleme | Bölüm 3 |
+| STRIDE | Bölüm 3 |
+| Saldırı ağacı | Bölüm 3 |
+| Veri akış diyagramı (DFD) | Bölüm 3 |
+
+---
+
+# Demolar nasıl çalışıyor?
+
+- Tek kaynak, iki/üç ortam: **Windows** (Visual Studio 2022 Community ya da PowerShell), **WSL** ve **Linux**
+- Derle: Windows `.\build.ps1` · WSL/Linux `./build.sh` — dersten önce bir kez derleyin
+- Çalıştır: Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- Visual Studio: **Dosya > Aç > Klasör** → `code` → yapılandırma **Windows (MSVC)** → **Derle > Tümünü Derle**
+- Bu hafta 4 demo: `code/week-01` altında
+
+> ⚠️ **Etik:** Bütün demolar yalnız kendi klasöründe çalışır, yönetici yetkisi istemez. Teknikleri yalnız **kendi bilgisayarınızda** deneyin.
 
 ---
 
@@ -200,7 +104,6 @@ Konuşma notu: Demoları önceden bir kez derleyin (Windows: code içinde .\buil
 ![w:900](assets/h01-17-bes-karar.svg)
 
 ---
-
 
 # Ders nasıl yürüyor?
 
@@ -234,6 +137,12 @@ Konuşma notu: Demoları önceden bir kez derleyin (Windows: code içinde .\buil
 <!--
 Konuşma notu: Öğrencilere kendi örneklerini sorun: "Instagram hesabınız için varlık, tehdit, zafiyet ne?"
 -->
+
+---
+
+# Tehdit · zafiyet · varlık — şema
+
+![w:950](assets/h01-01-tehdit-zafiyet-varlik.svg)
 
 ---
 
@@ -301,6 +210,14 @@ Konuşma notu: Demo 4'te aynı aileden bir hatayı (uzunluk denetimi) kendi elle
 <!--
 Konuşma notu: Mobil ödeme, DRM, oyun hileleri, lisans denetimi örnekleri. "Anahtarı gizle" demek yetmez; saldırgan belleği okuyabilir.
 -->
+
+---
+
+# Beyaz kutu / MATE
+
+- **MATE (Man-At-The-End):** programa **sahip** saldırgan.
+- Kodu okur, belleği görür, değiştirir.
+- Mobil/masaüstü uygulamanın gerçek durumu (bu dersin ana teması).
 
 ---
 
@@ -381,6 +298,14 @@ Kullanılamayan güvenlik, **atlatılan** güvenliktir.
 <!-- _class: bolum -->
 
 # 2. Uygulama korumasına genel bakış
+
+---
+
+# Katmanlı savunma
+
+- **Katmanlı savunma (defense in depth):** tek önlem değil, **birçok** önlem.
+- Biri aşılırsa diğeri durdurur.
+- "Güvenlik kabuğu" bu katmanların birleşimi.
 
 ---
 
@@ -512,6 +437,14 @@ Bu tablo, koruma planındaki **tehdit** bölümünün başlangıç noktasıdır.
 
 ---
 
+# Ödünleşim (trade-off)
+
+- Her koruma bir **bedel** getirir: hız, karmaşıklık, maliyet.
+- Güvenlik "sonsuz koruma" değil, **dengeli** koruma.
+- Kalan riski açıkça yazarız.
+
+---
+
 # Korumanın bedeli
 
 | Bedel | Örnek |
@@ -562,6 +495,14 @@ Durdurulmadığı **her adım** raporda bir bulgu olur
 <!-- _class: bolum -->
 
 # 3. Uygulama koruma planı ve tehdit modelleme
+
+---
+
+# Tehdit modelleme
+
+- **Tehdit modelleme:** "neyi, kime karşı, nasıl koruyacağız?" sorusunu **sistemli** yanıtlamak.
+- Varlıkları, tehditleri, önlemleri listeler.
+- Bugün STRIDE ve saldırı ağaçlarıyla yapacağız.
 
 ---
 
@@ -732,6 +673,87 @@ Veri akış diyagramını çiz → **güven sınırını geçen her ok** için a
 
 ---
 
+# Örnek sistem
+
+Bir mobil bankacılık uygulaması:
+
+- kullanıcı girişi
+- bakiye görüntüleme
+- para transferi
+
+Her STRIDE harfini bu sisteme uygulayalım.
+
+---
+
+# S · Spoofing (sahtecilik)
+
+- **Tehdit:** başkası gibi davranmak (sahte kullanıcı/sunucu).
+- **Örnek:** sahte sunucu, çalınan oturum.
+- **Önlem:** güçlü kimlik doğrulama, TLS + sertifika denetimi.
+
+---
+
+# T · Tampering (kurcalama)
+
+- **Tehdit:** veriyi/kodu izinsiz değiştirmek.
+- **Örnek:** transfer tutarını değiştirmek.
+- **Önlem:** bütünlük (MAC/imza), bütünlük denetimi (RASP).
+
+---
+
+# R · Repudiation (inkâr)
+
+- **Tehdit:** yaptığını inkâr etmek.
+- **Örnek:** "ben o transferi yapmadım".
+- **Önlem:** güvenli günlük, imza, denetim izi.
+
+---
+
+# I · Information disclosure (bilgi sızması)
+
+- **Tehdit:** gizli verinin sızması.
+- **Örnek:** bakiye/parola sızıntısı.
+- **Önlem:** şifreleme, en az yetki, sızıntısız hata iletisi.
+
+---
+
+# D · Denial of service (hizmet reddi)
+
+- **Tehdit:** hizmeti kullanılamaz kılmak.
+- **Örnek:** aşırı istek, kaynak tüketimi.
+- **Önlem:** hız sınırı, kaynak kotaları, girdi sınırı.
+
+---
+
+# E · Elevation of privilege (yetki yükseltme)
+
+- **Tehdit:** izinsiz yetki kazanmak.
+- **Örnek:** normal kullanıcı yönetici olur.
+- **Önlem:** en az yetki, yetki denetimi, güvenli varsayılan.
+
+---
+
+# Bankacılık örneğinde STRIDE özeti
+
+| Harf | Bu sistemde önlem |
+| --- | --- |
+| S | TLS + kimlik doğrulama |
+| T | MAC/imza + RASP |
+| R | Güvenli günlük |
+| I | Şifreleme + en az yetki |
+| D | Hız sınırı |
+| E | Yetki denetimi |
+
+---
+
+# Kök · hedef
+
+![w:900](assets/h01-06-saldiri-agaci.svg)
+
+Saldırganın nihai amacı. Şimdi yolları bölelim.
+
+---
+
 # Saldırı ağacı: "Ödeme anahtarını ele geçir"
 
 **HEDEF: Ödeme anahtarı** — *VEYA* (biri yeter)
@@ -782,14 +804,16 @@ Bu, derinlemesine savunmanın **çalıştığının** kanıtıdır.
 
 ---
 
-# Saldırı ağacından çıkan sonuçlar
+# Saldırı ağacı — önlem eşlemesi
 
-- "Trafiği dinle" yolu **iki katmanı birden** kırmayı gerektirir → pahalı → **derinlemesine savunma** çalışıyor
-- "Bellekten oku" yolunun **üç alternatifi** var → en zayıf nokta **bellekteki anahtar**
-  - Bu hafta: **Demo 2** (bellekte kalan sır)
-  - Hafta 6: çalışma zamanı koruması (hata ayıklayıcı, kanca algılama)
-  - Hafta 11: whitebox kriptografi (anahtar bellekte hiç açık durmaz)
-- Savunmacının hedefi: saldırganı **VE** düğümlerine zorlamak
+Saldırı ağacının yapraklarını doğrudan bir savunma katmanına bağlayalım:
+
+| Yaprak | Önlem |
+| --- | --- |
+| Debugger | Anti-debug (6) |
+| Bellek dökümü | Kısa ömür + koruma (6, 10) |
+| İkiliden çıkar | Gizleme + whitebox (9, 11) |
+| Ağdan sız | TLS + pin (10) |
 
 ---
 
@@ -1036,20 +1060,6 @@ T9 örneği önemli: her tehdide önlem **eklemek** gerekmez, bazen **kabul etme
 - **Testsiz önlem:** "siliyoruz" deyip derleyicinin silmeyi kaldırdığını fark etmemek (Demo 2)
 
 <!-- Konuşma notu: Bu yedi adım dönem projesinin güvenlik kılavuzu iskeleti. Bu hafta adım 0-4 bekleniyor. -->
-
----
-
-# Sınıf alıştırması (15 dk)
-
-**Öğrenci not sistemi:** öğretim üyesi not girer, öğrenci görür, veri sunucuda.
-
-1. Veri akış diyagramı + güven sınırları
-2. Her STRIDE harfinden **bir** tehdit
-3. "Notumu 45'ten 85'e çıkar" saldırı ağacı — **en ucuz yol** hangisi?
-
-<!--
-Konuşma notu: 3-4 kişilik gruplar. 10 dakika çalışma, 5 dakika iki gruba sunum. İpucu: E için doğrudan URL ile not girme sayfası; R için değişiklik kaydının olmaması.
--->
 
 ---
 
@@ -1932,6 +1942,50 @@ Yazılmamış ödünleşim = değerlendiricinin gözünde **hata**
 
 ---
 
+# Sınıf alıştırması (15 dk)
+
+**Öğrenci not sistemi:** öğretim üyesi not girer, öğrenci görür, veri sunucuda.
+
+1. Veri akış diyagramı + güven sınırları
+2. Her STRIDE harfinden **bir** tehdit
+3. "Notumu 45'ten 85'e çıkar" saldırı ağacı — **en ucuz yol** hangisi?
+
+<!--
+Konuşma notu: 3-4 kişilik gruplar. 10 dakika çalışma, 5 dakika iki gruba sunum. İpucu: E için doğrudan URL ile not girme sayfası; R için değişiklik kaydının olmaması.
+-->
+
+---
+
+# Uçtan uca: Kasa'nın savunmasını tamamlamak
+
+Bölüm 4'te "Kasa"nın tehdit tablosunda iki madde vardı; bu haftanın geri kalanı onları **somut kodla** kapatıyor:
+
+| Kasa'nın tehdidi | Bu haftaki karşılık |
+| --- | --- |
+| T2 — parola/anahtar bellekte kalır | Bölüm 5: `explicit_bzero`/`SecureZeroMemory`, `mlock`, döküm kapatma (Demo 2) |
+| T8 — ayrıştırıcıda bellek hatası | Bölüm 6–7: sınır denetimi, ASan, güvenli kalıp (Demo 3–4) |
+
+> Güvenlik bir **his** değil, **süreçtir:** varlığı tanı, tehdidi modelle, katmanla koru, kalan riski yaz. Bu çerçeveyi dönem boyunca kullanacağız.
+
+---
+
+<!-- _class: yogun -->
+
+# Klasik hatalar — özet
+
+| Hata | Bölüm | Kural |
+| --- | --- | --- |
+| PATH/ortama güvenmek (CWE-426) | 5 | Mutlak yol + temiz ortam + kabuksuz çalıştırma |
+| Sır bellekte kalır (CWE-14) | 5 | `explicit_bzero`/`SecureZeroMemory`, derleyicinin silemeyeceği biçimde |
+| Arabellek taşması (CWE-121/787) | 6 | Önce doğrula, sonra sınırlı kopyala; tehlikeli fonksiyonları kullanma |
+| Bir fazla hatası (CWE-193) | 6 | `<=` değil `<`; sonlandırıcıya her zaman yer bırak |
+| İşaretli/işaretsiz tamsayı (CWE-195) | 6 | Boyutları `size_t` tut; alt **ve** üst sınırı denetle |
+| Sızıntı, çift serbest bırakma, UAF (CWE-401/415/416) | 7 | Her bloğun tek sahibi olsun; `free` sonrası işaretçiyi `NULL` yap |
+
+Altı hatanın hepsi bu destede bir demo ya da kod örneğiyle işlendi; burada tek bakışta toparlıyoruz.
+
+---
+
 # Kendi başına çalış (not verilmez)
 
 1. PATH tuzağı: `ls` (Linux) / `whoami` (Windows) ile tekrarla, tam yolla düzelt
@@ -1979,7 +2033,6 @@ Ayrıntı ve ipuçları: ders sitesi → Hafta 1 → "Kendi başına çalış"
 
 ---
 
-
 # Kendini sınama (devam)
 
 1. Bir veri akışına neden **S** sorulmaz?
@@ -2001,7 +2054,6 @@ Ayrıntı ve ipuçları: ders sitesi → Hafta 1 → "Kendi başına çalış"
 5. Heartbleed yalnız **okudu**; okunan bellek sürecin kendi **geçerli** belleğiydi → çökmeden sızdı.
 
 ---
-
 
 # Kendini sınama (devam)
 
@@ -2025,349 +2077,6 @@ Ayrıntı ve ipuçları: ders sitesi → Hafta 1 → "Kendi başına çalış"
 
 ---
 
-
-<!-- _class: baslik -->
-
-# Gelecek hafta
-
-**Hafta 2 — Bilgisayar Virüsleri ve Güvenlik Modelleri**
-
-Kötü yazılım türleri · Bell–LaPadula, Biba, Clark–Wilson · CWE, OWASP, CVSS
-
-Kaynak: Viega & Messier, Tarif 1, 3, 12.1, 13.2–13.3
-
----
-
-<!-- _class: bolum -->
-
-# Ek · STRIDE'ı adım adım uygulamak
-
-<!-- Konuşma notu: STRIDE'ın her harfini sentetik bir örnekte tek tek uyguluyoruz. -->
-
----
-
-# Örnek sistem
-
-Bir mobil bankacılık uygulaması:
-
-- kullanıcı girişi
-- bakiye görüntüleme
-- para transferi
-
-Her STRIDE harfini bu sisteme uygulayalım.
-
----
-
-# S · Spoofing (sahtecilik)
-
-- **Tehdit:** başkası gibi davranmak (sahte kullanıcı/sunucu).
-- **Örnek:** sahte sunucu, çalınan oturum.
-- **Önlem:** güçlü kimlik doğrulama, TLS + sertifika denetimi.
-
----
-
-# T · Tampering (kurcalama)
-
-- **Tehdit:** veriyi/kodu izinsiz değiştirmek.
-- **Örnek:** transfer tutarını değiştirmek.
-- **Önlem:** bütünlük (MAC/imza), bütünlük denetimi (RASP).
-
----
-
-# R · Repudiation (inkâr)
-
-- **Tehdit:** yaptığını inkâr etmek.
-- **Örnek:** "ben o transferi yapmadım".
-- **Önlem:** güvenli günlük, imza, denetim izi.
-
----
-
-# I · Information disclosure (bilgi sızması)
-
-- **Tehdit:** gizli verinin sızması.
-- **Örnek:** bakiye/parola sızıntısı.
-- **Önlem:** şifreleme, en az yetki, sızıntısız hata iletisi.
-
----
-
-# D · Denial of service (hizmet reddi)
-
-- **Tehdit:** hizmeti kullanılamaz kılmak.
-- **Örnek:** aşırı istek, kaynak tüketimi.
-- **Önlem:** hız sınırı, kaynak kotaları, girdi sınırı.
-
----
-
-# E · Elevation of privilege (yetki yükseltme)
-
-- **Tehdit:** izinsiz yetki kazanmak.
-- **Örnek:** normal kullanıcı yönetici olur.
-- **Önlem:** en az yetki, yetki denetimi, güvenli varsayılan.
-
----
-
-# STRIDE · özet uygulama
-
-| Harf | Bu sistemde önlem |
-| --- | --- |
-| S | TLS + kimlik doğrulama |
-| T | MAC/imza + RASP |
-| R | Güvenli günlük |
-| I | Şifreleme + en az yetki |
-| D | Hız sınırı |
-| E | Yetki denetimi |
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Saldırı ağacı adım adım
-
----
-
-# Kök · hedef
-
-![w:900](assets/h01-06-saldiri-agaci.svg)
-
-Saldırganın nihai amacı. Şimdi yolları bölelim.
-
----
-
-# Dallar · nasıl?
-
-Kökten sonra sorulacak soru: **"Bu hedefe hangi yollardan ulaşılır?"**
-
-- Her dal, hedefe ulaşmanın **bir yolu**
-- **VE**: dalın hepsi gerekir · **VEYA**: biri yeter
-- Sonraki adım: en olası dalı **alt dallara** bölmek
-
----
-
-# Alt dallar · bellekten oku
-
-**Bellekten oku** — üç yol:
-
-- Debugger bağla
-- Bellek dökümü al
-- Hook ile yakala
-
-Her yaprak bir saldırı adımı.
-
----
-
-# Ağaçtan önceliklendirme
-
-- En **kolay** yaprak en büyük risk.
-- Önce onu kapat (ör. RASP + kısa ömür).
-- Ağaç, savunma önceliğini gösterir.
-
----
-
-# Ağaçtan önleme eşleme
-
-| Yaprak | Önlem |
-| --- | --- |
-| Debugger | Anti-debug (6) |
-| Bellek dökümü | Kısa ömür + koruma (6, 10) |
-| İkiliden çıkar | Gizleme + whitebox (9, 11) |
-| Ağdan sız | TLS + pin (10) |
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Güvenli tasarım ilkeleri derinleşme
-
----
-
-# En az yetki
-
-- Her bileşen yalnız gerekeni yapabilsin.
-- Fazla yetki = büyük saldırı yüzeyi.
-- Örnek: DB kullanıcısı yalnız `SELECT`.
-
----
-
-# Güvenli varsayılan (fail-safe)
-
-- Bir şey ters giderse **güvenli** tarafa düş.
-- Hata → erişim **reddedilir** (fail-closed).
-- Varsayılan: kapalı, kısıtlı.
-
----
-
-# Ekonomi ve açık tasarım
-
-- **Ekonomi:** basit tasarım, az hata.
-- **Açık tasarım:** güvenlik gizliliğe değil, **anahtara** dayanır (Kerckhoffs).
-- Karmaşıklık düşmandır.
-
----
-
-# Tam aracılık ve ayrık ayrıcalık
-
-- **Tam aracılık:** her erişim denetlenir (önbelleğe güvenip atlama).
-- **Ayrık ayrıcalık:** kritik işlem için birden çok koşul.
-- Derinlemesine savunmanın temeli.
-
----
-
-# İlkeler → bu ders
-
-- Bu ilkeler dönem boyunca her haftada tekrar edecek.
-- Kod, kripto, RASP, gereksinimler — hepsi bunlara dayanır.
-- İlkeler değişmez; teknikler değişir.
-
----
-
-# Ek · özet
-
-- STRIDE her öğeye altı soru sorar.
-- Saldırı ağacı hedefi yollara böler, önceliklendirir.
-- Tasarım ilkeleri her kararın pusulası.
-
-> Tehdidi **modelle**, sonra **katmanla** koru.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Çözümlü kendini sınama
-
-<!-- Konuşma notu: Önce öğrenciye sordurun, sonra cevabı açın. -->
-
----
-
-# Soru 1
-
-**CIA üçlüsünü bir örnekle açıklayın.**
-
-**Cevap:** Gizlilik: parola yalnız sahibince görülür. Bütünlük: banka bakiyesi izinsiz değişmez. Erişilebilirlik: uygulama gerektiğinde çalışır.
-
----
-
-# Soru 2
-
-**Hata ile zafiyet arasındaki fark nedir?**
-
-**Cevap:** Her zafiyet bir hatadır ama her hata zafiyet değildir. Zafiyet, bir saldırganın **kötüye kullanabileceği** hatadır.
-
----
-
-# Soru 3
-
-**MATE (beyaz kutu) saldırgan ağ saldırganından nasıl ayrılır?**
-
-**Cevap:** MATE programa sahiptir: kodu okur, belleği görür, değiştirir. Ağ saldırganı yalnız dışarıdan bağlanır.
-
----
-
-# Soru 4
-
-**STRIDE neyi sağlar?**
-
-**Cevap:** Tehditleri altı sınıfta sistemli aramayı: sahtecilik, kurcalama, inkâr, bilgi sızması, hizmet reddi, yetki yükseltme.
-
----
-
-# Soru 5
-
-**Saldırı ağacı ne işe yarar?**
-
-**Cevap:** Bir saldırı hedefini alt adımlara böler; en kolay/olası yolu ve önceliklendirmeyi gösterir.
-
----
-
-# Soru 6
-
-**Neden tek bir önlem yetmez?**
-
-**Cevap:** Her önlem aşılabilir; katmanlı savunmada biri aşılsa diğeri durdurur. Güç birliktelikten gelir.
-
----
-
-# Soru 7
-
-**"Gizleme doğru kodun yerine geçer mi?"**
-
-**Cevap:** Hayır. Gizleme okumayı zorlaştırır ama hatayı düzeltmez. Önce güvenli kod, sonra gizleme.
-
----
-
-# Soru 8
-
-**En az yetki ilkesi nedir?**
-
-**Cevap:** Her bileşen yalnız **gereken** yetkiye sahip olmalı; fazlası saldırı yüzeyini büyütür.
-
----
-
-# Soru 9
-
-**Bir güven sınırı nedir?**
-
-**Cevap:** Güvenilen ve güvenilmeyen bölgelerin ayrıldığı yer; girdi doğrulama en erken burada yapılır.
-
----
-
-# Soru 10
-
-**Kalan risk neden yazılır?**
-
-**Cevap:** Hiçbir sistem %100 güvenli değildir; bilinen ve kabul edilen riskler açıkça belgelenir.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · İşlenmiş mini tehdit modeli
-
----
-
-# Ürün · sentetik
-
-Bir "parola kasası" uygulaması:
-
-- parolaları yerelde saklar
-- ana parolayla açılır
-
-Hızlı bir tehdit modeli yapalım.
-
----
-
-# Adım · varlıklar
-
-- Ana parola (C/I)
-- Saklanan parolalar (C/I)
-- Şifreleme anahtarı (C/I)
-
----
-
-# Adım · tehditler (STRIDE)
-
-- **I** (bilgi sızması): cihaz çalınırsa parolalar okunur.
-- **T** (kurcalama): kasa dosyası değiştirilir.
-- **E** (yetki): kök cihazda belleğe erişim.
-
----
-
-# Adım · önlemler
-
-- Parolalar AEAD ile şifreli (I → C).
-- Ana paroladan KDF ile anahtar.
-- Bütünlük etiketi (T).
-- Kısa ömürlü bellek + RASP (E).
-
----
-
-# Adım · kalan risk
-
-- Köklü cihazda ana parola girilirken bellekte açık olabilir.
-- Azaltma: hızlı silme, cihaz bağlama.
-- **Açıkça yazılır.**
-
----
-
 <!-- _class: yogun -->
 
 # Sözlük
@@ -2383,16 +2092,12 @@ Hızlı bir tehdit modeli yapalım.
 
 ---
 
-# Bu haftadan projeye
+<!-- _class: baslik -->
 
-- **S2–S5:** ürün, mimari, varlık listesi, tehdit modeli.
-- **S1:** kapsam, kaynaklar.
-- Her varlık C/I/I+ ile etiketli; her tehdide bir önlem.
+# Bir sonraki hafta
 
----
+**2. hafta — Bilgisayar virüsleri ve güvenlik modelleri**
 
-# Son söz (1. hafta)
+Bu hafta kurduğumuz tehdit modelleme (STRIDE, saldırı ağacı) ve saldırgan modeli araçlarını, gelecek hafta somut bir tehdit sınıfına — zararlı yazılıma — uygulayacağız: bir virüsün nasıl yayıldığını, nasıl gizlendiğini ve hangi erişim denetimi modelleriyle (DAC/MAC/RBAC) durdurulduğunu göreceğiz.
 
-> Güvenlik "his" değil, **süreçtir**: varlığı tanı, tehdidi modelle, katmanla koru, kalan riski yaz.
-
-Bu çerçeveyi dönem boyunca kullanacağız.
+Bu haftaki bellek güvenliği hataları için gördüğümüz CWE sınıflandırması, 2. haftada CVE ve CVSS ile birlikte derinleşecek.

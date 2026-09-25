@@ -1,0 +1,21 @@
+% Hafta 11 — Code lifting: anahtarı hiç çıkarmadan
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-06-code-lifting.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {Code lifting: anahtarı hiç çıkarmadan};
+  \node[altbaslik, text width=150mm] at (b.south west) {WBC'nin en sinsi saldırısı: anahtar gizli kalsa bile işlev çalınır};
+
+  \node[kotukutu=62mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{Saldırı}\\[2mm]
+    whitebox rutinini/tablosunu\\olduğu gibi KOPYALA\\[3mm]
+    kendi programında kullan\\anahtar hiç bilinmez};
+  \node[iyikutu=62mm, right=of sol] (sag) {\kb{Önlem}\\[2mm]
+    dış kodlama (F, G)\\cihaz bağlama\\sunucu tarafı denetim\\[3mm]
+    taşınan rutin işe yaramaz};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=160mm, below=8mm of sol.south -| sag, anchor=north] {%
+    Bu yüzden WBC tek başına değil, bağlama ve sunucu denetimiyle birlikte kullanılır.};
+\end{tikzpicture}
+\end{document}

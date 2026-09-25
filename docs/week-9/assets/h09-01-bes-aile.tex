@@ -1,0 +1,31 @@
+% Hafta 9 — Gizlemenin beş ailesi
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-01-bes-aile.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=5mm and 6mm]
+  \node[baslik] (b) at (0,0) {Gizlemenin beş ailesi};
+  \node[altbaslik] at (b.south west) {aşağıdan yukarı: güç $\uparrow$ $\cdot$ maliyet $\uparrow$};
+
+  \node[kutu=26mm, draw=acik, fill=acik!35, below=9mm of b.south west, anchor=north west] (f1) {\kb{1 $\cdot$ Düzen / Ad}};
+  \node[etiket, right=4mm of f1, anchor=west] {isim $\cdot$ biçim $\cdot$ dize};
+
+  \node[kutu=34mm, draw=ana!70!acik, fill=ana!25!acik, below=4mm of f1.south west, anchor=north west] (f2) {\kb{2 $\cdot$ Veri}};
+  \node[etiket, right=4mm of f2, anchor=west] {aritmetik $\cdot$ sabit};
+
+  \node[kutu=42mm, draw=ana!60!koyu, fill=ana!40!koyu, text=white, below=4mm of f2.south west, anchor=north west] (f3) {\kb{3 $\cdot$ Kontrol akışı}};
+  \node[etiket, right=4mm of f3, anchor=west] {düzleştirme $\cdot$ opak yüklem};
+
+  \node[kutu=50mm, draw=ana, fill=ana, text=white, below=4mm of f3.south west, anchor=north west] (f4) {\kb{4 $\cdot$ Önleyici}};
+  \node[etiket, right=4mm of f4, anchor=west] {anti-debug $\cdot$ anti-analiz};
+
+  \node[kutu=58mm, draw=koyu, fill=koyu, text=white, below=4mm of f4.south west, anchor=north west] (f5) {\kb{5 $\cdot$ Sanallaştırma}};
+  \node[etiket, right=4mm of f5, anchor=west] {bytecode + VM};
+
+  \draw[ok, draw=soluk] ($(f5.west)+(-9mm,0)$) -- ($(f1.west)+(-9mm,0)$);
+  \node[etiket, rotate=90, anchor=south] at ($(f3.west)+(-16mm,0)$) {güç ve maliyet};
+
+  \node[kotudip, text width=165mm, below=9mm of f5.south -| f1, anchor=north west] {%
+    Güç birliktelikten ve çeşitlendirmeden gelir; her aile ölçülmeli. Hiçbiri anahtarı korumaz.};
+\end{tikzpicture}
+\end{document}

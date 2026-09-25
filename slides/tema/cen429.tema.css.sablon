@@ -86,3 +86,16 @@ section.cok-yogun h1 { font-size: 27px; margin-bottom: 8px; }
 section.cok-yogun table { font-size: 15px; }
 section.cok-yogun th, section.cok-yogun td { padding: 3px 6px; }
 section.cok-yogun pre { font-size: 14px; }
+
+/* Görseller slayta sığar. Slaytlarda görsel sabit genişlikle yazılı (![w:950](...)); çizimlerin en/boy oranı
+   farklı olduğundan uzun bir çizim içeriği taşırıp başlığı yukarı itiyor, geniş bir çizim kenardan taşıyordu.
+   Tek başına paragraf olan görsel, başlık ve maddelerden sonra KALAN alanı doldurur ve oranı korunarak sığar. */
+section > p:has(> img:only-child) {
+  flex: 1 1 0; min-height: 0; margin: 6px 0;
+  display: flex; align-items: center; justify-content: center;
+}
+section > p > img:only-child {
+  width: 100% !important; height: 100% !important;
+  max-width: 100% !important; max-height: 100% !important;
+  object-fit: contain;
+}

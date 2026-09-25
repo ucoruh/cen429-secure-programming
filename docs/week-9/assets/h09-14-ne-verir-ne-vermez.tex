@@ -1,0 +1,17 @@
+% Hafta 9 — Gizleme ne verir, ne vermez?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-14-ne-verir-ne-vermez.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Gizleme ne verir, ne vermez?};
+  \node[altbaslik, text width=170mm] at (b.south west) {gizleme bir maliyet kuralıdır, bir güvence değil};
+
+  \node[kotukutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{VERMEZ}\\gizlilik (kriptonun işi)\\matematiksel güvence\\kalıcı koruma\\kötü tasarımı kurtarma};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{VERİR}\\saldırgana ZAMAN kaybettirir\\otomatik araçları zorlaştırır\\toplu kırılmayı engeller\\tespit için süre kazandırır};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    ``Ne kadar sürer?'' sorusuna cevap verir; ``kırılamaz mı?'' sorusuna değil.};
+\end{tikzpicture}
+\end{document}

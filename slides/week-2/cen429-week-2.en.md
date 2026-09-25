@@ -25,173 +25,6 @@ Speaker note: Last week we established the language of security (asset, threat, 
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Fundamental Concepts (from Scratch)
-
-<!-- Speaker note: We define this week's terms from scratch: malware, detection, access models, the vulnerability catalogue. -->
-
----
-
-# Why This Section?
-
-This week, terms like "polymorphic virus", "Bell–LaPadula", "CVSS" will come up.
-
-We assume you know none of them.
-
-Let's define them all **one by one** first.
-
----
-
-# Malware
-
-- **Malware:** a program written to cause harm.
-- "Virus" is one subtype; not everything is a virus.
-- Types: virus, worm, trojan horse, ransomware, spyware…
-
----
-
-# Virus, Worm, Trojan Horse
-
-- **Virus:** spreads by **infecting** another program.
-- **Worm:** **copies itself** on its own, over the network.
-- **Trojan horse:** looks useful while carrying hidden harm.
-
----
-
-# Ransomware and Others
-
-- **Ransomware:** encrypts files and demands a ransom.
-- **Spyware:** secretly collects information.
-- **Backdoor:** leaves hidden access.
-
----
-
-# A Virus's Three Parts
-
-- **Infection mechanism:** how it spreads.
-- **Trigger:** when it activates.
-- **Payload:** what it does.
-
----
-
-# A Virus's Three Parts — Diagram
-
-![w:950](assets/h02-02-virus-uc-parca.svg)
-
----
-
-# Concealment: Polymorphic/Metamorphic
-
-- **Polymorphic:** encrypts itself **differently** in every copy (evades signatures).
-- **Metamorphic:** **rewrites** its own code in every copy.
-- Goal: evade signature-based detection.
-
----
-
-# Detection: Signature vs. Heuristic
-
-- **Signature-based:** looks for the fingerprint of known malware (fast, misses new ones).
-- **Heuristic/behaviour:** looks for suspicious **behaviour** (finds new ones, false alarms).
-
----
-
-# Entropy (Randomness)
-
-- **Entropy:** how random data appears to be.
-- Encrypted/packed code has **high entropy**.
-- Detection clue: a high-entropy region is suspicious.
-
----
-
-# Access Control
-
-- **Access control:** who (subject), on what (object), can do what (right)?
-- Modelled with a **matrix**.
-- Models: DAC, MAC, RBAC.
-
----
-
-# DAC and MAC — Diagram
-
-![w:900](assets/h02-14-dac-mac.svg)
-
----
-
-# DAC / MAC / RBAC
-
-- **DAC:** the owner decides the permissions (Unix file permissions).
-- **MAC:** the system imposes mandatory rules (labelled).
-- **RBAC:** permissions attach to **roles**.
-
----
-
-# Formal Models
-
-- **Bell–LaPadula:** **confidentiality** (no read up).
-- **Biba:** **integrity** (no read down — the reverse of BLP).
-- **Clark–Wilson:** commercial integrity (well-formed transactions).
-
----
-
-# Audit Log
-
-- **Audit log:** who did what and when — a log as **evidence**.
-- Must be tamper-resistant.
-- Watch out for log injection (CWE-117).
-
----
-
-# Audit Log — Diagram
-
-![w:900](assets/h02-13-denetim-kaydi.svg)
-
----
-
-# CWE, CVE, CVSS
-
-- **CWE:** a catalogue of weakness **types** (e.g. CWE-416).
-- **CVE:** a **specific** flaw in a specific product (e.g. CVE-2024-xxxx).
-- **CVSS:** a flaw's **severity score** (0–10).
-
----
-
-# CWE, CVE, CVSS — Diagram
-
-![w:900](assets/h02-15-cwe-cve-cvss.svg)
-
----
-
-# OWASP and the Vulnerability Lifecycle
-
-- **OWASP Top 10 / MASVS:** common flaws and mobile requirements.
-- **Responsible disclosure:** report the flaw to the vendor first.
-- Flaw: discovery → report → patch → release.
-
----
-
-# A Flaw's Lifeline — Diagram
-
-![w:900](assets/h02-17-acik-yasam-cizgisi.svg)
-
----
-
-# OWASP and MASVS — Diagram
-
-![w:900](assets/h02-16-owasp-masvs.svg)
-
----
-
-# Now We're Ready
-
-Terms:
-
-malware · virus/worm/trojan/ransomware · a virus's three parts · polymorphic · signature/heuristic detection · entropy · access control (DAC/MAC/RBAC) · BLP/Biba · audit log · CWE/CVE/CVSS · OWASP
-
-Now: the big picture of threat, model, and classification.
-
----
-
 # Today's Plan (3 Hours)
 
 | Hour | Topic |
@@ -200,7 +33,7 @@ Now: the big picture of threat, model, and classification.
 | 2 | **Demo 1–2** · countermeasures · attack tree (**Demo 4**) · access and models (**Demo 3, 6**) |
 | 3 | CWE · OWASP · CVE · CVSS (**Demo 5**) · lifecycle · project |
 
-**Demos:** `code/week-02` — Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+**Learning outcome:** LO.1 (identifies and classifies common software security vulnerabilities)
 
 <!--
 Speaker note: Compile the demos once beforehand (build.ps1 or build.sh inside code/). Keep the first three demos open so there's no waiting in class.
@@ -208,41 +41,61 @@ Speaker note: Compile the demos once beforehand (build.ps1 or build.sh inside co
 
 ---
 
+# What We Bring from Earlier Weeks
+
+- **Asset, threat, vulnerability, risk and the attacker model** — the language for telling an asset's value, the
+  threat against it, the vulnerability that makes it possible, and the risk (probability × impact) apart **(Week 1)**
+- **STRIDE and the attack tree** — asking about the threats at an interface with STRIDE's six letters, then
+  breaking them from a root goal into branches with AND/OR logic **(Week 1)**
+
+This week: we make this language concrete through malware (the threat side) and access models (the defence
+side); we add **cost** to the attack tree and compute the cheapest attack path (Demo 04).
+
+---
+
 <!-- _class: yogun -->
 
-# A Short History — Malware and Security Models
+# This Week's Concepts
 
-- **1949** — von Neumann: **self-reproducing** automata (the virus's mathematical root)
-- **1971** Creeper · **1986** Brain (first PC virus) · **1988** **Morris Worm** halts the internet
-- **1973–77** — **Bell–LaPadula** (confidentiality), **Biba** (integrity); **1987** Clark–Wilson
-- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: a common classification language
+Each term is defined once, where it first appears in the body; here we only mark **where**.
 
-> Two separate strands: **recognising malware** + **modelling access**. Today we see both at once.
+| Concept | Where |
+| --- | --- |
+| Malware | Section 1 |
+| A virus's three parts | Section 1 |
+| Malware types | Section 1 |
+| Concealment: polymorphic/metamorphic | Section 2 |
+| Detection methods | Section 2 |
+| Entropy | Section 2 |
+| Audit log | Section 3 |
+| Access control | Section 4 |
+| DAC / MAC / RBAC | Section 4 |
+| Bell–LaPadula, Biba, Clark–Wilson | Section 4 |
+| CWE | Section 5 |
+| CVE and CVSS | Section 5 |
+| OWASP Top 10 and MASVS | Section 5 |
+| Vulnerability lifecycle | Section 5 |
 
 ---
 
-# A Short History of Malware — Diagram
+# How Do the Demos Work?
 
-![w:900](assets/h02-09-zararli-tarihce.svg)
+- One source, two platforms: **Windows (Visual Studio 2022 Community, MSVC)** and **WSL/Linux (GCC)**
+- Demos that need hashing/encryption use the OS's **BCrypt** library on Windows and **OpenSSL** on Linux
+  (`code/common/cen429_kripto.h`) — you don't need to install OpenSSL on Windows either
+- Build: Windows `.\build.ps1` · WSL/Linux `./build.sh`
+- Run: in each demo's folder, Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- **Demo 6** (TOCTOU) only runs on WSL/Linux
 
----
-
-
-# Learning Outcome and Scope
-
-- **LO.1:** **Identifies and classifies** common software security vulnerabilities.
-- Three topics together this week:
-  - **Threat:** malware types and concealment
-  - **Defence:** access control and formal models
-  - **Common language:** CWE · CVE · CVSS · OWASP · MASVS
-
-> ⚠️ **Ethics:** No demo contains real malware. All of them are **safe simulations** that run in their own folder, with no administrator privilege.
+> ⚠️ **Ethics:** No demo contains real malware, self-replicating code, file deletion/encryption, or a network
+> attack. All of them are **safe simulations** that run in their own folder without administrator rights; only
+> try what you learn on your own computer.
 
 ---
 
 <!-- _class: bolum -->
 
-# Malware: Types and History
+# 1. Malware: Types and History
 
 ---
 
@@ -266,6 +119,29 @@ Speaker note: Ask the students: "What do you call something that infects your ph
 # The Week's Three Parts — Diagram
 
 ![w:950](assets/h02-01-haftanin-resmi.svg)
+
+- **Threat:** malware types and concealment
+- **Defence:** access control and formal models
+- **Common language:** CWE · CVE · CVSS · OWASP · MASVS
+
+---
+
+<!-- _class: yogun -->
+
+# A Short History — Malware and Security Models
+
+- **1949** — von Neumann: **self-reproducing** automata (the virus's mathematical root)
+- **1971** Creeper · **1986** Brain (first PC virus) · **1988** **Morris Worm** halts the internet
+- **1973–77** — **Bell–LaPadula** (confidentiality), **Biba** (integrity); **1987** Clark–Wilson
+- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: a common classification language
+
+> Two separate strands: **recognising malware** + **modelling access**. Today we see both at once.
+
+---
+
+# A Short History of Malware — Diagram
+
+![w:900](assets/h02-09-zararli-tarihce.svg)
 
 ---
 
@@ -316,6 +192,12 @@ Speaker note: Give the dates accurately. WannaCry spread to machines that had no
 
 ---
 
+# A Virus's Three Parts — Diagram
+
+![w:950](assets/h02-02-virus-uc-parca.svg)
+
+---
+
 # Virus Subtypes
 
 - **Program (file) virus:** infects an executable file; when the file runs, the virus runs too.
@@ -347,6 +229,8 @@ Speaker note: The "enable macros" prompt is still an attack vector. Tell student
 - **Bot / botnet:** a network of machines taking remote commands (DDoS, spam, cryptomining).
 - **Spyware / adware:** collects data or shows adverts.
 - **Wiper:** looks like ransomware but **permanently destroys** data (NotPetya). The goal is not money but destruction.
+
+- **Backdoor:** leaves behind hidden access.
 
 ---
 
@@ -478,7 +362,7 @@ Halve the `beta` value inside `salgin.c` and rerun it.
 
 <!-- _class: bolum -->
 
-# Propagation and Concealment
+# 2. Propagation and Concealment
 
 ---
 
@@ -985,7 +869,7 @@ The risk lasts **until the patch is applied**; a released patch also **gives the
 
 <!-- _class: bolum -->
 
-# Attack Trees
+# 3. Attack Trees and the Audit Log
 
 ---
 
@@ -1072,6 +956,12 @@ Recipe 13.11 · design the log **assuming the attacker will read it too**
 
 ---
 
+# Audit Log — Diagram
+
+![w:900](assets/h02-13-denetim-kaydi.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 10 — Log Injection (CWE-117)
@@ -1091,6 +981,21 @@ GUVENLI:
 ✅ Escape it (`\xNN`) · ✅ cap the length · ✅ `syslog(LOG_INFO, "%s", girdi)` — the input is never a format string
 
 <!-- Speaker note: A single line break embedded in a username wrote a fake administrator login into the log that never happened. Mention the format-string trap as a bridge to Week 4. -->
+
+---
+
+# Vulnerable Code: Log Injection and Format String
+
+```c
+fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
+```
+
+```c
+syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
+```
+
+User-supplied data must never be used in a log as an **unescaped line break** or **directly as a format
+string**: `syslog(LOG_INFO, "%s", girdi)`.
 
 ---
 
@@ -1212,7 +1117,7 @@ An HMAC chain catches insertion/modification; to catch **truncation from the end
 
 <!-- _class: bolum -->
 
-# Access Control and Models
+# 4. Access Control and Models
 
 ---
 
@@ -1242,6 +1147,14 @@ The matrix is stored in two forms: **ACL** (column: the object holds who can acc
 
 Real systems use all three **together**; the effective decision is usually the **intersection**.
 
+DAC is **flexible** but leak-prone; MAC is **strict** (military/labelled); RBAC is **enterprise**, role-based and easy to administer.
+
+---
+
+# DAC and MAC — Diagram
+
+![w:900](assets/h02-14-dac-mac.svg)
+
 ---
 
 # Demo 03 — DAC Alone (Matrix)
@@ -1267,6 +1180,8 @@ Levels: Public < Confidential < Top Secret
 - **No write down (the \*-property):** cannot write to something less confidential than itself.
 
 > **"Read down, write up"** — confidential information **cannot leak downward.**
+
+Example: a user labelled "Confidential" **cannot read** a "Top Secret" document; a "Top Secret" process **cannot write** to a "Public" file (this is how the leak is prevented).
 
 <!--
 Speaker note: Military origin (1973). "No write down" seems odd at first; the goal is to prevent top-secret information from being written somewhere a clerk could see it.
@@ -1521,7 +1436,7 @@ A static (**SSD**) or dynamic (**DSD**) separation-of-duty constraint must be de
 
 <!-- _class: bolum -->
 
-# Vulnerability Classification
+# 5. Vulnerability Classification
 
 ---
 
@@ -1575,6 +1490,12 @@ Rule: pick the **most concrete** CWE possible (preferably at the base level).
 
 ---
 
+# OWASP and MASVS — Diagram
+
+![w:900](assets/h02-16-owasp-masvs.svg)
+
+---
+
 # Misconception: "OWASP Top 10 Is a Checklist"
 
 **Misconception:** If I satisfy the 10 items on the Top 10, I'm secure.
@@ -1591,6 +1512,12 @@ Verifiable requirements live in **ASVS** for the web, and in **MASVS and MASTG**
 - **CVSS:** a flaw's **severity**, 0.0–10.0. Three groups: **Base** (fixed), Temporal, Environmental.
 
 A CVE belongs to one or more **CWE types**.
+
+---
+
+# CWE, CVE, CVSS — Diagram
+
+![w:900](assets/h02-15-cwe-cve-cvss.svg)
 
 ---
 
@@ -1751,18 +1678,6 @@ The risk **doesn't decrease** even if the score does; the score should be writte
 
 ---
 
-<!-- _class: yogun -->
-
-# Checklist — Vulnerability Classification
-
-- [ ] I know CWE's abstraction levels (pillar, class, base, variant) and the "most concrete entry" rule.
-- [ ] I can **distinguish** CWE, CVE, and CVSS in one sentence each.
-- [ ] I can build a CVSS v3.1 vector for a finding and compute the score **by hand**.
-- [ ] I can explain that EPSS, KEV, and CVSS answer **different questions**.
-- [ ] I can explain the vulnerability lifecycle, zero-day, patch gap, and responsible disclosure.
-
----
-
 # The Vulnerability Lifecycle
 
 ![w:900](assets/h02-06-zafiyet-yasam-dongusu.svg)
@@ -1781,6 +1696,12 @@ The risk **doesn't decrease** even if the score does; the score should be writte
 4. **Release:** the patch reaches the user; the risk ends **if it's applied**.
 
 The time between every arrow is the **window** given to the attacker.
+
+---
+
+# A Flaw's Lifeline — Diagram
+
+![w:900](assets/h02-17-acik-yasam-cizgisi.svg)
 
 ---
 
@@ -1831,16 +1752,13 @@ An assessment questions not just the code, but this **process** too.
 
 <!-- _class: yogun -->
 
-# Glossary Addendum — Added in This Expansion
+# Checklist — Vulnerability Classification
 
-| Term | Meaning |
-| --- | --- |
-| EPSS | The **probability** a flaw is exploited within 30 days |
-| KEV | A catalogue of **proven** exploited flaws |
-| SSVC | A Track–Act decision from exploit/impact/prevalence |
-| Responsible / full disclosure | Report to the vendor first / disclose publicly right away |
-| Authentication / authorization | "Who are you?" / "Can you do this?" |
-| Safe default | If the policy is unclear, the answer is **deny** (fail-closed) |
+- [ ] I know CWE's abstraction levels (pillar, class, base, variant) and the "most concrete entry" rule.
+- [ ] I can **distinguish** CWE, CVE, and CVSS in one sentence each.
+- [ ] I can build a CVSS v3.1 vector for a finding and compute the score **by hand**.
+- [ ] I can explain that EPSS, KEV, and CVSS answer **different questions**.
+- [ ] I can explain the vulnerability lifecycle, zero-day, patch gap, and responsible disclosure.
 
 ---
 
@@ -1854,6 +1772,20 @@ An assessment questions not just the code, but this **process** too.
 ```text
 | ID | Tehdit | Varlik | Yol | CWE | Onlem | Bolum |
 ```
+
+---
+
+# Class Activities
+
+1. **Classify the malware, pick the layer:** type and first catching layer across six scenarios
+2. **Attack tree duel:** the other group hunts for a cheaper path not on the tree
+3. **From matrix to model:** write the same policy as an ACL, capability list, and BLP/Biba labels
+4. **From finding to patch order:** rank five findings with CWE + CVSS + EPSS + KEV + SSVC
+5. **Tamper with the audit log:** try modifying/deleting/truncating the Demo 11 chain
+6. **Code-reading tournament:** write the CWE, the attack, and the fix for four code pieces
+7. **Incident autopsy:** fill in CVE-CWE-CVSS-dates for Heartbleed/WannaCry/Log4Shell
+
+<!-- Speaker note: Use groups of 3-4; see the activity boxes in the lecture notes for timing. -->
 
 ---
 
@@ -1894,181 +1826,23 @@ An assessment questions not just the code, but this **process** too.
 
 ---
 
-<!-- _class: baslik -->
+# Self-Check (Continued)
 
-# Next Week
+9. The strength/weakness of signature and heuristic detection?
+10. How is log injection (CWE-117) prevented?
+11. What is responsible disclosure?
 
-**Week 3 — Data Security: In Transit, at Rest, in Use**
-
-Encryption fundamentals · TLS 1.3 and certificate pinning · local encryption with AES-GCM · secure deletion
-
-Source: Viega & Messier, Recipes 9.1–9.3, 10.7–10.9, 4.9–4.11, 13.2
+<!-- ask first, then open the answer slide -->
 
 ---
 
-<!-- _class: bolum -->
-
-# Appendix · Access Model Comparison
-
-<!-- Speaker note: We reinforce BLP, Biba, and the models with examples. -->
-
----
-
-# BLP · The Confidentiality Rule
-
-- **Not** "write up, no read down" — the opposite:
-- **No read up:** a low-clearance subject cannot read high-confidentiality data.
-- **No write down:** a high-clearance subject cannot leak into a lower level.
-
----
-
-# BLP · Example
-
-- A user labelled "Confidential" **cannot read** a "Top Secret" document.
-- A "Top Secret" process **cannot write** to a "Public" file (this prevents a leak).
-
-Goal: **confidentiality**.
-
----
-
-# Biba · The Integrity Rule
-
-- The **reverse** of BLP:
-- **No read down:** a high-integrity subject does not read low-trust data.
-- **No write up:** a low-trust subject cannot write to high integrity.
-
-Goal: **integrity**.
-
----
-
-# BLP vs. Biba
-
-| | BLP | Biba |
-| --- | --- | --- |
-| Protects | Confidentiality | Integrity |
-| Read | No up | No down |
-| Write | No down | No up |
-
-The two can **conflict** in the same system; they must be combined carefully.
-
----
-
-# Clark–Wilson
-
-- Commercial integrity: well-formed transactions + separation of duty.
-- Data is accessed only through **approved** procedures.
-- Example: accounting records.
-
----
-
-# DAC / MAC / RBAC · Choosing
-
-- **DAC:** flexible but leak-prone (the owner shares).
-- **MAC:** strict, a military/labelled environment.
-- **RBAC:** enterprise; role-based, easy to administer.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Find the Vulnerability (Code Reading)
-
----
-
-# Example 1 · Log Injection
-
-```c
-fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
-```
-
-If the username contains `\n`, it inserts a **fake** log line. The fix: escaping/sanitisation.
-
----
-
-# Example 2 · Format String
-
-```c
-syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
-```
-
-The format string must be fixed: `syslog(LOG_INFO, "%s", girdi)`.
-
----
-
-# Example 3 · Weak Detection
-
-- Scanning by **signature** alone misses a polymorphic virus.
-- Add: heuristic + behaviour + entropy.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Solved Self-Check
-
----
-
-# Question 1
-
-**Difference between a virus and a worm?**
-
-**Answer:** A virus spreads by infecting another program; a worm copies itself over the network on its own.
-
----
-
-# Question 2
-
-**Why does a polymorphic virus make signature detection hard?**
-
-**Answer:** It encrypts itself differently in every copy; no fixed signature remains. Heuristic/emulation is needed.
-
----
-
-# Question 3
-
-**The strength/weakness of signature and heuristic detection?**
-
-**Answer:** Signature is fast but misses new samples; heuristic finds new ones but produces false alarms.
-
----
-
-# Question 4
-
-**What do BLP and Biba protect; are their rules reversed?**
-
-**Answer:** BLP protects confidentiality (no read up), Biba protects integrity (no read down). Yes, their directions are reversed.
-
----
-
-# Question 5
-
-**Difference between CWE and CVE?**
-
-**Answer:** CWE is a weakness **type** (e.g. use-after-free); CVE is a **concrete** flaw in a specific product.
-
----
-
-# Question 6
-
-**What does CVSS tell you?**
-
-**Answer:** A flaw's severity as a standard score (0–10); used for prioritisation.
-
----
-
-# Question 7
-
-**How is log injection (CWE-117) prevented?**
-
-**Answer:** Sanitise/escape line-break and control characters in user data written to the log; use structured logging.
-
----
-
-# Question 8
-
-**What is responsible disclosure?**
-
-**Answer:** Reporting a flaw to the vendor first, allowing time for a patch, and disclosing it publicly afterward.
+# Self-Check — Answers (9–11)
+
+9. **Signature** is fast but misses new samples; **heuristic** finds new ones but produces false alarms.
+10. **Sanitise/escape** line-break and control characters in user data written to the log; use structured
+    logging.
+11. Reporting a flaw to the **vendor first**, allowing time for a patch, and **disclosing it publicly**
+    afterward.
 
 ---
 
@@ -2087,8 +1861,35 @@ The format string must be fixed: `syslog(LOG_INFO, "%s", girdi)`.
 
 ---
 
-# Final Word (Week 2)
+<!-- _class: yogun -->
 
-> **Classify** the threat, **model** access, track flaws with **catalogues** (CWE/CVE), and **measure** their severity (CVSS).
+# Glossary (continued)
 
-This framework is the foundation for the technical protections in the coming weeks.
+| Term | Meaning |
+| --- | --- |
+| EPSS | The **probability** a flaw is exploited within 30 days |
+| KEV | A catalogue of **proven** exploited flaws |
+| SSVC | A Track–Act decision from exploit/impact/prevalence |
+| Responsible / full disclosure | Report to the vendor first / disclose publicly right away |
+| Authentication / authorization | "Who are you?" / "Can you do this?" |
+| Safe default | If the policy is unclear, the answer is **deny** (fail-closed) |
+
+---
+
+<!-- _class: baslik -->
+
+# Next Week
+
+**Week 3 — Data Security: In Transit, at Rest, in Use**
+
+This week we used the **entropy** measure to detect malware; next week we reuse it again to assess the disorder
+in the input of a cryptographic random number generator (CSPRNG). Week 3 covers encryption fundamentals, TLS
+1.3 and certificate pinning, local encryption with AES-GCM, and secure deletion (Source: Viega & Messier,
+Recipes 9.1–9.3, 10.7–10.9, 4.9–4.11, 13.2).
+
+> This week's summary: **classify** the threat, **model** access, track flaws with **catalogues** (CWE/CVE),
+> and **measure** their severity (**CVSS**). This framework is the foundation for the technical protections in
+> the coming weeks.
+
+The vulnerability language we prioritised this week with CWE and CVSS will reappear in **Week 12** as an input
+to penetration-test planning.

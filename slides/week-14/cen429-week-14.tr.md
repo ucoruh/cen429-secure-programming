@@ -10,9 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -32,9 +29,9 @@ Konuşma notu: Bu hafta 9. haftadaki gizleme kurallarının otomatik karşılı�
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 0–1 | Temel kavramlar · kaynaktan kaynağa gizleme · Tigress · lisans · temel akış |
+| 1 | 1 | Kaynaktan kaynağa gizleme · Tigress · lisans · temel akış |
 | 2 | 2 | Dönüşüm aileleri · 9. hafta eşlemesi · dönüşüm hattı · adım adım örnek |
-| 3 | 3–4 | Çeşitlendirme · ölçme · sınıf içi akış · derleme hattı (S15) · proje |
+| 3 | 3–5 | Çeşitlendirme · ölçme · sınıf içi akış · derleme hattı (S15) · proje |
 
 <!-- Konuşma notu: Bu hafta 9. haftadaki el ile gizleme kurallarını araçla (Tigress) otomatikleştiriyoruz. Ana mesaj aynı: gizleme kırılamazlık vermez, maliyet yükseltir; birleştir, çeşitlendir, ölç. -->
 
@@ -53,7 +50,6 @@ Konuşma notu: Bu hafta 9. haftadaki gizleme kurallarının otomatik karşılı�
 > Ana kural: **dayanıklılık ↔ maliyet**; koruma varlığın değeriyle orantılı seçilir.
 
 ---
-
 
 # Bu hafta nereye oturuyor?
 
@@ -80,7 +76,7 @@ Sonunda yapabileceğiniz:
 
 # Baştan bir hatırlatma
 
-9. haftanın ana kuralı bu hafta da geçerli:
+9\. haftanın ana kuralı bu hafta da geçerli:
 
 > Gizleme kırılamazlık vermez, **maliyet** yükseltir.
 
@@ -88,34 +84,37 @@ Tigress bir **sihir değil**; el ile yaptığımızı otomatikleştirir ve **çe
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Temel kavramlar (sıfırdan)
+# Önceki haftalardan gelenler
 
-<!-- Konuşma notu: Hiçbir ön bilgi varsaymıyoruz; 9. haftanın terimlerini kısaca hatırlatıp yenilerini ekliyoruz. -->
-
----
-
-# Neden bu bölüm?
-
-Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terimler geçecek.
-
-Önce hepsini **tek tek** tanımlayalım.
-
----
-
-# Hatırlatma · kaynak, derleyici, ikili
-
-- **Kaynak kod:** insanın yazdığı program metni (C dosyası).
-- **Derleyici:** kaynağı makine koduna çeviren program (gcc/clang).
-- **İkili dosya:** çalıştırılan sonuç.
+- **Kaynak kod, derleyici, ikili dosya** — insanın yazdığı program metninin derleyiciyle makine koduna çevrilip çalıştırılabilir hale gelmesi **(Hafta 9)**
+- **Kod gizleme (obfuscation)** — davranışı değiştirmeden kodu anlaşılması zor kılan, saldırı maliyetini artıran karşı önlem **(Hafta 9)**
+- **9. haftanın gizleme kuralları (K-01–K-12)** — opak yüklem, aritmetik kodlama, kontrol akışı düzleştirme, dize kodlama, değişken bölme, sanallaştırma gibi el ile uygulanan kurallar; bu hafta bunları Tigress'in dönüşümleriyle tek tek eşliyoruz **(Hafta 9)**
+- **CFG (kontrol akışı grafiği)** — temel blokları düğüm, geçişleri kenar yapan şema **(Hafta 9)**
+- **Sembolik yürütme** — program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE) **(Hafta 9)**
+- **Çeşitlendirme (diversification)** — aynı kaynaktan davranışça eş, yapıca farklı ikili dosyalar üretme fikri; bu hafta Tigress'in `--Seed` bayrağıyla otomatikleştiriyoruz **(Hafta 9)**
+- **CI ve derleme hattı** — her kod değişikliğinde otomatik derleme/test adımlarını çalıştıran sistem **(Hafta 4)**
+- **Sürüm kimliği ve özet (hash) değeri** — bir yazılımın hangi ikili/kaynak/özet üçlüsüyle dağıtıldığını gösteren kayıt; bu hafta buna bir de tohum alanı ekliyoruz **(Hafta 1)**
 
 ---
 
-# Hatırlatma · gizleme
+<!-- _class: yogun -->
 
-- **Kod gizleme (obfuscation):** davranışı değiştirmeden kodu **anlaşılması zor** hale getirmek.
-- Amaç: saldırgan için maliyeti artırmak (9. hafta).
+# Bu haftanın kavramları
+
+Her terim gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Kaynaktan kaynağa (source-to-source) gizleme, Tigress ve lisansı | Bölüm 1 |
+| Dönüşüm (`--Transform`) ve hedef seçimi (`--Functions`) | Bölüm 1 |
+| Dönüşüm aileleri ve 9. hafta eşlemesi | Bölüm 2 |
+| Dönüşüm hattı (pipeline) ve adım adım maliyet artışı | Bölüm 2 |
+| Çeşitlendirme aracı: tohum (`--Seed`) | Bölüm 3 |
+| Gizleme ve çeşitlendirmeyi ölçmek | Bölüm 3 |
+| Sınıf içi yedi adımlık akış | Bölüm 4 |
+| S15 derleme ve dağıtım hattı, dönem projesi | Bölüm 5 |
 
 ---
 
@@ -151,13 +150,6 @@ Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terim
 
 ---
 
-# Çeşitlendirme (diversification)
-
-- **Çeşitlendirme:** aynı kaynaktan **davranışça eş, yapıca farklı** ikili dosyalar üretmek.
-- Bir kopyaya yazılan saldırı diğerinde çalışmaz (9. hafta Kural 2).
-
----
-
 # CLI (komut satırı) nedir?
 
 - **CLI (Command-Line Interface):** komutları yazarak çalıştırdığınız arayüz.
@@ -172,30 +164,6 @@ Bugün "kaynaktan kaynağa", "dönüşüm", "tohum", "derleme hattı" gibi terim
 
 ---
 
-# CFG hatırlatma
-
-- **CFG (Control Flow Graph):** temel blokları düğüm, geçişleri kenar yapan şema.
-- Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz (9. hafta).
-
----
-
-# Sembolik yürütme (kısaca)
-
-- **Sembolik yürütme:** program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE).
-- Gizlemeye karşı bir **deobfuscation** yöntemidir; dayanıklılığı bununla sınarız.
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · birim testi · CFG · sembolik yürütme
-
-Şimdi: Tigress nedir ve nasıl çalışır?
-
----
-
 <!-- _class: bolum -->
 
 # 1. Kaynaktan kaynağa gizleme ve Tigress
@@ -204,7 +172,7 @@ kaynaktan kaynağa · dönüşüm · hat · tohum · çeşitlendirme · CLI · b
 
 # El ile gizlemenin üç sorunu
 
-9. haftada kuralları **el ile** uyguladık. Öğreticiydi ama:
+9\. haftada kuralları **el ile** uyguladık. Öğreticiydi ama:
 
 1. **Hataya açık** — davranışı bozabilir
 2. **Bakımı zor** — kaynak okunamaz olur
@@ -228,12 +196,11 @@ Bakım maliyeti **okunur kaynakta** kalır; dağıtılan kaynak gizli.
 
 ---
 
-# Dönüşüm hattı — şema
+# Sıralı dönüşümler — şema
 
 ![w:950](assets/h14-04-donusum-hatti.svg)
 
 ---
-
 
 # Tigress nedir?
 
@@ -322,6 +289,43 @@ cc -o program gizli.c
 
 ---
 
+# "Bu fonksiyonu gizlemeli miyim?" — 1
+
+**Soru 1:** Bu fonksiyon hassas mı? (lisans, anahtar, bütünlük, denetim)
+
+- **Hayır** → gizleme; maliyeti boşa harcama.
+- **Evet** → devam.
+
+---
+
+# "Bu fonksiyonu gizlemeli miyim?" — 2
+
+**Soru 2:** Değeri yüksek mi?
+
+- **Orta** → EncodeLiterals + EncodeArithmetic + Flatten + AddOpaque.
+- **Yüksek ve küçük** → yukarısı + Virtualize.
+
+---
+
+# "Bu fonksiyonu gizlemeli miyim?" — 3
+
+**Soru 3:** Her durumda:
+
+- Çeşitlendir (tohum)
+- Ölç (boyut, süre, blok)
+- Birim testleriyle davranışı doğrula
+- S9/S15'e yaz
+
+---
+
+<!-- _class: yogun -->
+
+# Karar akışı · tek bakış
+
+![w:900](assets/h14-09-karar-akisi.svg)
+
+---
+
 # Bölüm 1 — kısa sınama
 
 1. Kaynaktan kaynağa gizleme nedir?
@@ -340,7 +344,6 @@ cc -o program gizli.c
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 2. Dönüşüm aileleri ve hat
@@ -351,7 +354,7 @@ cc -o program gizli.c
 
 # Dönüşümler = 9. hafta kuralları
 
-Tigress dönüşümleri, 9. haftadaki gizleme ailelerine karşılık gelir.
+Tigress dönüşümleri, 9. haftada **gördüğümüz** gizleme ailelerine karşılık gelir (K-01–K-12).
 
 Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 
@@ -367,13 +370,14 @@ Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 
 - **Flatten:** kontrol akışını düzleştirir → **K-04**
 - **InitOpaque / AddOpaque / UpdateOpaque:** opak yüklem + sahte dal → **K-01, K-03**
+- Sıra: önce **InitOpaque**, sonra **AddOpaque**.
 
 ---
 
 # Veri dönüşümleri
 
 - **EncodeArithmetic:** aritmetiği denk karmaşık ifadeyle (MBA) → **K-02**
-- **EncodeLiterals:** sabit ve dizgeleri kodlar → **K-07, K-08**
+- **EncodeLiterals:** sabit ve dizgeleri kodlar (ucuz, neredeyse her zaman uygulanır) → **K-07, K-08**
 - **EncodeData:** değişken gösterimini kodlar → **K-09**
 
 ---
@@ -382,7 +386,7 @@ Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 
 - **Split / Merge:** fonksiyonları böler/birleştirir → **K-06**
 - **Virtualize:** fonksiyonu özel VM bayt koduna → **K-10**
-- **Jit:** kodu çalışma anında üretir → **K-12 (dinamik)**
+- **Jit:** kodu çalışma anında üretir; OS korumalarıyla dikkatli kullanılmalı → **K-12 (dinamik)**
 
 ---
 
@@ -433,13 +437,13 @@ Bu yüzden Virtualize yalnız **küçük, kritik** fonksiyonlara; `--Functions` 
 
 <!-- _class: bolum -->
 
-# Dönüşüm hattı
+# Dönüşümleri sırayla birleştirmek
 
 ---
 
 # "Tek teknik değil, birlikte"
 
-9. haftanın en önemli kuralı.
+9\. haftanın en önemli kuralı.
 
 Tigress'te bu, dönüşümleri **sırayla** uygulamak demektir.
 
@@ -549,6 +553,32 @@ projede **S9 koruma tablonuzun** doğrudan karşılığıdır.
 
 ---
 
+# O-LLVM (derleyici tabanlı)
+
+- **Obfuscator-LLVM:** dönüşümleri **derleme sırasında** uygular.
+- Kaynaktan kaynağa değil; LLVM ara temsili üstünde.
+- 9. hafta K-11. Tigress'e bir alternatif.
+
+---
+
+# Tigress mi, O-LLVM mi?
+
+| | Tigress | O-LLVM |
+| --- | --- | --- |
+| Nerede | Kaynak (C→C) | Derleyici (IR) |
+| Görünürlük | Gizli kaynağı görebilirsin | Derleme adımı |
+| Dönüşüm zenginliği | Çok (Virtualize dahil) | Daha sınırlı |
+
+---
+
+# Ortak sınır
+
+- İkisi de iyi bilinir → kalıpları tanınabilir.
+- İkisi de **çeşitlendirme** ve **katmanlı savunma** ister.
+- İkisi de kırılamazlık **vermez**.
+
+---
+
 # Bölüm 2 — kısa sınama
 
 1. Flatten, EncodeArithmetic, Virtualize hangi K-kurallarına karşılık?
@@ -566,7 +596,6 @@ projede **S9 koruma tablonuzun** doğrudan karşılığıdır.
 3. (1) **Davranışı test et** (birim testi geçmeli), (2) **maliyeti ölç** (boyut/hız/komut sayısı, önce-sonra).
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -610,7 +639,7 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 - **Uzayda:** farklı kullanıcı/cihaza farklı tohumlu kopya → bir kopyanın saldırısı diğerinde çalışmaz.
 - **Zamanda:** her sürüm yeni tohum → eski saldırı yeni sürümde bozulur.
 
-10. haftadaki anahtar/sürüm yenilemeyle birlikte çalışır.
+10\. haftadaki anahtar/sürüm yenilemeyle birlikte çalışır.
 
 ---
 
@@ -641,7 +670,7 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 
 # Tigress'in öğretim değeri
 
-9. haftada gizlemeyi dört boyutta (güç, dayanıklılık, gizlilik, maliyet) ölçmeyi öğrendik.
+9\. haftada gizlemeyi dört boyutta (güç, dayanıklılık, gizlilik, maliyet) ölçmeyi öğrendik.
 
 Tigress bu ölçümleri **somut** yapmanızı sağlar: aynı programı gizle, önce/sonra ölç.
 
@@ -672,15 +701,44 @@ Basit ama **kanıt** üretir.
 
 <!-- _class: yogun -->
 
-# Maliyet · örnek tablo
+# Maliyet · örnek tablo (Hat A ve Hat B)
 
-| Ölçüt | Önce | Sonra |
-| --- | --- | --- |
-| Boyut | 100 KB | 130 KB |
-| Süre | 1.0× | 1.8× |
-| Temel blok (hedef fn.) | 5 | 40 |
+**Hat A:** EncodeLiterals + EncodeArithmetic (hafif) · **Hat B:** Hat A + Flatten + AddOpaque (ağır)
+
+| Ölçüt | Temiz | Hat A | Hat B |
+| --- | --- | --- | --- |
+| Boyut | 100 KB | 103 KB | 131 KB |
+| Süre | 1.00× | 1.05× | 1.80× |
+| Blok (hedef fn.) | 5 | 7 | 40 |
+| Hassas dize | 3 | 0 | 0 |
 
 Rakamlar örnek; siz **kendi** ölçtüğünüzü yazarsınız.
+
+---
+
+<!-- _class: yogun -->
+
+# Maliyet · ham ölçüm çıktısı
+
+```text
+program_temiz:
+  boyut: 100 KB
+  işlem süresi: 1.00× (referans)
+  erisim_ver temel blok: 5
+```
+
+```text
+boyut: 103 KB   (+%3)
+süre:  1.05×
+blok:  7
+strings hassas dize: 0  (öncesi 3)
+```
+
+```text
+boyut: 131 KB   (+%31)
+süre:  1.80×
+blok:  40
+```
 
 ---
 
@@ -726,6 +784,23 @@ Bir gizleme kararını ölçüyle savun:
 
 ---
 
+# Karar
+
+- Varlık değeri **düşük** → Hat A yeter.
+- Varlık değeri **yüksek** → Hat B (maliyeti kabul et) + çeşitlendirme.
+
+> Karar sayılara dayanır, hisse değil.
+
+---
+
+# Çeşitlendirme ölçümü (örnek)
+
+- Hat B'yi tohum 1001 ve 2002 ile üret.
+- Korunan fonksiyonun bayt farkı: **%92**.
+- Yorum: bir kopyaya yazılan yama diğerinde büyük olasılıkla çalışmaz.
+
+---
+
 # Bölüm 3 — kısa sınama
 
 1. Tohum çeşitlendirmeyi nasıl sağlar?
@@ -743,7 +818,6 @@ Bir gizleme kararını ölçüyle savun:
 3. Daha güçlü gizleme daha çok **dayanıklılık** ama daha çok **maliyet**; koruma varlığın **değeriyle orantılı** seçilir.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -867,6 +941,101 @@ Bu tablo doğrudan **S9/S15**'e girer.
 
 ---
 
+# Yeni örnek · bütünlük denetimi
+
+```c
+int dosya_saglam(const uint8_t *veri, size_t n,
+                 const uint8_t *beklenen) {
+    uint8_t ozet[32];
+    ozet_hesapla(veri, n, ozet);        /* SHA-256 benzeri */
+    return sabit_zamanli_esit(ozet, beklenen, 32);
+}
+```
+
+Sürüm bütünlüğünü denetleyen sentetik bir fonksiyon.
+
+---
+
+# Neden bunu gizleyelim?
+
+- Saldırgan bu denetimi bulup **atlatmak** ister (kurcalanmış dosyayı geçirmek için).
+- Denetimin dönüş noktası ve karşılaştırması hedef.
+- 9. hafta: opak boolean + rastgele çıkış burada kritik.
+
+---
+
+# Hat seçimi
+
+```bash
+tigress \
+  --Transform=EncodeLiterals \
+  --Transform=EncodeArithmetic \
+  --Transform=Flatten \
+  --Transform=AddOpaque \
+  --Functions=dosya_saglam \
+  --out=gizli.c temiz.c
+```
+
+---
+
+# Adım adım · ne olur?
+
+- EncodeLiterals: `32` ve varsa dizgeler düz görünmez.
+- EncodeArithmetic: karşılaştırma karmaşıklaşır.
+- Flatten: tek dönüş noktası görünmez.
+- AddOpaque: sahte dallar; "başarı" dalı tek yerde değil.
+
+---
+
+# Davranış doğrulama (zorunlu)
+
+- Doğru özetli dosya → **geçer**.
+- Bozuk özetli dosya → **reddedilir**.
+- Gizli sürümde de aynı sonuç → hat doğru.
+
+---
+
+# CFG önce/sonra (kavram)
+
+![w:900](assets/h14-10-cfg-once-sonra.svg)
+
+Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
+
+---
+
+# ⚠️ Sabit zamanlılık korunmalı
+
+- `sabit_zamanli_esit` gizlense de **sabit zamanlı** kalmalı.
+- Gizleme uğruna erken çıkış eklenirse yan kanal açılır (3. hafta).
+- Dönüşümlerin bunu bozmadığını **test et**.
+
+---
+
+# Ölçüm (örnek)
+
+| Ölçüt | Önce | Sonra |
+| --- | --- | --- |
+| Boyut | 100 KB | 128 KB |
+| Süre | 1.0× | 1.7× |
+| Blok (dosya_saglam) | 4 | 33 |
+
+---
+
+# Çeşitlendirme
+
+- İki tohumla üret → iki farklı ikili.
+- "Bütünlük denetimini atla" yaması bir kopyada işe yarasa bile diğerinde yaramaz.
+
+---
+
+# İkinci örnek · çıkarım
+
+- Bütünlük denetimi gibi **atlatma hedefi** fonksiyonlarda gizleme değerlidir.
+- Ama asıl güç: gizleme + RASP (6. hafta) + sunucu denetimi.
+- Gizleme tek başına atlatmayı **geciktirir**, engellemez.
+
+---
+
 # Bölüm 4 — kısa sınama
 
 1. Gizledikten sonra ilk **mutlaka** yapılacak şey?
@@ -884,7 +1053,6 @@ Bu tablo doğrudan **S9/S15**'e girer.
 3. **S9** (kod sağlamlaştırma) ve **S15** (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -982,6 +1150,47 @@ Ortak kural: koruma = **gecikme**; güç katmanlardan ve ölçümden.
 
 ---
 
+# Vaka · kurgu
+
+Sentetik bir uygulamada bir **lisans denetimi** ve bir **anahtar türetme** fonksiyonu var.
+
+İkisini de mi ağır gizleyeceğiz?
+
+---
+
+# Vaka · karar
+
+- **Lisans denetimi:** orta değer → Hat B (Flatten + AddOpaque).
+- **Anahtar türetme:** yüksek değer → Hat B + **Virtualize** (küçük olduğu için maliyet kabul edilebilir).
+- Gerisi: gizlenmez (maliyet gereksiz).
+
+---
+
+# Vaka · çeşitlendirme + hat
+
+- Her sürüm farklı tohum.
+- Derleme hattı: gizle → imzala → sürüm kimliği.
+- CI'da birim testleri + ölçüm otomatik.
+
+---
+
+# Vaka · S9/S15 çıktısı
+
+| Fonksiyon | Hat | Boyut/süre | Gerekçe |
+| --- | --- | --- | --- |
+| lisans_dogrula | B | +%31 / 1.8× | orta değer |
+| anahtar_turet | B+Virtualize | +%60 / 3× | yüksek değer, küçük fn. |
+
+---
+
+# Vaka · kalan risk
+
+- Yeterince kararlı saldırgan tek kopyada çözebilir.
+- Telafi: çeşitlendirme + kısa ömürlü anahtar + sunucu denetimi.
+- **Açıkça yazılır.**
+
+---
+
 # Bölüm 5 — kısa sınama
 
 1. İmzalama neden gizlemeden **sonra**?
@@ -999,7 +1208,6 @@ Ortak kural: koruma = **gecikme**; güç katmanlardan ve ölçümden.
 3. Kaynak → (statik analiz) → derle → **gizle** → çeşitlendir (tohum) → paketle/SBOM → **imzala** → dağıt (hepsi CI'da kayıtlı).
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1115,165 +1323,18 @@ Hepsi aynı çerçeve: maliyet + katman + ölçüm.
 
 ---
 
-<!-- _class: bolum -->
-
-# Ek A · İşlenmiş ölçüm
-
-<!-- Konuşma notu: Somut, sentetik sayılarla bir ölçüm turu; tahtada yapılabilir. -->
-
----
-
-# Senaryo
-
-`erisim_ver` fonksiyonunu iki hatla gizleyip ölçelim:
-
-- **Hat A:** EncodeLiterals + EncodeArithmetic (hafif)
-- **Hat B:** Hat A + Flatten + AddOpaque (ağır)
-
----
-
-# Önce · temel çizgi
-
-```text
-program_temiz:
-  boyut: 100 KB
-  işlem süresi: 1.00× (referans)
-  erisim_ver temel blok: 5
-```
-
----
-
-# Hat A · ölçüm (örnek)
-
-```text
-boyut: 103 KB   (+%3)
-süre:  1.05×
-blok:  7
-strings hassas dize: 0  (öncesi 3)
-```
-
-Ucuz; dize gizleme büyük getiri.
-
----
-
-# Hat B · ölçüm (örnek)
-
-```text
-boyut: 131 KB   (+%31)
-süre:  1.80×
-blok:  40
-```
-
-Güç arttı (blok 5→40); maliyet de arttı.
-
----
-
 <!-- _class: yogun -->
 
-# Karşılaştırma tablosu
+# Klasik hatalar — özet
 
-| Ölçüt | Temiz | Hat A | Hat B |
-| --- | --- | --- | --- |
-| Boyut | 100 KB | 103 KB | 131 KB |
-| Süre | 1.00× | 1.05× | 1.80× |
-| Blok | 5 | 7 | 40 |
-| Hassas dize | 3 | 0 | 0 |
-
----
-
-# Karar
-
-- Varlık değeri **düşük** → Hat A yeter.
-- Varlık değeri **yüksek** → Hat B (maliyeti kabul et) + çeşitlendirme.
-
-> Karar sayılara dayanır, hisse değil.
-
----
-
-# Çeşitlendirme ölçümü (örnek)
-
-- Hat B'yi tohum 1001 ve 2002 ile üret.
-- Korunan fonksiyonun bayt farkı: **%92**.
-- Yorum: bir kopyaya yazılan yama diğerinde büyük olasılıkla çalışmaz.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Mini vaka
-
----
-
-# Vaka · kurgu
-
-Sentetik bir uygulamada bir **lisans denetimi** ve bir **anahtar türetme** fonksiyonu var.
-
-İkisini de mi ağır gizleyeceğiz?
-
----
-
-# Vaka · karar
-
-- **Lisans denetimi:** orta değer → Hat B (Flatten + AddOpaque).
-- **Anahtar türetme:** yüksek değer → Hat B + **Virtualize** (küçük olduğu için maliyet kabul edilebilir).
-- Gerisi: gizlenmez (maliyet gereksiz).
-
----
-
-# Vaka · çeşitlendirme + hat
-
-- Her sürüm farklı tohum.
-- Derleme hattı: gizle → imzala → sürüm kimliği.
-- CI'da birim testleri + ölçüm otomatik.
-
----
-
-# Vaka · S9/S15 çıktısı
-
-| Fonksiyon | Hat | Boyut/süre | Gerekçe |
-| --- | --- | --- | --- |
-| lisans_dogrula | B | +%31 / 1.8× | orta değer |
-| anahtar_turet | B+Virtualize | +%60 / 3× | yüksek değer, küçük fn. |
-
----
-
-# Vaka · kalan risk
-
-- Yeterince kararlı saldırgan tek kopyada çözebilir.
-- Telafi: çeşitlendirme + kısa ömürlü anahtar + sunucu denetimi.
-- **Açıkça yazılır.**
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Alternatif ve sınırlar
-
----
-
-# O-LLVM (derleyici tabanlı)
-
-- **Obfuscator-LLVM:** dönüşümleri **derleme sırasında** uygular.
-- Kaynaktan kaynağa değil; LLVM ara temsili üstünde.
-- 9. hafta K-11. Tigress'e bir alternatif.
-
----
-
-# Tigress mi, O-LLVM mi?
-
-| | Tigress | O-LLVM |
-| --- | --- | --- |
-| Nerede | Kaynak (C→C) | Derleyici (IR) |
-| Görünürlük | Gizli kaynağı görebilirsin | Derleme adımı |
-| Dönüşüm zenginliği | Çok (Virtualize dahil) | Daha sınırlı |
-
----
-
-# Ortak sınır
-
-- İkisi de iyi bilinir → kalıpları tanınabilir.
-- İkisi de **çeşitlendirme** ve **katmanlı savunma** ister.
-- İkisi de kırılamazlık **vermez**.
+| Hata | Nerede işlendi |
+| --- | --- |
+| Her şeyi gizlemek | Bölüm 1 (`--Functions`), Bölüm 2 (maliyet) |
+| Testsiz gizleme | Bölüm 2 (sıra ve test kuralı) |
+| Ölçmeden "güçlü" demek | Bölüm 3 (ölçüm kuralı) |
+| Çeşitlendirmeyi atlamak | Bölüm 3 (Kural 2) |
+| İmzayı gizlemeden önce yapmak | Bölüm 5 (Hat kuralı 3) |
+| Eski/dağıtılan Tigress kullanmak | Bölüm 1 (lisans) |
 
 ---
 
@@ -1288,355 +1349,6 @@ Sentetik bir uygulamada bir **lisans denetimi** ve bir **anahtar türetme** fonk
 | Hat | Dönüşümlerin sıralı bütünü |
 | Tohum | Rastgeleliği yöneten sayı (çeşitlendirme) |
 | Sembolik yürütme | Yol-çözen otomatik analiz (KLEE) |
-
----
-
-# Kaynaklar
-
-- **Tigress** resmî sitesi/çalışma sayfaları (`tigress.wtf`) — dönüşümler, sözdizimi, v4, lisans
-- Collberg & Nagra, *Surreptitious Software* — taksonomi, ölçme
-- Banescu vd. — Tigress + KLEE dayanıklılık ölçümü
-- Obfuscator-LLVM — derleyici tabanlı alternatif
-
----
-
-# Özet: bu haftanın tek cümlesi
-
-> Tigress, 9. haftanın gizleme kurallarını **otomatik** ve **çeşitlendirilmiş** uygular; ama kural aynı: gizleme
-> **kırılamazlık değil gecikme**; birleştir, çeşitlendir, **ölç**.
-
----
-
-<!-- _class: bolum -->
-
-# Sonraki hafta
-
-**15. hafta — Final proje gösterimleri (RAP2)**
-
-Dönem içeriği tamamlandı. Final raporunda bu haftanın **hattı (S15)** ve **ölçümleri (S9)** beklenir. 16. hafta: Quiz-2.
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · Dönüşüm dönüşüm
-
-<!-- Konuşma notu: En çok kullanılan dönüşümleri tek tek, ne yaptığı/ne zaman/maliyeti ile ele alıyoruz. -->
-
----
-
-# Neden tek tek?
-
-Bir hat kurarken **hangi dönüşümü neden** seçtiğinizi bilmelisiniz.
-
-Her dönüşümü: ne yapar · ne zaman · maliyet.
-
----
-
-# Flatten
-
-- **Ne yapar:** kontrol akışını tek switch'e taşır (K-04).
-- **Ne zaman:** algoritma yapısını gizlemek için; çoğu hatta.
-- **Maliyet:** orta.
-
----
-
-# AddOpaque / InitOpaque
-
-- **Ne yapar:** opak yüklemler ve sahte dallar ekler (K-01, K-03).
-- **Ne zaman:** Flatten'ı güçlendirmek için.
-- **Maliyet:** orta.
-
----
-
-# EncodeArithmetic
-
-- **Ne yapar:** aritmetiği denk karmaşık ifadeyle değiştirir (K-02).
-- **Ne zaman:** hesap/karşılaştırma içeren fonksiyonlarda.
-- **Maliyet:** düşük.
-
----
-
-# EncodeLiterals
-
-- **Ne yapar:** sabit ve dizgeleri kodlar (K-07, K-08).
-- **Ne zaman:** neredeyse her zaman (ucuz, yüksek getiri).
-- **Maliyet:** çok düşük.
-
----
-
-# EncodeData
-
-- **Ne yapar:** değişkenlerin gösterimini kodlar (K-09).
-- **Ne zaman:** hassas değişkenleri gizlemek için.
-- **Maliyet:** düşük–orta.
-
----
-
-# Split / Merge
-
-- **Ne yapar:** fonksiyonları böler/birleştirir; yapıyı bulanıklaştırır (K-06).
-- **Ne zaman:** fonksiyon sınırlarını gizlemek için.
-- **Maliyet:** düşük–orta.
-
----
-
-# Virtualize
-
-- **Ne yapar:** fonksiyonu özel VM bayt koduna çevirir (K-10).
-- **Ne zaman:** yalnız en kritik, **küçük** fonksiyonlar.
-- **Maliyet:** **yüksek** (onlarca kat yavaşlama).
-
----
-
-# Jit
-
-- **Ne yapar:** kodu çalışma anında üretir (dinamik, K-12).
-- **Ne zaman:** çok seçici; ileri kullanım.
-- **Maliyet:** yüksek; OS korumalarıyla dikkat.
-
----
-
-# AntiBranchAnalysis / AntiAliasAnalysis / AntiTaintAnalysis
-
-- **Ne yapar:** ilgili statik analiz tekniğini zorlaştırır (önleyici aile).
-- **Ne zaman:** belirli analiz tehdidine karşı.
-- **Maliyet:** değişken.
-
----
-
-# RandomFuns / RndArgs
-
-- **Ne yapar:** rastgele sahte fonksiyon/parametre ekler.
-- **Ne zaman:** çeşitlendirmeyi güçlendirmek için (tohumla).
-- **Maliyet:** düşük–orta.
-
----
-
-<!-- _class: yogun -->
-
-# Hangi dönüşüm önce?
-
-Tipik sıra (kavramsal):
-
-1. EncodeLiterals (ucuz temizlik)
-2. EncodeArithmetic
-3. Flatten
-4. AddOpaque
-5. (gerekirse) Virtualize
-6. RandomFuns/RndArgs (çeşitlendirme)
-
----
-
-<!-- _class: bolum -->
-
-# Ek E · Gizleme kararı akışı
-
----
-
-# "Bu fonksiyonu gizlemeli miyim?" — 1
-
-**Soru 1:** Bu fonksiyon hassas mı? (lisans, anahtar, bütünlük, denetim)
-
-- **Hayır** → gizleme; maliyeti boşa harcama.
-- **Evet** → devam.
-
----
-
-# "Bu fonksiyonu gizlemeli miyim?" — 2
-
-**Soru 2:** Değeri yüksek mi?
-
-- **Orta** → EncodeLiterals + EncodeArithmetic + Flatten + AddOpaque.
-- **Yüksek ve küçük** → yukarısı + Virtualize.
-
----
-
-# "Bu fonksiyonu gizlemeli miyim?" — 3
-
-**Soru 3:** Her durumda:
-
-- Çeşitlendir (tohum)
-- Ölç (boyut, süre, blok)
-- Birim testleriyle davranışı doğrula
-- S9/S15'e yaz
-
----
-
-<!-- _class: yogun -->
-
-# Karar akışı · tek bakış
-
-![w:900](assets/h14-09-karar-akisi.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Ek F · Sık yapılan hatalar
-
----
-
-# Hata · her şeyi gizlemek
-
-- Tüm fonksiyonları gizlemek programı çok yavaşlatır/şişirir.
-- Yalnız hassas ve değerli fonksiyonlar.
-
----
-
-# Hata · testsiz gizleme
-
-- Gizlemeden sonra birim testleri çalıştırılmazsa, bozuk davranış fark edilmez.
-- Her hattan sonra test **zorunlu**.
-
----
-
-# Hata · ölçmeden "güçlü" demek
-
-- Ölçüm yoksa değerlendirici (12. hafta) bunu **iddia** sayar.
-- Boyut/süre/blok sayılarını yaz.
-
----
-
-# Hata · çeşitlendirmeyi atlamak
-
-- Tek tip gizleme → bir kırık her kopyayı açar.
-- Her sürüm/dağıtım farklı tohum.
-
----
-
-# Hata · imzayı gizlemeden önce yapmak
-
-- İmza dağıtılan **son** ikiliyi kapsamalı.
-- Önce gizle, sonra imzala.
-
----
-
-# Hata · eski/dağıtılan Tigress kullanmak
-
-- Derste ikili dağıtılmaz; güncel sürümü resmî siteden indir.
-- Lisans koşulunu doğrula.
-
----
-
-# Ek · kapanış notu
-
-Bu ekler size **kendi hattınızı** kurmanın somut kalıbını verdi:
-
-- dönüşüm dönüşüm seçim
-- karar akışı
-- kaçınılacak hatalar
-
-> Doğru araç + doğru ölçüm + çeşitlendirme = savunulabilir bir S9/S15.
-
----
-
-<!-- _class: bolum -->
-
-# Ek G · İkinci işlenmiş hat
-
-<!-- Konuşma notu: İkinci bir sentetik örnekle hattı pekiştiriyoruz; farklı bir fonksiyon türü. -->
-
----
-
-# Yeni örnek · bütünlük denetimi
-
-```c
-int dosya_saglam(const uint8_t *veri, size_t n,
-                 const uint8_t *beklenen) {
-    uint8_t ozet[32];
-    ozet_hesapla(veri, n, ozet);        /* SHA-256 benzeri */
-    return sabit_zamanli_esit(ozet, beklenen, 32);
-}
-```
-
-Sürüm bütünlüğünü denetleyen sentetik bir fonksiyon.
-
----
-
-# Neden bunu gizleyelim?
-
-- Saldırgan bu denetimi bulup **atlatmak** ister (kurcalanmış dosyayı geçirmek için).
-- Denetimin dönüş noktası ve karşılaştırması hedef.
-- 9. hafta: opak boolean + rastgele çıkış burada kritik.
-
----
-
-# Hat seçimi
-
-```bash
-tigress \
-  --Transform=EncodeLiterals \
-  --Transform=EncodeArithmetic \
-  --Transform=Flatten \
-  --Transform=AddOpaque \
-  --Functions=dosya_saglam \
-  --out=gizli.c temiz.c
-```
-
----
-
-# Adım adım · ne olur?
-
-- EncodeLiterals: `32` ve varsa dizgeler düz görünmez.
-- EncodeArithmetic: karşılaştırma karmaşıklaşır.
-- Flatten: tek dönüş noktası görünmez.
-- AddOpaque: sahte dallar; "başarı" dalı tek yerde değil.
-
----
-
-# Davranış doğrulama (zorunlu)
-
-- Doğru özetli dosya → **geçer**.
-- Bozuk özetli dosya → **reddedilir**.
-- Gizli sürümde de aynı sonuç → hat doğru.
-
----
-
-# CFG önce/sonra (kavram)
-
-![w:900](assets/h14-10-cfg-once-sonra.svg)
-
-Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
-
----
-
-# ⚠️ Sabit zamanlılık korunmalı
-
-- `sabit_zamanli_esit` gizlense de **sabit zamanlı** kalmalı.
-- Gizleme uğruna erken çıkış eklenirse yan kanal açılır (3. hafta).
-- Dönüşümlerin bunu bozmadığını **test et**.
-
----
-
-# Ölçüm (örnek)
-
-| Ölçüt | Önce | Sonra |
-| --- | --- | --- |
-| Boyut | 100 KB | 128 KB |
-| Süre | 1.0× | 1.7× |
-| Blok (dosya_saglam) | 4 | 33 |
-
----
-
-# Çeşitlendirme
-
-- İki tohumla üret → iki farklı ikili.
-- "Bütünlük denetimini atla" yaması bir kopyada işe yarasa bile diğerinde yaramaz.
-
----
-
-# İkinci örnek · çıkarım
-
-- Bütünlük denetimi gibi **atlatma hedefi** fonksiyonlarda gizleme değerlidir.
-- Ama asıl güç: gizleme + RASP (6. hafta) + sunucu denetimi.
-- Gizleme tek başına atlatmayı **geciktirir**, engellemez.
-
----
-
-<!-- _class: bolum -->
-
-# Ek H · Hızlı başvuru
 
 ---
 
@@ -1669,8 +1381,28 @@ Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
 
 ---
 
-# Son söz (14. hafta)
+# Kaynaklar
 
-> Araç güçlüdür ama **karar sizindir**: neyi, neden, hangi maliyetle gizliyorsunuz?
+- **Tigress** resmî sitesi/çalışma sayfaları (`tigress.wtf`) — dönüşümler, sözdizimi, v4, lisans
+- Collberg & Nagra, *Surreptitious Software* — taksonomi, ölçme
+- Banescu vd. — Tigress + KLEE dayanıklılık ölçümü
+- Obfuscator-LLVM — derleyici tabanlı alternatif
 
-Ölç, çeşitlendir, katmanla. Gizleme kırılamazlık değil, **kazanılan zamandır**.
+---
+
+# Özet: bu haftanın tek cümlesi
+
+> Tigress, 9. haftanın gizleme kurallarını **otomatik** ve **çeşitlendirilmiş** uygular; ama kural aynı: gizleme
+> **kırılamazlık değil gecikme**; birleştir, çeşitlendir, **ölç**.
+
+Araç güçlüdür ama **karar sizindir**: neyi, neden, hangi maliyetle gizliyorsunuz?
+
+---
+
+<!-- _class: baslik -->
+
+# Bir sonraki hafta
+
+**15. hafta — Final proje gösterimleri (RAP2)**
+
+Dönem içeriği tamamlandı. Final raporunda bu haftanın **hattı (S15)** ve **ölçümleri (S9)** beklenir. 16. hafta: Quiz-2.

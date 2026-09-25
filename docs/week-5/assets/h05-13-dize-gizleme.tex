@@ -1,0 +1,24 @@
+% Hafta 5 — Dize gizleme ve dinamik yöntem çağrısı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-13-dize-gizleme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Dize gizleme ve dinamik yöntem çağrısı};
+  \node[altbaslik] at (b.south west) {iki basit yöntem, iki farklı izi siler};
+  \node[kotukutu=36mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{Düz sabit}\\\kod{"sunucu-anahtari"}\\strings ile görünür};
+  \node[uyarikutu=34mm, right=9mm of n1] (n2)
+    {\kb{Kodlanmış sabit}\\XOR / tablo ile\\saklanır};
+  \node[kutu=36mm, right=9mm of n2] (n3)
+    {\kb{Çalışma anında çöz}\\kullanım anında,\\kısa süre bellekte};
+  \node[morkutu=34mm, right=9mm of n3] (n4)
+    {\kb{Dinamik çağrı}\\yansıma (reflection) ile\\ad ikilide görünmez};
+  \draw[kotuok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \draw[ok] (n3.east) -- (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Bu bir şifreleme değil, bir GECİKTİRMEdir: anahtar da ikilidedir, bulunabilir.};
+\end{tikzpicture}
+\end{document}

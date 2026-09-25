@@ -1,0 +1,28 @@
+% Hafta 1 — Belleğin dört ömrü ve her adımın CWE'si
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-09-bellek-omru.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Belleğin dört ömrü ve her adımın CWE'si};
+  \node[altbaslik] (alt) at (b.south west) {her adımın atlanması ayrı bir zafiyet sınıfı üretir};
+
+  \node[kutu=32mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k1) {\kb{1 · AYIR}\\malloc / new};
+  \node[uyarikutu=32mm, right=of k1] (k2) {\kb{2 · DENETLE}\\NULL mı?\\CWE-476};
+  \node[kutu=32mm, right=of k2] (k3) {\kb{3 · KULLAN}\\sınır içinde\\CWE-787};
+
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+
+  \node[iyikutu=32mm, below=24mm of k1] (k4) {\kb{4 · SİL}\\sırrı temizle\\CWE-226};
+  \node[iyikutu=32mm, right=of k4] (k5) {\kb{5 · SERBEST BIRAK}\\bir kez\\CWE-415};
+  \node[morkutu=32mm, right=of k5] (k6) {\kb{6 · İŞARETÇİYİ UNUT}\\p = NULL\\CWE-416};
+
+  \draw[ok, draw=soluk] (k4.east) -- (k5.west);
+  \draw[ok, draw=soluk] (k5.east) -- (k6.west);
+  \draw[ok, draw=soluk] (k3.south) -- ++(0,-8mm) -| (k4.north);
+
+  \node[dip, text width=140mm, below=9mm of k6.south -| k3, anchor=north]
+    {Altı adımın hepsi yapılmazsa bellek hatası kaçınılmazdır.};
+\end{tikzpicture}
+\end{document}

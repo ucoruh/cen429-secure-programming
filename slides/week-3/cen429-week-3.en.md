@@ -10,7 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -23,132 +22,6 @@ Asst. Prof. Dr. Uğur CORUH · 02.10.2026
 <!--
 Speaker note: This week the focus shifts from the program to the DATA. A secret has three states; each state has a different threat and a different defence. Main idea: the security shell (the concrete form of defence in depth).
 -->
-
----
-
-<!-- _class: bolum -->
-
-# 0. Fundamental Concepts (From Scratch)
-
-<!-- Speaker note: We define crypto/data-security terms from scratch. This week is an introduction to crypto; Week 10 goes deeper. -->
-
----
-
-# Why This Section?
-
-This week terms such as "encryption," "nonce," and "key derivation" will come up.
-
-We assume you know none of them.
-
-Let's first define them **one by one**.
-
----
-
-# The Three States of Data
-
-- **In transit:** moving across the network (TLS).
-- **At rest:** sitting on disk (file encryption).
-- **In use:** being processed in memory (the hardest).
-
-Each state needs different protection.
-
----
-
-# What Is Encryption?
-
-- **Encryption:** turning readable data (plaintext) into unreadable data (ciphertext) with a **key**.
-- **Decryption:** opening it back up with the key.
-- Security depends on the **key's** secrecy.
-
----
-
-# Symmetric vs. Asymmetric
-
-- **Symmetric:** a single key (AES). Fast.
-- **Asymmetric:** a public + private pair (RSA/ECC). Easy key distribution.
-- In practice, used **together** (hybrid).
-
----
-
-# Hash (Digest)
-
-- **Digest:** a fixed-size fingerprint computed from data (SHA-256).
-- One-way; if the data changes, the digest changes.
-- The foundation of integrity and signatures.
-
----
-
-# MAC and Signature
-
-- **MAC:** symmetric; the message hasn't changed + it came from the right party.
-- **Signature:** asymmetric; who signed it (non-repudiation).
-- Both provide **integrity**.
-
----
-
-# AEAD
-
-- **AEAD:** confidentiality **and** integrity **together** (AES-GCM).
-- Provides both without a separate MAC.
-- The modern choice.
-
----
-
-# IV / Nonce / Salt
-
-- **IV/nonce:** a **unique** starting value for every encryption.
-- **Salt:** a random value added when deriving a key from a password.
-- None of the three are **secret**, but all must be **non-repeating/unique**.
-
----
-
-# Randomness and CSPRNG
-
-- **CSPRNG:** a cryptographically secure random generator (the operating system's `getrandom`/`BCryptGenRandom`).
-- `rand()` is **insecure**.
-- Keys/nonces/salts are generated from it.
-
----
-
-# Key Derivation (KDF)
-
-- **KDF:** **generating a key** from a secret (a password or a master key).
-- **PBKDF2/Argon2:** from a password (slow, salted).
-- **HKDF:** many keys from a master secret.
-
----
-
-# Key Hierarchy
-
-- A single key isn't used for every job.
-- Master key → derived keys (data, session).
-- **Crypto-period:** each key's lifetime.
-
----
-
-# Forward Secrecy
-
-- **Forward secrecy:** a new key for every session.
-- Even if the long-term key leaks, **old** sessions can't be decrypted.
-- Modern TLS provides it.
-
----
-
-# TLS (Briefly)
-
-- **TLS:** the protocol for secure communication on the network (underneath HTTPS).
-- Key agreement + AEAD + certificate validation.
-- We'll see it in Section 8.
-
----
-
-# Now We're Ready
-
-Terms:
-
-the three states of data · encryption · symmetric/asymmetric · digest · MAC/signature · AEAD · IV/nonce/salt · CSPRNG · KDF/HKDF · key hierarchy · forward secrecy · TLS
-
-Now: the three states of data and the security shell.
 
 ---
 
@@ -168,19 +41,38 @@ Speaker note: Build the lab in advance. build.ps1 on Windows, build.sh under WSL
 
 ---
 
-<!-- _class: yogun -->
+# What We Bring from Earlier Weeks
 
-# A Brief History — Tools for Protecting Data
+- **The white-box attacker model** — the owner of the device/server may also be the attacker; they can read memory, attach a debugger **(Week 1)**
+- **Secure erasure from memory** — wiping a secret with `explicit_bzero`/`OPENSSL_cleanse` so the compiler can't remove it **(Week 1)**
+- **Entropy measurement** — measuring the disorder in a file's bytes to tell encrypted/packed content apart **(Week 2)**
 
-- **1976** Diffie–Hellman (public key) · **1977** **RSA** and **DES**
-- **2001** — **AES** (Rijndael) replaces DES
-- **2007** — **GCM** becomes a standard: the **AEAD** era (confidentiality + integrity together)
-- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
-
-> The rule follows from this: don't write your own crypto, use **AEAD**, and manage the **key** correctly.
+This week: the white-box model → **data in use** and **whitebox**; entropy → **the random generator's input**.
 
 ---
 
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| The three states of data (+ security shell) | Section 1 |
+| Encryption | Section 2 |
+| AEAD | Section 2 |
+| Symmetric / asymmetric | Section 2 |
+| Hash | Section 2 |
+| MAC and signature | Section 2 |
+| Randomness / CSPRNG | Section 3 |
+| IV / nonce / salt | Section 4 |
+| Key derivation (KDF) | Section 5–6 |
+| Forward secrecy | Section 6 |
+| Key hierarchy | Section 7 |
+| TLS | Section 8 |
+
+---
 
 # How Do the Demos Work?
 
@@ -212,6 +104,19 @@ Speaker note: Build the lab in advance. build.ps1 on Windows, build.sh under WSL
 
 ---
 
+<!-- _class: yogun -->
+
+# A Brief History — Tools for Protecting Data
+
+- **1976** Diffie–Hellman (public key) · **1977** **RSA** and **DES**
+- **2001** — **AES** (Rijndael) replaces DES
+- **2007** — **GCM** becomes a standard: the **AEAD** era (confidentiality + integrity together)
+- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
+
+> The rule follows from this: don't write your own crypto, use **AEAD**, and manage the **key** correctly.
+
+---
+
 # A Secret's Three States
 
 | State | Where | Threat | Defence |
@@ -233,7 +138,6 @@ Speaker note: Ask the students: a password in a banking app on your phone — wh
 ![w:1000](assets/h03-01-verinin-uc-hali.svg)
 
 ---
-
 
 <!-- _class: sema -->
 
@@ -269,6 +173,7 @@ To reach the secret, the attacker must break **all of them in sequence** = defen
 
 # Cryptography Isn't One Thing
 
+- **Encryption, briefly:** turning plaintext into unreadable ciphertext with a key; decryption reverses this with the same (or a matching) key; security rests on the key's secrecy.
 - **Different tools** exist for different goals.
 - The four most commonly confused families: encryption, hash, MAC, signature.
 - Which gives **confidentiality**, which gives **integrity**, which gives **both**?
@@ -423,17 +328,6 @@ Same result: **confidentiality + integrity in one package.**
 - Instead of wiring up "encrypt + add a MAC" separately, use **AEAD**.
 - It does both jobs **in one call**, in the right order (encrypt-then-MAC), with fewer chances for error.
 - A separate MAC is needed only for data that won't be encrypted but still needs integrity (or via AEAD's AAD field).
-
----
-
-<!-- _class: sema -->
-
-# AEAD: Confidentiality + Integrity in One Call
-
-
-<!--
-Speaker note: Emphasize the AAD: data that needs to be bound but not encrypted — like a version number or record ID — goes there.
--->
 
 ---
 
@@ -968,6 +862,7 @@ Every occurrence of `ecb` in code review is a **finding**. An evaluator can catc
 - A password is **short, low-entropy, and predictable**.
 - Made directly into a key, brute force becomes cheap.
 - Solution: a key derivation function from a password (**KDF**).
+- **KDFs in general:** you can derive a key not only from a password but also from a **master secret** — we'll see this in Section 6 (**HKDF**).
 
 ---
 
@@ -1807,6 +1702,37 @@ Saldiri 2: baska cihaza kopyala -> dis 3 kabuk acilir,
 
 ---
 
+# End to End: Protecting a Note in All Three States
+
+An app protects a user's "note": it **arrives** from the server (in transit), **sits** on disk (at rest), and is **shown** on screen (in use).
+
+| State | Protection | Section |
+| --- | --- | --- |
+| In transit | TLS 1.3 + chain/SAN + SPKI pin (where applicable) | 8 |
+| At rest | AES-256-GCM (AEAD), a unique nonce, key from a KDF | 5, 9 |
+| In use | Keep it in memory as briefly as possible, erase when done | 9 |
+
+Key chain: password → **KDF** → master key → **HKDF** → data/session key; **AEAD integrity** comes along at every stage.
+
+---
+
+<!-- _class: yogun -->
+
+# Classic Crypto Mistakes — Summary
+
+| Mistake | Section | Rule |
+| --- | --- | --- |
+| Nonce reuse | 4 | Never repeat with the same key; use a counter or a sufficiently random nonce |
+| Weak randomness | 3 | Not `rand()` — a **CSPRNG** (`getrandom`, `BCryptGenRandom`) |
+| Making the password the key directly | 5 | Derive it with a **KDF** (salted, slow) |
+| ECB mode | 4 | Leaks patterns (the "penguin"); use **AEAD** |
+| Encryption without integrity | 2 | **AEAD** or encrypt-then-MAC |
+| A non-constant-time comparison | 3 | Not `memcmp` — compare in constant time |
+
+All six mistakes were covered earlier in this deck; here they are gathered in one glance.
+
+---
+
 # Project: This Week (S5, S7)
 
 - **S5 — Asset list (draft):** every sensitive asset; location, lifetime, C/I/I+, protection
@@ -1858,247 +1784,71 @@ Speaker note: Make groups of 3-4. Activities 1 and 3 are the most productive for
 
 # Self-Check (Continued)
 
-1. Why can't `rand()` be used for security? What instead?
-2. `EVP_DecryptFinal_ex` returned failure; what do you do with the plaintext in the buffer?
-3. Why is `memcmp` risky for MAC comparison?
-4. Is a key whose crypto-period has expired deleted immediately?
-5. Why isn't the data re-encrypted when the KEK is renewed in envelope encryption?
+7. Why can't `rand()` be used for security? What instead?
+8. `EVP_DecryptFinal_ex` returned failure; what do you do with the plaintext in the buffer?
+9. Why is `memcmp` risky for MAC comparison?
+10. Is a key whose crypto-period has expired deleted immediately?
+11. Why isn't the data re-encrypted when the KEK is renewed in envelope encryption?
 
 <!-- ask first, then open the answer slide -->
 
 ---
 
-# Self-Check — Answers (1–5)
+# Self-Check — Answers (7–11)
 
-1. `rand()` is **statistical and predictable** → use a CSPRNG (`RAND_bytes` / `getrandom`).
-2. If decryption fails, **securely erase** the plaintext in the buffer (`memset_s`) and **reject it** — integrity wasn't verified, don't use it.
-3. `memcmp` **exits early** → a **timing leak**; use `CRYPTO_memcmp` / a constant-time comparison.
-4. **No.** It's not used for new encryption, but it's kept **for decryption only** until the old data is re-encrypted.
-5. The data is encrypted with the **DEK**; when the KEK is renewed, only the **DEKs are rewrapped**, not the data.
+7. `rand()` is **statistical and predictable** → use a CSPRNG (`RAND_bytes` / `getrandom`).
+8. If decryption fails, **securely erase** the plaintext in the buffer (`memset_s`) and **reject it** — integrity wasn't verified, don't use it.
+9. `memcmp` **exits early** → a **timing leak**; use `CRYPTO_memcmp` / a constant-time comparison.
+10. **No.** It's not used for new encryption, but it's kept **for decryption only** until the old data is re-encrypted.
+11. The data is encrypted with the **DEK**; when the KEK is renewed, only the **DEKs are rewrapped**, not the data.
 
 ---
 
 # Self-Check (Continued)
 
-6. What happens if `SSL_set1_host` isn't called?
-7. Why SPKI for pinning, and why a backup pin?
-8. What is "fail-open"? An example
-9. Why can't a plain SHA-256 of an ID number be a pseudonym?
-10. Why does tokenization shrink PCI DSS scope?
+12. What happens if `SSL_set1_host` isn't called?
+13. Why SPKI for pinning, and why a backup pin?
+14. What is "fail-open"? An example
+15. Why can't a plain SHA-256 of an ID number be a pseudonym?
+16. Why does tokenization shrink PCI DSS scope?
 
 <!-- ask first, then open the answer slide -->
 
 ---
 
-# Self-Check — Answers (6–10)
+# Self-Check — Answers (12–16)
 
-6. Without `SSL_set1_host`, **the hostname isn't validated**; a **valid** certificate for another name gets accepted → MITM.
-7. The **SPKI** stays the same even if the certificate is renewed (as long as the key is the same); a **backup pin** prevents the app from **"bricking"** when the key changes.
-8. **Fail-open:** treating an error as "passed/allow"; e.g., a **swallowed `KeyStoreException`** skipping validation.
-9. An ID number's value space is **small/predictable** → plain SHA-256 can be **brute-forced back**; a **keyed HMAC** is needed.
-10. **Tokenization:** the real PAN stays only **in the vault**; the rest of the system holds tokens → the **PCI DSS audit scope** shrinks.
-
----
-
-
-<!-- _class: baslik -->
-
-# Next Week
-
-**Week 4 — Code Hardening: C/C++**
-
-Secure memory management · sanitizers · compiler/OS protections
-(stack canary, ASLR, DEP/NX, CFI) · control-flow flattening
-
-Source: Viega & Messier, Recipes 3.1–3.5, 13.1
+12. Without `SSL_set1_host`, **the hostname isn't validated**; a **valid** certificate for another name gets accepted → MITM.
+13. The **SPKI** stays the same even if the certificate is renewed (as long as the key is the same); a **backup pin** prevents the app from **"bricking"** when the key changes.
+14. **Fail-open:** treating an error as "passed/allow"; e.g., a **swallowed `KeyStoreException`** skipping validation.
+15. An ID number's value space is **small/predictable** → plain SHA-256 can be **brute-forced back**; a **keyed HMAC** is needed.
+16. **Tokenization:** the real PAN stays only **in the vault**; the rest of the system holds tokens → the **PCI DSS audit scope** shrinks.
 
 ---
 
-<!-- _class: bolum -->
+# Self-Check (Continued)
 
-# Appendix · Protecting a Piece of Data End to End
+17. The three states of data and each one's protection?
+18. Why can't a password be a key directly?
+19. What does AEAD provide, which separate steps does it replace?
+20. What does forward secrecy mean?
+21. Is IV/nonce/salt secret? What's the rule?
+22. Why is a CSPRNG needed?
+23. Why does a key hierarchy exist?
 
-<!-- Speaker note: We summarise the week by protecting a single secret in all three of its states. -->
-
----
-
-# Scenario
-
-An application must protect a user's "note":
-
-- it comes from the server (in transit)
-- it sits on disk (at rest)
-- it's shown on screen (in use)
-
-Let's protect all three states.
+<!-- ask first, then open the answer slide -->
 
 ---
 
-# In Transit · Step
-
-- Transport with **TLS 1.3**.
-- Certificate chain + SAN validation.
-- SPKI pin + backup pin, where applicable.
-
----
-
-# At Rest · Step
-
-- Encrypt with **AES-256-GCM** (AEAD).
-- A unique nonce.
-- Key from a TEE/HSM or a KDF from a password.
-
----
-
-# In Use · Step
-
-- Keep it in memory for as short a time as possible.
-- **Erase** it when done (`memset`-like).
-- RASP + short lifetime.
-
----
-
-# Where Does the Key Come From?
-
-- Master password → **PBKDF2/Argon2** (salted, slow) → master key.
-- Master key → **HKDF** → data key, session key.
-- Each key has a **separate** job.
-
----
-
-# Integrity
-
-- AEAD already provides integrity.
-- TLS in transit, the GCM tag at rest.
-- Tampering → decryption is **rejected**.
-
----
-
-# Scenario · Summary
-
-| State | Protection |
-| --- | --- |
-| In transit | TLS 1.3 + chain |
-| At rest | AES-GCM + KDF |
-| In use | short lifetime + erasure |
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Classic Crypto Mistakes
-
----
-
-# Mistake · Nonce Reuse
-
-- Same nonce twice in GCM → **disaster** (key/data can leak).
-- Use a counter or a sufficiently random nonce.
-
----
-
-# Mistake · Weak Randomness
-
-- Key/nonce with `rand()` → predictable.
-- Use a **CSPRNG** (`getrandom`, `BCryptGenRandom`).
-
----
-
-# Mistake · Making the Password the Key Directly
-
-- A password has low entropy; a direct key is **weak**.
-- Derive it with a **KDF** (salted, slow).
-
----
-
-# Mistake · ECB Mode
-
-- Leaks patterns (the "penguin").
-- Use AEAD.
-
----
-
-# Mistake · Encryption Without Integrity
-
-- Confidentiality alone isn't enough; it can be tampered with.
-- AEAD or encrypt-then-MAC.
-
----
-
-# Mistake · A Non-Constant-Time Comparison
-
-- If MAC/password comparison exits early, it leaks **timing**.
-- Compare in constant time.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Solved Self-Check
-
----
-
-# Question 1
-
-**The three states of data and each one's protection?**
-
-**Answer:** In transit (TLS), at rest (AEAD encryption), in use (short lifetime + erasure).
-
----
-
-# Question 2
-
-**Why is nonce reuse a disaster in GCM?**
-
-**Answer:** Under the same key+nonce, confidentiality and integrity both collapse; the keystream and data can leak. The nonce must be unique.
-
----
-
-# Question 3
-
-**Why can't a password be a key directly?**
-
-**Answer:** It has low entropy and is predictable. It's derived, salted and slow, with a KDF (PBKDF2/Argon2).
-
----
-
-# Question 4
-
-**What does AEAD provide, which separate steps does it replace?**
-
-**Answer:** Confidentiality + integrity together; it replaces separate encryption + MAC steps.
-
----
-
-# Question 5
-
-**What does forward secrecy mean?**
-
-**Answer:** A new key every session; even if the long-term key leaks, old sessions can't be decrypted.
-
----
-
-# Question 6
-
-**Is IV/nonce/salt secret? What's the rule?**
-
-**Answer:** Not secret, but must be **unique/non-repeating**; nonce reuse and a fixed salt are dangerous.
-
----
-
-# Question 7
-
-**Why is a CSPRNG needed?**
-
-**Answer:** `rand()` is predictable; a cryptographically secure generator (the OS) is needed for keys/nonces/salts.
-
----
-
-# Question 8
-
-**Why does a key hierarchy exist?**
-
-**Answer:** A single key isn't used for every job; derived keys come from a master key, each with its own job and lifetime.
+# Self-Check — Answers (17–23)
+
+17. **In transit** (TLS), **at rest** (AEAD encryption), **in use** (short lifetime + erasure).
+18. It's low-entropy and predictable; it's derived, salted and slow, with a **KDF** (PBKDF2/Argon2).
+19. **Confidentiality + integrity** together; it replaces separate encryption + MAC steps.
+20. A new key every session; even if the long-term key leaks, old sessions can't be decrypted.
+21. **Not secret**, but must be **unique/non-repeating**; nonce reuse and a fixed salt are dangerous.
+22. `rand()` is predictable; a **CSPRNG** (the OS) is needed for keys/nonces/salts.
+23. A single key isn't used for every job; derived keys come from a master key, each with its own job and lifetime.
 
 ---
 
@@ -2117,9 +1867,16 @@ Let's protect all three states.
 
 ---
 
-# Final Word (Week 3)
+<!-- _class: baslik -->
 
-> Protect data **in all three states**: the right mode (AEAD), secure randomness, a key from a KDF, a unique nonce, and a well
-> managed key hierarchy.
+# Next Week
+
+**Week 4 — Code Hardening: C/C++**
+
+This week we learned to protect data (keys, plaintext) with correct encryption and key management; but the encryption code itself is also a C/C++ program, and a buffer overflow, format-string bug, or integer error can leak the very key and plaintext we carefully protected.
+
+Week 4 covers preventing exactly these mistakes with the **SEI CERT C/C++** rules, and catching them with static analysis and sanitizers.
+
+> Protect data **in all three states**: the right mode (AEAD), secure randomness, a key from a KDF, a unique nonce, and a well managed key hierarchy.
 
 We'll go deeper into PKI and certificates in Week 10.

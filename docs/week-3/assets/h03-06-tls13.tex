@@ -1,0 +1,23 @@
+% Hafta 3 — TLS 1.3 el sıkışması (dizi diyagramı)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-06-tls13.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {TLS 1.3 el sıkışması};
+  \node[altbaslik] at (b.south west) {tek gidiş-dönüşte anahtar anlaşması ve kimlik doğrulama};
+  \node[aktor] (a1) at (0,-2) {İSTEMCİ};
+  \node[aktor] (a2) at (13,-2) {SUNUCU};
+  \draw[yasam] (a1.south) -- ++(0,-108mm);
+  \draw[yasam] (a2.south) -- ++(0,-108mm);
+  \draw[anaok] (0,-3.4) -- node[oketiket, above=3pt, text width=58mm, align=center] {ClientHello (+ anahtar payları, şifre takımları)} (13,-3.4);
+  \draw[kesik ok, draw=iyi] (13,-4.6) -- node[oketiket, above=3pt, text width=50mm, align=center] {ServerHello (+ anahtar payı)} (0,-4.6);
+  \node[notkutusu, text width=55mm] at (0,-5.8) {Ortak sır (ECDHE) --- her oturuma yeni: İLERİ GİZLİLİK};
+  \draw[kesik ok, draw=iyi] (13,-7.2) -- node[oketiket, above=3pt] {\{Sertifika\} (şifreli)} (0,-7.2);
+  \draw[kesik ok, draw=iyi] (13,-8.4) -- node[oketiket, above=3pt, text width=58mm, align=center] {\{CertificateVerify\} (özel anahtarla imza)} (0,-8.4);
+  \draw[kesik ok, draw=iyi] (13,-9.6) -- node[oketiket, above=3pt] {\{Finished\}} (0,-9.6);
+  \node[notkutusu, text width=62mm] at (0,-10.9) {Sertifikayı DOĞRULA: zincir + süre + SAN + iptal};
+  \draw[anaok] (0,-12.2) -- node[oketiket, above=3pt, text width=58mm, align=center] {\{Finished\} $\rightarrow$ uygulama verisi} (13,-12.2);
+  \node[kotudip, text width=160mm] at (6.5,-13.4) {Doğrulama adımı atlanırsa şifreli ama KİMİN olduğu belirsiz bir kanal kurulur.};
+\end{tikzpicture}
+\end{document}

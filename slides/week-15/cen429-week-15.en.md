@@ -35,6 +35,12 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 
 ---
 
+# RAP2 Submission — Diagram
+
+![w:950](assets/h15-01-rap2.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Final Rubric
@@ -48,12 +54,6 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 | Security testing and unit tests | 6 | S16 **results** |
 | Standards | 7 | S1 · S14 · S17 |
 | Final report and presentation | 7 | All |
-
----
-
-# Security Guide Map S0–S17 — Diagram
-
-![w:950](assets/h15-02-kilavuz-haritasi.svg)
 
 ---
 
@@ -71,9 +71,9 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 
 ---
 
-# RAP2 Submission — Diagram
+# Security Guide Map S0–S17 — Diagram
 
-![w:950](assets/h15-01-rap2.svg)
+![w:950](assets/h15-02-kilavuz-haritasi.svg)
 
 ---
 
@@ -94,8 +94,8 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 # Suggested Demonstration Flow
 
 1. **Summary:** product, architecture, the three most critical assets
-2. **Since the midterm:** finding–action list
-3. **Live demonstration:** cryptography, secure communication, a protection layer **working live**
+2. **Since the midterm:** finding–action list (finding → action → closure; the assessor looks for this loop)
+3. **Live demonstration:** cryptography, secure communication, a protection layer **working live** (e.g., a tampered file being rejected)
 4. **Evidence:** tests, protection table, SBOM, compliance matrix
 5. **Remaining risk:** what was deliberately scoped out, and why
 
@@ -110,10 +110,10 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 # Sample Questions
 
 - Which key is this key derived from, where does it live, when is it deleted?
-- Where are chain and hostname verification performed?
+- How do you verify the certificate chain? Where is hostname verification performed?
 - What happens if signature verification fails? Can an old but validly signed version still be installed?
-- Did you measure the cost of obfuscation?
-- Where is the evidence for this row marked "met"?
+- Did you measure the cost of obfuscation? Which function did you obfuscate, and why?
+- In the compliance matrix, where is the evidence for this row marked "met"?
 - Which requirement did you defer, and how will the other party meet it?
 
 ---
@@ -133,7 +133,9 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 
 ---
 
-# S16: Results, Not a Plan — Diagram
+# Academic Integrity
+
+The syllabus's "Academic Integrity" section also applies to the project; every submitted line must be explainable, and any team member may be asked a question during the demonstration.
 
 ![w:950](assets/h15-04-s16.svg)
 
@@ -142,189 +144,15 @@ Speaker note: Final demonstration week: each team shows the complete security gu
 # At the End of the Term
 
 - Your guide = a small model of certification documents → **portfolio** (make sure it contains no confidential information)
-- Every submitted line must be explainable; any team member may be asked a question
-
----
-
-# Final Exam Period
-
-**Week 16 — Quiz-2**
-
-- Scope: weeks 9–14
-- Study guide: Week 16 page
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Final Rubric Item by Item
-
-<!-- Speaker note: At the final demonstration (RAP2), every section is expected to be complete; we explain what evidence each item expects. -->
-
----
-
-# What Does the Final Measure?
-
-The final demonstration measures the **entirety** of your project:
-
-- cryptography, secure communication
-- asset management (complete)
-- advanced binary protections
-- test **results**, standards
-
----
-
-# Item · Cryptography
-
-- Algorithm inventory, key lifecycle.
-- **Evidence:** S8 + tests.
-
----
-
-# Item · Secure Communication
-
-- TLS, pinning, message level.
-- **Evidence:** S6, S11 + tests.
-
----
-
-# Item · Advanced Binary Protections
-
-- Obfuscation (S9 advanced), build pipeline (S15).
-- **Evidence:** measurement table + signing.
-
----
-
-# Item · Testing and Verification
-
-- Test **results** (not a plan).
-- **Evidence:** S16.
-
----
-
-# Item · Standards and Compliance
-
-- Compliance matrix (S17), deferred requirements (S14).
-- **Evidence:** S14, S17.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · From Midterm to Final
-
----
-
-# New Sections
-
-- S6 identity/binding
-- S8 cryptography/keys
-- S11 secure communication
-- S14 assumptions/deferred requirements
-- S15 build/deployment pipeline
-
----
-
-# To Be Completed
-
-- S5 assets (complete)
-- S9 hardening (advanced)
-- S12 reporting (complete)
-- S16 **results**
-- S17 complete matrix
-
----
-
-# Finding–Action (from the Midterm)
-
-- Midterm feedback into one table:
-  - finding → action → closure.
-- The assessor looks for this loop.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Demonstration Flow
-
----
-
-# Flow · Summary + Since the Midterm
-
-- Product, architecture, the three most critical assets.
-- Finding–action list.
-
----
-
-# Flow · Live Demonstration
-
-- Cryptography, secure communication and **a protection layer** working live.
-- E.g., a tampered file being rejected.
-
----
-
-# Flow · Evidence + Remaining Risk
-
-- Tests, protection table, SBOM, compliance matrix.
-- Remaining risk: what was deliberately scoped out.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Sample Questions
-
----
-
-# Question 1
-
-**Which key is this key derived from, where does it live, when is it deleted?**
-
----
-
-# Question 2
-
-**Where is certificate chain and hostname verification performed?**
-
----
-
-# Question 3
-
-**What happens if signature verification fails? Can an old but validly signed version still be installed?**
-
----
-
-# Question 4
-
-**Did you measure the cost of obfuscation? Which function did you obfuscate, and why?**
-
----
-
-# Question 5
-
-**Where is the evidence for this row marked "met" in the compliance matrix?**
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Common Mistakes
-
----
-
-# Mistake List
-
-- Test plan exists, no **results**.
-- "Met" without evidence.
-- Guide and code version differ.
-- Remaining risk is empty.
-- Midterm feedback was ignored.
-- Real secret/personal data in the repo.
-
----
-
-# Final Word (RAP2)
 
 > At the final, **results** are expected: every protection is shown working, every requirement is tied to evidence.
 
-Your guide is a small model of certification documents; it is a **portfolio** item.
+---
+
+<!-- _class: baslik -->
+
+# Next Week
+
+**Week 16 — Quiz-2**
+
+After the final demonstration (RAP2), it's time for Quiz-2; the scope is weeks 9–14. The study guide is on the Week 16 page.

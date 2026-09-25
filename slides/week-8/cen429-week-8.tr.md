@@ -30,14 +30,9 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 - Kapsam: **1–6. haftalar** · vizenin **%40**'ı
 - Tarih, saat, yer, süre, soru biçimi: **ders sınıfında** duyurulur
-- Ölçülen: ezber değil, **neden** sorusu
-- En iyi hazırlık: her haftanın **Kendini sınama** soruları + demoları yeniden çalıştırmak
-
----
-
-# Vize notu hesabı — şema
-
-![w:950](assets/h08-03-vize-hesabi.svg)
+- Ölçülen: ezber değil, **neden** sorusu — sık karıştırılan kavramları da nedeniyle öğrenin
+- En iyi hazırlık: her haftanın **Kendini sınama** sorularını cevaba bakmadan yapıp demoları yeniden çalıştırmak
+- Özellikle **3. ve 4. hafta** demolarını bir kez daha gözden geçirin
 
 ---
 
@@ -51,11 +46,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | 2 | Virüs/solucan/truva · salgın · kural tespiti · bütünlük izleme · BLP, Biba, Clark–Wilson · Unix/Windows ACL · RBAC · CWE, OWASP, CVE, CVSS · günlük enjeksiyonu |
 | 3 | AEAD · özet/MAC/imza · CSPRNG · nonce/IV/tuz · ECB · Argon2id · HKDF · anahtar yaşam döngüsü · TLS 1.3 · sabitleme · fail-open · maskeleme · kabuklar |
 
----
-
-# Quiz-1 kapsamı — şema
-
-![w:950](assets/h08-01-kapsam.svg)
+*Ek not: 2. hafta — güven sınırı ve en az yetki ilkesi.*
 
 ---
 
@@ -69,11 +60,13 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | 5 | Yönetilen dil · CERT Java · enjeksiyon kökü · SQL/komut/yol · seri durumdan çıkarma · XXE/XSS · Python/JS, ReDoS · bayt kodu · ProGuard/R8 · SBOM, VEX |
 | 6 | Algılama–savunma–caydırma · MATE · RASP mimarisi · bütünlük · hata ayıklayıcı/ortam/kanca · bellek koruması · root/imza · akış sayacı · tepki, decoy, cihaz bağlama |
 
+*Ek not: 4. hafta — üç katman (kod → derleyici/OS → gizleme); 5. hafta — yönetilen dil bellek hatasını çözer, enjeksiyonu çözmez.*
+
 ---
 
-# Soru tipleri — şema
+# Quiz-1 kapsamı — şema
 
-![w:950](assets/h08-02-soru-tipleri.svg)
+![w:950](assets/h08-01-kapsam.svg)
 
 ---
 
@@ -112,6 +105,25 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 <!-- _class: yogun -->
 
+# Sık karıştırılanlar (3)
+
+| A | B | Fark |
+| --- | --- | --- |
+| Hata | Zafiyet | Kötüye kullanılabilir hata |
+| Kara kutu | Beyaz kutu (MATE) | Programa sahip |
+| Simetrik | Asimetrik | Tek / çift anahtar |
+| AEAD | Yalnız şifreleme | + bütünlük |
+
+---
+
+# Soru tipleri — şema
+
+![w:950](assets/h08-02-soru-tipleri.svg)
+
+---
+
+<!-- _class: yogun -->
+
 # Bir haftalık plan
 
 | Gün | Ne yapılacak? |
@@ -126,9 +138,103 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 ---
 
+# Vize notu hesabı — şema
+
+![w:950](assets/h08-03-vize-hesabi.svg)
+
+---
+
 # Çalışma planı — şema
 
 ![w:950](assets/h08-04-calisma-plani.svg)
+
+---
+
+# Soru 1
+
+**MATE saldırgan neden kriptografiyi tek başına yetersiz bırakır?**
+
+**Cevap:** Anahtar bellekte; saldırgan programı çalıştırıp okur. Kripto gizliliği verir ama beyaz kutuda anahtar korunmaz; RASP/gizleme/whitebox gerekir.
+
+---
+
+# Soru 2
+
+**AES-GCM'de aynı nonce iki kez kullanılırsa?**
+
+**Cevap:** Gizlilik ve bütünlük çöker; anahtar akışı ve veri sızabilir. Nonce her zaman benzersiz olmalı.
+
+---
+
+# Soru 3
+
+**ASan hangi taşmayı göremez?**
+
+**Cevap:** Aynı yapının içinde alandan alana taşmayı (arada zehirli bölge yoktur).
+
+---
+
+# Soru 4
+
+**Kanarya neyi durdurur, neyi durdurmaz?**
+
+**Cevap:** Durdurur: dönüş adresine ulaşan yığın taşması. Durdurmaz: öbek taşması, önceki değişkenler, sızan kanarya.
+
+---
+
+# Soru 5
+
+**RASP self-hashing tek başına neden yetmez?**
+
+**Cevap:** Saldırgan özet fonksiyonunu bulup atlatabilir. Gizleme + çapraz + örtüşen denetim gerekir.
+
+---
+
+# Soru 6
+
+**Paroladan anahtar türetirken neden KDF ve tuz?**
+
+**Cevap:** Parola düşük entropili; KDF yavaşlatır, tuz aynı parolaların aynı anahtar üretmesini önler (gökkuşağı tablosu).
+
+---
+
+# Soru 7
+
+**En az yetki ilkesi bir örnekle?**
+
+**Cevap:** Uygulamanın DB kullanıcısı yalnız `SELECT` yapabilsin; `DROP` yetkisi olmasın. Fazla yetki = büyük hasar.
+
+---
+
+# Soru 8
+
+**Tehdit modellemede STRIDE'ın "E"si nedir, bir önlem?**
+
+**Cevap:** Elevation of privilege (yetki yükseltme). Önlem: en az yetki, yetki denetimi, güvenli varsayılan.
+
+---
+
+# Soru 9
+
+**Deserialization neden tehlikeli, çözüm?**
+
+**Cevap:** Çıkarma sırasında kod çalışabilir (gadget). Çözüm: veri biçimi + şema; zorunda kalınırsa beyaz liste filtresi.
+
+---
+
+# Örnek · çoktan seçmeli
+
+**Aşağıdakilerden hangisi bir AEAD kipidir?**
+
+A) ECB B) CBC C) **GCM** ✓ D) Ham RSA
+
+---
+
+# Örnek · doğru/yanlış
+
+- Gizleme hatayı düzeltir. **(Y)**
+- Nonce gizli olmalı. **(Y — benzersiz olmalı, gizli değil)**
+- Parametreli sorgu SQL enjeksiyonunu önler. **(D)**
 
 ---
 
@@ -171,7 +277,7 @@ EVP_DecryptFinal_ex(ctx, acik + n, &m);
 try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 ```
 
-<!-- Konuşma notu: 1) SQL enjeksiyonu → PreparedStatement. 2) Etiket doğrulanmadan açık metin kullanılıyor, Final dönüşü denetlenmiyor. 3) Fail-open: hata yutuluyor, bağlantı kabul ediliyor. -->
+<!-- Konuşma notu: 1) SQL enjeksiyonu; kesin çözüm parametreli sorgu (PreparedStatement) — veri asla komut olarak yorumlanmaz, string birleştirme yapılmaz. 2) Etiket doğrulanmadan açık metin kullanılıyor, Final dönüşü denetlenmiyor. 3) Fail-open: hata yutuluyor, bağlantı kabul ediliyor. -->
 
 ---
 
@@ -188,6 +294,14 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 
 ---
 
+# Son söz (Quiz-1 hazırlık)
+
+> Ezber değil, **neden** ölçülür: "neden bu kip?", "neden bu denetim?", "neyi korumaz?"
+
+İyi şanslar.
+
+---
+
 # Gelecek hafta
 
 **Hafta 9 — Gelişmiş kod gizleme ve çeşitlendirme**
@@ -195,192 +309,3 @@ try { pinDenetle(zincir); } catch (KeyStoreException e) { e.printStackTrace(); }
 - Gizleme taksonomisi, opak yüklemler, veri kodlama
 - Sanallaştırma ve derleyici tabanlı gizleme (kavram)
 - Gizlemenin ölçülmesi: güç, dayanıklılık, maliyet
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Hafta hafta konu haritası (1–6)
-
-<!-- Konuşma notu: Quiz-1 kapsamı 1-6. hafta. Her haftanın anahtar noktalarını ve çok sorulan ayrımları tekrar ediyoruz. -->
-
----
-
-# 1. hafta · anahtar noktalar
-
-- CIA üçlüsü; hata ≠ zafiyet.
-- MATE (beyaz kutu) saldırgan.
-- STRIDE, saldırı ağacı, DFD.
-- Katmanlı savunma; tasarım ilkeleri.
-
----
-
-# 2. hafta · anahtar noktalar
-
-- Tehdit modelleme adımları.
-- Güven sınırı; en az yetki.
-- Varlık listesi ve C/I/I+ etiketi.
-
----
-
-# 3. hafta · anahtar noktalar
-
-- Verinin üç hâli.
-- AEAD; nonce tekrarı felaketi.
-- CSPRNG; KDF (parola → anahtar).
-- Anahtar hiyerarşisi; ileri gizlilik.
-
----
-
-# 4. hafta · anahtar noktalar
-
-- Üç katman: kod → derleyici/OS → gizleme.
-- CERT/CWE; UAF; tamsayı/UB.
-- Sanitizer (ASan/UBSan), fuzzing.
-- Derleyici korumaları (kanarya, ASLR, NX).
-
----
-
-# 5. hafta · anahtar noktalar
-
-- Yönetilen dil bellek hatasını çözer, enjeksiyonu çözmez.
-- SQL/komut/yol enjeksiyonu → parametreli/argüman dizisi.
-- Deserialization; ProGuard/R8; SBOM.
-
----
-
-# 6. hafta · anahtar noktalar
-
-- RASP: algıla, savun, caydır.
-- Bütünlük (self-hash), anti-debug, hook algılama.
-- Çapraz denetim; tepki politikası; cihaz bağlama.
-
----
-
-# Sık karıştırılanlar
-
-| A | B | Fark |
-| --- | --- | --- |
-| Hata | Zafiyet | Kötüye kullanılabilir hata |
-| Kara kutu | Beyaz kutu (MATE) | Programa sahip |
-| Simetrik | Asimetrik | Tek / çift anahtar |
-| AEAD | Yalnız şifreleme | + bütünlük |
-| Gizleme | Güvenli kod | Hatayı düzeltmez |
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Çözümlü pratik sorular
-
----
-
-# Soru 1
-
-**MATE saldırgan neden kriptografiyi tek başına yetersiz bırakır?**
-
-**Cevap:** Anahtar bellekte; saldırgan programı çalıştırıp okur. Kripto gizliliği verir ama beyaz kutuda anahtar korunmaz; RASP/gizleme/whitebox gerekir.
-
----
-
-# Soru 2
-
-**AES-GCM'de aynı nonce iki kez kullanılırsa?**
-
-**Cevap:** Gizlilik ve bütünlük çöker; anahtar akışı ve veri sızabilir. Nonce her zaman benzersiz olmalı.
-
----
-
-# Soru 3
-
-**SQL enjeksiyonunu ne kesin önler?**
-
-**Cevap:** Parametreli sorgu (prepared statement); veri asla komut olarak yorumlanmaz. String birleştirme yapılmaz.
-
----
-
-# Soru 4
-
-**ASan hangi taşmayı göremez?**
-
-**Cevap:** Aynı yapının içinde alandan alana taşmayı (arada zehirli bölge yoktur).
-
----
-
-# Soru 5
-
-**Kanarya neyi durdurur, neyi durdurmaz?**
-
-**Cevap:** Durdurur: dönüş adresine ulaşan yığın taşması. Durdurmaz: öbek taşması, önceki değişkenler, sızan kanarya.
-
----
-
-# Soru 6
-
-**RASP self-hashing tek başına neden yetmez?**
-
-**Cevap:** Saldırgan özet fonksiyonunu bulup atlatabilir. Gizleme + çapraz + örtüşen denetim gerekir.
-
----
-
-# Soru 7
-
-**Paroladan anahtar türetirken neden KDF ve tuz?**
-
-**Cevap:** Parola düşük entropili; KDF yavaşlatır, tuz aynı parolaların aynı anahtar üretmesini önler (gökkuşağı tablosu).
-
----
-
-# Soru 8
-
-**En az yetki ilkesi bir örnekle?**
-
-**Cevap:** Uygulamanın DB kullanıcısı yalnız `SELECT` yapabilsin; `DROP` yetkisi olmasın. Fazla yetki = büyük hasar.
-
----
-
-# Soru 9
-
-**Tehdit modellemede STRIDE'ın "E"si nedir, bir önlem?**
-
-**Cevap:** Elevation of privilege (yetki yükseltme). Önlem: en az yetki, yetki denetimi, güvenli varsayılan.
-
----
-
-# Soru 10
-
-**Deserialization neden tehlikeli, çözüm?**
-
-**Cevap:** Çıkarma sırasında kod çalışabilir (gadget). Çözüm: veri biçimi + şema; zorunda kalınırsa beyaz liste filtresi.
-
----
-
-# Örnek · çoktan seçmeli
-
-**Aşağıdakilerden hangisi bir AEAD kipidir?**
-
-A) ECB B) CBC C) **GCM** ✓ D) Ham RSA
-
----
-
-# Örnek · doğru/yanlış
-
-- Gizleme hatayı düzeltir. **(Y)**
-- Nonce gizli olmalı. **(Y — benzersiz olmalı, gizli değil)**
-- Parametreli sorgu SQL enjeksiyonunu önler. **(D)**
-
----
-
-# Çalışma planı
-
-- Her haftanın "Kendini sınama"sını cevaba bakmadan yap.
-- Sık karıştırılanları ezberden değil **nedeniyle** öğren.
-- 3. ve 4. haftanın demolarını bir kez daha gözden geçir.
-
----
-
-# Son söz (Quiz-1 hazırlık)
-
-> Ezber değil, **neden** ölçülür: "neden bu kip?", "neden bu denetim?", "neyi korumaz?"
-
-İyi şanslar.

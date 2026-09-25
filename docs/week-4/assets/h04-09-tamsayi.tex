@@ -1,0 +1,23 @@
+% Hafta 4 — -1 ne zaman dev olur?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-09-tamsayi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 13mm]
+  \node[baslik] (b) at (0,0) {-1 ne zaman dev olur?};
+  \node[altbaslik] at (b.south west) {işaretli $\rightarrow$ işaretsiz dönüşümü sessizce gerçekleşir};
+
+  \node[kotukutu=38mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{int uzunluk = -1}\\işaretli};
+  \node[uyarikutu=38mm, right=of n1] (n2) {\kb{size\_t'ye dönüşür}\\işaretsiz};
+  \node[kotukutu=38mm, right=of n2] (n3) {\kb{SIZE\_MAX olur}\\18 446 744 073 709 551 615};
+  \node[kotukutu=38mm, right=of n3] (n4) {\kb{memcpy devasa kopya}\\çökme / taşma};
+
+  \draw[ok] (n1) -- (n2);
+  \draw[ok] (n2) -- (n3);
+  \draw[ok] (n3) -- (n4);
+
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0] (satirfit) {};
+  \node[kotudip, text width=175mm, below=10mm of satirfit.south, anchor=north]
+    {Kural: uzunlukları size\_t ile tutun; dışarıdan gelen sayıyı hem alt hem üst sınırla denetleyin.};
+\end{tikzpicture}
+\end{document}

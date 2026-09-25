@@ -51,7 +51,7 @@ lang: tr-TR
 | **Eğitim dili** | Türkçe |
 | **Tür / yarıyıl** | Seçmeli · 7. yarıyıl |
 | **Haftalık saat / kredi / AKTS** | Kuramsal 3 saat · Kredi 3 · AKTS 5 |
-| **Ön koşul** | CEN107 Algoritmalar ve Programlama I (eski kodu CE103) |
+| **Ön koşul** | CEN107 Algoritmalar ve Programlama I (eski kodu CE103) — ayrıntılar: [Ön gereksinimler](../prerequisites/index.md) |
 
 ---
 

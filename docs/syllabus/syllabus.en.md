@@ -51,7 +51,7 @@ lang: en-US
 | **Language** | Turkish |
 | **Type / semester** | Elective · 7th semester |
 | **Weekly hours / credit / ECTS** | Theory 3 h · Credit 3 · ECTS 5 |
-| **Prerequisite** | CEN107 Algorithms and Programming I (former code CE103) |
+| **Prerequisite** | CEN107 Algorithms and Programming I (former code CE103) — details: [Prerequisites](../prerequisites/index.md) |
 
 ---
 

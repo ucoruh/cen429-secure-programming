@@ -1,0 +1,24 @@
+% Hafta 14 — Tigress dönüşümleri ↔ 9. hafta kuralları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-03-donusum-esleme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=5mm and 8mm]
+  \node[baslik] (b) at (0,0) {Tigress dönüşümleri $\leftrightarrow$ 9. hafta kuralları};
+  \node[altbaslik, text width=150mm] at (b.south west) {araç yeni bir şey icat etmiyor --- aynı kuralları otomatikleştiriyor};
+
+  \node[kutu=58mm, below=14mm of b.south west, anchor=north west] (k1) {\kb{Flatten}};
+  \node[etiket, right=6mm of k1, anchor=west, text width=80mm] {K-04 kontrol akışı düzleştirme};
+  \node[kutu=58mm, below=of k1] (k2) {\kb{AddOpaque / InitOpaque}};
+  \node[etiket, right=6mm of k2, anchor=west, text width=80mm] {K-01 opak yüklem · K-03 ölü dal};
+  \node[kutu=58mm, below=of k2] (k3) {\kb{EncodeArithmetic}};
+  \node[etiket, right=6mm of k3, anchor=west, text width=80mm] {K-02 aritmetik kodlama};
+  \node[kutu=58mm, below=of k3] (k4) {\kb{EncodeLiterals}};
+  \node[etiket, right=6mm of k4, anchor=west, text width=80mm] {K-07 sabit / dize gizleme};
+  \node[koyukutu=58mm, below=of k4] (k5) {\kb{Virtualize}};
+  \node[etiket, right=6mm of k5, anchor=west, text width=80mm] {K-10 sanallaştırma (en pahalı)};
+
+  \node[dip, text width=160mm, anchor=north west] at ($(k1.west |- k5.south)+(0,-8mm)$) {%
+    Hangi dönüşümü seçtiğinizi S9'da kuralla eşleyerek gerekçelendirin.};
+\end{tikzpicture}
+\end{document}

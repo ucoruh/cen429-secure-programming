@@ -1,0 +1,23 @@
+% Hafta 9 — Opak yüklem: gerçek yol ile ölü yol
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-02-opak-yuklem.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 16mm]
+  \node[baslik] (b) at (0,0) {Opak yüklem: gerçek yol ile ölü yol};
+  \node[altbaslik, text width=165mm] at (b.south west) {program hep aynı çalışır, analizci iki yolu da incelemek zorunda kalır};
+
+  \node[morkutu=40mm, below=42mm of b.south west, anchor=north west] (kosul) {\kb{if ( x$\cdot$(x+1) çift mi? )}\\matematikçe: DAİMA doğru};
+  \node[iyikutu=44mm, above right=8mm and 26mm of kosul] (gercek) {\kb{GERÇEK YOL}\\\kod{gercek\_adim(durum)}\\her çalıştırmada burası};
+  \node[kotukutu=44mm, below right=8mm and 26mm of kosul] (olu) {\kb{ÖLÜ YOL}\\\kod{sahte\_adim(durum)}\\hiç çalışmaz};
+  \draw[iyiok] (kosul.north east) -- node[oketiket, above=3pt] {true (daima)} (gercek.west);
+  \draw[kotuok, dashed] (kosul.south east) -- node[oketiket, below=3pt] {false (asla)} (olu.west);
+
+  \node[uyarikutu=34mm] (analiz) at ($(gercek.east)!0.5!(olu.east)+(26mm,0)$) {\kb{Statik analiz}\\iki yolu da\\gerçek sayar\\$\rightarrow$ iş 2 katına çıkar};
+  \draw[ok, draw=uyari] (gercek.east) -- (analiz.north west);
+  \draw[ok, draw=uyari] (olu.east) -- (analiz.south west);
+
+  \node[dip, text width=165mm, below=10mm of olu.south -| kosul, anchor=north west] {%
+    Maliyet düşük $\cdot$ Sınır: klasik kalıplar araçlarca tanınır $\rightarrow$ tohumla çeşitlendirin (14. hafta).};
+\end{tikzpicture}
+\end{document}

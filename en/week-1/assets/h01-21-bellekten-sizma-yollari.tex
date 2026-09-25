@@ -1,0 +1,26 @@
+% Hafta 1 — Sır bellekten nasıl dışarı sızar?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-21-bellekten-sizma-yollari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 12mm]
+  \node[baslik] (b) at (0,0) {Sır bellekten nasıl dışarı sızar?};
+  \node[altbaslik] (alt) at (b.south west) {değişken kapsam dışına çıkar, baytlar kalır};
+
+  \node[uyarikutu=70mm, below=16mm of alt.south west, anchor=north, xshift=45mm, text width=62mm] (hub)
+    {\kb{Parola bellekte}\\kullanıldı, ama silinmedi};
+
+  \node[kotukutu=34mm, below=26mm of hub.south west, anchor=north west, text width=28mm] (s1) {\kb{Çökme dökümü}\\core dump dosyası};
+  \node[kotukutu=34mm, right=of s1, text width=28mm] (s2) {\kb{Takas / uyku}\\swap, hibernation};
+  \node[kotukutu=34mm, right=of s2, text width=28mm] (s3) {\kb{Hata ayıklayıcı}\\sürece bağlanır};
+  \node[kotukutu=34mm, right=of s3, text width=28mm] (s4) {\kb{Bellek yeniden kullanımı}\\başka kod eski içeriği okur};
+
+  \draw[ok, draw=kotu] (hub.south) -- (s1.north);
+  \draw[ok, draw=kotu] (hub.south) -- (s2.north);
+  \draw[ok, draw=kotu] (hub.south) -- (s3.north);
+  \draw[ok, draw=kotu] (hub.south) -- (s4.north);
+
+  \node[dip, text width=160mm, below=9mm of s1.south -| s2, anchor=north]
+    {Çözüm: \kod{explicit\_bzero} / \kod{SecureZeroMemory} --- derleyicinin kaldıramayacağı silme.};
+\end{tikzpicture}
+\end{document}

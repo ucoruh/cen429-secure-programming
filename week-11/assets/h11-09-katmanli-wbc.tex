@@ -1,0 +1,21 @@
+% Hafta 11 — WBC'yi tek başına bırakmayın
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-09-katmanli-wbc.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {WBC'yi tek başına bırakmayın};
+  \node[altbaslik] at (b.south west) {her katman saldırganın kazanç penceresini daraltır};
+
+  \node[uyarikutu=38mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{WBC tablosu}\\anahtarı geciktirir};
+  \node[kutu=38mm, right=of n1] (n2) {\kb{+ Cihaz bağlama}\\başka cihazda çalışmaz};
+  \node[kutu=38mm, right=of n2] (n3) {\kb{+ Anahtar yenileme}\\kısa kripto-periyot};
+  \node[iyikutu=38mm, right=of n3] (n4) {\kb{+ Sunucu denetimi}\\anormal kullanımı görür};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[dip, text width=160mm, below=8mm of n4.south -| n2, anchor=north] {%
+    Tek başına WBC = zaman kazandırır; katmanlı WBC = saldırıyı ölçeklenemez kılar.};
+\end{tikzpicture}
+\end{document}

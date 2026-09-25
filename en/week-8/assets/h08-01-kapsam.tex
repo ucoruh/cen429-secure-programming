@@ -1,0 +1,26 @@
+% Hafta 8 — Quiz-1 kapsamı (1–6. haftalar)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-8/assets/h08-01-kapsam.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=3mm and 8mm]
+  \node[baslik] (b) at (0,0) {Quiz-1 kapsamı (1--6. haftalar)};
+  \node[altbaslik, text width=170mm] at (b.south west) {ezber değil GEREKÇE sorulur: ``neden bu kip?'', ``neyi korumaz?''};
+
+  \node[kutu=32mm, below=16mm of b.south west, anchor=north west] (k1) {\kb{Hafta 1}};
+  \node[etiket, right=6mm of k1, anchor=west, text width=115mm] {CIA, saldırgan modeli, STRIDE, saldırı ağacı};
+  \node[kutu=32mm, below=of k1] (k2) {\kb{Hafta 2}};
+  \node[etiket, right=6mm of k2, anchor=west, text width=115mm] {zararlı yazılım, BLP/Biba, CWE/CVE/CVSS};
+  \node[koyukutu=32mm, below=of k2] (k3) {\kb{Hafta 3}};
+  \node[etiket, right=6mm of k3, anchor=west, text width=115mm] {verinin üç hâli, AEAD, nonce, KDF, TLS};
+  \node[koyukutu=32mm, below=of k3] (k4) {\kb{Hafta 4}};
+  \node[etiket, right=6mm of k4, anchor=west, text width=115mm] {C/C++ hataları, sanitizer, derleyici korumaları};
+  \node[kutu=32mm, below=of k4] (k5) {\kb{Hafta 5}};
+  \node[etiket, right=6mm of k5, anchor=west, text width=115mm] {enjeksiyon, deserialization, ProGuard, SBOM};
+  \node[kutu=32mm, below=of k5] (k6) {\kb{Hafta 6}};
+  \node[etiket, right=6mm of k6, anchor=west, text width=115mm] {RASP: algıla / savun / caydır};
+
+  \node[dip, text width=185mm, anchor=north west] at ($(k1.west |- k6.south)+(0,-8mm)$) {%
+    Her haftanın ``Kendini sınama'' bölümünü cevaba bakmadan çözün.};
+\end{tikzpicture}
+\end{document}

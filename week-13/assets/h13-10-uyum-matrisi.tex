@@ -1,0 +1,45 @@
+% Hafta 13 — Uyum matrisi: her satır bir kanıt ister
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-10-uyum-matrisi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Uyum matrisi: her satır bir kanıt ister};
+  \node[altbaslik] (alt) at (b.south west) {S17'nin iskeleti};
+
+  % Sütun merkezleri (cm): Kimlik, Gereksinim, Durum, Önlem, Kanıt
+  % Satır merkezleri (cm): başlık, satır1, satır2, satır3
+
+  % Başlık satırı
+  \node[koyukutu=16mm, minimum height=10mm, font=\sffamily\bfseries\footnotesize] at (1.1,-2.0) (h1) {Kimlik};
+  \node[koyukutu=40mm, minimum height=10mm, font=\sffamily\bfseries\footnotesize] at (4.8,-2.0) (h2) {Gereksinim};
+  \node[koyukutu=22mm, minimum height=10mm, font=\sffamily\bfseries\footnotesize] at (8.8,-2.0) (h3) {Durum};
+  \node[koyukutu=14mm, minimum height=10mm, font=\sffamily\bfseries\footnotesize] at (11.5,-2.0) (h4) {Önlem};
+  \node[koyukutu=24mm, minimum height=10mm, font=\sffamily\bfseries\footnotesize] at (14.3,-2.0) (h5) {Kanıt};
+
+  % Satır 1 — Karşılandı (yeşil)
+  \node[iyikutu=16mm, minimum height=11mm, font=\sffamily\footnotesize] at (1.1,-3.6) (a1) {DR-01};
+  \node[iyikutu=40mm, minimum height=11mm, font=\sffamily\footnotesize] at (4.8,-3.6) (a2) {Beklemede AEAD};
+  \node[iyikutu=22mm, minimum height=11mm, font=\sffamily\footnotesize] at (8.8,-3.6) (a3) {Karşılandı};
+  \node[iyikutu=14mm, minimum height=11mm, font=\sffamily\footnotesize] at (11.5,-3.6) (a4) {S7.2};
+  \node[iyikutu=24mm, minimum height=11mm, font=\sffamily\footnotesize] at (14.3,-3.6) (a5) {test çıktısı};
+
+  % Satır 2 — Devredildi (mor)
+  \node[morkutu=16mm, minimum height=11mm, font=\sffamily\footnotesize] at (1.1,-5.2) (b1) {AP-07};
+  \node[morkutu=40mm, minimum height=11mm, font=\sffamily\footnotesize] at (4.8,-5.2) (b2) {Güvenli güncelleme};
+  \node[morkutu=22mm, minimum height=11mm, font=\sffamily\footnotesize] at (8.8,-5.2) (b3) {Devredildi};
+  \node[morkutu=14mm, minimum height=11mm, font=\sffamily\footnotesize] at (11.5,-5.2) (b4) {S14.2};
+  \node[morkutu=24mm, minimum height=11mm, font=\sffamily\footnotesize] at (14.3,-5.2) (b5) {gerekçe};
+
+  % Satır 3 — Karşılanmadı (kırmızı)
+  \node[kotukutu=16mm, minimum height=11mm, font=\sffamily\footnotesize] at (1.1,-6.8) (c1) {DT-04};
+  \node[kotukutu=40mm, minimum height=11mm, font=\sffamily\footnotesize] at (4.8,-6.8) (c2) {Sertifika sabitleme};
+  \node[kotukutu=22mm, minimum height=11mm, font=\sffamily\footnotesize] at (8.8,-6.8) (c3) {Karşılanmadı};
+  \node[kotukutu=14mm, minimum height=11mm, font=\sffamily\footnotesize] at (11.5,-6.8) (c4) {--};
+  \node[kotukutu=24mm, minimum height=11mm, font=\sffamily\footnotesize] at (14.3,-6.8) (c5) {kalan risk};
+
+  \node[fit=(c1)(c5), inner sep=0] (altsatir) {};
+  \node[dip, text width=155mm, below=9mm of altsatir.south west, anchor=north west] {%
+    Kanıt sütunu boş olan ``Karşılandı'' satırı, KARŞILANMAMIŞ sayılır.};
+\end{tikzpicture}
+\end{document}

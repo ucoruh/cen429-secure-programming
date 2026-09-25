@@ -1,0 +1,20 @@
+% Hafta 2 — Erişim denetimi: kim, neye, ne yapabilir?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-14-dac-mac.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Erişim denetimi: kim, neye, ne yapabilir?};
+  \node[altbaslik] at (b.south west) {iki ana model, iki farklı güven varsayımı};
+
+  \node[uyarikutu=68mm, minimum height=42mm, below=14mm of b.south west, anchor=north west, xshift=8mm] (sol)
+    {\kb{İSTEĞE BAĞLI (DAC)}\\[2mm]sahibi izinleri belirler\\Unix rwx, Windows ACL\\esnek\\kullanıcı yanlış izin verebilir};
+  \node[iyikutu=68mm, minimum height=42mm, right=16mm of sol] (sag)
+    {\kb{ZORUNLU (MAC)}\\[2mm]politika merkezî\\etiket/seviye ile karar\\kullanıcı gevşetemez\\kurulumu zor};
+
+  \draw[draw=cizgi, line width=1.2pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=160mm, below=10mm of sol.south -| sag, anchor=north]
+    {RBAC ikisinin arasındadır: yetkiyi kişiye değil ROLE verir.};
+\end{tikzpicture}
+\end{document}

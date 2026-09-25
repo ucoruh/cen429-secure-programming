@@ -1,0 +1,26 @@
+% Hafta 2 — Olay incelemelerinin ortak iskeleti
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-11-olay-iskeleti.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 9mm]
+  \node[baslik] (b) at (0,0) {Olay incelemelerinin ortak iskeleti};
+  \node[altbaslik] at (b.south west) {Morris'ten WannaCry'a kadar aynı zincir};
+
+  \node[kotukutu=38mm, minimum height=24mm, below=13mm of b.south west, anchor=north west, xshift=6mm] (p1)
+    {\kb{Programlama hatası}\\taşma, doğrulanmamış girdi,\\eksik yama};
+  \node[kotukutu=38mm, minimum height=24mm, right=of p1] (p2)
+    {\kb{Zararlı yazılım girer}\\solucan, fidye, arka kapı};
+  \node[kotukutu=38mm, minimum height=24mm, right=of p2] (p3)
+    {\kb{Zarar}\\veri kaybı, üretim durması,\\itibar};
+  \node[iyikutu=38mm, minimum height=24mm, right=of p3] (p4)
+    {\kb{Önlem}\\güvenli kodlama + yama +\\bütünlük izleme};
+
+  \draw[kotuok] (p1) -- (p2);
+  \draw[kotuok] (p2) -- (p3);
+  \draw[ok, draw=soluk] (p3) -- (p4);
+
+  \node[dip, text width=185mm, below=10mm of p2.south, anchor=north]
+    {Her olay incelemesinde bu dört kutuyu doldurun; ders zincirin neresinde kırıldığıdır.};
+\end{tikzpicture}
+\end{document}

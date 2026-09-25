@@ -1,0 +1,21 @@
+% Hafta 13 — Devrederken yanıtlanacak üç soru
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-06-devretme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 18mm]
+  \node[baslik] (b) at (0,0) {Devrederken yanıtlanacak üç soru};
+  \node[altbaslik] (alt) at (b.south west) {devretmek serbest, SESSİZ devretmek değil};
+
+  \node[uyarikutu=38mm, below=9mm of alt.south west, anchor=north west] (n1) {\kb{1 · NEDEN}\\şimdi karşılanmıyor?};
+  \node[kotukutu=38mm, right=of n1] (n2) {\kb{2 · RİSKİ NE}\\kim kabul ediyor?};
+  \node[iyikutu=42mm, right=of n2] (n3) {\kb{3 · NASIL}\\ne zaman karşılanacak?\\telafi kontrolü var mı?};
+
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \node[fit=(n1)(n2)(n3), inner sep=0] (satir) {};
+
+  \node[dip, text width=150mm, below=9mm of satir.south west, anchor=north west] {%
+    Kayıt ve onay olmadan atlanan gereksinim = gizli açık, sahipsiz risk.};
+\end{tikzpicture}
+\end{document}

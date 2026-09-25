@@ -1,0 +1,26 @@
+% Hafta 9 — "Koruma kuralı" şablonu
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-10-koruma-kurali.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {``Koruma kuralı'' şablonu};
+  \node[altbaslik, text width=170mm] at (b.south west) {her teknik bu altı satırla yazılır --- S9'a böyle gider};
+
+  \node[kutu=46mm, below=10mm of b.south west, anchor=north west] (a1) {\kb{1 $\cdot$ Neyi korur?}\\hangi varlık};
+  \node[uyarikutu=46mm, right=of a1] (a2) {\kb{2 $\cdot$ Hangi tehdide}\\karşı?};
+  \node[kutu=46mm, right=of a2] (a3) {\kb{3 $\cdot$ Nasıl?}\\hangi dönüşüm};
+  \draw[ok, draw=soluk] (a1.east) -- (a2.west);
+  \draw[ok, draw=soluk] (a2.east) -- (a3.west);
+
+  \node[kotukutu=46mm, below=16mm of a1.south west, anchor=north west] (b1) {\kb{4 $\cdot$ Maliyet}\\boyut / hız};
+  \node[kotukutu=46mm, right=of b1] (b2) {\kb{5 $\cdot$ Sınır}\\neyi korumaz};
+  \node[iyikutu=46mm, right=of b2] (b3) {\kb{6 $\cdot$ Ölçüm}\\önce/sonra sayı};
+  \draw[ok, draw=soluk] (b1.east) -- (b2.west);
+  \draw[ok, draw=soluk] (b2.east) -- (b3.west);
+  \draw[ok, draw=soluk] (a3.east) -- ++(6mm,0) |- (b1.north);
+
+  \node[dip, text width=170mm, below=10mm of b1.south -| a1, anchor=north west] {%
+    ``Ölçüm'' satırı olmayan kural, gerekçelendirilmemiş sayılır.};
+\end{tikzpicture}
+\end{document}

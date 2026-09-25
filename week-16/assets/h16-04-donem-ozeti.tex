@@ -1,0 +1,32 @@
+% Hafta 16 — Dönemin tek cümlesi
+% Derleme: py -3.12 tools/latex/derle.py docs/week-16/assets/h16-04-donem-ozeti.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\definecolor{icr2}{HTML}{D3EEF0}
+\definecolor{icr3}{HTML}{B9E3E5}
+\definecolor{icr4}{HTML}{9ED6D7}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 6mm]
+  \node[baslik] (b) at (0,0) {Dönemin tek cümlesi};
+  \node[altbaslik] at (b.south west) {16 haftanın özeti};
+
+  \coordinate (merkez) at ($(b.south west)+(75mm,-58mm)$);
+
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=cokacik, minimum width=150mm, minimum height=85mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr2, minimum width=118mm, minimum height=67mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr3, minimum width=86mm, minimum height=49mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr4, minimum width=54mm, minimum height=31mm] at (merkez) {};
+
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=140mm] at ($(merkez)+(0,38mm)$)
+    {Güvenlik = katman + ölçüm};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=105mm] at ($(merkez)+(0,29mm)$)
+    {Koruma kırılamazlık değil, GECİKME sağlar};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=75mm] at ($(merkez)+(0,20mm)$)
+    {Güç birliktelikten ve çeşitlendirmeden gelir};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=48mm] at (merkez)
+    {Kanıtı olmayan koruma, yok sayılır};
+
+  \node[dip, text width=175mm, below=10mm of merkez, yshift=-42.5mm, anchor=north]
+    {Bu dört cümle, her hafta farklı bir teknikle tekrar edildi.};
+\end{tikzpicture}
+\end{document}

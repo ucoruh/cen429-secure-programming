@@ -1,0 +1,24 @@
+% Hafta 7 — RAP1 (vize) teslimi: ne bekleniyor?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-7/assets/h07-02-rap1.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 8mm]
+  \node[baslik] (b) at (0,0) {RAP1 (vize) teslimi: ne bekleniyor?};
+  \node[altbaslik, text width=150mm] at (b.south west) {ürünün ilk yarısı + kılavuzun ilk bölümleri};
+
+  \node[kutu=58mm, below=14mm of b.south west, anchor=north west] (k1) {\kb{S2 · Ürün ve mimari}};
+  \node[etiket, right=6mm of k1, anchor=west, text width=100mm] {bileşenler, arayüzler, güven sınırları};
+  \node[kutu=58mm, below=of k1] (k2) {\kb{S3 · Arayüzler}};
+  \node[etiket, right=6mm of k2, anchor=west, text width=100mm] {her arayüz için doğrulama};
+  \node[uyarikutu=58mm, below=of k2] (k3) {\kb{S4 · Tehdit modeli}};
+  \node[etiket, right=6mm of k3, anchor=west, text width=100mm] {STRIDE + saldırı ağacı};
+  \node[kutu=58mm, below=of k3] (k4) {\kb{S5 · Varlık listesi}};
+  \node[etiket, right=6mm of k4, anchor=west, text width=100mm] {her varlık: konum, koruma şeması};
+  \node[iyikutu=58mm, below=of k4] (k5) {\kb{Temel korumalar}};
+  \node[etiket, right=6mm of k5, anchor=west, text width=100mm] {AEAD, güvenli silme, girdi doğrulama};
+
+  \node[dip, text width=170mm, anchor=north west] at ($(k1.west |- k5.south)+(0,-8mm)$) {%
+    RAP1 = 0,7 · vize notu. Kalan 0,3 Quiz-1'den gelir.};
+\end{tikzpicture}
+\end{document}

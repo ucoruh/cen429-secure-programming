@@ -1,0 +1,25 @@
+% Hafta 6 — Tepki politikası: ne yapmalı?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-11-tepki.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Tepki politikası: ne yapmalı?};
+  \node[altbaslik] at (b.south west) {tepki, algılamadan daha çok düşünülmesi gereken kısımdır};
+  \node[kotukutu=50mm, anchor=north west] (k1) at (0,-2.4) {\kb{Hemen çök}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k1]
+    {saldırgana denetimin YERİNİ gösterir --- kötü};
+  \node[iyikutu=50mm, below=6mm of k1] (k2) {\kb{Sessiz/gecikmeli tepki}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k2]
+    {sonraki işlemde sırrı sil, bağlantıyı kes};
+  \node[iyikutu=50mm, below=6mm of k2] (k3) {\kb{Decoy (sahte sonuç)}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k3]
+    {saldırgan yanlış yolda zaman kaybeder};
+  \node[iyikutu=50mm, below=6mm of k3] (k4) {\kb{Sunucuya bildir}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k4]
+    {telemetri + hesap/cihaz kısıtlama};
+  \node[fit=(k1)(k2)(k3)(k4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Yanlış pozitifte meşru kullanıcıyı vurmayan, saldırganı yormayan tepki seçilir.};
+\end{tikzpicture}
+\end{document}

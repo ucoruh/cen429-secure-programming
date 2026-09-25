@@ -1,0 +1,24 @@
+% Hafta 12 — Standartlar manzarası: hangisi neyi sertifikalar?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-05-standartlar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=5mm and 3mm]
+  \node[baslik] (b) at (0,0) {Standartlar manzarası: hangisi neyi sertifikalar?};
+  \node[altbaslik, text width=160mm] at (b.south west) {``sertifikalı'' demek, NEYİN sertifikalandığını bilmeden anlamsızdır};
+
+  \node[morkutu=52mm, below=16mm of b.south west, anchor=north west, xshift=2mm] (k1) {\kb{ISO/IEC 27001}};
+  \node[etiket, align=left, text width=95mm, right=3mm of k1] {KURUMU --- bilgi güvenliği yönetim sistemi};
+  \node[koyukutu=52mm, below=of k1] (k2) {\kb{Ortak Kriterler (15408)}};
+  \node[etiket, align=left, text width=95mm, right=3mm of k2] {ÜRÜNÜ --- TOE, belirli güvence düzeyinde};
+  \node[kutu=52mm, below=of k2] (k3) {\kb{FIPS 140-3}};
+  \node[etiket, align=left, text width=95mm, right=3mm of k3] {KRİPTOGRAFİK MODÜLÜ};
+  \node[kutu=52mm, below=of k3] (k4) {\kb{ETSI EN 303 645}};
+  \node[etiket, align=left, text width=95mm, right=3mm of k4] {tüketici IoT cihazı};
+  \node[iyikutu=52mm, below=of k4] (k5) {\kb{OWASP MASVS / ASVS}};
+  \node[etiket, align=left, text width=95mm, right=3mm of k5] {uygulama --- geliştirici dostu öz-değerlendirme};
+
+  \node[dip, text width=160mm, below=9mm of k5, anchor=north]
+    {Kurum sertifikası ürün güvenliğini, ürün sertifikası kurum olgunluğunu göstermez.};
+\end{tikzpicture}
+\end{document}

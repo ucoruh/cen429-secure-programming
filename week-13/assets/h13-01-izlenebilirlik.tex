@@ -1,0 +1,39 @@
+% Hafta 13 — Gereksinimden kanıta: izlenebilirlik zinciri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-01-izlenebilirlik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  \node[baslik] (b) at (0,0) {Gereksinimden kanıta: izlenebilirlik zinciri};
+  \node[altbaslik] at (b.south west) {her gereksinim bir kanıta bağlanır};
+
+  \node[koyukutu=30mm, minimum height=17mm, below=12mm of b.south west, anchor=north west, xshift=2mm] (ger)
+    {\kb{GEREKSİNİM}\\kimlik + metin};
+  \node[morkutu=30mm, minimum height=15mm, below=24mm of ger] (tehdit)
+    {\kb{Tehdit / varlık}\\(S4, S5)};
+  \draw[kesik ok, draw=mor] (ger.south) -- node[oketiket, right=3pt] {neden var?} (tehdit.north);
+
+  \node[kutu=30mm, minimum height=17mm, right=16mm of ger] (onlem)
+    {\kb{Önlem kartı}\\(S7--S12)};
+  \draw[ok, draw=soluk] (ger.east) -- (onlem.west);
+
+  \node[kutu=28mm, minimum height=15mm, above right=8mm and 16mm of onlem] (kod)
+    {\kb{Kod}\\dosya, fonksiyon};
+  \node[iyikutu=28mm, minimum height=15mm, below right=8mm and 16mm of onlem] (dogrula)
+    {\kb{Doğrulama}\\test, inceleme};
+  \draw[ok, draw=soluk] (onlem.east) -- (kod.west);
+  \draw[ok, draw=soluk] (onlem.east) -- (dogrula.west);
+
+  \node[iyikutu=26mm, minimum height=15mm, right=16mm of dogrula] (kanit)
+    {\kb{KANIT}\\çıktı, rapor};
+  \draw[iyiok] (dogrula.east) -- (kanit.west);
+
+  \node[fit=(ger)(tehdit)(onlem)(kod)(dogrula)(kanit), inner sep=0] (ust) {};
+  \node[uyarikutu=115mm, minimum height=14mm, below=14mm of ust.south, anchor=north] (durum)
+    {\kb{DURUM: karşılandı / devredildi / karşılanmadı}};
+  \draw[ok, draw=uyari] (kanit.south) -- (durum.north east);
+
+  \node[dip, text width=165mm, below=10mm of durum.south, anchor=north]
+    {Kanıtı olmayan 'karşılandı' satırı, karşılanmamış sayılır.};
+\end{tikzpicture}
+\end{document}

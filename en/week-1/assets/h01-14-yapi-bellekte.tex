@@ -1,0 +1,21 @@
+% Hafta 1 — Yapının bellekteki hâli: taşma neyi ezer?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-14-yapi-bellekte.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 6mm]
+  \node[baslik] (b) at (0,0) {Yapının bellekteki hâli: taşma neyi ezer?};
+  \node[altbaslik] (alt) at (b.south west) {ad[16] ve yonetici yan yana durur};
+
+  \node[etiket, text=iyi, font=\sffamily\bfseries, below=8mm of alt.south west, anchor=north west, xshift=2mm] (t1) {ÖNCE};
+  \node[iyikutu=64mm, right=6mm of t1, text width=58mm] (once_ad) {\kod{"ayse"}\\ad[16]};
+  \node[iyikutu=30mm, right=6mm of once_ad, text width=24mm] (once_y) {\kod{00 00 00 00}\\yonetici = 0};
+
+  \node[etiket, text=kotu, font=\sffamily\bfseries, below=24mm of t1, anchor=north west] (t2) {SONRA};
+  \node[kotukutu=64mm, right=6mm of t2, text width=58mm] (sonra_ad) {\kod{"AAAAAAAAAAAAAAAA"}\\17 karakterlik \kod{"AAAA...AAAB"} kopyalandı};
+  \node[kotukutu=30mm, right=6mm of sonra_ad, text width=24mm] (sonra_y) {\kod{B 00 00 00}\\yonetici $\neq$ 0};
+
+  \node[kotudip, text width=150mm, below=9mm of sonra_y.south -| once_ad, anchor=north]
+    {Tek bayt taşma yetkiyi değiştirdi: sınır denetimi olmayan kopya, komşu alanı ezer.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,34 @@
+% Hafta 2 — Zararlı yazılımın kısa tarihi
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-09-zararli-tarihce.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Zararlı yazılımın kısa tarihi};
+  \node[altbaslik] at (b.south west) {şaka ve merak $\rightarrow$ suç $\rightarrow$ devlet operasyonu};
+
+  \draw[line width=1.6pt, draw=acik, line cap=round]
+    (0,-2.6) -- (170mm,-2.6);
+
+  \foreach \x/\yil/\metin/\ust in {
+    0mm/1971/{Creeper --- ilk\\kendini kopyalayan}/1,
+    34mm/1986/{Brain --- ilk PC\\virüsü}/0,
+    68mm/1988/{Morris solucanı ---\\internet durdu}/1,
+    102mm/2003/{Slammer --- 10 dk'da\\küresel}/0,
+    136mm/2010/{Stuxnet --- devlet\\düzeyinde}/1,
+    170mm/2017/{WannaCry ---\\fidye + solucan}/0}
+  {
+    \filldraw[fill=koyu, draw=white, line width=0.6pt] (\x,-2.6) circle (1.3mm);
+    \ifnum\ust=1
+      \node[font=\sffamily\bfseries\small, text=koyu, anchor=south, align=center] at (\x,-1.9) {\yil};
+      \node[font=\sffamily\footnotesize, text=yazi, anchor=south, align=center, text width=26mm] at (\x,-1.3) {\metin};
+    \else
+      \node[font=\sffamily\bfseries\small, text=koyu, anchor=north, align=center] at (\x,-3.3) {\yil};
+      \node[font=\sffamily\footnotesize, text=yazi, anchor=north, align=center, text width=26mm] at (\x,-3.9) {\metin};
+    \fi
+  }
+
+  \node[kotudip, text width=180mm, below=16mm of {(85mm,-4.9)}, anchor=north]
+    {Değişen şey teknik değil, SAİK: her dönemde saldırganın amacı farklı.};
+\end{tikzpicture}
+\end{document}

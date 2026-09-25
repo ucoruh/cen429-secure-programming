@@ -1,0 +1,22 @@
+% Hafta 12 — Hazırlık aşaması: adım 1--4
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-02-hazirlik-adimlari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Hazırlık aşaması: adım 1--4};
+  \node[altbaslik] at (b.south west) {yanlış tanımlanmış TOE, tüm değerlendirmeyi geçersiz kılar};
+
+  \node[koyukutu=32mm, below=16mm of b.south west, anchor=north west] (a1) {\kb{1 · TOE tanımı}\\sürüm, yapı, özet};
+  \node[kutu=32mm, right=of a1] (a2) {\kb{2 · Kapsam}\\neyi kapsar, neyi kapsamaz};
+  \node[kutu=32mm, right=of a2] (a3) {\kb{3 · Güvenlik hedefi}\\gereksinimler (ST)};
+  \node[iyikutu=32mm, right=of a3] (a4) {\kb{4 · Değerlendirme planı}\\yöntem, takvim, kanıt};
+
+  \draw[ok, draw=soluk] (a1) -- (a2);
+  \draw[ok, draw=soluk] (a2) -- (a3);
+  \draw[ok, draw=soluk] (a3) -- (a4);
+
+  \node[dip, text width=150mm, below=8mm of a4.south -| a2, anchor=north] {%
+    TOE benzersiz tanımlanmazsa ``hangi sürüm sertifikalı?'' sorusu yanıtsız kalır.};
+\end{tikzpicture}
+\end{document}

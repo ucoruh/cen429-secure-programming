@@ -1,0 +1,27 @@
+% Hafta 1 — Süreç belleği: verileriniz nerede duruyor?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-13-surec-bellegi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 3mm]
+  \node[baslik] (b) at (0,0) {Süreç belleği: verileriniz nerede duruyor?};
+  \node[altbaslik] (alt) at (b.south west) {yığın aşağı, öbek yukarı büyür --- ortada boşluk};
+
+  \node[kutu=55mm, below=8mm of alt.south west, anchor=north west, xshift=14mm] (yigin) {\kb{Yığın (stack)}};
+  \node[etiket, align=left, text width=80mm, right=3mm of yigin] {yerel değişkenler, dönüş adresleri};
+  \node[notrkutu=55mm, draw=cizgi, below=of yigin] (bos) {$\downarrow$ boş alan $\uparrow$};
+  \node[iyikutu=55mm, below=of bos] (obek) {\kb{Öbek (heap)}};
+  \node[etiket, align=left, text width=80mm, right=3mm of obek] {malloc / new ile ayrılan};
+  \node[morkutu=55mm, below=of obek] (bss) {\kb{BSS + Data}};
+  \node[etiket, align=left, text width=80mm, right=3mm of bss] {global ve statik değişkenler};
+  \node[uyarikutu=55mm, below=of bss] (kod) {\kb{Kod (text)}};
+  \node[etiket, align=left, text width=80mm, right=3mm of kod] {makine komutları --- salt okunur};
+
+  \draw[ok, draw=soluk] (yigin.north west) ++(-8mm,0) coordinate (ay1) -- ($(kod.south west)+(-8mm,0)$) coordinate (ay2);
+  \node[etiket, rotate=90, anchor=south] at (ay1) {yüksek adres};
+  \node[etiket, rotate=90, anchor=north] at (ay2) {düşük adres};
+
+  \node[dip, text width=155mm, below=9mm of kod, anchor=north]
+    {Taşmanın sonucu hangi bölgede olduğuna bağlıdır: yığında dönüş adresi, öbekte komşu blok.};
+\end{tikzpicture}
+\end{document}

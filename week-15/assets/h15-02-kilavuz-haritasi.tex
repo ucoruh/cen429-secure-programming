@@ -1,0 +1,36 @@
+% Hafta 15 — Güvenlik kılavuzu S0–S17
+% Derleme: py -3.12 tools/latex/derle.py docs/week-15/assets/h15-02-kilavuz-haritasi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\definecolor{icr2}{HTML}{D3EEF0}
+\definecolor{icr3}{HTML}{B9E3E5}
+\definecolor{icr4}{HTML}{9ED6D7}
+\definecolor{icr5}{HTML}{7CC9CC}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 6mm]
+  \node[baslik] (b) at (0,0) {Güvenlik kılavuzu S0--S17};
+  \node[altbaslik] at (b.south west) {dıştan içe değil, alttan üste: her bölüm bir öncekine dayanır};
+
+  \coordinate (merkez) at ($(b.south west)+(85mm,-70mm)$);
+
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=cokacik, minimum width=170mm, minimum height=95mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr2, minimum width=142mm, minimum height=80mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr3, minimum width=114mm, minimum height=65mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr4, minimum width=86mm, minimum height=50mm] at (merkez) {};
+  \node[rounded corners=3pt, draw=ana, line width=1.1pt, fill=icr5, minimum width=58mm, minimum height=35mm] at (merkez) {};
+
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=160mm] at ($(merkez)+(0,43.5mm)$)
+    {S0--S1 $\cdot$ Kapak, kapsam, kaynaklar};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=130mm] at ($(merkez)+(0,36mm)$)
+    {S2--S5 $\cdot$ Ürün, arayüz, tehdit, varlık};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=105mm] at ($(merkez)+(0,28.5mm)$)
+    {S6--S12 $\cdot$ Korumalar (kimlik, veri, kripto, RASP)};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=80mm] at ($(merkez)+(0,21mm)$)
+    {S13--S15 $\cdot$ Süreç, devredilen, derleme hattı};
+  \node[font=\sffamily\bfseries\footnotesize, text=yazi, align=center, text width=52mm] at (merkez)
+    {S16--S17 $\cdot$ Test sonuçları ve uyum matrisi};
+
+  \node[dip, text width=185mm, below=10mm of merkez, yshift=-47.5mm, anchor=north]
+    {Kılavuz, sertifikasyon belgesinin küçültülmüş modelidir.};
+\end{tikzpicture}
+\end{document}

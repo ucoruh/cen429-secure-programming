@@ -1,0 +1,21 @@
+% Hafta 1 — Tehdit · zafiyet · varlık · karşı önlem
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-01-tehdit-zafiyet-varlik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Tehdit · zafiyet · varlık · karşı önlem};
+  \node[altbaslik] (alt) at (b.south west) {risk = olasılık $\times$ etki};
+
+  \node[kotukutu=30mm, below=8mm of alt.south west, anchor=north west, xshift=6mm] (tehdit) {\kb{TEHDİT}\\saldırgan};
+  \node[uyarikutu=30mm, right=of tehdit] (zafiyet) {\kb{ZAFİYET}\\hatalı kod};
+  \node[koyukutu=30mm, right=of zafiyet] (varlik) {\kb{VARLIK}\\veri · anahtar};
+  \node[iyikutu=42mm, below=24mm of zafiyet] (onlem) {\kb{KARŞI ÖNLEM}\\denetim · şifreleme};
+
+  \draw[kotuok] (tehdit.east) -- node[oketiket, above=3pt] {kullanır} (zafiyet.west);
+  \draw[kotuok] (zafiyet.east) -- node[oketiket, above=3pt] {zarar verir} (varlik.west);
+  \draw[ok, draw=iyi, dashed] (onlem.north) -- node[oketiket, right=3pt] {kapatır} (zafiyet.south);
+
+  \node[dip, text width=150mm, below=9mm of onlem, anchor=north] {Zafiyet olmadan tehdit zarar veremez; karşı önlem zafiyeti kapatır.};
+\end{tikzpicture}
+\end{document}

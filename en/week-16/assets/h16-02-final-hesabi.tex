@@ -1,0 +1,24 @@
+% Hafta 16 — Final ve başarı notu
+% Derleme: py -3.12 tools/latex/derle.py docs/week-16/assets/h16-02-final-hesabi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Final ve başarı notu};
+  \node[altbaslik] at (b.south west) {iki aşamalı hesap};
+
+  \node[kutu=30mm, minimum height=20mm, below=14mm of b.south west, anchor=north west, xshift=6mm] (rap)
+    {\kb{RAP2}\\$\times$ 0,7};
+  \node[font=\sffamily\bfseries\Large, text=soluk, right=4mm of rap] (p1) {+};
+  \node[uyarikutu=30mm, minimum height=20mm, right=4mm of p1] (quiz) {\kb{Quiz-2}\\$\times$ 0,3};
+  \node[font=\sffamily\bfseries\Large, text=soluk, right=8mm of quiz] (ok1) {$\rightarrow$};
+  \node[koyukutu=30mm, minimum height=20mm, right=8mm of ok1] (final) {\kb{FİNAL}};
+
+  \node[notrkutu=36mm, minimum height=16mm, draw=ana, below=14mm of rap] (vize) {Vize $\times$ 0,4};
+  \node[font=\sffamily\bfseries\large, text=soluk, right=6mm of vize] (p2) {+};
+  \node[notrkutu=36mm, minimum height=16mm, draw=ana, right=6mm of p2] (finalx) {Final $\times$ 0,6};
+
+  \node[dip, text width=175mm, below=12mm of vize.south, anchor=north]
+    {BAŞARI NOTU = 0,4 $\cdot$ Vize + 0,6 $\cdot$ Final --- ağırlık finalde.};
+\end{tikzpicture}
+\end{document}

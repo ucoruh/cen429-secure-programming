@@ -1,0 +1,25 @@
+% Hafta 13 — Sektöre özgü gereksinim setleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-09-sektor.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {Sektöre özgü gereksinim setleri};
+  \node[altbaslik] (alt) at (b.south west) {hepsi aynı soruyu sorar: hangi gereksinim, hangi kanıtla karşılandı?};
+
+  \node[iyikutu=46mm, below=8mm of alt.south west, anchor=north west] (n1) {\kb{OWASP MASVS / MASTG}};
+  \node[etiket, right=6mm of n1, anchor=west, align=left, text width=85mm] {mobil uygulama -- bu dersin projesine en yakın};
+
+  \node[kutu=46mm, below=4mm of n1.south west, anchor=north west] (n2) {\kb{ETSI EN 303 645}};
+  \node[etiket, right=6mm of n2, anchor=west, align=left, text width=85mm] {tüketici IoT};
+
+  \node[kutu=46mm, below=4mm of n2.south west, anchor=north west] (n3) {\kb{EMVCo / PCI}};
+  \node[etiket, right=6mm of n3, anchor=west, align=left, text width=85mm] {ödeme kartı ekosistemi};
+
+  \node[kutu=46mm, below=4mm of n3.south west, anchor=north west] (n4) {\kb{GSMA}};
+  \node[etiket, right=6mm of n4, anchor=west, align=left, text width=85mm] {mobil operatör / SIM};
+
+  \node[dip, text width=150mm, below=8mm of n4.south west, anchor=north west] {%
+    Projenizde MASVS seçin: somut, kontrol edilebilir maddeler + MASTG test rehberi.};
+\end{tikzpicture}
+\end{document}

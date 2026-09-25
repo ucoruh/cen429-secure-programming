@@ -1,0 +1,54 @@
+% Hafta 13 — Gereksinimi projeye aktarma kararı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-02-gereksinim-karari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  \node[baslik] (b) at (0,0) {Gereksinimi projeye aktarma kararı};
+  \node[altbaslik] at (b.south west) {her gereksinim için aynı soruları sor};
+
+  \node[kutu=32mm, minimum height=15mm, below=12mm of b.south west, anchor=north west, xshift=2mm] (set)
+    {\kb{Gereksinim seti}};
+  \node[uyarikutu=32mm, minimum height=15mm, right=22mm of set] (uygular)
+    {\kb{Uygulanır mı?}};
+  \draw[ok, draw=soluk] (set.east) -- (uygular.west);
+
+  \node[uyarikutu=32mm, minimum height=15mm, right=26mm of uygular] (sorumlu)
+    {\kb{Sorumlu kim?}};
+  \draw[iyiok] (uygular.east) -- node[oketiket, above=3pt] {evet} (sorumlu.west);
+
+  \node[kotukutu=34mm, minimum height=13mm, below=24mm of uygular] (gerekce)
+    {\kb{Gerekçe yaz}};
+  \draw[kotuok] (uygular.south) -- node[oketiket, right=3pt] {hayır} (gerekce.north);
+
+  \node[morkutu=34mm, minimum height=13mm, below=24mm of sorumlu] (devredilen)
+    {\kb{S14: devredilen}};
+  \draw[ok, draw=mor] (sorumlu.south) -- node[oketiket, right=3pt] {devret} (devredilen.north);
+
+  \node[fit=(gerekce)(devredilen), inner sep=0] (ustfit) {};
+  \coordinate (altbaslangic) at (set.west |- ustfit.south);
+
+  \node[kutu=28mm, minimum height=15mm, below=16mm of altbaslangic, anchor=north west] (varlik)
+    {\kb{Varlık + tehdit}\\(S4, S5)};
+  \node[kutu=28mm, minimum height=15mm, right=14mm of varlik] (onlemk)
+    {\kb{Önlem kartı}\\(S6--S13)};
+  \draw[ok, draw=soluk] (varlik.east) -- (onlemk.west);
+
+  \node[iyikutu=28mm, minimum height=15mm, right=14mm of onlemk] (dogrulama2)
+    {\kb{Doğrulama}\\(S16)};
+  \draw[ok, draw=soluk] (onlemk.east) -- (dogrulama2.west);
+
+  \node[iyikutu=28mm, minimum height=15mm, right=14mm of dogrulama2] (uyum)
+    {\kb{Uyum matrisi}\\(S17)};
+  \draw[ok, draw=soluk] (dogrulama2.east) -- (uyum.west);
+
+  \coordinate (bizstart) at ($(sorumlu.south)+(-27mm,-6mm)$);
+  \coordinate (bizasagi) at ($(bizstart |- ustfit.south)+(0,-3mm)$);
+  \draw[iyiok] (sorumlu.south) -- (bizstart) -- (bizasagi) -| (varlik.north);
+  \node[font=\sffamily\footnotesize, text=iyi] at ($(bizstart)+(0,6mm)$) {biz};
+
+  \node[fit=(varlik)(onlemk)(dogrulama2)(uyum), inner sep=0] (altfit) {};
+  \node[dip, text width=170mm, below=10mm of altfit.south, anchor=north]
+    {Devredilen gereksinim de yazılır: kime, neden, karşı taraf nasıl karşılayacak.};
+\end{tikzpicture}
+\end{document}

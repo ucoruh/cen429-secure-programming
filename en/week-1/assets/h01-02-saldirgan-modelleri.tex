@@ -1,0 +1,23 @@
+% Hafta 1 — Saldırgan modelleri: ne görebiliyor?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-02-saldirgan-modelleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Saldırgan modelleri: ne görebiliyor?};
+  \node[altbaslik] (alt) at (b.south west) {soldan sağa görünürlük artar $\rightarrow$ savunma zorlaşır};
+
+  \node[kutu=38mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (uzak)
+    {\kb{UZAK saldırgan}\\yalnız ağ mesajları\\görür};
+  \node[uyarikutu=38mm, right=of uzak] (yerel)
+    {\kb{YEREL kullanıcı}\\+ dosyalar, ortam\\başka süreçler};
+  \node[kotukutu=38mm, right=of yerel] (beyaz)
+    {\kb{BEYAZ KUTU (MATE)}\\+ bellek, yazmaçlar\\ikili kod, debugger};
+
+  \draw[ok, draw=soluk] (uzak.east) -- (yerel.west);
+  \draw[ok, draw=soluk] (yerel.east) -- (beyaz.west);
+
+  \node[kotudip, text width=155mm, below=9mm of beyaz.south -| yerel, anchor=north]
+    {Bu derste varsayılan model BEYAZ KUTU'dur: saldırgan cihazın sahibidir.};
+\end{tikzpicture}
+\end{document}

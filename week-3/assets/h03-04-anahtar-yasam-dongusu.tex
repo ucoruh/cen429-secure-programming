@@ -1,0 +1,38 @@
+% Hafta 3 — Bir anahtarın hayatı (üretimden imhaya)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-04-anahtar-yasam-dongusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 7mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Bir anahtarın hayatı};
+  \node[altbaslik] at (b.south west) {üretimden imhaya --- her geçiş kayıt altında};
+
+  % Ana zincir: beş aşama
+  \node[kutu=26mm] (uret) at (0.5,-2.2) {\kb{Üretildi}\\CSPRNG / KDF};
+  \node[kutu=26mm, right=of uret] (dagit) {\kb{Dağıtıldı}\\sarılı (wrapped)};
+  \node[koyukutu=26mm, right=of dagit] (etkin) {ETKİN\\kullanımda};
+  \node[kutu=26mm, right=of etkin] (pasif) {\kb{Pasif}\\yalnız çözme};
+  \node[kutu=26mm, right=of pasif] (imha) {\kb{İmha}\\silindi};
+  \draw[ok, draw=soluk] (uret.east) -- (dagit.west);
+  \draw[ok, draw=soluk] (dagit.east) -- (etkin.west);
+  \draw[ok, draw=soluk] (etkin.east) -- (pasif.west);
+  \draw[ok, draw=soluk] (pasif.east) -- (imha.west);
+
+  % Yan dal 1: Askıda (turuncu, ETKİN <-> Pasif arası dolaşım)
+  \coordinate (orta1) at ($(etkin)!0.5!(pasif)$);
+  \node[uyarikutu=30mm, below=22mm of orta1] (askida) {\kb{Askıda}\\şüphe / geçici durdurma};
+  \draw[ok, draw=uyari] (etkin.south) -- (askida.north);
+  \draw[ok, draw=uyari] (askida.east) -- (pasif.south);
+
+  % Yan dal 2: ELE GEÇİRİLDİ (kırmızı, kesik oklar)
+  \coordinate (orta2) at ($(pasif)!0.5!(imha)$);
+  \node[kotukutu=34mm, below=22mm of orta2] (ele) {\kb{ELE GEÇİRİLDİ}\\iptal + yeni anahtar};
+  \draw[kesik ok, draw=kotu] (pasif.south) -- node[oketiket, left] {sızıntı} (ele.north);
+  \draw[kesik ok, draw=kotu] (ele.east) -- node[oketiket, below] {iptal} (imha.south);
+
+  % Dip şeridi
+  \node[dip, text width=165mm, below=10mm of ele.south -| etkin, anchor=north] {%
+    Kripto-periyodu dolan anahtar HEMEN silinmez: eski veri yeniden şifrelenene dek yalnız çözmede kalır.};
+\end{tikzpicture}
+\end{document}

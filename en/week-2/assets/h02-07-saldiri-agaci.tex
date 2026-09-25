@@ -1,0 +1,47 @@
+% Hafta 2 — Saldırı ağacı: başkasının hesabından ödeme
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-07-saldiri-agaci.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 8mm]
+  \node[baslik] (b) at (0,0) {Saldırı ağacı: başkasının hesabından ödeme};
+  \node[altbaslik] at (b.south west) {parantez içindeki sayı = saldırganın maliyeti (düşük = kolay)};
+
+  \node[uyarikutu=42mm, minimum height=16mm, below=48mm of b.south west, anchor=north west, xshift=2mm] (d1)
+    {\kb{Çalıntı cihazla}\\ödeme (11)};
+  \node[uyarikutu=42mm, minimum height=16mm, right=of d1] (d2) {\kb{Oturum anahtarını}\\kopyala ve taşı (10)};
+  \node[uyarikutu=42mm, minimum height=16mm, right=of d2] (d3) {\kb{Ağda araya}\\gir (6)};
+  \node[uyarikutu=42mm, minimum height=16mm, right=of d3] (d4) {\kb{Sunucu API'sini}\\kötüye kullan (3)};
+
+  \coordinate (orta) at ($(d1.north)!0.5!(d4.north)$);
+  \node[koyukutu=100mm, minimum height=11mm, above=18mm of orta] (hedef)
+    {VEYA: Başkasının hesabından ödeme yap (maliyet 3)};
+  \node[font=\sffamily\bfseries\small, text=kotu, below=2mm of hedef] (veya) {VEYA};
+
+  \draw[ok, draw=soluk] (hedef.south -| d1) -- (d1.north);
+  \draw[ok, draw=soluk] (hedef.south -| d2) -- (d2.north);
+  \draw[ok, draw=soluk] (hedef.south -| d3) -- (d3.north);
+  \draw[ok, draw=soluk] (hedef.south -| d4) -- (d4.north);
+
+  \node[kutu=42mm, minimum height=11mm, below=15mm of d1] (l1a) {Ekran kilidini aş $\cdot$ 6};
+  \node[kutu=42mm, minimum height=11mm, below=5mm of l1a] (l1b) {Uygulama PIN'ini aş $\cdot$ 5};
+  \draw[ok, draw=soluk] (d1.south) -- node[pos=0.5, font=\sffamily\bfseries\footnotesize, text=iyi, fill=white, inner sep=1.5pt] {VE} (l1a.north);
+  \draw[ok, draw=soluk] (l1a.south) -- (l1b.north);
+
+  \node[kutu=42mm, minimum height=11mm, below=15mm of d2] (l2a) {Anahtarı elde et $\cdot$ 4};
+  \node[kutu=42mm, minimum height=11mm, below=5mm of l2a] (l2b) {Cihaz bağlamayı aş $\cdot$ 6};
+  \draw[ok, draw=soluk] (d2.south) -- node[pos=0.5, font=\sffamily\bfseries\footnotesize, text=iyi, fill=white, inner sep=1.5pt] {VE} (l2a.north);
+  \draw[ok, draw=soluk] (l2a.south) -- (l2b.north);
+
+  \node[kutu=42mm, minimum height=11mm, below=15mm of d3] (l3a) {TLS'i kır $\cdot$ 3};
+  \node[kutu=42mm, minimum height=11mm, below=5mm of l3a] (l3b) {Mesaj şifrelemesi $\cdot$ 3};
+  \draw[ok, draw=soluk] (d3.south) -- node[pos=0.5, font=\sffamily\bfseries\footnotesize, text=iyi, fill=white, inner sep=1.5pt] {VE} (l3a.north);
+  \draw[ok, draw=soluk] (l3a.south) -- (l3b.north);
+
+  \node[kutu=42mm, minimum height=11mm, below=15mm of d4] (l4a) {Yetki hatası bul $\cdot$ 3};
+  \draw[ok, draw=soluk] (d4.south) -- node[pos=0.5, font=\sffamily\bfseries\footnotesize, text=iyi, fill=white, inner sep=1.5pt] {VE} (l4a.north);
+
+  \node[dip, text width=195mm, below=10mm of l1b.south -| d3, anchor=north]
+    {En ucuz dal (3) önce kapatılır: savunma bütçesi en olası yola harcanır.};
+\end{tikzpicture}
+\end{document}

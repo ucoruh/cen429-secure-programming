@@ -1,0 +1,24 @@
+% Hafta 1 — CIA üçlüsü
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-12-cia-uclusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {CIA üçlüsü};
+  \node[altbaslik] (alt) at (b.south west) {her güvenlik hedefi bu üçünden birine dayanır};
+
+  \node[kutu=46mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (giz)
+    {\kb{GİZLİLİK}\\yalnız yetkili\\GÖREBİLİR};
+  \node[iyikutu=46mm, right=of giz] (but)
+    {\kb{BÜTÜNLÜK}\\yalnız yetkili\\DEĞİŞTİREBİLİR};
+  \node[uyarikutu=46mm, right=of but] (eri)
+    {\kb{ERİŞİLEBİLİRLİK}\\gerektiğinde\\ÇALIŞIR};
+
+  \node[etiket, below=3mm of giz] {parola sızarsa\\ihlal};
+  \node[etiket, below=3mm of but] {bakiye değişirse\\ihlal};
+  \node[etiket, below=3mm of eri] {hizmet durursa\\ihlal};
+
+  \node[dip, text width=160mm, below=14mm of giz.south -| but, anchor=north]
+    {Bir saldırıyı sınıflarken önce sorun: bu üçünden HANGİSİ bozuldu?};
+\end{tikzpicture}
+\end{document}

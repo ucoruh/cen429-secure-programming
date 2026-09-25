@@ -1,0 +1,21 @@
+% Hafta 8 — Quiz-1 soru tipleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-8/assets/h08-02-soru-tipleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Quiz-1 soru tipleri};
+  \node[altbaslik, text width=170mm] at (b.south west) {dördü de ``anladın mı'' diye sorar, ``ezberledin mi'' diye değil};
+
+  \node[kutu=38mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Çoktan seçmeli}\\kavram ayrımı};
+  \node[kutu=38mm, right=of n1] (n2) {\kb{Doğru / yanlış}\\sık yanılgılar};
+  \node[uyarikutu=38mm, right=of n2] (n3) {\kb{Kısa cevap}\\``neden?'' sorusu};
+  \node[kotukutu=38mm, right=of n3] (n4) {\kb{Kod okuma}\\açığı bul, düzelt};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[dip, text width=180mm, below=8mm of n4.south -| n2, anchor=north] {%
+    Kod okuma sorusunda önce açığın SINIFINI (CWE) söyleyin, sonra düzeltmeyi.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,30 @@
+% Hafta 3 — HKDF: bir ana sırdan birçok anahtar
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-03-hkdf.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {HKDF: bir ana sırdan birçok anahtar};
+  \node[altbaslik] at (b.south west) {Extract (topla) $\rightarrow$ Expand (amaca göre böl)};
+
+  % Ana zincir: sır -> extract -> PRK
+  \node[kutu=24mm] (sir) at (0.5,-2.4) {\kb{Ana sır}};
+  \node[koyukutu=28mm, right=of sir] (extract) {HKDF-Extract\\+ tuz};
+  \node[kutu=18mm, fill=acik, right=of extract] (prk) {\kb{PRK}};
+  \draw[ok, draw=soluk] (sir.east) -- (extract.west);
+  \draw[ok, draw=soluk] (extract.east) -- (prk.west);
+
+  % PRK'dan üç türetilmiş anahtar
+  \node[iyikutu=34mm] (k1) at ($(prk)+(5.8,2.4)$) {\kb{Şifreleme anahtarı}\\\kod{info='sifreleme'}};
+  \node[iyikutu=34mm] (k2) at ($(prk)+(5.8,0)$) {\kb{MAC anahtarı}\\\kod{info='mac'}};
+  \node[iyikutu=34mm] (k3) at ($(prk)+(5.8,-2.4)$) {\kb{Oturum-42 anahtarı}\\\kod{info='oturum-42'}};
+  \draw[iyiok] (prk.east) -- (k1.west);
+  \draw[iyiok] (prk.east) -- (k2.west);
+  \draw[iyiok] (prk.east) -- (k3.west);
+
+  % Dip şeridi
+  \node[dip, text width=160mm, below=10mm of k3.south -| extract, anchor=north] {%
+    Farklı \kod{info} $\rightarrow$ farklı anahtar. Aynı sırdan üretilseler de biri sızarsa diğerleri güvende kalır.};
+\end{tikzpicture}
+\end{document}

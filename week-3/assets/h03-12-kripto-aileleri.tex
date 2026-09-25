@@ -1,0 +1,29 @@
+% Hafta 3 — Kriptografinin dört ailesi: hangi araç neyi korur?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-12-kripto-aileleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 6mm]
+  \node[baslik] (b) at (0,0) {Kriptografinin dört ailesi: hangi araç neyi korur?};
+  \node[altbaslik, text width=170mm] at (b.south west) {tek bir ``şifreleme'' yoktur; hedefe göre araç seçilir};
+
+  \node[kutu=44mm, below=14mm of b.south west, anchor=north west] (r1) {\kb{Simetrik şifreleme}};
+  \node[align=left, text width=100mm, right=6mm of r1]
+    {\textcolor{ana}{\textbf{GİZLİLİK}}\\[2pt]\textcolor{soluk}{\footnotesize AES-GCM, ChaCha20}};
+
+  \node[morkutu=44mm, below=of r1] (r2) {\kb{Özet (hash)}};
+  \node[align=left, text width=100mm, right=6mm of r2]
+    {\textcolor{mor}{\textbf{PARMAK İZİ}}\\[2pt]\textcolor{soluk}{\footnotesize SHA-256 --- anahtar yok}};
+
+  \node[iyikutu=44mm, below=of r2] (r3) {\kb{MAC}};
+  \node[align=left, text width=100mm, right=6mm of r3]
+    {\textcolor{iyi}{\textbf{BÜTÜNLÜK + KİMLİK}}\\[2pt]\textcolor{soluk}{\footnotesize HMAC --- paylaşılan anahtar}};
+
+  \node[uyarikutu=44mm, below=of r3] (r4) {\kb{Dijital imza}};
+  \node[align=left, text width=100mm, right=6mm of r4]
+    {\textcolor{uyari}{\textbf{BÜTÜNLÜK + İNKÂR EDİLEMEZLİK}}\\[2pt]\textcolor{soluk}{\footnotesize Ed25519 --- özel anahtar}};
+
+  \node[dip, text width=165mm, below=9mm of r4, anchor=north] {%
+    En sık hata: gizlilik ile bütünlüğü karıştırmak. Şifreleme tek başına bütünlük vermez.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,24 @@
+% Hafta 5 — Güvensiz seri durumdan çıkarma
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-06-deserialization.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Güvensiz seri durumdan çıkarma};
+  \node[altbaslik] at (b.south west) {saldırgan kod yazmaz --- VAR OLAN sınıfları zincirler};
+  \node[kotukutu=36mm, anchor=north west] (n1) at (0,-2.2)
+    {\kb{Saldırganın bayt akışı}\\nesne grafiği};
+  \node[uyarikutu=32mm, right=9mm of n1] (n2)
+    {\kb{readObject()}\\nesneleri KURAR};
+  \node[kotukutu=36mm, right=9mm of n2] (n3)
+    {\kb{Gadget zinciri}\\sınıf yolundaki\\yan etkili metotlar};
+  \node[kotukutu=34mm, right=9mm of n3] (n4)
+    {\kb{Komut çalıştırma}\\RCE};
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[kotuok] (n2.east) -- (n3.west);
+  \draw[kotuok] (n3.east) -- (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[kotudip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Savunma: ObjectInputFilter ile izin listesi ve sonda ``!*'' (varsayılan-reddet).};
+\end{tikzpicture}
+\end{document}

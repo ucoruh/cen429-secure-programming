@@ -1,0 +1,29 @@
+% Hafta 3 — İleri gizlilik: eski anahtarlar geri hesaplanamaz
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-11-ileri-gizlilik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 24mm]
+  \node[baslik] (b) at (0,0) {İleri gizlilik: eski anahtarlar geri hesaplanamaz};
+  \node[altbaslik] at (b.south west) {zincirin her halkası bir öncekinden tek yönlü türetilir};
+
+  \node[notrkutu=26mm] (k1) at (2.2,-2.8) {\kb{K1}\\oturum 1\\silindi};
+  \node[notrkutu=26mm, right=of k1] (k2) {\kb{K2}\\oturum 2\\silindi};
+  \node[notrkutu=26mm, right=of k2] (k3) {\kb{K3}\\oturum 3\\silindi};
+  \node[iyikutu=26mm, right=of k3] (k4) {\kb{K4}\\oturum 4\\\textbf{ELDE OLAN}};
+
+  \draw[ok, draw=soluk] (k1.east) -- node[oketiket, above=3pt] {KDF} (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- node[oketiket, above=3pt] {KDF} (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- node[oketiket, above=3pt] {KDF} (k4.west);
+
+  \coordinate (alt1) at ($(k1.south)+(0,-10mm)$);
+  \coordinate (alt4) at ($(k4.south)+(0,-10mm)$);
+  \coordinate (altorta) at ($(alt1)!0.5!(alt4)$);
+  \draw[ok, draw=kotu, dashed, line width=1.6pt] (alt4) -- (alt1);
+  \node[align=center, text=kotu, font=\sffamily\bfseries\small, text width=155mm, below=4mm of altorta] (uyari)
+    {K4'ten K3, K2, K1 GERİ HESAPLANAMAZ (tek yönlü)};
+
+  \node[dip, text width=155mm, below=8mm of uyari, anchor=north] {%
+    Bugün anahtar çalınsa bile dünkü trafik çözülemez --- ileri gizliliğin tanımı budur.};
+\end{tikzpicture}
+\end{document}

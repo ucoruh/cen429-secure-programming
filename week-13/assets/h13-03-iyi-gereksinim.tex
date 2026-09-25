@@ -1,0 +1,28 @@
+% Hafta 13 — İyi gereksinimin ölçütleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-03-iyi-gereksinim.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {İyi gereksinimin ölçütleri};
+  \node[altbaslik] (alt) at (b.south west) {bu ölçütleri karşılamayan gereksinim test edilemez};
+
+  \node[kutu=40mm, below=8mm of alt.south west, anchor=north west] (n1) {\kb{TEKİL}};
+  \node[etiket, right=6mm of n1, anchor=west, align=left, text width=85mm] {bir cümle, bir gereksinim};
+
+  \node[iyikutu=40mm, below=4mm of n1.south west, anchor=north west] (n2) {\kb{DOĞRULANABİLİR}};
+  \node[etiket, right=6mm of n2, anchor=west, align=left, text width=85mm] {nasıl test edileceği bellidir};
+
+  \node[iyikutu=40mm, below=4mm of n2.south west, anchor=north west] (n3) {\kb{İZLENEBİLİR}};
+  \node[etiket, right=6mm of n3, anchor=west, align=left, text width=85mm] {kaynağı ve kanıtı vardır};
+
+  \node[kutu=40mm, below=4mm of n3.south west, anchor=north west] (n4) {\kb{ÖLÇÜLEBİLİR}};
+  \node[etiket, right=6mm of n4, anchor=west, align=left, text width=85mm] {sayı ya da somut teknik terim içerir};
+
+  \node[morkutu=40mm, below=4mm of n4.south west, anchor=north west] (n5) {\kb{'NE' odaklı}};
+  \node[etiket, right=6mm of n5, anchor=west, align=left, text width=85mm] {'nasıl' yapılacağını dayatmaz};
+
+  \node[kotudip, text width=140mm, below=8mm of n5.south west, anchor=north west] {%
+    'Uygulama güvenli olmalı' bunların HİÇBİRİNİ karşılamaz.};
+\end{tikzpicture}
+\end{document}

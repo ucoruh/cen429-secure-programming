@@ -1,0 +1,29 @@
+% Hafta 3 — TLS istemcisini doğru kurmanın adımları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-16-tls-istemci-adimlari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 9mm]
+  \node[baslik] (b) at (0,0) {TLS istemcisini doğru kurmanın adımları};
+  \node[altbaslik] at (b.south west) {tek bir adım atlanırsa MITM açık kalır};
+
+  \node[kutu=36mm, below=14mm of b.south west, anchor=north west] (a1) {\kb{1 · Güncel kütüphane}\\TLS 1.3 / 1.2\\eski sürümü kapat};
+  \node[kutu=36mm, right=of a1] (a2) {\kb{2 · Kök deposu}\\sistem deposunu kullan};
+  \node[iyikutu=36mm, right=of a2] (a3) {\kb{3 · Zinciri doğrula}\\imza + süre + amaç};
+
+  \draw[ok] (a1.east) -- (a2.west);
+  \draw[ok] (a2.east) -- (a3.west);
+
+  \node[iyikutu=36mm, below=18mm of a1] (a4) {\kb{4 · Ana makine adı}\\sertifika bu sunucuya mı ait?};
+  \node[morkutu=36mm, right=of a4] (a5) {\kb{5 · İptal denetimi}\\OCSP / CRL};
+  \node[uyarikutu=36mm, right=of a5] (a6) {\kb{6 · Sabitleme (isteğe bağlı)}\\yedek pin + son kullanma};
+
+  \draw[ok] (a4.east) -- (a5.west);
+  \draw[ok] (a5.east) -- (a6.west);
+
+  \draw[ok] (a3.south) -- ++(0,-9mm) -| (a4.north);
+
+  \node[dip, text width=165mm, below=9mm of a4.south -| a2, anchor=north] {%
+    En sık hata: zincir doğrulanır ama ana makine adı denetlenmez --- sertifika geçerli, sunucu yanlış.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,21 @@
+% Hafta 6 — Emülatör algılamada yanlış pozitif
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-09-emulator.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Emülatör algılamada yanlış pozitif};
+  \node[altbaslik] at (b.south west) {suçsuz kullanıcıyı engellemek en pahalı hatadır};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{Zayıf sinyaller}\\[2mm]
+     pil yok · sensör yok\\hipervizör biti\\[3mm]
+     WSL2 / Hyper-V / VBS yüzünden\\MEŞRU makinede de görülür};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{Doğru yaklaşım}\\[2mm]
+     birden çok sinyali TART\\sertliği derecelendir\\[3mm]
+     sunucu tarafı attestation\\ikili ``çalış/çalışma'' değil};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Bir skor üretin; eşiği ürünün risk iştahına göre ayarlayın.};
+\end{tikzpicture}
+\end{document}

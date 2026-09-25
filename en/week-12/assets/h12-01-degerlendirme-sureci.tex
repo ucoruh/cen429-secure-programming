@@ -1,0 +1,20 @@
+% Hafta 12 — Değerlendirme süreci: üç aşama, 13 adım
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-01-degerlendirme-sureci.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Değerlendirme süreci: üç aşama, 13 adım};
+  \node[altbaslik] at (b.south west) {üretici kendi ürününü onaylayamaz};
+
+  \node[kutu=40mm, below=16mm of b.south west, anchor=north west] (haz) {\kb{HAZIRLIK}\\TOE · kapsam\\gereksinim · plan\\(adım 1--4)};
+  \node[uyarikutu=46mm, right=of haz] (deg) {\kb{DEĞERLENDİRME}\\kod inceleme $\rightarrow$ SAST $\rightarrow$\\DAST $\rightarrow$ fuzzing $\rightarrow$ pentest\\+ derecelendirme};
+  \node[iyikutu=40mm, right=of deg] (sur) {\kb{SÜREKLİLİK}\\karar / sertifika\\etki analizi + delta};
+
+  \draw[anaok] (haz) -- (deg);
+  \draw[anaok] (deg) -- (sur);
+
+  \node[dip, text width=150mm, below=8mm of sur.south -| deg, anchor=north] {%
+    Sertifika bir anlık fotoğraftır: her değişiklikte etki analizi ve delta değerlendirme gerekir.};
+\end{tikzpicture}
+\end{document}

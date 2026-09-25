@@ -1,0 +1,31 @@
+% Hafta 2 — Güvenlik denetim kaydı: kanıt olarak günlük
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-13-denetim-kaydi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Güvenlik denetim kaydı: kanıt olarak günlük};
+  \node[altbaslik] at (b.south west) {olay olduktan sonra elinizde kalan tek şey};
+
+  \node[kutu=44mm, minimum height=18mm, below=13mm of b.south west, anchor=north west, xshift=8mm] (ne)
+    {\kb{Ne yazılır?}\\kim, ne zaman,\\ne yaptı, sonuç};
+  \node[kotukutu=44mm, minimum height=18mm, right=of ne] (ne2)
+    {\kb{Ne YAZILMAZ?}\\parola, anahtar,\\kart no, kişisel veri};
+  \node[iyikutu=36mm, minimum height=18mm, right=of ne2] (nasil)
+    {\kb{Nasıl korunur?}\\özet zinciri};
+
+  \node[morkutu=24mm, minimum height=13mm, below=18mm of ne] (r1) {kayıt 1};
+  \node[morkutu=24mm, minimum height=13mm, right=6mm of r1] (r2) {kayıt 2};
+  \node[morkutu=24mm, minimum height=13mm, right=6mm of r2] (r3) {kayıt 3};
+  \node[morkutu=24mm, minimum height=13mm, right=6mm of r3] (r4) {kayıt 4};
+  \draw[ok, draw=mor] (r1) -- (r2);
+  \draw[ok, draw=mor] (r2) -- (r3);
+  \draw[ok, draw=mor] (r3) -- (r4);
+
+  \node[font=\sffamily\small, text=soluk, text width=170mm, align=center, below=6mm of r1.south -| r2, anchor=north]
+    {her kayıt bir öncekinin özetini taşır $\rightarrow$ araya ekleme ve silme fark edilir};
+
+  \node[dip, text width=180mm, below=8mm of ne2.south -| r1, anchor=north, yshift=-30mm]
+    {Sondan kesme özet zinciriyle yakalanmaz; ayrıca uzak sunucuya kopyalayın.};
+\end{tikzpicture}
+\end{document}

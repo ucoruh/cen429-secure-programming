@@ -1,0 +1,27 @@
+% Hafta 9 — Katmanlı savunmada gizlemenin yeri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-16-katmanli-savunmada-yer.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Katmanlı savunmada gizlemenin yeri};
+  \node[altbaslik, text width=170mm] at (b.south west) {gizleme en dıştaki kabuk değil, diğerlerini örten bir katmandır};
+
+  \begin{scope}[shift={(85mm,-46mm)}]
+    \draw[rounded corners=4pt, draw=ana, fill=cokacik, line width=1pt] (-82mm,-36mm) rectangle (82mm,36mm);
+    \node[font=\sffamily\bfseries\small, text=yazi, text width=150mm, align=center, anchor=north] at (0,34mm) {Süreç ve gereksinim (13. hafta)};
+
+    \draw[rounded corners=4pt, draw=ana, fill=acik, line width=1pt] (-64mm,-28mm) rectangle (64mm,28mm);
+    \node[font=\sffamily\bfseries\small, text=yazi, text width=120mm, align=center, anchor=north] at (0,26mm) {Kriptografi ve anahtar yönetimi (3., 10. hafta)};
+
+    \draw[rounded corners=4pt, draw=ana, fill=ana!65!white, line width=1pt] (-44mm,-19mm) rectangle (44mm,19mm);
+    \node[font=\sffamily\bfseries\small, text=white, text width=80mm, align=center, anchor=north] at (0,17mm) {Çalışma zamanı koruması / RASP (6. hafta)};
+
+    \draw[rounded corners=4pt, draw=uyari, fill=uyari, line width=1pt] (-25mm,-10mm) rectangle (25mm,10mm);
+    \node[font=\sffamily\bfseries\small, text=white, text width=44mm, align=center] at (0,0) {GİZLEME (9., 14. hafta)};
+  \end{scope}
+
+  \node[dip, text width=170mm, anchor=north west] at (0mm,-94mm) {%
+    Tek başına gizleme bir güvenlik mimarisi değildir; diğer katmanların ömrünü uzatır.};
+\end{tikzpicture}
+\end{document}

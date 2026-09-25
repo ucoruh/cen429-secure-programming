@@ -1,0 +1,17 @@
+% Hafta 10 — ECB neden asla kullanılmaz?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-06-ecb.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {ECB neden asla kullanılmaz?};
+  \node[altbaslik, text width=170mm] at (b.south west) {ünlü ``ECB pengueni'' bu yüzden görünür kalır};
+
+  \node[kotukutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{ECB}\\her blok BAĞIMSIZ şifrelenir\\[2mm]aynı düz metin bloğu $\rightarrow$\\aynı şifreli blok\\$\rightarrow$ DESENLER görünür};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{CBC / CTR / GCM}\\her blok öncekine ya da\\nonce'a bağlı\\[2mm]aynı metin $\rightarrow$ farklı şifreli\\$\rightarrow$ desen sızmaz};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Kip seçimi şifrelemenin kendisi kadar önemlidir; varsayılan tercih AEAD (GCM).};
+\end{tikzpicture}
+\end{document}

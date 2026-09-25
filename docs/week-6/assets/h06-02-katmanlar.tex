@@ -1,0 +1,28 @@
+% Hafta 6 — Katmanlar birbirini korur
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-02-katmanlar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Katmanlar birbirini korur};
+  \node[altbaslik] at (b.south west) {aynı hassas işlemi saran katmanlar};
+  \node[kutu=50mm, anchor=north west] (k1) at (0,-2.4) {\kb{Gizleme (4, 5, 9. hafta)}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k1]
+    {denetimleri BULMAYI zorlaştırır};
+  \node[kutu=50mm, below=6mm of k1] (k2) {\kb{Bütünlük denetimi}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k2]
+    {denetimlerin YAMALANMASINI fark eder};
+  \node[kutu=50mm, below=6mm of k2] (k3) {\kb{Debugger / kanca / ortam}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k3]
+    {çalışma anı ANALİZİNİ fark eder};
+  \node[iyikutu=50mm, below=6mm of k3] (k4) {\kb{Kontrol akışı sayacı}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k4]
+    {denetimin ATLANMASINI fark eder};
+  \node[koyukutu=50mm, below=6mm of k4] (k5) {\kb{HASSAS İŞLEM}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k5]
+    {korunan çekirdek};
+  \node[fit=(k1)(k2)(k3)(k4)(k5), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Saldırganın hepsini aynı anda aşması gerekir; bu da saldırı potansiyelini yükseltir.};
+\end{tikzpicture}
+\end{document}

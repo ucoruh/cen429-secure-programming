@@ -1,0 +1,41 @@
+% Hafta 2 — Bell–LaPadula ↔ Biba: ters yönler
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-05-blp-biba.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Bell--LaPadula $\leftrightarrow$ Biba: ters yönler};
+  \node[altbaslik] at (b.south west) {BLP gizliliği, Biba bütünlüğü korur};
+
+  % Sol sütun: BLP seviyeleri
+  \node[notrkutu=32mm, draw=koyu, below=30mm of b.south west, anchor=north west, xshift=18mm] (blp3) {Çok Gizli};
+  \node[notrkutu=32mm, draw=koyu, below=9mm of blp3] (blp2) {Gizli};
+  \node[notrkutu=32mm, draw=koyu, below=9mm of blp2] (blp1) {Genel};
+
+  % Sağ sütun: Biba seviyeleri
+  \node[notrkutu=32mm, draw=uyari, right=54mm of blp3] (biba3) {Çekirdek};
+  \node[notrkutu=32mm, draw=uyari, below=9mm of biba3] (biba2) {Uygulama};
+  \node[notrkutu=32mm, draw=uyari, below=9mm of biba2] (biba1) {Dış};
+
+  \begin{pgfonlayer}{background}
+    \node[draw=koyu, fill=cokacik, rounded corners=4pt, line width=1.3pt,
+          fit=(blp3)(blp1), inner sep=13mm,
+          label={[font=\sffamily\bfseries, text=koyu]above:Bell--LaPadula (GİZLİLİK)}] {};
+    \node[draw=uyari, fill=uyaribg, rounded corners=4pt, line width=1.3pt,
+          fit=(biba3)(biba1), inner sep=13mm,
+          label={[font=\sffamily\bfseries, text=uyari]above:Biba (BÜTÜNLÜK)}] {};
+  \end{pgfonlayer}
+
+  \draw[kesik ok, draw=kotu] ($(blp1.west)+(-8mm,0)$) -- ($(blp3.west)+(-8mm,0)$)
+    node[midway, sloped, above, font=\sffamily\footnotesize, text=kotu] {yukarı OKUMA yok};
+  \draw[kesik ok, draw=kotu] ($(blp3.east)+(8mm,0)$) -- ($(blp1.east)+(8mm,0)$)
+    node[midway, sloped, above, font=\sffamily\footnotesize, text=kotu] {aşağı YAZMA yok};
+  \draw[kesik ok, draw=kotu] ($(biba3.west)+(-8mm,0)$) -- ($(biba1.west)+(-8mm,0)$)
+    node[midway, sloped, above, font=\sffamily\footnotesize, text=kotu] {aşağı OKUMA yok};
+  \draw[kesik ok, draw=kotu] ($(biba1.east)+(8mm,0)$) -- ($(biba3.east)+(8mm,0)$)
+    node[midway, sloped, above, font=\sffamily\footnotesize, text=kotu] {yukarı YAZMA yok};
+
+  \node[kotudip, text width=170mm, below=14mm of blp1.south -| biba1, anchor=north]
+    {Aynı kafes, ters kurallar: biri sırrın aşağı sızmasını, diğeri çöpün yukarı çıkmasını engeller.};
+\end{tikzpicture}
+\end{document}

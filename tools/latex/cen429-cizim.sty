@@ -1,0 +1,80 @@
+% CEN429 ders çizimleri için ortak TikZ stili.
+% Her çizim docs/week-N/assets/<ad>.tex dosyasıdır (standalone); tools/latex/derle.py ile PDF -> SVG + PNG üretilir.
+% Renkler slayt temasıyla ve eski matplotlib çizimleriyle aynıdır.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cen429-cizim}[2026/09/25 CEN429 cizim stili]
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{tgheros}
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.misc,shapes.multipart,
+  calc,fit,backgrounds,decorations.pathreplacing,matrix,chains}
+
+% --- Ders renk paleti ---
+\definecolor{koyu}{HTML}{006D77}
+\definecolor{ana}{HTML}{0A9396}
+\definecolor{acik}{HTML}{9ED6D7}
+\definecolor{cokacik}{HTML}{E8F6F7}
+\definecolor{iyi}{HTML}{2E7D32}
+\definecolor{iyibg}{HTML}{EAF4EA}
+\definecolor{kotu}{HTML}{C0392B}
+\definecolor{kotubg}{HTML}{FDEAEA}
+\definecolor{uyari}{HTML}{B5651D}
+\definecolor{uyaribg}{HTML}{FDF1E7}
+\definecolor{mor}{HTML}{4054B2}
+\definecolor{morbg}{HTML}{EEF2FF}
+\definecolor{yazi}{HTML}{1F2933}
+\definecolor{soluk}{HTML}{6B7280}
+\definecolor{cizgi}{HTML}{CFD8DC}
+
+% --- Ortak stiller ---
+\tikzset{
+  every picture/.style={font=\sffamily\small, text=yazi, line join=round},
+  % Başlık ve alt başlık (çizimin üstünde)
+  baslik/.style={font=\sffamily\bfseries\large, text=koyu, anchor=south west},
+  altbaslik/.style={font=\sffamily\small, text=soluk, anchor=north west},
+  % Kutular: ana (turkuaz), iyi (yeşil), kotu (kırmızı), uyari (turuncu), mor, notr (gri)
+  kutu/.style={draw=ana, fill=cokacik, rounded corners=3pt, line width=0.9pt, align=center,
+               inner sep=5pt, minimum height=9mm, text width=#1},
+  kutu/.default=34mm,
+  iyikutu/.style={kutu=#1, draw=iyi, fill=iyibg},
+  iyikutu/.default=34mm,
+  kotukutu/.style={kutu=#1, draw=kotu, fill=kotubg},
+  kotukutu/.default=34mm,
+  uyarikutu/.style={kutu=#1, draw=uyari, fill=uyaribg},
+  uyarikutu/.default=34mm,
+  morkutu/.style={kutu=#1, draw=mor, fill=morbg},
+  morkutu/.default=34mm,
+  notrkutu/.style={kutu=#1, draw=cizgi, fill=white},
+  notrkutu/.default=34mm,
+  koyukutu/.style={kutu=#1, draw=koyu, fill=koyu, text=white, font=\sffamily\bfseries\small},
+  koyukutu/.default=34mm,
+  % Kutu başlığı + satırlar için: \kbaslik{Başlık}\\ satır
+  % Oklar
+  ok/.style={-{Stealth[length=2.6mm]}, line width=1.1pt, draw=yazi},
+  cift ok/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, line width=1.1pt, draw=yazi},
+  kesik ok/.style={ok, dashed},
+  anaok/.style={ok, draw=ana},
+  kotuok/.style={ok, draw=kotu},
+  iyiok/.style={ok, draw=iyi},
+  oketiket/.style={font=\sffamily\footnotesize, text=soluk, fill=white, inner sep=1.5pt},
+  % Dipnot şeridi (çizimin altındaki ana fikir)
+  dip/.style={draw=koyu, fill=cokacik, rounded corners=2pt, align=center, inner sep=5pt,
+              font=\sffamily\small\bfseries, text=koyu},
+  kotudip/.style={dip, draw=kotu, fill=kotubg, text=kotu},
+  iyidip/.style={dip, draw=iyi, fill=iyibg, text=iyi},
+  % Küçük etiket / not
+  etiket/.style={font=\sffamily\footnotesize, text=soluk, align=center},
+  notkutusu/.style={draw=uyari, fill=uyaribg, rounded corners=2pt, font=\sffamily\footnotesize,
+                    align=left, inner sep=4pt},
+  % Sıralı etkileşim (dizi) şeması: aktör başlığı ve yaşam çizgisi
+  aktor/.style={koyukutu=26mm},
+  yasam/.style={draw=cizgi, line width=1pt, dashed},
+}
+% Kutu içinde kalın başlık satırı
+\newcommand{\kb}[1]{\textbf{#1}}
+% Kod/terim yazımı
+\newcommand{\kod}[1]{\texttt{\small #1}}

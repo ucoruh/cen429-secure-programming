@@ -1,0 +1,32 @@
+% Hafta 6 — Kontrol akışı sayacı: denetim atlandı mı?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-04-akis-sayaci.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Kontrol akışı sayacı: denetim atlandı mı?};
+  \node[altbaslik] at (b.south west) {her denetim akümülatörü ilerletir};
+  \node[kutu=26mm, anchor=north west] (n0) at (0,-2.4) {\kb{tohum}};
+  \node[kutu=26mm, right=7mm of n0] (n1)
+    {\kb{kontrol 0}\\\kod{acc=HMAC(acc,'0')}};
+  \node[kutu=26mm, right=7mm of n1] (n2)
+    {\kb{kontrol 1}\\\kod{acc=HMAC(acc,'1')}};
+  \node[kutu=26mm, right=7mm of n2] (n3)
+    {\kb{kontrol 2}\\\kod{acc=HMAC(acc,'2')}};
+  \node[koyukutu=30mm, right=7mm of n3] (n4)
+    {\kb{KRİTİK İŞLEM}\\sırrı acc ile aç};
+  \draw[ok] (n0.east) -- (n1.west);
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \draw[ok] (n3.east) -- (n4.west);
+  \node[iyikutu=40mm, below=26mm of n4, xshift=-6mm, anchor=north] (n5)
+    {\kb{Gerçek sonuç}};
+  \node[kotukutu=40mm, left=24mm of n5] (n6)
+    {\kb{Decoy (sahte sonuç)}};
+  \draw[iyiok] (n4.south) -- node[oketiket, above=3pt, xshift=3mm] {zincir doğru} (n5.north);
+  \draw[kotuok] (n4.south) -- node[oketiket, above=3pt, xshift=-3mm] {zincir yanlış} (n6.north);
+  \node[fit=(n0)(n1)(n2)(n3)(n4)(n5)(n6), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Tek \kod{if} bir NOP'la atlanır; sayaç, denetimin GERÇEKTEN çalıştığını sonradan kanıtlar.};
+\end{tikzpicture}
+\end{document}

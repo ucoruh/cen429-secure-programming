@@ -1,0 +1,20 @@
+% Hafta 10 — En zayıf halka kuralı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-13-en-zayif-halka.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {En zayıf halka kuralı};
+  \node[altbaslik, text width=170mm] at (b.south west) {sistemin gücü, en güçlü parçası kadar değildir};
+
+  \node[kotukutu=52mm, below=14mm of b.south west, anchor=north west] (rsa) {\kb{RSA-2048}\\asimetrik katman\\$\approx$ 112 bit güvenlik};
+  \node[etiket, font=\Large, right=6mm of rsa] (plus) {+};
+  \node[iyikutu=52mm, right=6mm of plus] (aes) {\kb{AES-256}\\simetrik katman\\256 bit güvenlik};
+
+  \node[uyarikutu=130mm, below=20mm of rsa.south -| plus, anchor=north] (sonuc) {\kb{SİSTEMİN GÜVENLİĞİ $\approx$ 112 BİT}\\zayıf halka belirler --- 256 bitlik AES bunu yükseltmez};
+  \draw[ok, draw=soluk] ($(rsa.south)!0.5!(aes.south)$) -- (sonuc.north);
+
+  \node[dip, text width=170mm, below=10mm of sonuc.south -| rsa, anchor=north west] {%
+    Katmanları ayrı ayrı değil, en düşük güvenlik seviyesine göre değerlendirin.};
+\end{tikzpicture}
+\end{document}

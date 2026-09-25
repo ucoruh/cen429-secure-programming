@@ -35,9 +35,11 @@ Speaker note: This week we harden the code itself: first bug-free code, then pro
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–2 | Basic concepts · layers of hardening · SEI CERT · input validation |
-| 2 | 3–4 | Format string · UAF · integer/UB · error/signal · static analysis · sanitizers · fuzzing |
-| 3 | 5–7 | Compiler/OS protections · secure build pipeline · introduction to code obfuscation · project |
+| 1 | 1 | Layers of hardening · SEI CERT · input validation principles · CERT pairs |
+| 2 | 2–4 | Format string **Demo 1** · UAF **Demo 2** · integer/UB **Demo 3** · error handling/signals · static analysis · sanitizers · fuzzing **Demo 4** |
+| 3 | 5–7 | Compiler/OS protections **Demo 5** · secure build pipeline (CI) · code obfuscation **Demo 6–7** · end to end · project |
+
+**Learning outcome:** LO.3 (binary application protections)
 
 <!-- Speaker note: This week we harden the code itself. We assume students know C but not security terms; we will define every term. Demos are under code/week-04. -->
 
@@ -56,24 +58,76 @@ Speaker note: This week we harden the code itself: first bug-free code, then pro
 
 ---
 
+# What We Bring from Earlier Weeks
 
-# Where Does This Week Fit?
+- **Process memory: stack and heap** — the stack automatically manages the local variables of function calls, the heap is managed manually with `malloc`/`free` **(Week 1)**
+- **Buffer overflow** — writing more data to an array than its allocated size; the overflowing bytes land on neighbouring memory **(Week 1)**
+- **Stack frame and return address** — the region a function call gets on the stack, holding its local variables and the return address **(Week 1)**
+- **The white-box attacker model** — the owner of the device is also a possible attacker; they can read memory, attach a debugger **(Week 1)**
+- **CWE** — a numbered catalogue of software weaknesses **(Week 2)**
 
-- **Weeks 1–3:** security principles, threat model, cryptography.
-- **This week (4):** **hardening** C/C++ code — write it bug-free, limit the damage if a bug slips through, make it harder to read.
-- **Week 5:** the same topic for Java/interpreted languages.
+This week: on top of these foundations we build SEI CERT rules, sanitizers, and compiler/OS protections — applying the Weeks 1–3 principles/threat-model/crypto foundation to the C/C++ code itself.
 
 ---
 
-# Learning Outcome
+<!-- _class: yogun -->
 
-This week is about **LO.3** (binary application protections).
+# This Week's Concepts
 
-By the end, you will be able to:
+Each term is defined once, where it first appears in the body; here we only mark **where**.
 
-- Recognise and fix common C/C++ vulnerabilities
-- Use static analysis, sanitizers, fuzzing
-- Turn on and verify compiler/OS protections
+| Concept | Where |
+| --- | --- |
+| Layers of hardening · SEI CERT | Section 1 |
+| Input validation principles | Section 1 |
+| Format string vulnerability | Section 2 |
+| Use-after-free (UAF) | Section 3 |
+| Undefined behaviour (UB) | Section 3 |
+| Error handling, signals | Section 3 |
+| Static analysis · sanitizers · fuzzing | Section 4 |
+| Compiler/OS protections · CI | Section 5 |
+| Code obfuscation | Section 6 |
+
+---
+
+# Pointer
+
+- **Pointer:** a variable that holds a memory **address**.
+- `p` is an address; `*p` is the value at that address.
+- Wrong address → crash or wrong data.
+
+---
+
+# Compiler Flag
+
+- **Flag:** an option passed to the compiler.
+- Example: `-O2` (optimisation), `-Wall` (warnings), `-fsanitize=address`.
+- The right flags catch many bugs **at compile time**.
+
+---
+
+# Warning vs Error
+
+- **Error:** compilation stops.
+- **Warning:** compilation continues but a problem is reported.
+- Rule: **turn warnings into errors** (`-Werror`) — an ignored warning is a future vulnerability.
+
+---
+
+# How Do the Demos Work?
+
+- Demos live under `code/week-04`; they run on **Windows (Visual Studio 2022)** and **WSL/Linux**.
+- Build: Windows `.\build.ps1` · WSL/Linux `./build.sh`
+- Run: in each demo folder, Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- **Fuzzing (Demo 4)** needs **clang** on Linux/WSL (`sudo apt install -y clang`); on Windows it needs Visual Studio's "C++ AddressSanitizer" component.
+
+> ⚠️ **Ethics:** the demos run only against **our own small programs**; none of them touch another program or system.
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Layers and SEI CERT
 
 ---
 
@@ -97,157 +151,9 @@ Code hardening is three layers. The order matters:
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Basic Concepts (From Scratch)
-
-<!-- Speaker note: We assume they know C syntax, but we define memory/security concepts from scratch. -->
-
----
-
-# Memory: Stack and Heap
-
-- **Stack:** automatically managed memory that holds the local variables of function calls.
-- **Heap:** memory allocated **manually** with `malloc`/`new`, released with `free`/`delete`.
-
-Both can be a source of overflows and bugs.
-
----
-
-# Pointer
-
-- **Pointer:** a variable that holds a memory **address**.
-- `p` is an address; `*p` is the value at that address.
-- Wrong address → crash or wrong data.
-
----
-
-# Buffer and Overflow
-
-- **Buffer:** a contiguous block of memory (e.g., `char ad[16]`).
-- **Overflow (buffer overflow):** writing more data than the buffer can hold → corrupts neighbouring memory.
-- A classic and dangerous class of bug.
-
----
-
-# Why Is an Overflow Dangerous?
-
-- It can corrupt neighbouring variables or the return address.
-- An attacker can use this to hijack **control flow**.
-- This is why **bounds checking** is vital.
-
----
-
-# What Is Undefined Behaviour (UB)?
-
-- **Undefined behaviour:** situations the C/C++ standard calls "the result is unspecified."
-- Example: signed integer overflow, accessing past the end of an array.
-- The compiler may handle this **however it likes** — it may even **delete** the corresponding check.
-
----
-
-# Compiler Flag
-
-- **Flag:** an option passed to the compiler.
-- Example: `-O2` (optimisation), `-Wall` (warnings), `-fsanitize=address`.
-- The right flags catch many bugs **at compile time**.
-
----
-
-# Warning vs Error
-
-- **Error:** compilation stops.
-- **Warning:** compilation continues but a problem is reported.
-- Rule: **turn warnings into errors** (`-Werror`) — an ignored warning is a future vulnerability.
-
----
-
-# What Is a CWE?
-
-- **CWE (Common Weakness Enumeration):** a numbered catalogue of software weaknesses.
-- Example: CWE-416 = "use-after-free."
-- Naming a finding with its CWE number makes it **searchable**.
-
----
-
-# What Is CERT?
-
-- **SEI CERT C/C++:** the **rulebook** of secure coding.
-- Every rule: a noncompliant example + a compliant solution + risk + a CWE link.
-- Example: `STR31-C` = allocate sufficient memory for the string.
-
----
-
-# Static vs Dynamic Analysis
-
-- **Static analysis:** examining code **without running** it (compiler warnings, clang-tidy).
-- **Dynamic analysis:** observing code **while it runs** (sanitizers).
-- The two complement each other.
-
----
-
-# What Is a Sanitizer?
-
-- **Sanitizer:** a compiler tool that catches memory/UB bugs while the program runs.
-- Example: **ASan** (address), **UBSan** (undefined behaviour).
-- It does not ship in the release build; it is used in **testing/CI**.
-
----
-
-# What Is Fuzzing?
-
-- **Fuzzing:** feeding a program **random/unexpected** inputs and looking for crashes.
-- It finds inputs a human would never think of.
-- Very powerful when combined with a sanitizer.
-
----
-
-# ASLR, NX/DEP, Canary
-
-- **ASLR:** **randomizes** memory addresses (so the attacker cannot guess an address).
-- **NX/DEP:** prevents bytes in a data region from being **executed as code**.
-- **Stack canary:** a **sentinel value** just before the return address; if an overflow corrupts it, the program halts.
-
----
-
-# White-Box Attacker (Reminder)
-
-- An attacker who possesses the program (Week 1's MATE).
-- Reads strings, finds functions by name, bypasses checks.
-- We will return to this in the obfuscation section (later today).
-
----
-
-# Two Attacker Models — Diagram
-
-![w:900](assets/h04-17-iki-saldirgan-modeli.svg)
-
----
-
-# CI (Continuous Integration)
-
-- **CI (Continuous Integration):** a system that runs an automatic build + tests on every code change.
-- It runs security tools (warnings, static analysis, sanitizers, fuzzing) **on every merge**.
-
----
-
-# Now We're Ready
-
-Terms:
-
-stack/heap · pointer · buffer/overflow · UB · flag · warning/error · CWE · CERT · static/dynamic · sanitizer · fuzzing · ASLR/NX/canary · CI
-
-Now: the layers of code hardening.
-
----
-
-<!-- _class: bolum -->
-
-# 1. Layers and SEI CERT
-
----
-
 # Anatomy of a CERT Rule — Diagram
+
+**SEI CERT C/C++:** the rulebook of secure coding, distilled from real-world vulnerabilities.
 
 ![w:900](assets/h04-15-cert-kural-anatomisi.svg)
 
@@ -779,6 +685,8 @@ Writing too much into a small allocated block = an overflow.
 
 # UB · the Compiler Can Delete the Check
 
+**Undefined behaviour (UB):** an operation whose result the C/C++ standard does not define (e.g., signed integer overflow).
+
 ```c
 if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
     return -1;     /* işaretli taşma UB → derleyici bu dalı SİLEBİLİR */
@@ -917,7 +825,7 @@ static void isleyici(int s){ (void)s; durdur = 1; }  /* YALNIZ bayrak */
 
 ---
 
-# What Is Static Analysis? (Reminder)
+# What Is Static Analysis?
 
 Examining code **without running** it, looking for bugs.
 
@@ -958,7 +866,7 @@ The tool sees **unvalidated** data flowing to a dangerous place.
 
 ---
 
-# What Is a Sanitizer? (Reminder)
+# What Is a Sanitizer?
 
 A tool that catches memory/UB bugs while the program runs.
 
@@ -1015,6 +923,8 @@ gcc -g -O1 -fno-omit-frame-pointer \
 ---
 
 # What Is Fuzzing? · Coverage-Guided
+
+**Fuzzing:** feeding a program a large number of automatically generated, mostly malformed inputs to look for crashes.
 
 ![w:900](assets/h04-01-fuzzing-dongusu.svg)
 
@@ -1238,6 +1148,8 @@ readelf -s p | grep __stack_chk   # kanarya
 
 # Secure Build Pipeline (CI)
 
+**CI (Continuous Integration):** a system that runs an automatic build + tests on every code change.
+
 ![w:900](assets/h04-03-ci-hatti.svg)
 
 Every failing step **stops** the merge.
@@ -1312,6 +1224,12 @@ Most of the protection flags: Demo 5's `giris_sert`.
 
 - White-box attacker: reads strings, finds functions by name, bypasses checks.
 - Obfuscation: same behaviour, **harder to understand**.
+
+---
+
+# Two Attacker Models — Diagram
+
+![w:900](assets/h04-17-iki-saldirgan-modeli.svg)
 
 ---
 
@@ -1494,6 +1412,91 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 <!-- _class: bolum -->
 
+# End to End: Closing One Overflow in Three Layers
+
+<!-- Speaker note: We trace a single overflow from buggy code to attack, then to the fix; we see all three of this week's layers (coding, compiler/OS, not obfuscation but correction) in the same example. Can be worked through on the board. -->
+
+---
+
+# Buggy Code
+
+```c
+void selamla(const char *ad) {
+    char tampon[16];
+    strcpy(tampon, ad);          /* sınır yok */
+    printf("Merhaba %s\n", tampon);
+}
+```
+
+What happens if `ad` is longer than 16 bytes?
+
+---
+
+# What Happens? · Step by Step
+
+- `tampon` is 16 bytes on the stack.
+- `strcpy` copies `ad` all the way to its end, paying no attention to bounds.
+- An `ad` longer than 16 → neighbouring memory (including the return address) is corrupted.
+
+---
+
+# Attack · Outcome
+
+- Short overflow: a neighbouring variable gets corrupted (a logic bug).
+- Long overflow: the **return address** gets corrupted → crash or control hijacking.
+- Without protection: a serious vulnerability (CWE-121).
+
+---
+
+# Fix 1 · Bounded Copying
+
+```c
+int n = snprintf(tampon, sizeof tampon, "%s", ad);
+if (n < 0 || (size_t)n >= sizeof tampon) {
+    /* ad kesildi: reddet ya da işaretle */
+}
+```
+
+`snprintf` knows the size and **reports truncation**.
+
+---
+
+# Fix 2 · Layers
+
+- **Coding:** `snprintf` (STR31-C).
+- **Compiler:** `-fstack-protector-strong` (canary).
+- **FORTIFY:** `-D_FORTIFY_SOURCE=2` checks the library call.
+- **Testing:** ASan catches the overflow with a long input.
+
+---
+
+# Lesson: One Line, Many Layers
+
+- One bug: `strcpy`.
+- Defence: the right function + compiler protection + sanitizer testing.
+- But the **real** fix is in the first line: bounded copying.
+
+---
+
+<!-- _class: yogun -->
+
+# Classic Mistakes — Summary
+
+| Mistake | Section | Rule |
+| --- | --- | --- |
+| Ignoring warnings | 1 | Turn warnings into errors with `-Werror`; keep the CERT scan clean |
+| "Cleaning up" input and using it anyway | 1 | Reject dangerous input; allow-list + rejection is safest |
+| Not checking the return value | 2–3 | Check every return (ERR33-C); `fopen`/`malloc` can return NULL |
+| Hiding UB with `-fwrapv` | 2–3 | Making the overflow "defined" hides the logic bug; diagnose with UBSan |
+| Shipping the sanitizer in the release build | 4 | Test/CI only; disabled in the release build |
+| Covering up a bug with obfuscation | 6 | Obfuscation doesn't fix it, only hides it; fix first, then obfuscate |
+
+All six mistakes were covered earlier in this deck; here they are gathered in one glance.
+
+---
+
+<!-- _class: bolum -->
+
 # 7. Project and Closing
 
 ---
@@ -1510,6 +1513,7 @@ The template alone is solved quickly on its own → Week 9 depth.
 - [ ] Run the tests with ASan + UBSan.
 - [ ] At least one fuzz target, ≥ 10 min.
 - [ ] No logging in the release build; no sensitive string in `strings` output.
+- [ ] Every return value is checked (ERR33-C); it builds with `-Werror`.
 
 **Measure card:** Description → Implementation → Verification → Residual risk.
 
@@ -1620,140 +1624,8 @@ The template alone is solved quickly on its own → Week 9 depth.
 # Summary: This Week in One Sentence
 
 > First **bug-free code** (CERT + sanitizer + fuzzing), then **limit the damage** (compiler/OS protections), and finally **make it harder to read** (obfuscation) — and no protection substitutes for secure coding.
-
----
-
-<!-- _class: bolum -->
-
-# Next Week
-
-**Week 5 — Code Hardening: Java and Interpreted Languages**
-
-Injection (SQL, command, path), obfuscation with ProGuard/R8, dependency security and SBOM.
-
-Preparation: JDK 17+, Maven · `code/week-05`.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix A · A Vulnerability, Start to Finish
-
-<!-- Speaker note: We trace a single overflow from buggy code to attack, then to the fix. Can be worked through on the board. -->
-
----
-
-# Buggy Code
-
-```c
-void selamla(const char *ad) {
-    char tampon[16];
-    strcpy(tampon, ad);          /* sınır yok */
-    printf("Merhaba %s\n", tampon);
-}
-```
-
-What happens if `ad` is longer than 16 bytes?
-
----
-
-# What Happens? · Step by Step
-
-- `tampon` is 16 bytes on the stack.
-- `strcpy` copies `ad` all the way to its end, paying no attention to bounds.
-- An `ad` longer than 16 → neighbouring memory (including the return address) is corrupted.
-
----
-
-# Attack · Outcome
-
-- Short overflow: a neighbouring variable gets corrupted (a logic bug).
-- Long overflow: the **return address** gets corrupted → crash or control hijacking.
-- Without protection: a serious vulnerability (CWE-121).
-
----
-
-# Fix 1 · Bounded Copying
-
-```c
-int n = snprintf(tampon, sizeof tampon, "%s", ad);
-if (n < 0 || (size_t)n >= sizeof tampon) {
-    /* ad kesildi: reddet ya da işaretle */
-}
-```
-
-`snprintf` knows the size and **reports truncation**.
-
----
-
-# Fix 2 · Layers
-
-- **Coding:** `snprintf` (STR31-C).
-- **Compiler:** `-fstack-protector-strong` (canary).
-- **FORTIFY:** `-D_FORTIFY_SOURCE=2` checks the library call.
-- **Testing:** ASan catches the overflow with a long input.
-
----
-
-# Lesson: One Line, Many Layers
-
-- One bug: `strcpy`.
-- Defence: the right function + compiler protection + sanitizer testing.
-- But the **real** fix is in the first line: bounded copying.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · Common Mistakes
-
----
-
-# Mistake · Ignoring Warnings
-
-- Something dismissed as "just a warning" is tomorrow's vulnerability.
-- Turn the warning into an error with `-Werror`.
-
----
-
-# Mistake · Not Checking the Return Value
-
-- `malloc`, `fread`, `RAND_bytes` can return NULL/an error.
-- If not checked: a silent disaster (ERR33-C).
-
----
-
-# Mistake · Shipping the Sanitizer in the Release Build
-
-- Sanitizers are for test/CI; they are slow and leak information.
-- Disabled in the release build.
-
----
-
-# Mistake · Hiding UB with `-fwrapv`
-
-- Making the overflow "defined" **hides** the logic error.
-- Use UBSan to diagnose it, then fix it.
-
----
-
-# Mistake · Covering Up a Bug with Obfuscation
-
-- Obfuscation does not fix the bug, it only **hides** it.
-- Fix first, then obfuscate.
-
----
-
-# Mistake · "Cleaning Up" Input and Using It Anyway
-
-- Reject dangerous input instead of trying to **fix** it.
-- Allow-list + rejection is the safest approach.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Quick Reference
+>
+> Secure code is not written once; it is **checked with tools on every build**.
 
 ---
 
@@ -1772,21 +1644,16 @@ if (n < 0 || (size_t)n >= sizeof tampon) {
 
 ---
 
-<!-- _class: yogun -->
+<!-- _class: baslik -->
 
-# Hardening Checklist
+# Next Week
 
-- [ ] `-Werror` and the CERT scan are clean
-- [ ] Every return value is checked
-- [ ] Tests pass with ASan + UBSan
-- [ ] At least one fuzz target has run
-- [ ] Release flags are on (protection table)
-- [ ] No logging/sensitive strings in the release build
+**Week 5 — Java and Interpreted Languages**
 
----
+This week we dealt with manually managed memory in C/C++ and compiler/OS protections; Week 5 shows how the JVM eliminates most of these bugs (overflow, UAF, UB), but opens a new bug class such as injection (SQL, command, path).
 
-# Final Word (Week 4)
+The SEI CERT Java rules will be compared with today's SEI CERT C/C++ rules; we will also cover obfuscation with ProGuard/R8, dependency security, and SBOM.
 
-> Secure code is not written once; it is **checked with tools on every build**.
+Preparation: JDK 17+, Maven · `code/week-05`.
 
 First correct code, then protection, finally obfuscation. The order matters.

@@ -1,0 +1,22 @@
+% Hafta 3 — Paroladan anahtar türetme: iki ek, iki fayda
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-15-kdf-iki-ek.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 14mm]
+  \node[baslik] (b) at (0,0) {Paroladan anahtar türetme: iki ek, iki fayda};
+  \node[altbaslik] at (b.south west) {Argon2id / scrypt / PBKDF2};
+
+  \node[kotukutu=34mm] (parola) at (2,-2.8) {\kb{Parola}\\kısa, düşük entropi\\tahmin edilebilir};
+  \node[kutu=34mm, right=of parola] (tuz) {\kb{+ TUZ}\\her kayda rastgele\\aynı parola $\neq$ aynı anahtar};
+  \node[kutu=34mm, right=of tuz] (maliyet) {\kb{+ MALİYET}\\yüz binlerce tur\\bellek + zaman};
+  \node[iyikutu=34mm, right=of maliyet] (anahtar) {\kb{Anahtar}\\32 bayt\\kaba kuvvet pahalı};
+
+  \draw[ok] (parola.east) -- (tuz.west);
+  \draw[ok] (tuz.east) -- (maliyet.west);
+  \draw[ok] (maliyet.east) -- (anahtar.west);
+
+  \node[dip, text width=160mm, below=10mm of anahtar.south -| tuz, anchor=north] {%
+    Tuz önhesaplı tabloyu, maliyet ise deneme hızını öldürür. Biri eksikse KDF işe yaramaz.};
+\end{tikzpicture}
+\end{document}

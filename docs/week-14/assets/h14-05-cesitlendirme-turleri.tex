@@ -1,0 +1,21 @@
+% Hafta 14 — Uzayda ve zamanda çeşitlendirme
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-05-cesitlendirme-turleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {Uzayda ve zamanda çeşitlendirme};
+  \node[altbaslik] at (b.south west) {ikisi birlikte saldırının yeniden kullanımını kırar};
+
+  \node[iyikutu=62mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{UZAYDA}\\[2mm]
+    her kullanıcı/kopya farklı\\[3mm]
+    bir kırık TEK kopyayı açar\\ölçeklenemez saldırı};
+  \node[iyikutu=62mm, right=of sol] (sag) {\kb{ZAMANDA}\\[2mm]
+    her sürüm farklı\\[3mm]
+    bir kırık KALICI olmaz\\saldırgan tekrar başlar};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=160mm, below=8mm of sol.south -| sag, anchor=north] {%
+    Çeşitlendirme tek kopyanın gücünü artırmaz; saldırının ÖLÇEKLENMESİNİ engeller.};
+\end{tikzpicture}
+\end{document}

@@ -10,7 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -26,15 +25,63 @@ Konuşma notu: Bu hafta güvenlik gereksinimlerini okuyup kendi projemize eşlem
 
 ---
 
-# Bugünün planı (3 saat)
+<!-- _class: yogun -->
 
-| Saat | Bölüm | Konu |
+# Bugün (3 saat)
+
+| Zaman | Bölüm | Ne yapılıyor |
 | --- | --- | --- |
-| 1 | 0–3 | Temel kavramlar · iyi gereksinim · izlenebilirlik · gereksinim bloğu · devredilenler |
-| 2 | 4–5 | Ortak Kriterler (TOE, ST, PP, SFR/SAR, EAL) · FIPS 140-3 |
-| 3 | 6–9 | ETSI, GSMA, EMVCo, PCI, MASVS · dersin gereksinim aileleri · uyum matrisi · proje |
+| 0:00–0:20 | 1 | Gereksinim nedir, iyi gereksinim nasıl yazılır? |
+| 0:20–0:50 | 2–3 | Gereksinimden kanıta izlenebilirlik; gereksinim bloğu kalıbı ve devredilen gereksinimler |
+| 0:50–1:00 | Ara | |
+| 1:00–1:30 | 4 | Ortak Kriterler: TOE, ST, PP, SFR/SAR, EAL |
+| 1:30–1:50 | 5 | FIPS 140-3 ve kriptografik modül doğrulaması |
+| 1:50–2:00 | Ara | |
+| 2:00–2:25 | 6 | ETSI, GSMA, EMVCo, PCI MPoC, OWASP MASVS |
+| 2:25–2:50 | 7–8 | Gereksinimleri plana ve varlık yönetimine aktarmak; dersin gereksinim aileleri — uyum matrisi etkinliği |
+| 2:50–3:00 | 9+ | Proje adımı (S14, S17), kendini sınama |
+
+**Öğrenme çıktıları (ÖÇ.5, 7):** iyi bir güvenlik gereksinimini kötüsünden ayırmak · izlenebilirlik/uyum matrisi kurmak · CC, FIPS, ETSI, EMVCo, PCI, MASVS'in ne istediğini karşılaştırmak
 
 <!-- Konuşma notu: Bu hafta güvenlik gereksinimlerini okuyup kendi projemize eşlemeyi öğreniyoruz: gereksinim → önlem → doğrulama → kanıt. Sıfır ön bilgi; her terimi tanımlayacağız. -->
+
+---
+
+# Önceki haftalardan gelenler
+
+- **Varlık, tehdit ve uygulama koruma planı** — bir yazılımın güvenliğini yöneten yazılı plan: kapsam, mimari, varlıklar, tehditler, karşı önlemler, doğrulama, kalan risk; her varlığın nerede durduğu, ne zaman oluşup silindiği ve hangi korumayı (C/I) gerektirdiği bir **varlık tablosunda** listelenir **(Hafta 1)**
+- **Bağımsız değerlendirme, bulgu ve kanıt** — bir ürünün geliştiricisi değil bağımsız bir laboratuvarın kanıta dayalı yürüttüğü değerlendirme süreci; değerlendiricinin belgelediği her eksiklik bir **bulgudur** **(Hafta 12)**
+
+Bu hafta: varlık tablosunu her gereksinime bağlıyoruz, bağımsız değerlendirme disiplinini "gereksinimden kanıta izlenebilirlik zinciri" olarak kullanıyoruz — çıktı, projenizin **uyum matrisi (S17)** ve **devredilenler (S14)**.
+
+---
+
+<!-- _class: yogun -->
+
+# Bu haftanın kavramları
+
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Gereksinim | Bölüm 1 |
+| Üç tür gereksinim | Bölüm 1 |
+| İyi ve kötü gereksinim | Bölüm 1 |
+| İzlenebilirlik | Bölüm 2 |
+| Uyum matrisi | Bölüm 2 |
+| Gereksinim durumları | Bölüm 2 |
+| Devredilen gereksinim | Bölüm 3 |
+| Ortak Kriterler (CC) | Bölüm 4 |
+| TOE, ST, PP | Bölüm 4 |
+| SFR, SAR, EAL | Bölüm 4 |
+| FIPS 140-3 | Bölüm 5 |
+| Sektör standartları | Bölüm 6 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. İyi gereksinim nasıl yazılır?
 
 ---
 
@@ -51,175 +98,11 @@ Konuşma notu: Bu hafta güvenlik gereksinimlerini okuyup kendi projemize eşlem
 
 ---
 
-
-# Bu hafta nereye oturuyor?
-
-- **12. hafta:** bir ürün nasıl **değerlendirilir/test edilir**.
-- **Bu hafta (13):** değerlendirmenin ölçtüğü **gereksinimler** nereden gelir, nasıl yazılır, nasıl izlenir.
-- Çıktı: projenizin **uyum matrisi** (S17) ve **devredilenler** (S14).
-
----
-
-# Öğrenme çıktısı
-
-Bu hafta **ÖÇ.7** üstünedir.
-
-Sonunda yapabileceğiniz:
-
-- İyi bir güvenlik gereksinimini kötüsünden ayırmak
-- Bir **izlenebilirlik/uyum matrisi** kurmak
-- CC, FIPS, ETSI, EMVCo, PCI, MASVS'in ne istediğini karşılaştırmak
-
----
-
-# Ana fikir
-
-> Güvenlik bir "his" değil, **yazılı, ölçülebilir, izlenebilir** gereksinimlerle yönetilir:
-> gereksinim → önlem → doğrulama → kanıt.
-
-Bugün bu zinciri kurmayı öğreneceğiz.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: Gereksinim/standart terimlerini sıfırdan tanımlıyoruz. -->
-
----
-
 # Gereksinim (requirement) nedir?
 
 - **Gereksinim:** sistemin **karşılaması gereken** bir koşul.
 - Güvenlik gereksinimi: bir güvenlik koşulu.
 - İyi gereksinim **doğrulanabilir** (test edilebilir).
-
----
-
-# Üç tür gereksinim
-
-- **İşlevsel:** hangi güvenlik işlevi olacak? (ör. veri AEAD ile korunur)
-- **Güvence:** doğru yapıldığına nasıl güveneceğiz? (ör. test raporu)
-- **Süreç:** kurum nasıl çalışmalı? (ör. her değişiklik incelenir)
-
----
-
-# İyi vs kötü gereksinim
-
-- **Kötü:** "Uygulama güvenli olmalıdır." (doğrulanamaz)
-- **İyi:** "Sürüm derlemesi yığın koruyucu, PIE ve tam RELRO ile üretilmelidir." (ölçülebilir)
-
----
-
-# İzlenebilirlik (traceability)
-
-- **İzlenebilirlik:** her gereksinimi bir **önleme**, **teste** ve **kanıta** bağlamak.
-- "Bu gereksinim nerede karşılandı, nasıl doğrulandı?"
-
----
-
-# Uyum matrisi
-
-- **Uyum matrisi:** gereksinim → durum → bölüm → doğrulama → kanıt tablosu.
-- Projenin **S17** bölümü.
-- Değerlendiricinin ilk baktığı yer.
-
----
-
-# Gereksinim durumları
-
-- **Karşılandı:** ürün bu gereksinimi sağlar (kanıtla).
-- **Devredildi:** başka bir taraf sağlar (kime, neden, nasıl).
-- **Karşılanmadı:** henüz sağlanmıyor.
-
----
-
-# Devredilen gereksinim
-
-- Bir bileşen bir gereksinimi **karşılayamıyorsa**, üst uygulamaya/OS'a **devreder**.
-- Kılavuza: **kime**, **neden**, **nasıl** karşılanacağı yazılır.
-- Projenin **S14** bölümü.
-
----
-
-# Ortak Kriterler (CC)
-
-- **Ortak Kriterler (ISO/IEC 15408):** ürün güvenliği değerlendirme standardı.
-- Kavramlar: TOE, ST, PP, SFR, SAR, EAL (birazdan).
-
----
-
-# CC · temel terimler
-
-- **TOE:** değerlendirilen ürün.
-- **ST (Security Target):** bu ürünün güvenlik hedefi belgesi.
-- **PP (Protection Profile):** bir ürün **sınıfı** için ortak gereksinim seti.
-
----
-
-# CC · SFR, SAR, EAL
-
-- **SFR:** güvenlik **işlevsel** gereksinimleri.
-- **SAR:** güvenlik **güvence** gereksinimleri.
-- **EAL:** değerlendirmenin **derinlik** düzeyi (EAL1–EAL7).
-
----
-
-# FIPS 140-3
-
-- **FIPS 140-3:** kriptografik **modüllerin** doğrulanması standardı.
-- Güvenlik düzeyleri (1–4).
-- Yalnız modülü kapsar, uygulamanın tamamını değil.
-
----
-
-# Sektör standartları
-
-- **ETSI EN 303 645:** IoT temel güvenlik.
-- **GSMA, EMVCo, PCI:** mobil/ödeme.
-- **OWASP MASVS:** mobil uygulama gereksinimleri.
-
----
-
-<!-- _class: yogun -->
-
-# Gereksinim vs önlem · "karşılanmadı" vs "uygulanmaz"
-
-- **Sık hata:** "Gereksinim: AES-256-GCM kullanılmalıdır." → bu bir **önlem**, gereksinim değil. Doğrusu: "...AEAD ile korunmalıdır" (gereksinim) + "AES-256-GCM, S7.2" (önlem).
-- **Karşılanmadı:** gereksinim uygulanıyor ama henüz sağlanmıyor — bir **eksikliktir**, kalan riske yazılır.
-- **Uygulanmaz:** gereksinim ürüne hiç uygulanmıyor (ör. ağ kullanmıyorsa "aktarımda veri" gereksinimleri) — her zaman **gerekçesiyle** yazılmalı.
-
----
-
-<!-- _class: yogun -->
-
-# Durum ve karar kelimeleri — özet
-
-| Kelime | Ne zaman kullanılır | Yanında ne yazılmalı |
-| --- | --- | --- |
-| Karşılandı | Ürün gereksinimi kendisi sağlıyor | Önlem + doğrulama + kanıt |
-| Devredildi | Başka bir taraf sağlıyor | Kime + neden + nasıl |
-| Karşılanmadı | Uygulanır ama henüz sağlanmıyor | Kalan risk + planlanan düzeltme |
-| Uygulanmaz | Ürüne hiç uygulanmıyor | Gerekçe |
-| -malıdır (MUST) | Zorunlu | Karşılanmazsa doğrudan bulgu |
-| -malı (SHOULD) | Güçlü öneri | Karşılanmazsa yazılı gerekçe |
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-gereksinim (işlevsel/güvence/süreç) · izlenebilirlik · uyum matrisi · durum (karşılandı/devredildi/karşılanmadı) · devredilen · CC (TOE/ST/PP/SFR/SAR/EAL) · FIPS 140-3 · ETSI/GSMA/EMVCo/PCI/MASVS
-
-Şimdi: iyi gereksinim nasıl yazılır?
-
----
-
-<!-- _class: bolum -->
-
-# 1. İyi gereksinim nasıl yazılır?
 
 ---
 
@@ -366,6 +249,7 @@ Biri eksik kalırsa gereksinim yine tartışmaya açık kalır; değerlendirici 
 # Bölüm 1'in kuralı ve zorunluluk sözcükleri
 
 - Gereksinim sütununa **ne** istendiğini yazın; **nasıl** karşıladığınızı ayrı bir önlem cümlesine yazın.
+- **Sık hata:** "Gereksinim: AES-256-GCM kullanılmalıdır." → bu bir **önlem**, gereksinim değil; doğrusu "...AEAD ile korunmalıdır" (gereksinim) + "AES-256-GCM, S7.2" (önlem).
 - Gereksinim metninde **araç sınıfını** (AEAD, CSPRNG, TLS 1.2+) yazın; belirli kütüphane/sürüm adını önleme koyun.
 - **-malıdır (MUST):** zorunlu, karşılanmazsa doğrudan bulgu. **-malı (SHOULD):** güçlü öneri, gerekçe gerekir. **-abilir (MAY):** isteğe bağlı, bulgu değil.
 
@@ -385,6 +269,21 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 
 ---
 
+<!-- _class: yogun -->
+
+# Durum ve karar kelimeleri — özet
+
+| Kelime | Ne zaman kullanılır | Yanında ne yazılmalı |
+| --- | --- | --- |
+| Karşılandı | Ürün gereksinimi kendisi sağlıyor | Önlem + doğrulama + kanıt |
+| Devredildi | Başka bir taraf sağlıyor | Kime + neden + nasıl |
+| Karşılanmadı | Uygulanır ama henüz sağlanmıyor | Kalan risk + planlanan düzeltme |
+| Uygulanmaz | Ürüne hiç uygulanmıyor | Gerekçe |
+| -malıdır (MUST) | Zorunlu | Karşılanmazsa doğrudan bulgu |
+| -malı (SHOULD) | Güçlü öneri | Karşılanmazsa yazılı gerekçe |
+
+---
+
 # İzlenebilirlik neden önemli?
 
 - Değerlendirici "bu gereksinim nerede?" diye sorar.
@@ -401,7 +300,6 @@ Her gereksinim bu zincirle bir **kanıta** bağlanmalı.
 | Sürüm korumaları | Bayraklar | checksec | Koruma tablosu |
 
 ---
-
 
 # İki yön
 
@@ -533,7 +431,6 @@ Bir halka eksik olsaydı: varlık yoksa "hangi veri" belirsiz kalır, tehdit yok
 3. **Tehdit/standart → gereksinim → tasarım/kod → test/kanıt.** Her gereksinim bir kaynağa ve bir kanıta **iki yönlü** bağlanır.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -694,7 +591,6 @@ Devredilen blok da **Karşılama** alanına sahiptir — ama "karşı taraf nas�
 3. Kayıt/onay olmadan gereksinim atlanır → **gizli açık**, sorumlusu yok, denetimde patlar. Açık, gerekçeli, onaylı devret.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -918,7 +814,6 @@ Düzey 1 beklentilerini tek tek işaretleyelim.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 6. Sektöre özgü gereksinim setleri
@@ -1050,6 +945,7 @@ Düzey 1 beklentilerini tek tek işaretleyelim.
 # Örtüşme ve Bölüm 6'nın kuralı
 
 - Bir standarda uyum kanıtı, başka bir standartta da **kısmen yeniden kullanılabilir** — ama "otomatik karşılanır" demek değildir; her standardın **kendi ek ölçütü** vardır.
+- Aynı gereksinimi birden çok standarda eşlemek (bir standart sütunu ekleyerek) işi hızlandırır; sertifikasyon değişse bile iş tekrarlanmaz.
 - "FIPS'li modül kullanıyoruz, o yüzden MASVS-CRYPTO'yu da karşılıyoruz" cümlesi **tehlikelidir**.
 - **Kural:** örtüşmeyi kanıt toplamayı hızlandırmak için kullanın, ama her standardı **ayrı ayrı** işaretleyin.
 
@@ -1073,10 +969,15 @@ Düzey 1 beklentilerini tek tek işaretleyelim.
 
 ---
 
-
 <!-- _class: bolum -->
 
-# 7. Gereksinimleri projeye aktarmak
+# 7. Gereksinimleri yazılım planına ve varlık yönetimine aktarmak
+
+---
+
+# Uyum matrisinin yapısı — şema
+
+![w:950](assets/h13-10-uyum-matrisi.svg)
 
 ---
 
@@ -1160,24 +1061,24 @@ CEN429-**AP** (uygulama koruma), **ID** (kimlik), **AS** (varlık), **DR/DU/DT**
 
 # Aileler (1)
 
-| Aile | Konu |
-| --- | --- |
-| AP | Uygulama koruma (gizleme, RASP) |
-| ID | Kimlik ve bağlama |
-| AS | Varlık yönetimi |
-| DR | Beklemedeki veri |
+| Aile | Konu | Örnek |
+| --- | --- | --- |
+| AP | Uygulama koruma (gizleme, RASP) | Hassas fonksiyonlar gizlenir ve bütünlük denetimiyle korunur |
+| ID | Kimlik ve bağlama | Cihaz ve sürüm, anahtar kullanımına bağlanır |
+| AS | Varlık yönetimi | Her varlık C/I/I+ ile etiketlenir ve yaşam döngüsü belgelenir |
+| DR | Beklemede veri | Yerel veri AEAD ile şifreli |
 
 ---
 
 # Aileler (2)
 
-| Aile | Konu |
-| --- | --- |
-| DU | Kullanımdaki veri |
-| DT | Aktarımdaki veri |
-| RP | Raporlama/günlük |
-| CR | Kriptografi |
-| DV | Geliştirme/süreç |
+| Aile | Konu | Örnek |
+| --- | --- | --- |
+| DU | Kullanımdaki veri | Anahtar kullanımdan sonra silinir |
+| DT | Aktarımdaki veri | TLS 1.3 + zincir doğrulama |
+| RP | Raporlama/günlük | Sürümde hassas veri düz loglanmaz |
+| CR | Kriptografi | Onaylı algoritma, kip, anahtar uzunluğu; anahtar hiyerarşisi belgeli |
+| DV | Geliştirme/süreç | Her değişiklik birleştirilmeden önce incelenir; SBOM güncellenir |
 
 ---
 
@@ -1192,13 +1093,7 @@ Projeniz bu ailelerden bir **alt küme** seçer.
 
 ---
 
-<!-- _class: bolum -->
-
-# Uyum matrisi etkinliği
-
----
-
-# Etkinlik · adım 1
+# Uyum matrisi etkinliği · Adım 1
 
 - Kendi projenizden **beş gereksinim** seçin (farklı ailelerden).
 - Her biri için bir **gereksinim bloğu** yazın.
@@ -1299,14 +1194,127 @@ Bir takımın `CEN429-AP-04` için matris satırı, **ilk taslakta**:
 
 ---
 
+<!-- _class: yogun -->
+
+# Uçtan uca: NotKasa'nın uyum matrisi (1/2)
+
+Sentetik uygulama **NotKasa** (yerel şifreli not tutar, sunucuyla konuşur, güncellenir) için gereksinim tehditten türer:
+
+```text
+Tehdit: cihaz çalınırsa yerel notlar okunur
+   ↓
+Amaç: beklemede gizlilik
+   ↓
+Gereksinim: C sınıfı veri AEAD ile şifrelenir
+```
+
+Bu zincirden iki "karşılandı" bloğu:
+
+**DR-01 — beklemede veri:**
+```text
+CEN429-DR-01
+Metin: Yerel DB'deki C sınıfı veri AES-256-GCM ile şifrelenir.
+Durum: Karşılandı
+Karşılama: AES-256-GCM, anahtar TEE'de
+Doğrulama: T-05
+Kanıt: test çıktısı (S16)
+```
+
+**CR-02 — kripto:**
+```text
+CEN429-CR-02
+Metin: Anahtarların amacı, kripto-periyodu, imhası belgelenir.
+Durum: Karşılandı
+Karşılama: S8 anahtar tablosu
+Doğrulama: belge incelemesi
+Kanıt: S8
+```
+
+---
+
+<!-- _class: yogun -->
+
+# Uçtan uca: NotKasa'nın uyum matrisi (2/2)
+
+**DT-03 — aktarımda veri:**
+```text
+CEN429-DT-03
+Metin: Sunucu iletişimi TLS 1.3 ve sertifika zinciri doğrulaması kullanır.
+Durum: Karşılandı
+Karşılama: TLS 1.3 + SAN denetimi + SPKI pin
+Doğrulama: T-11
+Kanıt: test + S11
+```
+
+**AP-04 — uygulama koruma (devredilen):**
+```text
+CEN429-AP-04
+Metin: Güvenli kurulum ve güncelleme sağlanır.
+Durum: Devredildi
+Kime: Üst uygulama (MPA)
+Neden: SDK dağıtım kanalına sahip değil
+Nasıl: MPA imzalı güncelleme + sürüm denetimi
+```
+
+**AS-05 — karşılanmadı:**
+```text
+CEN429-AS-05
+Metin: Tüm hassas varlıklar için bellek izleme tespiti.
+Durum: Karşılanmadı
+Kalan risk: köklü cihazda canlı bellek analizi
+Azaltma: kısa ömürlü anahtar + sunucu denetimi
+```
+
+---
+
+<!-- _class: yogun -->
+
+# Matris · toplu görünüm
+
+| ID | Durum | Bölüm | Kanıt |
+| --- | --- | --- | --- |
+| DR-01 | Karşılandı | S8 | T-05 |
+| CR-02 | Karşılandı | S8 | S8 |
+| DT-03 | Karşılandı | S11 | T-11 |
+| AP-04 | Devredildi | S14 | — |
+| AS-05 | Karşılanmadı | S12 | kalan risk |
+
+---
+
+# Matristen okunanlar
+
+- Üç karşılandı (kanıtlı), bir devredildi, bir kalan risk.
+- Her satır izlenebilir.
+- Değerlendirici bu tablodan başlar.
+
+---
+
+<!-- _class: yogun -->
+
+# Klasik hatalar — özet
+
+| Hata | Bölüm |
+| --- | --- |
+| Doğrulanamaz gereksinim ("güvenli olmalı" gibi) | Bölüm 1 |
+| Kanıtsız "karşılandı" | Bölüm 2 |
+| Sessiz devretme | Bölüm 3 |
+| EAL'i güvenlik miktarı sanmak | Bölüm 4 |
+| FIPS'li kütüphane = FIPS uyumlu sanmak | Bölüm 5 |
+| Kalan riski boş bırakmak | Bölüm 2 |
+
+Her satırın ayrıntısı, ilgili bölümdeki ⚠️ kutusunda ve kuralda işlendi; burada tek bakışta toparlıyoruz.
+
+---
 
 <!-- _class: bolum -->
 
-# 9. Proje ve kapanış
+# 9. Dönem projesi: bu hafta
 
 ---
 
 # Proje · S14 ve S17
+
+S17 ve S14, değerlendiricinin **ilk açtığı** belgelerdir.
 
 - [ ] **S17 uyum matrisi:** uygulanan her gereksinim için durum, bölüm, doğrulama, kanıt.
 - [ ] **S14 devredilenler:** kime, neden, nasıl.
@@ -1319,6 +1327,19 @@ Bir takımın `CEN429-AP-04` için matris satırı, **ilk taslakta**:
 - Kanıtsız "karşılandı" = karşılanmamış.
 - Devredilenler açık ve gerekçeli mi?
 - Gereksinimler doğrulanabilir mi?
+
+---
+
+<!-- _class: yogun -->
+
+# Kontrol listesi
+
+- [ ] Her gereksinim doğrulanabilir + tekil
+- [ ] Her satırda durum/bölüm/doğrulama/kanıt
+- [ ] Devredilenler: kime/neden/nasıl
+- [ ] Karşılanmayanlar → kalan risk
+- [ ] Standart eşlemesi (ETSI/MASVS/CC)
+- [ ] En az bir aile başına gereksinim
 
 ---
 
@@ -1451,315 +1472,13 @@ evidence/week13/  <- test/log/pcap dosyaları
 
 ---
 
-# Özet: bu haftanın tek cümlesi
+<!-- _class: baslik -->
 
-> Güvenlik, **yazılı, doğrulanabilir, izlenebilir** gereksinimlerle yönetilir; her gereksinim bir önleme, teste ve
-> **kanıta** bağlanır, karşılanamayan açıkça **devredilir**.
-
----
-
-<!-- _class: bolum -->
-
-# Gelecek hafta
+# Bir sonraki hafta
 
 **14. hafta — Tigress ve çeşitlendirme**
 
-Gizleme kurallarının otomatik, çeşitlendirilmiş uygulaması; ölçme ve derleme hattı.
-
----
-
-<!-- _class: bolum -->
-
-# Ek A · İşlenmiş uyum matrisi
-
-<!-- Konuşma notu: Sentetik "NotKasa" ürünü için birkaç gereksinim bloğunu ve matris satırını dolduruyoruz. -->
-
----
-
-# Bağlam · NotKasa
-
-Sentetik uygulama: yerel şifreli not tutar, sunucuyla konuşur, güncellenir.
-
-Birkaç gereksinim seçip matris satırı yazalım.
-
----
-
-# Gereksinimin doğuşu · tehditten
-
-```text
-Tehdit: cihaz çalınırsa yerel notlar okunur
-   ↓
-Amaç: beklemede gizlilik
-   ↓
-Gereksinim: C sınıfı veri AEAD ile şifrelenir
-```
-
-Gereksinim havadan gelmez; **tehditten** türer.
-
----
-
-# Blok · DR-01 (beklemede veri)
-
-```text
-CEN429-DR-01
-Metin: Yerel DB'deki C sınıfı veri AES-256-GCM ile şifrelenir.
-Durum: Karşılandı
-Karşılama: AES-256-GCM, anahtar TEE'de
-Doğrulama: T-05
-Kanıt: test çıktısı (S16)
-```
-
----
-
-# Blok · CR-02 (kripto)
-
-```text
-CEN429-CR-02
-Metin: Anahtarların amacı, kripto-periyodu, imhası belgelenir.
-Durum: Karşılandı
-Karşılama: S8 anahtar tablosu
-Doğrulama: belge incelemesi
-Kanıt: S8
-```
-
----
-
-# Blok · DT-03 (aktarımda veri)
-
-```text
-CEN429-DT-03
-Metin: Sunucu iletişimi TLS 1.3 ve sertifika zinciri doğrulaması kullanır.
-Durum: Karşılandı
-Karşılama: TLS 1.3 + SAN denetimi + SPKI pin
-Doğrulama: T-11
-Kanıt: test + S11
-```
-
----
-
-# Blok · AP-04 (uygulama koruma) — devredilen
-
-```text
-CEN429-AP-04
-Metin: Güvenli kurulum ve güncelleme sağlanır.
-Durum: Devredildi
-Kime: Üst uygulama (MPA)
-Neden: SDK dağıtım kanalına sahip değil
-Nasıl: MPA imzalı güncelleme + sürüm denetimi
-```
-
----
-
-# Blok · AS-05 — karşılanmadı
-
-```text
-CEN429-AS-05
-Metin: Tüm hassas varlıklar için bellek izleme tespiti.
-Durum: Karşılanmadı
-Kalan risk: köklü cihazda canlı bellek analizi
-Azaltma: kısa ömürlü anahtar + sunucu denetimi
-```
-
----
-
-<!-- _class: yogun -->
-
-# Matris · toplu görünüm
-
-| ID | Durum | Bölüm | Kanıt |
-| --- | --- | --- | --- |
-| DR-01 | Karşılandı | S8 | T-05 |
-| CR-02 | Karşılandı | S8 | S8 |
-| DT-03 | Karşılandı | S11 | T-11 |
-| AP-04 | Devredildi | S14 | — |
-| AS-05 | Karşılanmadı | S12 | kalan risk |
-
----
-
-# Matristen okunanlar
-
-- Üç karşılandı (kanıtlı), bir devredildi, bir kalan risk.
-- Her satır izlenebilir.
-- Değerlendirici bu tablodan başlar.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Standart eşleme
-
----
-
-# Aynı gereksinim, çok standart
-
-Bir gereksinim birden çok standarda bağlanabilir:
-
-![w:900](assets/h13-10-uyum-matrisi.svg)
-
----
-
-# Eşleme neden yararlı?
-
-- Bir kez karşılarsınız, birçok standardı **aynı anda** sağlarsınız.
-- Uyum matrisinde standart sütunu ekleyin.
-- Sertifikasyon değişse bile iş tekrarlanmaz.
-
----
-
-<!-- _class: yogun -->
-
-# Eşleme örneği
-
-| Gereksinim | ETSI | MASVS | CC |
-| --- | --- | --- | --- |
-| Şifreli saklama | ✓ | STORAGE | SFR |
-| Güvenli iletişim | ✓ | NETWORK | SFR |
-| Güvenli güncelleme | ✓ | — | SAR |
-
----
-
-# Ek A–B · özet
-
-- Gereksinim tehditten türer, blok olarak yazılır, matrise girer.
-- Bir gereksinim çok standardı karşılayabilir.
-- Kanıt olmadan hiçbir satır "karşılandı" değildir.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Gereksinim aileleri detay
-
-<!-- Konuşma notu: Her aile için bir örnek gereksinim; öğrenci kendi projesine benzerini yazar. -->
-
----
-
-# AP · uygulama koruma
-
-- **Örnek:** "Hassas fonksiyonlar gizlenir ve bütünlük denetimiyle korunur."
-- Bağ: 4, 6, 9, 11, 14. haftalar.
-- Doğrulama: gizleme ölçümü + RASP testi.
-
----
-
-# ID · kimlik ve bağlama
-
-- **Örnek:** "Cihaz ve sürüm, anahtar kullanımına bağlanır."
-- Bağ: 6, 11. haftalar.
-- Doğrulama: cihaz bağlama testi.
-
----
-
-# AS · varlık yönetimi
-
-- **Örnek:** "Her varlık C/I/I+ ile etiketlenir ve yaşam döngüsü belgelenir."
-- Bağ: 1, 3. haftalar.
-- Doğrulama: S5 varlık listesi.
-
----
-
-# DR/DU/DT · veri
-
-- **DR (beklemede):** "Yerel veri AEAD ile şifreli."
-- **DU (kullanımda):** "Anahtar kullanımdan sonra silinir."
-- **DT (aktarımda):** "TLS 1.3 + zincir doğrulama."
-
----
-
-# CR · kriptografi
-
-- **Örnek:** "Onaylı algoritma, kip ve anahtar uzunluğu; anahtar hiyerarşisi belgeli."
-- Bağ: 3, 10. haftalar.
-- Doğrulama: algoritma envanteri.
-
----
-
-# RP · raporlama
-
-- **Örnek:** "Sürümde hassas veri düz loglanmaz."
-- Bağ: 4, 6. haftalar.
-- Doğrulama: `strings`, günlük denetimi.
-
----
-
-# DV · geliştirme/süreç
-
-- **Örnek:** "Her değişiklik birleştirilmeden önce incelenir; SBOM güncellenir."
-- Bağ: 5, 12, 13. haftalar.
-- Doğrulama: süreç kayıtları, SBOM.
-
----
-
-# Aileden gereksinime · kural
-
-- Projeniz her aileden **en az bir** gereksinim seçer.
-- Her gereksinim tehditten türer, blok olarak yazılır.
-- Matrise girer, kanıtla bağlanır.
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · Sık yapılan hatalar
-
----
-
-# Hata · doğrulanamaz gereksinim
-
-- "Güvenli olmalı" gibi ölçülemez ifade.
-- Doğrusu: somut, test edilebilir madde.
-
----
-
-# Hata · kanıtsız "karşılandı"
-
-- Matriste kanıt sütunu boş.
-- Değerlendirici karşılanmamış sayar.
-
----
-
-# Hata · sessiz devretme
-
-- Karşılanamayan gereksinimi yazmamak.
-- Doğrusu: kime/neden/nasıl (S14).
-
----
-
-# Hata · EAL'i güvenlik miktarı sanmak
-
-- "EAL4 > EAL2 daha güvenli" yanlış.
-- EAL derinliktir; güvenlik ST'ye bağlı.
-
----
-
-# Hata · FIPS'li kütüphane = FIPS uyumlu
-
-- Modül doğrulanmış olsa da uygulama doğru kullanmalı.
-- Onaylı kip + doğru anahtar yönetimi.
-
----
-
-# Hata · kalan riski boş bırakmak
-
-- Hiçbir ürünün kalan riski sıfır değildir.
-- Boş "kalan risk" = eksik analiz.
-
----
-
-<!-- _class: yogun -->
-
-# Kontrol listesi
-
-- [ ] Her gereksinim doğrulanabilir + tekil
-- [ ] Her satırda durum/bölüm/doğrulama/kanıt
-- [ ] Devredilenler: kime/neden/nasıl
-- [ ] Karşılanmayanlar → kalan risk
-- [ ] Standart eşlemesi (ETSI/MASVS/CC)
-- [ ] En az bir aile başına gereksinim
-
----
-
-# Son söz (13. hafta)
+Bu hafta tanımladığımız dersin gereksinim ailelerinden **CEN429-AP** (uygulama koruması) grubundaki "hassas kod bölümleri gizlenmelidir" gibi gereksinimlerin somut karşılığını, yani **önlem** tarafını, 14. haftada göreceğiz: Tigress aracıyla kod gizleme ve çeşitlendirme dönüşümlerini uygulayıp bunları uyum matrisinizin (S17) ilgili satırlarına bağlayacaksınız. Gizleme kurallarının otomatik, çeşitlendirilmiş uygulaması; ölçme ve derleme hattı.
 
 > Bir gereksinim, tehditten doğar; bir önleme, bir teste ve bir **kanıta** bağlanır; karşılanamıyorsa açıkça
 > **devredilir**. Uyum matrisi bu zincirin haritasıdır.

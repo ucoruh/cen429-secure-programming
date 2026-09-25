@@ -10,7 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -23,132 +22,6 @@ Dr. Öğr. Üyesi Uğur CORUH · 02.10.2026
 <!--
 Konuşma notu: Bu hafta odak programdan VERİYE kayıyor. Bir sırrın üç hâli var; her hâlin tehdidi ve savunması farklı. Ana fikir: güvenlik kabuğu (derinlemesine savunmanın somut hâli).
 -->
-
----
-
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: Kripto/veri güvenliği terimlerini sıfırdan tanımlıyoruz. Bu hafta kriptoya giriş; 10. hafta derinleşecek. -->
-
----
-
-# Neden bu bölüm?
-
-Bu hafta "şifreleme", "nonce", "anahtar türetme" gibi terimler geçecek.
-
-Hiçbirini bilmediğinizi varsayıyoruz.
-
-Önce hepsini **tek tek** tanımlayalım.
-
----
-
-# Verinin üç hâli
-
-- **Aktarımda:** ağda giderken (TLS).
-- **Beklemede:** diskte dururken (dosya şifreleme).
-- **Kullanımda:** bellekte işlenirken (en zor).
-
-Her hâl farklı koruma ister.
-
----
-
-# Şifreleme nedir?
-
-- **Şifreleme:** okunur veriyi (açık metin) bir **anahtarla** okunamaz hale (şifreli metin) getirmek.
-- **Çözme:** anahtarla geri açmak.
-- Güvenlik **anahtarın** gizliliğine bağlı.
-
----
-
-# Simetrik vs asimetrik
-
-- **Simetrik:** tek anahtar (AES). Hızlı.
-- **Asimetrik:** açık + gizli çift (RSA/ECC). Anahtar dağıtımı kolay.
-- Pratikte **birlikte** (hibrit).
-
----
-
-# Özet (hash)
-
-- **Özet:** veriden hesaplanan sabit parmak izi (SHA-256).
-- Tek yönlü; veri değişirse özet değişir.
-- Bütünlük ve imzanın temeli.
-
----
-
-# MAC ve imza
-
-- **MAC:** simetrik; mesaj değişmedi + doğru taraftan.
-- **İmza:** asimetrik; kim imzaladı (inkâr edilemezlik).
-- İkisi de **bütünlük** sağlar.
-
----
-
-# AEAD
-
-- **AEAD:** gizlilik **+** bütünlük **birlikte** (AES-GCM).
-- Ayrı MAC uğraşmadan ikisini verir.
-- Modern tercih.
-
----
-
-# IV / nonce / tuz
-
-- **IV/nonce:** her şifrelemede **benzersiz** başlangıç değeri.
-- **Tuz (salt):** paroladan anahtar türetirken eklenen rastgele değer.
-- Üçü de **gizli değil**, ama **tekrarsız/benzersiz** olmalı.
-
----
-
-# Rastgelelik ve CSPRNG
-
-- **CSPRNG:** kriptografik olarak güvenli rastgele üreteç (işletim sisteminin `getrandom`/`BCryptGenRandom`).
-- `rand()` **güvensizdir**.
-- Anahtar/nonce/tuz bundan üretilir.
-
----
-
-# Anahtar türetme (KDF)
-
-- **KDF:** bir sırdan (parola ya da ana anahtar) **anahtar üretme**.
-- **PBKDF2/Argon2:** paroladan (yavaş, tuzlu).
-- **HKDF:** ana sırdan çok anahtar.
-
----
-
-# Anahtar hiyerarşisi
-
-- Tek anahtar her işte kullanılmaz.
-- Ana anahtar → türev anahtarlar (veri, oturum).
-- **Kripto-periyot:** her anahtarın ömrü.
-
----
-
-# İleri gizlilik
-
-- **İleri gizlilik:** her oturum için yeni anahtar.
-- Uzun vadeli anahtar sızsa bile **eski** oturumlar çözülemez.
-- Modern TLS sağlar.
-
----
-
-# TLS (kısaca)
-
-- **TLS:** ağda güvenli iletişim protokolü (HTTPS'in altında).
-- Anahtar anlaşması + AEAD + sertifika doğrulama.
-- 8. bölümde göreceğiz.
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-verinin üç hâli · şifreleme · simetrik/asimetrik · özet · MAC/imza · AEAD · IV/nonce/tuz · CSPRNG · KDF/HKDF · anahtar hiyerarşisi · ileri gizlilik · TLS
-
-Şimdi: verinin üç hâli ve güvenlik kabuğu.
 
 ---
 
@@ -168,19 +41,38 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 
 ---
 
-<!-- _class: yogun -->
+# Önceki haftalardan gelenler
 
-# Kısa tarihçe — veriyi korumanın araçları
+- **Beyaz kutu saldırgan modeli** — cihazın/sunucunun sahibi aynı zamanda olası saldırgandır; belleği okuyabilir, hata ayıklayıcı bağlayabilir **(Hafta 1)**
+- **Bellekten güvenli silme** — bir sırrı `explicit_bzero`/`OPENSSL_cleanse` ile, derleyicinin kaldıramayacağı biçimde silmek **(Hafta 1)**
+- **Entropi ölçümü** — bir dosyanın baytlarındaki düzensizliği ölçüp şifreli/paketli içeriği ayırt etmek **(Hafta 2)**
 
-- **1976** Diffie–Hellman (açık anahtar) · **1977** **RSA** ve **DES**
-- **2001** — **AES** (Rijndael) DES'in yerini alır
-- **2007** — **GCM** standart olur: **AEAD** çağı (gizlilik + bütünlük birlikte)
-- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
-
-> Kural buradan çıkar: kendi kriptonu yazma, **AEAD** kullan, **anahtarı** doğru yönet.
+Bu hafta: beyaz kutu modeli → **kullanımda veri** ve **whitebox**; entropi → **rastgele üretecin girdisi**.
 
 ---
 
+<!-- _class: yogun -->
+
+# Bu haftanın kavramları
+
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| Verinin üç hâli (+ güvenlik kabuğu) | Bölüm 1 |
+| Şifreleme | Bölüm 2 |
+| AEAD | Bölüm 2 |
+| Simetrik / asimetrik | Bölüm 2 |
+| Özet (hash) | Bölüm 2 |
+| MAC ve imza | Bölüm 2 |
+| Rastgelelik / CSPRNG | Bölüm 3 |
+| IV / nonce / tuz | Bölüm 4 |
+| Anahtar türetme (KDF) | Bölüm 5–6 |
+| İleri gizlilik | Bölüm 6 |
+| Anahtar hiyerarşisi | Bölüm 7 |
+| TLS | Bölüm 8 |
+
+---
 
 # Demolar nasıl çalışıyor?
 
@@ -212,6 +104,19 @@ Konuşma notu: Laboratuvarı önceden derleyin. Windows'ta build.ps1, WSL'de bui
 
 ---
 
+<!-- _class: yogun -->
+
+# Kısa tarihçe — veriyi korumanın araçları
+
+- **1976** Diffie–Hellman (açık anahtar) · **1977** **RSA** ve **DES**
+- **2001** — **AES** (Rijndael) DES'in yerini alır
+- **2007** — **GCM** standart olur: **AEAD** çağı (gizlilik + bütünlük birlikte)
+- **1994 → 2018** — SSL → TLS 1.0 → **TLS 1.3**
+
+> Kural buradan çıkar: kendi kriptonu yazma, **AEAD** kullan, **anahtarı** doğru yönet.
+
+---
+
 # Bir sırrın üç hâli
 
 | Hâl | Nerede | Tehdit | Savunma |
@@ -233,7 +138,6 @@ Konuşma notu: Öğrencilere sorun: telefonundaki bankacılık uygulamasında bi
 ![w:1000](assets/h03-01-verinin-uc-hali.svg)
 
 ---
-
 
 <!-- _class: sema -->
 
@@ -269,6 +173,7 @@ Saldırgan sırra ulaşmak için **hepsini sırayla** kırmalı = derinlemesine 
 
 # Kriptografi tek şey değildir
 
+- **Şifreleme, kısaca:** açık metni bir anahtarla okunamaz şifreli metne çevirmek; çözme aynı/eşleşen anahtarla tersine çevirir; güvenlik anahtarın gizliliğine dayanır.
 - Farklı hedefler için **farklı araçlar** vardır.
 - En sık karıştırılan dört aile: şifreleme, özet, MAC, imza.
 - Hangisi **gizlilik**, hangisi **bütünlük**, hangisi **ikisi birden** verir?
@@ -423,17 +328,6 @@ Sonuç aynı: **gizlilik + bütünlük tek pakette.**
 - Ayrı ayrı "şifrele + MAC ekle" kurmak yerine **AEAD** kullanın.
 - İki işi **tek çağrıda**, doğru sırada (encrypt-then-MAC) ve daha az hatayla yapar.
 - Ayrı MAC yalnız şifrelenmeyecek ama bütünlüğü gereken veriler için (ya da AEAD'nin AAD alanıyla) gerekir.
-
----
-
-<!-- _class: sema -->
-
-# AEAD: tek çağrıda gizlilik + bütünlük
-
-
-<!--
-Konuşma notu: AAD'yi vurgulayın: sürüm no, kayıt kimliği gibi bağlanması gereken ama şifrelenmeyecek veriler oraya konur.
--->
 
 ---
 
@@ -968,6 +862,7 @@ Kod incelemesinde `ecb` geçen her yer bir **bulgudur**. Değerlendirici aynı d
 - Parola **kısa, düşük entropili ve tahmin edilebilir**.
 - Doğrudan anahtar yapılırsa kaba kuvvet ucuzlaşır.
 - Çözüm: paroladan anahtar türetme fonksiyonu (**KDF**).
+- **Genel olarak KDF:** yalnız paroladan değil, bir **ana sırdan** da anahtar türetilebilir — bunu 6. bölümde (**HKDF**) görüyoruz.
 
 ---
 
@@ -1807,6 +1702,37 @@ Saldiri 2: baska cihaza kopyala -> dis 3 kabuk acilir,
 
 ---
 
+# Uçtan uca: bir notu üç hâlde de korumak
+
+Bir uygulama kullanıcının "notunu" korur: sunucudan **gelir** (aktarımda), diskte **durur** (beklemede), ekranda **gösterilir** (kullanımda).
+
+| Hâl | Koruma | Bölüm |
+| --- | --- | --- |
+| Aktarımda | TLS 1.3 + zincir/SAN + (varsa) SPKI pin | 8 |
+| Beklemede | AES-256-GCM (AEAD), benzersiz nonce, anahtar KDF'den | 5, 9 |
+| Kullanımda | En kısa süre bellekte tut, iş bitince sil | 9 |
+
+Anahtar zinciri: parola → **KDF** → ana anahtar → **HKDF** → veri/oturum anahtarı; her aşamada **AEAD bütünlüğü** de gelir.
+
+---
+
+<!-- _class: yogun -->
+
+# Klasik kripto hataları — özet
+
+| Hata | Bölüm | Kural |
+| --- | --- | --- |
+| Nonce tekrarı | 4 | Anahtarla asla tekrar etmesin; sayaç ya da yeterli rastgele nonce |
+| Zayıf rastgelelik | 3 | `rand()` değil, **CSPRNG** (`getrandom`, `BCryptGenRandom`) |
+| Parolayı doğrudan anahtar yapmak | 5 | **KDF** ile türet (tuzlu, yavaş) |
+| ECB kipi | 4 | Desen sızdırır ("penguen"); **AEAD** kullan |
+| Şifreleme var, bütünlük yok | 2 | **AEAD** ya da encrypt-then-MAC |
+| Sabit zamanlı olmayan karşılaştırma | 3 | `memcmp` değil, sabit zamanlı karşılaştır |
+
+Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
+
+---
+
 # Proje: bu hafta (S5, S7)
 
 - **S5 — Varlık listesi (taslak):** her hassas varlık; konum, ömür, C/I/I+, koruma
@@ -1856,251 +1782,73 @@ Konuşma notu: Grupları 3-4 kişi yapın. Etkinlik 1 ve 3 tartışma için en v
 
 ---
 
-
 # Kendini sınama (devam)
 
-1. `rand()` neden güvenlik için kullanılamaz? Yerine?
-2. `EVP_DecryptFinal_ex` başarısız döndü; tampondaki açık metne ne yaparsınız?
-3. MAC karşılaştırmasında `memcmp` neden sakıncalı?
-4. Kripto-periyodu dolan anahtar hemen silinir mi?
-5. Zarflamada KEK yenilenince neden veri yeniden şifrelenmez?
+7. `rand()` neden güvenlik için kullanılamaz? Yerine?
+8. `EVP_DecryptFinal_ex` başarısız döndü; tampondaki açık metne ne yaparsınız?
+9. MAC karşılaştırmasında `memcmp` neden sakıncalı?
+10. Kripto-periyodu dolan anahtar hemen silinir mi?
+11. Zarflamada KEK yenilenince neden veri yeniden şifrelenmez?
 
 <!-- önce sordur, sonra cevap slaytını aç -->
 
 ---
 
-# Kendini sınama — cevaplar (1–5)
+# Kendini sınama — cevaplar (7–11)
 
-1. `rand()` **istatistikseldir, tahmin edilebilir** → CSPRNG kullanın (`RAND_bytes` / `getrandom`).
-2. Çözme başarısızsa tampondaki açık metni **güvenli silin** (`memset_s`) ve **reddedin** — bütünlük doğrulanmadı, kullanmayın.
-3. `memcmp` **erken çıkar** → **zamanlama sızıntısı**; `CRYPTO_memcmp` / sabit zamanlı karşılaştırma kullanın.
-4. **Hayır.** Yeni şifrelemede kullanılmaz ama eski veri yeniden şifrelenene dek **yalnız çözmede** tutulur.
-5. Veri **DEK** ile şifrelidir; KEK yenilenince yalnızca **DEK'ler yeniden sarılır** (rewrap), veri değil.
+7. `rand()` **istatistikseldir, tahmin edilebilir** → CSPRNG kullanın (`RAND_bytes` / `getrandom`).
+8. Çözme başarısızsa tampondaki açık metni **güvenli silin** (`memset_s`) ve **reddedin** — bütünlük doğrulanmadı, kullanmayın.
+9. `memcmp` **erken çıkar** → **zamanlama sızıntısı**; `CRYPTO_memcmp` / sabit zamanlı karşılaştırma kullanın.
+10. **Hayır.** Yeni şifrelemede kullanılmaz ama eski veri yeniden şifrelenene dek **yalnız çözmede** tutulur.
+11. Veri **DEK** ile şifrelidir; KEK yenilenince yalnızca **DEK'ler yeniden sarılır** (rewrap), veri değil.
 
 ---
 
-
 # Kendini sınama (devam)
 
-6. `SSL_set1_host` çağrılmazsa ne olur?
-7. Sabitlemede neden SPKI ve neden yedek pin?
-8. "Fail-open" nedir? Bir örnek
-9. Kimlik numarasının düz SHA-256'sı neden takma ad olamaz?
-10. Tokenizasyon PCI DSS kapsamını neden küçültür?
+12. `SSL_set1_host` çağrılmazsa ne olur?
+13. Sabitlemede neden SPKI ve neden yedek pin?
+14. "Fail-open" nedir? Bir örnek
+15. Kimlik numarasının düz SHA-256'sı neden takma ad olamaz?
+16. Tokenizasyon PCI DSS kapsamını neden küçültür?
 
 <!-- önce sordur, sonra cevap slaytını aç -->
 
 ---
 
-# Kendini sınama — cevaplar (6–10)
+# Kendini sınama — cevaplar (12–16)
 
-6. `SSL_set1_host` yoksa **hostname doğrulanmaz**; başka ada ait **geçerli** sertifika kabul edilir → MITM.
-7. **SPKI** sertifika yenilense de (anahtar aynıysa) **değişmez**; **yedek pin** anahtar değişiminde uygulamanın **"tuğlalaşmasını"** önler.
-8. **Fail-open:** hata durumunda "geçti/izin ver" sayılması; örn. **yutulan `KeyStoreException`** ile doğrulamanın atlanması.
-9. Kimlik no'nun değer uzayı **küçük/tahmin edilebilir** → düz SHA-256 **kaba kuvvetle** geri döner; **anahtarlı HMAC** gerekir.
-10. **Tokenizasyon:** gerçek PAN yalnız **kasada** kalır; sistemin kalanı token tutar → **PCI DSS denetim kapsamı** daralır.
-
----
-
-
-<!-- _class: baslik -->
-
-# Gelecek hafta
-
-**Hafta 4 — Kod Sağlamlaştırma: C/C++**
-
-Güvenli bellek yönetimi · sanitizer'lar · derleyici/OS korumaları
-(stack canary, ASLR, DEP/NX, CFI) · kontrol akışı düzleştirme
-
-Kaynak: Viega & Messier, Tarif 3.1–3.5, 13.1
+12. `SSL_set1_host` yoksa **hostname doğrulanmaz**; başka ada ait **geçerli** sertifika kabul edilir → MITM.
+13. **SPKI** sertifika yenilense de (anahtar aynıysa) **değişmez**; **yedek pin** anahtar değişiminde uygulamanın **"tuğlalaşmasını"** önler.
+14. **Fail-open:** hata durumunda "geçti/izin ver" sayılması; örn. **yutulan `KeyStoreException`** ile doğrulamanın atlanması.
+15. Kimlik no'nun değer uzayı **küçük/tahmin edilebilir** → düz SHA-256 **kaba kuvvetle** geri döner; **anahtarlı HMAC** gerekir.
+16. **Tokenizasyon:** gerçek PAN yalnız **kasada** kalır; sistemin kalanı token tutar → **PCI DSS denetim kapsamı** daralır.
 
 ---
 
-<!-- _class: bolum -->
+# Kendini sınama (devam)
 
-# Ek · Bir veriyi baştan sona korumak
+17. Verinin üç hâli ve her birinin koruması?
+18. Parola neden doğrudan anahtar olamaz?
+19. AEAD ne sağlar, hangi ayrı adımların yerine geçer?
+20. İleri gizlilik ne demek?
+21. IV/nonce/tuz gizli mi? Kuralı ne?
+22. CSPRNG neden gerekli?
+23. Anahtar hiyerarşisi neden var?
 
-<!-- Konuşma notu: Tek bir sırrı üç hâlinde de koruyarak haftayı özetliyoruz. -->
-
----
-
-# Senaryo
-
-Bir uygulama, kullanıcının bir "notunu" korumalı:
-
-- sunucudan gelir (aktarımda)
-- diskte durur (beklemede)
-- ekranda gösterilir (kullanımda)
-
-Üç hâli de koruyalım.
+<!-- önce sordur, sonra cevap slaytını aç -->
 
 ---
 
-# Aktarımda · adım
-
-- **TLS 1.3** ile taşı.
-- Sertifika zinciri + SAN denetimi.
-- Varsa SPKI pin + yedek pin.
-
----
-
-# Beklemede · adım
-
-- **AES-256-GCM** ile şifrele (AEAD).
-- Nonce benzersiz.
-- Anahtar TEE/HSM ya da paroladan KDF.
-
----
-
-# Kullanımda · adım
-
-- En kısa süre bellekte tut.
-- İş bitince **sil** (`memset` benzeri).
-- RASP + kısa ömür.
-
----
-
-# Anahtar nereden?
-
-- Ana parola → **PBKDF2/Argon2** (tuzlu, yavaş) → ana anahtar.
-- Ana anahtar → **HKDF** → veri anahtarı, oturum anahtarı.
-- Her anahtarın **ayrı** görevi.
-
----
-
-# Bütünlük
-
-- AEAD zaten bütünlük veriyor.
-- Aktarımda TLS, beklemede GCM etiketi.
-- Kurcalama → çözme **reddedilir**.
-
----
-
-# Senaryo · özet
-
-| Hâl | Koruma |
-| --- | --- |
-| Aktarımda | TLS 1.3 + zincir |
-| Beklemede | AES-GCM + KDF |
-| Kullanımda | kısa ömür + silme |
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Klasik kripto hataları
-
----
-
-# Hata · nonce tekrarı
-
-- GCM'de aynı nonce iki kez → **felaket** (anahtar/veri sızabilir).
-- Sayaç ya da yeterli rastgele nonce.
-
----
-
-# Hata · zayıf rastgelelik
-
-- `rand()` ile anahtar/nonce → tahmin edilebilir.
-- **CSPRNG** kullan (`getrandom`, `BCryptGenRandom`).
-
----
-
-# Hata · parolayı doğrudan anahtar yapmak
-
-- Parola düşük entropili; doğrudan anahtar **zayıf**.
-- **KDF** ile türet (tuzlu, yavaş).
-
----
-
-# Hata · ECB kipi
-
-- Desen sızar ("penguen").
-- AEAD kullan.
-
----
-
-# Hata · şifreleme ama bütünlük yok
-
-- Yalnız gizlilik yetmez; kurcalanabilir.
-- AEAD ya da encrypt-then-MAC.
-
----
-
-# Hata · sabit zamanlı olmayan karşılaştırma
-
-- MAC/parola karşılaştırması erken çıkarsa **zamanlama** sızdırır.
-- Sabit zamanlı karşılaştır.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Çözümlü kendini sınama
-
----
-
-# Soru 1
-
-**Verinin üç hâli ve her birinin korumasi?**
-
-**Cevap:** Aktarımda (TLS), beklemede (AEAD şifreleme), kullanımda (kısa ömür + silme).
-
----
-
-# Soru 2
-
-**GCM'de nonce tekrarı neden felaket?**
-
-**Cevap:** Aynı anahtar+nonce altında gizlilik ve bütünlük çöker; anahtar akışı ve veri sızabilir. Nonce benzersiz olmalı.
-
----
-
-# Soru 3
-
-**Parola neden doğrudan anahtar olamaz?**
-
-**Cevap:** Düşük entropili ve tahmin edilebilir. KDF (PBKDF2/Argon2) ile tuzlu, yavaş türetilir.
-
----
-
-# Soru 4
-
-**AEAD ne sağlar, hangi ayrı adımların yerine geçer?**
-
-**Cevap:** Gizlilik + bütünlüğü birlikte; ayrı şifreleme + MAC adımlarının yerine.
-
----
-
-# Soru 5
-
-**İleri gizlilik ne demek?**
-
-**Cevap:** Her oturum yeni anahtar; uzun vadeli anahtar sızsa bile eski oturumlar çözülemez.
-
----
-
-# Soru 6
-
-**IV/nonce/tuz gizli mi? Kuralı ne?**
-
-**Cevap:** Gizli değildir ama **benzersiz/tekrarsız** olmalı; nonce tekrarı ve sabit tuz tehlikelidir.
-
----
-
-# Soru 7
-
-**CSPRNG neden gerekli?**
-
-**Cevap:** `rand()` tahmin edilebilir; anahtar/nonce/tuz için kriptografik güvenli üreteç (OS) gerekir.
-
----
-
-# Soru 8
-
-**Anahtar hiyerarşisi neden var?**
-
-**Cevap:** Tek anahtar her işte kullanılmaz; ana anahtardan türev anahtarlar üretilir, her birinin ayrı görevi ve ömrü olur.
+# Kendini sınama — cevaplar (17–23)
+
+17. **Aktarımda** (TLS), **beklemede** (AEAD şifreleme), **kullanımda** (kısa ömür + silme).
+18. Düşük entropili ve tahmin edilebilir; **KDF** (PBKDF2/Argon2) ile tuzlu, yavaş türetilir.
+19. **Gizlilik + bütünlüğü** birlikte verir; ayrı şifreleme + MAC adımlarının yerine geçer.
+20. Her oturum için **yeni anahtar**; uzun vadeli anahtar sızsa bile eski oturumlar çözülemez.
+21. **Gizli değildir** ama **benzersiz/tekrarsız** olmalı; nonce tekrarı ve sabit tuz tehlikelidir.
+22. `rand()` tahmin edilebilir; anahtar/nonce/tuz için **CSPRNG** (OS) gerekir.
+23. Tek anahtar her işte kullanılmaz; ana anahtardan türev anahtarlar gelir, her birinin ayrı görevi ve ömrü olur.
 
 ---
 
@@ -2119,9 +1867,16 @@ Bir uygulama, kullanıcının bir "notunu" korumalı:
 
 ---
 
-# Son söz (3. hafta)
+<!-- _class: baslik -->
 
-> Veriyi **üç hâlinde de** koru; doğru kip (AEAD), güvenli rastgelelik, KDF ile anahtar, benzersiz nonce ve iyi
-> yönetilen anahtar hiyerarşisi.
+# Bir sonraki hafta
 
-10. haftada PKI ve sertifikalarla derinleşeceğiz.
+**4. hafta — Kod Sağlamlaştırma: C/C++**
+
+Bu hafta veriyi (anahtarı, açık metni) doğru şifreleme ve anahtar yönetimiyle korumayı öğrendik; ama şifreleme kodunun kendisi de bir C/C++ programıdır — bir arabellek taşması, biçim dizisi açığı ya da tamsayı hatası, özenle korunan anahtarı ve açık metni belleğe sızdırabilir.
+
+4\. haftada **SEI CERT C/C++** kurallarıyla tam olarak bu tür hataları önlemeyi, statik analiz ve sanitizer'larla yakalamayı işleyeceğiz.
+
+> Bu haftanın özeti: veriyi **üç hâlinde de** koru; doğru kip (AEAD), güvenli rastgelelik, KDF ile anahtar, benzersiz nonce ve iyi yönetilen anahtar hiyerarşisi.
+
+10\. haftada PKI ve sertifikalarla derinleşeceğiz.

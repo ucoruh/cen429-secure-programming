@@ -26,17 +26,17 @@ Speaker note: Quiz-2 period: we review the concepts of weeks 9-14; this deck is 
 
 ---
 
-# Final and Course Passing Grade — Diagram
-
-![w:950](assets/h16-02-final-hesabi.svg)
-
----
-
 # Quiz-2: What, When?
 
 - Scope: **weeks 9–14** · **30%** of the final grade
 - Date, time, place, duration, format: **announced in class**
 - Best preparation: Self-check questions · Week 10 OpenSSL steps · Week 13 compliance matrix
+
+---
+
+# Final and Course Passing Grade — Diagram
+
+![w:950](assets/h16-02-final-hesabi.svg)
 
 ---
 
@@ -58,6 +58,62 @@ Speaker note: Quiz-2 period: we review the concepts of weeks 9-14; this deck is 
 # Quiz-2 Scope — Diagram
 
 ![w:950](assets/h16-01-kapsam.svg)
+
+---
+
+# Week 9 · Key Points
+
+- Obfuscation: not unbreakability, but **cost**.
+- Techniques: opaque predicates, control-flow flattening, bogus/dead code, data encoding.
+- Measurement: potency, resilience, stealth, cost.
+- Diversification.
+
+<!-- Speaker note: Quiz-2 covers weeks 9-14. Weeks 9, 11, and 14 have now been published; sample questions have been added. -->
+
+---
+
+# Week 10 · Key Points
+
+- Security level; weakest link.
+- Modes and padding; padding oracle → AEAD.
+- HMAC, encrypt-then-MAC, replay.
+- OAEP/PSS, Ed25519/X25519; PKI, X.509, CRL/OCSP.
+
+---
+
+# Week 11 · Key Points
+
+- Black/gray/white box.
+- Table-based WBC; internal/external encoding.
+- "All broken" → WBC is one layer.
+- Key renewal + device binding + server.
+
+---
+
+# Week 12 · Key Points
+
+- 13-step assessment.
+- Attack potential + CVSS.
+- Penetration test plan; test card.
+- Impact analysis vs. delta.
+
+---
+
+# Week 13 · Key Points
+
+- Good requirement; traceability.
+- Compliance matrix; deferred requirements.
+- CC (TOE/ST/PP/SFR/SAR/EAL); FIPS 140-3.
+- ETSI/EMVCo/PCI/MASVS.
+
+---
+
+# Week 14 · Key Points
+
+- Source-to-source (Tigress).
+- Transformation pipeline; seed-based diversification.
+- Cost + resilience measurement.
+- Build pipeline (S15).
 
 ---
 
@@ -120,93 +176,6 @@ Speaker note: Quiz-2 period: we review the concepts of weeks 9-14; this deck is 
 
 - Answers on the Week 16 page
 - Your guide is a **portfolio** item (make sure it contains no confidential information)
-
----
-
-# The Term in One Sentence — Diagram
-
-![w:950](assets/h16-04-donem-ozeti.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Week-by-Week Topic Map (9–14)
-
-<!-- Speaker note: Quiz-2 covers weeks 9-14. Weeks 9, 11, and 14 have now been published; sample questions have been added. -->
-
----
-
-# Week 9 · Key Points
-
-- Obfuscation: not unbreakability, but **cost**.
-- Techniques: opaque predicates, control-flow flattening, bogus/dead code, data encoding.
-- Measurement: potency, resilience, stealth, cost.
-- Diversification.
-
----
-
-# Week 10 · Key Points
-
-- Security level; weakest link.
-- Modes and padding; padding oracle → AEAD.
-- HMAC, encrypt-then-MAC, replay.
-- OAEP/PSS, Ed25519/X25519; PKI, X.509, CRL/OCSP.
-
----
-
-# Week 11 · Key Points
-
-- Black/gray/white box.
-- Table-based WBC; internal/external encoding.
-- "All broken" → WBC is one layer.
-- Key renewal + device binding + server.
-
----
-
-# Week 12 · Key Points
-
-- 13-step assessment.
-- Attack potential + CVSS.
-- Penetration test plan; test card.
-- Impact analysis vs. delta.
-
----
-
-# Week 13 · Key Points
-
-- Good requirement; traceability.
-- Compliance matrix; deferred requirements.
-- CC (TOE/ST/PP/SFR/SAR/EAL); FIPS 140-3.
-- ETSI/EMVCo/PCI/MASVS.
-
----
-
-# Week 14 · Key Points
-
-- Source-to-source (Tigress).
-- Transformation pipeline; seed-based diversification.
-- Cost + resilience measurement.
-- Build pipeline (S15).
-
----
-
-# Frequently Confused
-
-| A | B | Difference |
-| --- | --- | --- |
-| CBC | GCM | Padding / AEAD |
-| OAEP | PSS | Encryption / signature |
-| Ed25519 | X25519 | Signature / key |
-| EAL | Attack potential | Depth / attacker resources |
-| Met | Deferred | Product / another party |
-| Impact analysis | Delta | Documents / re-assesses only what changed |
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Solved Practice (9, 11, 14)
 
 ---
 
@@ -287,6 +256,12 @@ A) Too slow B) **Not standard AES** ✓ C) Table too small D) Key exposed
 - Do the solved practice items on the Week 9, 11, and 14 pages.
 - Review the Week 10 OpenSSL steps.
 - Fill in the Week 13 compliance matrix activity yourself.
+
+---
+
+# The Term in One Sentence — Diagram
+
+![w:950](assets/h16-04-donem-ozeti.svg)
 
 ---
 

@@ -1,0 +1,27 @@
+% Hafta 14 — Hangi koda ne kadar gizleme? Karar akışı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-09-karar-akisi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Hangi koda ne kadar gizleme? Karar akışı};
+  \node[altbaslik] at (b.south west) {önce hassas mı, sonra değeri ne kadar};
+
+  \node[kutu=40mm, draw=koyu, below=16mm of b.south west, anchor=north west, xshift=25mm] (hassas) {\kb{Hassas mı?}};
+
+  \node[iyikutu=30mm, below=26mm of hassas.south west, anchor=north east] (gizlemeyok) {\kb{gizleme yok}};
+  \node[kutu=36mm, draw=koyu, below=26mm of hassas.south east, anchor=north west] (degeri) {\kb{Değeri?}};
+
+  \draw[ok, draw=soluk] (hassas.south) -- node[oketiket, above=3pt] {hayır} (gizlemeyok.north);
+  \draw[ok, draw=soluk] (hassas.south) -- node[oketiket, above=3pt] {evet} (degeri.north);
+
+  \node[uyarikutu=44mm, below=26mm of degeri.south west, anchor=north east] (orta) {\kb{ORTA}\\EncodeLiterals + Arithmetic\\+ Flatten + AddOpaque};
+  \node[kotukutu=48mm, below=26mm of degeri.south east, anchor=north west] (yuksek) {\kb{YÜKSEK ve küçük}\\yukarıdakilerin hepsi\\+ Virtualize};
+
+  \draw[ok, draw=soluk] (degeri.south) -- (orta.north);
+  \draw[ok, draw=soluk] (degeri.south) -- (yuksek.north);
+
+  \node[dip, text width=175mm, below=8mm of yuksek.south -| degeri, anchor=north] {%
+    Her durumda: çeşitlendir · ölç · testle · S9 ve S15 kayıtlarına yaz.};
+\end{tikzpicture}
+\end{document}

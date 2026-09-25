@@ -1,0 +1,23 @@
+% Hafta 5 — Enjeksiyonun ortak kökü: veri ile komutun karışması
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-01-enjeksiyon-koku.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Enjeksiyonun ortak kökü: veri ile komutun karışması};
+  \node[altbaslik] at (b.south west) {bütün enjeksiyon türleri aynı şemanın farklı yorumlayıcılardaki hâli};
+  \node[kotukutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{HATALI: tek kanal}\\[2mm]
+     \kod{"...WHERE x='" + girdi}\\[3mm]
+     Yorumlayıcı girdiyi\\KOMUT olarak ayrıştırır\\[3mm]
+     SQLi · komut enj. · XXE\\şablon enjeksiyonu};
+  \node[iyikutu=70mm, right=14mm of sol] (sag)
+    {\kb{DOĞRU: ayrı kanal}\\[2mm]
+     \kod{WHERE x = ?  (parametre)}\\[3mm]
+     Komut SABİT kalır,\\girdi yalnız VERİ\\[3mm]
+     enjeksiyon ailesi\\tümüyle kapanır};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Kaçış (escaping) son çaredir; asıl çözüm komutu ve veriyi ayrı kanala koymaktır.};
+\end{tikzpicture}
+\end{document}

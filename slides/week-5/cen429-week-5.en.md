@@ -23,25 +23,92 @@ Asst. Prof. Dr. Uğur CORUH · 16.10.2026
 Speaker note: This week we move to managed languages: memory safety comes for free, but injection, deserialisation, readable bytecode and dependencies bring new risks.
 -->
 
-<!--
-Speaker note: This week we move to managed languages: memory safety comes for free, but injection, deserialisation, readable bytecode and dependencies bring new risks.
--->
-
-<!--
-Speaker note: This week we move to managed languages: memory safety comes for free, but injection, deserialisation, readable bytecode and dependencies bring new risks.
--->
-
 ---
 
-# Today's plan (3 hours)
+# Today
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–3 | Basic concepts · managed languages · CERT Java · the root of injection |
-| 2 | 4–9 | SQL/command/path injection · deserialisation · XML/XXE · Python/JS |
-| 3 | 10–16 | Bytecode · ProGuard/R8 · string obfuscation · Android · SBOM · project |
+| 1 | 1–4 | Managed languages and the root of injection, SEI CERT · SQL injection **Demo 1** · Command injection **Demo 2** · Path traversal **Demo 3** |
+| 2 | 5–7 | Unsafe deserialisation **Demo 7** · XML/XXE, templates, XSS · Python and JavaScript (ReDoS) |
+| 3 | 8–12 | Bytecode **Demo 4** · ProGuard/R8 + string obfuscation **Demo 5** · Android R8/measurement · SBOM **Demo 6** · Project |
 
-<!-- Speaker note: We cover Java/interpreted languages' counterpart of week 4's C/C++ material. We assume zero prior knowledge; every term will be defined. -->
+**Learning outcomes (LO.3 / LO.4):** recognise and prevent the injection class (SQL, command, path, XML, deserialisation) · obfuscate with ProGuard/R8 and write `-keep` rules · produce an SBOM and manage dependency risk
+
+> A managed language largely solves memory bugs; but data mixing with commands (injection) exists in every language.
+
+<!-- Speaker note: We cover Week 4's C/C++ counterpart in Java/interpreted languages. We assume zero prior knowledge; every term will be defined. -->
+
+---
+
+# What We Bring from Earlier Weeks
+
+- **Memory bugs (overflow, use of freed memory, undefined behaviour)** — across the first four weeks we saw how these bugs arise in C/C++ and how they are prevented **(Week 4)**
+- **The structure of the SEI CERT rule book** — identifier, non-compliant example, compliant solution and risk **(Week 4)**
+- **TOCTOU (time-of-check to time-of-use)** — the gap between checking a file's permissions and actually using it is a race-condition flaw **(Week 2)**
+
+This week: memory bugs → which ones disappear at the **language level** (Section 1); the SEI CERT structure → the **Oracle Java** standard (Section 1); TOCTOU → re-checking the root **after** the file is opened, in path traversal (Section 4).
+
+---
+
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Injection | Section 1 |
+| The JVM and bytecode | Section 8 |
+| Parameterised query | Section 2 |
+| Deserialisation | Section 5 |
+| XXE | Section 6 |
+| Path traversal | Section 4 |
+| ProGuard / R8 | Section 9 |
+| The `-keep` rule | Section 9 |
+| SBOM | Section 12 |
+
+---
+
+# Background: Managed Languages and Garbage Collection
+
+- **Managed language:** a language that manages memory **automatically** (Java, C#, Python, JS); the programmer never calls `malloc`/`free`.
+- **GC (garbage collector):** automatically cleans up objects no longer used, in the background; the programmer never frees memory by hand.
+- This single difference → most memory bugs (overflow, use-after-free) **disappear**; Section 1 shows this in detail.
+
+---
+
+# Background: Databases and SQL
+
+- **SQL:** a database query language (`SELECT ... WHERE ...`).
+- The application puts user input into the query.
+- If put in wrong → **SQL injection** (Section 2).
+
+---
+
+# Background: Reflection and Dependencies
+
+- **Reflection:** finding and calling a class/method **by its name, at run time** (`Class.forName("...")`, `getMethod("...")`); obfuscation can break this → `-keep` is required (Section 9).
+- **Dependency:** an external library your project uses that your own team did not write; even if your own code is secure, a flaw in a dependency affects you (Section 12).
+
+---
+
+# How Do the Demos Work?
+
+- 7 demos, in the `code/week-05` folder — need **Python 3** and **JDK 17+**
+- The main part of the SQL demo runs with Python's built-in `sqlite3` module, with nothing to download
+- Run: Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- For the optional Java parts (JDBC, ProGuard) every demo folder has a `hazirla` (prepare) script
+
+> ⚠️ **Ethics:** the injection examples run only against the **synthetic** database/files in the demo folder;
+> never apply these techniques to someone else's system.
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Managed languages and the root of injection
 
 ---
 
@@ -55,181 +122,6 @@ Speaker note: This week we move to managed languages: memory safety comes for fr
 - **2015** deserialisation · **2020–21** SolarWinds and **Log4Shell** → the **SBOM** era
 
 > The language solves **memory bugs**; it does **not solve injection or dependency risk**.
-
----
-
-
-# Where does this week fit?
-
-- **Week 4:** C/C++ hardening (memory bugs).
-- **This week (5):** Java/interpreted languages — most memory bugs are **solved**, but a new class appears: **injection** and **dependency**.
-- The binary-protection side: **ProGuard/R8** and **SBOM**.
-
----
-
-# Learning outcome
-
-This week is about **LO.3 / LO.4**.
-
-By the end you will be able to:
-
-- Recognise and prevent the injection class (SQL, command, path, XML, deserialisation)
-- Obfuscate with ProGuard/R8 and write `-keep` rules
-- Produce an **SBOM** and manage dependency risk
-
----
-
-# Main idea
-
-> A managed language largely **solves** memory bugs; but **data mixing with commands** (injection) exists in every language.
-
-Today we look at this common root and the language-specific defences.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Basic concepts (from scratch)
-
-<!-- Speaker note: We define basic Java/web terms from scratch. -->
-
----
-
-# Why this section exists
-
-This section **assumes no prior knowledge**.
-
-- We define, from scratch, the terms we will use for the rest of the week.
-- If you do not know a term, read **here** first.
-- The sections that follow build **on top of** these terms.
-
----
-
-# What is a managed language?
-
-- **Managed language:** a language that manages memory **automatically** (Java, C#, Python, JS).
-- The programmer does not call `malloc`/`free`; the **garbage collector** (GC) handles it.
-- → most memory bugs (overflow, UAF) **disappear**.
-
----
-
-# The JVM and bytecode
-
-- **JVM (Java Virtual Machine):** the virtual machine that runs Java.
-- **Bytecode:** the intermediate form Java source is compiled into (`.class` files).
-- Bytecode is machine-independent; the JVM executes it.
-
----
-
-# The garbage collector (GC)
-
-- **GC (Garbage Collector):** automatically cleans up objects that are no longer used.
-- The programmer never frees memory by hand.
-- This is why UAF/double free is **almost nonexistent** in Java.
-
----
-
-# What is injection?
-
-- **Injection:** user **data** being interpreted as a **command**.
-- Example: text entered as a username leaking into a SQL query as a command.
-- The main theme of this week.
-
----
-
-# SQL and databases
-
-- **SQL:** a database query language (`SELECT ... WHERE ...`).
-- The application puts user input into the query.
-- If put in wrong → **SQL injection**.
-
----
-
-# Parameterised query
-
-- **Parameterised query (prepared statement):** the query skeleton is fixed; the data is supplied separately, as **parameters**.
-- Data is never interpreted as a command.
-- The **real** fix against SQL injection.
-
----
-
-# Serialisation
-
-- **Serialisation:** converting an object to a byte sequence (to save or send it).
-- **Deserialisation:** converting the bytes back into an object.
-- Deserialising untrusted bytes is **dangerous** (code execution).
-
----
-
-# XML and XXE
-
-- **XML:** a structured data format (built from tags).
-- **XXE (XML External Entity):** abuse of XML's "external entity" feature → file reading, SSRF.
-- External entities are **disabled** in the XML parser.
-
----
-
-# Path traversal
-
-- **Path traversal:** escaping **outside** the allowed folder with `../`.
-- Like `files/../../etc/passwd`.
-- Prevented with canonicalisation + a root check.
-
----
-
-# ProGuard and R8
-
-- **ProGuard / R8:** tools that **shrink** Java/Android bytecode and **obfuscate names**.
-- R8 is Android's default tool.
-- Name obfuscation + dead-code elimination + shrinking.
-
----
-
-# The `-keep` rule
-
-- **`-keep`:** telling ProGuard/R8 "do not **change** this class's/method's name."
-- Code called by name through reflection has to be kept.
-- A wrong `-keep` → either a crash or weak obfuscation.
-
----
-
-# What is reflection?
-
-- **Reflection:** finding and calling a class/method **by its name, at run time**.
-- `Class.forName("...")`, `getMethod("...")`.
-- Obfuscation can break this → `-keep` is required.
-
----
-
-# What is an SBOM?
-
-- **SBOM (Software Bill of Materials):** the software's **bill of materials** — which libraries, which versions.
-- When a vulnerability is disclosed in a library, it answers "are we affected?" **quickly**.
-- Formats: CycloneDX, SPDX.
-
----
-
-# Dependency
-
-- **Dependency:** the external libraries your project uses.
-- Even if your own code is secure, a flaw in a dependency affects you.
-- Supply-chain security.
-
----
-
-# Now we are ready
-
-Terms:
-
-managed language · JVM/bytecode · GC · injection · SQL/parameterised query · serialisation · XML/XXE · path traversal · ProGuard/R8 · `-keep` · reflection · SBOM · dependency
-
-Now: what do managed languages solve, and what do they not solve?
-
----
-
-<!-- _class: bolum -->
-
-# 1. Managed languages and the root of injection
 
 ---
 
@@ -311,7 +203,6 @@ IDs end with the `-J` suffix.
 
 ---
 
-
 # The common root of the fix
 
 The same principle in every injection type:
@@ -376,7 +267,6 @@ All share the **same** root and the **same** fix logic.
 3. Untrusted **DATA** mixing with **CODE/command** in the same channel; the interpreter parses the data as a **command**.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -550,6 +440,14 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 
 ---
 
+# Path traversal
+
+- **Path traversal:** escaping **outside** the allowed folder with `../`.
+- Like `files/../../etc/passwd`.
+- Prevented with canonicalisation + a root check.
+
+---
+
 # Two steps that close off path traversal — diagram
 
 ![w:950](assets/h05-05-yol-gecisi.svg)
@@ -652,10 +550,17 @@ Same root: **separate data from code/command**.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. Unsafe deserialisation
+
+---
+
+# Serialisation
+
+- **Serialisation:** converting an object to a byte sequence (to save or send it).
+- **Deserialisation:** converting the bytes back into an object.
+- Deserialising untrusted bytes is **dangerous** (code execution).
 
 ---
 
@@ -707,6 +612,13 @@ ObjectInputFilter f = ObjectInputFilter.Config
 ois.setObjectInputFilter(f);
 ```
 
+If a single class is expected, a narrower pattern also works:
+
+```java
+ois.setObjectInputFilter(ObjectInputFilter.Config
+  .createFilter("com.uygulama.Oturum;!*"));  // yalnız bu sınıf
+```
+
 - **Allow list**: only the expected classes.
 - Also set a depth/size limit (against DoS).
 
@@ -723,6 +635,14 @@ ois.setObjectInputFilter(f);
 <!-- _class: bolum -->
 
 # 6. XML, templates, XSS
+
+---
+
+# XML and XXE
+
+- **XML:** a structured data format (built from tags).
+- **XXE (XML External Entity):** abuse of XML's "external entity" feature → file reading, SSRF.
+- External entities are **disabled** in the XML parser.
 
 ---
 
@@ -871,10 +791,17 @@ Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 8. Bytecode and decompilation
+
+---
+
+# The JVM and bytecode
+
+- **JVM (Java Virtual Machine):** the virtual machine that runs Java.
+- **Bytecode:** the intermediate form Java source is compiled into (`.class` files).
+- Bytecode is machine-independent; the JVM executes it.
 
 ---
 
@@ -993,6 +920,15 @@ LisansDenetleyici.dogrula()  →  a.b()
 -keep class com.uygulama.Api { public *; }
 ```
 
+For multiple entry points and annotation-marked members:
+
+```proguard
+-keep class com.uygulama.PublicApi { public *; }
+-keepclassmembers class * {
+    @com.uygulama.Reflected *;
+}
+```
+
 ---
 
 # The `-keep` balance — diagram
@@ -1006,6 +942,7 @@ LisansDenetleyici.dogrula()  →  a.b()
 - **Too little `-keep`:** the application crashes (reflection breaks).
 - **Too much `-keep`:** obfuscation is weakened (everything stays exposed).
 - Keep **only the entry points that are genuinely required**.
+- **Test** flows that use reflection — any crash after obfuscation?
 
 ---
 
@@ -1101,7 +1038,14 @@ android { buildTypes { release {
 }}}
 ```
 
-The debug build is **not obfuscated**; verify that the shipped build is the **release** one.
+The debug build is **not obfuscated**; verify that the shipped build is the **release** one. A plain Java/Gradle project without Android needs only a simpler form:
+
+```gradle
+buildTypes { release {
+    minifyEnabled true
+    proguardFiles(..., 'proguard-rules.pro')
+}}
+```
 
 ---
 
@@ -1156,7 +1100,6 @@ The debug build is **not obfuscated**; verify that the shipped build is the **re
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 12. Dependency security and SBOM
@@ -1187,7 +1130,7 @@ The debug build is **not obfuscated**; verify that the shipped build is the **re
 
 ---
 
-# What is an SBOM? (recap)
+# What is an SBOM?
 
 - The software's **bill of materials**: which component, which version, which licence.
 - When a flaw is announced, "am I affected?" is answered **quickly**.
@@ -1242,6 +1185,15 @@ Every component: name, version, **purl** (an ecosystem-independent, uniform iden
 
 Each release's SBOM is stored with its release identifier.
 
+```bash
+# örnek: CycloneDX eklentisi
+mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom
+```
+
+```bash
+dependency-check --scan . --format HTML
+```
+
 ---
 
 # Link to the project
@@ -1278,26 +1230,148 @@ Each release's SBOM is stored with its release identifier.
 
 ---
 
+# Context · a login form
 
-<!-- _class: bolum -->
+An application that logs a user in with a username and password.
 
-# Project and closing
+```java
+String q = "SELECT * FROM kul WHERE ad='" + ad +
+           "' AND parola='" + p + "'";
+```
+
+Where is the mistake?
+
+
+<!-- Speaker note: We trace a single SQL injection from buggy code to the attack, the fix, and layered defence. -->
+
+---
+
+# Step 1 · the attacker's input
+
+Into the `ad` field:
+
+```text
+yonetici' --
+```
+
+`--` starts a **comment** in SQL; everything after it is ignored.
+
+---
+
+# Step 2 · what does the query become?
+
+```sql
+SELECT * FROM kul WHERE ad='yonetici' -- ' AND parola='...'
+```
+
+The password check stayed **inside the comment** → an `yonetici` login with no password.
+
+---
+
+# Step 3 · impact
+
+- Authentication was **bypassed**.
+- Further: reading other tables with `UNION SELECT`.
+- `; DROP TABLE` (if stacked queries are supported) — data loss.
+
+---
+
+# Step 4 · the fix
+
+```java
+PreparedStatement ps = con.prepareStatement(
+  "SELECT * FROM kul WHERE ad=? AND parola_ozet=?");
+ps.setString(1, ad);
+ps.setString(2, ozetle(p));
+```
+
+`ad` and the password are now **data**; `--` has no effect.
+
+---
+
+# Step 5 · layered defence
+
+- **Never store a password in plain text:** a hash + salt (Week 3).
+- **Least privilege:** the DB user only has `SELECT`.
+- **Input validation:** an allow list for the username.
+- **Logging/monitoring:** failed login attempts.
+
+---
+
+# Lesson
+
+- A single root: data got mixed with the command.
+- The real fix: a parameterised query.
+- But defence in depth at every layer.
+
+---
+
+<!-- _class: yogun -->
+
+# The same bug, three languages
+
+| Danger | Java | Python | JS |
+| --- | --- | --- | --- |
+| Command | `Runtime.exec(str)` | `os.system(str)` | `exec(str)` |
+| Safe | `ProcessBuilder([...])` | `subprocess.run([...])` | `execFile([...])` |
+
+---
+
+<!-- _class: yogun -->
+
+# The same bug, extracting data
+
+| Danger | Java | Python | JS |
+| --- | --- | --- | --- |
+| Code execution | `readObject` | `pickle.loads`, `eval` | `eval`, `Function` |
+| Safe | JSON + schema | `json.loads` | `JSON.parse` |
+
+The root is always the same: data ≠ code.
+
+---
+
+# Three languages · one rule
+
+- A dynamic "run" (`eval`, `exec`, `pickle`, `readObject`) → **never** with untrusted data.
+- Command → an argument array.
+- SQL → parameterised.
+- Input → an allow list + rejection.
+
+---
+
+# Injection · the general lesson
+
+- Injection is not tied to a language; it is tied to a **pattern**.
+- Recognise the pattern: "is user data going to an interpreter as a command?"
+- Once recognised, the fix is ready: separate.
+
+---
+
+<!-- _class: yogun -->
+
+# Classic Mistakes — Summary
+
+| Mistake | Section | Rule |
+| --- | --- | --- |
+| Building SQL/commands with string concatenation | 2, 3 | Use a parameterised query / an argument array |
+| `eval`/`pickle`/`readObject` with untrusted data | 5, 7 | Use a data format + schema, never execute it |
+| Leaving external entities open in XML | 6 | Disable external entities and DOCTYPE |
+| Protecting everything with `-keep *` | 9 | Keep only the entry points that are genuinely required |
+| Not scanning dependencies | 12 | Produce an SBOM, scan continuously |
+
+All five were covered earlier in this deck; here they are gathered in one glance.
 
 ---
 
 # Project · S9/S13 (the Java side)
 
 - [ ] Turn injection-prone spots into parameterised APIs (SQL, command, path).
+- [ ] Path: canonicalise + a root check (path traversal closed off).
 - [ ] A filter/schema if there is unsafe deserialisation.
+- [ ] XXE disabled (external entities + DOCTYPE rejected).
 - [ ] Obfuscate with R8/ProGuard; `-keep` only the entry points that are needed.
 - [ ] String obfuscation; no sensitive string in `strings`/a decompiler.
 - [ ] Produce an SBOM + a dependency scan (S13).
-
----
-
-<!-- _class: bolum -->
-
-# Solved self-check
 
 ---
 
@@ -1397,328 +1471,6 @@ Each release's SBOM is stored with its release identifier.
 
 ---
 
-# Summary: this week in one sentence
-
-> A managed language solves memory bugs, but **injection exists in every language**; the fix is always separating data from the command,
-> and on the protection side it is obfuscation (R8) and **dependency/SBOM** management.
-
----
-
-<!-- _class: bolum -->
-
-# Next week
-
-**Week 6 — RASP and run-time protection**
-
-Tamper/debugger detection, integrity checking, response policy and layered defence.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix A · An injection from start to finish
-
-<!-- Speaker note: We trace a single SQL injection from buggy code to the attack, the fix, and layered defence. -->
-
----
-
-# Context · a login form
-
-An application that logs a user in with a username and password.
-
-```java
-String q = "SELECT * FROM kul WHERE ad='" + ad +
-           "' AND parola='" + p + "'";
-```
-
-Where is the mistake?
-
----
-
-# Step 1 · the attacker's input
-
-Into the `ad` field:
-
-```text
-yonetici' --
-```
-
-`--` starts a **comment** in SQL; everything after it is ignored.
-
----
-
-# Step 2 · what does the query become?
-
-```sql
-SELECT * FROM kul WHERE ad='yonetici' -- ' AND parola='...'
-```
-
-The password check stayed **inside the comment** → an `yonetici` login with no password.
-
----
-
-# Step 3 · impact
-
-- Authentication was **bypassed**.
-- Further: reading other tables with `UNION SELECT`.
-- `; DROP TABLE` (if stacked queries are supported) — data loss.
-
----
-
-# Step 4 · the fix
-
-```java
-PreparedStatement ps = con.prepareStatement(
-  "SELECT * FROM kul WHERE ad=? AND parola_ozet=?");
-ps.setString(1, ad);
-ps.setString(2, ozetle(p));
-```
-
-`ad` and the password are now **data**; `--` has no effect.
-
----
-
-# Step 5 · layered defence
-
-- **Never store a password in plain text:** a hash + salt (Week 3).
-- **Least privilege:** the DB user only has `SELECT`.
-- **Input validation:** an allow list for the username.
-- **Logging/monitoring:** failed login attempts.
-
----
-
-# Lesson
-
-- A single root: data got mixed with the command.
-- The real fix: a parameterised query.
-- But defence in depth at every layer.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · A deserialisation mini case study
-
----
-
-# Scenario
-
-An application deserialises a "session object" sent by the user using native serialisation:
-
-```java
-Object o = new ObjectInputStream(giris).readObject();  // TEHLİKELİ
-```
-
----
-
-# What could happen?
-
-- The attacker prepares a **gadget chain** from libraries found on the classpath.
-- The chain runs while unpacking → command execution.
-- The input was thought to be "data," but it behaved like code.
-
----
-
-# Fix 1 · change the format
-
-- **JSON** + a strict schema instead of native serialisation.
-- Only the expected fields are read.
-- The object graph never "comes alive."
-
----
-
-# Fix 2 · if you must, filter
-
-```java
-ois.setObjectInputFilter(ObjectInputFilter.Config
-  .createFilter("com.uygulama.Oturum;!*"));  // yalnız bu sınıf
-```
-
-- An allow list + a depth/size limit.
-
----
-
-# Case study · lesson
-
-- Turning untrusted data into a "live object" is risky.
-- Safest: never do it (use a data format).
-- If you must: a strict allow list.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Injection, language by language
-
----
-
-<!-- _class: yogun -->
-
-# The same bug, three languages
-
-| Danger | Java | Python | JS |
-| --- | --- | --- | --- |
-| Command | `Runtime.exec(str)` | `os.system(str)` | `exec(str)` |
-| Safe | `ProcessBuilder([...])` | `subprocess.run([...])` | `execFile([...])` |
-
----
-
-<!-- _class: yogun -->
-
-# The same bug, extracting data
-
-| Danger | Java | Python | JS |
-| --- | --- | --- | --- |
-| Code execution | `readObject` | `pickle.loads`, `eval` | `eval`, `Function` |
-| Safe | JSON + schema | `json.loads` | `JSON.parse` |
-
-The root is always the same: data ≠ code.
-
----
-
-# Three languages · one rule
-
-- A dynamic "run" (`eval`, `exec`, `pickle`, `readObject`) → **never** with untrusted data.
-- Command → an argument array.
-- SQL → parameterised.
-- Input → an allow list + rejection.
-
----
-
-# Appendices A–C · summary
-
-- Injection is not tied to a language; it is tied to a **pattern**.
-- Recognise the pattern: "is user data going to an interpreter as a command?"
-- Once recognised, the fix is ready: separate.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · R8 obfuscation, step by step
-
----
-
-# Step 1 · turn it on
-
-`build.gradle`:
-
-```gradle
-buildTypes { release {
-    minifyEnabled true
-    proguardFiles(..., 'proguard-rules.pro')
-}}
-```
-
-Shrinking + obfuscation are turned on for the release build.
-
----
-
-# Step 2 · protect the entry points
-
-```proguard
--keep class com.uygulama.PublicApi { public *; }
--keepclassmembers class * {
-    @com.uygulama.Reflected *;
-}
-```
-
-Keep only what is called through reflection/JNI.
-
----
-
-# Step 3 · build and verify
-
-- Decompile the APK; see that names are `a`, `b`.
-- **Keep** `mapping.txt` (do not distribute it).
-- **Test** flows that use reflection (no crashes?).
-
----
-
-# Step 4 · measure
-
-- Meaningful-name ratio: before 90% → after 10%.
-- Plain sensitive-string count: before N → after 0.
-- APK size: did it shrink?
-
-Write the measurement into S9.
-
----
-
-# Step 5 · add string obfuscation
-
-- Encode sensitive strings, decode at use, then wipe immediately.
-- Must not appear in `strings`/a decompiler.
-- Not a key; only a static-scanning deterrent.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix E · SBOM, step by step
-
----
-
-# Step 1 · generate
-
-```bash
-# örnek: CycloneDX eklentisi
-mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom
-```
-
-A `bom.json`/`bom.xml` is produced during the build.
-
----
-
-# Step 2 · scan
-
-```bash
-dependency-check --scan . --format HTML
-```
-
-Maps known vulnerabilities (CVEs) to dependencies.
-
----
-
-# Step 3 · assess (VEX)
-
-- For every flaw: do I **have** it? Is it **exploitable**?
-- If not exploitable, mark it with VEX (noise drops).
-- If exploitable: update or mitigate.
-
----
-
-# Step 4 · archive
-
-- The SBOM + scan report are stored **with the release identifier**.
-- When a new flaw appears: "which release had this dependency?" is answered fast.
-
----
-
-# Step 5 · process
-
-- Pin versions; no automatic "latest" pulling.
-- Apply critical patches fast.
-- If you cannot handle safe updates yourself → **hand it off** (Week 13).
-
----
-
-<!-- _class: bolum -->
-
-# Appendix F · Quick reference
-
----
-
-# Common mistakes
-
-- Building SQL/commands with string concatenation.
-- `eval`/`pickle`/`readObject` with untrusted data.
-- Leaving external entities open in XML.
-- Protecting everything with `-keep *` (obfuscation wasted).
-- Not scanning dependencies.
-
----
-
 <!-- _class: yogun -->
 
 # Glossary
@@ -1734,21 +1486,14 @@ Maps known vulnerabilities (CVEs) to dependencies.
 
 ---
 
-<!-- _class: yogun -->
+<!-- _class: baslik -->
 
-# Checklist
+# Next Week
 
-- [ ] SQL parameterised, command as an argument array
-- [ ] Path canonical + root check
-- [ ] Deserialisation filtered/schema'd
-- [ ] XXE disabled
-- [ ] R8 on, `-keep` minimal, measured
-- [ ] SBOM produced, dependency scan clean
+**Week 6 — RASP and Run-Time Protection**
 
----
+This week we used obfuscation and shrinking to make bytecode harder to read **statically**; but an attacker can also examine an application **while it runs** (attaching a debugger, dumping memory, installing a hook).
 
-# Final word (Week 5)
+In Week 6 we will see how an application verifies itself at run time with RASP (Runtime Application Self-Protection), and how it detects debuggers and hooks — the next layer built on top of this week's static defences.
 
-> Even though the language solves memory bugs, **injection and the supply chain remain your responsibility**.
-
-Separate data from code; obfuscate the binary with R8; manage dependencies with an SBOM.
+> This week in one sentence: a managed language solves memory bugs, but **injection exists in every language**; the fix is always separating data from the command, and on the protection side it is obfuscation (R8) and **dependency/SBOM** management.

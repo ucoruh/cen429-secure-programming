@@ -1,0 +1,28 @@
+% Hafta 1 — Bölümleme: güvenilir hesaplama tabanını küçült
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-10-bolumleme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Bölümleme: güvenilir hesaplama tabanını küçült};
+  \node[altbaslik] (alt) at (b.south west) {aralarından yalnız tutamaç ve şifreli veri geçer};
+
+  \node[uyarikutu=64mm, below=8mm of alt.south west, anchor=north west, xshift=2mm, text width=56mm] (genel)
+    {\kb{GENEL BÖLGE}\\[1mm]
+     büyük · hızlı değişir\\[2mm]
+     Arayüz\\
+     İş mantığı\\[2mm]
+     hata olasılığı YÜKSEK};
+  \node[iyikutu=64mm, right=24mm of genel, text width=56mm] (cekirdek)
+    {\kb{KORUNAN ÇEKİRDEK}\\[1mm]
+     küçük · seyrek değişir\\[2mm]
+     Dar arayüz (tutamaçlar)\\
+     Kripto ve anahtar yönetimi\\
+     Bütünlük / RASP denetimleri\\[2mm]
+     incelenebilir, kanıtlanabilir};
+
+  \path (genel.south) -- (cekirdek.south) coordinate[midway] (ortasi);
+  \node[dip, text width=150mm, below=10mm of ortasi, anchor=north]
+    {Güvenlik kritik kod ne kadar küçükse, doğruluğunu kanıtlamak o kadar kolaydır.};
+\end{tikzpicture}
+\end{document}

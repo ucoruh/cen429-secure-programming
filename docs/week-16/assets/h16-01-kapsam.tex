@@ -1,0 +1,37 @@
+% Hafta 16 — Quiz-2 kapsamı (9–14. haftalar)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-16/assets/h16-01-kapsam.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=5mm and 6mm]
+  \node[baslik] (b) at (0,0) {Quiz-2 kapsamı (9--14. haftalar)};
+  \node[altbaslik] at (b.south west) {ortak soru: `bu koruma neyi korur, neyi korumaz, maliyeti ne?'};
+
+  \node[kutu=32mm, minimum height=11mm, below=15mm of b.south west, anchor=north west, xshift=6mm] (k1) {\kb{Hafta 9}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k1] (a1)
+    {gizleme: beş aile, dört ölçüt, çeşitlendirme};
+
+  \node[koyukutu=32mm, minimum height=11mm, below=4mm of k1] (k2) {\kb{Hafta 10}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k2] (a2)
+    {kip, dolgu, imza, PKI, zincir, iptal};
+
+  \node[koyukutu=32mm, minimum height=11mm, below=4mm of k2] (k3) {\kb{Hafta 11}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k3] (a3)
+    {whitebox: üç model, kodlama, DCA, sınırlar};
+
+  \node[kutu=32mm, minimum height=11mm, below=4mm of k3] (k4) {\kb{Hafta 12}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k4] (a4)
+    {değerlendirme süreci, saldırı potansiyeli, CVSS};
+
+  \node[kutu=32mm, minimum height=11mm, below=4mm of k4] (k5) {\kb{Hafta 13}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k5] (a5)
+    {iyi gereksinim, izlenebilirlik, CC/FIPS/MASVS};
+
+  \node[kutu=32mm, minimum height=11mm, below=4mm of k5] (k6) {\kb{Hafta 14}};
+  \node[font=\sffamily\small, text=soluk, text width=140mm, align=left, right=6mm of k6] (a6)
+    {Tigress, dönüşüm hattı, dayanıklılık $\leftrightarrow$ maliyet};
+
+  \node[dip, text width=190mm, below=10mm of k6.south, anchor=north]
+    {Koruma = gecikme; güç katmandan ve ÖLÇÜMDEN gelir.};
+\end{tikzpicture}
+\end{document}

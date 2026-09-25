@@ -1,0 +1,26 @@
+% Hafta 1 — İşaretli uzunluk hatası: aynı bitler, iki farklı sayı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-22-isaretli-donusum.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {İşaretli uzunluk hatası: aynı bitler, iki farklı sayı};
+  \node[altbaslik] (alt) at (b.south west) {int işaretli, size\_t işaretsiz --- dönüşüm sessizdir};
+
+  \node[kutu=54mm, below=16mm of alt.south west, anchor=north west, xshift=6mm, text width=48mm] (sol)
+    {\kb{int uzunluk = -1}\\programcının niyeti:\\``geçersiz'' işareti};
+  \node[morkutu=54mm, right=44mm of sol, text width=48mm] (sag)
+    {\kb{0xFFFFFFFFFFFFFFFF}\\64 bit, ikiye tümleyen};
+  \node[etiket, text width=30mm, align=center] at ($(sol.east)!0.5!(sag.west)$) {aynı bit dizisi};
+
+  \path (sol.south) -- (sag.south) coordinate[midway] (orta);
+  \node[kotukutu=100mm, below=26mm of orta, anchor=north, text width=90mm] (memcpy_uyari)
+    {\kb{(size\_t) 18.446.744.073.709.551.615}\\sınır denetimi ``uzunluk < 16'' ile yapılmışsa, o denetim -1'i GEÇİRİR};
+
+  \draw[ok, draw=kotu] (orta) -- node[oketiket, right=3pt, text width=68mm, align=left, text=kotu]
+    {\kod{memcpy(..., uzunluk)} --- size\_t bekler} (memcpy_uyari.north);
+
+  \node[dip, text width=155mm, below=9mm of memcpy_uyari, anchor=north]
+    {Kural: boyutlar baştan sona size\_t tutulur; -Wsign-conversion açılır.};
+\end{tikzpicture}
+\end{document}

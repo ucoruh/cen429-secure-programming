@@ -1,0 +1,23 @@
+% Hafta 2 — Bu haftanın üç parçası
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-01-haftanin-resmi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Bu haftanın üç parçası};
+  \node[altbaslik] at (b.south west) {tehdidi tanı $\rightarrow$ savun $\rightarrow$ ortak dille adlandır};
+
+  \node[kotukutu=42mm, minimum height=24mm, below=13mm of b.south west, anchor=north west, xshift=8mm] (tehdit)
+    {\kb{TEHDİT tarafı}\\zararlı yazılım türleri\\ve gizlenmesi};
+  \node[iyikutu=42mm, minimum height=24mm, right=26mm of tehdit] (savunma)
+    {\kb{SAVUNMA tarafı}\\güvenlik modelleri\\erişim denetimi};
+  \node[morkutu=42mm, minimum height=24mm, right=26mm of savunma] (ortak)
+    {\kb{ORTAK DİL}\\CWE $\cdot$ CVE $\cdot$ CVSS\\OWASP $\cdot$ MASVS};
+
+  \draw[ok, draw=soluk] (tehdit) -- node[oketiket, above=3pt, align=center] {neye karşı\\savunuyoruz?} (savunma);
+  \draw[ok, draw=soluk] (savunma) -- node[oketiket, above=3pt, align=center] {kalan açığı\\nasıl adlandırırız?} (ortak);
+
+  \node[dip, text width=155mm, below=10mm of savunma.south, anchor=north]
+    {Üçü birlikte: ne olduğunu bilmeden savunamazsın, adlandırmadan yönetemezsin.};
+\end{tikzpicture}
+\end{document}

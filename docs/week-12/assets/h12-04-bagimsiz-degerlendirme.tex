@@ -1,0 +1,21 @@
+% Hafta 12 — Neden bağımsız değerlendirme?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-04-bagimsiz-degerlendirme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 24mm]
+  \node[baslik] (b) at (0,0) {Neden bağımsız değerlendirme?};
+  \node[altbaslik] at (b.south west) {üretici kendi ürününü onaylayamaz};
+
+  \node[kotukutu=62mm, below=16mm of b.south west, anchor=north west] (sol)
+    {\kb{Geliştiricinin sözü}\\taraftır (çıkar çatışması)\\kendi hatasına kördür\\elinde kanıt yoktur\\[3mm]``bence güvenli''};
+  \node[iyikutu=62mm, right=of sol] (sag)
+    {\kb{Bağımsız değerlendirme}\\tarafsız laboratuvar\\tanımlı yöntem\\KANIT üretir\\[3mm]``şu testte şu sonuç''};
+
+  \coordinate (orta) at ($(sol.east)!0.5!(sag.west)$);
+  \draw[cizgi, line width=1pt] (orta |- sol.north) -- (orta |- sol.south);
+
+  \node[dip, text width=150mm, below=8mm of sol.south -| orta, anchor=north] {%
+    Değerlendirici iki şey varsayar: saldırgan sistemi tam bilir ve yetenekli/kaynaklıdır.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,17 @@
+% Hafta 9 — Veri gizleme kuralları (K-07 – K-09)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-15-veri-gizleme-kurallari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 10mm]
+  \node[baslik] (b) at (0,0) {Veri gizleme kuralları (K-07 -- K-09)};
+  \node[altbaslik, text width=170mm] at (b.south west) {amaç: statik okumada anlamlı veri bırakmamak};
+
+  \node[kutu=170mm, below=9mm of b.south west, anchor=north west] (k1) {\kb{K-07 Dize kodlama} --- sabit metinler şifreli saklanır, kullanım anında çözülür};
+  \node[kutu=170mm, below=4mm of k1.south west, anchor=north west] (k2) {\kb{K-08 Opak boolean} --- karar değeri hesaplanır, sabit karşılaştırma yapılmaz};
+  \node[morkutu=170mm, below=4mm of k2.south west, anchor=north west] (k3) {\kb{K-09 Değişken bölme} --- bir değer birden çok parçada tutulur, geç birleştirilir};
+
+  \node[dip, text width=170mm, below=9mm of k3.south west, anchor=north west] {%
+    Ortak tuzak: çözülen değeri gereğinden uzun süre bellekte tutmak --- kazancı siler.};
+\end{tikzpicture}
+\end{document}

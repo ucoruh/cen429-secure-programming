@@ -1,0 +1,20 @@
+% Hafta 3 — Kayıt biçimi: anahtar yenilemeyi mümkün kılan alan
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-10-kayit-bicimi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Kayıt biçimi: anahtar yenilemeyi mümkün kılan alan};
+  \node[altbaslik] at (b.south west) {sürüm alanı olmadan anahtar değiştirilemez};
+  \node[morkutu=16mm] (f1) at (0.8,-2) {\kb{biçim}\\1 bayt};
+  \node[uyarikutu=26mm] (f2) at (3.2,-2) {\kb{\kod{anahtar\_sürüm}}\\4 bayt};
+  \node[kutu=21mm] (f3) at (5.85,-2) {\kb{nonce}\\12 bayt};
+  \node[iyikutu=29mm] (f4) at (8.65,-2) {\kb{şifreli metin}\\n bayt};
+  \node[kutu=18mm] (f5) at (11.3,-2) {\kb{etiket}\\16 bayt};
+  \draw[draw=uyari, line width=1pt] ([yshift=-3mm]f1.south west) -- ([yshift=-3mm]f2.south east);
+  \draw[draw=uyari, line width=1pt] ([yshift=-3mm]f1.south west) -- ++(0,-1.5mm);
+  \draw[draw=uyari, line width=1pt] ([yshift=-3mm]f2.south east) -- ++(0,-1.5mm);
+  \node[text=uyari, font=\bfseries\footnotesize, align=center, text width=60mm, anchor=north] at (2.25,-3.15) {AAD --- şifrelenmez ama DEĞİŞTİRİLEMEZ};
+  \node[dip, text width=165mm] at (6.1,-5.9) {Okurken önce sürüme bakılır, o sürümün anahtarıyla çözülür $\rightarrow$ eski kayıtlar bozulmadan anahtar yenilenir.};
+\end{tikzpicture}
+\end{document}

@@ -25,173 +25,6 @@ Konuşma notu: Geçen hafta güvenliğin dilini kurduk (varlık, tehdit, STRIDE,
 
 ---
 
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: Bu haftanın terimlerini sıfırdan tanımlıyoruz: zararlı yazılım, tespit, erişim modelleri, zafiyet kataloğu. -->
-
----
-
-# Neden bu bölüm?
-
-Bu hafta "polimorfik virüs", "Bell–LaPadula", "CVSS" gibi terimler geçecek.
-
-Hiçbirini bilmediğinizi varsayıyoruz.
-
-Önce hepsini **tek tek** tanımlayalım.
-
----
-
-# Zararlı yazılım (malware)
-
-- **Zararlı yazılım:** zarar vermek için yazılmış program.
-- "Virüs" bir alt türdür; hepsi virüs değildir.
-- Türler: virüs, solucan, truva atı, fidye, casus…
-
----
-
-# Virüs, solucan, truva atı
-
-- **Virüs:** başka bir programa **bulaşarak** yayılır.
-- **Solucan:** kendi başına, ağ üzerinden **kendini kopyalar**.
-- **Truva atı:** faydalı görünüp gizli zararlı taşır.
-
----
-
-# Fidye ve diğerleri
-
-- **Fidye (ransomware):** dosyaları şifreleyip fidye ister.
-- **Casus (spyware):** gizlice bilgi toplar.
-- **Arka kapı (backdoor):** gizli erişim bırakır.
-
----
-
-# Bir virüsün üç parçası
-
-- **Bulaştırıcı:** nasıl yayılır.
-- **Tetikleyici:** ne zaman etkinleşir.
-- **Yük (payload):** ne yapar.
-
----
-
-# Virüsün üç parçası — şema
-
-![w:950](assets/h02-02-virus-uc-parca.svg)
-
----
-
-# Gizlenme: polimorfik/metamorfik
-
-- **Polimorfik:** her kopyada kendini **farklı şifreler** (imzadan kaçar).
-- **Metamorfik:** her kopyada kodunu **yeniden yazar**.
-- Amaç: imza tabanlı tespitten kaçmak.
-
----
-
-# Tespit: imza vs sezgisel
-
-- **İmza tabanlı:** bilinen zararlının parmak izini arar (hızlı, yeniyi kaçırır).
-- **Sezgisel/davranış:** şüpheli **davranışı** arar (yeniyi bulur, yanlış alarm).
-
----
-
-# Entropi (rastgelelik)
-
-- **Entropi:** verinin ne kadar rastgele göründüğü.
-- Şifreli/paketlenmiş kod **yüksek entropili**.
-- Tespitte ipucu: yüksek entropili bölge şüphelidir.
-
----
-
-# Erişim denetimi
-
-- **Erişim denetimi:** kim (özne), neye (nesne), ne yapabilir (hak)?
-- Bir **matris** ile modellenir.
-- Modeller: DAC, MAC, RBAC.
-
----
-
-# DAC ve MAC — şema
-
-![w:900](assets/h02-14-dac-mac.svg)
-
----
-
-# DAC / MAC / RBAC
-
-- **DAC:** sahibi izinleri belirler (Unix dosya izinleri).
-- **MAC:** sistem zorunlu kurallar koyar (etiketli).
-- **RBAC:** izinler **rollere** bağlı.
-
----
-
-# Biçimsel modeller
-
-- **Bell–LaPadula:** **gizlilik** (yukarı okuma yok).
-- **Biba:** **bütünlük** (aşağı okuma yok — BLP'nin tersi).
-- **Clark–Wilson:** ticari bütünlük (iyi biçimli işlemler).
-
----
-
-# Denetim kaydı (audit log)
-
-- **Denetim kaydı:** kim ne zaman ne yaptı — **kanıt** olarak günlük.
-- Kurcalamaya dayanıklı olmalı.
-- Günlük enjeksiyonuna (CWE-117) dikkat.
-
----
-
-# Denetim kaydı — şema
-
-![w:900](assets/h02-13-denetim-kaydi.svg)
-
----
-
-# CWE, CVE, CVSS
-
-- **CWE:** zayıflık **türü** kataloğu (ör. CWE-416).
-- **CVE:** **belirli** bir üründeki açık (ör. CVE-2024-xxxx).
-- **CVSS:** bir açığın **ciddiyet puanı** (0–10).
-
----
-
-# CWE, CVE, CVSS — şema
-
-![w:900](assets/h02-15-cwe-cve-cvss.svg)
-
----
-
-# OWASP ve zafiyet yaşam döngüsü
-
-- **OWASP Top 10 / MASVS:** yaygın açıklar ve mobil gereksinimler.
-- **Sorumlu ifşa:** açığı önce üreticiye bildirme.
-- Açık: keşif → bildirim → yama → yayın.
-
----
-
-# Açığın yaşam çizgisi — şema
-
-![w:900](assets/h02-17-acik-yasam-cizgisi.svg)
-
----
-
-# OWASP ve MASVS — şema
-
-![w:900](assets/h02-16-owasp-masvs.svg)
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-zararlı yazılım · virüs/solucan/truva/fidye · virüsün üç parçası · polimorfik · imza/sezgisel tespit · entropi · erişim denetimi (DAC/MAC/RBAC) · BLP/Biba · denetim kaydı · CWE/CVE/CVSS · OWASP
-
-Şimdi: tehdit, model, sınıflandırmanın büyük resmi.
-
----
-
 # Bugünün planı (3 saat)
 
 | Saat | Konu |
@@ -200,7 +33,7 @@ zararlı yazılım · virüs/solucan/truva/fidye · virüsün üç parçası · 
 | 2 | **Demo 1–2** · karşı önlemler · saldırı ağacı (**Demo 4**) · erişim ve modeller (**Demo 3, 6**) |
 | 3 | CWE · OWASP · CVE · CVSS (**Demo 5**) · yaşam döngüsü · proje |
 
-**Demolar:** `code/week-02` — Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+**Öğrenme çıktısı:** ÖÇ.1 (yaygın yazılım güvenlik açıklarını tanımlar ve sınıflandırır)
 
 <!--
 Konuşma notu: Demoları önceden bir kez derleyin (code/ içinde build.ps1 ya da build.sh). Derste bekleme olmasın diye ilk üç demoyu açık bırakın.
@@ -208,41 +41,61 @@ Konuşma notu: Demoları önceden bir kez derleyin (code/ içinde build.ps1 ya d
 
 ---
 
+# Önceki haftalardan gelenler
+
+- **Varlık, tehdit, zafiyet, risk ve saldırgan modeli** — bir varlığın değerini, ona yönelik tehdidi, zafiyeti ve
+  olasılık × etki olan riski ayırt etme dili **(Hafta 1)**
+- **STRIDE ve saldırı ağacı** — bir arayüzdeki tehditleri STRIDE'ın altı harfiyle sorup kök hedeften dallara
+  VE/VEYA mantığıyla ayrıştırma yöntemi **(Hafta 1)**
+
+Bu hafta: bu dili zararlı yazılım (tehdit) ve erişim modelleri (savunma) üzerinden somutlaştırıyoruz; saldırı
+ağacına **maliyet** ekleyip en ucuz saldırı yolunu hesaplıyoruz (Demo 04).
+
+---
+
 <!-- _class: yogun -->
 
-# Kısa tarihçe — zararlı yazılım ve güvenlik modelleri
+# Bu haftanın kavramları
 
-- **1949** — von Neumann: **kendini çoğaltan** otomata (virüsün matematiksel kökü)
-- **1971** Creeper · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** interneti durdurur
-- **1973–77** — **Bell–LaPadula** (gizlilik), **Biba** (bütünlük); **1987** Clark–Wilson
-- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
 
-> İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
+| Kavram | Nerede |
+| --- | --- |
+| Zararlı yazılım (malware) | Bölüm 1 |
+| Bir virüsün üç parçası | Bölüm 1 |
+| Zararlı yazılım türleri | Bölüm 1 |
+| Gizlenme: polimorfik/metamorfik | Bölüm 2 |
+| Tespit yöntemleri | Bölüm 2 |
+| Entropi | Bölüm 2 |
+| Denetim kaydı (audit log) | Bölüm 3 |
+| Erişim denetimi | Bölüm 4 |
+| DAC / MAC / RBAC | Bölüm 4 |
+| Bell–LaPadula, Biba, Clark–Wilson | Bölüm 4 |
+| CWE | Bölüm 5 |
+| CVE ve CVSS | Bölüm 5 |
+| OWASP Top 10 ve MASVS | Bölüm 5 |
+| Zafiyet yaşam döngüsü | Bölüm 5 |
 
 ---
 
-# Zararlı yazılımın kısa tarihi — şema
+# Demolar nasıl çalışıyor?
 
-![w:900](assets/h02-09-zararli-tarihce.svg)
+- Tek kaynak, iki platform: **Windows (Visual Studio 2022 Community, MSVC)** ve **WSL/Linux (GCC)**
+- Özet/şifreleme gerektiren demolarda Windows'ta işletim sisteminin **BCrypt** kütüphanesi, Linux'ta **OpenSSL**
+  kullanılır (`code/common/cen429_kripto.h`) — Windows'ta ayrıca OpenSSL kurmanız gerekmez
+- Derle: Windows `.\build.ps1` · WSL/Linux `./build.sh`
+- Çalıştır: her demo klasöründe Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
+- **Demo 6** (TOCTOU) yalnız WSL/Linux'ta çalışır
 
----
-
-
-# Öğrenme çıktısı ve kapsam
-
-- **ÖÇ.1:** Yaygın yazılım güvenlik açıklarını **tanımlar ve sınıflandırır.**
-- Bu hafta üç konu bir arada:
-  - **Tehdit:** zararlı yazılım türleri ve gizlenmesi
-  - **Savunma:** erişim denetimi ve biçimsel modeller
-  - **Ortak dil:** CWE · CVE · CVSS · OWASP · MASVS
-
-> ⚠️ **Etik:** Hiçbir demoda gerçek zararlı yazılım yok. Hepsi kendi klasöründe, yönetici yetkisi olmadan çalışan **güvenli benzetimlerdir.**
+> ⚠️ **Etik:** Hiçbir demoda gerçek zararlı yazılım, kendini çoğaltan kod, dosya silme/şifreleme ya da ağ
+> saldırısı yoktur. Hepsi kendi klasöründe, yönetici yetkisi olmadan çalışan **güvenli benzetimlerdir**;
+> öğrendiklerinizi yalnız kendi bilgisayarınızda deneyin.
 
 ---
 
 <!-- _class: bolum -->
 
-# Zararlı yazılım: türler ve tarih
+# 1. Zararlı yazılım: türler ve tarih
 
 ---
 
@@ -266,6 +119,29 @@ Konuşma notu: Öğrencilere sorun: "Telefonunuza bulaşan bir şey duyduğunuzd
 # Haftanın üç parçası — şema
 
 ![w:950](assets/h02-01-haftanin-resmi.svg)
+
+- **Tehdit:** zararlı yazılım türleri ve gizlenmesi
+- **Savunma:** erişim denetimi ve biçimsel modeller
+- **Ortak dil:** CWE · CVE · CVSS · OWASP · MASVS
+
+---
+
+<!-- _class: yogun -->
+
+# Kısa tarihçe — zararlı yazılım ve güvenlik modelleri
+
+- **1949** — von Neumann: **kendini çoğaltan** otomata (virüsün matematiksel kökü)
+- **1971** Creeper · **1986** Brain (ilk PC virüsü) · **1988** **Morris Worm** interneti durdurur
+- **1973–77** — **Bell–LaPadula** (gizlilik), **Biba** (bütünlük); **1987** Clark–Wilson
+- **1999 → 2006** — **CVE** · **CWE** · **CVSS**: ortak sınıflandırma dili
+
+> İki ayrı kol: **zararlıyı tanıma** + **erişimi modelleme**. Bugün ikisini birden görüyoruz.
+
+---
+
+# Zararlı yazılımın kısa tarihi — şema
+
+![w:900](assets/h02-09-zararli-tarihce.svg)
 
 ---
 
@@ -316,6 +192,12 @@ Konuşma notu: Tarihleri doğru verin. WannaCry, yama çıktıktan SONRA güncel
 
 ---
 
+# Virüsün üç parçası — şema
+
+![w:950](assets/h02-02-virus-uc-parca.svg)
+
+---
+
 # Virüs alt türleri
 
 - **Program (dosya) virüsü:** çalıştırılabilir dosyaya bulaşır; dosya çalışınca virüs de çalışır.
@@ -347,6 +229,8 @@ Konuşma notu: "Makroları etkinleştir" uyarısı hâlâ bir saldırı yoludur.
 - **Bot / botnet:** uzaktan komut alan makineler ağı (DDoS, spam, madencilik).
 - **Casus / reklam yazılımı:** veri toplar ya da reklam gösterir.
 - **Silici (wiper):** fidye gibi görünür ama veriyi **kalıcı yok eder** (NotPetya). Amaç para değil, yıkım.
+
+- **Arka kapı (backdoor):** gizli erişim bırakır.
 
 ---
 
@@ -478,7 +362,7 @@ Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yo
 
 <!-- _class: bolum -->
 
-# Yayılma ve gizlenme
+# 2. Yayılma ve gizlenme
 
 ---
 
@@ -985,7 +869,7 @@ Yama **uygulanana kadar** risk sürer; yayımlanan yama saldırgana da **yol gö
 
 <!-- _class: bolum -->
 
-# Saldırı ağaçları
+# 3. Saldırı ağaçları ve denetim kaydı
 
 ---
 
@@ -1072,6 +956,12 @@ Tarif 13.11 · günlüğü **saldırganın da okuyacağını** varsayarak tasarl
 
 ---
 
+# Denetim kaydı — şema
+
+![w:900](assets/h02-13-denetim-kaydi.svg)
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 10 — Günlük enjeksiyonu (CWE-117)
@@ -1091,6 +981,21 @@ GUVENLI:
 ✅ Kaçışla (`\xNN`) · ✅ uzunluğu sınırla · ✅ `syslog(LOG_INFO, "%s", girdi)` — girdi asla biçim dizgesi değil
 
 <!-- Konuşma notu: Kullanıcı adına gömülü tek bir satır sonu, hiç yaşanmamış bir yönetici girişini günlüğe yazdırdı. Biçim dizgesi tuzağını 4. haftaya köprü olarak anın. -->
+
+---
+
+# Zafiyetli kod: günlük enjeksiyonu ve biçim dizisi
+
+```c
+fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
+```
+
+```c
+syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
+```
+
+Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğrudan biçim dizgesi** olarak kullanılmamalı:
+`syslog(LOG_INFO, "%s", girdi)`.
 
 ---
 
@@ -1212,7 +1117,7 @@ HMAC zinciri araya ekleme/değiştirmeyi yakalar; **sondan kesmeyi** yakalamak i
 
 <!-- _class: bolum -->
 
-# Erişim denetimi ve modeller
+# 4. Erişim denetimi ve modeller
 
 ---
 
@@ -1242,6 +1147,14 @@ Matris iki biçimde saklanır: **ACL** (sütun: nesne kimin erişeceğini tutar)
 
 Gerçek sistemler üçünü **birlikte** kullanır; etkin karar çoğu zaman **kesişimdir.**
 
+DAC **esnek** ama sızıntıya açık; MAC **katı** (askeri/etiketli); RBAC **kurumsal**, rol bazlı ve yönetimi kolaydır.
+
+---
+
+# DAC ve MAC — şema
+
+![w:900](assets/h02-14-dac-mac.svg)
+
 ---
 
 # Demo 03 — Salt DAC (matris)
@@ -1267,6 +1180,8 @@ Seviyeler: Genel < Gizli < Çok Gizli
 - **Aşağı yazma yok (\*-özellik):** kendinden az gizli olana yazamaz.
 
 > **"Read down, write up"** — gizli bilgi **aşağı sızamaz.**
+
+Örnek: "Gizli" etiketli bir kullanıcı "Çok Gizli" bir belgeyi **okuyamaz**; "Çok Gizli" bir süreç "Genel" bir dosyaya **yazamaz** (sızıntı böyle önlenir).
 
 <!--
 Konuşma notu: Askeri kokenli (1973). "Asagi yazma yok" ilk bakista tuhaf gelir; amac cok gizli bilgiyi memurun gorebilecegi bir yere yazmayi engellemek.
@@ -1296,7 +1211,6 @@ Seviyeler: Dış < Uygulama < Çekirdek (güvenilirlik)
 Bir veri hem gizli hem güvenilir olmalıysa → yalnız **kendi seviyesinde** işlenir.
 
 ---
-
 
 # Clark–Wilson: ticari bütünlük
 
@@ -1522,7 +1436,7 @@ Statik (**SSD**) ya da dinamik (**DSD**) görev ayrılığı kısıtı **ayrıca
 
 <!-- _class: bolum -->
 
-# Zafiyet sınıflandırma
+# 5. Zafiyet sınıflandırma
 
 ---
 
@@ -1576,6 +1490,12 @@ Kural: mümkün olan **en somut** (tercihen base düzeyi) CWE'yi seçin.
 
 ---
 
+# OWASP ve MASVS — şema
+
+![w:900](assets/h02-16-owasp-masvs.svg)
+
+---
+
 # Yanılgı: "OWASP Top 10 bir kontrol listesidir"
 
 **Yanılgı:** Top 10'daki 10 maddeyi karşılıyorsam güvenliyim demektir.
@@ -1592,6 +1512,12 @@ Doğrulanabilir gereksinimler web için **ASVS'de**, mobil için **MASVS ve MAST
 - **CVSS:** açığın **ciddiyeti** 0.0–10.0. Üç grup: **Temel** (değişmez), Zamansal, Çevresel.
 
 Bir CVE bir ya da birden çok **CWE türüne** aittir.
+
+---
+
+# CWE, CVE, CVSS — şema
+
+![w:900](assets/h02-15-cwe-cve-cvss.svg)
 
 ---
 
@@ -1752,18 +1678,6 @@ Puan düşse bile risk **azalmaz**; puanın yanına **saldırı potansiyeli** (s
 
 ---
 
-<!-- _class: yogun -->
-
-# Kontrol listesi — zafiyet sınıflandırma
-
-- [ ] CWE'nin soyutlama düzeylerini (pillar, class, base, variant) ve "en somut girdi" kuralını biliyorum.
-- [ ] CWE, CVE ve CVSS'i birer cümleyle **ayırabiliyorum**.
-- [ ] Bir bulguya CVSS v3.1 vektörü kurup puanı **elle** hesaplayabiliyorum.
-- [ ] EPSS, KEV ve CVSS'in **farklı sorulara** cevap verdiğini açıklayabiliyorum.
-- [ ] Zafiyet yaşam döngüsünü, sıfırıncı gün, yama boşluğu ve sorumlu ifşayı anlatabiliyorum.
-
----
-
 # Zafiyet yaşam döngüsü
 
 ![w:900](assets/h02-06-zafiyet-yasam-dongusu.svg)
@@ -1782,6 +1696,12 @@ Puan düşse bile risk **azalmaz**; puanın yanına **saldırı potansiyeli** (s
 4. **Yayın:** yama kullanıcıya ulaşır, **uygulanırsa** risk biter.
 
 Her ok arasında geçen süre, saldırgana verilen **zaman penceresidir**.
+
+---
+
+# Açığın yaşam çizgisi — şema
+
+![w:900](assets/h02-17-acik-yasam-cizgisi.svg)
 
 ---
 
@@ -1832,16 +1752,13 @@ Bir değerlendirme yalnız kodu değil, bu **süreci** de sorar.
 
 <!-- _class: yogun -->
 
-# Sözlük eki — bu genişletmede eklenenler
+# Kontrol listesi — zafiyet sınıflandırma
 
-| Terim | Anlam |
-| --- | --- |
-| EPSS | Açığın 30 gün içinde istismar edilme **olasılığı** |
-| KEV | **Kanıtlanmış** istismar edilen açıklar kataloğu |
-| SSVC | İstismar/etki/yaygınlık ile Track–Act kararı |
-| Sorumlu / tam ifşa | Önce satıcıya bildirme / hemen kamuya açma |
-| Kimlik doğrulama / yetkilendirme | "Sen kimsin?" / "Bunu yapabilir misin?" |
-| Güvenli varsayılan | Politika belirsizse cevap **ret** (fail-closed) |
+- [ ] CWE'nin soyutlama düzeylerini (pillar, class, base, variant) ve "en somut girdi" kuralını biliyorum.
+- [ ] CWE, CVE ve CVSS'i birer cümleyle **ayırabiliyorum**.
+- [ ] Bir bulguya CVSS v3.1 vektörü kurup puanı **elle** hesaplayabiliyorum.
+- [ ] EPSS, KEV ve CVSS'in **farklı sorulara** cevap verdiğini açıklayabiliyorum.
+- [ ] Zafiyet yaşam döngüsünü, sıfırıncı gün, yama boşluğu ve sorumlu ifşayı anlatabiliyorum.
 
 ---
 
@@ -1855,6 +1772,20 @@ Bir değerlendirme yalnız kodu değil, bu **süreci** de sorar.
 ```text
 | ID | Tehdit | Varlik | Yol | CWE | Onlem | Bolum |
 ```
+
+---
+
+# Sınıf etkinlikleri
+
+1. **Zararlıyı sınıfla, katmanı seç:** altı senaryoda tür ve ilk yakalayan katman
+2. **Saldırı ağacı düellosu:** karşı grup, ağaçta olmayan daha ucuz bir yol arar
+3. **Matristen modele:** aynı politikayı ACL, yetenek listesi, BLP/Biba etiketiyle yaz
+4. **Bulgudan yama sırasına:** CWE + CVSS + EPSS + KEV + SSVC ile beş bulguyu sırala
+5. **Denetim kaydını kurcala:** Demo 11 zincirinde değiştirme/silme/sondan kesmeyi dene
+6. **Kod okuma turnuvası:** dört koda CWE, saldırı ve düzeltme yaz
+7. **Olay otopsisi:** Heartbleed/WannaCry/Log4Shell için CVE-CWE-CVSS-tarih doldur
+
+<!-- Konuşma notu: Grupları 3-4 kişi yapın; süre notu için ders notundaki etkinlik kutularına bakın. -->
 
 ---
 
@@ -1895,181 +1826,22 @@ Bir değerlendirme yalnız kodu değil, bu **süreci** de sorar.
 
 ---
 
-<!-- _class: baslik -->
+# Kendini sınama (devam)
 
-# Gelecek hafta
+9. İmza ve sezgisel tespitin güçlü/zayıf yanı?
+10. Günlük enjeksiyonu (CWE-117) nasıl önlenir?
+11. Sorumlu ifşa nedir?
 
-**Hafta 3 — Veri Güvenliği: Aktarımda, Beklemede, Kullanımda**
-
-Şifreleme temelleri · TLS 1.3 ve sertifika sabitleme · AES-GCM ile yerel şifreleme · güvenli silme
-
-Kaynak: Viega & Messier, Tarif 9.1–9.3, 10.7–10.9, 4.9–4.11, 13.2
+<!-- önce sordur, sonra cevap slaytını aç -->
 
 ---
 
-<!-- _class: bolum -->
-
-# Ek · Erişim modelleri karşılaştırma
-
-<!-- Konuşma notu: BLP, Biba ve modelleri örneklerle pekiştiriyoruz. -->
-
----
-
-# BLP · gizlilik kuralı
-
-- **"Yukarı yazma, aşağı okuma yok"** değil — tersi:
-- **Yukarı okuma yok** (no read up): düşük yetkili, yüksek gizli veriyi okuyamaz.
-- **Aşağı yazma yok** (no write down): yüksek yetkili, düşük seviyeye sızdıramaz.
-
----
-
-# BLP · örnek
-
-- "Gizli" etiketli bir kullanıcı "Çok Gizli" belgeyi **okuyamaz**.
-- "Çok Gizli" bir süreç "Genel" dosyaya **yazamaz** (sızıntı önlenir).
-
-Amaç: **gizlilik**.
-
----
-
-# Biba · bütünlük kuralı
-
-- BLP'nin **tersi**:
-- **Aşağı okuma yok**: yüksek bütünlüklü, düşük güvenilir veriyi okumaz.
-- **Yukarı yazma yok**: düşük güvenilir, yüksek bütünlüğe yazamaz.
-
-Amaç: **bütünlük**.
-
----
-
-# BLP vs Biba
-
-| | BLP | Biba |
-| --- | --- | --- |
-| Korur | Gizlilik | Bütünlük |
-| Okuma | Yukarı yok | Aşağı yok |
-| Yazma | Aşağı yok | Yukarı yok |
-
-Aynı sistemde ikisi **çelişebilir**; dikkatle birleştirilir.
-
----
-
-# Clark–Wilson
-
-- Ticari bütünlük: iyi biçimli işlemler + görev ayrımı.
-- Veriye yalnız **onaylı** yordamlarla erişilir.
-- Örnek: muhasebe kayıtları.
-
----
-
-# DAC / MAC / RBAC · seçim
-
-- **DAC:** esnek ama sızıntıya açık (sahibi paylaşır).
-- **MAC:** katı, askeri/etiketli ortam.
-- **RBAC:** kurumsal; rol bazlı, yönetimi kolay.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Zafiyeti bul (kod okuma)
-
----
-
-# Örnek 1 · günlük enjeksiyonu
-
-```c
-fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
-```
-
-Kullanıcı adı `\n` içerirse **sahte** günlük satırı ekler. Doğrusu: kaçış/temizleme.
-
----
-
-# Örnek 2 · biçim dizisi
-
-```c
-syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
-```
-
-Biçim dizgesi sabit olmalı: `syslog(LOG_INFO, "%s", girdi)`.
-
----
-
-# Örnek 3 · zayıf tespit
-
-- Yalnız **imza** ile tarama, polimorfik virüsü kaçırır.
-- Ek: sezgisel + davranış + entropi.
-
----
-
-<!-- _class: bolum -->
-
-# Ek · Çözümlü kendini sınama
-
----
-
-# Soru 1
-
-**Virüs ile solucan farkı?**
-
-**Cevap:** Virüs başka programa bulaşarak yayılır; solucan kendi başına ağ üzerinden kendini kopyalar.
-
----
-
-# Soru 2
-
-**Polimorfik virüs neden imza tespitini zorlar?**
-
-**Cevap:** Her kopyada kendini farklı şifreler; sabit bir imza kalmaz. Sezgisel/emülasyon gerekir.
-
----
-
-# Soru 3
-
-**İmza ve sezgisel tespitin güçlü/zayıf yanı?**
-
-**Cevap:** İmza hızlı ama yeniyi kaçırır; sezgisel yeniyi bulur ama yanlış alarm üretir.
-
----
-
-# Soru 4
-
-**BLP ile Biba neyi korur, kuralları ters mi?**
-
-**Cevap:** BLP gizliliği (yukarı okuma yok), Biba bütünlüğü (aşağı okuma yok). Evet, yönleri terstir.
-
----
-
-# Soru 5
-
-**CWE ile CVE farkı?**
-
-**Cevap:** CWE zayıflık **türü** (örn. use-after-free); CVE belirli bir üründeki **somut** açık.
-
----
-
-# Soru 6
-
-**CVSS ne söyler?**
-
-**Cevap:** Bir açığın ciddiyetini standart bir puanla (0–10); önceliklendirmede kullanılır.
-
----
-
-# Soru 7
-
-**Günlük enjeksiyonu (CWE-117) nasıl önlenir?**
-
-**Cevap:** Günlüğe yazılan kullanıcı verisindeki satır sonu/kontrol karakterlerini temizle/kaçır; yapılandırılmış günlük kullan.
-
----
-
-# Soru 8
-
-**Sorumlu ifşa nedir?**
-
-**Cevap:** Açığı önce üreticiye bildirip yama için süre tanımak, sonra kamuya açıklamak.
+# Kendini sınama — cevaplar (9–11)
+
+9. **İmza** hızlı ama yeniyi kaçırır; **sezgisel** yeniyi bulur ama yanlış alarm üretir.
+10. Günlüğe yazılan kullanıcı verisindeki satır sonu/kontrol karakterlerini **temizle/kaçır**; yapılandırılmış
+    günlük kullan.
+11. Açığı önce **üreticiye bildirip** yama için süre tanımak, sonra **kamuya açıklamak**.
 
 ---
 
@@ -2088,8 +1860,34 @@ Biçim dizgesi sabit olmalı: `syslog(LOG_INFO, "%s", girdi)`.
 
 ---
 
-# Son söz (2. hafta)
+<!-- _class: yogun -->
 
-> Tehdidi **sınıflandır**, erişimi **modelle**, açığı **kataloglar**la (CWE/CVE) izle ve ciddiyetini (CVSS) ölç.
+# Sözlük (devam)
 
-Bu çerçeve, sonraki haftalardaki teknik korumaların zeminidir.
+| Terim | Anlam |
+| --- | --- |
+| EPSS | Açığın 30 gün içinde istismar edilme **olasılığı** |
+| KEV | **Kanıtlanmış** istismar edilen açıklar kataloğu |
+| SSVC | İstismar/etki/yaygınlık ile Track–Act kararı |
+| Sorumlu / tam ifşa | Önce satıcıya bildirme / hemen kamuya açma |
+| Kimlik doğrulama / yetkilendirme | "Sen kimsin?" / "Bunu yapabilir misin?" |
+| Güvenli varsayılan | Politika belirsizse cevap **ret** (fail-closed) |
+
+---
+
+<!-- _class: baslik -->
+
+# Bir sonraki hafta
+
+**3. hafta — Veri Güvenliği: Aktarımda, Beklemede, Kullanımda**
+
+Bu hafta zararlı yazılımı tespit ederken kullandığımız **entropi** ölçütünü, gelecek hafta kriptografik rastgele
+sayı üretecinin (CSPRNG) girdisindeki düzensizliği değerlendirmek için yeniden kullanacağız. 3. haftada
+şifreleme temellerini, TLS 1.3 ve sertifika sabitlemeyi, AES-GCM ile yerel şifrelemeyi ve güvenli silmeyi
+işleyeceğiz (Kaynak: Viega & Messier, Tarif 9.1–9.3, 10.7–10.9, 4.9–4.11, 13.2).
+
+> Bu haftanın özeti: tehdidi **sınıflandır**, erişimi **modelle**, açığı **kataloglarla** (CWE/CVE) izle ve
+> ciddiyetini (**CVSS**) ölç. Bu çerçeve, sonraki haftalardaki teknik korumaların zeminidir.
+
+Bu hafta CWE ve CVSS ile önceliklendirdiğimiz zafiyet dili, **12. haftada** sızma testi planlamasının girdisi
+olarak yeniden karşımıza çıkacak.

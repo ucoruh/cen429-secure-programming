@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -31,11 +29,63 @@ Speaker note: This week we build the building blocks of cryptography and PKI end
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–3 | Basic concepts · algorithm/key selection · modes/padding · MAC/HMAC |
-| 2 | 4–7 | RSA/ECC · OAEP/PSS · digital signature · Diffie–Hellman · PKI |
-| 3 | 8–13 | X.509 · chain · CRL/OCSP · HSM/PKCS#11 · post-quantum · project |
+| 1 | 1–3 | Algorithm/key selection · block cipher modes/padding · MAC/HMAC |
+| 2 | 4–6 | RSA/ECC (OAEP/PSS) · digital signature · Diffie–Hellman |
+| 3 | 7–13 | PKI · X.509 · building a chain with OpenSSL · CRL/OCSP · HSM/PKCS#11 · post-quantum · project |
+
+**Learning outcomes (LO.2 / LO.4):** choose the right algorithm, mode, padding, and key length · spot the pitfalls of
+signatures and key exchange · correctly validate a certificate chain
+
+> In cryptography, mistakes are usually not in the algorithm but in the **usage**: the wrong mode, the wrong padding,
+> an unverified signature, an unchecked chain.
 
 <!-- Speaker note: This week is about using crypto correctly, and PKI. Students saw an introduction in Week 3; here we recap from scratch and go deeper. Emphasis: not the right algorithm, but the right USE. -->
+
+---
+
+# What We Bring from Earlier Weeks
+
+- **Symmetric and asymmetric encryption** — symmetric encryption runs fast with a single shared key; asymmetric
+  encryption uses a public/private key pair, making key distribution easy but slow **(Week 3)**
+- **AEAD** — authenticated encryption gives confidentiality and integrity together, in a single call **(Week 3)**
+- **Digest, MAC, and digital signature** — a digest is a one-way fingerprint; a MAC proves a message hasn't changed
+  with a shared key, a signature does the same with a public/private key pair **(Week 3)**
+- **Forward secrecy** — deleting a session's derived key after use, so that even if today's key leaks, past
+  sessions cannot be decrypted **(Week 3)**
+- **TLS certificate validation** — the client checking a server certificate's chain, validity, intended usage, and
+  name **(Week 3)**
+
+This week we go deeper: asymmetric mathematics and the right mode/padding (Sections 2, 4) · HMAC's internal
+structure and signature pitfalls (Sections 3, 5) · DH and authentication (Section 6) · PKI, X.509, and revocation
+(Sections 7–10).
+
+---
+
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Block cipher modes, padding | Section 2 |
+| MAC, HMAC | Section 3 |
+| RSA, elliptic curve (ECC) | Section 4 |
+| Digital signature | Section 5 |
+| Diffie–Hellman (DH) | Section 6 |
+| PKI, CA | Section 7 |
+| Certificate, X.509 | Section 8 |
+| Building a chain with OpenSSL | Section 9 |
+| CRL, OCSP | Section 10 |
+| HSM, PKCS#11, SoftHSM | Section 11 |
+| Post-quantum (PQC) | Section 12 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Algorithm and Key Selection
 
 ---
 
@@ -49,184 +99,6 @@ Speaker note: This week we build the building blocks of cryptography and PKI end
 - **2014** Heartbleed · **2015** Let's Encrypt · **2018** TLS 1.3 · **2022–24** **PQC** (Kyber/Dilithium)
 
 > Today's rules (the right mode/padding, chain validation, revocation) came out of these painful lessons.
-
----
-
-
-# Where Does This Week Fit?
-
-- **Week 3:** introduction to cryptography (confidentiality, integrity).
-- **This week (10):** choosing the right **algorithm/mode/padding**, the key lifecycle, **PKI**.
-- **Week 11:** if the key is protected in software → whitebox.
-
----
-
-# Learning Outcome
-
-This week is about **LO.2 / LO.4**.
-
-By the end, you will be able to:
-
-- Choose the right algorithm, mode, padding, and key length
-- Spot the **pitfalls** of signatures and key exchange
-- Correctly validate a certificate **chain**
-
----
-
-# Main Idea
-
-> In cryptography, mistakes are usually not in the algorithm but in the **usage**: the wrong mode, the wrong padding, an unverified signature,
-> an unchecked chain.
-
-Today we learn the correct **usage**.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Basic Concepts (From Scratch)
-
-<!-- Speaker note: We define crypto terms from scratch; a recap from Week 3 plus new terms. -->
-
----
-
-# Symmetric vs Asymmetric (Reminder)
-
-- **Symmetric:** one key, encrypts and decrypts (AES). Fast.
-- **Asymmetric:** a public + private key pair (RSA, ECC). Slower, but easy key distribution.
-- In practice, **together**: carry the key with asymmetric, encrypt the data with symmetric.
-
----
-
-# Block Cipher and Mode
-
-- **Block cipher:** encrypts a fixed-size block (AES: 16 bytes).
-- **Mode:** **how** we chain the blocks together (CBC, GCM…).
-- The choice of mode is the **heart** of security.
-
----
-
-# Padding
-
-- **Padding:** filling data out when it is not a multiple of the block size.
-- Required by some modes (CBC), **absent** from others (GCM).
-- Handling padding incorrectly → the **padding oracle** attack.
-
----
-
-# What Is AEAD?
-
-- **AEAD (Authenticated Encryption with Associated Data):** encryption that gives confidentiality **and** integrity **together**.
-- Example: AES-GCM, ChaCha20-Poly1305.
-- Modern choice: don't bother with a separate MAC, use AEAD.
-
----
-
-# MAC and HMAC
-
-- **MAC (Message Authentication Code):** a tag that proves a message **has not changed** and came from the right party (symmetric).
-- **HMAC:** a common MAC built on a digest function.
-- For integrity.
-
----
-
-# Encrypt-then-MAC — Diagram
-
-![w:950](assets/h10-01-encrypt-then-mac.svg)
-
----
-
-# Digest (Hash)
-
-- **Digest:** a fixed-size fingerprint computed from data (SHA-256).
-- One-way: you cannot get the data back from the digest.
-- The building block of signatures and MACs.
-
----
-
-# Digital Signature
-
-- **Signature:** asymmetric; sign with the **private** key, verify with the **public** key.
-- Provides: integrity + **non-repudiation** (who signed it).
-- Different from a MAC: asymmetric, anyone can verify.
-
----
-
-# RSA and Elliptic Curve (ECC)
-
-- **RSA:** the classic asymmetric algorithm; large keys (2048+ bits).
-- **ECC:** elliptic curve; the same security with a **smaller** key (Ed25519, X25519).
-- The modern choice is increasingly ECC.
-
----
-
-# Diffie–Hellman (DH)
-
-- **DH:** two parties deriving a shared secret **without sharing** a private key.
-- Key agreement over the network.
-- Risk of **man-in-the-middle** (MITM) if identity is not authenticated.
-
----
-
-# Unauthenticated DH and MITM — Diagram
-
-![w:950](assets/h10-02-dh-mitm.svg)
-
----
-
-# PKI and CA
-
-- **PKI (Public Key Infrastructure):** the trust system that answers "which public key belongs to whom?"
-- **CA (Certificate Authority):** the trusted party that signs certificates.
-- Root CA → intermediate CA → server certificate.
-
----
-
-# Certificate and X.509
-
-- **Certificate:** a document, signed by a CA, that binds a public key to an identity (a domain name).
-- **X.509:** the standard format for certificates.
-- Contains: subject, public key, validity, signature, SAN.
-
----
-
-# CRL and OCSP
-
-- **CRL (Certificate Revocation List):** a **list** of revoked certificates.
-- **OCSP:** asking about a certificate's revocation status **on the spot**.
-- The question "is this certificate still valid?"
-
----
-
-# HSM, PKCS#11, SoftHSM
-
-- **HSM:** dedicated **hardware** that stores/operates keys; the key never leaves it.
-- **PKCS#11:** the standard interface for talking to key modules.
-- **SoftHSM:** a software simulation of an HSM (for testing).
-
----
-
-# Post-Quantum (PQC)
-
-- **PQC (Post-Quantum Cryptography):** algorithms resistant to quantum computers.
-- Today's RSA/ECC will be under threat in the future.
-- Standardization is ongoing (e.g., ML-KEM).
-
----
-
-# Now We're Ready
-
-Terms:
-
-symmetric/asymmetric · block cipher/mode · padding · AEAD · MAC/HMAC · digest · signature · RSA/ECC · DH · PKI/CA · certificate/X.509 · CRL/OCSP · HSM/PKCS#11 · PQC
-
-Now: choosing the right algorithm and key.
-
----
-
-<!-- _class: bolum -->
-
-# 1. Algorithm and Key Selection
 
 ---
 
@@ -269,15 +141,43 @@ Three rules:
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 2. Block Cipher Modes and Padding
+# Which Mode?
+
+| Need | Choice |
+| --- | --- |
+| Confidentiality + integrity | AES-GCM / ChaCha20-Poly1305 |
+| Speed only (no hardware AES) | ChaCha20-Poly1305 |
+| Never | ECB |
+| Legacy CBC system | + encrypt-then-MAC, a single error |
 
 ---
 
-# OAEP / PSS — Diagram
+<!-- _class: yogun -->
 
-![w:950](assets/h10-09-oaep-pss.svg)
+# Which Asymmetric Algorithm?
+
+| Need | Choice |
+| --- | --- |
+| Signature (modern) | Ed25519 |
+| Key agreement | X25519 |
+| RSA encryption | RSA-OAEP (≥3072) |
+| RSA signature | RSA-PSS |
+
+---
+
+# Decision Rule
+
+- Choose current, standard, properly used.
+- AEAD first; ECC first.
+- Write the decision and its rationale into **S8**.
+
+---
+
+<!-- _class: bolum -->
+
+# 2. Block Cipher Modes and Padding
 
 ---
 
@@ -368,13 +268,7 @@ The last three bytes are **`03 03 03`**: the number of missing bytes (16 − 13 
 
 ---
 
-<!-- _class: bolum -->
-
-# Padding Oracle
-
----
-
-# The Problem · Step by Step
+# Padding Oracle · the Problem, Step by Step
 
 1. While decrypting CBC, the server gives a **different** response/timing for **invalid padding** versus **invalid MAC**.
 2. The attacker modifies the ciphertext and watches the responses.
@@ -424,7 +318,6 @@ The padding oracle is the classic example of a "usage mistake."
 4. **AEAD** verifies the tag first and **refuses to decrypt** text with an invalid tag → no oracle is left for a padding error.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -498,11 +391,9 @@ constant-time comparison; `memcmp`/`==` leaves an open door to a timing attack.
 
 ---
 
-# This Section's Rule · MAC/HMAC
+# Encrypt-then-MAC — Diagram
 
-- Provide integrity with **HMAC**, not plain `H(K‖m)` (risk of length extension).
-- When combining encryption + MAC, the order is **encrypt-then-MAC**.
-- Tag/signature comparison must be **constant-time**; don't use a function with an early exit.
+![w:950](assets/h10-01-encrypt-then-mac.svg)
 
 ---
 
@@ -543,6 +434,14 @@ constant-time comparison; `memcmp`/`==` leaves an open door to a timing attack.
 
 ---
 
+# This Section's Rule · MAC/HMAC
+
+- Provide integrity with **HMAC**, not plain `H(K‖m)` (risk of length extension).
+- When combining encryption + MAC, the order is **encrypt-then-MAC**.
+- Tag/signature comparison must be **constant-time**; don't use a function with an early exit.
+
+---
+
 <!-- _class: bolum -->
 
 # 4. Asymmetric Cryptography: RSA and ECC
@@ -552,6 +451,12 @@ constant-time comparison; `memcmp`/`==` leaves an open door to a timing attack.
 # Symmetric ↔ Asymmetric — Diagram
 
 ![w:950](assets/h10-05-simetrik-asimetrik.svg)
+
+---
+
+# OAEP / PSS — Diagram
+
+![w:950](assets/h10-09-oaep-pss.svg)
 
 ---
 
@@ -679,7 +584,6 @@ handshakes, in embedded flash, or on a blockchain, this difference adds up.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. Digital Signatures and Pitfalls
@@ -805,6 +709,12 @@ an AES key; it is first passed through a **KDF** (HKDF) to derive session keys.
 
 ---
 
+# Unauthenticated DH · MITM — Diagram
+
+![w:950](assets/h10-02-dh-mitm.svg)
+
+---
+
 # MITM · Diagram
 
 ```text
@@ -852,7 +762,6 @@ Both sides think "I've established a secure channel."
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 7. Public Key Infrastructure (PKI)
@@ -881,7 +790,6 @@ Each level **signs** the one below it.
 
 ---
 
-
 # Root and Intermediate CA
 
 - **Root CA:** offline, self-signed, heavily protected.
@@ -895,77 +803,6 @@ Each level **signs** the one below it.
 - The OS/browser carries the trusted **root CAs**.
 - If a chain reaches one of these roots, it is trusted.
 - If it can't, it is **untrusted**.
-
----
-
-<!-- _class: bolum -->
-
-# 8. The X.509 Certificate
-
----
-
-# X.509 Fields — Diagram
-
-![w:950](assets/h10-11-x509.svg)
-
----
-
-# What's Inside?
-
-- **Subject:** who it belongs to (domain name).
-- **Public key.**
-- **Validity:** start/end.
-- **Issuer:** which CA signed it.
-- **Signature.**
-
----
-
-# SAN · Name Checking
-
-- **SAN (Subject Alternative Name):** the domain names the certificate is valid for.
-- Name checking is done against the **SAN, not the CN**.
-- A certificate for `example.com` must not be valid for `baska.com`.
-
----
-
-<!-- _class: yogun -->
-
-# Real Certificate · Top-Level Fields
-
-```text
-Version: 3 (0x2)
-Serial Number: 35:e2:f6:8d:...:76:e7
-Signature Algorithm: ecdsa-with-SHA256
-Issuer: CN=CEN429 Lab Ara CA
-Validity: Sep 23 2026 – Dec 22 2026
-Subject: CN=localhost
-Subject Public Key Info: 256 bit, NIST CURVE: P-256
-```
-
-Real `openssl x509 -text` output; each field carries the answer to one of the "four questions" (next section).
-
----
-
-<!-- _class: yogun -->
-
-# Real Certificate · Extensions
-
-```text
-X509v3 Basic Constraints: CA:FALSE
-X509v3 Key Usage: critical, Digital Signature
-X509v3 Extended Key Usage: TLS Web Server Authentication
-X509v3 Subject Alternative Name:
-    DNS:localhost, IP Address:127.0.0.1
-X509v3 Authority Key Identifier: F5:BA:39:86:...
-```
-
-The `Authority Key Identifier` is the **fingerprint** of the CA that signed the certificate; when building the chain, it prevents confusion with a "fake intermediate CA with the same name but a different key."
-
----
-
-<!-- _class: bolum -->
-
-# 9. Chain Validation
 
 ---
 
@@ -1057,14 +894,6 @@ openssl verify -CAfile kok.crt \
 
 ---
 
-# Common Mistake · Missing Intermediate Certificate
-
-- If the server doesn't send the **intermediate** certificate, the chain can't reach the root.
-- `verify` fails; it passes with `-untrusted ara.crt`.
-- A very common configuration mistake in the field.
-
----
-
 # SPKI Pinning
 
 - The application embeds the **digest** of the expected server key.
@@ -1078,6 +907,189 @@ openssl verify -CAfile kok.crt \
 - Don't skip any of the chain validation's **four questions** (signature, validity, usage, name).
 - `verify` does not check the name — **SAN** checking must be done separately.
 - Even a cryptographically correct chain can't connect if the server doesn't send the **intermediate certificate**.
+
+---
+
+<!-- _class: bolum -->
+
+# 8. The X.509 Certificate
+
+---
+
+# X.509 Fields — Diagram
+
+![w:950](assets/h10-11-x509.svg)
+
+---
+
+# What's Inside?
+
+- **Subject:** who it belongs to (domain name).
+- **Public key.**
+- **Validity:** start/end.
+- **Issuer:** which CA signed it.
+- **Signature.**
+
+---
+
+# SAN · Name Checking
+
+- **SAN (Subject Alternative Name):** the domain names the certificate is valid for.
+- Name checking is done against the **SAN, not the CN**.
+- A certificate for `example.com` must not be valid for `baska.com`.
+
+---
+
+<!-- _class: yogun -->
+
+# Real Certificate · Top-Level Fields
+
+```text
+Version: 3 (0x2)
+Serial Number: 35:e2:f6:8d:...:76:e7
+Signature Algorithm: ecdsa-with-SHA256
+Issuer: CN=CEN429 Lab Ara CA
+Validity: Sep 23 2026 – Dec 22 2026
+Subject: CN=localhost
+Subject Public Key Info: 256 bit, NIST CURVE: P-256
+```
+
+Real `openssl x509 -text` output; each field carries the answer to one of the "four questions" (next section).
+
+---
+
+<!-- _class: yogun -->
+
+# Real Certificate · Extensions
+
+```text
+X509v3 Basic Constraints: CA:FALSE
+X509v3 Key Usage: critical, Digital Signature
+X509v3 Extended Key Usage: TLS Web Server Authentication
+X509v3 Subject Alternative Name:
+    DNS:localhost, IP Address:127.0.0.1
+X509v3 Authority Key Identifier: F5:BA:39:86:...
+```
+
+The `Authority Key Identifier` is the **fingerprint** of the CA that signed the certificate; when building the chain, it prevents confusion with a "fake intermediate CA with the same name but a different key."
+
+---
+
+<!-- _class: bolum -->
+
+# 9. Building a Certificate Chain with OpenSSL
+
+---
+
+# Goal
+
+Let's build a small chain:
+
+Root CA → Intermediate CA → Server certificate.
+
+Then let's validate it with `verify` and see the typical mistake.
+
+---
+
+# Step 1 · Root CA (Self-Signed)
+
+```bash
+openssl req -x509 -newkey ed25519 \
+  -keyout kok.key -out kok.crt \
+  -subj "/CN=Ders Kok CA" -days 3650 -nodes
+```
+
+The root signs itself; it is kept offline.
+
+---
+
+# Step 2 · Intermediate CA (Signed by the Root)
+
+```bash
+openssl req -newkey ed25519 -keyout ara.key \
+  -out ara.csr -subj "/CN=Ders Ara CA" -nodes
+openssl x509 -req -in ara.csr -CA kok.crt -CAkey kok.key \
+  -CAcreateserial -out ara.crt -days 1825
+```
+
+---
+
+# Step 3 · Server Certificate (Signed by the Intermediate)
+
+```bash
+openssl req -newkey ed25519 -keyout sunucu.key \
+  -out sunucu.csr -subj "/CN=ornek.test" -nodes
+openssl x509 -req -in sunucu.csr -CA ara.crt -CAkey ara.key \
+  -CAcreateserial -out sunucu.crt -days 365
+```
+
+---
+
+# Step 4 · Validate (Missing Intermediate)
+
+```bash
+openssl verify -CAfile kok.crt sunucu.crt
+# HATA: unable to get local issuer certificate
+```
+
+The chain can't reach the root: the **intermediate certificate is missing**.
+
+---
+
+# Step 5 · Validate (With the Intermediate)
+
+```bash
+openssl verify -CAfile kok.crt \
+  -untrusted ara.crt sunucu.crt
+# OK
+```
+
+Given the intermediate certificate, the chain is complete.
+
+---
+
+# Lesson
+
+- The server must also send the **intermediate** certificate.
+- If it's missing, the client says "issuer not found."
+- The most common TLS configuration mistake in the field.
+
+---
+
+# The Chain's Four Questions · in Practice
+
+- **Signature:** each level signed by the one above ✓
+- **Root:** `-CAfile kok.crt` trust store ✓
+- **Validity:** within `-days` ✓
+- **Name:** SAN checking in the application (verify does not check the name!)
+
+---
+
+# Turning Off Certificate Validation
+
+```c
+/* ASLA: */
+SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+```
+
+This opens the door to MITM. A line left in "for testing" is a catastrophe in the field.
+
+---
+
+# Skipping Name Checking
+
+- If the chain is valid but the **name** is not verified, the attacker's valid certificate is accepted.
+- The hostname (SAN) must always be checked.
+
+---
+
+# Critical Reading Rule
+
+Ask this when reading TLS setup code:
+
+- Is validation turned on?
+- Is the name checked?
+- Is it **fail-closed** on error?
 
 ---
 
@@ -1182,7 +1194,6 @@ revocation checking works **independently** of validity checking.
 4. **Fail-open:** counting an error/unreachability as "passed." Mitigation: **fail-closed**, OCSP stapling / must-staple, reject on error.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1328,207 +1339,7 @@ larger. TLS's **hybrid** (classical + PQC) approach exists to manage this transi
 
 ---
 
-<!-- _class: bolum -->
-
-# Solved Self-Check
-
----
-
-# Question 1
-
-**What is the security level of an RSA-2048 + AES-256 system?**
-
-**Answer:** ~112 bits (RSA-2048 is the weakest link). For 128 bits, use RSA-3072 or ECC.
-
----
-
-# Question 2
-
-**"Invalid padding" and "invalid MAC" as separate messages: what's the risk?**
-
-**Answer:** A padding oracle; the attacker can decrypt the message by watching the responses. Use one and the same error; prefer AEAD.
-
----
-
-# Question 3
-
-**Why is `if (EVP_DigestVerify(...))` wrong?**
-
-**Answer:** A negative error value also counts as true; the check should be `== 1`. Also, the signed content must cover the version.
-
----
-
-# Question 4
-
-**Why does `verify` fail without the intermediate certificate?**
-
-**Answer:** The chain can't reach the root; the intermediate certificate is missing. In the field, this usually means the server isn't sending the intermediate certificate.
-
----
-
-# Question 5
-
-**Accepting when OCSP is unreachable: what pattern is this, and how is it mitigated?**
-
-**Answer:** Fail-open (a soft failure). Must-Staple or short-lived certificates.
-
----
-
-# Question 6
-
-**How is MITM against unauthenticated DH prevented?**
-
-**Answer:** The DH values are signed with a key whose identity is known (TLS 1.3 CertificateVerify), and the other side verifies it.
-
----
-
-# Question 7
-
-**What are the four questions of chain validation?**
-
-**Answer:** Is the signature valid, does it reach a trusted root, has the validity period not expired, does the name (SAN) match.
-
----
-
-# Question 8
-
-**Why shouldn't the key be placed in software? Alternative?**
-
-**Answer:** A whitebox attacker can extract a key embedded in software. Alternative: HSM/TEE (PKCS#11); otherwise whitebox + a layer (Week 11).
-
----
-
-<!-- _class: yogun -->
-
-# Glossary
-
-| Term | Meaning |
-| --- | --- |
-| AEAD | Encryption + integrity together |
-| Encrypt-then-MAC | The correct order |
-| OAEP/PSS | RSA encryption/signature padding |
-| Ed25519/X25519 | Signature / key agreement |
-| SAN | Certificate name checking |
-| CRL/OCSP | Revocation list / on-the-spot query |
-
----
-
-# Summary: This Week in One Sentence
-
-> In cryptography, security lies less in the right algorithm than in the right **usage**: AEAD, the right padding, a verified signature, a checked
-> chain, and a well-managed key.
-
----
-
-<!-- _class: bolum -->
-
-# Next Week
-
-**Week 11 — Whitebox Cryptography**
-
-What happens when the key is protected in software? The whitebox attacker, table-based WBC, and its limits.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix A · Building a Chain with OpenSSL (Step by Step)
-
-<!-- Speaker note: We build a synthetic root→intermediate→server chain and validate it. Values are examples. -->
-
----
-
-# Goal
-
-Let's build a small chain:
-
-Root CA → Intermediate CA → Server certificate.
-
-Then let's validate it with `verify` and see the typical mistake.
-
----
-
-# Step 1 · Root CA (Self-Signed)
-
-```bash
-openssl req -x509 -newkey ed25519 \
-  -keyout kok.key -out kok.crt \
-  -subj "/CN=Ders Kok CA" -days 3650 -nodes
-```
-
-The root signs itself; it is kept offline.
-
----
-
-# Step 2 · Intermediate CA (Signed by the Root)
-
-```bash
-openssl req -newkey ed25519 -keyout ara.key \
-  -out ara.csr -subj "/CN=Ders Ara CA" -nodes
-openssl x509 -req -in ara.csr -CA kok.crt -CAkey kok.key \
-  -CAcreateserial -out ara.crt -days 1825
-```
-
----
-
-# Step 3 · Server Certificate (Signed by the Intermediate)
-
-```bash
-openssl req -newkey ed25519 -keyout sunucu.key \
-  -out sunucu.csr -subj "/CN=ornek.test" -nodes
-openssl x509 -req -in sunucu.csr -CA ara.crt -CAkey ara.key \
-  -CAcreateserial -out sunucu.crt -days 365
-```
-
----
-
-# Step 4 · Validate (Missing Intermediate)
-
-```bash
-openssl verify -CAfile kok.crt sunucu.crt
-# HATA: unable to get local issuer certificate
-```
-
-The chain can't reach the root: the **intermediate certificate is missing**.
-
----
-
-# Step 5 · Validate (With the Intermediate)
-
-```bash
-openssl verify -CAfile kok.crt \
-  -untrusted ara.crt sunucu.crt
-# OK
-```
-
-Given the intermediate certificate, the chain is complete.
-
----
-
-# Lesson
-
-- The server must also send the **intermediate** certificate.
-- If it's missing, the client says "issuer not found."
-- The most common TLS configuration mistake in the field.
-
----
-
-# The Chain's Four Questions · in Practice
-
-- **Signature:** each level signed by the one above ✓
-- **Root:** `-CAfile kok.crt` trust store ✓
-- **Validity:** within `-days` ✓
-- **Name:** SAN checking in the application (verify does not check the name!)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · A Crypto Design Case Study
-
----
-
-# Scenario
+# End to End: a Crypto Design Case Study
 
 A mobile app:
 
@@ -1574,168 +1385,113 @@ Let's design the crypto.
 
 ---
 
+<!-- _class: yogun -->
+
+# Classic Crypto Mistakes — Summary
+
+| Mistake | Section | The Right Way |
+| --- | --- | --- |
+| Writing your own crypto | 1 | A proven library, a standard algorithm |
+| ECB mode | 2 | AEAD (GCM / ChaCha20-Poly1305) |
+| IV/nonce reuse | 2 | A unique, non-repeating nonce |
+| Encryption without integrity | 3 | AEAD or encrypt-then-MAC |
+| Raw RSA / wrong padding | 4 | OAEP (encryption), PSS (signing) |
+| Weak digest | 5 | SHA-256+ |
+| Not checking the signature return value | 5 | `== 1`, and the version is covered |
+| Not checking the chain/name | 7 | The four questions + SAN checking |
+| Fail-open revocation | 10 | Must-Staple, short lifetimes |
+| Embedding the key in plaintext | 11 | HSM/TEE; otherwise whitebox + a layer (Week 11) |
+
+All ten mistakes were covered earlier in this deck; here they are gathered in one glance.
+
+---
+
 <!-- _class: bolum -->
 
-# Appendix C · Decision Tables
+# Solved Self-Check
+
+---
+
+# Question 1
+
+**What is the security level of an RSA-2048 + AES-256 system?**
+
+**Answer:** ~112 bits (RSA-2048 is the weakest link). For 128 bits, use RSA-3072 or ECC.
+
+---
+
+# Question 2
+
+**"Invalid padding" and "invalid MAC" as separate messages: what's the risk?**
+
+**Answer:** A padding oracle; the attacker can decrypt the message by watching the responses. Use one and the same error; prefer AEAD.
+
+---
+
+# Question 3
+
+**Why is `if (EVP_DigestVerify(...))` wrong?**
+
+**Answer:** A negative error value also counts as true; the check should be `== 1`. Also, the signed content must cover the version.
+
+---
+
+# Question 4
+
+**Why does `verify` fail without the intermediate certificate?**
+
+**Answer:** The chain can't reach the root; the intermediate certificate is missing. In the field, this usually means the server isn't sending the intermediate certificate.
+
+---
+
+# Question 5
+
+**What happens when `openssl verify` is given both a correct and an irrelevant intermediate certificate?**
+
+**Answer:** OpenSSL builds the chain along any valid path it can (e.g., directly to the root); the irrelevant
+certificate just remains an unused candidate, and validation can still succeed. This is an operational, not a
+cryptographic, situation.
+
+---
+
+# Question 6
+
+**Why is reusing the same random value in two ECDSA signatures a disaster?**
+
+**Answer:** The private key can be computed from the two signatures. Ed25519 or deterministic ECDSA (RFC 6979)
+removes this risk.
+
+---
+
+# Question 7
+
+**Why is the root CA kept offline, and why does an intermediate CA exist?**
+
+**Answer:** Compromise of the root key collapses the entire chain, and removing the root from trust stores takes
+years. The intermediate CA does the day-to-day work; if it is compromised, only that one is revoked.
+
+---
+
+# Question 8
+
+**Why shouldn't the key be placed in software? Alternative?**
+
+**Answer:** A whitebox attacker can extract a key embedded in software. Alternative: HSM/TEE (PKCS#11); otherwise whitebox + a layer (Week 11).
 
 ---
 
 <!-- _class: yogun -->
 
-# Which Mode?
+# Glossary
 
-| Need | Choice |
+| Term | Meaning |
 | --- | --- |
-| Confidentiality + integrity | AES-GCM / ChaCha20-Poly1305 |
-| Speed only (no hardware AES) | ChaCha20-Poly1305 |
-| Never | ECB |
-| Legacy CBC system | + encrypt-then-MAC, a single error |
-
----
-
-<!-- _class: yogun -->
-
-# Which Asymmetric Algorithm?
-
-| Need | Choice |
-| --- | --- |
-| Signature (modern) | Ed25519 |
-| Key agreement | X25519 |
-| RSA encryption | RSA-OAEP (≥3072) |
-| RSA signature | RSA-PSS |
-
----
-
-# Decision Rule
-
-- Choose current, standard, properly used.
-- AEAD first; ECC first.
-- Write the decision and its rationale into **S8**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Ten Common Crypto Mistakes
-
-<!-- Speaker note: One mistake per slide: wrong → right. Can move through it quickly. -->
-
----
-
-# Mistake 1 · Writing Your Own Crypto
-
-- **Wrong:** your own "encryption" algorithm.
-- **Right:** a proven library, a standard algorithm.
-
----
-
-# Mistake 2 · ECB Mode
-
-- **Wrong:** ECB (pattern leaks).
-- **Right:** AEAD (GCM / ChaCha20-Poly1305).
-
----
-
-# Mistake 3 · IV/Nonce Reuse
-
-- **Wrong:** a fixed or repeating nonce.
-- **Right:** a unique, non-repeating nonce.
-
----
-
-# Mistake 4 · Encryption Without Integrity
-
-- **Wrong:** CBC alone, no MAC.
-- **Right:** AEAD or encrypt-then-MAC.
-
----
-
-# Mistake 5 · Raw RSA / Wrong Padding
-
-- **Wrong:** raw RSA, PKCS#1 v1.5.
-- **Right:** OAEP (encryption), PSS (signing).
-
----
-
-# Mistake 6 · Weak Digest
-
-- **Wrong:** MD5, SHA-1.
-- **Right:** SHA-256+.
-
----
-
-# Mistake 7 · Not Checking the Signature Return Value
-
-- **Wrong:** `if (verify(...))`.
-- **Right:** `== 1`, and the version is covered.
-
----
-
-# Mistake 8 · Not Checking the Chain/Name
-
-- **Wrong:** looking only at the signature.
-- **Right:** the four questions + SAN checking.
-
----
-
-# Mistake 9 · Fail-Open Revocation
-
-- **Wrong:** accepting when OCSP is unreachable.
-- **Right:** Must-Staple, short lifetimes.
-
----
-
-# Mistake 10 · Embedding the Key in Plaintext
-
-- **Wrong:** `static uint8_t k[16]`.
-- **Right:** HSM/TEE; otherwise whitebox + a layer (Week 11).
-
----
-
-<!-- _class: bolum -->
-
-# Appendix E · Setting Up TLS in Code (a Critical Read)
-
----
-
-# Turning Off Certificate Validation
-
-```c
-/* ASLA: */
-SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-```
-
-This opens the door to MITM. A line left in "for testing" is a catastrophe in the field.
-
----
-
-# Skipping Name Checking
-
-- If the chain is valid but the **name** is not verified, the attacker's valid certificate is accepted.
-- The hostname (SAN) must always be checked.
-
----
-
-# Pinning · Use with Care
-
-- SPKI pinning is strong, but without a **backup pin** you get locked out when the key changes.
-- At least one backup pin.
-
----
-
-# Critical Reading Rule
-
-Ask this when reading TLS setup code:
-
-- Is validation turned on?
-- Is the name checked?
-- Is it **fail-closed** on error?
-
----
-
-<!-- _class: bolum -->
-
-# Appendix F · Quick Reference
+| AEAD | Encryption + integrity together |
+| Encrypt-then-MAC | The correct order |
+| OAEP/PSS | RSA encryption/signature padding |
+| Ed25519/X25519 | Signature / key agreement |
+| SAN | Certificate name checking |
+| CRL/OCSP | Revocation list / on-the-spot query |
 
 ---
 
@@ -1754,21 +1510,18 @@ Ask this when reading TLS setup code:
 
 ---
 
-<!-- _class: yogun -->
+<!-- _class: baslik -->
 
-# Crypto Checklist
+# Next Week
 
-- [ ] AEAD (GCM), nonce never repeated
-- [ ] Integrity is present (AEAD/EtM)
-- [ ] RSA-OAEP/PSS or Ed25519/X25519
-- [ ] Signature `==1` + version covered
-- [ ] Chain + SAN validated, fail-closed
-- [ ] Key lifecycle + storage documented
+**Week 11 — Whitebox Cryptography**
 
----
+This week we saw the "entrust it to hardware" path for protecting a key (HSM, PKCS#11, `CKA_EXTRACTABLE=false`,
+Section 11). Week 11 asks the same question with no hardware available: how do you protect a key inside an
+application that is pure software, with no access to any HSM? Table-based whitebox AES and the attacks built
+against it (BGE, DCA, DFA) are the software-side counterpart of this week's "the key must never be exposed"
+principle.
 
-# Final Word (Week 10)
-
-> Judge cryptography not by "on/off," but by whether it is **used correctly**.
-
-The right mode, the right padding, a verified signature, a checked chain, a well-managed key.
+> This week in one sentence: in cryptography, security lies less in the right algorithm than in the right
+> **usage** — AEAD, the right padding, a verified signature, a checked chain, a well-managed key. Judge
+> cryptography not by "on/off," but by whether it is used correctly.

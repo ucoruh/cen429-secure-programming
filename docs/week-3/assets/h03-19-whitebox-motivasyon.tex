@@ -1,0 +1,27 @@
+% Hafta 3 — Whitebox kriptografiye neden ihtiyaç duyuldu?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-19-whitebox-motivasyon.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Whitebox kriptografiye neden ihtiyaç duyuldu?};
+  \node[altbaslik] at (b.south west) {11. haftanın kapısı burada açılıyor};
+
+  \node[kotukutu=32mm, minimum height=22mm, below=12mm of b.south west, anchor=north west, xshift=4mm] (n1)
+    {\kb{Sorun}\\anahtar kullanıldığı an\\bellekte AÇIK durur};
+  \node[uyarikutu=32mm, minimum height=22mm, right=of n1] (n2)
+    {\kb{Kısmi çözüm}\\güvenli silme +\\bellek kilidi};
+  \node[uyarikutu=32mm, minimum height=22mm, right=of n2] (n3)
+    {\kb{Kalan açık}\\pencere daraldı,\\kapanmadı};
+  \node[morkutu=38mm, minimum height=22mm, right=of n3] (n4)
+    {\kb{Whitebox}\\anahtar tablolara gömülür,\\hiç açık var olmaz};
+
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \draw[ok] (n3.east) -- (n4.west);
+
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0] (satirfit) {};
+  \node[dip, text width=170mm, below=10mm of satirfit.south, anchor=north]
+    {Whitebox sihir değildir: anahtar çıkarmayı geciktirir, diğer katmanlarla anlam kazanır.};
+\end{tikzpicture}
+\end{document}

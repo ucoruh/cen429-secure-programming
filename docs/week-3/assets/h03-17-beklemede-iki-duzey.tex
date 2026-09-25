@@ -1,0 +1,31 @@
+% Hafta 3 — Beklemede veri: iki düzey, iki tehdit modeli
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-17-beklemede-iki-duzey.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Beklemede veri: iki düzey, iki tehdit modeli};
+  \node[altbaslik] at (b.south west) {hangi tehdide karşı koruduğunuzu önce yazın};
+
+  \node[uyarikutu=68mm, minimum height=52mm, below=10mm of b.south west, anchor=north west, xshift=6mm] (sol)
+    {\kb{TÜM DİSK / DOSYA}\\[4pt]
+     LUKS, BitLocker, XTS-AES\\[2pt]
+     cihaz kapalıyken korur\\[2pt]
+     açıkken her şey okunur\\[2pt]
+     yedek çalınırsa yeter};
+  \node[iyikutu=68mm, minimum height=52mm, right=22mm of sol] (sag)
+    {\kb{ALAN / SÜTUN}\\[4pt]
+     yalnız hassas alan AEAD ile\\[2pt]
+     uygulama açıkken bile korur\\[2pt]
+     anahtar yönetimi gerekir\\[2pt]
+     arama/indeks zorlaşır};
+
+  \coordinate (usttepe) at ($(sol.north east)!0.5!(sag.north west)$);
+  \coordinate (alttepe) at ($(sol.south east)!0.5!(sag.south west)$);
+  \draw[draw=cizgi, line width=1pt] (usttepe) -- (alttepe);
+
+  \coordinate (orta) at ($(sol.south)!0.5!(sag.south)$);
+  \node[dip, text width=155mm, below=10mm of orta, anchor=north]
+    {Kayıp telefon $\rightarrow$ disk şifreleme yeter. Ele geçirilen sunucu $\rightarrow$ alan şifreleme şart.};
+\end{tikzpicture}
+\end{document}

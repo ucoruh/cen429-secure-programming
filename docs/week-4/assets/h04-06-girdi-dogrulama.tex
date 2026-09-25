@@ -1,0 +1,25 @@
+% Hafta 4 — Güven sınırında girdi doğrulama
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-06-girdi-dogrulama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 12mm]
+  \node[baslik] (b) at (0,0) {Güven sınırında girdi doğrulama};
+  \node[altbaslik] at (b.south west) {her dış girdi bu kapıdan geçer};
+
+  \node[kotukutu=28mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Dış girdi}\\kullanıcı · dosya · ağ};
+  \node[kutu=28mm, right=of n1] (n2) {\kb{1· Tip ve uzunluk}\\sınırı denetle};
+  \node[kutu=28mm, right=of n2] (n3) {\kb{2· Kanonikleştir}\\tek doğru yazım};
+  \node[kutu=28mm, right=of n3] (n4) {\kb{3· İzin listesi}\\beklenen değerler};
+  \node[iyikutu=28mm, right=of n4] (n5) {\kb{Güvenli kullanım}\\yoksa REDDET};
+
+  \draw[ok] (n1) -- (n2);
+  \draw[ok] (n2) -- (n3);
+  \draw[ok] (n3) -- (n4);
+  \draw[ok] (n4) -- (n5);
+
+  \node[fit=(n1)(n2)(n3)(n4)(n5), inner sep=0] (satirfit) {};
+  \node[dip, text width=175mm, below=10mm of satirfit.south, anchor=north]
+    {Kara liste değil İZİN listesi: neyin yasak olduğunu değil, neyin serbest olduğunu yazın.};
+\end{tikzpicture}
+\end{document}

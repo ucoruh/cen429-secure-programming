@@ -1,0 +1,23 @@
+% Hafta 10 — Encrypt-then-MAC: doğru sıra
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-01-encrypt-then-mac.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 8mm]
+  \node[baslik] (b) at (0,0) {Encrypt-then-MAC: doğru sıra};
+  \node[altbaslik, text width=175mm] at (b.south west) {alıcı geçersiz metni hiç çözmez $\rightarrow$ dolgu kâhini kapanır};
+
+  \node[kutu=30mm, below=10mm of b.south west, anchor=north west] (k1) {\kb{1 $\cdot$ ŞİFRELE}\\\kod{c = ENC(k1, m)}};
+  \node[kutu=30mm, right=of k1] (k2) {\kb{2 $\cdot$ MAC'LE}\\\kod{t = MAC(k2, c)}};
+  \node[koyukutu=26mm, right=of k2] (k3) {\kb{3 $\cdot$ GÖNDER}\\\kod{c || t}};
+  \node[kotukutu=34mm, right=of k3] (k4) {\kb{4 $\cdot$ ÖNCE MAC doğrula}\\geçmezse\\ÇÖZMEDEN REDDET};
+  \node[iyikutu=28mm, right=of k4] (k5) {\kb{5 $\cdot$ ÇÖZ}\\m elde edilir};
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+  \draw[ok, draw=soluk] (k4.east) -- (k5.west);
+
+  \node[kotudip, text width=185mm, below=10mm of k1.south -| k1, anchor=north west] {%
+    Yanlış sıra (önce çöz, sonra doğrula) dolgu hatası sızdırır ve oracle açar.};
+\end{tikzpicture}
+\end{document}

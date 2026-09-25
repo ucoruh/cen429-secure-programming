@@ -1,0 +1,48 @@
+% Hafta 1 — Saldırı ağacı: ödeme anahtarını ele geçir
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-06-saldiri-agaci.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 12mm]
+  \node[baslik] (b) at (0,0) {Saldırı ağacı: ödeme anahtarını ele geçir};
+  \node[altbaslik] (alt) at (b.south west) {VEYA = tek dal yeter · VE = tüm dallar gerekir};
+
+  \node[koyukutu=90mm, below=8mm of alt.south west, anchor=north, xshift=45mm] (hedef)
+    {\kb{HEDEF: Ödeme anahtarını ele geçir}};
+  \node[etiket, text=kotu, below=5mm of hedef] (gate0) {\kb{VEYA}};
+
+  \node[uyarikutu=44mm, below=22mm of gate0.south west, anchor=north west] (b1)
+    {\kb{Yerel veritabanını kopyala ve çöz}};
+  \node[uyarikutu=44mm, right=14mm of b1] (b2)
+    {\kb{Kullanım anında bellekten oku}};
+  \node[uyarikutu=44mm, right=14mm of b2] (b3)
+    {\kb{Sunucu ile telefon}\\arasında dinle};
+
+  \draw[ok, draw=soluk] (hedef.south) -- (b1.north);
+  \draw[ok, draw=soluk] (hedef.south) -- (b2.north);
+  \draw[ok, draw=soluk] (hedef.south) -- (b3.north);
+
+  \node[etiket, text=iyi, below=5mm of b1] (g1) {\kb{VE}};
+  \node[kutu=44mm, below=22mm of b1] (b1a) {Root yetkisi al};
+  \node[kutu=44mm, below=24mm of b1a] (b1b) {DB anahtarını bul};
+  \draw[ok, draw=soluk] (b1.south) -- (b1a.north);
+  \draw[ok, draw=soluk] (b1a.south) -- (b1b.north);
+
+  \node[etiket, text=kotu, below=5mm of b2] (g2) {\kb{VEYA}};
+  \node[kutu=44mm, below=22mm of b2] (b2a) {Debugger bağla};
+  \node[kutu=44mm, below=24mm of b2a] (b2b) {Bellek dökümü al};
+  \node[kutu=44mm, below=24mm of b2b] (b2c) {Fonksiyona kanca at};
+  \draw[ok, draw=soluk] (b2.south) -- (b2a.north);
+  \draw[ok, draw=soluk] (b2a.south) -- (b2b.north);
+  \draw[ok, draw=soluk] (b2b.south) -- (b2c.north);
+
+  \node[etiket, text=iyi, below=5mm of b3] (g3) {\kb{VE}};
+  \node[kutu=44mm, below=22mm of b3] (b3a) {TLS'i kır / sahte sertifika kabul ettir};
+  \node[kutu=44mm, below=24mm of b3a] (b3b) {Mesaj şifrelemesini kır};
+  \draw[ok, draw=soluk] (b3.south) -- (b3a.north);
+  \draw[ok, draw=soluk] (b3a.south) -- (b3b.north);
+
+  \node[dip, text width=170mm, below=9mm of b2c.south -| b2, anchor=north]
+    {Savunma, saldırganı VE düğümlerine zorlar: birini kesmek saldırıyı durdurur.};
+\end{tikzpicture}
+\end{document}

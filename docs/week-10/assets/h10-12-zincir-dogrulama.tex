@@ -1,0 +1,21 @@
+% Hafta 10 — Zincir doğrulamanın dört sorusu
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-12-zincir-dogrulama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Zincir doğrulamanın dört sorusu};
+  \node[altbaslik, text width=170mm] at (b.south west) {+ ad denetimi (SAN) --- beşi birden geçmeden kabul edilmez};
+
+  \node[kutu=40mm, below=10mm of b.south west, anchor=north west] (k1) {\kb{1 $\cdot$ İmza zinciri}\\köke kadar geçerli mi?};
+  \node[kutu=40mm, right=of k1] (k2) {\kb{2 $\cdot$ Süre}\\her sertifika geçerli mi?};
+  \node[uyarikutu=40mm, right=of k2] (k3) {\kb{3 $\cdot$ Amaç / kısıt}\\CA:TRUE, KeyUsage, EKU};
+  \node[kotukutu=40mm, right=of k3] (k4) {\kb{4 $\cdot$ İptal}\\CRL / OCSP};
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+
+  \node[dip, text width=175mm, below=10mm of k1.south -| k1, anchor=north west] {%
+    Eksik ara sertifika zinciri kurdurmaz; fail-open ile ``geçti'' saymak en sık hatadır.};
+\end{tikzpicture}
+\end{document}

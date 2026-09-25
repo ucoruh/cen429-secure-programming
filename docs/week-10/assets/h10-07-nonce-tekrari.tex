@@ -1,0 +1,21 @@
+% Hafta 10 — Nonce tekrarı neden felaket?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-07-nonce-tekrari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Nonce tekrarı neden felaket?};
+  \node[altbaslik, text width=170mm] at (b.south west) {gizlilik VE bütünlük birlikte çöker};
+
+  \node[kotukutu=38mm, below=10mm of b.south west, anchor=north west] (k1) {\kb{Aynı anahtar + aynı nonce}\\iki farklı mesajda};
+  \node[kotukutu=38mm, right=of k1] (k2) {\kb{Anahtar akışı TEKRAR eder}\\K aynı};
+  \node[kotukutu=38mm, right=of k2] (k3) {\kb{C1 $\oplus$ C2 = P1 $\oplus$ P2}\\şifre düşer};
+  \node[kotukutu=38mm, right=of k3] (k4) {\kb{GCM'de kimlik anahtarı}\\sahtecilik mümkün};
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+
+  \node[kotudip, text width=170mm, below=10mm of k1.south -| k1, anchor=north west] {%
+    Nonce gizli olmak zorunda değil ama anahtar başına BENZERSİZ olmak zorundadır.};
+\end{tikzpicture}
+\end{document}

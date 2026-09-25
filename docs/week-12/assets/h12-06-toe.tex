@@ -1,0 +1,22 @@
+% Hafta 12 — TOE neden benzersiz tanımlanır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-06-toe.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {TOE neden benzersiz tanımlanır?};
+  \node[altbaslik] at (b.south west) {sertifika bir ANLIK FOTOĞRAFTIR};
+
+  \node[kutu=32mm, below=16mm of b.south west, anchor=north west] (u1) {\kb{Ürün adı + SÜRÜM}};
+  \node[kutu=32mm, right=of u1] (u2) {\kb{Yapı (build) kimliği}\\git commit};
+  \node[koyukutu=32mm, right=of u2] (u3) {\kb{İkili ÖZETİ}\\SHA-256};
+  \node[iyikutu=32mm, right=of u3] (u4) {\kb{TOE kimliği}\\sertifikanın kapsamı};
+
+  \draw[anaok] (u1) -- (u2);
+  \draw[anaok] (u2) -- (u3);
+  \draw[anaok] (u3) -- (u4);
+
+  \node[kotudip, text width=150mm, below=8mm of u4.south -| u2, anchor=north] {%
+    Tanım belirsizse başka bir sürüm ``sertifikalı'' görünür --- sertifika geçersizleşir.};
+\end{tikzpicture}
+\end{document}

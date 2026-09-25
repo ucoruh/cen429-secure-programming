@@ -10,8 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -27,15 +25,59 @@ Konuşma notu: Bu hafta odak "programı sağlamlaştırma"dan "program çalış�
 
 ---
 
-# Bugünün planı (3 saat)
+# Bugün
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 0–2 | Temel kavramlar · RASP nedir · RASP mimarisi |
-| 2 | 3–7 | Bütünlük · hata ayıklayıcı · emülatör · kanca/Frida · bellek koruması |
-| 3 | 8–13 | Kök/imza · kontrol akışı bütünlüğü · tepki politikası · sınırlar · proje |
+| 1 | 1–3 | RASP nedir, RASP mimarisi · Bütünlük denetimi (self-hashing) **Demo 1** |
+| 2 | 4–6 | Hata ayıklayıcı algılama **Demo 2** · Ortam/emülatör algılama **Demo 3** · Kanca/enstrümantasyon algılama **Demo 4** |
+| 3 | 7–10 | Bellek koruması · Kök/imza doğrulama **Demo 6-7** · Kontrol akışı bütünlüğü **Demo 5** · Tepki politikası **Demo 8** · Proje |
+
+**Öğrenme çıktısı (ÖÇ.3):** RASP denetimlerini (bütünlük, anti-debug, ortam, kanca) tanımak · tepki politikası ve cihaz bağlama tasarlamak · RASP'in sınırlarını ve etik çerçevesini açıklamak
+
+> RASP = **Runtime Application Self-Protection**: uygulamanın çalışırken kendini **izlemesi** ve tehdide **tepki** vermesi. Algıla → savun → caydır. Ama tek denetim değil, **katman**.
 
 <!-- Konuşma notu: Bu hafta çalışma anı korumalarını (RASP) işliyoruz. Sıfır ön bilgi; her terimi tanımlayacağız. Ana çerçeve: RASP algılar, savunur, caydırır; ama tek başına değil, katmanlı. -->
+
+---
+
+# Önceki haftalardan gelenler
+
+- **Beyaz kutu saldırgan modeli** — cihazın sahibi olan kullanıcının aynı zamanda saldırgan olabildiği; belleği okuyup hata ayıklayıcı bağlayabildiği model **(Hafta 1)**
+- **Özet, MAC ve HMAC** — özet bir veriden hesaplanan tek yönlü parmak izi; HMAC paylaşılan bir gizli anahtarla mesajın değişmediğini kanıtlar **(Hafta 3)**
+- **Ana sırdan anahtar türetme (HKDF)** — bir ana sırdan Extract ve Expand adımlarıyla yeni anahtarlar türetme **(Hafta 3)**
+- **Cihaz bağlama** — bir sırrın yalnızca belirli bir cihazda anlamlı olması, güvenlik kabuğunun en iç katmanı **(Hafta 3)**
+
+Bu hafta: beyaz kutu modeli → **MATE** saldırgan modeli (Bölüm 1); HMAC → uygulamanın kendi kodunu doğrulamak (Bölüm 3); HKDF → cihaz parmak izinden anahtar türetmek (Bölüm 10); cihaz bağlama → bir RASP tepki politikasının parçası (Bölüm 10).
+
+---
+
+<!-- _class: yogun -->
+
+# Bu haftanın kavramları
+
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
+
+| Kavram | Nerede |
+| --- | --- |
+| RASP (algıla/savun/caydır) | Bölüm 1 |
+| MATE saldırgan modeli | Bölüm 1 |
+| RASP mimarisi (ne zaman/nerede/nasıl) | Bölüm 2 |
+| Bütünlük / self-hashing | Bölüm 3 |
+| Hata ayıklayıcı (debugger) algılama | Bölüm 4 |
+| Emülatör/VM algılama | Bölüm 5 |
+| Kanca (hook) / LD_PRELOAD algılama | Bölüm 6 |
+| Dinamik bellek koruması | Bölüm 7 |
+| Kök (root) göstergesi | Bölüm 8 |
+| Bileşen imza doğrulaması | Bölüm 8 |
+| Kontrol akışı sayacı | Bölüm 9 |
+| Tepki politikası ve cihaz bağlama | Bölüm 10 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. RASP nedir?
 
 ---
 
@@ -49,167 +91,6 @@ Konuşma notu: Bu hafta odak "programı sağlamlaştırma"dan "program çalış�
 - **bugün** — **OWASP MASVS-RESILIENCE** bunu denetlenebilir gereksinime çevirir
 
 > RASP yeni bir fikir değil: **MATE saldırganına** verilen kurumsal cevabın adı.
-
----
-
-
-# Bu hafta nereye oturuyor?
-
-- **4–5. hafta:** kodu **statik** sağlamlaştırdık (derleme, gizleme).
-- **Bu hafta (6):** program **çalışırken** kendini korur → RASP.
-- **9/11/14:** gizleme ve whitebox RASP ile birlikte çalışır.
-
----
-
-# Öğrenme çıktısı
-
-Bu hafta **ÖÇ.3** üstünedir.
-
-Sonunda yapabileceğiniz:
-
-- RASP denetimlerini (bütünlük, anti-debug, ortam, kanca) tanımak
-- Tepki politikası ve cihaz bağlama tasarlamak
-- RASP'in **sınırlarını** ve etik çerçevesini açıklamak
-
----
-
-# Ana fikir
-
-> RASP = **Runtime Application Self-Protection**: uygulamanın çalışırken kendini **izlemesi** ve tehdide **tepki** vermesi.
-
-Algıla → savun → caydır. Ama tek denetim değil, **katman**.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Temel kavramlar (sıfırdan)
-
-<!-- Konuşma notu: RASP terimlerini sıfırdan tanımlıyoruz. -->
-
----
-
-# Çalışma anı (runtime) nedir?
-
-- **Çalışma anı:** programın **çalıştığı** an (derleme değil).
-- RASP korumaları burada devreye girer: program kendini **çalışırken** izler.
-
----
-
-# RASP nedir?
-
-- **RASP (Runtime Application Self-Protection):** uygulamanın çalışırken kendini koruması.
-- Kurcalama, hata ayıklama, sahte ortam gibi tehditleri **algılar** ve **tepki** verir.
-
----
-
-# Hata ayıklayıcı (debugger)
-
-- **Debugger:** programı adım adım çalıştırıp durduran, belleği okuyan araç (gdb, lldb).
-- Saldırgan bununla akışı izler, değer değiştirir.
-- RASP "bana debugger bağlı mı?" diye bakar.
-
----
-
-# Emülatör ve sanal makine
-
-- **Emülatör/VM:** bir cihazı **taklit eden** yazılım ortamı (Android emülatör, QEMU).
-- Saldırgan analizini gerçek cihaz yerine burada yapar (daha kolay).
-- RASP sahte ortamı sezmeye çalışır.
-
----
-
-# Kanca (hook) ve enstrümantasyon
-
-- **Kanca (hook):** bir fonksiyonun çağrısını **araya girip** değiştirme.
-- **Enstrümantasyon:** çalışan programa kod enjekte edip davranışını izleme/değiştirme.
-- Araç: **Frida** (çok yaygın dinamik enstrümantasyon aracı).
-
----
-
-# LD_PRELOAD
-
-- **LD_PRELOAD:** Linux'ta bir kütüphaneyi programdan **önce** yükletip fonksiyonları değiştirme yolu.
-- Saldırgan bununla kritik fonksiyonları **kancalayabilir**.
-- RASP bunu tespit etmeye çalışır.
-
----
-
-# Bütünlük ve self-hashing
-
-- **Bütünlük (integrity):** kodun/dosyanın **değişmemiş** olması.
-- **Self-hashing:** programın **kendi kodunun** özetini hesaplayıp beklenenle karşılaştırması.
-- Kurcalanmışsa özet tutmaz.
-
----
-
-# Self-hashing — şema
-
-![w:950](assets/h06-03-self-hashing.svg)
-
----
-
-# Özet (checksum/hash)
-
-- **Özet:** bir veriden hesaplanan sabit boyutlu **parmak izi** (SHA-256).
-- Veri değişirse özet değişir.
-- Bütünlük denetiminin temeli.
-
----
-
-# Kök (root) / jailbreak
-
-- **Kök (root):** cihaz üzerinde tam yetki (normalde kısıtlı).
-- Köklü cihazda korumalar zayıflar; saldırgan her şeye erişir.
-- RASP "cihaz köklü mü?" diye bakar.
-
----
-
-# İmza doğrulama
-
-- Uygulama paketleri **dijital imzayla** imzalanır.
-- **İmza doğrulama:** çağıran/yüklenen bileşenin imzasının beklenen olup olmadığını denetleme.
-- Sahte/değiştirilmiş bileşeni yakalar.
-
----
-
-# Kontrol akışı bütünlüğü (sayaç)
-
-- Kritik denetimler **tek bir `if`** ile yapılırsa, tek nokta yamayla atlanır.
-- **Kontrol akışı sayacı:** denetimlerin doğru **sırayla** geçtiğini sayarak doğrulama.
-- Tek yama yetmez hale gelir.
-
----
-
-# Tepki politikası (response)
-
-- **Tepki politikası:** RASP bir tehdit görünce **ne yapacak**?
-- Sessizce kapan, işlevi kısıtla, sunucuya bildir, gecikmeli tepki…
-- "Hemen çök" her zaman en iyisi değildir.
-
----
-
-# Cihaz bağlama ve caydırma
-
-- **Cihaz bağlama:** verilerin/anahtarların yalnız **belirli cihazda** anlamlı olması.
-- **Caydırma (deterrence):** saldırıyı zahmetli/riskli kılıp vazgeçirme.
-- RASP'in nihai amacı: maliyeti yükseltmek.
-
----
-
-# Şimdi hazırız
-
-Terimler:
-
-çalışma anı · RASP · debugger · emülatör/VM · hook/Frida · LD_PRELOAD · bütünlük/self-hashing · özet · kök · imza doğrulama · kontrol akışı sayacı · tepki politikası · cihaz bağlama · caydırma
-
-Şimdi: RASP nedir, ne yapar?
-
----
-
-<!-- _class: bolum -->
-
-# 1. RASP nedir?
 
 ---
 
@@ -252,7 +133,6 @@ WAF "dışarıdan gelen istek zararlı mı?" sorar; RASP "**ben** kurcalandım m
 ![w:1000](assets/h06-01-rasp-dongusu.svg)
 
 ---
-
 
 # RASP neyi tamamlar?
 
@@ -396,7 +276,6 @@ Denetim sonucu bir `if`'e değil, **sonraki hesabın verisine** karışır:
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 3. Bütünlük denetimi (self-hashing)
@@ -449,6 +328,12 @@ Denetim sonucu bir `if`'e değil, **sonraki hesabın verisine** karışır:
 - Özet **tutmuyorsa** → kurcalama (yama) algılanmıştır.
 - Sonuç doğrudan bir `if`'e değil, bir **tepkiye** bağlanır (10. bölüm).
 - "Hemen çök" yerine daha akıllı bir tepki tercih edilir.
+
+---
+
+# Self-hashing — şema
+
+![w:950](assets/h06-03-self-hashing.svg)
 
 ---
 
@@ -554,13 +439,14 @@ Denetimi tek noktada ve yalnız başlangıçta yapmayın; **periyodik, çoklu ve
 
 # Neden debugger tehlikeli?
 
+- **Hata ayıklayıcı (debugger):** programı adım adım çalıştırıp durduran, belleği okuyan araç (gdb, lldb, x64dbg, WinDbg).
 - Saldırgan programı **durdurup** belleği okur, değer değiştirir.
 - Denetimleri tek tek atlayabilir.
 - RASP "bana debugger bağlı mı?" diye bakar.
 
 ---
 
-# Algılama yolları (kavram)
+# Debugger algılama yolları (kavram)
 
 - İşletim sisteminin "izleniyorum mu?" bilgisini sorma.
 - Belirli hata ayıklama arayüzlerinin durumu.
@@ -667,7 +553,6 @@ Birden çok bağımsız sinyal toplayın, sonucu bir davranışa bağlayın, tep
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. Ortam algılama: emülatör/VM
@@ -682,6 +567,7 @@ Birden çok bağımsız sinyal toplayın, sonucu bir davranışa bağlayın, tep
 
 # Neden emülatör?
 
+- **Emülatör/VM:** bir cihazı **taklit eden** yazılım ortamı (Android emülatör, QEMU).
 - Saldırgan analizini gerçek cihaz yerine **emülatörde** yapar.
 - Emülatörde durdurmak, izlemek, sıfırlamak kolaydır.
 - RASP "gerçek cihazda mıyım?" diye bakar.
@@ -779,6 +665,7 @@ Sert tepki yerine risk skoru; sonuç sunucu tarafı doğrulamayla birlikte değe
 - Saldırgan kritik bir fonksiyonu **kancalar**: çağrıyı araya girip değiştirir.
 - Örnek: "imza geçerli mi?" fonksiyonunu her zaman "evet" döndürtmek.
 - Araç: **Frida**, Xposed.
+- **Enstrümantasyon:** çalışan programa kod enjekte edip davranışını izleme/değiştirme; Frida bunun en yaygın aracıdır.
 
 ---
 
@@ -803,7 +690,7 @@ Sert tepki yerine risk skoru; sonuç sunucu tarafı doğrulamayla birlikte değe
 
 ---
 
-# Algılama yolları (kavram)
+# Kanca algılama yolları (kavram)
 
 - Beklenmeyen yüklenmiş kütüphaneler/modüller.
 - Bilinen enstrümantasyon araçlarının izleri (bellekte, portlarda).
@@ -973,12 +860,6 @@ Saldırgan yalnız `deger`'i değiştirirse tutarsızlık yakalanır.
 
 ---
 
-# RASP'in sınırları — şema
-
-![w:900](assets/h06-15-rasp-sinirlari.svg)
-
----
-
 # Bu bölümün kuralı (7)
 
 > Bellekte **az, kısa ve dağınık** tutun; kritik değeri **gölge kopya + özetle** koruyun.
@@ -1004,7 +885,6 @@ Tutarsızlık bir tepkiye bağlanmalı — sessizce yok saymak korumayı boşa �
 3. **Kontrol akışının atlanmasını:** kritik denetimler çalıştıkça sayaç artar; beklenen değere ulaşmazsa bir denetim **baypas** edilmiştir.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1132,12 +1012,6 @@ if (imza_gecerli()) devam();   /* tek nokta */
 
 ---
 
-# Cihaz bağlama — şema
-
-![w:950](assets/h06-12-cihaz-baglama.svg)
-
----
-
 <!-- _class: kucuk -->
 
 # Demo 5 · skip saldırısı — gerçek çıktı
@@ -1174,6 +1048,7 @@ Güvenlik kontrollerini bir **kontrol akışı sayacına** ve mümkünse bir **v
 
 # "Hemen çök" neden kötü?
 
+- **Tepki politikası:** RASP bir tehdit görünce **ne yapacağına** karar vermesidir.
 - Saldırgana "işte tam burada denetim var" der.
 - Denetimi bulup atlamayı kolaylaştırır.
 - Daha akıllı tepkiler gerekir.
@@ -1267,6 +1142,12 @@ Kontroller geçse **bile** cihaz-bağlı anahtar tutmadı → sır **açılamad�
 
 ---
 
+# Cihaz bağlama — şema
+
+![w:950](assets/h06-12-cihaz-baglama.svg)
+
+---
+
 # Cihaz bağlama
 
 - Anahtar/veri yalnız **belirli cihazda** anlamlı.
@@ -1290,6 +1171,22 @@ Kontroller geçse **bile** cihaz-bağlı anahtar tutmadı → sır **açılamad�
 > RASP saldırıyı **imkânsız** kılmaz; **zahmetli ve riskli** kılar.
 
 Yeterince katman + sunucu denetimi → saldırgan vazgeçer ya da yakalanır.
+
+---
+
+# Tepki: nasıl karar verilir?
+
+1. **Gösterge ne kadar güvenilir?** Çok güvenilir → reddet + sunucuya bildir. Belirsiz → devam et, risk skorunu artır.
+2. **Kullanıcı deneyimi etkilenir mi?** Yanlış pozitif riski yüksekse **sert tepki verme**; sessiz kısıtlama + sunucu denetimi tercih et.
+3. **Tepki denetimi ele verir mi?** Hemen çökme kaynağı gösterir; **gecikmeli/dolaylı** tepki kaynağı gizler.
+
+---
+
+<!-- _class: yogun -->
+
+# Tepki akışı · tek bakış
+
+![w:900](assets/h06-11-tepki.svg)
 
 ---
 
@@ -1319,7 +1216,6 @@ Tamper anında sırrı **silin**, çökmek yerine **decoy** döndürün, olayı 
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 11. Sınırlar ve etik
@@ -1332,6 +1228,12 @@ Tamper anında sırrı **silin**, çökmek yerine **decoy** döndürün, olayı 
 - Köklü cihazda güç azalır.
 - Yanlış pozitif → gerçek kullanıcı mağdur olabilir.
 - Bakım maliyeti yüksek (araçlar gelişir).
+
+---
+
+# RASP'in sınırları — şema
+
+![w:900](assets/h06-15-rasp-sinirlari.svg)
 
 ---
 
@@ -1359,6 +1261,130 @@ Tamper anında sırrı **silin**, çökmek yerine **decoy** döndürün, olayı 
 
 ---
 
+# Uçtan uca: bir RASP katmanı kurmak
+
+Sentetik bir "lisans denetimi"ni RASP ile koruyalım:
+
+- bütünlük denetimi
+- hata ayıklayıcı denetimi
+- akıllı tepki
+
+<!-- Konuşma notu: Sentetik bir örnekte bütünlük + anti-debug + tepki adım adım kuruyoruz. -->
+
+---
+
+# Adım 1 · korunacak nokta
+
+```c
+int lisans_gecerli(void) {
+    /* ... kontrol ... */
+    return sonuc;   /* saldırganın hedefi */
+}
+```
+
+Bu fonksiyon ve onu çağıran akış kritik.
+
+---
+
+# Adım 2 · bütünlük denetimi ekle
+
+- Derleme sonrası bu bölgenin özetini kaydet.
+- Çalışırken yeniden hesapla, karşılaştır.
+- Fark → kurcalama bayrağı.
+
+---
+
+# Adım 3 · anti-debug ekle
+
+- Zamanlama + OS göstergesiyle "izleniyor muyum?".
+- Sonucu tek başına bırakma; başka denetimle **birleştir**.
+
+---
+
+# Adım 4 · sonucu davranışa bağla
+
+- `lisans_gecerli` sonucu düz true/false değil.
+- Bütünlük + anti-debug göstergeleri, sonucun **hesabına** girer.
+- Kurcalama varsa fonksiyon **yanlış** çalışır.
+
+---
+
+# Adım 5 · tepki
+
+- Hemen çökme yerine: bayrağı sunucuya bildir, işlevi kısıtla.
+- Gecikmeli tetik: kaynağı gizle.
+
+---
+
+# Adım 6 · gizle ve çeşitlendir
+
+- Denetim kodunu gizle (9. hafta).
+- Her sürümde farklı yerleştirme (çeşitlendirme).
+- Çapraz denetim ekle.
+
+---
+
+# Adım 7 · ölç ve belgele
+
+- Kaç denetim, nerede, hangi tepki?
+- Başarım maliyeti (denetimler yavaşlatır).
+- S10'a yaz.
+
+---
+
+<!-- _class: yogun -->
+
+# RASP denetim kataloğu (1)
+
+| Denetim | Ne yakalar | Sınır |
+| --- | --- | --- |
+| Bütünlük (self-hash) | İkili yama | Özet fn. atlanabilir |
+| Anti-debug | Debugger bağlı | Bilinen yöntemler atlanır |
+| Emülatör | Sahte ortam | Yanlış pozitif |
+
+---
+
+<!-- _class: yogun -->
+
+# RASP denetim kataloğu (2)
+
+| Denetim | Ne yakalar | Sınır |
+| --- | --- | --- |
+| Hook/Frida | Fonksiyon kancası | Gizli araçlar |
+| Kök | Yetki yükseltme | Kök gizleyiciler |
+| İmza | Sahte bileşen | Anahtar sızarsa |
+| CFI sayacı | Denetim atlama | Karmaşık yama |
+
+---
+
+# Katalogdan ders
+
+- Her denetimin bir **kör noktası** var.
+- Tek başına hiçbiri yeterli değil.
+- Katalogdan **birçoğunu** seç, birleştir, çeşitlendir.
+
+---
+
+# Denetim seçimi
+
+- Varlığın değerine göre kaç katman?
+- Platforma göre hangi denetimler anlamlı?
+- Başarım bütçesi ne kadar?
+
+Kararı ve gerekçesini S10'a yaz.
+
+---
+
+# Sık yapılan hatalar
+
+- Tek denetime güvenmek.
+- Denetimi gizlememek (kolay bulunur).
+- "Hemen çök" tepkisi (kaynağı ele verir).
+- Sert tepki + yüksek yanlış pozitif (kullanıcı mağdur).
+- Sunucu denetimini atlamak (asıl güvence orada).
+
+---
+
 <!-- _class: bolum -->
 
 # 12. Proje: bu hafta (S10)
@@ -1368,9 +1394,13 @@ Tamper anında sırrı **silin**, çökmek yerine **decoy** döndürün, olayı 
 # Proje · S10 (RASP + tepki)
 
 - [ ] En az iki farklı RASP denetimi (ör. bütünlük + anti-debug).
+- [ ] Denetimler **gizli** ve **çeşitlendirilmiş**.
+- [ ] Çapraz denetim (Java ↔ native) varsa belgele.
 - [ ] Denetimlerin **ne zaman/nerede** çalıştığını belgele.
-- [ ] Tepki politikası: tehdit görülünce ne olur?
+- [ ] Tepki politikası **akıllı** (gecikmeli/dolaylı — "hemen çök" değil).
 - [ ] Cihaz bağlama kararı ve gerekçesi.
+- [ ] Sunucu tarafı doğrulama var mı?
+- [ ] Yanlış pozitif planı.
 - [ ] Sınır ve kalan risk (neyi korumaz).
 
 ---
@@ -1496,325 +1526,14 @@ Gizleme · çoklu/örtüşen blok · çapraz denetim · sonucu davranışa bağl
 
 ---
 
-# Özet: bu haftanın tek cümlesi
+<!-- _class: baslik -->
 
-> RASP program çalışırken kendini izler ve tehdide tepki verir; ama tek denetim değil, **katmanlı, çeşitlendirilmiş,
-> gizli** denetimler ve **sunucu tarafı** doğrulama ile güç kazanır.
+# Bir sonraki hafta
 
----
+**7. hafta — Ara proje gösterimleri (RAP1)** ve **8. hafta — Quiz-1**
 
-<!-- _class: bolum -->
+Hafta 7'de bu haftaki RASP kontrollerinizi (bütünlük denetimi, hata ayıklayıcı/ortam/kanca algılama, kontrol akışı sayacı, tepki politikası) projenizde canlı göstereceksiniz. Hafta 8, 1–6. haftaları kapsayan Quiz-1'dir.
 
-# Gelecek hafta
+Ardından **Hafta 9 — Gelişmiş gizleme ve çeşitlendirme**, bu haftanın hata ayıklayıcı/ortam algılama ve "gizleme/caydırma kırılmazlık değildir" fikirlerini kod gizleme tarafında derinleştirerek sürer.
 
-**7. hafta — Ara proje gösterimi (RAP1)** ve **8. hafta — Quiz-1**
-
-Vize dönemi: projenizin ilk yarısını gösterip Quiz-1'e hazırlanın.
-
----
-
-<!-- _class: bolum -->
-
-# Ek A · Bir RASP katmanı kurmak
-
-<!-- Konuşma notu: Sentetik bir örnekte bütünlük + anti-debug + tepki adım adım kuruyoruz. -->
-
----
-
-# Hedef
-
-Sentetik bir "lisans denetimi"ni RASP ile koruyalım:
-
-- bütünlük denetimi
-- hata ayıklayıcı denetimi
-- akıllı tepki
-
----
-
-# Adım 1 · korunacak nokta
-
-```c
-int lisans_gecerli(void) {
-    /* ... kontrol ... */
-    return sonuc;   /* saldırganın hedefi */
-}
-```
-
-Bu fonksiyon ve onu çağıran akış kritik.
-
----
-
-# Adım 2 · bütünlük denetimi ekle
-
-- Derleme sonrası bu bölgenin özetini kaydet.
-- Çalışırken yeniden hesapla, karşılaştır.
-- Fark → kurcalama bayrağı.
-
----
-
-# Adım 3 · anti-debug ekle
-
-- Zamanlama + OS göstergesiyle "izleniyor muyum?".
-- Sonucu tek başına bırakma; başka denetimle **birleştir**.
-
----
-
-# Adım 4 · sonucu davranışa bağla
-
-- `lisans_gecerli` sonucu düz true/false değil.
-- Bütünlük + anti-debug göstergeleri, sonucun **hesabına** girer.
-- Kurcalama varsa fonksiyon **yanlış** çalışır.
-
----
-
-# Adım 5 · tepki
-
-- Hemen çökme yerine: bayrağı sunucuya bildir, işlevi kısıtla.
-- Gecikmeli tetik: kaynağı gizle.
-
----
-
-# Adım 6 · gizle ve çeşitlendir
-
-- Denetim kodunu gizle (9. hafta).
-- Her sürümde farklı yerleştirme (çeşitlendirme).
-- Çapraz denetim ekle.
-
----
-
-# Adım 7 · ölç ve belgele
-
-- Kaç denetim, nerede, hangi tepki?
-- Başarım maliyeti (denetimler yavaşlatır).
-- S10'a yaz.
-
----
-
-<!-- _class: bolum -->
-
-# Ek B · Mini vaka
-
----
-
-# Kurgu · ödeme uygulaması
-
-- Yerel anahtar + ödeme akışı.
-- Hedef: kurcalama ve canlı analiz zorlaşsın.
-
----
-
-# Vaka · denetim yerleşimi
-
-- **Başlangıç:** kök/emülatör/imza denetimi.
-- **Ödeme öncesi:** bütünlük + anti-debug + hook denetimi.
-- **Periyodik/rastgele:** tekrar.
-
----
-
-# Vaka · tepki
-
-- Yüksek güvenli gösterge → işlemi reddet + sunucuya bildir.
-- Zayıf gösterge → sunucu risk skorunu artır.
-- Kullanıcı deneyimini koru (yanlış pozitif).
-
----
-
-# Vaka · katmanlar
-
-- RASP + gizleme (9) + whitebox (11) + kısa ömürlü anahtar (10).
-- Sunucu tarafı: hız sınırı, anomali.
-- Bir katman aşılsa bile diğerleri sürer.
-
----
-
-# Vaka · kalan risk
-
-- Köklü cihazda kararlı saldırgan ilerleyebilir.
-- Ama: çok katman + sunucu denetimi → hasar sınırlı, saldırı pahalı.
-- Açıkça yazılır.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · RASP denetim kataloğu
-
----
-
-<!-- _class: yogun -->
-
-# Katalog (1)
-
-| Denetim | Ne yakalar | Sınır |
-| --- | --- | --- |
-| Bütünlük (self-hash) | İkili yama | Özet fn. atlanabilir |
-| Anti-debug | Debugger bağlı | Bilinen yöntemler atlanır |
-| Emülatör | Sahte ortam | Yanlış pozitif |
-
----
-
-<!-- _class: yogun -->
-
-# Katalog (2)
-
-| Denetim | Ne yakalar | Sınır |
-| --- | --- | --- |
-| Hook/Frida | Fonksiyon kancası | Gizli araçlar |
-| Kök | Yetki yükseltme | Kök gizleyiciler |
-| İmza | Sahte bileşen | Anahtar sızarsa |
-| CFI sayacı | Denetim atlama | Karmaşık yama |
-
----
-
-# Katalogdan ders
-
-- Her denetimin bir **kör noktası** var.
-- Tek başına hiçbiri yeterli değil.
-- Katalogdan **birçoğunu** seç, birleştir, çeşitlendir.
-
----
-
-# Denetim seçimi
-
-- Varlığın değerine göre kaç katman?
-- Platforma göre hangi denetimler anlamlı?
-- Başarım bütçesi ne kadar?
-
-Kararı ve gerekçesini S10'a yaz.
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · Saldırgan ↔ savunmacı
-
-<!-- Konuşma notu: Her denetim için "saldırgan ne yapar → savunma ne ekler" döngüsünü gösteriyoruz. Bu, katmanlı savunmanın neden gerekli olduğunu somutlaştırır. -->
-
----
-
-# Neden bu diyalog?
-
-Güvenlik bir **hamle-karşı hamle** oyunudur.
-
-Her savunmaya bir saldırı, her saldırıya yeni savunma.
-
-Katmanlı savunma bu yüzden gereklidir.
-
----
-
-# Bütünlük · diyalog
-
-- **Savunma:** self-hashing ekle.
-- **Saldırgan:** özet fonksiyonunu bul, hep "tutuyor" dedirt.
-- **Savunma:** özeti gizle, örtüştür, sonucu davranışa bağla.
-
----
-
-# Anti-debug · diyalog
-
-- **Savunma:** debugger denetimi ekle.
-- **Saldırgan:** denetimi bul, atla.
-- **Savunma:** çok yöntem + zamanlama + gizleme; tepkiyi gecikmeli yap.
-
----
-
-# Hook · diyalog
-
-- **Savunma:** fonksiyon baytlarını denetle.
-- **Saldırgan:** kancayı gizle, baytları geri düzelt.
-- **Savunma:** çapraz denetim + sunucu tarafı doğrulama.
-
----
-
-# Kök · diyalog
-
-- **Savunma:** kök göstergelerini denetle.
-- **Saldırgan:** kök gizleyici kullan.
-- **Savunma:** çok gösterge + sunucu risk skoru; sert tepki değil kısıtlama.
-
----
-
-# Diyalogdan ders
-
-- Tek savunma her zaman aşılır.
-- Güç: **çokluk + gizlilik + çeşitlilik + sunucu**.
-- Amaç: saldırıyı **ekonomik olmaktan çıkarmak**.
-
----
-
-<!-- _class: bolum -->
-
-# Ek E · Tepki karar akışı
-
----
-
-# "Tehdit gördüm, ne yapayım?" — 1
-
-**Soru 1:** Gösterge ne kadar güvenilir?
-
-- **Çok güvenilir** → işlemi reddet + sunucuya bildir.
-- **Belirsiz** → devam, ama risk skorunu artır.
-
----
-
-# "Ne yapayım?" — 2
-
-**Soru 2:** Kullanıcı deneyimi etkilenir mi?
-
-- Yanlış pozitif riski yüksekse → **sert tepki verme**.
-- Sessiz kısıtlama + sunucu denetimi tercih.
-
----
-
-# "Ne yapayım?" — 3
-
-**Soru 3:** Tepki denetimi ele verir mi?
-
-- Hemen çökme → kaynağı gösterir.
-- **Gecikmeli/dolaylı** tepki → kaynağı gizler.
-
----
-
-<!-- _class: yogun -->
-
-# Tepki akışı · tek bakış
-
-![w:900](assets/h06-11-tepki.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Ek F · Hızlı başvuru
-
----
-
-# Sık yapılan hatalar
-
-- Tek denetime güvenmek.
-- Denetimi gizlememek (kolay bulunur).
-- "Hemen çök" tepkisi (kaynağı ele verir).
-- Sert tepki + yüksek yanlış pozitif (kullanıcı mağdur).
-- Sunucu denetimini atlamak (asıl güvence orada).
-
----
-
-<!-- _class: yogun -->
-
-# RASP kontrol listesi
-
-- [ ] ≥ 2 farklı denetim türü
-- [ ] Denetimler gizli + çeşitlendirilmiş
-- [ ] Çapraz denetim (Java ↔ native)
-- [ ] Akıllı tepki (gecikmeli/dolaylı)
-- [ ] Cihaz bağlama
-- [ ] Sunucu tarafı doğrulama
-- [ ] Yanlış pozitif planı
-
----
-
-# Son söz (6. hafta)
-
-> RASP, saldırganla oynanan bir **zaman** oyunudur: her katman biraz daha zaman kazandırır.
-
-Asıl güvence: katmanlı RASP + gizleme + kısa ömürlü anahtar + **sunucu denetimi**.
+> Bu haftanın özeti: RASP program çalışırken kendini izler ve tehdide tepki verir; tek denetim değil, **katmanlı, çeşitlendirilmiş, gizli** denetimler ve **sunucu tarafı** doğrulama ile güç kazanır. Gerçek güvence: katmanlı RASP + gizleme + kısa ömürlü anahtarlar + **sunucu tarafı doğrulama** — saldırganla oynanan bir **zaman** oyunudur.

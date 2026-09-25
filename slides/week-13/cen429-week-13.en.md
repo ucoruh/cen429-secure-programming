@@ -10,7 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -26,15 +25,63 @@ Speaker note: This week we learn to read security requirements and map them onto
 
 ---
 
-# Today's Plan (3 Hours)
+<!-- _class: yogun -->
 
-| Hour | Section | Topic |
+# Today (3 Hours)
+
+| Time | Section | What Happens |
 | --- | --- | --- |
-| 1 | 0–3 | Basic concepts · a good requirement · traceability · requirement block · deferred requirements |
-| 2 | 4–5 | Common Criteria (TOE, ST, PP, SFR/SAR, EAL) · FIPS 140-3 |
-| 3 | 6–9 | ETSI, GSMA, EMVCo, PCI, MASVS · the course's requirement families · compliance matrix · project |
+| 0:00–0:20 | 1 | What is a requirement, how do you write a good one? |
+| 0:20–0:50 | 2–3 | Requirement-to-evidence traceability; the requirement-block pattern and deferred requirements |
+| 0:50–1:00 | Break | |
+| 1:00–1:30 | 4 | Common Criteria: TOE, ST, PP, SFR/SAR, EAL |
+| 1:30–1:50 | 5 | FIPS 140-3 and cryptographic module validation |
+| 1:50–2:00 | Break | |
+| 2:00–2:25 | 6 | ETSI, GSMA, EMVCo, PCI MPoC, OWASP MASVS |
+| 2:25–2:50 | 7–8 | Carrying requirements into the plan and asset management; the course's requirement families — compliance matrix activity |
+| 2:50–3:00 | 9+ | Project step (S14, S17), self-check |
+
+**Learning outcomes (LO.5, 7):** tell a good security requirement apart from a bad one · build a traceability/compliance matrix · compare what CC, FIPS, ETSI, EMVCo, PCI, and MASVS ask for
 
 <!-- Speaker note: Today we learn to read security requirements and map them onto our own project: requirement → control → verification → evidence. Zero prior knowledge; we will define every term. -->
+
+---
+
+# What We Bring from Earlier Weeks
+
+- **Asset, threat, and the application protection plan** — the written plan that governs a piece of software's security: scope, architecture, assets, threats, controls, verification, residual risk; where each asset lives, when it is created and destroyed, and which protection (C/I) it needs are listed in an **asset table** **(Week 1)**
+- **Independent evaluation, findings, and evidence** — the evidence-based evaluation process run by an independent laboratory rather than the product's own developer; every gap the evaluator documents is a **finding** **(Week 12)**
+
+This week: we link the asset table to every requirement, and we use the independent-evaluation discipline as a "requirement-to-evidence traceability chain" — the output is your project's **compliance matrix (S17)** and **deferred requirements (S14)**.
+
+---
+
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Requirement | Section 1 |
+| Three types of requirement | Section 1 |
+| Good vs. bad requirement | Section 1 |
+| Traceability | Section 2 |
+| Compliance matrix | Section 2 |
+| Requirement statuses | Section 2 |
+| Deferred requirement | Section 3 |
+| Common Criteria (CC) | Section 4 |
+| TOE, ST, PP | Section 4 |
+| SFR, SAR, EAL | Section 4 |
+| FIPS 140-3 | Section 5 |
+| Sector standards | Section 6 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. How Do You Write a Good Requirement?
 
 ---
 
@@ -51,175 +98,11 @@ Speaker note: This week we learn to read security requirements and map them onto
 
 ---
 
-
-# Where Does This Week Fit In?
-
-- **Week 12:** how a product is **evaluated/tested**.
-- **This week (13):** where the **requirements** that evaluation measures come from, how they're written, how they're traced.
-- Output: your project's **compliance matrix** (S17) and **deferred requirements** (S14).
-
----
-
-# Learning Outcome
-
-This week is about **LO.7**.
-
-By the end, you will be able to:
-
-- Tell a good security requirement apart from a bad one
-- Build a **traceability/compliance matrix**
-- Compare what CC, FIPS, ETSI, EMVCo, PCI, and MASVS ask for
-
----
-
-# Main Idea
-
-> Security is not a "feeling"; it is managed with **written, measurable, traceable** requirements:
-> requirement → control → verification → evidence.
-
-Today we will learn to build this chain.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Basic Concepts (From Scratch)
-
-<!-- Speaker note: We define requirement/standard terms from scratch. -->
-
----
-
 # What Is a Requirement?
 
 - **Requirement:** a condition the system **must meet**.
 - A security requirement: a security condition.
 - A good requirement is **verifiable** (testable).
-
----
-
-# Three Types of Requirement
-
-- **Functional:** which security function will exist? (e.g., data is protected with AEAD)
-- **Assurance:** how will we trust it was done correctly? (e.g., a test report)
-- **Process:** how must the organisation operate? (e.g., every change is reviewed)
-
----
-
-# Good vs. Bad Requirement
-
-- **Bad:** "The application must be secure." (unverifiable)
-- **Good:** "The release build must be produced with a stack canary, PIE, and full RELRO." (measurable)
-
----
-
-# Traceability
-
-- **Traceability:** linking each requirement to a **control**, a **test**, and **evidence**.
-- "Where was this requirement met, how was it verified?"
-
----
-
-# Compliance Matrix
-
-- **Compliance matrix:** a requirement → status → section → verification → evidence table.
-- The project's **S17** section.
-- The first thing an evaluator looks at.
-
----
-
-# Requirement Statuses
-
-- **Met:** the product satisfies this requirement (with evidence).
-- **Deferred:** another party satisfies it (to whom, why, how).
-- **Not met:** not yet satisfied.
-
----
-
-# Deferred Requirement
-
-- If a component **cannot meet** a requirement, it **defers** it to the parent application/OS.
-- The guide states **to whom**, **why**, and **how** it will be met.
-- The project's **S14** section.
-
----
-
-# Common Criteria (CC)
-
-- **Common Criteria (ISO/IEC 15408):** the standard for product security evaluation.
-- Concepts: TOE, ST, PP, SFR, SAR, EAL (shortly).
-
----
-
-# CC · Basic Terms
-
-- **TOE:** the product being evaluated.
-- **ST (Security Target):** this product's security-target document.
-- **PP (Protection Profile):** a common requirement set for a product **class**.
-
----
-
-# CC · SFR, SAR, EAL
-
-- **SFR:** security **functional** requirements.
-- **SAR:** security **assurance** requirements.
-- **EAL:** the **depth** level of the evaluation (EAL1–EAL7).
-
----
-
-# FIPS 140-3
-
-- **FIPS 140-3:** the standard for validating cryptographic **modules**.
-- Security levels (1–4).
-- It covers only the module, not the whole application.
-
----
-
-# Sector Standards
-
-- **ETSI EN 303 645:** baseline IoT security.
-- **GSMA, EMVCo, PCI:** mobile/payment.
-- **OWASP MASVS:** mobile application requirements.
-
----
-
-<!-- _class: yogun -->
-
-# Requirement vs. Control · "Not Met" vs. "Not Applicable"
-
-- **Common mistake:** "Requirement: AES-256-GCM must be used." → this is a **control**, not a requirement. Correct: "...must be protected with AEAD" (requirement) + "AES-256-GCM, S7.2" (control).
-- **Not met:** the requirement applies but is not yet satisfied — a **gap**, written into residual risk.
-- **Not applicable:** the requirement does not apply to the product at all (e.g., "data in transit" requirements if it doesn't use the network) — must always be written **with a rationale**.
-
----
-
-<!-- _class: yogun -->
-
-# Status and Decision Words — Summary
-
-| Word | When to use it | What must accompany it |
-| --- | --- | --- |
-| Met | The product satisfies the requirement itself | Control + verification + evidence |
-| Deferred | Another party satisfies it | To whom + why + how |
-| Not met | Applies but not yet satisfied | Residual risk + planned fix |
-| Not applicable | Does not apply to the product at all | Rationale |
-| must (MUST) | Mandatory | A direct finding if not met |
-| should (SHOULD) | Strong recommendation | A written rationale if not met |
-
----
-
-# Now We're Ready
-
-Terms:
-
-requirement (functional/assurance/process) · traceability · compliance matrix · status (met/deferred/not met) · deferred · CC (TOE/ST/PP/SFR/SAR/EAL) · FIPS 140-3 · ETSI/GSMA/EMVCo/PCI/MASVS
-
-Now: how do you write a good requirement?
-
----
-
-<!-- _class: bolum -->
-
-# 1. How Do You Write a Good Requirement?
 
 ---
 
@@ -366,6 +249,7 @@ If any one is missing, the requirement stays open to debate; the evaluator sends
 # Section 1's Rule and the Obligation Keywords
 
 - Write **what** is being asked for in the requirement column; write **how** you meet it in a separate control sentence.
+- **Common mistake:** "Requirement: AES-256-GCM must be used." → this is a **control**, not a requirement; correct: "...must be protected with AEAD" (requirement) + "AES-256-GCM, S7.2" (control).
 - Write the **tool class** (AEAD, CSPRNG, TLS 1.2+) in the requirement text; put a specific library/version name in the control.
 - **must (MUST):** mandatory, a direct finding if not met. **should (SHOULD):** strong recommendation, needs a rationale. **may (MAY):** optional, not a finding.
 
@@ -385,6 +269,21 @@ Every requirement must be linked to **evidence** through this chain.
 
 ---
 
+<!-- _class: yogun -->
+
+# Status and Decision Words — Summary
+
+| Word | When to use it | What must accompany it |
+| --- | --- | --- |
+| Met | The product satisfies the requirement itself | Control + verification + evidence |
+| Deferred | Another party satisfies it | To whom + why + how |
+| Not met | Applies but not yet satisfied | Residual risk + planned fix |
+| Not applicable | Does not apply to the product at all | Rationale |
+| must (MUST) | Mandatory | A direct finding if not met |
+| should (SHOULD) | Strong recommendation | A written rationale if not met |
+
+---
+
 # Why Is Traceability Important?
 
 - The evaluator asks "where is this requirement?"
@@ -401,7 +300,6 @@ Every requirement must be linked to **evidence** through this chain.
 | Release protections | Flags | checksec | Protection table |
 
 ---
-
 
 # Two Directions
 
@@ -533,7 +431,6 @@ In "not met," the control/verification can stay blank, but the **evidence** (whe
 3. **Threat/standard → requirement → design/code → test/evidence.** Every requirement is linked **both ways** to a source and to evidence.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -695,7 +592,6 @@ The "not met" block fills in the **Status** and **Residual risk** fields instead
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 4. Common Criteria (ISO/IEC 15408)
@@ -819,7 +715,6 @@ This table is the heart of the ST: every row is a bridge between "why this requi
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. FIPS 140-3
@@ -918,7 +813,6 @@ Let's check off the Level 1 expectations one by one.
 4. **No.** The module must be used in the **correct mode/configuration, with approved algorithms**. Module certificate ≠ application compliance.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1051,6 +945,7 @@ Let's check off the Level 1 expectations one by one.
 # Overlap and Section 6's Rule
 
 - Compliance evidence for one standard can be **partly reused** for another — but that doesn't mean "automatically met"; every standard has **its own additional criteria**.
+- Mapping the same requirement to several standards (by adding a standard column) speeds up the work; it isn't repeated even if certification changes.
 - "We use a FIPS-validated module, so we also meet MASVS-CRYPTO" is a **dangerous** sentence.
 - **Rule:** use overlap to speed up gathering evidence, but check off every standard **separately**.
 
@@ -1074,10 +969,15 @@ Let's check off the Level 1 expectations one by one.
 
 ---
 
-
 <!-- _class: bolum -->
 
-# 7. Carrying Requirements Into the Project
+# 7. Carrying Requirements Into the Software Plan and Asset Management
+
+---
+
+# Compliance Matrix Structure — Diagram
+
+![w:950](assets/h13-10-uyum-matrisi.svg)
 
 ---
 
@@ -1139,7 +1039,6 @@ Every requirement is linked to an **asset** and to a **control**.
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 8. The Course's Requirement Families
@@ -1162,24 +1061,24 @@ CEN429-**AP** (application protection), **ID** (identity), **AS** (asset), **DR/
 
 # Families (1)
 
-| Family | Topic |
-| --- | --- |
-| AP | Application protection (obfuscation, RASP) |
-| ID | Identity and binding |
-| AS | Asset management |
-| DR | Data at rest |
+| Family | Topic | Example |
+| --- | --- | --- |
+| AP | Application protection (obfuscation, RASP) | Sensitive functions are obfuscated and protected with an integrity check |
+| ID | Identity and binding | The device and version are bound to key usage |
+| AS | Asset management | Every asset is labelled C/I/I+ and its lifecycle is documented |
+| DR | Data at rest | Local data is encrypted with AEAD |
 
 ---
 
 # Families (2)
 
-| Family | Topic |
-| --- | --- |
-| DU | Data in use |
-| DT | Data in transit |
-| RP | Reporting/logging |
-| CR | Cryptography |
-| DV | Development/process |
+| Family | Topic | Example |
+| --- | --- | --- |
+| DU | Data in use | The key is erased after use |
+| DT | Data in transit | TLS 1.3 + chain validation |
+| RP | Reporting/logging | Sensitive data is never logged in plain text in the release |
+| CR | Cryptography | Approved algorithm, mode, and key length; key hierarchy documented |
+| DV | Development/process | Every change is reviewed before being merged; the SBOM is updated |
 
 ---
 
@@ -1194,13 +1093,7 @@ Your project chooses a **subset** of these families.
 
 ---
 
-<!-- _class: bolum -->
-
-# Compliance Matrix Activity
-
----
-
-# Activity · Step 1
+# Compliance Matrix Activity · Step 1
 
 - Choose **five requirements** from your own project (from different families).
 - Write a **requirement block** for each one.
@@ -1301,14 +1194,127 @@ Three problems: (1) the control is a **repetition** of the requirement. (2) "Tes
 
 ---
 
+<!-- _class: yogun -->
+
+# End to End: NotKasa's Compliance Matrix (1/2)
+
+For the synthetic application **NotKasa** (keeps local encrypted notes, talks to a server, gets updated), a requirement derives from a threat:
+
+```text
+Tehdit: cihaz çalınırsa yerel notlar okunur
+   ↓
+Amaç: beklemede gizlilik
+   ↓
+Gereksinim: C sınıfı veri AEAD ile şifrelenir
+```
+
+Two "met" blocks from this chain:
+
+**DR-01 — data at rest:**
+```text
+CEN429-DR-01
+Metin: Yerel DB'deki C sınıfı veri AES-256-GCM ile şifrelenir.
+Durum: Karşılandı
+Karşılama: AES-256-GCM, anahtar TEE'de
+Doğrulama: T-05
+Kanıt: test çıktısı (S16)
+```
+
+**CR-02 — cryptography:**
+```text
+CEN429-CR-02
+Metin: Anahtarların amacı, kripto-periyodu, imhası belgelenir.
+Durum: Karşılandı
+Karşılama: S8 anahtar tablosu
+Doğrulama: belge incelemesi
+Kanıt: S8
+```
+
+---
+
+<!-- _class: yogun -->
+
+# End to End: NotKasa's Compliance Matrix (2/2)
+
+**DT-03 — data in transit:**
+```text
+CEN429-DT-03
+Metin: Sunucu iletişimi TLS 1.3 ve sertifika zinciri doğrulaması kullanır.
+Durum: Karşılandı
+Karşılama: TLS 1.3 + SAN denetimi + SPKI pin
+Doğrulama: T-11
+Kanıt: test + S11
+```
+
+**AP-04 — application protection (deferred):**
+```text
+CEN429-AP-04
+Metin: Güvenli kurulum ve güncelleme sağlanır.
+Durum: Devredildi
+Kime: Üst uygulama (MPA)
+Neden: SDK dağıtım kanalına sahip değil
+Nasıl: MPA imzalı güncelleme + sürüm denetimi
+```
+
+**AS-05 — not met:**
+```text
+CEN429-AS-05
+Metin: Tüm hassas varlıklar için bellek izleme tespiti.
+Durum: Karşılanmadı
+Kalan risk: köklü cihazda canlı bellek analizi
+Azaltma: kısa ömürlü anahtar + sunucu denetimi
+```
+
+---
+
+<!-- _class: yogun -->
+
+# Matrix · Combined View
+
+| Id | Status | Section | Evidence |
+| --- | --- | --- | --- |
+| DR-01 | Met | S8 | T-05 |
+| CR-02 | Met | S8 | S8 |
+| DT-03 | Met | S11 | T-11 |
+| AP-04 | Deferred | S14 | — |
+| AS-05 | Not met | S12 | residual risk |
+
+---
+
+# What the Matrix Tells Us
+
+- Three met (with evidence), one deferred, one residual risk.
+- Every row is traceable.
+- The evaluator starts from this table.
+
+---
+
+<!-- _class: yogun -->
+
+# Common Mistakes — Summary
+
+| Mistake | Section |
+| --- | --- |
+| An unverifiable requirement (e.g. "must be secure") | Section 1 |
+| A "met" with no evidence | Section 2 |
+| Silent deferring | Section 3 |
+| Mistaking EAL for the amount of security | Section 4 |
+| Assuming a FIPS-validated library = FIPS compliance | Section 5 |
+| Leaving residual risk blank | Section 2 |
+
+Each row's detail was already covered in its section's ⚠️ box and rule; here we gather them in one view.
+
+---
 
 <!-- _class: bolum -->
 
-# 9. Project and Closing
+# 9. Term Project: This Week
 
 ---
 
 # Project · S14 and S17
+
+S17 and S14 are the documents an evaluator **opens first**.
 
 - [ ] **S17 compliance matrix:** status, section, verification, evidence for every applicable requirement.
 - [ ] **S14 deferred requirements:** to whom, why, how.
@@ -1321,6 +1327,19 @@ Three problems: (1) the control is a **repetition** of the requirement. (2) "Tes
 - A "met" with no evidence = not met.
 - Are the deferred ones explicit and justified?
 - Are the requirements verifiable?
+
+---
+
+<!-- _class: yogun -->
+
+# Checklist
+
+- [ ] Every requirement is verifiable + singular
+- [ ] Every row has status/section/verification/evidence
+- [ ] Deferred ones: to whom/why/how
+- [ ] Not-met ones → residual risk
+- [ ] Standard mapping (ETSI/MASVS/CC)
+- [ ] At least one requirement per family
 
 ---
 
@@ -1352,7 +1371,6 @@ evidence/week13/  <- test/log/pcap dosyaları
 **Rule:** a "small but honest" matrix always scores better than a "large but evidence-free" one.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1454,315 +1472,13 @@ evidence/week13/  <- test/log/pcap dosyaları
 
 ---
 
-# Summary: This Week in One Sentence
-
-> Security is managed with **written, verifiable, traceable** requirements; every requirement is linked to a
-> control, a test, and **evidence**; what can't be met is explicitly **deferred**.
-
----
-
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
 # Next Week
 
 **Week 14 — Tigress and Diversification**
 
-The automated, diversified application of the obfuscation rules; measurement and the build pipeline.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix A · A Worked Compliance Matrix
-
-<!-- Speaker note: We fill in a few requirement blocks and matrix rows for the synthetic "NotKasa" product. -->
-
----
-
-# Context · NotKasa
-
-A synthetic application: keeps local encrypted notes, talks to a server, gets updated.
-
-Let's pick a few requirements and write matrix rows.
-
----
-
-# Where a Requirement Comes From · The Threat
-
-```text
-Tehdit: cihaz çalınırsa yerel notlar okunur
-   ↓
-Amaç: beklemede gizlilik
-   ↓
-Gereksinim: C sınıfı veri AEAD ile şifrelenir
-```
-
-A requirement doesn't come out of thin air; it derives from a **threat**.
-
----
-
-# Block · DR-01 (Data at Rest)
-
-```text
-CEN429-DR-01
-Metin: Yerel DB'deki C sınıfı veri AES-256-GCM ile şifrelenir.
-Durum: Karşılandı
-Karşılama: AES-256-GCM, anahtar TEE'de
-Doğrulama: T-05
-Kanıt: test çıktısı (S16)
-```
-
----
-
-# Block · CR-02 (Crypto)
-
-```text
-CEN429-CR-02
-Metin: Anahtarların amacı, kripto-periyodu, imhası belgelenir.
-Durum: Karşılandı
-Karşılama: S8 anahtar tablosu
-Doğrulama: belge incelemesi
-Kanıt: S8
-```
-
----
-
-# Block · DT-03 (Data in Transit)
-
-```text
-CEN429-DT-03
-Metin: Sunucu iletişimi TLS 1.3 ve sertifika zinciri doğrulaması kullanır.
-Durum: Karşılandı
-Karşılama: TLS 1.3 + SAN denetimi + SPKI pin
-Doğrulama: T-11
-Kanıt: test + S11
-```
-
----
-
-# Block · AP-04 (Application Protection) — Deferred
-
-```text
-CEN429-AP-04
-Metin: Güvenli kurulum ve güncelleme sağlanır.
-Durum: Devredildi
-Kime: Üst uygulama (MPA)
-Neden: SDK dağıtım kanalına sahip değil
-Nasıl: MPA imzalı güncelleme + sürüm denetimi
-```
-
----
-
-# Block · AS-05 — Not Met
-
-```text
-CEN429-AS-05
-Metin: Tüm hassas varlıklar için bellek izleme tespiti.
-Durum: Karşılanmadı
-Kalan risk: köklü cihazda canlı bellek analizi
-Azaltma: kısa ömürlü anahtar + sunucu denetimi
-```
-
----
-
-<!-- _class: yogun -->
-
-# Matrix · Combined View
-
-| Id | Status | Section | Evidence |
-| --- | --- | --- | --- |
-| DR-01 | Met | S8 | T-05 |
-| CR-02 | Met | S8 | S8 |
-| DT-03 | Met | S11 | T-11 |
-| AP-04 | Deferred | S14 | — |
-| AS-05 | Not met | S12 | residual risk |
-
----
-
-# What the Matrix Tells Us
-
-- Three met (with evidence), one deferred, one residual risk.
-- Every row is traceable.
-- The evaluator starts from this table.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · Standard Mapping
-
----
-
-# The Same Requirement, Multiple Standards
-
-A single requirement can link to more than one standard:
-
-![w:900](assets/h13-10-uyum-matrisi.svg)
-
----
-
-# Why Is Mapping Useful?
-
-- You meet it once and satisfy several standards **at the same time**.
-- Add a standard column to the compliance matrix.
-- The work isn't repeated even if certification changes.
-
----
-
-<!-- _class: yogun -->
-
-# A Mapping Example
-
-| Requirement | ETSI | MASVS | CC |
-| --- | --- | --- | --- |
-| Encrypted storage | ✓ | STORAGE | SFR |
-| Secure communication | ✓ | NETWORK | SFR |
-| Secure update | ✓ | — | SAR |
-
----
-
-# Appendices A–B · Summary
-
-- A requirement derives from a threat, is written as a block, and enters the matrix.
-- One requirement can meet many standards.
-- No row is "met" without evidence.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Requirement Families in Detail
-
-<!-- Speaker note: One example requirement per family; students write a similar one for their own project. -->
-
----
-
-# AP · Application Protection
-
-- **Example:** "Sensitive functions are obfuscated and protected with an integrity check."
-- Link: Weeks 4, 6, 9, 11, 14.
-- Verification: obfuscation measurement + RASP test.
-
----
-
-# ID · Identity and Binding
-
-- **Example:** "The device and version are bound to key usage."
-- Link: Weeks 6, 11.
-- Verification: device-binding test.
-
----
-
-# AS · Asset Management
-
-- **Example:** "Every asset is labelled C/I/I+ and its lifecycle is documented."
-- Link: Weeks 1, 3.
-- Verification: S5 asset list.
-
----
-
-# DR/DU/DT · Data
-
-- **DR (at rest):** "Local data is encrypted with AEAD."
-- **DU (in use):** "The key is erased after use."
-- **DT (in transit):** "TLS 1.3 + chain validation."
-
----
-
-# CR · Cryptography
-
-- **Example:** "Approved algorithm, mode, and key length; key hierarchy documented."
-- Link: Weeks 3, 10.
-- Verification: algorithm inventory.
-
----
-
-# RP · Reporting
-
-- **Example:** "Sensitive data is never logged in plain text in the release."
-- Link: Weeks 4, 6.
-- Verification: `strings`, log audit.
-
----
-
-# DV · Development/Process
-
-- **Example:** "Every change is reviewed before being merged; the SBOM is updated."
-- Link: Weeks 5, 12, 13.
-- Verification: process records, SBOM.
-
----
-
-# From Family to Requirement · The Rule
-
-- Your project chooses **at least one** requirement from every family.
-- Every requirement derives from a threat, written as a block.
-- It enters the matrix, linked to evidence.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Common Mistakes
-
----
-
-# Mistake · An Unverifiable Requirement
-
-- An unmeasurable phrase like "must be secure."
-- Correct: a concrete, testable item.
-
----
-
-# Mistake · A "Met" With No Evidence
-
-- The evidence column is empty in the matrix.
-- The evaluator counts it as not met.
-
----
-
-# Mistake · Silent Deferring
-
-- Not writing down a requirement that isn't met.
-- Correct: to whom/why/how (S14).
-
----
-
-# Mistake · Mistaking EAL for the Amount of Security
-
-- "EAL4 > EAL2 is more secure" is wrong.
-- EAL is depth; security depends on the ST.
-
----
-
-# Mistake · A FIPS-Validated Library = FIPS Compliance
-
-- Even if the module is validated, the application must use it correctly.
-- Approved mode + correct key management.
-
----
-
-# Mistake · Leaving Residual Risk Blank
-
-- No product has zero residual risk.
-- An empty "residual risk" = an incomplete analysis.
-
----
-
-<!-- _class: yogun -->
-
-# Checklist
-
-- [ ] Every requirement is verifiable + singular
-- [ ] Every row has status/section/verification/evidence
-- [ ] Deferred ones: to whom/why/how
-- [ ] Not-met ones → residual risk
-- [ ] Standard mapping (ETSI/MASVS/CC)
-- [ ] At least one requirement per family
-
----
-
-# Final Word (Week 13)
+This week we defined the course's requirement families; in week 14 we will see the concrete counterpart — the **control** side — of requirements such as "sensitive code sections must be obfuscated" from the **CEN429-AP** (application protection) family: you will apply code obfuscation and diversification transforms with Tigress and link them to the relevant rows of your compliance matrix (S17). The automated, diversified application of the obfuscation rules; measurement and the build pipeline.
 
 > A requirement is born from a threat; it is linked to a control, a test, and **evidence**; if it cannot be met, it
 > is explicitly **deferred**. The compliance matrix is the map of this chain.

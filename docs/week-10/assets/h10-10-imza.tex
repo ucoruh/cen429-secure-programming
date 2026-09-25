@@ -1,0 +1,21 @@
+% Hafta 10 — Dijital imza: oluşturma ve doğrulama
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-10-imza.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Dijital imza: oluşturma ve doğrulama};
+  \node[altbaslik, text width=170mm] at (b.south west) {en sık hata: if(r) ile denetlemek};
+
+  \node[kutu=38mm, below=10mm of b.south west, anchor=north west] (k1) {\kb{Veri + özel anahtar}\\imzala};
+  \node[koyukutu=34mm, right=of k1] (k2) {\kb{İmza}\\veriyle birlikte gider};
+  \node[uyarikutu=42mm, right=of k2] (k3) {\kb{Açık anahtarla doğrula}\\sonuç == 1 mi?};
+  \node[iyikutu=38mm, right=of k3] (k4) {\kb{KABUL / RED}\\r $\neq$ 1 ise reddet};
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+
+  \node[kotudip, text width=175mm, below=10mm of k1.south -| k1, anchor=north west] {%
+    API 1=başarı, 0=başarısız, $<$0=hata döner; if(r) hatayı da ``doğru'' sayar.};
+\end{tikzpicture}
+\end{document}

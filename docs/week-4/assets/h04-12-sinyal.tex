@@ -1,0 +1,26 @@
+% Hafta 4 — Sinyal işleyicide ne yapılır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-12-sinyal.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 24mm]
+  \node[baslik] (b) at (0,0) {Sinyal işleyicide ne yapılır?};
+  \node[altbaslik] at (b.south west) {sinyal, kesilen kodun ortasında gelebilir};
+
+  \node[kotukutu=58mm, below=16mm of b.south west, anchor=north west] (yanlis) {%
+    \kb{YANLIŞ}\\[2mm]
+    printf, malloc, free\\
+    kilit alan her şey\\[3mm]
+    yeniden girişte iç yapı bozulur\\
+    $\rightarrow$ kilitlenme / çökme};
+  \node[iyikutu=58mm, right=of yanlis] (dogru) {%
+    \kb{DOĞRU}\\[2mm]
+    yalnız bayrak kur:\\
+    \kod{volatile sig\_atomic\_t}\\[3mm]
+    asıl işi ana döngü yapar\\
+    (\kod{write()} gibi güvenli çağrılar)};
+
+  \node[fit=(yanlis)(dogru), inner sep=0pt] (grup) {};
+  \node[dip, text width=150mm, below=10mm of grup.south, anchor=north] {Async-signal-safe olmayan fonksiyon çağırmak tanımsız davranıştır.};
+\end{tikzpicture}
+\end{document}

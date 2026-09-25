@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -35,46 +33,158 @@ Speaker note: This week we cover advanced code obfuscation rules. Framework: obf
 | 2 | 3 | Control-flow rules (K-01…K-06) |
 | 3 | 4–6 | Data rules · virtualisation/dynamic · diversification · measurement |
 
+**Learning outcome (LO.3):** write obfuscation as a security rule · state each technique's cost and limit · measure a protection and justify it
+
 <!-- Speaker note: Today we take the obfuscation introduction from week 4 to an advanced level and add measurement. Main framework: obfuscation does not give unbreakability, it raises cost. We present every technique as a "rule." -->
 
 ---
 
 <!-- _class: yogun -->
 
-# A Brief History — Where Does Code Obfuscation Come From?
+# What We Bring from Earlier Weeks
 
-- **1976** — Diffie & Hellman: the idea of "incomprehensible but working" (protection **through effort**)
-- **1997** — Collberg et al. **taxonomy** + *potency–resilience–stealth–cost* (this course's five families)
-- **2001** — Barak et al.: perfect obfuscation is **impossible** → not "unbreakability" but **cost**
-- **2002** — Chow et al. **whitebox AES** (week 11) · **2010s** **Tigress**, O-LLVM (week 14)
+- **The white-box / MATE attacker model** — the threat model where whoever holds the device is also the attacker **(Week 1)**
+- **Debugger** — a tool that runs a program step by step and shows variables (gdb, lldb); we saw its run-time detection in the RASP context **(Week 6)**
+- **Entropy** — a measure of how disordered a data's bytes look; we saw it in detecting encrypted/packed content and in random number generation **(Weeks 2, 3)**
+- **Compiler flags, `strings` and the symbol table** — compiler options and the tools that list a binary's readable text/name list; the entry-level steps of obfuscation **(Week 4)**
+- **Decompilation** — turning a binary/bytecode back into something close to readable code; we saw it on JVM bytecode **(Week 5)**
+- **XOR** — 1 if the two bits differ, 0 if they match; `a^b^b=a` undoes itself; we decoded it by hand in Java string obfuscation **(Week 5)**
+- **Logging** — the informational messages a program writes while running; if sensitive information ends up in a log, the attacker reads it **(Week 2)**
 
-> Obfuscation is a **practical delaying** discipline built on top of an **impossibility theorem**.
+This week: we use these tools and concepts at an **advanced** level and in a **measurable** way.
 
 ---
-
 
 <!-- _class: yogun -->
 
-# Where Have We Come From, Where Are We Going?
+# This Week's Concepts
 
-- **Week 4:** symbol/string obfuscation, an introduction to flattening (first acquaintance)
-- **This week (9):** the same techniques, **advanced** + **how to measure them**
-- **Week 11:** whitebox (for the key)
-- **Week 14:** the **automated** form of these same rules (Tigress)
+Each term is defined once, where it first appears in the body; here we only mark **where**.
 
-> These three weeks form one whole: rule → whitebox → automation
+| Concept | Where |
+| --- | --- |
+| Obfuscation as a security rule, MATE | Section 1 |
+| Obfuscation taxonomy (five families) | Section 2 |
+| The "protection rule" template (protects what/cost/limit/measurement) | Section 2 |
+| Control-flow rules (K-01–K-06) | Section 3 |
+| Data obfuscation rules (K-07–K-09) | Section 4 |
+| Whole-program rules (K-10–K-12) | Section 4 |
+| Diversification | Section 5 |
+| Obfuscation's four metrics (potency/resilience/stealth/cost) | Section 5 |
+| Deobfuscation (the other side's tools) | Section 5 |
+| Its place in layered defence, project S9 | Section 6 |
 
 ---
 
-# Learning Outcome
+# What Is Source Code?
 
-This week is about **LO.3** (binary application protections).
+- The **human-readable** program text that **you** write (e.g., a C file).
+- Example: `int topla(int a, int b) { return a + b; }`
 
-By the end, you will be able to:
+Source code is **compiled** and turned into the form the machine runs.
 
-- Write obfuscation as a **security rule**
-- State each technique's **cost** and **limit**
-- **Measure** a protection and justify it
+---
+
+# Compiler and Binary
+
+- **Compiler:** the program that translates source code into **machine code** (gcc, clang).
+- **Binary:** the result of compilation; the file the computer runs directly (`.exe`, `.so`).
+
+![w:900](assets/h09-13-derleme-zinciri.svg)
+
+---
+
+# Machine Code and Assembly
+
+- **Machine code:** the numeric instructions the processor understands.
+- **Assembly:** a somewhat more human-readable form of machine code (`mov`, `cmp`, `jmp`).
+
+This is what you see when you open a binary.
+
+---
+
+# What Is Reverse Engineering?
+
+**Reverse engineering:** looking at a binary and trying to work out **what the program does**.
+
+This is the attacker's basic job.
+
+---
+
+# Decompiler
+
+- **Decompiler:** a tool that turns a binary back into a form close to readable code.
+- Examples: Ghidra, IDA.
+
+Goal: someone with no access to the source can infer the logic just by looking at the binary.
+
+---
+
+# Bit, Byte, Hexadecimal
+
+- **Bit:** 0 or 1.
+- **Byte:** 8 bits.
+- **Hexadecimal (hex):** written with a `0x` prefix; `0x2A` = 42.
+
+We will see values like `0x5A` in the code; these are just numbers.
+
+---
+
+# What Is XOR?
+
+- **XOR** (`^`): 1 if the two bits differ, 0 if they are the same.
+- Property: `a ^ b ^ b == a` → **it undoes itself**.
+
+```c
+c = a ^ 0x5A;   /* şifrele */
+a = c ^ 0x5A;   /* geri çöz */
+```
+
+It is heavily used in obfuscation because it is reversible.
+
+---
+
+# What Is Entropy (Randomness)?
+
+- **Entropy:** how "random" a piece of data looks.
+- Cryptographic keys look **high-entropy** (irregular bytes).
+
+If an attacker sees a high-entropy block in a binary, they say "there might be a key here."
+
+---
+
+# Function, Branch, Condition
+
+- **Function:** a block of code that does one job (`erisim_ver`).
+- **Branch:** a fork in the road, like an `if`.
+- **Condition:** the expression that decides which way the branch goes.
+
+---
+
+# Basic Block
+
+- **Basic block:** a sequence of instructions that runs straight through, with no branch.
+- When an `if` is reached the block ends, and two new blocks begin.
+
+Program = basic blocks wired together.
+
+---
+
+# Control Flow Graph (CFG)
+
+- **CFG** (Control Flow Graph): a diagram that makes basic blocks its **nodes** and the transitions between them its **edges**.
+- It is the program's "road map."
+
+![w:900](assets/h09-12-cfg.svg)
+
+---
+
+# This Week's Question in One Sentence
+
+> I have delivered the program to the user; **the attacker now owns it.** How do I make it **harder**
+> for them to read and modify my code?
+
+Answer: **code obfuscation rules.** Let's begin.
 
 ---
 
@@ -127,6 +237,19 @@ This is also called the **white-box** model (week 1).
 | Defence | Crypto, verification | + obfuscation, RASP, whitebox |
 
 Cryptography assumes a **black box**; that assumption collapses on delivery.
+
+---
+
+<!-- _class: yogun -->
+
+# A Brief History — Where Does Code Obfuscation Come From?
+
+- **1976** — Diffie & Hellman: the idea of "incomprehensible but working" (protection **through effort**)
+- **1997** — Collberg et al. **taxonomy** + *potency–resilience–stealth–cost* (this course's five families)
+- **2001** — Barak et al.: perfect obfuscation is **impossible** → not "unbreakability" but **cost**
+- **2002** — Chow et al. **whitebox AES** (week 11) · **2010s** **Tigress**, O-LLVM (week 14)
+
+> Obfuscation is a **practical delaying** discipline built on top of an **impossibility theorem**.
 
 ---
 
@@ -311,7 +434,6 @@ We met this in week 4; this week we go deeper.
 
 ---
 
-
 # In the Field: All Together
 
 The native countermeasures listed in a certified product cover this **entire** map:
@@ -411,201 +533,13 @@ Obfuscation is not "present/absent."
 
 <!-- _class: bolum -->
 
-# 0. Basic Concepts First
-
-<!-- Speaker note: This section assumes no prior knowledge. We define every term here; we will use these terms in the sections that follow. Do not rush. -->
-
----
-
-# Why Does This Section Exist?
-
-This week's subject is **code obfuscation**. But first let's pin down a few basic terms.
-
-Without knowing these terms, the subject **stays up in the air**.
-
-We assume you know nothing — that is a good starting point.
-
----
-
-# What Is Source Code?
-
-- The **human-readable** program text that **you** write (e.g., a C file).
-- Example: `int topla(int a, int b) { return a + b; }`
-
-Source code is **compiled** and turned into the form the machine runs.
-
----
-
-# Compiler and Binary
-
-- **Compiler:** the program that translates source code into **machine code** (gcc, clang).
-- **Binary:** the result of compilation; the file the computer runs directly (`.exe`, `.so`).
-
-![w:900](assets/h09-13-derleme-zinciri.svg)
-
----
-
-# Machine Code and Assembly
-
-- **Machine code:** the numeric instructions the processor understands.
-- **Assembly:** a somewhat more human-readable form of machine code (`mov`, `cmp`, `jmp`).
-
-This is what you see when you open a binary.
-
----
-
-# What Is Reverse Engineering?
-
-**Reverse engineering:** looking at a binary and trying to work out **what the program does**.
-
-This is the attacker's basic job.
-
----
-
-# Decompiler
-
-- **Decompiler:** a tool that turns a binary back into a form close to readable code.
-- Examples: Ghidra, IDA.
-
-Goal: someone with no access to the source can infer the logic just by looking at the binary.
-
----
-
-# The `strings` Command
-
-- **`strings`:** a simple tool that lists the **readable text** inside a binary.
-- `strings program` → text such as `"Lisans gecersiz"`, `"http://..."`.
-
-This is usually the attacker's **first step**.
-
----
-
-# Symbol and Symbol Table
-
-- **Symbol:** the **name** of a function or variable inside a binary (e.g., `lisans_dogrula`).
-- **Symbol table:** the list of these names.
-
-If the name `lisans_dogrula` is visible, the attacker knows where to look.
-
----
-
-# Debugger
-
-- **Debugger:** a tool that runs a program **step by step** and shows its variables (gdb, lldb).
-- An attacker can stop the program, read memory, and change values.
-
----
-
-# Bit, Byte, Hexadecimal
-
-- **Bit:** 0 or 1.
-- **Byte:** 8 bits.
-- **Hexadecimal (hex):** written with a `0x` prefix; `0x2A` = 42.
-
-We will see values like `0x5A` in the code; these are just numbers.
-
----
-
-# What Is XOR?
-
-- **XOR** (`^`): 1 if the two bits differ, 0 if they are the same.
-- Property: `a ^ b ^ b == a` → **it undoes itself**.
-
-```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
-```
-
-It is heavily used in obfuscation because it is reversible.
-
----
-
-# What Is Entropy (Randomness)?
-
-- **Entropy:** how "random" a piece of data looks.
-- Cryptographic keys look **high-entropy** (irregular bytes).
-
-If an attacker sees a high-entropy block in a binary, they say "there might be a key here."
-
----
-
-# Function, Branch, Condition
-
-- **Function:** a block of code that does one job (`erisim_ver`).
-- **Branch:** a fork in the road, like an `if`.
-- **Condition:** the expression that decides which way the branch goes.
-
----
-
-# Basic Block
-
-- **Basic block:** a sequence of instructions that runs straight through, with no branch.
-- When an `if` is reached the block ends, and two new blocks begin.
-
-Program = basic blocks wired together.
-
----
-
-# Control Flow Graph (CFG)
-
-- **CFG** (Control Flow Graph): a diagram that makes basic blocks its **nodes** and the transitions between them its **edges**.
-- It is the program's "road map."
-
-![w:900](assets/h09-12-cfg.svg)
-
----
-
-# Compiler Flag
-
-- **Compiler flag:** an option passed to the compiler (e.g., `-O2`, `-DGUNLUK_ACIK`).
-- The same source can be compiled differently with different flags (e.g., with logging / without logging).
-
----
-
-# What Is a Log?
-
-- **Log:** the informational messages a program writes while it runs (`printf("...")`).
-- Problem: if sensitive information or internal state ends up in the log, the attacker reads it.
-
----
-
-# Now We're Ready
-
-We now know the following terms:
-
-source · compiler · binary · decompilation · `strings` · symbol · debugger · XOR · entropy · branch · basic block · CFG · log
-
-We will use these **constantly** throughout the week. Come back to this section whenever you get stuck.
-
----
-
-# This Week's Question in One Sentence
-
-> I have delivered the program to the user; **the attacker now owns it.** How do I make it **harder**
-> for them to read and modify my code?
-
-Answer: **code obfuscation rules.** Let's begin.
-
----
-
-<!-- _class: bolum -->
-
 # 3. Control-Flow Rules
 
 ---
 
-# What Is a Control Flow Graph (CFG)?
-
-A compiled function's **skeleton**:
-
-- Which check happens in what order?
-- Which branch leads to success?
-
-The attacker's first job is to extract this skeleton.
-
----
-
 # The Purpose of This Section
+
+We treat the CFG (already defined in the background section) as this section's skeleton; the attacker's first job is to extract that skeleton.
 
 In week 4 we **introduced** flattening.
 
@@ -1407,6 +1341,59 @@ If it is distinguishable, the attacker knows where to look.
 
 ---
 
+# Before Flattening (Concept)
+
+![w:900](assets/h09-04-duzlestirme.svg)
+
+Few nodes, readable flow.
+
+---
+
+# After Flattening (Concept)
+
+
+Many nodes, a single hub; "which block comes next" cannot be read.
+
+---
+
+<!-- _class: yogun -->
+
+# Potency Measurement Example
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Basic blocks | 5 | 34 |
+| Edges | 6 | 60 |
+| Cyclomatic complexity | 3 | 28 |
+
+You take these numbers from the decompiler and write them into S9.
+
+---
+
+# Cost Measurement Example
+
+```bash
+size ./program_temiz ./program_gizli   # boyut
+# süre: aynı girdiyle N kez çalıştır, ortalama
+```
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Size | 100 KB | 128 KB |
+| Runtime | 1.0× | 1.7× |
+
+---
+
+# Interpreting the Measurement
+
+- Potency ↑ (34 blocks) and cost ↑ (28% size, 1.7× time)
+- This **trade-off** is expected
+- Decision: is the gain acceptable given the asset's value?
+
+> Do not say "strong"; show **these numbers**.
+
+---
+
 <!-- _class: yogun -->
 
 # The Four Metrics Trade Off
@@ -1459,6 +1446,8 @@ We learn these **to test our own defence** — not to attack.
 
 - Undoes arithmetic encoding (K-02)
 
+- Countermeasure: also tie encoded constants to opaque predicates — layers that depend on each other are harder to solve separately
+
 **Rule:** do not **count** arithmetic encoding as a secrecy layer on its own; combine it with control flow.
 
 ---
@@ -1469,6 +1458,8 @@ We learn these **to test our own defence** — not to attack.
 
 **Rule:** **diversify**; do not rely on a single opaque predicate pattern or a single VM design.
 
+(in space: several patterns/seeds · in time: change the patterns every release)
+
 ---
 
 # Main Takeaway
@@ -1477,7 +1468,7 @@ Banescu et al. (Tigress + KLEE): how much each transform withstands symbolic exe
 
 > Resilience is not a **claim**, it is a **measured** quantity.
 
-Do not say "strong"; say "it withstood this much against this tool."
+Do not say "strong"; **produce a number**: "this transform pipeline did not let this problem, of this size, be solved in this much time, against this tool."
 
 ---
 
@@ -1517,126 +1508,13 @@ But the document notes, next to every one of them: **"not strong on its own."**
 
 ---
 
-# Project · S9 (Advanced Hardening) — 1
-
-**1. Protection table**
-
-For 2–3 critical sections (license, key derivation, integrity), fill in the rule template:
-
-what it protects · threat · how · cost · limit · measurement
-
----
-
-# Project · S9 — 2
-
-**2. Measurement**
-
-For at least one technique, before/after:
-
-- Count of sensitive strings in `strings` output
-- CFG node count
-- Binary size, the duration of an operation
-
----
-
-# Project · S9 — 3, 4
-
-**3. Diversification decision:** yes/no + **justification**
-
-**4. Limit and remaining risk:** what does each protection **not** protect?
-
-> "This string obfuscation does not protect the key; for the key see S8 whitebox/hardware."
-
----
-
-# Through an Evaluator's Eyes
-
-What S9 is graded on is **not** "I used a lot of techniques."
-
-It is graded on: **the justification and measurement of every technique**.
-
-> An unmeasured protection = a claim. Not evidence.
-
----
-
-<!-- _class: yogun -->
-
-# Self-Check (1–6)
-
-1. What is MATE? Why does it leave cryptography insufficient on its own?
-2. "Makes it expensive" — give an asset-value example?
-3. Bogus operation ≠ dead branch?
-4. Why is flattening weak on its own? Name 3 reinforcements?
-5. Which attack does random exit make harder?
-6. Does string obfuscation protect the key?
-
----
-
-<!-- _class: yogun -->
-
-# Self-Check — Answers (1–6)
-
-1. **MATE = Man-At-The-End:** the attacker fully possesses the device (memory, debugger, key). Crypto assumes a secure endpoint; under MATE the key is exposed **while running** → crypto alone is not enough.
-2. Obfuscation does not mean unbreakable; it demands **more time/skill/tools** for the attack. If breaking 100 TL worth of content requires 10,000 TL of effort, the attacker gives up.
-3. A **bogus operation** runs but its result is not used (it tires the analyst out); a **dead branch**, protected by an opaque predicate, **never runs**.
-4. In flattening, the dispatcher pattern is recognisable and the state variable can be tracked. Reinforcements: **opaque predicate · encrypting the state variable · bogus states/blocks + random exit**.
-5. It makes **pattern-matching and automated-script** attacks (expecting the same pattern for the same input) and symbolic execution harder.
-6. **No.** String/table obfuscation makes static `strings` scanning harder, but the key is exposed **in memory while running** → whitebox/HSM is required.
-
----
-
-
-<!-- _class: yogun -->
-
-# Self-Check (7–12)
-
-7. What are virtualisation's two costs?
-8. Which OS protection does self-modifying code conflict with?
-9. The four metrics; which ones trade off?
-10. Does diversification prevent potency or scaling?
-11. Which rules does KLEE break? How is resilience increased?
-12. Fill in the rule template for a section.
-
----
-
-<!-- _class: yogun -->
-
-# Self-Check — Answers (7–12)
-
-7. A large **performance** penalty (the interpreter is slow) + a **size** increase (VM + bytecode); maintenance/debugging difficulty.
-8. **W^X / DEP-NX** (writable-and-executable memory is forbidden); writing to a code page needs `mprotect`/`VirtualProtect`, which is blocked or suspicious.
-9. **Potency · resilience · stealth · cost.** Potency/resilience ↑ → cost ↑ and stealth ↓ (looks abnormal). Main trade-off: **resilience ↔ cost**.
-10. It prevents **scaling** — it does not raise a single copy's strength; a crack does **not spread** to every copy (it breaks reuse of the attack).
-11. **KLEE** is symbolic execution; it can solve opaque predicates/flattening. Rule: make predicates **resistant to symbolic execution** (input-dependent, hard to solve); path-exploding structures raise resilience.
-12. Example: **Rule** [flattening] → **Goal** [hide the flow] → **How** [Tigress Flatten + opaque predicate] → **Measurement** [size +X%, speed −Y%, instructions N→M]. The measurement line is required.
-
----
-
-
-# Summary: This Week in One Sentence
-
-> Obfuscation does not give unbreakability, it raises **cost**; its strength comes from **togetherness**, **diversification**, and being **measured**.
-
----
-
 <!-- _class: bolum -->
 
-# Next Week
-
-**Week 10 — Certificates and Cryptographic Methods**
-
-We said "obfuscation does not protect the key" → choosing keys correctly, their lifecycle, PKI.
-Week 11 whitebox · week 14 Tigress (the automated form of these rules).
+# End to End: Layer by Layer Protection
 
 ---
 
-<!-- _class: bolum -->
-
-# Appendix A · An End-to-End Worked Example
-
----
-
-# Goal
+# The Goal of This Example
 
 We take a single synthetic check (`erisim_ver`) and protect it **layer by layer**.
 
@@ -1800,122 +1678,99 @@ if (karar_izin_mi(k)) uygula();
 
 ---
 
-<!-- _class: bolum -->
+# Project · S9 (Advanced Hardening) — 1
 
-# Appendix B · Reading and Measuring a CFG
+**1. Protection table**
 
----
+For 2–3 critical sections (license, key derivation, integrity), fill in the rule template:
 
-# What Is a CFG, and How Do You Read It?
-
-- **Node:** a basic block (an instruction sequence with no branch)
-- **Edge:** a transition between blocks (a branch)
-- A decompiler (e.g., Ghidra) draws the CFG
-
-We measure obfuscation's **strength** using node/edge count.
+what it protects · threat · how · cost · limit · measurement
 
 ---
 
-# Before Flattening (Concept)
+# Project · S9 — 2
 
-![w:900](assets/h09-04-duzlestirme.svg)
+**2. Measurement**
 
-Few nodes, readable flow.
+For at least one technique, before/after:
+
+- Count of sensitive strings in `strings` output
+- CFG node count
+- Binary size, the duration of an operation
 
 ---
 
-# After Flattening (Concept)
+# Project · S9 — 3, 4
 
+**3. Diversification decision:** yes/no + **justification**
 
-Many nodes, a single hub; "which block comes next" cannot be read.
+**4. Limit and remaining risk:** what does each protection **not** protect?
+
+> "This string obfuscation does not protect the key; for the key see S8 whitebox/hardware."
+
+> Later: S15 (week 14, putting obfuscation into the build pipeline) · S16 (week 12, testing that behaviour is unchanged).
+
+---
+
+# Through an Evaluator's Eyes
+
+What S9 is graded on is **not** "I used a lot of techniques."
+
+It is graded on: **the justification and measurement of every technique**.
+
+> An unmeasured protection = a claim. Not evidence.
 
 ---
 
 <!-- _class: yogun -->
 
-# Potency Measurement Example
+# Self-Check (1–6)
 
-| Metric | Before | After |
-| --- | --- | --- |
-| Basic blocks | 5 | 34 |
-| Edges | 6 | 60 |
-| Cyclomatic complexity | 3 | 28 |
-
-You take these numbers from the decompiler and write them into S9.
-
----
-
-# Cost Measurement Example
-
-```bash
-size ./program_temiz ./program_gizli   # boyut
-# süre: aynı girdiyle N kez çalıştır, ortalama
-```
-
-| Metric | Before | After |
-| --- | --- | --- |
-| Size | 100 KB | 128 KB |
-| Runtime | 1.0× | 1.7× |
+1. What is MATE? Why does it leave cryptography insufficient on its own?
+2. "Makes it expensive" — give an asset-value example?
+3. Bogus operation ≠ dead branch?
+4. Why is flattening weak on its own? Name 3 reinforcements?
+5. Which attack does random exit make harder?
+6. Does string obfuscation protect the key?
 
 ---
 
-# Interpreting the Measurement
+<!-- _class: yogun -->
 
-- Potency ↑ (34 blocks) and cost ↑ (28% size, 1.7× time)
-- This **trade-off** is expected
-- Decision: is the gain acceptable given the asset's value?
+# Self-Check — Answers (1–6)
 
-> Do not say "strong"; show **these numbers**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Increasing Resilience
+1. **MATE = Man-At-The-End:** the attacker fully possesses the device (memory, debugger, key). Crypto assumes a secure endpoint; under MATE the key is exposed **while running** → crypto alone is not enough.
+2. Obfuscation does not mean unbreakable; it demands **more time/skill/tools** for the attack. If breaking 100 TL worth of content requires 10,000 TL of effort, the attacker gives up.
+3. A **bogus operation** runs but its result is not used (it tires the analyst out); a **dead branch**, protected by an opaque predicate, **never runs**.
+4. In flattening, the dispatcher pattern is recognisable and the state variable can be tracked. Reinforcements: **opaque predicate · encrypting the state variable · bogus states/blocks + random exit**.
+5. It makes **pattern-matching and automated-script** attacks (expecting the same pattern for the same input) and symbolic execution harder.
+6. **No.** String/table obfuscation makes static `strings` scanning harder, but the key is exposed **in memory while running** → whitebox/HSM is required.
 
 ---
 
-# Against Symbolic Execution — Step by Step
+<!-- _class: yogun -->
 
-1. Flattening alone → the solver resolves the paths
-2. Tie the opaque predicate to a structure that is **expensive to solve**
-3. Grow the state space (more cases)
-4. **Measure the cost** — resilience can grow exponentially, and so can cost
+# Self-Check (7–12)
 
----
-
-# Against Pattern Recognition — Step by Step
-
-1. A single opaque predicate pattern → recognisable
-2. Use **multiple** patterns
-3. **Diversify** (seed)
-4. Change the patterns with every release (in time)
+7. What are virtualisation's two costs?
+8. Which OS protection does self-modifying code conflict with?
+9. The four metrics; which ones trade off?
+10. Does diversification prevent potency or scaling?
+11. Which rules does KLEE break? How is resilience increased?
+12. Fill in the rule template for a section.
 
 ---
 
-# Against the MBA Simplifier
+<!-- _class: yogun -->
 
-1. Do not count arithmetic encoding **on its own**
-2. Use it **interleaved** with control flow
-3. Tie encoded constants to opaque predicates
+# Self-Check — Answers (7–12)
 
-> Layers being **interlinked** makes them harder to solve **separately**.
-
----
-
-# Resilience: the Golden Rule
-
-Produce a number:
-
-> "This transform pipeline, against this tool, did not let it solve a problem of this size within this time."
-
-Not a claim, a **measurement**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Terms and Closing
+7. A large **performance** penalty (the interpreter is slow) + a **size** increase (VM + bytecode); maintenance/debugging difficulty.
+8. **W^X / DEP-NX** (writable-and-executable memory is forbidden); writing to a code page needs `mprotect`/`VirtualProtect`, which is blocked or suspicious.
+9. **Potency · resilience · stealth · cost.** Potency/resilience ↑ → cost ↑ and stealth ↓ (looks abnormal). Main trade-off: **resilience ↔ cost**.
+10. It prevents **scaling** — it does not raise a single copy's strength; a crack does **not spread** to every copy (it breaks reuse of the attack).
+11. **KLEE** is symbolic execution; it can solve opaque predicates/flattening. Rule: make predicates **resistant to symbolic execution** (input-dependent, hard to solve); path-exploding structures raise resilience.
+12. Example: **Rule** [flattening] → **Goal** [hide the flow] → **How** [Tigress Flatten + opaque predicate] → **Measurement** [size +X%, speed −Y%, instructions N→M]. The measurement line is required.
 
 ---
 
@@ -1957,18 +1812,12 @@ Not a claim, a **measurement**.
 
 ---
 
-# What Carries Over to the Project from This Week
+<!-- _class: baslik -->
 
-- **S9:** protection table (rule template) + measurement + diversification decision + remaining risk
-- **S15:** (week 14) putting obfuscation into the build pipeline
-- **S16:** (week 12) testing that obfuscation does not break behaviour
+# Next Week
 
----
+**Week 10 — Certificates and Cryptographic Methods**
 
-# Final Word
+We said "obfuscation does not protect the key" this week; week 10 covers choosing keys correctly, their lifecycle, and protecting them with PKI. Rule (this week) → whitebox (week 11) → automation (week 14): these three weeks form one whole.
 
-> Obfuscation is not a fortress, it is a **delaying layer**.
-
-Its strength: **togetherness + diversification + measurement**.
-
-For the key: **cryptography** (10) and **whitebox** (11). Automation: **Tigress** (14).
+> Obfuscation is not a fortress, it is a **delaying layer**: it does not give unbreakability, it raises **cost**; its strength comes from **togetherness**, **diversification**, and being **measured**.

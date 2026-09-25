@@ -47,6 +47,8 @@ Speaker note: This week is not a lecture but a demonstration week: each team sho
 | Project management | 5 | S13 process, SBOM · GitHub repo and plan |
 | Interim report | 7 | All midterm sections |
 
+Evidence = the relevant guide section + code + test output; show at least one control for every threat.
+
 ---
 
 # How the Rubric Is Read — Diagram
@@ -81,7 +83,7 @@ Left for the final: S6 · S8 · S11 · S14 · S15
 
 | Week | What you should be able to show |
 | --- | --- |
-| 1 | Repo + plan · S2 · S3 interface table · S4 STRIDE + attack tree · S5 draft |
+| 1 | Repo + plan · S2 · S3 interface table · S4 STRIDE + attack tree · S5 draft (C/I/I+) |
 | 2 | Every threat → CWE + CVSS v3.1 vector |
 | 3 | S7 algorithm/key/binding · shell matrix · CSPRNG · AEAD verification |
 | 4 | S9 protection table · CERT findings · ASan+UBSan · fuzz result |
@@ -90,13 +92,15 @@ Left for the final: S6 · S8 · S11 · S14 · S15
 
 ---
 
+<!-- _class: yogun -->
+
 # Suggested Demonstration Flow
 
-1. **Product and architecture** (S2–S3): one diagram, trust boundaries
-2. **Threats and assets** (S4–S5): the three most critical threats
-3. **Live demonstration:** at least one control **working live**
+1. **Product and architecture** (S2–S3, ~2 min): one diagram, trust boundaries
+2. **Threats and assets** (S4–S5): the three most critical threats, a control for each
+3. **Live demonstration:** at least one control **working live** (e.g. encrypted data, signature verification, a RASP trigger) — backup video + commands ready
 4. **Evidence:** protection table, sanitizer/fuzz, SBOM — command + output
-5. **Remaining risk and plan:** what remains before the final?
+5. **Remaining risk and plan:** what remains before the final? (honest analysis earns points)
 
 For every control: **What does it protect? · How was it built? · How was it proven?**
 
@@ -108,14 +112,19 @@ For every control: **What does it protect? · How was it built? · How was it pr
 
 ---
 
+<!-- _class: yogun -->
+
 # Sample Questions
 
 - Which flow crossing a trust boundary is the riskiest?
 - How long does this asset stay unencrypted in memory, and where is it wiped?
-- Where does the key come from, where does it live? Can the nonce repeat?
+- Where does the key come from, where does it live, when is it deleted? Can the nonce repeat?
 - Which compiler protection is turned off, and why?
 - What happens when a RASP check fails?
 - Does the SBOM contain a vulnerable component? Are you affected?
+- What are your three most critical assets, their C/I/I+ labels, and their lifecycle?
+- Which control addresses a given threat, and how was it verified? (threat → control → evidence)
+- What is your remaining risk, and why is it acceptable? (answer honestly and with justification)
 
 ---
 
@@ -131,6 +140,7 @@ For every control: **What does it protect? · How was it built? · How was it pr
 | Threat table from general knowledge | Project-specific threats get missed |
 | Unrehearsed demonstration | Time is wasted |
 | Real password/key/personal data in the repo | A serious security mistake; values must be **synthetic** |
+| Live demo crashes with no backup / remaining-risk section left empty | Looks like a lack of preparation and honest analysis |
 
 ---
 
@@ -140,15 +150,20 @@ For every control: **What does it protect? · How was it built? · How was it pr
 
 ---
 
-# Academic Integrity and After
+# Academic Integrity
 
 - Uncredited code/text, work from outside the team, fabricated results **are not acceptable**
 - Every submitted line must be explainable
-- Any team member may be asked a question
+- Any team member should be able to present their own section; anyone may be asked a question
 
-**After the demonstration:** write the feedback as a **finding list** (finding · severity · fix · date) → a small model of Week 12
+---
 
-Final sections: S6 · S8 · S11 · S14 · S15 · S16 results · S17
+# After the Demonstration
+
+- Write the feedback as a **finding list** (finding · severity · fix · date) → a small model of Week 12
+- Final sections: S6 · S8 · S11 · S14 · S15 · S16 results · S17
+
+> A demonstration is a presentation of **evidence**: every claim should be backed by a document, a test, or live output.
 
 ---
 
@@ -158,194 +173,3 @@ Final sections: S6 · S8 · S11 · S14 · S15 · S16 results · S17
 
 - Scope: weeks 1–6
 - Study guide and sample questions: Week 8 page
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Rubric Item by Item
-
-<!-- Speaker note: For the midterm demonstration (RAP1), we explain what evidence each rubric item expects. -->
-
----
-
-# What Does the Rubric Measure?
-
-The midterm demonstration measures the **first half** of your project:
-
-- product, architecture, threat model
-- asset management
-- basic protections
-- documentation and presentation
-
----
-
-# Item · Product and Architecture
-
-- What does it do, which components?
-- One diagram + the three most critical assets.
-- **Evidence:** S2–S4 documentation.
-
----
-
-# Item · Threat Model
-
-- STRIDE / attack tree.
-- A control for every threat.
-- **Evidence:** S4 threat table.
-
----
-
-# Item · Asset Management
-
-- Asset list + C/I/I+.
-- Lifecycle.
-- **Evidence:** S5.
-
----
-
-# Item · Basic Protections
-
-- Cryptography (S8, partial), secure code (S9, partial).
-- **Evidence:** code + tests.
-
----
-
-# Item · Documentation and Presentation
-
-- Consistency, version identity.
-- Clear delivery.
-- **Evidence:** the entire guide.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Demonstration Flow
-
----
-
-# Flow · 1. Summary
-
-- Product, architecture, the three most critical assets.
-- One diagram, two minutes.
-
----
-
-# Flow · 2. Threat Model
-
-- One example from STRIDE and the attack tree.
-- "This threat, that control."
-
----
-
-# Flow · 3. Live Demonstration
-
-- Show a control **working live**.
-- E.g., encrypted data, a verified signature.
-
----
-
-# Flow · 4. Evidence
-
-- Tests, protection table.
-- "This command, this output."
-
----
-
-# Flow · 5. Remaining Risk
-
-- What did you deliberately scope out?
-- Honest analysis earns points.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Preparation Checklist
-
----
-
-# Checklist · Documentation
-
-- [ ] S0 version identity up to date
-- [ ] S2–S5 complete
-- [ ] Guide and code version consistent
-
----
-
-# Checklist · Demonstration
-
-- [ ] Live demo works (backup video ready)
-- [ ] Commands ready
-- [ ] Every team member can present a section
-
----
-
-# Checklist · Security
-
-- [ ] No real secret/personal data in the repo
-- [ ] Values are synthetic
-- [ ] Remaining risk is documented
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Sample Questions
-
----
-
-# Question 1
-
-**Your three most critical assets and their C/I/I+ labels?**
-
-Keep your answer ready; know the lifecycle of every asset.
-
----
-
-# Question 2
-
-**Which control against this threat, and how was it verified?**
-
-Show the threat → control → evidence chain.
-
----
-
-# Question 3
-
-**Where does this key come from, where does it live, when is it deleted?**
-
-Explain the key's lifecycle.
-
----
-
-# Question 4
-
-**What is your remaining risk? Why is it acceptable?**
-
-Answer honestly and with justification.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix · Common Mistakes
-
----
-
-# Mistake List
-
-- Guide and code version differ.
-- "Done" without evidence.
-- Live demo crashes (no backup).
-- Remaining-risk section is empty.
-- Real data in the repo.
-
----
-
-# Final Word (RAP1)
-
-> A demonstration is a presentation of **evidence**: every claim should be backed by a document, a test, or live output.
-
-Midterm feedback becomes a **finding–action** list at the final.

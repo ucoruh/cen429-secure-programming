@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -27,15 +25,59 @@ Speaker note: This week the focus shifts from "hardening the program" to "the pr
 
 ---
 
-# Today's Plan (3 Hours)
+# Today
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–2 | Basic concepts · what RASP is · RASP architecture |
-| 2 | 3–7 | Integrity · debugger · emulator · hook/Frida · memory protection |
-| 3 | 8–13 | Root/signature · control-flow integrity · response policy · limits · project |
+| 1 | 1–3 | What RASP is, RASP architecture · Integrity checking (self-hashing) **Demo 1** |
+| 2 | 4–6 | Debugger detection **Demo 2** · Environment/emulator detection **Demo 3** · Hook/instrumentation detection **Demo 4** |
+| 3 | 7–10 | Memory protection · Root/signature verification **Demo 6-7** · Control-flow integrity **Demo 5** · Response policy **Demo 8** · Project |
+
+**Learning outcome (LO.3):** recognise RASP checks (integrity, anti-debug, environment, hooking) · design a response policy and device binding · explain RASP's limits and its ethical framework
+
+> RASP = **Runtime Application Self-Protection**: the application **monitoring** itself while it runs and **responding** to threats. Detect → defend → deter. But never a single check — a **layer**.
 
 <!-- Speaker note: This week we cover runtime protections (RASP). Zero prior knowledge assumed; we will define every term. Core framework: RASP detects, defends, deters — but never alone, always layered. -->
+
+---
+
+# What We Bring from Earlier Weeks
+
+- **The white-box attacker model** — the user who owns the device may also be the attacker; they can read memory and attach a debugger **(Week 1)**
+- **Digest, MAC, and HMAC** — a digest is a one-way fingerprint computed from data; HMAC proves a message hasn't changed using a shared secret key **(Week 3)**
+- **Deriving keys from a master secret (HKDF)** — deriving new keys from a master secret through Extract and Expand steps **(Week 3)**
+- **Device binding** — a secret being meaningful only on a specific device, the innermost layer of the security shell **(Week 3)**
+
+This week: the white-box model → the **MATE** attacker model (Section 1); HMAC → verifying the application's own code (Section 3); HKDF → deriving a key from a device fingerprint (Section 10); device binding → part of a RASP response policy (Section 10).
+
+---
+
+<!-- _class: yogun -->
+
+# This Week's Concepts
+
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| RASP (detect/defend/deter) | Section 1 |
+| The MATE attacker model | Section 1 |
+| RASP architecture (when/where/how) | Section 2 |
+| Integrity / self-hashing | Section 3 |
+| Debugger detection | Section 4 |
+| Emulator/VM detection | Section 5 |
+| Hook / LD_PRELOAD detection | Section 6 |
+| Dynamic memory protection | Section 7 |
+| Root indicator | Section 8 |
+| Component signature verification | Section 8 |
+| Control-flow counter | Section 9 |
+| Response policy and device binding | Section 10 |
+
+---
+
+<!-- _class: bolum -->
+
+# 1. What Is RASP?
 
 ---
 
@@ -49,167 +91,6 @@ Speaker note: This week the focus shifts from "hardening the program" to "the pr
 - **today** — **OWASP MASVS-RESILIENCE** turns this into an auditable requirement
 
 > RASP is not a new idea: it is the name of the corporate answer to the **MATE attacker**.
-
----
-
-
-# Where Does This Week Fit?
-
-- **Weeks 4–5:** we hardened the code **statically** (compilation, obfuscation).
-- **This week (6):** the program protects itself **while it runs** → RASP.
-- **Weeks 9/11/14:** obfuscation and whitebox crypto work together with RASP.
-
----
-
-# Learning Outcome
-
-This week is about **LO.3**.
-
-By the end, you will be able to:
-
-- Recognise RASP checks (integrity, anti-debug, environment, hooking)
-- Design a response policy and device binding
-- Explain RASP's **limits** and its ethical framework
-
----
-
-# Core Idea
-
-> RASP = **Runtime Application Self-Protection**: the application **monitoring** itself while it runs and **responding** to threats.
-
-Detect → defend → deter. But never a single check — a **layer**.
-
----
-
-<!-- _class: bolum -->
-
-# 0. Basic Concepts (From Scratch)
-
-<!-- Speaker note: We define RASP terms from scratch. -->
-
----
-
-# What Is Runtime?
-
-- **Runtime:** the moment the program is **running** (not compilation).
-- RASP protections kick in here: the program monitors itself **while running**.
-
----
-
-# What Is RASP?
-
-- **RASP (Runtime Application Self-Protection):** the application protecting itself while it runs.
-- It **detects** threats such as tampering, debugging, and a fake environment, and **responds**.
-
----
-
-# Debugger
-
-- **Debugger:** a tool that runs a program step by step, halts it, and reads memory (gdb, lldb).
-- The attacker uses it to trace the flow and change values.
-- RASP checks "is a debugger attached to me?"
-
----
-
-# Emulator and Virtual Machine
-
-- **Emulator/VM:** a software environment that **imitates** a device (Android emulator, QEMU).
-- The attacker does their analysis here instead of on a real device (easier).
-- RASP tries to sense the fake environment.
-
----
-
-# Hook and Instrumentation
-
-- **Hook:** intercepting a function call and **changing** it.
-- **Instrumentation:** injecting code into a running program to observe/change its behaviour.
-- Tool: **Frida** (a very common dynamic instrumentation tool).
-
----
-
-# LD_PRELOAD
-
-- **LD_PRELOAD:** a way on Linux to load a library **before** the program and replace functions.
-- The attacker can use it to **hook** critical functions.
-- RASP tries to detect this.
-
----
-
-# Integrity and Self-Hashing
-
-- **Integrity:** the code/file being **unchanged**.
-- **Self-hashing:** the program computing a digest of **its own code** and comparing it against the expected value.
-- If it's been tampered with, the digest won't match.
-
----
-
-# Self-Hashing — Diagram
-
-![w:950](assets/h06-03-self-hashing.svg)
-
----
-
-# Digest (Checksum/Hash)
-
-- **Digest:** a fixed-size **fingerprint** computed from data (SHA-256).
-- If the data changes, the digest changes.
-- The foundation of integrity checking.
-
----
-
-# Root / Jailbreak
-
-- **Root:** full privilege on the device (normally restricted).
-- On a rooted device, protections weaken; the attacker can access everything.
-- RASP checks "is the device rooted?"
-
----
-
-# Signature Verification
-
-- Application packages are signed with a **digital signature**.
-- **Signature verification:** checking whether the caller's/loaded component's signature is the expected one.
-- Catches a fake/modified component.
-
----
-
-# Control-Flow Integrity (Counter)
-
-- If critical checks are done with **a single `if`**, one patch at that single point skips them.
-- **Control-flow counter:** verifying that checks passed in the correct **order**, by counting them.
-- A single patch is no longer enough.
-
----
-
-# Response Policy
-
-- **Response policy:** what will RASP **do** when it sees a threat?
-- Shut down silently, restrict the feature, notify the server, respond with a delay...
-- "Crash immediately" is not always the best choice.
-
----
-
-# Device Binding and Deterrence
-
-- **Device binding:** data/keys being meaningful only on a **specific device**.
-- **Deterrence:** making the attack costly/risky enough that the attacker gives up.
-- RASP's ultimate goal: raising the cost.
-
----
-
-# Now We're Ready
-
-Terms:
-
-runtime · RASP · debugger · emulator/VM · hook/Frida · LD_PRELOAD · integrity/self-hashing · digest · root · signature verification · control-flow counter · response policy · device binding · deterrence
-
-Now: what is RASP, and what does it do?
-
----
-
-<!-- _class: bolum -->
-
-# 1. What Is RASP?
 
 ---
 
@@ -252,7 +133,6 @@ A WAF asks "is the incoming request malicious?"; RASP asks "have **I** been tamp
 ![w:1000](assets/h06-01-rasp-dongusu.svg)
 
 ---
-
 
 # What Does RASP Complete?
 
@@ -396,7 +276,6 @@ Multi-point, cross-checked, hidden, and data-dependent checks **together** build
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 3. Integrity Checking (Self-Hashing)
@@ -449,6 +328,12 @@ Multi-point, cross-checked, hidden, and data-dependent checks **together** build
 - If the digest **doesn't match** → tampering (a patch) has been detected.
 - The result is tied not directly to an `if`, but to a **response** (Section 10).
 - A smarter response is preferred over "crash immediately."
+
+---
+
+# Self-Hashing — Diagram
+
+![w:950](assets/h06-03-self-hashing.svg)
 
 ---
 
@@ -554,13 +439,14 @@ Don't do the check at a single point and only at startup; make it **periodic, mu
 
 # Why Is a Debugger Dangerous?
 
+- **Debugger:** a tool that runs a program step by step, halting it and reading its memory (gdb, lldb, x64dbg, WinDbg).
 - The attacker **halts** the program, reads memory, changes values.
 - They can bypass checks one by one.
 - RASP checks "is a debugger attached to me?"
 
 ---
 
-# Detection Approaches (Concept)
+# Detection Approaches for a Debugger (Concept)
 
 - Asking the operating system for "am I being traced?" information.
 - The state of specific debugging interfaces.
@@ -667,7 +553,6 @@ Collect multiple independent signals, tie the result to a behaviour, **delay** t
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 5. Environment Detection: Emulator/VM
@@ -682,6 +567,7 @@ Collect multiple independent signals, tie the result to a behaviour, **delay** t
 
 # Why an Emulator?
 
+- **Emulator/VM:** a software environment that **imitates** a device (an Android emulator, QEMU).
 - The attacker does their analysis **in an emulator** instead of a real device.
 - Halting, tracing, and resetting is easy in an emulator.
 - RASP checks "am I on a real device?"
@@ -779,6 +665,7 @@ Use a risk score instead of a harsh response; the result is evaluated together w
 - The attacker **hooks** a critical function: intercepts and changes the call.
 - Example: making the "is the signature valid?" function always return "yes."
 - Tool: **Frida**, Xposed.
+- **Instrumentation:** injecting code into a running program to observe/change its behaviour; Frida is the most common tool for this.
 
 ---
 
@@ -803,7 +690,7 @@ Use a risk score instead of a harsh response; the result is evaluated together w
 
 ---
 
-# Detection Approaches (Concept)
+# Detection Approaches for a Hook (Concept)
 
 - Unexpected loaded libraries/modules.
 - Traces of known instrumentation tools (in memory, on ports).
@@ -973,12 +860,6 @@ If the attacker changes only `deger` (value), the inconsistency is caught.
 
 ---
 
-# RASP's Limits — Diagram
-
-![w:900](assets/h06-15-rasp-sinirlari.svg)
-
----
-
 # This Section's Rule (7)
 
 > Keep things in memory **briefly, minimally, and scattered**; protect a critical value with a **shadow copy + digest**.
@@ -1004,7 +885,6 @@ An inconsistency must be tied to a response — silently ignoring it defeats the
 3. **A check in the control flow being skipped:** the counter increases as critical checks run; if it doesn't reach the expected value, a check has been **bypassed**.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -1132,12 +1012,6 @@ if (imza_gecerli()) devam();   /* tek nokta */
 
 ---
 
-# Device Binding — Diagram
-
-![w:950](assets/h06-12-cihaz-baglama.svg)
-
----
-
 <!-- _class: kucuk -->
 
 # Demo 5 · Skip Attack — Actual Output
@@ -1174,6 +1048,7 @@ Tie security checks to a **control-flow counter** and, where possible, to a **da
 
 # Why Is "Crash Immediately" Bad?
 
+- **Response policy:** deciding **what RASP does** once it sees a threat.
 - It tells the attacker "the check is exactly here."
 - It makes finding and bypassing the check easier.
 - Smarter responses are needed.
@@ -1267,6 +1142,12 @@ SONUC: TAMPER ALGILANDI -> cihaz/surum baglama tutmadi
 
 ---
 
+# Device Binding — Diagram
+
+![w:950](assets/h06-12-cihaz-baglama.svg)
+
+---
+
 # Device Binding
 
 - The key/data is meaningful only on a **specific device**.
@@ -1290,6 +1171,22 @@ SONUC: TAMPER ALGILANDI -> cihaz/surum baglama tutmadi
 > RASP does not make the attack **impossible**; it makes it **costly and risky**.
 
 Enough layers + server-side verification → the attacker gives up or gets caught.
+
+---
+
+# Response: How Do You Decide?
+
+1. **How reliable is the indicator?** Highly reliable → reject + notify the server. Uncertain → continue, raise the risk score.
+2. **Will it affect the user experience?** If the false-positive risk is high, **don't respond harshly**; prefer silent restriction + server-side verification.
+3. **Does the response give away the check?** Crashing immediately reveals the source; a **delayed/indirect** response hides it.
+
+---
+
+<!-- _class: yogun -->
+
+# Response Flow · At a Glance
+
+![w:900](assets/h06-11-tepki.svg)
 
 ---
 
@@ -1319,7 +1216,6 @@ The instant tampering is found, **erase** the secret, return a **decoy** instead
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 11. Limits and Ethics
@@ -1332,6 +1228,12 @@ The instant tampering is found, **erase** the secret, return a **decoy** instead
 - Its strength decreases on a rooted device.
 - A false positive → a real user can be hurt.
 - Maintenance cost is high (tools evolve).
+
+---
+
+# RASP's Limits — Diagram
+
+![w:900](assets/h06-15-rasp-sinirlari.svg)
 
 ---
 
@@ -1359,6 +1261,130 @@ The instant tampering is found, **erase** the secret, return a **decoy** instead
 
 ---
 
+# End to End: Building a RASP Layer
+
+Let's protect a synthetic "license check" with RASP:
+
+- integrity checking
+- debugger checking
+- a smart response
+
+<!-- Speaker note: We build integrity + anti-debug + response step by step in a synthetic example. -->
+
+---
+
+# Step 1 · The Point to Protect
+
+```c
+int lisans_gecerli(void) {
+    /* ... kontrol ... */
+    return sonuc;   /* saldırganın hedefi */
+}
+```
+
+This function and the flow that calls it are critical.
+
+---
+
+# Step 2 · Add an Integrity Check
+
+- After compilation, record this region's digest.
+- Recompute and compare while running.
+- A difference → raise the tampering flag.
+
+---
+
+# Step 3 · Add Anti-Debug
+
+- "Am I being watched?" via timing + OS indicators.
+- Don't leave the result alone; **combine** it with another check.
+
+---
+
+# Step 4 · Tie the Result to a Behaviour
+
+- `lisans_gecerli`'s result is not plain true/false.
+- The integrity + anti-debug indicators feed into the result's **computation**.
+- If there's tampering, the function behaves **incorrectly**.
+
+---
+
+# Step 5 · Response
+
+- Instead of crashing immediately: report the flag to the server, restrict the feature.
+- Delayed trigger: hide the source.
+
+---
+
+# Step 6 · Obfuscate and Diversify
+
+- Obfuscate the check code (Week 9).
+- Place it differently in every version (diversification).
+- Add a cross-check.
+
+---
+
+# Step 7 · Measure and Document
+
+- How many checks, where, and what response?
+- Performance cost (checks slow things down).
+- Write it up in S10.
+
+---
+
+<!-- _class: yogun -->
+
+# RASP Check Catalogue (1)
+
+| Check | What It Catches | Limit |
+| --- | --- | --- |
+| Integrity (self-hash) | A binary patch | The digest fn. can be bypassed |
+| Anti-debug | A debugger attached | Known methods get bypassed |
+| Emulator | A fake environment | False positives |
+
+---
+
+<!-- _class: yogun -->
+
+# RASP Check Catalogue (2)
+
+| Check | What It Catches | Limit |
+| --- | --- | --- |
+| Hook/Frida | A function hook | Hidden tools |
+| Root | Privilege escalation | Root hiding tools |
+| Signature | A fake component | If the key leaks |
+| CFI counter | A skipped check | A sophisticated patch |
+
+---
+
+# The Lesson From the Catalogue
+
+- Every check has a **blind spot**.
+- None of them is enough alone.
+- Choose **several** from the catalogue, combine them, diversify them.
+
+---
+
+# Choosing Checks
+
+- How many layers, based on the asset's value?
+- Which checks make sense for the platform?
+- What's the performance budget?
+
+Write the decision and its rationale in S10.
+
+---
+
+# Common Mistakes
+
+- Relying on a single check.
+- Not obfuscating the check (easily found).
+- A "crash immediately" response (gives away the source).
+- A harsh response + a high false-positive rate (hurts the user).
+- Skipping server-side verification (the real guarantee is there).
+
+---
+
 <!-- _class: bolum -->
 
 # 12. Project: This Week (S10)
@@ -1368,9 +1394,13 @@ The instant tampering is found, **erase** the secret, return a **decoy** instead
 # Project · S10 (RASP + Response)
 
 - [ ] At least two different RASP checks (e.g., integrity + anti-debug).
+- [ ] Checks are **hidden** and **diversified**.
+- [ ] Document cross-checking (Java ↔ native), if any.
 - [ ] Document **when/where** the checks run.
-- [ ] Response policy: what happens when a threat is seen?
+- [ ] The response policy is **smart** (delayed/indirect — not "crash immediately").
 - [ ] The device-binding decision and its rationale.
+- [ ] Is there server-side verification?
+- [ ] A false-positive plan.
 - [ ] Limits and residual risk (what it doesn't protect).
 
 ---
@@ -1496,325 +1526,14 @@ Obfuscation · multiple/overlapping blocks · cross-checking · tying the result
 
 ---
 
-# Summary: This Week in One Sentence
-
-> RASP monitors itself while the program runs and responds to threats; but it gains its strength not from a single check, but from **layered, diversified,
-> hidden** checks and **server-side** verification.
-
----
-
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
 # Next Week
 
-**Week 7 — Interim Project Demo (RAP1)** and **Week 8 — Quiz-1**
+**Week 7 — Interim Project Demos (RAP1)** and **Week 8 — Quiz-1**
 
-Midterm period: demo the first half of your project and prepare for Quiz-1.
+In Week 7 you will present this week's RASP checks (integrity checking, debugger/environment/hook detection, the control-flow counter, the response policy) live in your project. Week 8 is Quiz-1, covering weeks 1–6.
 
----
+Then **Week 9 — Advanced Obfuscation and Diversification** continues by deepening this week's debugger/environment detection ideas and its "obscurity/deterrence is not unbreakability" theme on the code-obfuscation side.
 
-<!-- _class: bolum -->
-
-# Appendix A · Building a RASP Layer
-
-<!-- Speaker note: We build integrity + anti-debug + response step by step in a synthetic example. -->
-
----
-
-# Goal
-
-Let's protect a synthetic "license check" with RASP:
-
-- integrity checking
-- debugger checking
-- a smart response
-
----
-
-# Step 1 · The Point to Protect
-
-```c
-int lisans_gecerli(void) {
-    /* ... kontrol ... */
-    return sonuc;   /* saldırganın hedefi */
-}
-```
-
-This function and the flow that calls it are critical.
-
----
-
-# Step 2 · Add an Integrity Check
-
-- After compilation, record this region's digest.
-- Recompute and compare while running.
-- A difference → raise the tampering flag.
-
----
-
-# Step 3 · Add Anti-Debug
-
-- "Am I being watched?" via timing + OS indicators.
-- Don't leave the result alone; **combine** it with another check.
-
----
-
-# Step 4 · Tie the Result to a Behaviour
-
-- `lisans_gecerli`'s result is not plain true/false.
-- The integrity + anti-debug indicators feed into the result's **computation**.
-- If there's tampering, the function behaves **incorrectly**.
-
----
-
-# Step 5 · Response
-
-- Instead of crashing immediately: report the flag to the server, restrict the feature.
-- Delayed trigger: hide the source.
-
----
-
-# Step 6 · Obfuscate and Diversify
-
-- Obfuscate the check code (Week 9).
-- Place it differently in every version (diversification).
-- Add a cross-check.
-
----
-
-# Step 7 · Measure and Document
-
-- How many checks, where, and what response?
-- Performance cost (checks slow things down).
-- Write it up in S10.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · Mini Case Study
-
----
-
-# Scenario · A Payment Application
-
-- A local key + payment flow.
-- Goal: make tampering and live analysis hard.
-
----
-
-# Case · Check Placement
-
-- **At startup:** root/emulator/signature check.
-- **Before payment:** integrity + anti-debug + hook check.
-- **Periodic/random:** repeat.
-
----
-
-# Case · Response
-
-- A high-confidence indicator → reject the operation + notify the server.
-- A weak indicator → raise the server-side risk score.
-- Protect the user experience (false positives).
-
----
-
-# Case · Layers
-
-- RASP + obfuscation (Week 9) + whitebox crypto (Week 11) + short-lived keys (Week 10).
-- Server side: rate limiting, anomaly detection.
-- Even if one layer is breached, the others hold.
-
----
-
-# Case · Residual Risk
-
-- A determined attacker can still make progress on a rooted device.
-- But: many layers + server-side verification → the damage is limited, the attack is expensive.
-- This is written down explicitly.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · RASP Check Catalogue
-
----
-
-<!-- _class: yogun -->
-
-# Catalogue (1)
-
-| Check | What It Catches | Limit |
-| --- | --- | --- |
-| Integrity (self-hash) | A binary patch | The digest fn. can be bypassed |
-| Anti-debug | A debugger attached | Known methods get bypassed |
-| Emulator | A fake environment | False positives |
-
----
-
-<!-- _class: yogun -->
-
-# Catalogue (2)
-
-| Check | What It Catches | Limit |
-| --- | --- | --- |
-| Hook/Frida | A function hook | Hidden tools |
-| Root | Privilege escalation | Root hiding tools |
-| Signature | A fake component | If the key leaks |
-| CFI counter | A skipped check | A sophisticated patch |
-
----
-
-# The Lesson From the Catalogue
-
-- Every check has a **blind spot**.
-- None of them is enough alone.
-- Choose **several** from the catalogue, combine them, diversify them.
-
----
-
-# Choosing Checks
-
-- How many layers, based on the asset's value?
-- Which checks make sense for the platform?
-- What's the performance budget?
-
-Write the decision and its rationale in S10.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix D · Attacker ↔ Defender
-
-<!-- Speaker note: For every check, we show the "what does the attacker do → what does the defence add" loop. This makes concrete why layered defence is necessary. -->
-
----
-
-# Why This Dialogue?
-
-Security is a **move-countermove** game.
-
-Every defence gets an attack, every attack gets a new defence.
-
-This is why layered defence is necessary.
-
----
-
-# Integrity · Dialogue
-
-- **Defence:** add self-hashing.
-- **Attacker:** find the digest function, force it to always say "match."
-- **Defence:** obfuscate the digest check, overlap it, tie the result to a behaviour.
-
----
-
-# Anti-Debug · Dialogue
-
-- **Defence:** add a debugger check.
-- **Attacker:** find the check, bypass it.
-- **Defence:** many methods + timing + obfuscation; make the response delayed.
-
----
-
-# Hook · Dialogue
-
-- **Defence:** check the function's bytes.
-- **Attacker:** hide the hook, restore the bytes.
-- **Defence:** cross-checking + server-side verification.
-
----
-
-# Root · Dialogue
-
-- **Defence:** check root indicators.
-- **Attacker:** use a root-hiding tool.
-- **Defence:** many indicators + a server-side risk score; restriction instead of a harsh response.
-
----
-
-# The Lesson From the Dialogue
-
-- A single defence is always eventually bypassed.
-- Strength: **multiplicity + secrecy + diversity + the server**.
-- Goal: make the attack **no longer economical**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix E · Response Decision Flow
-
----
-
-# "I Saw a Threat — What Do I Do?" — 1
-
-**Question 1:** How reliable is the indicator?
-
-- **Highly reliable** → reject the operation + notify the server.
-- **Uncertain** → continue, but raise the risk score.
-
----
-
-# "What Do I Do?" — 2
-
-**Question 2:** Will it affect the user experience?
-
-- If the false-positive risk is high → **don't respond harshly**.
-- Prefer silent restriction + server-side verification.
-
----
-
-# "What Do I Do?" — 3
-
-**Question 3:** Does the response give away the check?
-
-- Crashing immediately → reveals the source.
-- A **delayed/indirect** response → hides the source.
-
----
-
-<!-- _class: yogun -->
-
-# Response Flow · At a Glance
-
-![w:900](assets/h06-11-tepki.svg)
-
----
-
-<!-- _class: bolum -->
-
-# Appendix F · Quick Reference
-
----
-
-# Common Mistakes
-
-- Relying on a single check.
-- Not obfuscating the check (easily found).
-- A "crash immediately" response (gives away the source).
-- A harsh response + a high false-positive rate (hurts the user).
-- Skipping server-side verification (the real guarantee is there).
-
----
-
-<!-- _class: yogun -->
-
-# RASP Checklist
-
-- [ ] ≥ 2 different types of checks
-- [ ] Checks are hidden + diversified
-- [ ] Cross-checking (Java ↔ native)
-- [ ] A smart response (delayed/indirect)
-- [ ] Device binding
-- [ ] Server-side verification
-- [ ] A false-positive plan
-
----
-
-# Final Word (Week 6)
-
-> RASP is a **time** game played against the attacker: every layer buys a little more time.
-
-The real guarantee: layered RASP + obfuscation + short-lived keys + **server-side verification**.
+> This week in one sentence: RASP monitors itself while the program runs and responds to threats; it gains its strength not from a single check but from **layered, diversified, hidden** checks and **server-side** verification. The real guarantee: layered RASP + obfuscation + short-lived keys + **server-side verification** — a **time** game played against the attacker.

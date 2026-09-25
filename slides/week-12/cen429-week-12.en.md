@@ -10,8 +10,6 @@ footer: "RTEU Computer Engineering · 2026-2027 Fall"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -31,28 +29,15 @@ Speaker note: This week we see, step by step, how a product is evaluated at an i
 
 | Hour | Section | Topic |
 | --- | --- | --- |
-| 1 | 0–1 | Basic concepts · why independent evaluation · standards · 13 steps |
-| 2 | 2–3 | Vulnerability-assessment methods · standard tests · attack potential |
-| 3 | 4–5 | Penetration test plan · test card · reporting · project S16 |
+| 1 | 1–2 | Why independent evaluation · the standards landscape · the evaluation process (13 steps) |
+| 2 | 3–5 | Vulnerability-assessment methods · the tests the standards demand · attack potential and rating |
+| 3 | 6–9 | Finding→recommendation→action and impact analysis · penetration test plan · reporting · project (S16) |
+
+**Learning outcome (LO.6 / LO.7):** explain the steps of independent evaluation · write a **penetration test plan** · **rate** a finding (attack potential, CVSS)
 
 <!-- Speaker note: This week we learn how a product is evaluated at an independent laboratory and how we plan the penetration test of our own product. We'll set the ethical framework right from the start. -->
 
 ---
-
-<!-- _class: yogun -->
-
-# A Short History — Evaluation and Certification
-
-- **1985** — **TCSEC** ("Orange Book"): the first formal evaluation criteria
-- **1991–93** — European **ITSEC**, Canadian **CTCPEC**
-- **1999** — **Common Criteria (ISO/IEC 15408)**; the **EAL** scale comes from here
-- **2001** **OWASP** · **PTES/NIST SP 800-115** · **2005→2023** **CVSS** (v2→v4.0)
-- **2010s** — **MASVS/MASTG** (mobile), **ETSI EN 303 645** (IoT)
-
-> One sentence: **a vendor cannot approve its own product** — independent, **evidence-based** evaluation.
-
----
-
 
 # Where Does This Week Fit?
 
@@ -61,18 +46,6 @@ Speaker note: This week we see, step by step, how a product is evaluated at an i
 - **Week 13:** security requirements and the compliance matrix
 
 Today: independent evaluation + penetration test planning.
-
----
-
-# Learning Outcome
-
-This week is about **LO.6 / LO.7** (testing/verification, standards).
-
-By the end, you will be able to:
-
-- Explain the steps of independent evaluation
-- Write a **penetration test plan**
-- **Rate** a finding (attack potential, CVSS)
 
 ---
 
@@ -88,19 +61,43 @@ By the end, you will be able to:
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: yogun -->
 
-# 0. Basic Concepts (From Scratch)
+# What We Bring from Earlier Weeks
 
-<!-- Speaker note: We assume no prior knowledge. We'll use the terms from this section throughout the week. -->
+- **Vulnerability** — a weak point that can be abused, e.g., an unbounded buffer **(Week 1)**
+- **Kerckhoffs's principle** — security must rest on the secrecy of the key, not on the secrecy of the design **(Week 3)**
+- **Static and dynamic analysis** — finding bugs without running the code (static) or while running it with sanitizers (dynamic) **(Week 4)**
+- **Fuzzing** — looking for crashes with unexpected/random input **(Week 4)**
+- **CVSS** — a scoring system expressing a vulnerability's impact as a standard score (0–10) **(Week 2)**
+
+This week: we rebuild these concepts in the language of an independent **evaluation**.
 
 ---
 
-# Why This Section?
+<!-- _class: yogun -->
 
-This week terms such as "evaluation," "certification," "penetration test" will come up.
+# This Week's Concepts
 
-Let's first define all of them **one by one** so the topic doesn't stay abstract.
+Each term is defined once, where it first appears in the body; here we only mark **where**.
+
+| Concept | Where |
+| --- | --- |
+| Security evaluation, certification, standard, laboratory | Section 1 |
+| TOE, white/black box, the 13-step evaluation process | Section 2 |
+| Vulnerability, assessment methods (code review, SAST, DAST, fuzzing) | Section 3 |
+| The tests the standards demand | Section 4 |
+| Attack potential, CVSS | Section 5 |
+| Finding, recommendation, action, security impact analysis, delta assessment | Section 6 |
+| Penetration test, penetration test plan, test card | Section 7 |
+
+Now: **why independent evaluation?**
+
+---
+
+<!-- _class: bolum -->
+
+# 1. Why Independent Evaluation?
 
 ---
 
@@ -134,119 +131,6 @@ Let's first define all of them **one by one** so the topic doesn't stay abstract
 
 ---
 
-# What Is a Vulnerability?
-
-- **Vulnerability:** a **weak point** in a system that can be abused (e.g., an unbounded buffer).
-- Vulnerability + abuse = a security incident.
-
----
-
-# What Is a Finding?
-
-- **Finding:** a problem or improvement point identified during evaluation.
-- Every finding needs: evidence, severity, a **recommendation**.
-
----
-
-# White-Box vs. Black-Box Testing
-
-- **White-box testing:** the tester has access to **source code + documentation**.
-- **Black-box testing:** the tester accesses the system only from the outside (like a user).
-- The evaluator usually works **white-box** (sees everything).
-
----
-
-# What Is SAST?
-
-- **SAST (Static Application Security Testing):** a tool that analyses source **without running it**.
-- Finds dangerous patterns and possible memory errors.
-- Fast and broad; but produces **false positives**.
-
-*(We saw this in week 4 as "static analysis.")*
-
----
-
-# What Is DAST?
-
-- **DAST (Dynamic Application Security Testing):** tests the program **while running it**.
-- Catches memory-access errors, undefined behaviour (e.g., with sanitizers).
-
-*(ASan/UBSan in week 4.)*
-
----
-
-# What Is Fuzzing?
-
-- **Fuzzing:** feeding a program **unexpected/random inputs** to look for crashes/corruption.
-- Finds inputs a human would never think of.
-
-*(The libFuzzer/AFL concept in week 4.)*
-
----
-
-# What Is a Penetration Test (Pentest)?
-
-- **Penetration test:** attempting to break into a system from an attacker's point of view, **with permission** and **in a planned way**.
-- **Combines** the methods above; the last and most expensive step.
-
----
-
-# What Is a TOE?
-
-- **TOE (Target of Evaluation):** **exactly what** is being evaluated?
-- A Common Criteria term.
-- Identified uniquely: version + binary + source + hash value.
-
----
-
-# What Is CVSS?
-
-- **CVSS (Common Vulnerability Scoring System):** expresses a vulnerability's **impact** as a standard score (0–10).
-- Higher score = more severe impact.
-- Used for prioritisation.
-
----
-
-# What Is Attack Potential?
-
-- **Attack potential:** **how difficult** it is to carry out an attack.
-- Scored with factors such as time, expertise, and equipment.
-- Low potential (an easy attack) = a serious finding.
-
----
-
-# Attack Potential — Five Factors
-
-![w:1000](assets/h12-03-saldiri-potansiyeli.svg)
-
----
-
-
-# Impact Analysis and Delta Assessment
-
-- **Security impact analysis:** a report **documenting** the security impact of a change.
-- **Delta assessment:** re-evaluating **only the changed part**.
-
-We'll see these in detail in section 5.
-
----
-
-# Now We're Ready
-
-The terms we know:
-
-evaluation · certification · laboratory · standard · vulnerability · finding · white/black box · SAST · DAST · fuzzing · penetration test · TOE · CVSS · attack potential · impact analysis/delta
-
-Now: **why independent evaluation?**
-
----
-
-<!-- _class: bolum -->
-
-# 1. Why Independent Evaluation?
-
----
-
 # Independent Evaluation — Diagram
 
 ![w:950](assets/h12-04-bagimsiz-degerlendirme.svg)
@@ -269,10 +153,32 @@ Now: **why independent evaluation?**
 
 ---
 
+<!-- _class: yogun -->
+
+# A Short History — Evaluation and Certification
+
+- **1985** — **TCSEC** ("Orange Book"): the first formal evaluation criteria
+- **1991–93** — European **ITSEC**, Canadian **CTCPEC**
+- **1999** — **Common Criteria (ISO/IEC 15408)**; the **EAL** scale comes from here
+- **2001** **OWASP** · **PTES/NIST SP 800-115** · **2005→2023** **CVSS** (v2→v4.0)
+- **2010s** — **MASVS/MASTG** (mobile), **ETSI EN 303 645** (IoT)
+
+> One sentence: **a vendor cannot approve its own product** — independent, **evidence-based** evaluation.
+
+---
+
 # The Evaluator's Two Assumptions
 
 1. **White-box:** it has access to all source code and documents.
 2. **Platform is untrusted:** the environment the product runs on is exposed to the attacker.
+
+---
+
+# White-Box vs. Black-Box Testing
+
+- **White-box testing:** the tester has access to **source code + documentation**.
+- **Black-box testing:** the tester accesses the system only from the outside (like a user).
+- The evaluator usually works **white-box** (sees everything).
 
 ---
 
@@ -408,7 +314,6 @@ An organisation can hold ISO 27001 while its product has not been evaluated; the
 3. **ISO 27001 certifies the organisation/process** (information security management), **Common Criteria certifies the product** (TOE) at a given assurance level.
 
 ---
-
 
 <!-- _class: bolum -->
 
@@ -622,6 +527,100 @@ Baseline → request → classification → approval → development and testing
 
 ---
 
+<!-- _class: bolum -->
+
+# End-to-End Example · NotKasa v1.0.0
+
+A synthetic mobile application: **"NotKasa"** (keeps encrypted notes locally).
+
+- Encrypts notes with AES.
+- Downloads the key from the server.
+- Logging is off in the release build.
+
+We'll evaluate this product start to finish.
+
+---
+
+# Applying Step 1 · TOE
+
+- **TOE:** NotKasa v1.0.0, `notkasa-1.0.0.apk`
+- Hash (SHA-256): `a1b2…` (synthetic)
+- Source: `notkasa/` repository, tag `v1.0.0`
+- Out of scope: server infrastructure
+
+---
+
+# Steps 2–3 · Documents and Requirement Template
+
+- Delivered: source, security guide, both debug and release APKs.
+- Requirement template: MASVS items numbered; each with status + evidence reference.
+
+---
+
+# Step 5 · Code Review Findings (Synthetic)
+
+- **B-01:** the key is erased in an intermediate variable, but the `tmp` buffer is **not erased** (it stays in memory).
+- **B-02:** the error message on a decode failure leaks internal detail.
+
+---
+
+# Step 6 · Vulnerability Analysis
+
+- Assets: note content (C/I), data key (C/I), server token.
+- Question: **where** is each asset exposed?
+- Output: a penetration test plan (below).
+
+---
+
+# Step 7 · Penetration Test Card (Summary)
+
+- **T-01** plaintext on disk? → pass (encrypted)
+- **T-02** does the key stay in memory? → **fail** (B-01 confirmed)
+- **T-03** does the error message leak? → **fail** (B-02)
+
+---
+
+# Step 7 · T-02 Rating
+
+- Time: low · expertise: moderate · knowledge: public · equipment: free (memory dump)
+- → **moderate-low attack potential**
+- CVSS: medium (confidentiality impact)
+
+---
+
+# Step 9 · Finding–Action
+
+| Finding | Recommendation | Action |
+| --- | --- | --- |
+| B-01 key residue | Erase `tmp` after use | Added (memset-like) |
+| B-02 error leak | Return a single generic error | Fixed |
+
+---
+
+# Steps 10–11 · Impact Analysis + Delta
+
+- The fixes produced v1.0.1.
+- **Impact analysis:** 2 files changed, both on the memory/error path; the crypto flow did not change.
+- **Delta:** only these two files + the new TOE identity (`notkasa-1.0.1.apk`) were re-evaluated.
+
+---
+
+# Step 12 · Residual Risk
+
+- If the device is rooted, a memory dump is still possible.
+- Mitigation: short-lived key + server-side risk check.
+- **Written explicitly.**
+
+---
+
+# Case · Takeaway
+
+- The 13 steps aren't abstract; they're **concrete** in a small product.
+- Evaluation is a **cycle**: find → fix → re-evaluate.
+- Your project is a scaled-down version of this.
+
+---
+
 # Where Does the Guide Fit?
 
 - The security guide that is the source of this course's "How it's done in the field" notes = the **document delivered at step 2**.
@@ -649,12 +648,18 @@ Baseline → request → classification → approval → development and testing
 
 ---
 
-
 <!-- _class: bolum -->
 
 # 3. Vulnerability-Assessment Methods
 
 <!-- Speaker note: We approach these defensively, with the question "how do I test my own product before I deliver it?" -->
+
+---
+
+# What Is a Vulnerability?
+
+- **Vulnerability:** a **weak point** in a system that can be abused (e.g., an unbounded buffer).
+- Vulnerability + abuse = a security incident.
 
 ---
 
@@ -758,46 +763,33 @@ This is the counterpart of week 4's **secure build pipeline** (SAST + sanitizer 
 
 ---
 
+# Section 3 — Quick Check
+
+1. Why do we order the methods cheap to expensive?
+2. What is SAST's weakness?
+3. Why does it matter that the developer tests first?
+
+<!-- Speaker note: Then attack potential and rating. -->
+
+---
+
+# Section 3 — Answers
+
+1. Cheap/automated methods (SAST/DAST) **filter out** easy findings early; expensive human effort is spent only on what remains → efficient.
+2. **SAST** doesn't run the code → high **false positives**, cannot see runtime/configuration/business-logic flaws, doesn't know context.
+3. It closes easy findings **cheaply** (goes clean to the evaluator), lowers cost/delay → evaluation can focus on deep problems.
+
+---
+
 <!-- _class: bolum -->
 
-# The Tests the Standards Demand
+# 4. The Tests the Standards Demand
 
 ---
 
 # Each Standard Emphasises Different Tests
 
 Whichever family your project is closest to, do the tests it expects first.
-
----
-
-# Common Criteria
-
-- Source review + vulnerability analysis + penetration test.
-- **Attack potential** rating.
-- Depth increases with EAL.
-
----
-
-# FIPS 140-3
-
-- Cryptographic **module** tests.
-- Algorithm validation, self-tests.
-- Covers only the module.
-
----
-
-# EMVCo / PCI
-
-- Functional conformance + laboratory **penetration test**.
-- Attack-potential scoring.
-- Payment domain; strict.
-
----
-
-# OWASP MASVS / MASTG
-
-- Mobile application: static + dynamic testing.
-- The **most applicable** guide for your project.
 
 ---
 
@@ -828,28 +820,17 @@ These are not an "attack recipe," they are **methodology** — they make the res
 
 ---
 
-# Section 3 — Quick Check
-
-1. Why do we order the methods cheap to expensive?
-2. What is SAST's weakness?
-3. Why does it matter that the developer tests first?
-
-<!-- Speaker note: Then attack potential and rating. -->
-
----
-
-# Section 3 — Answers
-
-1. Cheap/automated methods (SAST/DAST) **filter out** easy findings early; expensive human effort is spent only on what remains → efficient.
-2. **SAST** doesn't run the code → high **false positives**, cannot see runtime/configuration/business-logic flaws, doesn't know context.
-3. It closes easy findings **cheaply** (goes clean to the evaluator), lowers cost/delay → evaluation can focus on deep problems.
-
----
-
-
 <!-- _class: bolum -->
 
-# 4. Attack Potential and Rating
+# 5. Attack Potential and Finding Rating
+
+---
+
+# What Is Attack Potential?
+
+- **Attack potential:** **how difficult** it is to carry out an attack.
+- Scored with factors such as time, expertise, and equipment.
+- Low potential (an easy attack) = a serious finding.
 
 ---
 
@@ -945,9 +926,17 @@ The logic is the same as week 9's four metrics.
 
 ---
 
-<!-- _class: bolum -->
+# Attack Potential — Five Factors
 
-# CVSS
+![w:1000](assets/h12-03-saldiri-potansiyeli.svg)
+
+---
+
+# What Is CVSS?
+
+- **CVSS (Common Vulnerability Scoring System):** expresses a vulnerability's **impact** as a standard score (0–10).
+- Higher score = more severe impact.
+- Used for prioritisation.
 
 ---
 
@@ -974,9 +963,32 @@ The two complement each other.
 
 ---
 
+# Section 5 — Quick Check
+
+1. The five factors of attack potential?
+2. Why is a low attack potential a serious finding?
+3. What do attack potential and CVSS each measure?
+
+---
+
+# Section 5 — Answers
+
+1. **Elapsed time · expertise · knowledge of the target · opportunity (access) · equipment.**
+2. It means the exploit can be done with **little** time/skill/tools → many more attackers can do it → a broad, likely threat → high risk.
+3. **Attack potential** measures the attack's **difficulty/cost**; **CVSS** measures the vulnerability's **severity/impact**. Different axes, used together.
+
+---
+
 <!-- _class: bolum -->
 
-# Finding → Recommendation → Action
+# 6. Finding → Recommendation → Action and Impact Analysis
+
+---
+
+# What Is a Finding?
+
+- **Finding:** a problem or improvement point identified during evaluation.
+- Every finding needs: evidence, severity, a **recommendation**.
 
 ---
 
@@ -996,12 +1008,6 @@ Four steps for every finding:
 4. **Closure:** some findings close as "not open, a good-practice suggestion".
 
 This cycle → the source of the post-midterm **finding–action list** (week 7).
-
----
-
-<!-- _class: bolum -->
-
-# Impact Analysis and Delta Assessment
 
 ---
 
@@ -1041,30 +1047,23 @@ If the version identity/hash is inconsistent, delta **cannot be done** (the eval
 
 ---
 
-# Section 4 — Quick Check
+# Section 6 — Quick Check
 
-1. The five factors of attack potential?
-2. Why is a low attack potential a serious finding?
-3. What do attack potential and CVSS each measure?
-4. Whose job is impact analysis, whose is delta?
+1. Whose job is impact analysis, whose is delta?
 
 <!-- Speaker note: After the break, the penetration test plan. -->
 
 ---
 
-# Section 4 — Answers
+# Section 6 — Answers
 
-1. **Elapsed time · expertise · knowledge of the target · opportunity (access) · equipment.**
-2. It means the exploit can be done with **little** time/skill/tools → many more attackers can do it → a broad, likely threat → high risk.
-3. **Attack potential** measures the attack's **difficulty/cost**; **CVSS** measures the vulnerability's **severity/impact**. Different axes, used together.
-4. **Impact analysis is the developer's** job (they initiate the assessment of the change's impact); **delta assessment is the evaluator's** job (they independently re-review it).
+1. **Impact analysis is the developer's** job (they initiate the assessment of the change's impact); **delta assessment is the evaluator's** job (they independently re-review it).
 
 ---
 
-
 <!-- _class: bolum -->
 
-# 5. Penetration Test Plan
+# 7. Penetration Test Plan
 
 <!-- Speaker note: "Planned" and "permitted" are not optional. A test whose scope/rules aren't written down isn't legitimate. -->
 
@@ -1189,9 +1188,67 @@ This card is your project's **S16** skeleton. Let's look at the fields now.
 
 ---
 
+# Card · Crypto Verification
+
+- **Purpose:** are notes really encrypted with AEAD?
+- **Step:** inspect the encrypted blob's header/tag; is a corrupted tag rejected?
+- **Expected:** corrupted tag → decryption is rejected.
+
+---
+
+# Card · Key Lifecycle
+
+- **Purpose:** is the key erased once the job is done?
+- **Step:** scan memory after the operation.
+- **Expected:** key bytes are not found.
+
+---
+
+# Card · Release/Debug Distinction
+
+- **Purpose:** is logging really off in the release build?
+- **Step:** search the release APK with `strings` for the log string.
+- **Expected:** the log string is absent.
+
+---
+
+# Card · Upgrade Safety
+
+- **Purpose:** can an old signed version be restored?
+- **Step:** try installing a lower version.
+- **Expected:** the downgrade is rejected.
+
+---
+
+# Rule When Writing Cards
+
+- Every card must be **repeatable** (someone else must be able to follow the same steps).
+- Every card is linked to a **requirement** (S17).
+- The "Observed" field is filled with **evidence**.
+
+---
+
+# Section 7 — Quick Check
+
+1. The plan's four headings?
+2. Why does the "kill switch" exist?
+3. Which field of the test card links to S17?
+
+<!-- Speaker note: Then the project and the solved self-check. -->
+
+---
+
+# Section 7 — Answers
+
+1. **Scope · rules (RoE) · methodology · test cards** (+ kill switch, reporting).
+2. To limit real **harm/data loss/disruption** risk; at a defined threshold the test **stops** → safe and ethical execution.
+3. The test card's **result/requirement-met** field → links as evidence to the **S17 compliance matrix**.
+
+---
+
 <!-- _class: bolum -->
 
-# Reporting
+# 8. Reporting
 
 ---
 
@@ -1236,28 +1293,9 @@ This is a rehearsal for reading the compliance matrix in week 13.
 
 ---
 
-# Section 5 — Quick Check
-
-1. The plan's four headings?
-2. Why does the "kill switch" exist?
-3. Which field of the test card links to S17?
-
-<!-- Speaker note: Then the project and the solved self-check. -->
-
----
-
-# Section 5 — Answers
-
-1. **Scope · rules (RoE) · methodology · test cards** (+ kill switch, reporting).
-2. To limit real **harm/data loss/disruption** risk; at a defined threshold the test **stops** → safe and ethical execution.
-3. The test card's **result/requirement-met** field → links as evidence to the **S17 compliance matrix**.
-
----
-
-
 <!-- _class: bolum -->
 
-# 6. Project and Closing
+# 9. Term Project: This Week (S16)
 
 ---
 
@@ -1297,9 +1335,26 @@ This is a rehearsal for reading the compliance matrix in week 13.
 
 ---
 
+<!-- _class: yogun -->
+
+# Common Mistakes · Summary
+
+| Mistake | Section |
+| --- | --- |
+| A plan but **no result** — assuming "we will test" is enough | 9 (S16) |
+| **"Met"** without evidence — no evidence reference in the compliance matrix | 2 (S17) |
+| **Version inconsistency** — the guide and the code are at different versions | 2 (TOE) |
+| **Residual risk left empty** | 6 |
+| Midterm feedback **ignored** | 6 / 9 |
+| **Real** secrets/personal data in the repo | Ethical framework |
+
+Each row is a **violation** of that section's discipline — go back and re-read the source.
+
+---
+
 <!-- _class: bolum -->
 
-# Solved Self-Check
+# 10. Self-Check
 
 <!-- Speaker note: Go through the questions one by one, let students answer first, then reveal the answer. -->
 
@@ -1434,6 +1489,14 @@ This is a rehearsal for reading the compliance matrix in week 13.
 > Security is not a claim, it is a quality **independently tested and measured**; a protection existing is not
 > enough, **how much it withstands** is measured in a planned, permitted, and repeatable way.
 
+> A good test plan carries trust from **claim to evidence**.
+
+---
+
+<!-- _class: bolum -->
+
+# 11. References and Further Reading
+
 ---
 
 # References
@@ -1447,216 +1510,12 @@ This is a rehearsal for reading the compliance matrix in week 13.
 
 ---
 
-<!-- _class: bolum -->
+<!-- _class: baslik -->
 
 # Next Week
 
 **Week 13 — Security Requirements**
 
-Good requirements · traceability/compliance matrix · transferred requirements · CC, FIPS 140-3, ETSI, EMVCo, PCI, MASVS.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix A · A Mini End-to-End Case
-
-<!-- Speaker note: We evaluate a synthetic "toy product" from start to finish; it makes the 13 steps concrete. -->
-
----
-
-# Case · Scenario
-
-A synthetic mobile application: **"NotKasa"** (keeps encrypted notes locally).
-
-- Encrypts notes with AES.
-- Downloads the key from the server.
-- Logging is off in the release build.
-
-We'll evaluate this product start to finish.
-
----
-
-# Applying Step 1 · TOE
-
-- **TOE:** NotKasa v1.0.0, `notkasa-1.0.0.apk`
-- Hash (SHA-256): `a1b2…` (synthetic)
-- Source: `notkasa/` repository, tag `v1.0.0`
-- Out of scope: server infrastructure
-
----
-
-# Steps 2–3 · Documents and Requirement Template
-
-- Delivered: source, security guide, both debug and release APKs.
-- Requirement template: MASVS items numbered; each with status + evidence reference.
-
----
-
-# Step 5 · Code Review Findings (Synthetic)
-
-- **B-01:** the key is erased in an intermediate variable, but the `tmp` buffer is **not erased** (it stays in memory).
-- **B-02:** the error message on a decode failure leaks internal detail.
-
----
-
-# Step 6 · Vulnerability Analysis
-
-- Assets: note content (C/I), data key (C/I), server token.
-- Question: **where** is each asset exposed?
-- Output: a penetration test plan (below).
-
----
-
-# Step 7 · Penetration Test Card (Summary)
-
-- **T-01** plaintext on disk? → pass (encrypted)
-- **T-02** does the key stay in memory? → **fail** (B-01 confirmed)
-- **T-03** does the error message leak? → **fail** (B-02)
-
----
-
-# Step 7 · T-02 Rating
-
-- Time: low · expertise: moderate · knowledge: public · equipment: free (memory dump)
-- → **moderate-low attack potential**
-- CVSS: medium (confidentiality impact)
-
----
-
-# Step 9 · Finding–Action
-
-| Finding | Recommendation | Action |
-| --- | --- | --- |
-| B-01 key residue | Erase `tmp` after use | Added (memset-like) |
-| B-02 error leak | Return a single generic error | Fixed |
-
----
-
-# Steps 10–11 · Impact Analysis + Delta
-
-- The fixes produced v1.0.1.
-- **Impact analysis:** 2 files changed, both on the memory/error path; the crypto flow did not change.
-- **Delta:** only these two files + the new TOE identity (`notkasa-1.0.1.apk`) were re-evaluated.
-
----
-
-# Step 12 · Residual Risk
-
-- If the device is rooted, a memory dump is still possible.
-- Mitigation: short-lived key + server-side risk check.
-- **Written explicitly.**
-
----
-
-# Case · Takeaway
-
-- The 13 steps aren't abstract; they're **concrete** in a small product.
-- Evaluation is a **cycle**: find → fix → re-evaluate.
-- Your project is a scaled-down version of this.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix B · More Test Card Examples
-
----
-
-# Card · Crypto Verification
-
-- **Purpose:** are notes really encrypted with AEAD?
-- **Step:** inspect the encrypted blob's header/tag; is a corrupted tag rejected?
-- **Expected:** corrupted tag → decryption is rejected.
-
----
-
-# Card · Key Lifecycle
-
-- **Purpose:** is the key erased once the job is done?
-- **Step:** scan memory after the operation.
-- **Expected:** key bytes are not found.
-
----
-
-# Card · Release/Debug Distinction
-
-- **Purpose:** is logging really off in the release build?
-- **Step:** search the release APK with `strings` for the log string.
-- **Expected:** the log string is absent.
-
----
-
-# Card · Upgrade Safety
-
-- **Purpose:** can an old signed version be restored?
-- **Step:** try installing a lower version.
-- **Expected:** the downgrade is rejected.
-
----
-
-# Rule When Writing Cards
-
-- Every card must be **repeatable** (someone else must be able to follow the same steps).
-- Every card is linked to a **requirement** (S17).
-- The "Observed" field is filled with **evidence**.
-
----
-
-<!-- _class: bolum -->
-
-# Appendix C · Common Mistakes
-
----
-
-# Mistake · A Plan Without a Result
-
-- At the final, S16 expects a **result**.
-- "We will test this" is not enough; "we tested this, here's what came out" is.
-
----
-
-# Mistake · "Met" Without Evidence
-
-- In the compliance matrix, "met" without evidence counts as **not met** by the evaluator.
-- Every row needs an evidence reference.
-
----
-
-# Mistake · Version Inconsistency
-
-- Guide v1.0, code v1.1 → the product being evaluated is ambiguous.
-- The version identity + hash must be **consistent**.
-
----
-
-# Mistake · Residual Risk Left Empty
-
-- No product's residual risk is ever zero.
-- An empty "residual risk" = an incomplete analysis.
-
----
-
-# Mistake · Ignoring Midterm Feedback
-
-- The finding–action cycle is part of the process.
-- Midterm findings must be closed by the final.
-
----
-
-# Mistake · Real Data in the Repo
-
-- Real secrets/personal data = a serious finding.
-- Everything must be **synthetic**.
-
----
-
-# Appendix · Closing
-
-These appendices gave you a concrete template for writing **your own S16**:
-
-- an end-to-end case
-- card examples
-- mistakes to avoid
-
-> A good test plan carries trust from **claim to evidence**.
+This week we saw the "requirement template" and the "compliance matrix" inside the process; in week 13 we go into
+detail on how to write a good requirement, the traceability/compliance matrix, and the Common Criteria, FIPS 140-3,
+ETSI, EMVCo, PCI, and MASVS requirement sets.

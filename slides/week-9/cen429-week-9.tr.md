@@ -10,8 +10,6 @@ footer: "RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz"
 ---
 
 
-
-
 <!-- _class: baslik -->
 <!-- _paginate: false -->
 
@@ -35,46 +33,158 @@ Konuşma notu: Bu hafta ileri kod gizleme kurallarını işliyoruz. Çerçeve: g
 | 2 | 3 | Kontrol akışı kuralları (K-01…K-06) |
 | 3 | 4–6 | Veri kuralları · sanallaştırma/dinamik · çeşitlendirme · ölçme |
 
+**Öğrenme çıktısı (ÖÇ.3):** gizlemeyi bir güvenlik kuralı olarak yazmak · her tekniğin maliyetini/sınırını söylemek · bir korumayı ölçüp gerekçelendirmek
+
 <!-- Konuşma notu: Bugün 4. haftadaki gizleme girişini ileri düzeye taşıyoruz ve ölçmeyi ekliyoruz. Ana çerçeve: gizleme kırılamazlık vermez, maliyet yükseltir. Her tekniği bir "kural" olarak veriyoruz. -->
 
 ---
 
 <!-- _class: yogun -->
 
-# Kısa tarihçe — kod gizleme nereden geldi?
+# Önceki haftalardan gelenler
 
-- **1976** — Diffie & Hellman: "anlaşılmaz ama çalışır" fikri (**çaba-yoluyla** koruma)
-- **1997** — Collberg vd. **taksonomi** + *güç–dayanıklılık–gizlilik–maliyet* (bu dersin beş ailesi)
-- **2001** — Barak vd.: kusursuz gizleme **imkânsızdır** → "kırılamazlık" değil **maliyet**
-- **2002** — Chow vd. **whitebox AES** (11. hafta) · **2010'lar** **Tigress**, O-LLVM (14. hafta)
+- **Beyaz kutu / MATE saldırgan modeli** — cihazı elinde tutan kullanıcının aynı zamanda saldırgan olduğu tehdit modeli **(Hafta 1)**
+- **Hata ayıklayıcı (debugger)** — programı adım adım çalıştıran, değişkenleri gösteren araç (gdb, lldb); RASP bağlamında çalışma anında algılamasını görmüştük **(Hafta 6)**
+- **Entropi** — bir verinin baytlarının ne kadar düzensiz göründüğünün ölçüsü; şifreli/paketli içerik tespitinde ve rastgele sayı üretiminde gördük **(Hafta 2, 3)**
+- **Derleme bayrağı, `strings` ve sembol tablosu** — derleyici seçenekleri ve bir ikili dosyanın okunabilir metinlerini/isim listesini gösteren araçlar; gizlemenin giriş seviyesi adımları **(Hafta 4)**
+- **Tersine derleme** — bir ikili/bayt kodunu geri, okunabilir koda yaklaştırma; JVM bayt kodu üzerinde gördük **(Hafta 5)**
+- **XOR** — iki bit farklıysa 1, aynıysa 0; `a^b^b=a` ile kendini geri alır; Java dize gizlemede elle çözmüştük **(Hafta 5)**
+- **Günlük (log)** — çalışırken yazılan bilgi mesajları; hassas bilgi düşerse saldırgan okur **(Hafta 2)**
 
-> Gizleme, bir **imkânsızlık teoreminin** üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
+Bu hafta: bu araçları ve kavramları **ileri düzeyde** ve **ölçülebilir** biçimde kullanıyoruz.
 
 ---
-
 
 <!-- _class: yogun -->
 
-# Nereden geldik, nereye gidiyoruz?
+# Bu haftanın kavramları
 
-- **4. hafta:** sembol/dize gizleme, düzleştirmeye giriş (tanışma)
-- **Bu hafta (9):** aynı teknikler **ileri** + **nasıl ölçülür**
-- **11. hafta:** whitebox (anahtar için)
-- **14. hafta:** aynı kuralların **otomatik** hali (Tigress)
+Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** olduğunu işaretliyoruz.
 
-> Bu üç hafta bir bütün: kural → whitebox → otomasyon
+| Kavram | Nerede |
+| --- | --- |
+| Gizleme bir güvenlik kuralı olarak, MATE | Bölüm 1 |
+| Gizleme taksonomisi (beş aile) | Bölüm 2 |
+| "Koruma kuralı" şablonu (neyi korur/maliyet/sınır/ölçüm) | Bölüm 2 |
+| Kontrol akışı kuralları (K-01–K-06) | Bölüm 3 |
+| Veri gizleme kuralları (K-07–K-09) | Bölüm 4 |
+| Program bütünü kuralları (K-10–K-12) | Bölüm 4 |
+| Çeşitlendirme | Bölüm 5 |
+| Gizlemenin dört ölçütü (güç/dayanıklılık/gizlilik/maliyet) | Bölüm 5 |
+| Deobfuscation (karşı tarafın araçları) | Bölüm 5 |
+| Katmanlı savunmadaki yeri, proje S9 | Bölüm 6 |
 
 ---
 
-# Öğrenme çıktısı
+# Kaynak kod nedir?
 
-Bu hafta **ÖÇ.3** (ikili uygulama korumaları) üstünedir.
+- Sizin yazdığınız, **insanın okuyabildiği** program metni (ör. C dosyası).
+- Örnek: `int topla(int a, int b) { return a + b; }`
 
-Sonunda yapabileceğiniz:
+Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 
-- Gizlemeyi bir **güvenlik kuralı** olarak yazmak
-- Her tekniğin **maliyet** ve **sınırını** söylemek
-- Bir korumayı **ölçüp** gerekçelendirmek
+---
+
+# Derleyici ve ikili dosya
+
+- **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
+- **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
+
+![w:900](assets/h09-13-derleme-zinciri.svg)
+
+---
+
+# Makine kodu ve assembly
+
+- **Makine kodu:** işlemcinin anladığı sayısal komutlar.
+- **Assembly:** makine kodunun insana biraz daha okunur hali (`mov`, `cmp`, `jmp`).
+
+İkili dosyayı açtığınızda gördüğünüz şey budur.
+
+---
+
+# Tersine mühendislik nedir?
+
+**Tersine mühendislik** (reverse engineering): ikili dosyaya bakıp programın **ne yaptığını** anlamaya çalışmak.
+
+Saldırganın temel işi budur.
+
+---
+
+# Tersine derleyici (decompiler)
+
+- **Tersine derleyici** (decompiler): ikili dosyayı geri, okunabilir koda yakın bir biçime çeviren araç.
+- Örnekler: Ghidra, IDA.
+
+Amaç: kaynağa erişimi olmayan biri, ikiliye bakarak mantığı çıkarsın.
+
+---
+
+# Bit, bayt, onaltılık
+
+- **Bit:** 0 veya 1.
+- **Bayt:** 8 bit.
+- **Onaltılık (hex):** `0x` ile yazılır; `0x2A` = 42.
+
+Kodda `0x5A` gibi değerler göreceğiz; bunlar sadece sayılardır.
+
+---
+
+# XOR nedir?
+
+- **XOR** (`^`): iki bit farklıysa 1, aynıysa 0.
+- Özelliği: `a ^ b ^ b == a` → **kendini geri alır**.
+
+```c
+c = a ^ 0x5A;   /* şifrele */
+a = c ^ 0x5A;   /* geri çöz */
+```
+
+Gizlemede çok kullanılır çünkü tersine çevrilebilir.
+
+---
+
+# Entropi (rastgelelik) nedir?
+
+- **Entropi:** bir verinin ne kadar "rastgele" göründüğü.
+- Kriptografik anahtarlar **yüksek entropili** görünür (düzensiz baytlar).
+
+Saldırgan, ikilide yüksek entropili bir blok görürse "burada anahtar olabilir" der.
+
+---
+
+# Fonksiyon, dal, koşul
+
+- **Fonksiyon:** bir işi yapan kod bloğu (`erisim_ver`).
+- **Dal (branch):** `if` gibi bir yol ayrımı.
+- **Koşul:** dalın hangi yöne gideceğini belirleyen ifade.
+
+---
+
+# Temel blok (basic block)
+
+- **Temel blok:** dalsız, baştan sona akan komut dizisi.
+- Bir `if` gelince blok biter, iki yeni blok başlar.
+
+Program = temel blokların birbirine bağlanması.
+
+---
+
+# Kontrol akışı grafiği (CFG)
+
+- **CFG** (Control Flow Graph): temel blokları **düğüm**, geçişleri **kenar** yapan şema.
+- Programın "yol haritası"dır.
+
+![w:900](assets/h09-12-cfg.svg)
+
+---
+
+# Bir cümlede bu haftanın sorusu
+
+> Programı kullanıcıya teslim ettim; **saldırgan artık ona sahip.** Kodumu okumasını ve değiştirmesini nasıl
+> **zorlaştırırım**?
+
+Yanıt: **kod gizleme kuralları.** Başlıyoruz.
 
 ---
 
@@ -127,6 +237,19 @@ Buna **beyaz kutu** da denir (1. hafta).
 | Savunma | Kripto, doğrulama | + gizleme, RASP, whitebox |
 
 Kripto **kara kutu** varsayar; teslimde bu varsayım çöker.
+
+---
+
+<!-- _class: yogun -->
+
+# Kısa tarihçe — kod gizleme nereden geldi?
+
+- **1976** — Diffie & Hellman: "anlaşılmaz ama çalışır" fikri (**çaba-yoluyla** koruma)
+- **1997** — Collberg vd. **taksonomi** + *güç–dayanıklılık–gizlilik–maliyet* (bu dersin beş ailesi)
+- **2001** — Barak vd.: kusursuz gizleme **imkânsızdır** → "kırılamazlık" değil **maliyet**
+- **2002** — Chow vd. **whitebox AES** (11. hafta) · **2010'lar** **Tigress**, O-LLVM (14. hafta)
+
+> Gizleme, bir **imkânsızlık teoreminin** üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
 
 ---
 
@@ -224,7 +347,7 @@ Beş aile var. Sırayla görelim.
 - Fonksiyon/dosya adlarını anlamsızlaştırmak
 - Sürümde günlüğü kaldırmak
 
-4. haftada tanıştık; bu hafta derinleştiriyoruz.
+4\. haftada tanıştık; bu hafta derinleştiriyoruz.
 
 ---
 
@@ -310,7 +433,6 @@ Beş aile var. Sırayla görelim.
 ![w:1000](assets/h09-01-bes-aile.svg)
 
 ---
-
 
 # Sahada: hepsi bir arada
 
@@ -411,203 +533,15 @@ Gizleme "var/yok" değildir.
 
 <!-- _class: bolum -->
 
-# 0. Önce temel kavramlar
-
-<!-- Konuşma notu: Bu bölüm hiçbir ön bilgi varsaymaz. Her terimi burada tanımlıyoruz; sonraki bölümlerde bu terimleri kullanacağız. Acele etmeyin. -->
-
----
-
-# Neden bu bölüm var?
-
-Bu haftanın konusu **kod gizleme**. Ama önce birkaç temel terimi netleştirelim.
-
-Bu terimleri bilmeden konu **havada kalır**.
-
-Hiçbir şey bilmediğinizi varsayıyoruz — bu iyi bir başlangıç.
-
----
-
-# Kaynak kod nedir?
-
-- Sizin yazdığınız, **insanın okuyabildiği** program metni (ör. C dosyası).
-- Örnek: `int topla(int a, int b) { return a + b; }`
-
-Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
-
----
-
-# Derleyici ve ikili dosya
-
-- **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
-- **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
-
-![w:900](assets/h09-13-derleme-zinciri.svg)
-
----
-
-# Makine kodu ve assembly
-
-- **Makine kodu:** işlemcinin anladığı sayısal komutlar.
-- **Assembly:** makine kodunun insana biraz daha okunur hali (`mov`, `cmp`, `jmp`).
-
-İkili dosyayı açtığınızda gördüğünüz şey budur.
-
----
-
-# Tersine mühendislik nedir?
-
-**Tersine mühendislik** (reverse engineering): ikili dosyaya bakıp programın **ne yaptığını** anlamaya çalışmak.
-
-Saldırganın temel işi budur.
-
----
-
-# Tersine derleyici (decompiler)
-
-- **Tersine derleyici** (decompiler): ikili dosyayı geri, okunabilir koda yakın bir biçime çeviren araç.
-- Örnekler: Ghidra, IDA.
-
-Amaç: kaynağa erişimi olmayan biri, ikiliye bakarak mantığı çıkarsın.
-
----
-
-# `strings` komutu
-
-- **`strings`:** bir ikili dosyanın içindeki **okunabilir metinleri** listeleyen basit araç.
-- `strings program` → `"Lisans gecersiz"`, `"http://..."` gibi metinler.
-
-Saldırganın attığı **ilk adım** genelde budur.
-
----
-
-# Sembol ve sembol tablosu
-
-- **Sembol:** ikili dosyadaki bir fonksiyonun ya da değişkenin **adı** (ör. `lisans_dogrula`).
-- **Sembol tablosu:** bu adların listesi.
-
-`lisans_dogrula` adı görünüyorsa, saldırgan nereye bakacağını bilir.
-
----
-
-# Hata ayıklayıcı (debugger)
-
-- **Hata ayıklayıcı** (debugger): programı **adım adım** çalıştıran, değişkenleri gösteren araç (gdb, lldb).
-- Saldırgan programı durdurup belleği okuyabilir, değerleri değiştirebilir.
-
----
-
-# Bit, bayt, onaltılık
-
-- **Bit:** 0 veya 1.
-- **Bayt:** 8 bit.
-- **Onaltılık (hex):** `0x` ile yazılır; `0x2A` = 42.
-
-Kodda `0x5A` gibi değerler göreceğiz; bunlar sadece sayılardır.
-
----
-
-# XOR nedir?
-
-- **XOR** (`^`): iki bit farklıysa 1, aynıysa 0.
-- Özelliği: `a ^ b ^ b == a` → **kendini geri alır**.
-
-```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
-```
-
-Gizlemede çok kullanılır çünkü tersine çevrilebilir.
-
----
-
-# Entropi (rastgelelik) nedir?
-
-- **Entropi:** bir verinin ne kadar "rastgele" göründüğü.
-- Kriptografik anahtarlar **yüksek entropili** görünür (düzensiz baytlar).
-
-Saldırgan, ikilide yüksek entropili bir blok görürse "burada anahtar olabilir" der.
-
----
-
-# Fonksiyon, dal, koşul
-
-- **Fonksiyon:** bir işi yapan kod bloğu (`erisim_ver`).
-- **Dal (branch):** `if` gibi bir yol ayrımı.
-- **Koşul:** dalın hangi yöne gideceğini belirleyen ifade.
-
----
-
-# Temel blok (basic block)
-
-- **Temel blok:** dalsız, baştan sona akan komut dizisi.
-- Bir `if` gelince blok biter, iki yeni blok başlar.
-
-Program = temel blokların birbirine bağlanması.
-
----
-
-# Kontrol akışı grafiği (CFG)
-
-- **CFG** (Control Flow Graph): temel blokları **düğüm**, geçişleri **kenar** yapan şema.
-- Programın "yol haritası"dır.
-
-![w:900](assets/h09-12-cfg.svg)
-
----
-
-# Derleme bayrağı (flag)
-
-- **Derleme bayrağı:** derleyiciye verilen seçenek (ör. `-O2`, `-DGUNLUK_ACIK`).
-- Aynı kaynağı farklı bayraklarla farklı derleyebilirsiniz (ör. günlüklü / günlüksüz).
-
----
-
-# Günlük (log) nedir?
-
-- **Günlük:** programın çalışırken yazdığı bilgi mesajları (`printf("...")`).
-- Sorun: hassas bilgi ya da iç durum günlüğe düşerse, saldırgan okur.
-
----
-
-# Şimdi hazırız
-
-Artık şu terimleri biliyoruz:
-
-kaynak · derleyici · ikili · tersine derleme · `strings` · sembol · hata ayıklayıcı · XOR · entropi · dal · temel blok · CFG · günlük
-
-Bunları bu hafta boyunca **sürekli** kullanacağız. Takıldığınızda bu bölüme dönün.
-
----
-
-# Bir cümlede bu haftanın sorusu
-
-> Programı kullanıcıya teslim ettim; **saldırgan artık ona sahip.** Kodumu okumasını ve değiştirmesini nasıl
-> **zorlaştırırım**?
-
-Yanıt: **kod gizleme kuralları.** Başlıyoruz.
-
----
-
-<!-- _class: bolum -->
-
 # 3. Kontrol akışı kuralları
-
----
-
-# Kontrol akışı grafiği (CFG) nedir?
-
-Derlenmiş bir fonksiyonun **iskeleti**:
-
-- Hangi denetim hangi sırayla?
-- Hangi dal başarıya gidiyor?
-
-Saldırganın ilk işi bu iskeleti çıkarmaktır.
 
 ---
 
 # Bu bölümün amacı
 
-4. haftada düzleştirmeye **giriş** yaptık.
+CFG'yi (ön bilgide tanımladık) bu bölümün iskeleti sayıyoruz; saldırganın ilk işi bu iskeleti çıkarmaktır.
+
+4\. haftada düzleştirmeye **giriş** yaptık.
 
 Bu bölümde onu **güçlendiren** kuralları ekliyoruz:
 
@@ -849,7 +783,7 @@ for (;;) switch (durum) {
 
 # K-04 · Tek başına zayıf
 
-4. haftada söylemiştik: bu şablon deneyimli analiste kısa sürede çözülür.
+4\. haftada söylemiştik: bu şablon deneyimli analiste kısa sürede çözülür.
 
 **Güç, güçlendirmelerden gelir.** Sırayla:
 
@@ -1334,7 +1268,7 @@ Opak yüklemler, sahte bloklar, durum değerleri kopyadan kopyaya **değişir**.
 - **Zamanda:** her sürüm yeni düzenle
   - Eski sürüme yazılan saldırı yeni sürümde bozulur
 
-10. haftadaki anahtar/sürüm yenilemeyle birlikte çalışır.
+10\. haftadaki anahtar/sürüm yenilemeyle birlikte çalışır.
 
 ---
 
@@ -1407,6 +1341,59 @@ Ayırt edilirse saldırgan nereye bakacağını bilir.
 
 ---
 
+# Düzleştirme öncesi (kavram)
+
+![w:900](assets/h09-04-duzlestirme.svg)
+
+Az düğüm, okunur akış.
+
+---
+
+# Düzleştirme sonrası (kavram)
+
+
+Çok düğüm, tek merkez; "sonra hangi blok" okunmaz.
+
+---
+
+<!-- _class: yogun -->
+
+# Güç ölçümü örneği
+
+| Ölçüt | Önce | Sonra |
+| --- | --- | --- |
+| Temel blok | 5 | 34 |
+| Kenar | 6 | 60 |
+| Çevrimsel karmaşıklık | 3 | 28 |
+
+Rakamları tersine derleyiciden alıp S9'a yazarsınız.
+
+---
+
+# Maliyet ölçümü örneği
+
+```bash
+size ./program_temiz ./program_gizli   # boyut
+# süre: aynı girdiyle N kez çalıştır, ortalama
+```
+
+| Ölçüt | Önce | Sonra |
+| --- | --- | --- |
+| Boyut | 100 KB | 128 KB |
+| İşlem süresi | 1.0× | 1.7× |
+
+---
+
+# Ölçümü yorumlamak
+
+- Güç ↑ (34 blok) ve maliyet ↑ (%28 boyut, 1.7× süre)
+- Bu **ödünleşim** beklenir
+- Karar: kazanç, varlık değerine göre kabul edilebilir mi?
+
+> "Güçlü" deme; **bu sayıları** göster.
+
+---
+
 <!-- _class: yogun -->
 
 # Dört ölçüt ödünleşir
@@ -1459,6 +1446,8 @@ Bunları **savunmayı sınamak** için öğreniriz — saldırı için değil.
 
 - Aritmetik kodlamayı (K-02) açar
 
+- Karşı önlem: kodlanmış sabitleri de opak yüklemlere bağla — birbirine bağlı katmanları ayrı ayrı çözmek zorlaşır
+
 **Kural:** aritmetik kodlamayı tek başına bir sır katmanı **sayma**; kontrol akışıyla birleştir.
 
 ---
@@ -1469,6 +1458,8 @@ Bunları **savunmayı sınamak** için öğreniriz — saldırı için değil.
 
 **Kural:** **çeşitlendir**; tek bir opak yüklem kalıbına ya da tek VM tasarımına bağlı kalma.
 
+(uzayda: birden çok kalıp/tohum · zamanda: her sürümde kalıpları değiştir)
+
 ---
 
 # Ana çıkarım
@@ -1477,7 +1468,7 @@ Banescu vd. (Tigress + KLEE): hangi dönüşüm sembolik yürütmeye ne kadar da
 
 > Dayanıklılık bir **iddia** değil, **ölçülen** bir niceliktir.
 
-"Güçlü" deme; "şu araca karşı şu kadar dayandı" de.
+"Güçlü" deme; **bir sayı üret**: "şu dönüşüm hattı, şu araca karşı, şu boyutta bir problemi şu sürede çözdürmedi."
 
 ---
 
@@ -1517,126 +1508,13 @@ Ama belge her önlemin yanına: **"tek başına güçlü değildir."**
 
 ---
 
-# Proje · S9 (ileri sağlamlaştırma) — 1
-
-**1. Koruma tablosu**
-
-2–3 kritik bölüm için (lisans, anahtar türetme, bütünlük) kural şablonunu doldur:
-
-neyi korur · tehdit · nasıl · maliyet · sınır · ölçüm
-
----
-
-# Proje · S9 — 2
-
-**2. Ölçüm**
-
-En az bir teknik için önce/sonra:
-
-- `strings` çıktısındaki hassas dize sayısı
-- CFG düğüm sayısı
-- ikili boyut, bir işlemin süresi
-
----
-
-# Proje · S9 — 3, 4
-
-**3. Çeşitlendirme kararı:** evet/hayır + **gerekçe**
-
-**4. Sınır ve kalan risk:** her koruma neyi **korumaz**?
-
-> "Bu dize gizleme anahtarı korumaz; anahtar için S8 whitebox/donanım."
-
----
-
-# Değerlendirici gözüyle
-
-S9'da aranan: "çok teknik kullandım" **değil**.
-
-Aranan: **her tekniğin gerekçesi ve ölçüsü**.
-
-> Ölçülmemiş koruma = iddia. Kanıt değil.
-
----
-
-<!-- _class: yogun -->
-
-# Kendini sınama (1–6)
-
-1. MATE ne? Kriptografiyi neden tek başına yetersiz bırakır?
-2. "Pahalı kılar" — varlık değeri örneğiyle?
-3. Sahte işlem ≠ ölü dal?
-4. Düzleştirme neden tek başına zayıf? 3 güçlendirici?
-5. Rastgele çıkış hangi saldırıyı zorlaştırır?
-6. Dize gizleme anahtarı korur mu?
-
----
-
-<!-- _class: yogun -->
-
-# Kendini sınama — cevaplar (1–6)
-
-1. **MATE = Man-At-The-End:** saldırgan cihaza tam sahip (bellek, debugger, anahtar). Kripto güvenli uç varsayar; MATE'de anahtar **çalışırken** açığa çıkar → kripto tek başına yetmez.
-2. Gizleme kırılamazlık değil, saldırıya **daha çok zaman/beceri/araç** gerektirir. 100 TL'lik içeriği kırmak 10.000 TL emek isterse saldırgan vazgeçer.
-3. **Sahte işlem** çalışır ama sonucu kullanılmaz (analizciyi yorar); **ölü dal** opak yüklemle **hiç çalışmaz**.
-4. Düzleştirmede dispatcher deseni tanınır, durum değişkeni izlenir. Güçlendirici: **opak yüklem · durum değişkeni şifreleme · sahte durum/bloklar + rastgele çıkış**.
-5. **Desen/eşleştirme ve otomatik betik** saldırılarını (aynı giriş→aynı kalıp bekleyen) ve sembolik yürütmeyi zorlaştırır.
-6. **Hayır.** Dize/tablo gizleme statik `strings`'i zorlaştırır ama anahtar **çalışırken bellekte** açığa çıkar → whitebox/HSM gerekir.
-
----
-
-
-<!-- _class: yogun -->
-
-# Kendini sınama (7–12)
-
-7. Sanallaştırmanın iki maliyeti?
-8. Kendini değiştiren kod hangi OS korumasıyla çatışır?
-9. Dört ölçüt; hangileri ödünleşir?
-10. Çeşitlendirme gücü mü ölçeklenmeyi mi engeller?
-11. KLEE hangi kuralları zorlar? Dayanıklılık nasıl artar?
-12. Bir bölüm için kural şablonunu doldur.
-
----
-
-<!-- _class: yogun -->
-
-# Kendini sınama — cevaplar (7–12)
-
-7. Büyük **performans** cezası (yorumlayıcı yavaş) + **boyut** artışı (VM + bytecode); bakım/hata ayıklama zorluğu.
-8. **W^X / DEP-NX** (yazılabilir+çalıştırılabilir bellek yasağı); kod sayfasını yazmak `mprotect`/`VirtualProtect` ister, engellenir/şüphelidir.
-9. **Güç · dayanıklılık · gizlilik · maliyet.** Güç/dayanıklılık ↑ → maliyet ↑ ve gizlilik ↓ (anormal görünür). Başlıca ödünleşim: **dayanıklılık ↔ maliyet**.
-10. **Ölçeklenmeyi** engeller — tek kopyanın gücünü artırmaz; bir kırık tüm kopyalara **yayılmaz** (saldırının yeniden kullanımını kırar).
-11. **KLEE** sembolik yürütme; opak yüklem/düzleştirmeyi çözebilir. Kural: yüklemleri **sembolik yürütmeye dayanıklı** (girdi-bağımlı, çözülmesi zor) yap; yol patlatan yapılar dayanıklılığı artırır.
-12. Örnek: **Kural** [düzleştirme] → **Amaç** [akışı gizle] → **Nasıl** [Tigress Flatten + opak yüklem] → **Ölçüm** [boyut +%X, hız −%Y, komut N→M]. Ölçüm satırı şarttır.
-
----
-
-
-# Özet: bu haftanın tek cümlesi
-
-> Gizleme kırılamazlık vermez, **maliyet** yükseltir; gücü **birliktelikten**, **çeşitlendirmeden** ve **ölçülmüş** olmaktan gelir.
-
----
-
 <!-- _class: bolum -->
 
-# Sonraki hafta
-
-**10. hafta — Sertifikalar ve kriptografik yöntemler**
-
-"Gizleme anahtarı korumaz" dedik → anahtarların doğru seçimi, yaşam döngüsü, PKI.
-11. hafta whitebox · 14. hafta Tigress (bu kuralların otomatik hali).
+# Uçtan uca: katman katman koruma
 
 ---
 
-<!-- _class: bolum -->
-
-# Ek A · Uçtan uca işlenmiş örnek
-
----
-
-# Amaç
+# Bu örneğin amacı
 
 Tek bir sentetik denetimi (`erisim_ver`) alıp **katman katman** koruyacağız.
 
@@ -1800,122 +1678,99 @@ if (karar_izin_mi(k)) uygula();
 
 ---
 
-<!-- _class: bolum -->
+# Proje · S9 (ileri sağlamlaştırma) — 1
 
-# Ek B · CFG okuma ve ölçüm
+**1. Koruma tablosu**
 
----
+2–3 kritik bölüm için (lisans, anahtar türetme, bütünlük) kural şablonunu doldur:
 
-# CFG nedir, nasıl bakılır?
-
-- **Düğüm:** temel blok (dalsız komut dizisi)
-- **Kenar:** bloklar arası geçiş (dal)
-- Tersine derleyici (ör. Ghidra) CFG'yi çizer
-
-Gizlemenin **gücünü** düğüm/kenar sayısıyla ölçeriz.
+neyi korur · tehdit · nasıl · maliyet · sınır · ölçüm
 
 ---
 
-# Düzleştirme öncesi (kavram)
+# Proje · S9 — 2
 
-![w:900](assets/h09-04-duzlestirme.svg)
+**2. Ölçüm**
 
-Az düğüm, okunur akış.
+En az bir teknik için önce/sonra:
+
+- `strings` çıktısındaki hassas dize sayısı
+- CFG düğüm sayısı
+- ikili boyut, bir işlemin süresi
 
 ---
 
-# Düzleştirme sonrası (kavram)
+# Proje · S9 — 3, 4
 
+**3. Çeşitlendirme kararı:** evet/hayır + **gerekçe**
 
-Çok düğüm, tek merkez; "sonra hangi blok" okunmaz.
+**4. Sınır ve kalan risk:** her koruma neyi **korumaz**?
+
+> "Bu dize gizleme anahtarı korumaz; anahtar için S8 whitebox/donanım."
+
+> İleride: S15 (14. hafta, gizlemeyi derleme hattına koymak) · S16 (12. hafta, davranışın bozulmadığının testi).
+
+---
+
+# Değerlendirici gözüyle
+
+S9'da aranan: "çok teknik kullandım" **değil**.
+
+Aranan: **her tekniğin gerekçesi ve ölçüsü**.
+
+> Ölçülmemiş koruma = iddia. Kanıt değil.
 
 ---
 
 <!-- _class: yogun -->
 
-# Güç ölçümü örneği
+# Kendini sınama (1–6)
 
-| Ölçüt | Önce | Sonra |
-| --- | --- | --- |
-| Temel blok | 5 | 34 |
-| Kenar | 6 | 60 |
-| Çevrimsel karmaşıklık | 3 | 28 |
-
-Rakamları tersine derleyiciden alıp S9'a yazarsınız.
-
----
-
-# Maliyet ölçümü örneği
-
-```bash
-size ./program_temiz ./program_gizli   # boyut
-# süre: aynı girdiyle N kez çalıştır, ortalama
-```
-
-| Ölçüt | Önce | Sonra |
-| --- | --- | --- |
-| Boyut | 100 KB | 128 KB |
-| İşlem süresi | 1.0× | 1.7× |
+1. MATE ne? Kriptografiyi neden tek başına yetersiz bırakır?
+2. "Pahalı kılar" — varlık değeri örneğiyle?
+3. Sahte işlem ≠ ölü dal?
+4. Düzleştirme neden tek başına zayıf? 3 güçlendirici?
+5. Rastgele çıkış hangi saldırıyı zorlaştırır?
+6. Dize gizleme anahtarı korur mu?
 
 ---
 
-# Ölçümü yorumlamak
+<!-- _class: yogun -->
 
-- Güç ↑ (34 blok) ve maliyet ↑ (%28 boyut, 1.7× süre)
-- Bu **ödünleşim** beklenir
-- Karar: kazanç, varlık değerine göre kabul edilebilir mi?
+# Kendini sınama — cevaplar (1–6)
 
-> "Güçlü" deme; **bu sayıları** göster.
-
----
-
-<!-- _class: bolum -->
-
-# Ek C · Dayanıklılığı artırmak
+1. **MATE = Man-At-The-End:** saldırgan cihaza tam sahip (bellek, debugger, anahtar). Kripto güvenli uç varsayar; MATE'de anahtar **çalışırken** açığa çıkar → kripto tek başına yetmez.
+2. Gizleme kırılamazlık değil, saldırıya **daha çok zaman/beceri/araç** gerektirir. 100 TL'lik içeriği kırmak 10.000 TL emek isterse saldırgan vazgeçer.
+3. **Sahte işlem** çalışır ama sonucu kullanılmaz (analizciyi yorar); **ölü dal** opak yüklemle **hiç çalışmaz**.
+4. Düzleştirmede dispatcher deseni tanınır, durum değişkeni izlenir. Güçlendirici: **opak yüklem · durum değişkeni şifreleme · sahte durum/bloklar + rastgele çıkış**.
+5. **Desen/eşleştirme ve otomatik betik** saldırılarını (aynı giriş→aynı kalıp bekleyen) ve sembolik yürütmeyi zorlaştırır.
+6. **Hayır.** Dize/tablo gizleme statik `strings`'i zorlaştırır ama anahtar **çalışırken bellekte** açığa çıkar → whitebox/HSM gerekir.
 
 ---
 
-# Sembolik yürütmeye karşı — adım adım
+<!-- _class: yogun -->
 
-1. Yalnız düzleştirme → çözücü yolları çözer
-2. Opak yüklemi **çözmesi pahalı** yapıya bağla
-3. Durum uzayını büyüt (daha çok case)
-4. **Maliyeti ölç** — üstel dayanıklılık, üstel maliyet olabilir
+# Kendini sınama (7–12)
 
----
-
-# Kalıp tanımaya karşı — adım adım
-
-1. Tek opak yüklem kalıbı → tanınır
-2. Birden çok kalıp kullan
-3. **Çeşitlendir** (tohum)
-4. Her sürümde kalıpları değiştir (zamanda)
+7. Sanallaştırmanın iki maliyeti?
+8. Kendini değiştiren kod hangi OS korumasıyla çatışır?
+9. Dört ölçüt; hangileri ödünleşir?
+10. Çeşitlendirme gücü mü ölçeklenmeyi mi engeller?
+11. KLEE hangi kuralları zorlar? Dayanıklılık nasıl artar?
+12. Bir bölüm için kural şablonunu doldur.
 
 ---
 
-# MBA sadeleştiriciye karşı
+<!-- _class: yogun -->
 
-1. Aritmetik kodlamayı **tek başına** sayma
-2. Kontrol akışıyla **iç içe** kullan
-3. Kodlanmış sabitleri opak yüklemlere bağla
+# Kendini sınama — cevaplar (7–12)
 
-> Katmanların **birbirine bağlı** olması, ayrı ayrı çözülmesini zorlaştırır.
-
----
-
-# Dayanıklılık: altın kural
-
-Bir sayı üretin:
-
-> "Şu dönüşüm hattı, şu araca karşı, şu boyutta bir problemi şu sürede çözdürmedi."
-
-İddia değil, **ölçüm**.
-
----
-
-<!-- _class: bolum -->
-
-# Ek D · Terimler ve kapanış
+7. Büyük **performans** cezası (yorumlayıcı yavaş) + **boyut** artışı (VM + bytecode); bakım/hata ayıklama zorluğu.
+8. **W^X / DEP-NX** (yazılabilir+çalıştırılabilir bellek yasağı); kod sayfasını yazmak `mprotect`/`VirtualProtect` ister, engellenir/şüphelidir.
+9. **Güç · dayanıklılık · gizlilik · maliyet.** Güç/dayanıklılık ↑ → maliyet ↑ ve gizlilik ↓ (anormal görünür). Başlıca ödünleşim: **dayanıklılık ↔ maliyet**.
+10. **Ölçeklenmeyi** engeller — tek kopyanın gücünü artırmaz; bir kırık tüm kopyalara **yayılmaz** (saldırının yeniden kullanımını kırar).
+11. **KLEE** sembolik yürütme; opak yüklem/düzleştirmeyi çözebilir. Kural: yüklemleri **sembolik yürütmeye dayanıklı** (girdi-bağımlı, çözülmesi zor) yap; yol patlatan yapılar dayanıklılığı artırır.
+12. Örnek: **Kural** [düzleştirme] → **Amaç** [akışı gizle] → **Nasıl** [Tigress Flatten + opak yüklem] → **Ölçüm** [boyut +%X, hız −%Y, komut N→M]. Ölçüm satırı şarttır.
 
 ---
 
@@ -1957,18 +1812,12 @@ Bir sayı üretin:
 
 ---
 
-# Bu haftadan projeye taşınanlar
+<!-- _class: baslik -->
 
-- **S9:** koruma tablosu (kural şablonu) + ölçüm + çeşitlendirme kararı + kalan risk
-- **S15:** (14. haftada) gizlemeyi derleme hattına koymak
-- **S16:** (12. haftada) gizlemenin davranışı bozmadığının testi
+# Bir sonraki hafta
 
----
+**10. hafta — Sertifikalar ve kriptografik yöntemler**
 
-# Son söz
+Bu hafta "gizleme anahtarı korumaz" dedik; 10. haftada anahtarların doğru seçimi, yaşam döngüsü ve PKI ile korunması işlenir. Kural (bu hafta) → whitebox (11. hafta) → otomasyon (14. hafta): bu üç hafta bir bütündür.
 
-> Gizleme bir kaledir değil, bir **geciktirme katmanıdır**.
-
-Gücü: **birliktelik + çeşitlendirme + ölçüm**.
-
-Anahtar için: **kripto** (10) ve **whitebox** (11). Otomasyon: **Tigress** (14).
+> Gizleme bir kale değil, bir **geciktirme katmanıdır**: kırılamazlık vermez, **maliyet** yükseltir; gücü **birliktelikten**, **çeşitlendirmeden** ve **ölçülmüş** olmaktan gelir.

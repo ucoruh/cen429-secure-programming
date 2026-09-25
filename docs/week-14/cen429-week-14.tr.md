@@ -321,7 +321,7 @@ Tigress, Arizona Üniversitesi'nden Christian Collberg ve ekibinin geliştirdiğ
 | Tek tip, tanınabilir | Dönüşüm ve tohum kombinasyonuyla değişken |
 
 !!! note "Ama araç sihir değildir"
-    9. haftanın ana kuralı burada da geçerlidir: Tigress de kırılamazlık vermez, **maliyet** yükseltir. Üstelik iyi
+    9\. haftanın ana kuralı burada da geçerlidir: Tigress de kırılamazlık vermez, **maliyet** yükseltir. Üstelik iyi
     bilinen bir aracın ürettiği kalıplar zamanla tanınabilir; bu yüzden **çeşitlendirme** (bölüm 6) ve **katmanlı
     savunma** (RASP, sunucu denetimi) yine şarttır. Tigress'in kendisi de dönüşümlerin sembolik yürütmeye ne kadar
     dayandığını ölçen araştırmaların (bölüm 7) baş öznesidir.
@@ -1261,7 +1261,7 @@ kez çağrılıp yalnız o döngünün süresi ölçülür. Bu ayrım — "süre
 | Gizlilik (stealth) | Ölçülmedi bu demoda; istatistiksel ayırt edilebilirlik gerekir | 9. hafta bölüm 9 |
 
 !!! success "Kural: dördünü birden raporlayın, yalnız kolay ölçüleni değil"
-    9. haftadaki "sık yapılan hata: yalnızca maliyeti ölçüp 'güçlü' demek" uyarısı burada da geçerlidir. Bu demo
+    9\. haftadaki "sık yapılan hata: yalnızca maliyeti ölçüp 'güçlü' demek" uyarısı burada da geçerlidir. Bu demo
     yalnız güç ve maliyeti **doğrudan sayıyla** verir; dayanıklılık ve gizlilik için ayrı bir araç (KLEE gibi bir
     sembolik yürütücü, ya da istatistiksel bir ayırt edicilik testi) gerekir. S9/S15'inizde dördünü de yazın; hangi
     ikisinin **ölçülmediğini** de açıkça belirtin — bu, "ölçmedim" demekten daha dürüst bir "henüz ölçülmedi, şu
@@ -1303,7 +1303,7 @@ da eklemeyi unutmayın — aksi hâlde bir değerlendirici, hangi ölçümün ha
 
 ### İşlenmiş örnek: gizlilik (stealth) ölçütünü kavramsallaştıralım
 
-9. haftadaki entropi örneğini (bölüm 0: `[0x41,0x41,0x41,0x41]` düşük entropili, `[0x3F,0xA1,0x08,0xC7]` yüksek
+9\. haftadaki entropi örneğini (bölüm 0: `[0x41,0x41,0x41,0x41]` düşük entropili, `[0x3F,0xA1,0x08,0xC7]` yüksek
 entropili) hatırlayın. **Gizlilik**, gizlenmiş kodun **normal koddan istatistiksel olarak ayırt edilebilir olup
 olmadığını** sorar — ve bu ayırt edilebilirlik çoğu zaman tam olarak entropi/yoğunluk farkından kaynaklanır.
 

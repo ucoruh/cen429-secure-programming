@@ -1,0 +1,32 @@
+% Hafta 13 — Kötü gereksinim -> iyi gereksinim
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-04-kotu-iyi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {Kötü gereksinim $\rightarrow$ iyi gereksinim};
+  \node[altbaslik] (alt) at (b.south west) {fark: ölçülebilir dayanak ve tekil ifade};
+
+  \node[kotukutu=60mm, below=9mm of alt.south west, anchor=north west, text width=60mm,
+        minimum height=48mm, align=left] (kotu) {%
+    \kb{KÖTÜ}\\[2mm]
+    'Uygulama güvenli olmalı'\\[1mm]
+    'Anahtarlar iyi yönetilmeli'\\[1mm]
+    'Veriler uygun saklanmalı'\\[4mm]
+    $\rightarrow$ doğrulanamaz};
+
+  \node[iyikutu=60mm, at={($(kotu.north east)+(26mm,0)$)}, anchor=north west, text width=60mm,
+        minimum height=48mm, align=left] (iyi) {%
+    \kb{İYİ}\\[2mm]
+    'C sınıfı her varlık beklemede\\
+    en az 128 bit AES-GCM ile\\
+    şifrelenmelidir'\\[4mm]
+    $\rightarrow$ test edilebilir};
+
+  \draw[draw=cizgi, line width=1pt] ($(kotu.north east)!0.5!(iyi.north west)$) --
+        ($(kotu.south east)!0.5!(iyi.south west)$);
+
+  \node[dip, text width=150mm, below=9mm of kotu.south west, anchor=north west] {%
+    Zayıf gereksinim test edilemez; test edilemeyen gereksinim karşılandığı kanıtlanamaz.};
+\end{tikzpicture}
+\end{document}

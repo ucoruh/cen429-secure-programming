@@ -1,0 +1,27 @@
+% Hafta 6 — Bütünlük denetimi (self-hashing)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-03-self-hashing.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Bütünlük denetimi (self-hashing)};
+  \node[altbaslik] at (b.south west) {uygulama kendi baytlarını doğrular};
+  \node[kutu=36mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{İkili dosya}\\/ korunan bölge};
+  \node[koyukutu=36mm, right=9mm of n1] (n2)
+    {\kb{HMAC-SHA-256}\\gizli anahtarla};
+  \node[uyarikutu=36mm, right=9mm of n2] (n3)
+    {\kb{altın değer ==}\\hesaplanan?};
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \node[iyikutu=40mm, below=26mm of n3, xshift=-32mm, anchor=north] (n4)
+    {\kb{Bütünlük TAMAM}};
+  \node[kotukutu=40mm, right=24mm of n4] (n5)
+    {\kb{YAMA ALGILANDI}\\$\rightarrow$ tepki};
+  \draw[iyiok] (n3.south) -- node[oketiket, above=3pt, xshift=-3mm] {evet} (n4.north);
+  \draw[kotuok] (n3.south) -- node[oketiket, above=3pt, xshift=3mm] {hayır} (n5.north);
+  \node[fit=(n1)(n2)(n3)(n4)(n5), inner sep=0pt] (grp) {};
+  \node[kotudip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Tek başına yetmez: denetimin kendisi de yamalanabilir $\rightarrow$ örtüşen denetim gerekir.};
+\end{tikzpicture}
+\end{document}

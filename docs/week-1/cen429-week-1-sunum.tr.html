@@ -2367,7 +2367,7 @@ explicit_bzero -&gt; parola dökümde bulunamadı
 <blockquote>
 <p>&quot;<code>parola</code> bundan sonra <strong>hiç okunmuyor</strong>. Ona sıfır yazmak sonucu değiştirmez. <strong>Gereksiz — siliyorum.</strong>&quot;</p>
 </blockquote>
-<p><strong>Ölü yazma giderme</strong> (dead store elimination): hız için iyi, <strong>sırlar için felaket</strong>.</p>
+<p><strong>Kullanılmayan yazmanın silinmesi</strong> (dead store elimination): hız için iyi, <strong>sırlar için felaket</strong>.</p>
 <table>
 <thead>
 <tr>
@@ -2422,7 +2422,7 @@ explicit_bzero -&gt; parola dökümde bulunamadı
         [ A  A  A  A  A  A  A  A  A  A  A ][ 42  00  00  00 ]   yonetici = 66 (!)
                                               &#x27;B&#x27;  &#x27;\0&#x27;
 </code></pre>
-<p>Küçük uçlu (little-endian): en düşük bayt en düşük adreste.</p>
+<p>Az anlamlı bayt önce (little-endian): en düşük bayt en düşük adreste.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="108" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 1" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="108" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 1;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="160">
@@ -2439,7 +2439,7 @@ explicit_bzero -&gt; parola dökümde bulunamadı
 <ol>
 <li>Dizi <strong>boyutunu bilmez</strong></li>
 <li>Fonksiyona yalnız <strong>başlangıç adresi</strong> gider</li>
-<li>Dizge = <code>'\0'</code> ile biten dizi; <code>strcpy</code> hedefi <strong>sormaz</strong></li>
+<li>Dize (string) = <code>'\0'</code> ile biten dizi; <code>strcpy</code> hedefi <strong>sormaz</strong></li>
 <li>Derleyici sınır denetimi <strong>eklemez</strong></li>
 </ol>
 <p>CWE-787 &quot;sınırlar dışına yazma&quot;: CWE Top 25'in hep ilk sıralarında</p>
@@ -2472,12 +2472,12 @@ explicit_bzero -&gt; parola dökümde bulunamadı
 </thead>
 <tbody>
 <tr>
-<td>Yığın taşması</td>
+<td>Yığın (stack) taşması</td>
 <td><code>strcpy</code>, <code>gets</code>, sınırsız <code>scanf(&quot;%s&quot;)</code></td>
 <td>121</td>
 </tr>
 <tr>
-<td>Öbek taşması</td>
+<td>Öbek (heap) taşması</td>
 <td>Yanlış uzunluklu <code>memcpy</code></td>
 <td>122</td>
 </tr>
@@ -3072,10 +3072,10 @@ munlock(anahtar, <span class="hljs-keyword">sizeof</span> anahtar);
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="136" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 1" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-class="yogun" data-theme="cen429" data-lang="tr" lang="tr" class="yogun" data-marpit-pagination="136" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 1;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--class:yogun;--theme:cen429;--lang:tr;" data-marpit-pagination-total="160">
 <header>CEN429 Güvenli Programlama · Hafta 1</header>
 
-<h1 id="k%C3%A2hin-ve-kod-kald%C4%B1rma">Kâhin ve kod kaldırma</h1>
+<h1 id="k%C3%A2hin-ve-kod-s%C3%B6kme">Kâhin ve kod sökme</h1>
 <ul>
 <li><strong>Şifre çözme kâhini:</strong> saldırgan <code>kasa_coz</code>'u kendi verisiyle çağırır — anahtara gerek yok</li>
-<li><strong>Kod kaldırma:</strong> korunan fonksiyonu olduğu gibi kopyalayıp kara kutu gibi çalıştırır</li>
+<li><strong>Kod sökme (code lifting):</strong> korunan fonksiyonu olduğu gibi kopyalayıp kara kutu gibi çalıştırır</li>
 </ul>
 <table>
 <thead>
@@ -3241,7 +3241,7 @@ munlock(anahtar, <span class="hljs-keyword">sizeof</span> anahtar);
 <tr>
 <td>Sürümde günlükleme</td>
 <td>Derleme makrosuyla <strong>tamamen kaldırıldı</strong></td>
-<td>Susturulmuş kod dizge olarak kalır</td>
+<td>Susturulmuş kod dize olarak kalır</td>
 <td>Sahada tanı zor</td>
 </tr>
 <tr>

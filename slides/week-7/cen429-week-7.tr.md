@@ -43,7 +43,7 @@ Konuşma notu: Bu hafta ders değil gösterim haftası: her takım güvenlik kı
 | --- | --- | --- |
 | Güvenlik analizi | 1 | S2 · S3 arayüz tablosu · S4 tehdit/saldırgan modeli |
 | Veri güvenliği | 2 | S5 varlık listesi · S7 kabuk matrisi |
-| C/C++ sağlamlaştırma ve RASP | 3 | S9 (temel) · S10 |
+| C/C++ sağlamlaştırma (hardening) ve RASP | 3 | S9 (temel) · S10 |
 | Proje yönetimi | 5 | S13 süreç, SBOM · GitHub deposu ve plan |
 | Ara rapor | 7 | Vize bölümlerinin tamamı |
 

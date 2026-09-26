@@ -1186,7 +1186,7 @@ Neden? giris_yap() fonksiyonunun makine kodu:
 
 **İkinci adım şaşırtıcıdır:** kodda açıkça `memset` yazıyor, ama parola hâlâ bellekte! Nedeni derleyicinin
 optimizasyonudur. Derleyici şöyle düşünür: *"`parola` dizisi bu satırdan sonra hiç okunmuyor; ona sıfır yazmanın
-programın sonucuna hiçbir etkisi yok. Öyleyse bu yazma gereksiz, silebilirim."* Buna **ölü yazma giderme** (dead
+programın sonucuna hiçbir etkisi yok. Öyleyse bu yazma gereksiz, silebilirim."* Buna **kullanılmayan yazmanın silinmesi (dead store elimination)** (dead
 store elimination) denir. Normal programlarda hız kazandıran bu optimizasyon, güvenlik kodunda sırrın bellekte
 kalmasına yol açar. Bu yalnız GCC'ye özgü değildir: Windows'ta MSVC `/O2` ile de aynı sonuç çıkar. Makine koduna
 kendiniz bakın: Linux'ta `objdump -d bin/linux/parola_memset | less` ile `giris_yap`'ı arayın; Visual Studio'da
@@ -1213,7 +1213,7 @@ kendiniz bakın: Linux'ta `objdump -d bin/linux/parola_memset | less` ile `giris
 Taşma hatalarını anlamak için önce bir programın belleğinin nasıl düzenlendiğini bilmemiz gerekir. Linux'ta çalışan
 bir sürecin sanal belleği kabaca şöyledir:
 
-![Süreç belleği: yığın, öbek, BSS/data ve kod bölgeleri](assets/h01-13-surec-bellegi.svg)
+![Süreç belleği: yığın, öbek (heap), BSS/data ve kod bölgeleri](assets/h01-13-surec-bellegi.svg)
 
 Bir fonksiyon çağrıldığında yığında ona bir **çerçeve** (stack frame) ayrılır. Yerel değişkenler, bu çerçevede
 **yan yana** durur. C, bir dizinin sonuna gelindiğini **denetlemez**: `ad[16]` dizisine 17. baytı yazarsanız, C bunu
@@ -1230,7 +1230,7 @@ struct oturum {
 
 ![Taşmadan önce ve sonra ad(16) dizisi ile yonetici alanının bellekteki hâli](assets/h01-14-yapi-bellekte.svg)
 
-x86-64 işlemciler **küçük uçlu** (little-endian) çalışır: bir tamsayının en düşük baytı en düşük adreste durur. Bu
+x86-64 işlemciler **az anlamlı bayt önce** (little-endian) çalışır: bir tamsayının en düşük baytı en düşük adreste durur. Bu
 yüzden `yonetici`'nin ilk baytına yazılan `'B'` (0x42) tamsayıyı 66 yapar — sıfır olmayan her değer "yönetici" demektir.
 
 ---
@@ -1249,7 +1249,7 @@ Java, C#, Python gibi dillerde bir dizinin dışına yazmaya çalıştığınız
 
 1. Dizi, bellekte ardışık baytlardan başka bir şey değildir; **boyutunu kendisi bilmez**.
 2. Bir diziyi fonksiyona verdiğinizde yalnız **başlangıç adresi** gider (`char *`); boyut bilgisi kaybolur.
-3. Dizgeler (string) ayrı bir tür değildir; sonu `'\0'` baytıyla işaretlenmiş bir `char` dizisidir. `strcpy`,
+3. Dizeler (string) ayrı bir tür değildir; sonu `'\0'` baytıyla işaretlenmiş bir `char` dizisidir. `strcpy`,
    `strcat`, `sprintf` gibi fonksiyonlar kaynağı **sıfır baytını görene kadar** kopyalar; hedefin ne kadar yer
    olduğunu hiç sormaz.
 4. Derleyici, hızdan ödün vermemek için sınır denetimi **eklemez**.
@@ -1276,7 +1276,7 @@ Fonksiyon çağrıldığında yığında ona ait bir **çerçeve** (stack frame)
 bir önceki çerçevenin adresi ve fonksiyon bitince **nereye dönüleceğini** gösteren **dönüş adresi** bulunur.
 Basitleştirilmiş bir görünüm (düşük adres yukarıda; gerçek yerleşim derleyiciye göre değişir):
 
-![Yığın çerçevesinde taşmanın sırayla ezdiği alanlar](assets/h01-15-yiginda-tasma.svg)
+![Yığın (stack) çerçevesinde taşmanın sırayla ezdiği alanlar](assets/h01-15-yiginda-tasma.svg)
 
 Üç durum vardır:
 
@@ -1343,7 +1343,7 @@ düşük baytını ya da kaydedilmiş çerçeve adresini değiştirmeye yeter.
 | `alloca(n)`, VLA `char a[n]` | Büyük `n` yığını aşar | Sabit üst sınır ya da `malloc` | |
 
 !!! info "Tarif 3.3 ve 3.4'ün bugünkü karşılığı"
-    Kitap, taşmayı önlemek için dizge işlemlerini sınır denetimli bir kütüphaneye (SafeStr) devretmeyi önerir.
+    Kitap, taşmayı önlemek için dize işlemlerini sınır denetimli bir kütüphaneye (SafeStr) devretmeyi önerir.
     Fikir bugün de geçerlidir, araçlar değişmiştir: C'de `snprintf` ve `strlcpy`, Microsoft derleyicisinde C11
     Ek K'daki `strcpy_s`/`strcat_s` ailesi (glibc bu ailesi desteklemez), C++'ta ise `std::string`,
     `std::vector`, `std::array::at()` ve `std::span`. Microsoft'un güvenli geliştirme süreci, tehlikeli
@@ -1824,7 +1824,7 @@ Silme işleminin **nerede** yapılacağı da önemlidir. Sırrın kopyası sand�
 
 - Fonksiyona **değerle** geçirilen yapılar (her çağrıda bir kopya yığında kalır).
 - `realloc` ile taşınan eski blok.
-- `std::string`'in kısa dizge iyileştirmesi (SSO) ve kopyaları; `std::string` yok edilirken içeriğini **silmez**.
+- `std::string`'in kısa dize iyileştirmesi (SSO) ve kopyaları; `std::string` yok edilirken içeriğini **silmez**.
 - G/Ç tamponları (`fgets`'in okuduğu `stdin` tamponu).
 - İşletim sisteminin **takas dosyası** ve **hazırda bekletme** dosyası (aşağıda).
 
@@ -2053,13 +2053,13 @@ C'de **opak tür** (yalnız bildirilen, tanımı başlık dosyasında olmayan `s
 baytlarına doğrudan erişmesini dil düzeyinde engeller. Tabii ki aynı süreçteki bir saldırgan belleği yine de
 okuyabilir; opak tür **programlama hatalarını** önler, saldırganı değil. Saldırgana karşı ek katmanlar gerekir.
 
-### Arayüzün kötüye kullanımı: şifre çözme kâhini ve kod kaldırma
+### Arayüzün kötüye kullanımı: şifre çözme kâhini ve kod sökme
 
 Anahtarı iyi saklamak yetmez. Saldırgan anahtarı hiç bulmadan **sizin fonksiyonunuzu kullanabilir**:
 
 - **Şifre çözme kâhini (decryption oracle):** Saldırgan `kasa_coz` fonksiyonunu kendi seçtiği verilerle doğrudan
   çağırır. Anahtar gizli kalır ama saldırgan istediği her şeyi çözdürür.
-- **Kod kaldırma (code lifting):** Saldırgan korunan fonksiyonu (hatta içine gömülü anahtarıyla birlikte)
+- **Kod sökme (code lifting):** Saldırgan korunan fonksiyonu (hatta içine gömülü anahtarıyla birlikte)
   ikili dosyadan olduğu gibi **kopyalar** ve kendi programında bir "kara kutu" gibi çalıştırır. Anahtarı hiç
   çıkarmasına gerek kalmaz.
 
@@ -2255,7 +2255,7 @@ cevap veremez ve bir değerlendiricinin gözünde bir **hata** gibi görünür.
 
 | Karar | Seçenekler | Seçilen | Gerekçe | Güvenlik etkisi / kalan risk |
 | --- | --- | --- | --- | --- |
-| Sürüm derlemesinde günlükleme | Açık / seviyeli / tamamen kaldırılmış | Tamamen kaldırılmış (derleme makrosuyla) | Susturulmuş günlük kodu ikili dosyada dizge olarak kalır ve yeniden açılabilir | Sahada hata ayıklama zorlaşır; yalnız şifreli bir tanı çıktısı bırakıldı |
+| Sürüm derlemesinde günlükleme | Açık / seviyeli / tamamen kaldırılmış | Tamamen kaldırılmış (derleme makrosuyla) | Susturulmuş günlük kodu ikili dosyada dize olarak kalır ve yeniden açılabilir | Sahada hata ayıklama zorlaşır; yalnız şifreli bir tanı çıktısı bırakıldı |
 | Hata kodları | Ayrıntılı kod / yalnız başarılı-başarısız | Yalnız başarılı-başarısız (opak değer) | Ayrıntılı kod saldırgana hangi denetimde takıldığını söyler | Destek ekibi için ayrı, sunucu tarafında bir tanı kanalı gerekir |
 | Native kütüphanenin "hata ayıklanabilir" bayrağı | Kapalı / açık | Açık (gerekçeli istisna) | Kod bütünlüğü denetimi kendi belleğini okuyabilmeli | Hata ayıklayıcı algılama ile telafi edildi |
 | Parola türetme süresi | 50 ms / 250 ms / 1 s | 250 ms | Kullanıcı beklemesi ile kaba kuvvet maliyeti dengesi | Çok zayıf parolalar hâlâ risk (kalan risk listesinde) |
@@ -2300,7 +2300,7 @@ sürenin yarım saniyenin altında kalması gibi somut bir hedef, hangi koruman�
 | `clearenv`, `close_range`, `umask(077)`, `setrlimit(RLIMIT_CORE)`, `prctl(PR_SET_DUMPABLE)` | Programın ilk satırlarında devralınan durumu temizleme | Güvenli başlatma |
 | `setresuid`/`setresgid` + `getresuid` · `CreateRestrictedToken` | Yetkiyi kalıcı bırakma ve doğrulama | Güvenli başlatma |
 | `SetDefaultDllDirectories` | Windows'ta DLL arama sırasını daraltma | Güvenli başlatma |
-| `snprintf`, `strnlen`, `strlcpy`, `fgets` | Sınırlı dizge işlemleri | Arabellek taşmaları |
+| `snprintf`, `strnlen`, `strlcpy`, `fgets` | Sınırlı dize işlemleri | Arabellek taşmaları |
 | `calloc`, `reallocarray` | Çarpım taşmasını denetleyen bellek ayırma | Bellek yönetimi |
 | `mlock` / `VirtualLock`, `madvise(MADV_DONTDUMP)` | Sırların takasa ve döküme düşmesini önleme | Bellek yönetimi |
 | `valgrind --leak-check=full`, LeakSanitizer | Sızıntı ve UAF bulma | Bellek yönetimi |
@@ -2520,7 +2520,7 @@ yalnız kendi bilgisayarınızda yapılır.
     gider ve süreç yetkili grupla çalışmaya devam eder.
 
 ??? question "16. `strncpy(d, s, sizeof d)` neden güvenli bir `strcpy` değildir?"
-    Kaynak hedeften uzunsa hedefin sonuna `'\0'` koymaz; sonraki dizge işlemleri dizinin dışından okumaya devam
+    Kaynak hedeften uzunsa hedefin sonuna `'\0'` koymaz; sonraki dize işlemleri dizinin dışından okumaya devam
     eder. Doğrusu `snprintf` ya da uzunluk denetimi + `memcpy` + açık sonlandırıcıdır.
 
 ??? question "17. Heartbleed hangi tür bir bellek hatasıdır ve neden hiçbir şey çökmeden veri sızdı?"
@@ -2593,7 +2593,7 @@ yalnız kendi bilgisayarınızda yapılır.
     | Attack tree | Saldırı ağacı | Bir saldırı hedefine ulaşma yollarını gösteren VE/VEYA ağacı |
     | Trust boundary | Güven sınırı | Farklı güven düzeyindeki bileşenlerin ayrıldığı çizgi |
     | Buffer overflow | Arabellek taşması | Bir tamponun sınırından öteye yazma |
-    | Dead store elimination | Ölü yazma giderme | Sonucu hiç okunmayan yazmaların derleyicice kaldırılması |
+    | Dead store elimination | Kullanılmayan yazmanın silinmesi | Sonucu hiç okunmayan yazmaların derleyicice kaldırılması |
     | Sanitizer | Sanitizer | Programı çalışma anında hatalara karşı izleyen derleyici aracı |
     | Core dump | Çökme dökümü | Çöken sürecin belleğinin diske yazılmış kopyası |
     | Least privilege | En az ayrıcalık | Her bileşenin yalnız gereken yetkiyle çalışması |

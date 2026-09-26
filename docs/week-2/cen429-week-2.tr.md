@@ -633,8 +633,8 @@ programlarda da tipik olan "küçük açıcı kod + yüksek entropili gövde" de
 ### Demo 07 — Kural tabanlı tespit: küçük bir kural motoru
 
 İmza tabanlı tespitin gelişmiş biçimi, tek bir bayt dizisi yerine **kural** kullanmaktır. Sektörde bunun
-en yaygın aracı YARA'dır: bir kural birkaç **dizge** (metin ya da joker içeren onaltılık desen) ve bu
-dizgeler üzerinde bir **koşul** tanımlar. Demo 07, bu fikri sıfırdan yazılmış küçük bir motorla ve yalnız
+en yaygın aracı YARA'dır: bir kural birkaç **dize (string)** (metin ya da joker içeren onaltılık desen) ve bu
+dizeler üzerinde bir **koşul** tanımlar. Demo 07, bu fikri sıfırdan yazılmış küçük bir motorla ve yalnız
 **kendi uydurduğumuz zararsız desenlerle** gösterir.
 
 !!! info "Demo 07 · `code/week-02/07-kural-motoru` · kendi zararsız desenlerimiz"
@@ -649,7 +649,7 @@ dizgeler üzerinde bir **koşul** tanımlar. Demo 07, bu fikri sıfırdan yazıl
     }
     ```
 
-    Motor her dosyada her dizgenin kaç kez geçtiğini sayar, sonra koşulu (`and`, `or`, `not`, sayım,
+    Motor her dosyada her dizenin kaç kez geçtiğini sayar, sonra koşulu (`and`, `or`, `not`, sayım,
     "n of them") değerlendirir. Onaltılık desenlerde `??` herhangi bir baytla eşleşir (joker).
 
 === "Windows (PowerShell)"
@@ -778,7 +778,7 @@ okuyoruz; çünkü bu dersin konusu o giriş kapısını kapatmaktır.
 | --- | --- | --- | --- |
 | Morris solucanı (2 Kasım 1988) | `fingerd`'de `gets()` ile 512 baytlık tampona sınırsız okuma; `sendmail`'de açık bırakılmış DEBUG kipi; `rsh`/`rexec` güven ilişkileri; parola tahmini | CWE-120 / CWE-242, CWE-489, CWE-287, CWE-521 | Sınır denetimli okuma (`fgets`); hata ayıklama kodunu sürümde bırakmamak; adres tabanlı güvene dayanmamak; parola politikası |
 | Code Red (Temmuz 2001) | IIS `.ida` işleyicisinde arabellek taşması (CVE-2001-0500) | CWE-120 | Ağ girdisinin uzunluğunu kopyalamadan önce doğrulamak; kullanılmayan işleyiciyi kapatmak |
-| SQL Slammer (Ocak 2003) | SQL Server çözümleme hizmetine tek UDP paketiyle yığın taşması (CVE-2002-0649) | CWE-121 | Sınır denetimi; gerekmeyen hizmeti dışarı açmamak; yamayı uygulamak (yama aylar önce vardı) |
+| SQL Slammer (Ocak 2003) | SQL Server çözümleme hizmetine tek UDP paketiyle yığın (stack) taşması (CVE-2002-0649) | CWE-121 | Sınır denetimi; gerekmeyen hizmeti dışarı açmamak; yamayı uygulamak (yama aylar önce vardı) |
 | Blaster (Ağustos 2003) | Windows RPC/DCOM arabellek taşması (MS03-026, CVE-2003-0352) | CWE-120 | Sınır denetimi; RPC portlarını ağ sınırında engellemek |
 | Conficker (Kasım 2008) | Server hizmetinde yol işleme taşması (MS08-067, CVE-2008-4250); zayıf parolalar | CWE-119, CWE-521 | Güvenli dize işleme; güçlü kimlik doğrulama; otomatik yama |
 | Stuxnet (2010) | Kısayol (`.lnk`) dosyasının görüntülenmesiyle kod yükleme (CVE-2010-2568) ve üç sıfırıncı gün açığı daha; çalınmış sürücü imzaları | Güvenilmeyen içerikten kod yükleme; imza anahtarlarının korunmaması | Görüntüleme sırasında kod çalıştırmamak; imza anahtarlarını donanımda (HSM) korumak |
@@ -876,7 +876,7 @@ bugün de geçerlidir, yalnız araçlar güncellenmiştir.
 Kayıt, bir saldırganın da okuyabileceği varsayılarak tasarlanır. Günlüğe yazılan her sır, günlük
 dosyasına erişen herkese verilmiş demektir. Bu yüzden öğretim üyesinin yöntemlerinden biri, sürüm
 derlemesinde hata ayıklama günlüğünü koddan tamamen çıkarmaktır: kapalı bir bayrakla susturulmuş günlük
-kodu ikili dosyada kalır ve hem dizgeleriyle bilgi sızdırır hem de yeniden açılabilir.
+kodu ikili dosyada kalır ve hem dizeleriyle bilgi sızdırır hem de yeniden açılabilir.
 
 ### Demo 10 — Günlük enjeksiyonu (CWE-117)
 
@@ -926,8 +926,8 @@ yanlış bir olaya tepki verir; gerçek saldırı ise gürültünün arasında k
 
 1. **Kaçışlama:** yazdırılamayan her bayt (`\n`, `\r`, ESC) `\xNN` biçiminde yazılır; her girdi tek satır kalır.
 2. **Sınır:** alan belirli bir uzunlukta kırpılır (`...`); günlük dosyası bir girdiyle şişirilemez.
-3. **Sabit biçim dizgesi:** alan hiçbir zaman `printf`/`syslog`'un biçim dizgesi olarak verilmez. Kitabın
-   Tarif 13.11'de uyardığı `syslog(LOG_INFO, kullanici_girdisi)` hatası bir **biçim dizgesi açığıdır**
+3. **Sabit biçim dizesi (format string):** alan hiçbir zaman `printf`/`syslog`'un biçim dizesi olarak verilmez. Kitabın
+   Tarif 13.11'de uyardığı `syslog(LOG_INFO, kullanici_girdisi)` hatası bir **biçim dizesi açığıdır**
    (CWE-134; [4. haftada](../week-4/cen429-week-4.md) ayrıntılı): doğrusu `syslog(LOG_INFO, "%s", kullanici_girdisi)`.
 
 !!! tip "Değerlendirici nasıl test eder?"

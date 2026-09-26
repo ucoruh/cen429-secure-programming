@@ -5,7 +5,7 @@
 | **Tarih** | 09.10.2026 |
 | **Öğrenme çıktıları** | ÖÇ.3 |
 | **Süre** | 3 saat |
-| **Ön bilgi** | C'de işaretçi, dizi, dinamik bellek (`malloc`/`free`); [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni, yığın ve öbek; Linux/WSL terminalinde derleme ve `gdb` ile temel adımlar |
+| **Ön bilgi** | C'de işaretçi, dizi, dinamik bellek (`malloc`/`free`); [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni, yığın (stack) ve öbek (heap); Linux/WSL terminalinde derleme ve `gdb` ile temel adımlar |
 | **Uygulamalar** | [`code/week-04`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-04) — 7 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
 
 <!-- materyal:basla -->
@@ -31,11 +31,11 @@
 <!-- materyal:bitis -->
 
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
-    1. **Kod sağlamlaştırmanın** üç katmanını (güvenli kodlama, derleyici/işletim sistemi korumaları, kod gizleme)
+    1. **Kod sağlamlaştırmanın (hardening)** üç katmanını (güvenli kodlama, derleyici/işletim sistemi korumaları, kod gizleme)
        ayırt etmek ve her birinin neyi durdurup neyi durdurmadığını söylemek.
     2. **SEI CERT C/C++** kurallarını okumak, öncelik düzeylerini yorumlamak ve kendi kodunuzda en sık ihlal edilen
        kuralları bulmak.
-    3. **Biçim dizisi**, **serbest bırakılmış belleğin kullanımı**, **tamsayı taşması** ve **tanımsız davranış**
+    3. **Biçim dizesi (format string)**, **serbest bırakılmış belleğin kullanımı**, **tamsayı taşması** ve **tanımsız davranış**
        hatalarını çalışan örneklerde göstermek ve düzeltmek.
     4. **AddressSanitizer**, **UndefinedBehaviorSanitizer** ve **fuzzing** ile hataları otomatik bulmak; bir fuzz
        hedefi (harness) yazmak.
@@ -49,7 +49,7 @@
     | --- | --- | --- |
     | 0:00–0:10 | 1 | Kod sağlamlaştırmanın katmanları; 1. haftadan köprü |
     | 0:10–0:30 | 2–4 | SEI CERT C/C++; girdi doğrulama ilkeleri; hatalı/uyumlu kod çiftleri |
-    | 0:30–0:50 | 5 | Biçim dizisi açığı — **Demo 1** |
+    | 0:30–0:50 | 5 | Biçim dizesi açığı — **Demo 1** |
     | 0:50–1:00 | Ara | |
     | 1:00–1:25 | 6–8 | Serbest bırakılmış bellek **Demo 2**; tamsayılar ve UB **Demo 3**; hata işleme ve sinyaller |
     | 1:25–1:50 | 9–11 | Statik analiz; sanitizer'lar; fuzzing — **Demo 4** |
@@ -107,11 +107,11 @@ temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 - **Arabellek taşması** — bir programın bir diziye, ayrılan boyuttan fazla veri yazması; taşan baytlar dizinin
   hemen yanındaki belleğe, başka değişkenlerin ya da dönüş adresinin üzerine yazılır
   ([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)). Bu hafta bu
-  hatayı biçim dizisi açığıyla (§5) ve tamsayı kaynaklı taşmalarla (§7) genişletiyoruz.
+  hatayı biçim dizesi açığıyla (§5) ve tamsayı kaynaklı taşmalarla (§7) genişletiyoruz.
 - **Yığın çerçevesi ve dönüş adresi** — bir fonksiyon çağrıldığında yığında ona ayrılan, yerel değişkenleri ve
   fonksiyon bitince nereye döneceğini gösteren dönüş adresini tutan bölüm
   ([Hafta 1, §14](../week-1/cen429-week-1.md#14-arabellek-tasmalari-nasil-olusur-nasil-onlenir)). Bu hafta §5'te
-  biçim dizisi açığının yığından nasıl okuduğunu, §12'de yığın kanaryasının bu çerçeveyi nasıl koruduğunu adım
+  biçim dizesi açığının yığından nasıl okuduğunu, §12'de yığın kanaryasının bu çerçeveyi nasıl koruduğunu adım
   adım izliyoruz; ayrıca **ofset** terimini (bir başlangıç noktasına bayt cinsinden uzaklık) sıkça kullanacağız.
 - **Beyaz kutu saldırgan modeli** — cihazın sahibi olan kullanıcının aynı zamanda potansiyel saldırgan olduğu,
   belleği okuyup hata ayıklayıcı bağlayabildiği model
@@ -184,7 +184,7 @@ tekrarlayalım: **gizleme, hatayı düzeltmez.** Gizlenmiş bir taşma hâlâ bi
 
 Sıralamanın (önce 2, sonra 3, en son 4) keyfi olmadığını görmek için tersini deneyelim:
 
-- **Önce gizleme, hatayı düzeltmeden:** Kontrol akışı düzleştirilmiş, dizgeleri şifrelenmiş bir programda hâlâ bir
+- **Önce gizleme, hatayı düzeltmeden:** Kontrol akışı düzleştirilmiş, dizeleri (string) şifrelenmiş bir programda hâlâ bir
   tampon taşması varsa, taşma **hâlâ çalışır**. Saldırgan taşmayı bulmak için tersine mühendislik yapmak zorunda bile
   değildir; dışarıdan fuzzing yeterlidir (bu hafta Bölüm 11). Gizleme, hatayı görünmez kılmaz, yalnız **kodu okumayı**
   zorlaştırır — ama çalışan bir saldırı kodu okumadan da bulunabilir.
@@ -235,9 +235,9 @@ yaygın hem de düzeltmesi ucuz olanlardır; bir kod incelemesine buradan başla
 | `EXP` | İfadeler | EXP33-C: ilklendirilmemiş belleği okuma |
 | `INT` | Tamsayılar | INT30-C: işaretsiz işlemlerin sarmadığından emin ol; INT32-C: işaretli taşmaya izin verme |
 | `ARR` | Diziler | ARR30-C: sınırlar dışında işaretçi oluşturma ya da kullanma |
-| `STR` | Dizgeler | STR31-C: dizge ve sonlandırıcı için yeterli yer ayır |
+| `STR` | Dizeler | STR31-C: dize ve sonlandırıcı için yeterli yer ayır |
 | `MEM` | Bellek yönetimi | MEM30-C: serbest bırakılmış belleğe erişme |
-| `FIO` | Dosya G/Ç | FIO30-C: kullanıcı girdisini biçim dizgesinden dışla |
+| `FIO` | Dosya G/Ç | FIO30-C: kullanıcı girdisini biçim dizesinden dışla |
 | `ENV` | Ortam | ENV33-C: `system()` çağırma |
 | `SIG` | Sinyaller | SIG30-C: sinyal işleyicide yalnız eşzamansız güvenli fonksiyonlar çağır |
 | `ERR` | Hata işleme | ERR33-C: standart kütüphane hatalarını algıla ve işle |
@@ -247,18 +247,18 @@ yaygın hem de düzeltmesi ucuz olanlardır; bir kod incelemesine buradan başla
 
 C++ standardı (`-CPP` sonekli) C kurallarının çoğunu devralır ve dile özgü kurallar ekler: `MEM50-CPP` (serbest
 bırakılmış belleğe erişme), `CTR50-CPP` (kapsayıcı indekslerinin ve yineleyicilerin geçerli aralıkta olması),
-`STR50-CPP` (dizge için yeterli yer), `EXP53-CPP` (ilklendirilmemiş belleği okuma), `ERR50-CPP` (programı ani
+`STR50-CPP` (dize için yeterli yer), `EXP53-CPP` (ilklendirilmemiş belleği okuma), `ERR50-CPP` (programı ani
 sonlandırma).
 
 ### İlk hafta ile bu haftayı birbirine bağlayan on kural
 
 | Kural | Özet | Nerede gördük? |
 | --- | --- | --- |
-| STR31-C | Dizge için yeterli yer | [1. hafta](../week-1/cen429-week-1.md) Demo 3 |
+| STR31-C | Dize için yeterli yer | [1. hafta](../week-1/cen429-week-1.md) Demo 3 |
 | INT31-C | Tamsayı dönüşümleri veri kaybetmemeli | 1. hafta Demo 4 |
 | MSC06-C | Derleyici iyileştirmesinin güvenlik kodunu silmesine dikkat | 1. hafta Demo 2 |
 | ENV33-C | `system()` çağırma | 1. hafta Demo 1 |
-| FIO30-C | Kullanıcı girdisini biçim dizgesinden dışla | Bu hafta Demo 1 |
+| FIO30-C | Kullanıcı girdisini biçim dizesinden dışla | Bu hafta Demo 1 |
 | MEM30-C | Serbest bırakılmış belleğe erişme | Bu hafta Demo 2 |
 | MEM31-C | Dinamik belleği işi bitince serbest bırak | Bu hafta Demo 2 |
 | INT32-C | İşaretli tamsayı taşmasına izin verme | Bu hafta Demo 3 |
@@ -385,7 +385,7 @@ int sayi_oku(const char *s, long en_az, long en_cok, long *sonuc)
 ```
 
 Dört denetim de gereklidir ve her biri gerçek bir hata sınıfını kapatır: boş girdi, çöp ekli girdi, taşma ve iş kuralı
-ihlali. CERT bu kalıbı `ERR34-C` ("dizgeleri sayıya çevirirken hataları algıla") kuralıyla ister.
+ihlali. CERT bu kalıbı `ERR34-C` ("dizeleri sayıya çevirirken hataları algıla") kuralıyla ister.
 
 ### İkili veri: uzunluk önekli kayıtlar
 
@@ -478,7 +478,7 @@ fuzzing ile bulduğu tam hatadır. `uzunluk`'un `uint16_t` olması bile tek baş
 
 !!! note "Sahada nasıl uygulanır?"
     Ödeme kütüphanelerinin savunmacı programlama gereksinimlerinin ilk maddesi "uygulamanın her girdisi ve çıktısı
-    denetlenmelidir"dir. Bir kütüphane kendisini çağıran uygulamaya da güvenmez: JNI arayüzünden gelen her dizge ve
+    denetlenmelidir"dir. Bir kütüphane kendisini çağıran uygulamaya da güvenmez: JNI arayüzünden gelen her dize ve
     dizi, native tarafta uzunluk ve biçim açısından yeniden doğrulanır. Doğrulama başarısız olursa fonksiyon ayrıntı
     vermeden "başarısız" döner.
 
@@ -492,7 +492,7 @@ açıklamayı okuyun.
 
 ![Bu haftanın CERT kural çiftleri ve demoları](assets/h04-16-cert-kural-ciftleri.svg)
 
-### STR31-C: dizge ve sonlandırıcı için yeterli yer
+### STR31-C: dize ve sonlandırıcı için yeterli yer
 
 ```c title="Hatalı"
 char kopya[16];
@@ -510,7 +510,7 @@ if (n < 0 || (size_t)n >= sizeof kopya) {
 `snprintf`'in dönüş değeri, yer olsaydı yazılacak karakter sayısıdır; tampon boyutuna eşit ya da büyükse çıktı
 **kesilmiştir**. Kesilmiş bir dosya yolu ya da komut, farklı bir anlama gelebilir.
 
-**Sayısal doğrulama:** `ad = "Mehmet Ali Kaya Demir"` dizgesinin uzunluğu **21 karakterdir** (boşluklar dahil, `\0`
+**Sayısal doğrulama:** `ad = "Mehmet Ali Kaya Demir"` dizesinin uzunluğu **21 karakterdir** (boşluklar dahil, `\0`
 hariç). `char kopya[16]` yalnız 15 karakter + sonlandırıcı `\0` alabilir (16 bayt = 15 + 1). `snprintf(kopya, 16,
 "%s", ad)` çağrıldığında:
 
@@ -521,7 +521,7 @@ n >= sizeof kopya ?              : 21 >= 16 → EVET → KESİLDİ
 kopya içinde gerçekte duran      : "Mehmet Ali Kaya" (ilk 15 karakter) + '\0'
 ```
 
-`strcpy` kullanılsaydı denetim hiç olmazdı ve 21 karakterlik dizge, 16 baytlık tampona sınır denetimi yapılmadan
+`strcpy` kullanılsaydı denetim hiç olmazdı ve 21 karakterlik dize, 16 baytlık tampona sınır denetimi yapılmadan
 kopyalanır, **5 bayt** (21 − 16) komşu belleğe taşardı. `snprintf` taşmayı önler; ama **sessizce kesme** de kendi
 başına bir hatadır — "Mehmet Ali Kaya Demir" adlı bir kullanıcı, sistemde "Mehmet Ali Kaya" olarak kaydedilirse, iki
 farklı kullanıcı aynı kesilmiş ada sahip olabilir. Bu yüzden uyumlu çözümdeki `if (n < 0 || (size_t)n >= sizeof
@@ -623,14 +623,14 @@ Kısmen okunmuş bir yapıyı tam okunmuş sanmak, ilklendirilmemiş bellek okum
 
 ---
 
-## 5. Biçim dizisi açığı (Tarif 3.2)
+## 5. Biçim dizesi açığı (Tarif 3.2)
 
-`printf` ailesinin ilk argümanı bir **biçim dizgesidir**: içindeki `%d`, `%s`, `%x` gibi belirteçler, fonksiyona
+`printf` ailesinin ilk argümanı bir **biçim dizesidir**: içindeki `%d`, `%s`, `%x` gibi belirteçler, fonksiyona
 "yığından şu türde bir argüman al ve şu biçimde yaz" komutunu verir. Fonksiyon, gerçekten kaç argüman verildiğini
-**bilmez**; biçim dizgesinde ne yazıyorsa onu yapar. Biçim dizgesi kullanıcıdan geliyorsa, kullanıcı fonksiyona komut
+**bilmez**; biçim dizesinde ne yazıyorsa onu yapar. Biçim dizesi kullanıcıdan geliyorsa, kullanıcı fonksiyona komut
 vermiş olur.
 
-![Biçim dizisi açığı: hatalı ve doğru kullanım](assets/h04-07-bicim-dizisi.svg)
+![Biçim dizesi açığı: hatalı ve doğru kullanım](assets/h04-07-bicim-dizisi.svg)
 
 ```c title="Hatalı ve doğru"
 printf(kullanici_girdisi);           /* HATALI: girdi biçim dizgesi olarak yorumlanır */
@@ -642,26 +642,26 @@ printf("%s", kullanici_girdisi);     /* DOĞRU: girdi yalnız veri */
 | Belirteç | Normalde | Saldırgan verirse |
 | --- | --- | --- |
 | `%x`, `%p` | Bir argümanı onaltılık yazar | Olmayan argümanlar yerine **yığındaki değerler** okunur: bilgi sızıntısı |
-| `%s` | Bir işaretçinin gösterdiği dizgeyi yazar | Yığındaki rastgele bir değer işaretçi sanılır: çökme ya da bellek okuma |
+| `%s` | Bir işaretçinin gösterdiği dizeyi yazar | Yığındaki rastgele bir değer işaretçi sanılır: çökme ya da bellek okuma |
 | `%n` | Şimdiye kadar yazılan karakter sayısını bir işaretçiye **yazar** | Yığındaki bir değerin gösterdiği adrese **yazma**: bellek bozulması |
 
 Ne kadar zararlı olduğu platforma ve korumalara göre değişir; ama en hafif sonucu bile bir **bilgi sızıntısıdır**:
 yığında duran bir anahtar, bir adres (ASLR'yi zayıflatır) ya da bir kanarya değeri okunabilir. Aynı hata `syslog`,
-`fprintf`, `snprintf`, `err`/`warn` ve bir biçim dizgesi alan her fonksiyonda ortaya çıkar; [2. haftada](../week-2/cen429-week-2.md) denetim
+`fprintf`, `snprintf`, `err`/`warn` ve bir biçim dizesi alan her fonksiyonda ortaya çıkar; [2. haftada](../week-2/cen429-week-2.md) denetim
 kaydının `syslog(LOG_INFO, kullanici_girdisi)` hatasını görmüştük.
 
 ### İşlenmiş örnek: `%x` yığından ne okur? Adım adım
 
-`printf`'in nasıl çalıştığını hatırlayalım: `printf(bicim, arg1, arg2, ...)` çağrıldığında, `bicim` dizgesinin
+`printf`'in nasıl çalıştığını hatırlayalım: `printf(bicim, arg1, arg2, ...)` çağrıldığında, `bicim` dizesinin
 içinde kaç tane `%` belirteci varsa, fonksiyon **o kadar** argüman **beklediğini** varsayar. Argümanları nereden
 okuduğu ise derleyicinin ürettiği **çağrı kuralına (ABI)** bağlıdır. Öğretici olması için önce klasik ve basit
 modeli (bütün argümanlar yığında) izleyelim, sonra bugünün 64-bit sistemlerindeki farkı ekleyelim.
 
 **1) Basitleştirilmiş model — bütün argümanlar yığında art arda durur**
 
-`sizinti.c`'de çağrı şudur: `printf(tampon)` — yalnız **1** gerçek argüman (biçim dizgesinin kendisi) verilmiştir,
+`sizinti.c`'de çağrı şudur: `printf(tampon)` — yalnız **1** gerçek argüman (biçim dizesinin kendisi) verilmiştir,
 başka hiçbir değer verilmemiştir. Kullanıcı `tampon`'un içine `"%x.%x.%x.%x.%x.%x"` yazarsa, `printf` biçim
-dizgesinde **6 tane** `%x` görür ve "6 argüman daha gelecek" varsayımıyla ilerler. Ama gerçekte hiçbiri
+dizesinde **6 tane** `%x` görür ve "6 argüman daha gelecek" varsayımıyla ilerler. Ama gerçekte hiçbiri
 **gönderilmemiştir**. `printf`'in yapacağı tek şey bellidir: her `%x` için, "bir sonraki argümanın durması gereken"
 konuma bakıp oradaki baytları **sayı sanıp** onaltılık yazmaktır. Bu basit modelde o konumlar, çağrının hemen
 üzerindeki yığın hücreleridir — yani `sizinti()` fonksiyonunun **kendi yerel değişkenlerinin bulunduğu bölge**:
@@ -673,8 +673,8 @@ char tampon[64];                            /* fonksiyonun yerel değişkeni #2,
 
 Bu iki değişken **aynı yığın çerçevesinde**, birbirine **komşu** durur (derleyici ve bayraklara göre tam sıralama ve
 aradaki boşluk değişebilir; önemli olan ikisinin de aynı çerçevede, birbirine yakın olmasıdır). `printf(tampon)`
-çağrıldığında, biçim dizgesinin kendisi de zaten bu `tampon`'un içindedir — yani **okunan yer** ile **okuyan
-biçim dizgesi** aynı bellek bölgesindedir. Yeterli sayıda `%x` verilirse, tarama er ya da geç `gizli_deger`'in
+çağrıldığında, biçim dizesinin kendisi de zaten bu `tampon`'un içindedir — yani **okunan yer** ile **okuyan
+biçim dizesi** aynı bellek bölgesindedir. Yeterli sayıda `%x` verilirse, tarama er ya da geç `gizli_deger`'in
 durduğu 4 baytlık hücreye ulaşır:
 
 ```text title="'%x' taramasının adımları (basitleştirilmiş, kavramsal argüman sırası)"
@@ -698,7 +698,7 @@ değerdir.
 Yukarıdaki "hepsi yığında" modeli, x86 **32-bit** çağrı kuralı (cdecl) için tam doğrudur ve format-string
 saldırılarının klasik öğretim modelidir. Bugünün 64-bit Linux/Windows derlemelerinde ise x86-64 System V ABI, ilk
 **6** tamsayı/işaretçi argümanını **yığın yerine işlemci yazmaçlarında** (`RSI`, `RDX`, `RCX`, `R8`, `R9` — `RDI`
-biçim dizgesinin kendisi için ayrılmıştır) taşır; yalnız 6'dan fazlası yığına konur. Sonuç: `printf(tampon)`
+biçim dizesinin kendisi için ayrılmıştır) taşır; yalnız 6'dan fazlası yığına konur. Sonuç: `printf(tampon)`
 çağrısında ilk birkaç `%x`, yığındaki bir hücreyi değil, o an bu yazmaçlarda **tesadüfen** duran (önceki
 çağrılardan — ör. `snprintf`, kendi `printf` hazırlığı — kalan) değerleri okur; yalnız 6. `%x`'ten **sonrakiler**
 yığına, dolayısıyla `gizli_deger`'in de bulunduğu bölgeye ulaşır. Demo betiğinin `%x` sayısını kademeli
@@ -711,29 +711,29 @@ göre değişir; öğrencinin görmesi gereken **mekanizma** budur, belirli bir 
 yere** yaz" der — yani bir **yazma** işlemidir. Yukarıdaki modelde `%n` de tıpkı `%x` gibi "bir sonraki argüman
 konumunu" bir değer olarak okur; ama bu kez o değeri bir **sayı** değil bir **adres** (işaretçi) sanır ve o
 adrese yazar. Argüman hiç verilmediği için bu "adres" de yine yığında/yazmaçta o an ne duruyorsa **odur** —
-genellikle geçersiz bir adrestir ve program çöker. Ama saldırgan biçim dizgesini **kendisi** yazdığı için, dizgenin
+genellikle geçersiz bir adrestir ve program çöker. Ama saldırgan biçim dizesini **kendisi** yazdığı için, dizenin
 içine kendi seçtiği bayt dizilerini de yerleştirebilir; `%x` ile hangi konumun hangi veriye karşılık geldiğini
 önce **haritalayıp**, sonra `%n`'in tam o konuma denk gelmesini sağlayarak, "adres" olarak okunacak hücreyi
 **kendi verdiği bir değerle** doldurabilir. Bu, `%n`'i yalnızca bir çökme kaynağı olmaktan çıkarıp bellekte
 **seçilmiş bir konuma seçilmiş bir değer yazma** aracına çevirir (CWE-134). Bu derste bunun ötesine, çalışan bir
-sömürü adımına **girmiyoruz** — mekanizmayı anlamak, savunmayı (biçim dizgesini sabitlemek) anlamak için yeterlidir.
+sömürü adımına **girmiyoruz** — mekanizmayı anlamak, savunmayı (biçim dizesini sabitlemek) anlamak için yeterlidir.
 
 !!! danger "Sık yapılan hata: 'girdi hiç `%` içermiyor, sorun yok' varsayımı"
     Bir kod incelemesinde "bu girdi zaten kullanıcı adı, kimse `%n` yazmaz" diye düşünüp `printf(girdi)` çağrısını
     onaylamak, en sık görülen atlamadır. Doğrulama **girdinin içeriğine değil, çağrının biçimine** bakmalıdır:
-    değişken bir dizge asla biçim parametresi konumuna konmaz — girdinin ne içerdiği önemsizdir.
+    değişken bir dize asla biçim parametresi konumuna konmaz — girdinin ne içerdiği önemsizdir.
 
 !!! success "Kural"
-    Kural tek cümledir ve istisnasızdır: **biçim dizgesi her zaman sabit bir metin sabiti olmalı, kullanıcı verisi
+    Kural tek cümledir ve istisnasızdır: **biçim dizesi her zaman sabit bir metin sabiti olmalı, kullanıcı verisi
     yalnız `%s` gibi bir belirtecin argümanı olarak geçmelidir.** `printf("%s", girdi)` — asla `printf(girdi)`.
 
 Bu mekanizma, [1. haftada](../week-1/cen429-week-1.md) gördüğümüz "bellek okuma/yazma sınırlarının ihlali" hata ailesinin somut bir örneğidir:
 `%x` bir **sınır dışı okuma**, `%n` bir **sınır dışı yazma** yapar — farkı, sınırı aşan tarafın bir dizi indeksi
-değil, biçim dizgesindeki belirteç sayısı olmasıdır. [5. haftada](../week-5/cen429-week-5.md) göreceğimiz enjeksiyon saldırılarıyla da aynı
+değil, biçim dizesindeki belirteç sayısı olmasıdır. [5. haftada](../week-5/cen429-week-5.md) göreceğimiz enjeksiyon saldırılarıyla da aynı
 kökten gelir: **veri, komut yerine geçmiştir** — SQL enjeksiyonunda veri bir sorgu parçası, burada veri bir
 biçim komutu olarak yorumlanmıştır.
 
-### Demo 1 — Biçim dizisi açığı
+### Demo 1 — Biçim dizesi açığı
 
 !!! info "Demo 1 · `code/week-04/01-format-string` · CWE-134 · Tarif 3.2"
     `sizinti` programı kendisine verilen metni `printf(metin)` ile yazar; programın belleğinde sentetik bir "gizli
@@ -766,14 +766,14 @@ biçim komutu olarak yorumlanmıştır.
 
 ### Düzeltme ve savunma katmanları
 
-1. **Biçim dizgesi her zaman sabit olmalı** (FIO30-C). Kullanıcı verisi yalnız argümandır: `printf("%s", s)`.
+1. **Biçim dizesi her zaman sabit olmalı** (FIO30-C). Kullanıcı verisi yalnız argümandır: `printf("%s", s)`.
 2. **Derleyici uyarıları:** GCC/Clang'de `-Wformat -Wformat-security` (hatta `-Werror=format-security`); MSVC'de
    `/analyze`. Kendi yazdığınız `printf` benzeri fonksiyonlara `__attribute__((format(printf, 1, 2)))` ekleyin ki
    derleyici onları da denetlesin.
-3. **Çalışma zamanı koruması:** glibc'de `_FORTIFY_SOURCE=2`, yazılabilir bellekteki biçim dizgelerinde `%n`'i
+3. **Çalışma zamanı koruması:** glibc'de `_FORTIFY_SOURCE=2`, yazılabilir bellekteki biçim dizelerinde `%n`'i
    reddeder; Microsoft'un C çalışma kitaplığı `%n`'i varsayılan olarak kapatır.
 4. **Değişken argüman sayısını doğrulayın** (Tarif 13.4): kendi değişken argümanlı fonksiyonunuzu yazıyorsanız,
-   argüman sayısını ya da türünü biçim dizgesinden değil, açık bir parametreden alın.
+   argüman sayısını ya da türünü biçim dizesinden değil, açık bir parametreden alın.
 
 ```c title="Kendi günlük fonksiyonunuzu derleyiciye denetletin"
 #if defined(__GNUC__)
@@ -789,7 +789,7 @@ gunluk_yaz(1, "%s", kullanici);    /* doğru */
 ```
 
 !!! question "Değerlendirici nasıl test eder?"
-    Kaynak kodda biçim dizgesi olarak bir değişken alan her çağrıyı arar (`printf(`, `syslog(`, `snprintf(buf, n,`
+    Kaynak kodda biçim dizesi olarak bir değişken alan her çağrıyı arar (`printf(`, `syslog(`, `snprintf(buf, n,`
     ardından sabit olmayan bir argüman). Dinamik testte her metin alanına `%x%x%x%n` gibi girdiler verir ve
     çıktıda onaltılık değerler, çökme ya da günlükte bozulma arar.
 
@@ -833,7 +833,7 @@ Bellekteki yerleşim, ofset cinsinden:
 | Ofset (bayt) | Alan | Boyut |
 | --- | --- | --- |
 | 0–7 | `eylem` (fonksiyon işaretçisi) | 8 bayt |
-| 8–23 | `rol` (dizge) | 16 bayt |
+| 8–23 | `rol` (dize) | 16 bayt |
 
 Şimdi `kip_uaf()` fonksiyonunu adım adım izleyelim:
 
@@ -1221,7 +1221,7 @@ Kitabın Tarif 13.1'deki öneriler bugün de geçerlidir ve 3. haftadaki "fail-c
 ### Değişken argümanlı fonksiyonlar (Tarif 13.4)
 
 `printf` gibi değişken argüman alan fonksiyonlar, argümanların **sayısını ve türünü bilmez**; bunu çağıranın
-sözüne (biçim dizgesine) güvenerek öğrenir. Biçim dizgesi ile gerçek argümanlar uyuşmazsa sonuç tanımsızdır:
+sözüne (biçim dizesine) güvenerek öğrenir. Biçim dizesi ile gerçek argümanlar uyuşmazsa sonuç tanımsızdır:
 
 ```c
 long long buyuk = 5000000000LL;
@@ -1230,7 +1230,7 @@ printf("%s\n");                 /* argüman yok: yığından rastgele değer oku
 ```
 
 Kendi değişken argümanlı fonksiyonunuzu yazmanız gerekiyorsa: argüman sayısını açık bir parametreyle alın ya da
-listeyi bir bitiş işaretiyle (`NULL`) kapatın; `va_start`/`va_end` çiftini her yolda eşleştirin; biçim dizgesi
+listeyi bir bitiş işaretiyle (`NULL`) kapatın; `va_start`/`va_end` çiftini her yolda eşleştirin; biçim dizesi
 kullanıyorsanız 5. bölümdeki `format` özniteliğini ekleyin. C++'ta değişken argüman yerine tür güvenli şablonlar
 (`std::format`, değişken şablon parametreleri) tercih edilir.
 
@@ -1290,7 +1290,7 @@ yalnız çalışan yolları görür ama bulduğu hata kesindir.
 
 | Düzey | Araç | Ne bulur? | Maliyet |
 | --- | --- | --- | --- |
-| Derleyici uyarıları | `-Wall -Wextra -Wformat=2 -Wconversion -Wshadow` · MSVC `/W4` | Şüpheli dönüşüm, biçim dizgesi, kullanılmayan değer | Sıfır: her derlemede |
+| Derleyici uyarıları | `-Wall -Wextra -Wformat=2 -Wconversion -Wshadow` · MSVC `/W4` | Şüpheli dönüşüm, biçim dizesi, kullanılmayan değer | Sıfır: her derlemede |
 | Derleyici analizcisi | `gcc -fanalyzer` · `clang --analyze` · MSVC `/analyze` | Yol duyarlı: NULL erişimi, sızıntı, çift serbest bırakma | Düşük |
 | Kural denetleyici | `clang-tidy` (`cert-*`, `bugprone-*`), `cppcheck` (`--addon=cert`) | CERT ihlalleri, tehlikeli API'ler | Düşük |
 | Anlamsal sorgu | CodeQL, Semgrep | Kaynaktan hedefe veri akışı: "argv'den gelen değer denetimsiz memcpy'ye gidiyor mu?" | Orta |
@@ -1305,7 +1305,7 @@ cppcheck --enable=warning,portability --addon=cert ayristir.c
 ### Veri akışı analizi: kaynak → hedef
 
 En değerli statik analiz türü, **kirli veri** (taint) izlemesidir: güvenilmeyen bir **kaynaktan** (argv, dosya, ağ)
-gelen bir değerin, doğrulanmadan tehlikeli bir **hedefe** (memcpy uzunluğu, biçim dizgesi, `system`, dizi indeksi)
+gelen bir değerin, doğrulanmadan tehlikeli bir **hedefe** (memcpy uzunluğu, biçim dizesi, `system`, dizi indeksi)
 ulaşıp ulaşmadığı sorulur. CodeQL ve Semgrep bu soruyu kod tabanının tamamında sorabilir:
 
 ![Kirli veri takibi: kaynaktan hedefe, doğrulama olmadan](assets/h04-14-kirli-veri.svg)
@@ -1314,7 +1314,7 @@ ulaşıp ulaşmadığı sorulur. CodeQL ve Semgrep bu soruyu kod tabanının tam
 
 Statik analiz yanlış alarm verir; bunları yönetmek de sürecin bir parçasıdır:
 
-1. **Önce yüksek güvenilirlikli kurallar:** biçim dizgesi, tehlikeli fonksiyonlar, NULL erişimi.
+1. **Önce yüksek güvenilirlikli kurallar:** biçim dizesi, tehlikeli fonksiyonlar, NULL erişimi.
 2. **Her bastırma gerekçeli olsun:** `// NOLINT(cert-err33-c): dönüş değeri kasıtlı olarak yok sayılıyor, çünkü ...`
    Gerekçesiz bastırma, gelecekteki gerçek hatayı gizler.
 3. **Yeni kodda sıfır uyarı:** eski kodun bütün uyarılarını bir günde temizlemek gerçekçi değildir; ama yeni eklenen
@@ -1353,13 +1353,13 @@ bulur. Bu yüzden sanitizer'lar testlerle ve fuzzing'le birlikte kullanılır.
 ### ASan nasıl çalışır? Gölge bellek
 
 ASan, programın belleğinin her 8 baytı için 1 baytlık bir **gölge bellek** tutar. Gölge bayt, o 8 baytın ne kadarının
-geçerli olduğunu söyler. Her dizinin önüne ve arkasına **zehirli bölgeler** (redzone) konur; serbest bırakılan bloklar
+geçerli olduğunu söyler. Her dizinin önüne ve arkasına **koruma bölgesiler** (redzone) konur; serbest bırakılan bloklar
 hemen yeniden kullanılmaz, bir süre **karantinada** bekletilir ve zehirli işaretlenir. Derleyici her bellek erişiminden
-önce gölge baytı denetleyen birkaç komut ekler. Taşma zehirli bölgeye değdiği, UAF ise karantinadaki bloğa eriştiği
+önce gölge baytı denetleyen birkaç komut ekler. Taşma koruma bölgesiye değdiği, UAF ise karantinadaki bloğa eriştiği
 anda yakalanır.
 
 Bu tasarımın bir sonucu, 1. hafta Demo 3'te gördüğümüz sınırlamadır: taşma **aynı yapının içinde** kalırsa (bir
-alandan komşu alana), arada zehirli bölge olmadığı için ASan göremez.
+alandan komşu alana), arada koruma bölgesi olmadığı için ASan göremez.
 
 ### Pratik kullanım
 
@@ -1560,12 +1560,12 @@ ortadan kalkar.
 | --- | --- | --- |
 | Kanarya | Dönüş adresine ulaşan ardışık yığın taşması | Kanaryadan önceki yerel değişkenlerin bozulması; öbek taşması; bilgi sızıntısıyla okunan kanarya |
 | `_FORTIFY_SOURCE` | Boyutu bilinen tampona fazla yazan kütüphane çağrıları | Kendi yazdığınız döngüler; boyutu bilinmeyen tamponlar |
-| ASLR | Sabit adres varsayımına dayanan saldırılar | Bir adresin sızdırıldığı durumlar (biçim dizisi açığı!) |
+| ASLR | Sabit adres varsayımına dayanan saldırılar | Bir adresin sızdırıldığı durumlar (biçim dizesi açığı!) |
 | NX | Veri bölgesine yerleştirilen kodun çalıştırılması | Programın **kendi** kodunun parçalarını yeniden kullanan saldırılar |
 | CFI / CFG | Dolaylı çağrının geçersiz bir hedefe gitmesi | Geçerli hedefler arasında yanlış olana gitme; veri bozulması |
 
 Tablonun son sütunu önemlidir: her koruma bir **saldırı tekniğini** zorlaştırır, **hata sınıfını** ortadan kaldırmaz.
-Korumalar birbirini tamamlar; örneğin ASLR bir bilgi sızıntısıyla zayıflar, bu yüzden biçim dizisi açığı gibi
+Korumalar birbirini tamamlar; örneğin ASLR bir bilgi sızıntısıyla zayıflar, bu yüzden biçim dizesi açığı gibi
 "yalnız okuyan" hatalar da ciddiye alınır. Ve hiçbir koruma, mantık hatasını (1. hafta Demo 3'teki yetki bayrağının
 bozulması gibi) durdurmaz.
 
@@ -1618,10 +1618,10 @@ geçersiz, çöker) ya da bellek sessizce bozulmuş halde çalışmaya devam ede
 2. **Öbek (heap) hiç korunmaz.** Kanarya yalnız **yığın** çerçevelerinde vardır; Demo 2'deki `malloc`'lu `struct
    oturum` gibi öbek nesnelerinin böyle bir koruması yoktur.
 3. **Kanaryanın kendisi sızdırılabilirse koruma anlamsızlaşır.** Bu, bu hafta içindeki en önemli bağlantılardan
-   biridir: Bölüm 5'teki biçim dizisi açığı, `%x` ile yığındaki **herhangi bir** 8 baytı okuyabilir — kanarya da bu
+   biridir: Bölüm 5'teki biçim dizesi açığı, `%x` ile yığındaki **herhangi bir** 8 baytı okuyabilir — kanarya da bu
    sekiz baytlardan biridir. Saldırgan önce sızıntıyla kanaryanın **gerçek değerini öğrenir**, sonra taşmayı o
    öğrendiği değeri **aynen** yazacak şekilde kurgular; karşılaştırma `==` çıkar ve koruma hiç tetiklenmez. Kanarya
-   ile biçim dizisi açığı arasındaki bu bağ, neden "bir koruma tek başına yeterli değildir" ilkesinin (1. hafta
+   ile biçim dizesi açığı arasındaki bu bağ, neden "bir koruma tek başına yeterli değildir" ilkesinin (1. hafta
    savunma derinliği) somut bir örneğidir.
 
 **ASLR (Address Space Layout Randomization) — ne rastgeleleştirir, ne rastgeleleştirmez?**
@@ -1630,7 +1630,7 @@ ASLR, programın kod bölgesinin, yığınının, öbeğinin ve paylaşılan kü
 çalıştırmada değiştirir (işletim sistemi tarafından, süreç başlatılırken). **Engellediği:** saldırganın "dönüş
 adresini şu sabit adrese yazayım" gibi **sabit adres varsayımına dayanan** bir saldırı kurgulamasını — adres her
 çalıştırmada farklı olduğu için sabit bir değer bir sonraki çalıştırmada işe yaramaz. **Engellemediği:** (a) bir
-bilgi sızıntısı (ör. biçim dizisi açığı, bir işaretçinin ekrana yanlışlıkla yazdırılması) **gerçek** bir adresi
+bilgi sızıntısı (ör. biçim dizesi açığı, bir işaretçinin ekrana yanlışlıkla yazdırılması) **gerçek** bir adresi
 açığa çıkarırsa, o adresten geri kalan adresler **hesaplanabilir** hale gelir (kütüphaneler genelde birbirine göre
 sabit ofsetlerde yüklenir); (b) 32-bit sistemlerde adres uzayı küçük olduğu için rastgelelik "entropi" azdır ve
 kaba kuvvetle denenebilir; (c) mantık hatalarını hiç etkilemez.
@@ -1764,7 +1764,7 @@ kazanır. Bir güvenlik hatası çoğu zaman, önceden doğru olan bir kodun kü
 | Sanitizer'lı testler | Herhangi bir sanitizer raporu |
 | Fuzzing | Yeni bir çökme; ayrıca daha önce bulunmuş girdiler (corpus) **regresyon testi** olarak her seferinde çalışır |
 | Sürüm derlemesi | Bir koruma bayrağının kapanması |
-| İkili denetimi | `strings` çıktısında günlük dizgesi ya da yasaklı bir sabit; sembol tablosunun silinmemiş olması |
+| İkili denetimi | `strings` çıktısında günlük dizesi ya da yasaklı bir sabit; sembol tablosunun silinmemiş olması |
 
 !!! tip "Fuzzing'in bulduğu her girdi bir testtir"
     Fuzzer'ın bulduğu çökerten girdi, hata düzeltildikten sonra silinmez; `tests/regresyon/` gibi bir klasöre konur
@@ -1801,7 +1801,7 @@ sürüm için korumalar açık ve günlük kapalı.
 ## 14. Kod gizlemeye giriş (Tarif 12.1, 12.3)
 
 Buraya kadar anlattıklarımız, uzaktan girdi gönderen bir saldırgana karşı yeterlidir. Ama [1. haftada](../week-1/cen429-week-1.md) gördüğümüz
-**beyaz kutu saldırgan** programın kendisine sahiptir: ikili dosyayı bir tersine derleyicide açabilir, dizgelerini
+**beyaz kutu saldırgan** programın kendisine sahiptir: ikili dosyayı bir tersine derleyicide açabilir, dizelerini
 okuyabilir, fonksiyonlarını adlarıyla bulabilir. Kodunuzda bir lisans denetimi, bir anahtarın parçası ya da bir güvenlik
 denetimi varsa, bunları okumak onu atlatmanın ilk adımıdır. **Kod gizleme** (obfuscation), programın davranışını
 değiştirmeden **anlaşılmasını zorlaştıran** dönüşümlerin genel adıdır.
@@ -1833,7 +1833,7 @@ hassas bölümlere uygulanır.
 | Aile | Neyi gizler? | Örnek teknikler | Bu dönem |
 | --- | --- | --- | --- |
 | **Düzen (layout)** | Adları, yapıyı | Sembolleri gizleme, fonksiyon ve dosya adlarını anlamsızlaştırma, günlüğü kaldırma | Bu hafta Demo 6 |
-| **Veri** | Sabitleri, dizgeleri, değişkenleri | Dizge şifreleme, sabit dönüşümleri, değişken bölme/birleştirme, opak boolean | Bu hafta, 9. hafta |
+| **Veri** | Sabitleri, dizeleri, değişkenleri | Dize şifreleme, sabit dönüşümleri, değişken bölme/birleştirme, opak boolean | Bu hafta, 9. hafta |
 | **Kontrol akışı** | Algoritmanın yapısını | Kontrol akışı düzleştirme, opak yüklemler, sahte ve ölü dallar | Bu hafta Demo 7, 9. hafta |
 | **Önleyici** | Analiz araçlarının işini | Tersine derleyiciyi yanıltan yapılar, çalışma anında kod çözme | 9. hafta (kavram) |
 | **Sanallaştırma** | Makine kodunun kendisini | Fonksiyonu özel bir sanal makinenin bayt koduna çevirme | 9 ve 14. haftalar (Tigress) |
@@ -1842,7 +1842,7 @@ hassas bölümlere uygulanır.
     Sertifikasyondan geçmiş bir mobil ödeme kütüphanesinin native tarafında listelenen sağlamlaştırma önlemleri bu
     haritanın neredeyse tamamını kapsar: paylaşılan kütüphanede sembol görünürlüğünün kapatılması; fonksiyon, dosya ve
     parametre adlarının el ile anlamsızlaştırılması (asıl adlar iç belgelerde tutulur); sabitlerin aritmetik
-    dönüşümlerle gizlenmesi; statik dizgelerin derleme öncesinde şifrelenip kullanım anında çözülmesi ve hemen
+    dönüşümlerle gizlenmesi; statik dizelerin derleme öncesinde şifrelenip kullanım anında çözülmesi ve hemen
     silinmesi; yalnız "başarılı/başarısız" döndüren opak boolean değerler; standart kütüphane fonksiyonlarının kendi
     sürümleriyle değiştirilmesi; sonucu değiştirmeyen sahte işlemler ve hiç çalışmayan ölü dallar; kontrol akışı
     düzleştirme ve hata durumunda rastgele bir çıkış noktası; sürüm derlemesinde günlüğün tamamen kaldırılması. Bu
@@ -1853,7 +1853,7 @@ hassas bölümlere uygulanır.
 ## 15. Sembol, dize ve günlük gizleme
 
 Tersine mühendisliğin ilk adımı genellikle en basit olanıdır: ikili dosyadaki **okunabilir metinlere** ve **fonksiyon
-adlarına** bakmak. `lisans_dogrula` adlı bir fonksiyon ya da `"Lisans geçersiz"` dizgesi, saldırgana nereye bakacağını
+adlarına** bakmak. `lisans_dogrula` adlı bir fonksiyon ya da `"Lisans geçersiz"` dizesi, saldırgana nereye bakacağını
 doğrudan söyler. Bu yüzden ilk ve en ucuz gizleme katmanı bu bilgileri ikili dosyadan çıkarmaktır.
 
 ![Sembol, dize ve günlük gizleme](assets/h04-18-sembol-dize-gizleme.svg)
@@ -1864,7 +1864,7 @@ doğrudan söyler. Bu yüzden ilk ve en ucuz gizleme katmanı bu bilgileri ikili
 | --- | --- | --- |
 | **Sembolleri gizle** | `static` fonksiyonlar; paylaşılan kütüphanede `-fvisibility=hidden` ve yalnız gerekli API'yi dışa açmak; sürümde `strip -s`; Windows'ta PDB dosyasını dağıtmamak | Fonksiyon adları ikili dosyada görünmez |
 | **Günlüğü sürümde kaldır** | Günlük makrolarını derleme bayrağıyla **tamamen** derleme dışı bırakmak | Hata iletileri ve iç durum bilgisi ikili dosyada kalmaz |
-| **Hassas dizgeleri gizle** | Derleme anında şifrelemek ya da karıştırmak, kullanım anında çözmek ve **hemen silmek** (Tarif 12.11) | `strings` taraması hassas sabitleri bulamaz |
+| **Hassas dizeleri gizle** | Derleme anında şifrelemek ya da karıştırmak, kullanım anında çözmek ve **hemen silmek** (Tarif 12.11) | `strings` taraması hassas sabitleri bulamaz |
 
 ```c title="Günlük makrosu: sürümde hiç kod üretmez"
 #ifdef GUNLUK_ACIK
@@ -1876,12 +1876,12 @@ doğrudan söyler. Bu yüzden ilk ve en ucuz gizleme katmanı bu bilgileri ikili
 GUNLUK("[LOG] lisans denetimi: %s\n", sonuc ? "gecti" : "kaldi");
 ```
 
-Günlüğü bir **çalışma anı** bayrağıyla susturmak (`if (hata_ayiklama) printf(...)`) yetmez: dizge ikili dosyada kalır ve
+Günlüğü bir **çalışma anı** bayrağıyla susturmak (`if (hata_ayiklama) printf(...)`) yetmez: dize ikili dosyada kalır ve
 saldırgan bayrağı değiştirerek günlüğü yeniden açabilir. Sahada tek istisna genellikle bilinçli bir karardır ve
 ödünleşim kaydına yazılır (ör. yalnız şifrelenmiş bir tanı değerinin yazılması).
 
 !!! warning "Dize gizleme bir anahtar saklama yöntemi değildir"
-    Şifrelenmiş bir dizge, program çalışırken kullanım anında çözülür; o anda bellekte açıktır ve çözme anahtarı da
+    Şifrelenmiş bir dize, program çalışırken kullanım anında çözülür; o anda bellekte açıktır ve çözme anahtarı da
     programın içindedir. Dize gizleme `strings` gibi **statik** taramaları durdurur; programı çalışırken inceleyen
     saldırgana karşı RASP ([6. hafta](../week-6/cen429-week-6.md)), gerçek anahtarlar için ise whitebox kriptografi ([11. hafta](../week-11/cen429-week-11.md)) gerekir. Sahada dize
     gizleme anahtarı bu yüzden kendisi de parçalanıp gizlenir ve çözme fonksiyonu ek denetimlerle korunur.
@@ -1889,8 +1889,8 @@ saldırgan bayrağı değiştirerek günlüğü yeniden açabilir. Sahada tek is
 ### Demo 6 — Sembol ve dize sızıntısı
 
 !!! info "Demo 6 · `code/week-04/06-sembol-dize` · CWE-200, CWE-215 · Tarif 12.11"
-    Aynı küçük lisans denetimi iki kez derlenir: `gizli_acik` (semboller, günlük dizgeleri ve sentetik lisans anahtarı
-    açık) ve `gizli_kapali` (günlük derleme dışı, dizge derleme anında karıştırılmış, semboller silinmiş). İkisi de aynı
+    Aynı küçük lisans denetimi iki kez derlenir: `gizli_acik` (semboller, günlük dizeleri ve sentetik lisans anahtarı
+    açık) ve `gizli_kapali` (günlük derleme dışı, dize derleme anında karıştırılmış, semboller silinmiş). İkisi de aynı
     çalışır; fark ikili dosyada görülür.
 
 === "Windows (PowerShell)"
@@ -1910,9 +1910,9 @@ saldırgan bayrağı değiştirerek günlüğü yeniden açabilir. Sahada tek is
 | Adım | Ne olur? |
 | --- | --- |
 | 1 | İki sürüm aynı sonucu verir |
-| 2 | `strings`: açık sürümde lisans dizgesi ve `[LOG]` satırları görünür; kapalı sürümde yok |
+| 2 | `strings`: açık sürümde lisans dizesi ve `[LOG]` satırları görünür; kapalı sürümde yok |
 | 3 | `nm`: açık sürümde `lisans_dogrula` görünür; kapalı sürümde sembol yok |
-| 4 | Windows: fonksiyon adları EXE'de değil PDB dosyasındadır; kapalı sürüm PDB üretmez, dizgeler gizlidir |
+| 4 | Windows: fonksiyon adları EXE'de değil PDB dosyasındadır; kapalı sürüm PDB üretmez, dizeler gizlidir |
 
 ---
 
@@ -2016,7 +2016,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
       kimliğiyle belgeleyin.
 - [ ] Testlerinizi ASan + UBSan ile çalıştırın.
 - [ ] Dışarıdan veri okuyan en az bir fonksiyon için bir fuzz hedefi yazın ve en az 10 dakika fuzzlayın; sonucu yazın.
-- [ ] Sürüm derlemesinde günlüğün kaldırıldığını ve hassas dizgelerin `strings` çıktısında görünmediğini gösterin.
+- [ ] Sürüm derlemesinde günlüğün kaldırıldığını ve hassas dizelerin `strings` çıktısında görünmediğini gösterin.
 
 ```markdown title="S9 önlem kartı şablonu (her önlem için)"
 ### KS-01 Sürümde günlüğün kaldırılması
@@ -2034,8 +2034,8 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     Kendi projenizi `-Wall -Wextra -Wformat=2 -Wconversion -Werror` (MSVC'de `/W4 /WX`) ile derleyin. Kaç uyarı çıktı?
     Her birini ya düzeltin ya da neden zararsız olduğunu bir yorumla açıklayın.
 
-??? question "Alıştırma 2 — Kolay: Biçim dizgesi avı"
-    Kendi kodunuzda biçim dizgesi olarak değişken alan her çağrıyı bulun (`printf(`, `fprintf(`, `snprintf(`,
+??? question "Alıştırma 2 — Kolay: Biçim dizesi avı"
+    Kendi kodunuzda biçim dizesi olarak değişken alan her çağrıyı bulun (`printf(`, `fprintf(`, `snprintf(`,
     `syslog(`). Kendi günlük fonksiyonunuza `format` özniteliğini ekleyip derleyicinin yeni uyarılar verip
     vermediğine bakın.
 
@@ -2078,7 +2078,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     olasılık ve düzeltme maliyeti birlikte değerlendirildiğinde en yüksek önceliktir.
 
 ??? question "3. `printf(girdi)` neden tehlikelidir? En hafif sonucu nedir?"
-    Girdi biçim dizgesi olarak yorumlanır; `%x`/`%p` yığındaki değerleri okur, `%n` belleğe yazar. En hafif sonucu bilgi
+    Girdi biçim dizesi olarak yorumlanır; `%x`/`%p` yığındaki değerleri okur, `%n` belleğe yazar. En hafif sonucu bilgi
     sızıntısıdır (anahtar, adres, kanarya).
 
 ??? question "4. UAF raporundaki üç yığın izi nedir? Düzeltme çoğunlukla hangisindedir?"
@@ -2095,7 +2095,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     yapılarını bozar. İşleyici yalnız `volatile sig_atomic_t` bir bayrak kurmalıdır.
 
 ??? question "7. ASan aynı yapı içindeki bir alandan komşu alana taşmayı neden göremez?"
-    ASan zehirli bölgeleri nesnelerin arasına koyar; yapının alanları arasında zehirli bölge yoktur.
+    ASan koruma bölgesileri nesnelerin arasına koyar; yapının alanları arasında koruma bölgesi yoktur.
 
 ??? question "8. İyi bir fuzz hedefinin dört özelliği nedir?"
     Hızlı, deterministik, durum bırakmayan ve tek bir işi test eden.
@@ -2105,11 +2105,11 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     bozulmasını, öbek taşmasını ve sızdırılmış kanaryayı durdurmaz.
 
 ??? question "10. ASLR neden bir bilgi sızıntısıyla zayıflar?"
-    ASLR adresleri gizli tutmaya dayanır; biçim dizisi açığı gibi bir sızıntı gerçek bir adresi açığa çıkarırsa diğer
+    ASLR adresleri gizli tutmaya dayanır; biçim dizesi açığı gibi bir sızıntı gerçek bir adresi açığa çıkarırsa diğer
     adresler hesaplanabilir.
 
 ??? question "11. Günlüğü bir çalışma anı bayrağıyla susturmak neden yetmez?"
-    Günlük dizgeleri ikili dosyada kalır ve bayrak değiştirilerek günlük yeniden açılabilir. Doğrusu derleme anında
+    Günlük dizeleri ikili dosyada kalır ve bayrak değiştirilerek günlük yeniden açılabilir. Doğrusu derleme anında
     tamamen kaldırmaktır.
 
 ??? question "12. Kontrol akışı düzleştirme tek başına neden zayıftır? Onu güçlendiren üç teknik sayın."
@@ -2124,7 +2124,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
 ??? question "14. `%n` neden `%x`'ten daha tehlikelidir?"
     `%x` yalnız okur; `%n` ise "şimdiye kadar yazılan karakter sayısını" kendisine verilen "argümanın" gösterdiği
     adrese **yazar**. Argüman verilmediği için bu adres de yığından/yazmaçtan okunan rastgele bir değerdir; saldırgan
-    biçim dizgesini kendisi yazdığından bu "adres" konumuna kendi seçtiği bir bayt dizisi yerleştirebilir.
+    biçim dizesini kendisi yazdığından bu "adres" konumuna kendi seçtiği bir bayt dizisi yerleştirebilir.
 
 ??? question "15. Demo 2'de `sahte = malloc(24)` neden `o` ile aynı adresi alır?"
     `free(o)` ile serbest kalan blok tam olarak 24 bayttır (`sizeof(struct oturum) = 8 + 16`). Bellek yöneticileri
@@ -2155,8 +2155,8 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     değerle yazılır. Yalnız **kendisinden sonraki** (yığında ondan yukarıdaki) dönüş adresine ulaşan **ardışık**
     taşmaları, fonksiyon dönerken yaptığı karşılaştırmayla yakalar.
 
-??? question "21. Kanarya neden bu haftanın biçim dizisi açığıyla birlikte düşünülmelidir?"
-    Kanarya da yığında duran 8 baytlık bir değerdir; bir biçim dizisi açığı `%x` ile bu baytları da okuyabilir.
+??? question "21. Kanarya neden bu haftanın biçim dizesi açığıyla birlikte düşünülmelidir?"
+    Kanarya da yığında duran 8 baytlık bir değerdir; bir biçim dizesi açığı `%x` ile bu baytları da okuyabilir.
     Saldırgan sızıntıyla kanaryanın gerçek değerini öğrenirse, taşmayı bu değeri aynen yazacak şekilde kurgulayabilir
     ve karşılaştırma hiç tetiklenmez — bir koruma (kanarya) başka bir hatayla (bilgi sızıntısı) atlatılmış olur.
 
@@ -2196,7 +2196,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
   taşmasını önleme), 3.5 (tamsayı dönüşümü ve sarma)
 - Tarif 13.1 (hata işleme), 13.4 (değişken argümanlar), 13.5 (sinyal işleme)
 - Tarif 12.1 (yazılım korumasını anlamak), 12.3 (kodu gizleme), 12.5 (sabit dönüşümleri), 12.8 (boolean değerleri
-  gizleme), 12.11 (dizgeleri gizleme)
+  gizleme), 12.11 (dizeleri gizleme)
 
 **Açık standartlar ve kaynaklar**
 
@@ -2205,7 +2205,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
 - LLVM belgeleri: AddressSanitizer, UndefinedBehaviorSanitizer, libFuzzer; Microsoft Learn: `/fsanitize=address`,
   `/guard:cf`, `/GS`.
 - Google OSS-Fuzz ve ClusterFuzz belgeleri; AFL++ belgeleri.
-- MITRE CWE: CWE-134 (denetlenmeyen biçim dizgesi), CWE-190 (tamsayı taşması), CWE-252 (denetlenmeyen dönüş değeri),
+- MITRE CWE: CWE-134 (denetlenmeyen biçim dizesi), CWE-190 (tamsayı taşması), CWE-252 (denetlenmeyen dönüş değeri),
   CWE-415, CWE-416, CWE-479 (sinyal işleyicide güvensiz fonksiyon), CWE-758 (tanımsız davranışa dayanma), CWE-215
   (hata ayıklama kodunda bilgi), CWE-200.
 - C. Collberg, J. Nagra, *Surreptitious Software*, Addison-Wesley, 2009 (gizleme taksonomisi; [9. haftada](../week-9/cen429-week-9.md) ayrıntılı).
@@ -2214,7 +2214,7 @@ Güvenlik kılavuzunuzun **S9 "Kod sağlamlaştırma"** bölümünün ilk tasla�
     | Terim | Türkçe | Kısa tanım |
     | --- | --- | --- |
     | Hardening | Sağlamlaştırma | Kodu ve ikili dosyayı saldırıya karşı dayanıklı hale getirme |
-    | Format string | Biçim dizgesi | `printf` ailesinin nasıl yazacağını belirten ilk argüman |
+    | Format string | Biçim dizesi | `printf` ailesinin nasıl yazacağını belirten ilk argüman |
     | Use-after-free | Serbest bırakıldıktan sonra kullanma | Serbest bırakılmış belleğe eski işaretçiyle erişim |
     | Undefined behavior | Tanımsız davranış | Standardın sonucunu tanımlamadığı işlem; derleyici olmayacağını varsayar |
     | Sanitizer | Denetleyici | Derleyicinin eklediği çalışma anı hata denetimi |

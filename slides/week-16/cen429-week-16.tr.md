@@ -75,7 +75,7 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 # 10. hafta · anahtar noktalar
 
 - Güvenlik düzeyi; en zayıf halka.
-- Kip ve dolgu; dolgu kâhini → AEAD.
+- Kip ve dolgu; dolgu kâhini (padding oracle) → AEAD.
 - HMAC, encrypt-then-MAC, replay.
 - OAEP/PSS, Ed25519/X25519; PKI, X.509, CRL/OCSP.
 

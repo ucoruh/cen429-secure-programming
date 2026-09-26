@@ -430,7 +430,7 @@ static const uint8_t k_gizli[16] = ...;   /* k ^ maske */
 
 ---
 
-# Naif 3 tehdidi · Kod taşıma (code lifting)
+# Naif 3 tehdidi · Kod sökme (code lifting)
 
 - Diyelim WBC anahtarı tablolara gömdü.
 - Saldırgan anahtarı **hiç çıkarmadan**, şifreleme yapan kod parçasını (tablolar + yorumlayıcı) **olduğu gibi kopyalar**.
@@ -444,11 +444,11 @@ static const uint8_t k_gizli[16] = ...;   /* k ^ maske */
 
 ---
 
-# Kod taşıma · Kural
+# Kod sökme · Kural
 
 > WBC'nin "anahtarı gizledim" demesi yetmez.
 
-Kod taşımaya karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm): tablolar yalnız belirli bir cihazda/sürümde anlamlı olsun.
+Kod sökmeye (code lifting) karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm): tablolar yalnız belirli bir cihazda/sürümde anlamlı olsun.
 
 ---
 
@@ -458,7 +458,7 @@ Kod taşımaya karşı **cihaz/sürüm bağlama** gerekir (birazdan 3. bölüm):
 | --- | --- |
 | Diziye gömülü anahtar | `strings` + entropi + gdb |
 | XOR/whitening | maske de içeride |
-| (WBC bile) | kod taşıma → cihaz bağlama gerekir |
+| (WBC bile) | kod sökme → cihaz bağlama gerekir |
 
 ---
 
@@ -990,7 +990,7 @@ Hepsi **maliyeti artırır** ve **birlikte** kullanılır. Sırayla:
 # Karşı önlem 5 · Cihaz/sürüm bağlama
 
 - Tablolar yalnız **belirli bir cihazda/sürümde** anlamlı olur
-- **Kod taşımayı** (code lifting) engeller
+- **Kod sökmeyi** (code lifting) engeller
 
 ---
 
@@ -1212,7 +1212,7 @@ Bir istemci, bir veri şifreleme anahtarını sabit diziye gömer.
 
 - WBC'yi 9. haftanın **gizlemesiyle** ve 6. haftanın **RASP**'ıyla sar
   - DCA için iz toplamak, DFA için hata enjekte etmek zorlaşır
-- **Cihaz/sürüm bağla** → kod taşıma işe yaramaz
+- **Cihaz/sürüm bağla** → kod sökme işe yaramaz
 
 ---
 
@@ -1361,7 +1361,7 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 
 | Terim | Anlam |
 | --- | --- |
-| Kod taşıma | Anahtarı çıkarmadan kodu kopyalama |
+| Kod sökme | Anahtarı çıkarmadan kodu kopyalama |
 | DCA | Çalışma izlerine DPA benzeri istatistik |
 | DFA | Hata enjekte edip anahtarı hesaplama |
 | Kripto-periyot | Bir anahtarın ömrü |
@@ -1376,7 +1376,7 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 1. Üç saldırgan modeli; AES kanıtı hangisini varsayar?
 2. "Tek turu çalıştır" ve "hata enjekte et" hangi saldırılara zemin?
 3. Diziye gömülü anahtar neden koruma değil? (entropi)
-4. Kod taşıma nedir, hangi önlem kapatır?
+4. Kod sökme nedir, hangi önlem kapatır?
 5. `T[x]=S-box[x^k]` tek başına neden güvensiz?
 6. İç ve dış kodlama farkı; dış kodlamanın sınırı?
 

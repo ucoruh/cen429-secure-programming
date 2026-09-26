@@ -30,13 +30,13 @@ kullanılır.
 Demoların hemen hepsi C ile yazılmıştır ve güvenlik hataları çoğunlukla bu temel yapıların yanlış kullanımından
 doğar. Şunları rahatça okuyup yazabilmelisiniz:
 
-- işaretçiler (pointer), diziler ve dizgeler (`char[]`, sonlandırıcı `\0`),
+- işaretçiler (pointer), diziler ve dizeler (`char[]`, sonlandırıcı `\0`),
 - dinamik bellek (`malloc`, `calloc`, `free`) ve yapı (`struct`),
 - dosya okuma/yazma (`fopen`, `fread`, `fgets`),
 - birden çok kaynak dosyalı bir programı derlemek ve komut satırı argümanlarını (`argc`, `argv`) kullanmak.
 
 Bu konular [1. hafta](../week-1/cen429-week-1.md) (bellek, taşma) ve [4. hafta](../week-4/cen429-week-4.md) (C/C++
-sağlamlaştırma) boyunca yoğun biçimde kullanılır.
+sağlamlaştırma (hardening)) boyunca yoğun biçimde kullanılır.
 
 ## 3. Derste kısaca hatırlatılan ön bilgiler
 

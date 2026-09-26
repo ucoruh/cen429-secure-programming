@@ -56,7 +56,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 | Hafta | Ana kavramlar |
 | --- | --- |
-| 4 | SEI CERT · girdi doğrulama · biçim dizisi · UAF · tamsayı/UB · hata işleme, sinyaller · statik analiz · sanitizer · fuzzing · kanarya/FORTIFY/ASLR/NX/RELRO/CFI · gizlemeye giriş |
+| 4 | SEI CERT · girdi doğrulama · biçim dizesi (format string) · UAF · tamsayı/UB · hata işleme, sinyaller · statik analiz · sanitizer · fuzzing · kanarya/FORTIFY/ASLR/NX/RELRO/CFI · gizlemeye giriş |
 | 5 | Yönetilen dil · CERT Java · enjeksiyon kökü · SQL/komut/yol · seri durumdan çıkarma · XXE/XSS · Python/JS, ReDoS · bayt kodu · ProGuard/R8 · SBOM, VEX |
 | 6 | Algılama–savunma–caydırma · MATE · RASP mimarisi · bütünlük · hata ayıklayıcı/ortam/kanca · bellek koruması · root/imza · akış sayacı · tepki, decoy, cihaz bağlama |
 
@@ -96,7 +96,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | ASan | UBSan | Bellek erişimi · tanımsız davranış |
 | İşaretsiz sarma | İşaretli taşma | Tanımlı · **tanımsız** |
 | Parametreli sorgu | Kaçış | Asıl çözüm · ikinci hat |
-| ProGuard | Dize gizleme | Adlar · dizgeler |
+| ProGuard | Dize gizleme | Adlar · dizeler (string) |
 | Gizleme | Güvenli kodlama | Geciktirir · düzeltir |
 | Maskeleme | Tokenizasyon | Gösterimde gizle · kasadaki değere bağlı belirteç |
 | Takma ad | Anonim | Hâlâ kişisel veri · kişiye bağlanamaz |
@@ -132,7 +132,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 | 2 | 2. hafta: BLP, Biba, Clark–Wilson · bir CVSS vektörünü kendin puanla |
 | 3 | 3. hafta (1): AEAD, nonce, KDF, rastgele sayı · Demo 1–5 |
 | 4 | 3. hafta (2): anahtar yönetimi, TLS, sabitleme, kabuklar · Demo 6–9 |
-| 5 | 4. hafta: CERT çiftleri, biçim dizisi, UAF, UB, korumalar |
+| 5 | 4. hafta: CERT çiftleri, biçim dizesi, UAF, UB, korumalar |
 | 6 | 5–6. hafta: enjeksiyon, seri durumdan çıkarma, ProGuard, SBOM, RASP |
 | 7 | Örnek soruları süre tutarak çöz, yanlışları oku |
 
@@ -170,7 +170,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 **ASan hangi taşmayı göremez?**
 
-**Cevap:** Aynı yapının içinde alandan alana taşmayı (arada zehirli bölge yoktur).
+**Cevap:** Aynı yapının içinde alandan alana taşmayı (arada koruma bölgesi (redzone) yoktur).
 
 ---
 
@@ -178,7 +178,7 @@ Konuşma notu: Quiz-1 haftası: 1-6. haftaların kavramlarını tekrar ediyoruz;
 
 **Kanarya neyi durdurur, neyi durdurmaz?**
 
-**Cevap:** Durdurur: dönüş adresine ulaşan yığın taşması. Durdurmaz: öbek taşması, önceki değişkenler, sızan kanarya.
+**Cevap:** Durdurur: dönüş adresine ulaşan yığın (stack) taşması. Durdurmaz: öbek (heap) taşması, önceki değişkenler, sızan kanarya.
 
 ---
 

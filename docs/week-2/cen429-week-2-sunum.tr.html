@@ -1325,17 +1325,17 @@ GUVENLI:
   DENETIM giris kullanici=kayra\x0A2026-... (tek satir)
   sahte &#x27;admin BASARILI&#x27; satiri: 0
 </code></pre>
-<p>✅ Kaçışla (<code>\xNN</code>) · ✅ uzunluğu sınırla · ✅ <code>syslog(LOG_INFO, &quot;%s&quot;, girdi)</code> — girdi asla biçim dizgesi değil</p>
+<p>✅ Kaçışla (<code>\xNN</code>) · ✅ uzunluğu sınırla · ✅ <code>syslog(LOG_INFO, &quot;%s&quot;, girdi)</code> — girdi asla biçim dizesi (format string) değil</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="82" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 2" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="82" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 2;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="158">
 <header>CEN429 Güvenli Programlama · Hafta 2</header>
-<h1 id="zafiyetli-kod-g%C3%BCnl%C3%BCk-enjeksiyonu-ve-bi%C3%A7im-dizisi">Zafiyetli kod: günlük enjeksiyonu ve biçim dizisi</h1>
+<h1 id="zafiyetli-kod-g%C3%BCnl%C3%BCk-enjeksiyonu-ve-bi%C3%A7im-dizesi">Zafiyetli kod: günlük enjeksiyonu ve biçim dizesi</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c"><span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">log</span>, <span class="hljs-string">&quot;giris: %s\n&quot;</span>, kullanici_adi);  <span class="hljs-comment">/* CWE-117 */</span>
 </code></pre>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c">syslog(LOG_INFO, kullanici_girdisi);  <span class="hljs-comment">/* CWE-134 */</span>
 </code></pre>
-<p>Kullanıcıdan gelen veri günlükte <strong>kaçışsız satır sonu</strong> ya da <strong>doğrudan biçim dizgesi</strong> olarak kullanılmamalı:<br />
+<p>Kullanıcıdan gelen veri günlükte <strong>kaçışsız satır sonu</strong> ya da <strong>doğrudan biçim dizesi</strong> olarak kullanılmamalı:<br />
 <code>syslog(LOG_INFO, &quot;%s&quot;, girdi)</code>.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -1357,7 +1357,7 @@ GUVENLI:
 <li>Kayıt, bir <strong>saldırganın da okuyabileceği</strong> varsayılarak tasarlanır.</li>
 <li>Günlüğe yazılan her sır, günlük dosyasına erişen <strong>herkese</strong> verilmiş demektir.</li>
 <li>Kapalı bir bayrakla <strong>susturulmuş</strong> hata ayıklama kodu, ikili dosyada <strong>kalır</strong>.</li>
-<li>Hem dizgeleriyle bilgi sızdırır hem de <strong>yeniden açılabilir</strong> — bu yüzden sürüm derlemesinde tamamen <strong>çıkarılmalıdır</strong>.</li>
+<li>Hem dizeleriyle (string) bilgi sızdırır hem de <strong>yeniden açılabilir</strong> — bu yüzden sürüm derlemesinde tamamen <strong>çıkarılmalıdır</strong>.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>

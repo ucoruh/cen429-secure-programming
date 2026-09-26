@@ -133,7 +133,7 @@
 <ul>
 <li><strong>Yönetilen dil:</strong> belleği <strong>otomatik</strong> yöneten dil (Java, C#, Python, JS); programcı <code>malloc</code>/<code>free</code> yapmaz.</li>
 <li><strong>GC (çöp toplayıcı):</strong> artık kullanılmayan nesneleri arka planda otomatik temizler; programcı belleği elle bırakmaz.</li>
-<li>Bu tek fark → çoğu bellek hatası (taşma, kullanım-sonrası-serbest) <strong>ortadan kalkar</strong>; Bölüm 1 bunu ayrıntılı gösterir.</li>
+<li>Bu tek fark → çoğu bellek hatası (taşma, serbest bırakıldıktan sonra kullanma (use-after-free)) <strong>ortadan kalkar</strong>; Bölüm 1 bunu ayrıntılı gösterir.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -653,7 +653,7 @@ ps.executeQuery();
 <header>CEN429 Güvenli Programlama · Hafta 5</header>
 <h1 id="yol-ge%C3%A7i%C5%9Fi--bu-b%C3%B6l%C3%BCm%C3%BCn-kural%C4%B1">Yol geçişi · bu bölümün kuralı</h1>
 <ul>
-<li>Ham dizgeye <strong>asla</strong> güvenme (<code>contains(&quot;..&quot;)</code> yetmez).</li>
+<li>Ham dizeye (string) <strong>asla</strong> güvenme (<code>contains(&quot;..&quot;)</code> yetmez).</li>
 <li>Önce <strong>kanonikleştir</strong>, sonra <strong>kök içinde mi</strong> diye denetle.</li>
 <li>Sembolik bağlantıları da çöz (<code>toRealPath()</code>); denetimi dosya açıldıktan sonra da tekrarla.</li>
 </ul>
@@ -1005,7 +1005,7 @@ Girdi:  &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!&quot;
 <ul>
 <li><code>.class</code>/<code>.jar</code> bayt kodu, kaynağa <strong>çok yakın</strong> geri çevrilebilir.</li>
 <li>Araçlar: <code>javap</code> (sökme), JD-GUI/CFR/Procyon (tersine derleme).</li>
-<li>Adlar, dizgeler, yapı büyük ölçüde <strong>görünür</strong>.</li>
+<li>Adlar, dizeler, yapı büyük ölçüde <strong>görünür</strong>.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -1186,7 +1186,7 @@ public boolean pinDogru(java.lang.String);
 <header>CEN429 Güvenli Programlama · Hafta 5</header>
 <h1 id="proguardr8--bu-b%C3%B6l%C3%BCm%C3%BCn-kural%C4%B1">ProGuard/R8 · bu bölümün kuralı</h1>
 <ul>
-<li>Küçült + iyileştir + gizle; <strong>dizgeleri gizlemez</strong>.</li>
+<li>Küçült + iyileştir + gizle; <strong>dizeleri gizlemez</strong>.</li>
 <li><code>-keep</code> yalnız <strong>gerçekten</strong> reflection/JNI ile çağrılana.</li>
 <li><code>mapping.txt</code> bir <strong>sır</strong>: sakla, dağıtma.</li>
 </ul>
@@ -1206,9 +1206,9 @@ public boolean pinDogru(java.lang.String);
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="106" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 5" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="106" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 5;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="157">
 <header>CEN429 Güvenli Programlama · Hafta 5</header>
-<h1 id="javada-dizgeler-a%C3%A7%C4%B1k">Java'da dizgeler açık</h1>
+<h1 id="javada-dizeler-a%C3%A7%C4%B1k">Java'da dizeler açık</h1>
 <ul>
-<li><code>.class</code> içindeki sabit dizgeler <strong>düz</strong> görünür (<code>strings</code>, tersine derleyici).</li>
+<li><code>.class</code> içindeki sabit dizeler <strong>düz</strong> görünür (<code>strings</code>, tersine derleyici).</li>
 <li>Hassas URL, anahtar parçası, mesajlar sızar.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
@@ -1217,7 +1217,7 @@ public boolean pinDogru(java.lang.String);
 <header>CEN429 Güvenli Programlama · Hafta 5</header>
 <h1 id="dize-gizleme">Dize gizleme</h1>
 <ul>
-<li>Dizgeler derlemede <strong>kodlanır</strong>, kullanımda çözülür.</li>
+<li>Dizeler derlemede <strong>kodlanır</strong>, kullanımda çözülür.</li>
 <li>
 <ol start="4">
 <li>haftadaki kuralla aynı: <code>strings</code>'i durdurur, <strong>anahtar saklamaz</strong>.</li>
@@ -1308,7 +1308,7 @@ public boolean pinDogru(java.lang.String);
 <td>Gizlemeyle çok düşer</td>
 </tr>
 <tr>
-<td>Düz metin hassas dizge</td>
+<td>Düz metin hassas dize</td>
 <td>Dize gizlemeyle sıfıra iner</td>
 </tr>
 <tr>
@@ -1760,7 +1760,7 @@ ps.setString(<span class="hljs-number">2</span>, ozetle(p));
 <header>CEN429 Güvenli Programlama · Hafta 5</header>
 <h1 id="soru-8">Soru 8</h1>
 <p><strong>Java bayt kodu neden gizlemeye daha çok ihtiyaç duyar?</strong></p>
-<p><strong>Cevap:</strong> Bayt kodu yüksek seviyeli, tür ve ad bilgisi taşır; kaynağa çok yakın tersine derlenir. Adlar/dizgeler açık görünür.</p>
+<p><strong>Cevap:</strong> Bayt kodu yüksek seviyeli, tür ve ad bilgisi taşır; kaynağa çok yakın tersine derlenir. Adlar/dizeler açık görünür.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="152" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 5" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="152" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 5;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="157">

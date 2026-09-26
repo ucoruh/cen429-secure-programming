@@ -355,7 +355,7 @@ Beş aile var. Sırayla görelim.
 
 # Aile 2 — Veri
 
-**Neyi gizler?** Sabitleri, dizgeleri, değişkenleri.
+**Neyi gizler?** Sabitleri, dizeleri (string), değişkenleri.
 
 - Dize kodlama
 - Sabit dönüşümleri
@@ -967,7 +967,7 @@ Kendi karşılaştırmanı yazarken **sabit zamanlı** olsun (3. hafta).
 - **Kontrol akışı** (bölüm 3): algoritmanın **yapısını** gizler
 - **Veri gizleme** (bu bölüm): programın işlediği **değerleri** gizler
 
-Dizgeler, sabitler, tablolar, değişkenler.
+Dizeler, sabitler, tablolar, değişkenler.
 
 ---
 
@@ -989,7 +989,7 @@ En ucuz saldırı adımı: `strings`.
 
 # K-07 · Fikir
 
-- Hassas dizge **derleme öncesi** kodlanır (ör. XOR)
+- Hassas dize **derleme öncesi** kodlanır (ör. XOR)
 - İkili dosyada **kodlanmış** durur
 - **Kullanım anında** çözülür
 - İş biter bitmez **silinir**
@@ -1540,7 +1540,7 @@ int erisim_ver(const char *jeton) {
 
 # Adım 0 · Saldırgan ne yapar?
 
-- `strings` → `IZIN`/`RED` ve ilgili dizgeler
+- `strings` → `IZIN`/`RED` ve ilgili dizeler
 - Tersine derle → tek `if`, iki dönüş
 - Başarısızlık dalını başarıya çevir (tek bayt)
 

@@ -618,7 +618,7 @@ Kod incelemesi, otomatik araçların kaçırdığı **mantık** hatalarını bul
 
 - **Kripto kullanımı:** doğru algoritma/kip/dolgu mu? Anahtar nereden geliyor, nereye yazılıyor, ne zaman siliniyor?
   (3, 10, [11. haftalar](../week-11/cen429-week-11.md))
-- **Girdi doğrulama ve bellek:** sınır denetimi, tamsayı taşması, biçim dizisi, UAF ([4. hafta CERT](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi)).
+- **Girdi doğrulama ve bellek:** sınır denetimi, tamsayı taşması, biçim dizesi (format string), UAF ([4. hafta CERT](../week-4/cen429-week-4.md#2-sei-cert-cc-guvenli-kodlamanin-kural-kitabi)).
 - **Hata ve sır sızıntısı:** günlükte hassas veri, hata iletilerinde iç durum (4, [6. haftalar](../week-6/cen429-week-6.md)).
 - **Denetim atlama yolları:** bir güvenlik denetiminin tek bir dalla ya da tek bir dönüş değeriyle atlanabilmesi
   ([Hafta 9, §6](../week-9/cen429-week-9.md#6-veri-gizleme-kurallari) opak boolean,

@@ -89,7 +89,7 @@ Final kontrolünde bütün bölümler **tam** olarak beklenir:
 
     - [ ] Gizlemenin hangi fonksiyonlara, neden uygulandığı; maliyet ölçümü (süre, boyut) öncesi/sonrası tablosu.
     - [ ] Derleme hattında gizleme ve imzalama adımları; sürüm kimliği ve özet değerleri.
-    - [ ] Gizleme öncesi ve sonrası için ölçütler (anlamlı ad oranı, düz metin hassas dizge sayısı).
+    - [ ] Gizleme öncesi ve sonrası için ölçütler (anlamlı ad oranı, düz metin hassas dize (string) sayısı).
 
 ![Güvenlik kılavuzu haritası](assets/h15-02-kilavuz-haritasi.svg)
 

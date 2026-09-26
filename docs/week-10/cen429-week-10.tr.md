@@ -54,7 +54,7 @@
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. Bir uygulama için **algoritma, anahtar uzunluğu ve kip** seçmek ve seçimi güncel standartlara (NIST SP 800-57,
        SP 800-131A) dayandırmak.
-    2. Blok şifre **kiplerini** (ECB, CBC, CTR, GCM) ve **dolguyu** karşılaştırmak; dolgu kâhini saldırısının neden
+    2. Blok şifre **kiplerini** (ECB, CBC, CTR, GCM) ve **dolguyu** karşılaştırmak; dolgu kâhini (padding oracle) saldırısının neden
        mümkün olduğunu açıklamak.
     3. **HMAC**'i doğru kullanmak; şifreleme ile MAC'i doğru sırada birleştirmek ve **yeniden oynatmaya** karşı
        korumak.
@@ -62,14 +62,14 @@
        değişimi yapmak; imzalı Diffie–Hellman'ın neden gerektiğini göstermek.
     5. **PKI** bileşenlerini (CA, RA, zincir, güven deposu) açıklamak; OpenSSL ile **kök → ara → uç** sertifika zinciri
        kurmak ve doğrulamak.
-    6. Sertifika **iptalini** (CRL, OCSP, OCSP zımbalama) açıklamak ve anahtarları bir yazılım HSM'inde (**SoftHSM**,
+    6. Sertifika **iptalini** (CRL, OCSP, OCSP yanıtını iliştirme (OCSP stapling)) açıklamak ve anahtarları bir yazılım HSM'inde (**SoftHSM**,
        PKCS#11) saklamanın mantığını bilmek.
 
 ??? info "Ders akışı (öğretim üyesi için zaman planı)"
     | Zaman | Bölüm | Ne yapılıyor |
     | --- | --- | --- |
     | 0:00–0:15 | 1 | Kriptografinin haritası; algoritma ve anahtar uzunluğu seçimi |
-    | 0:15–0:50 | 2–3 | Blok şifre kipleri ve dolgu; MAC, HMAC, şifrele-sonra-MAC, yeniden oynatma |
+    | 0:15–0:50 | 2–3 | Blok şifre kipleri ve dolgu; MAC, HMAC, önce şifrele, sonra MAC (encrypt-then-MAC), yeniden oynatma |
     | 0:50–1:00 | Ara | |
     | 1:00–1:30 | 4–5 | RSA (OAEP, PSS) ve eliptik eğriler; dijital imza oluşturma ve doğrulama (OpenSSL) |
     | 1:30–1:50 | 6 | Anahtar değişimi: Diffie–Hellman, araya girme, imzalı DH |
@@ -146,7 +146,7 @@ kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldı�
 | Diffie–Hellman (DH) | İki tarafın önceden hiçbir sır paylaşmadan, güvensiz bir kanal üzerinden ortak bir sırda anlaşmasını sağlayan bir anahtar değişimi yöntemidir; kimlik doğrulanmazsa araya girme saldırısına açıktır. | [§6](#6-anahtar-degisimi-diffiehellman-ve-araya-girme-tarif-816818) |
 | PKI ve CA | Açık anahtar altyapısı (PKI), bir açık anahtarın gerçekten iddia edilen sahibine ait olduğunu sertifika otoriteleri (CA) aracılığıyla doğrulayan kurallar, roller ve belgeler bütünüdür. | [§7](#7-acik-anahtar-altyapisi-pki-kim-kime-guvenir-tarif-101) |
 | Sertifika ve X.509 | X.509, bir açık anahtarı bir kimliğe bağlayan ve CA'nın imzasını taşıyan sertifikaların standart biçimidir; içinde konu, açık anahtar, geçerlilik tarihleri ve uzantılar (SAN, anahtar kullanımı) bulunur. | [§8](#8-x509-sertifikasinin-yapisi) |
-| CRL ve OCSP | CRL, iptal edilmiş sertifikaların CA tarafından imzalanmış listesidir; OCSP ise bir sertifikanın iptal durumunu anlık sorgulamayı sağlayan protokoldür. | [§10](#10-sertifika-iptali-crl-ocsp-ve-zimbalama-tarif-10101012) |
+| CRL ve OCSP | CRL, iptal edilmiş sertifikaların CA tarafından imzalanmış listesidir; OCSP ise bir sertifikanın iptal durumunu anlık sorgulamayı sağlayan protokoldür. | [§10](#10-sertifika-iptali-crl-ocsp-ve-yanit-ilistirme-tarif-10101012) |
 | HSM, PKCS#11, SoftHSM | HSM, kurcalamaya dayanıklı bir donanımda anahtar üretip işleyen, anahtarı asla dışarı vermeyen bir modüldür; PKCS#11 bu modüllerle konuşmanın standart arayüzüdür ve SoftHSM bunun test amaçlı yazılım benzetimidir. | [§11](#11-anahtari-donanimda-saklamak-hsm-pkcs11-ve-softhsm) |
 | Kuantum sonrası kriptografi (PQC) | Yeterince büyük bir kuantum bilgisayarın RSA'nın ve eliptik eğrinin dayandığı matematiksel problemleri verimli çözebileceği varsayımına karşı, kafes gibi farklı matematiksel problemlere dayanan yeni algoritmalar geliştirir. | [§12](#12-kuantum-sonrasi-kriptografiye-bakis) |
 
@@ -428,7 +428,7 @@ her blok bir öncekiyle XOR'lanarak zincirlenir.
 !!! success "Kural"
     Kip adını **asla** varsayılana bırakmayın; `AES-256-GCM` gibi tam adıyla yazın. ECB'yi hiçbir durumda
     kullanmayın (dosya şifreleme, DB alanı, hatta "önemsiz" veri için bile) — deseni her zaman sızdırır. CBC
-    zorunluysa dolguyu Bölüm 3'teki şifrele-sonra-MAC kuralıyla koruyun.
+    zorunluysa dolguyu Bölüm 3'teki önce şifrele, sonra MAC kuralıyla koruyun.
 
 [İkinci haftadaki](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4) tehdit modellemesinde "bütünlük" bir varlık koruma hedefiydi; bu bölüm o hedefin **neden yalnız
 şifrelemekle sağlanamadığını** somutlaştırdı. Sıradaki bölüm, bütünlüğü doğru sağlayan aracı — MAC/HMAC'i ve doğru
@@ -466,12 +466,12 @@ printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(
 
 | Yöntem | Nasıl? | Örnek | Değerlendirme |
 | --- | --- | --- | --- |
-| **Şifrele-sonra-MAC** (Encrypt-then-MAC) | Önce şifrele, sonra **şifreli metnin** MAC'ini al | IPsec ESP, TLS'in EtM uzantısı | **Doğru yol**: MAC önce doğrulanır, geçersizse şifre hiç çözülmez |
+| **Önce şifrele, sonra MAC** (Encrypt-then-MAC) | Önce şifrele, sonra **şifreli metnin** MAC'ini al | IPsec ESP, TLS'in EtM uzantısı | **Doğru yol**: MAC önce doğrulanır, geçersizse şifre hiç çözülmez |
 | MAC-sonra-şifrele (MAC-then-Encrypt) | Düz metnin MAC'ini al, ikisini birlikte şifrele | Eski TLS (CBC kipleri) | Dolgu kâhinine açık; kaçının |
 | Şifrele-ve-MAC (Encrypt-and-MAC) | Düz metni şifrele, **düz metnin** MAC'ini ayrıca ekle | Eski SSH | MAC düz metin hakkında bilgi sızdırabilir; kaçının |
 
 AEAD kipleri bu seçimi sizin yerinize doğru yapar. Kendi birleştirmenizi yapmak zorundaysanız (Tarif 6.18): **iki ayrı
-anahtar** kullanın (biri şifreleme, biri MAC için; HKDF ile tek sırdan türetilebilir), şifrele-sonra-MAC sırasını izleyin,
+anahtar** kullanın (biri şifreleme, biri MAC için; HKDF ile tek sırdan türetilebilir), önce şifrele, sonra MAC sırasını izleyin,
 MAC'e IV'yi ve bağlam bilgisini de katın, karşılaştırmayı sabit zamanlı yapın.
 
 ### Yeniden oynatma: geçerli ama eski mesaj
@@ -1245,18 +1245,18 @@ olarak çalışıyor mu" ve "zincir tasarım kurallarına uyuyor mu" iki ayrı s
 
 ---
 
-## 10. Sertifika iptali: CRL, OCSP ve zımbalama (Tarif 10.10–10.12)
+## 10. Sertifika iptali: CRL, OCSP ve yanıt iliştirme (Tarif 10.10–10.12)
 
 Bir sertifikanın özel anahtarı çalınırsa ya da sertifika hatalı çıkarılmışsa, geçerlilik süresi dolmadan **iptal**
 edilmesi gerekir. İstemcinin bunu öğrenmesinin üç yolu vardır:
 
-![Sertifika iptali: CRL, OCSP ve zımbalama karşılaştırması](assets/h10-04-sertifika-iptali.svg)
+![Sertifika iptali: CRL, OCSP ve yanıt iliştirme (stapling) karşılaştırması](assets/h10-04-sertifika-iptali.svg)
 
 | Yöntem | Nasıl? | Artı | Eksi |
 | --- | --- | --- | --- |
 | **CRL** (iptal listesi) | CA, iptal edilen seri numaralarının imzalı listesini düzenli yayımlar | Basit, çevrimdışı önbelleklenebilir | Liste büyür; güncelleme aralığında iptal fark edilmez |
 | **OCSP** | İstemci CA'nın yanıtlayıcısına "bu seri numarası geçerli mi?" diye sorar | Anlık | Gecikme, gizlilik (CA hangi siteye gidildiğini öğrenir), yanıtlayıcı erişilemezse ne olacak? |
-| **OCSP zımbalama** (stapling) | Sunucu kendi sertifikasının taze OCSP yanıtını el sıkışmaya ekler | Gizlilik ve hız | Sunucunun yapılandırması gerekir |
+| **OCSP yanıtını iliştirme** (stapling) | Sunucu kendi sertifikasının taze OCSP yanıtını el sıkışmaya ekler | Gizlilik ve hız | Sunucunun yapılandırması gerekir |
 
 ```bash title="Laboratuvar CA'sıyla iptal ve CRL denetimi (özet)"
 # ara CA ile bir CRL üretmek için 'openssl ca' yapılandırması gerekir; sonra:
@@ -1358,7 +1358,7 @@ sor" ile çözer — ama bu kez de yukarıdaki gizlilik ve kullanılabilirlik ö
 !!! success "Kural"
     Sertifika ömrü ne kadar kısaysa, iptal mekanizmasına o kadar az ihtiyaç duyarsınız — bu yüzden endüstri
     (Let's Encrypt ve benzerleri) sertifika ömürlerini kısaltma yönünde ilerliyor. Uzun ömürlü sertifikalar
-    kullanıyorsanız CRL ya da OCSP zımbalamayı **mutlaka** etkinleştirin ve test edin.
+    kullanıyorsanız CRL ya da OCSP yanıtını iliştirmeyi **mutlaka** etkinleştirin ve test edin.
 
 Bölüm 9'da bir zincir **kurmayı**, bu bölümde bir zincirdeki bir halkayı **geçersiz kılmayı** öğrendik. Sıradaki
 bölüm, bu zincirin en değerli parçasını — özel anahtarların kendisini — nasıl koruduğumuzu işliyor.
@@ -1648,12 +1648,12 @@ arar.
 
 ??? question "2. Dolgu kâhini saldırısı hangi koşulda mümkündür? İki savunma verin."
     Çözücü "dolgu geçersiz" ile başka hataları (farklı ileti ya da süreyle) ayırt edilebilir biçimde bildiriyorsa. AEAD
-    kullanmak; CBC zorunluysa şifrele-sonra-MAC ve MAC'i dolgudan önce doğrulamak, bütün hataları aynı biçimde döndürmek.
+    kullanmak; CBC zorunluysa önce şifrele, sonra MAC ve MAC'i dolgudan önce doğrulamak, bütün hataları aynı biçimde döndürmek.
 
 ??? question "3. Neden HMAC kullanılır da H(K ‖ m) kullanılmaz?"
     Merkle–Damgård yapısındaki özetlerde H(K ‖ m) uzunluk uzatma saldırısına açıktır; HMAC'in iç içe yapısı bunu önler.
 
-??? question "4. Şifrele-sonra-MAC neden doğru sıradır?"
+??? question "4. Önce şifrele, sonra MAC neden doğru sıradır?"
     MAC şifreli metin üzerinden hesaplanır ve çözmeden önce doğrulanır; geçersiz ileti hiç çözülmez, dolgu kâhini ve
     düz metin sızıntısı oluşmaz.
 
@@ -1683,7 +1683,7 @@ arar.
 
 ??? question "12. OCSP'de 'yumuşak başarısızlık' nedir ve neden tehlikelidir?"
     Yanıtlayıcıya ulaşılamazsa sertifikanın kabul edilmesidir. Araya giren saldırgan OCSP isteğini engelleyerek iptal
-    denetimini atlatabilir (fail-open). Zımbalama zorunluluğu ya da kısa ömürlü sertifikalar bunu azaltır.
+    denetimini atlatabilir (fail-open). Yanıt iliştirme zorunluluğu ya da kısa ömürlü sertifikalar bunu azaltır.
 
 ??? question "13. SoftHSM'in gerçek bir HSM'den farkı nedir? Neden yine de kullanılır?"
     Anahtarları diskte saklar, donanım koruması yoktur. Uygulamayı PKCS#11 arayüzüne göre yazmayı sağlar; üretimde aynı
@@ -1774,14 +1774,14 @@ arar.
     | --- | --- | --- |
     | Mode of operation | Çalışma kipi | Blok şifresini uzun mesajlara uygulama yöntemi |
     | Padding oracle | Dolgu kâhini | Dolgu hatasını ayırt ederek şifreyi çözme saldırısı |
-    | Encrypt-then-MAC | Şifrele-sonra-MAC | Önce şifreleyip şifreli metnin MAC'ini alma |
+    | Encrypt-then-MAC | Önce şifrele, sonra MAC | Önce şifreleyip şifreli metnin MAC'ini alma |
     | Replay | Yeniden oynatma | Geçerli eski bir iletiyi tekrar gönderme |
     | OAEP / PSS | — | RSA'nın güvenli şifreleme ve imza dolguları |
     | Key agreement | Anahtar anlaşması | İki tarafın ortak sır üretmesi (DH, ECDH) |
     | CA / RA | Sertifika / kayıt otoritesi | Sertifika çıkaran / kimlik doğrulayan taraf |
     | SAN | Konu alternatif adı | Sertifikanın geçerli olduğu alan adları ve IP'ler |
     | CRL / OCSP | İptal listesi / çevrimiçi durum protokolü | Sertifika iptalini bildirme yolları |
-    | Stapling | Zımbalama | Sunucunun OCSP yanıtını el sıkışmaya eklemesi |
+    | Stapling | Yanıt iliştirme | Sunucunun OCSP yanıtını el sıkışmaya eklemesi |
     | HSM | Donanım güvenlik modülü | Anahtarı dışa vermeyen kurcalamaya dayanıklı donanım |
     | PKCS#11 | — | Kriptografik belirteçlere erişim için standart API |
     | Crypto agility | Kripto çevikliği | Algoritmaları kolayca değiştirebilme |

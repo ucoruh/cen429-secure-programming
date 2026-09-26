@@ -341,7 +341,7 @@ eklenir (sanallaştırma yavaştır, bu yüzden yalnız küçük bölümlere uyg
 ### İşlenmiş örnek: aynı fonksiyonu el ile ve araçla karşılaştıralım
 
 Dokuzuncu haftada K-07 kuralını (dize kodlama) **el ile** uyguladığımızda, kaynak kodun kendisi değişiyordu: sabit
-dizge yerine XOR'lu baytlar ve çözme döngüsü yazıyorduk. Aynı fikri şimdi **kaynaktan kaynağa** bir araçla
+dize (string) yerine XOR'lu baytlar ve çözme döngüsü yazıyorduk. Aynı fikri şimdi **kaynaktan kaynağa** bir araçla
 yapalım — girdi ve çıktı hâlâ ikisi de C'dir, ama çıktıyı **siz yazmazsınız**, araç üretir.
 
 ```c title="ÖNCE — temiz.c (K-07 uygulanmadan, elle yazılmış hâliyle aynı başlangıç noktası)"
@@ -585,7 +585,7 @@ farklar olabilir):
 | **Flatten** | Kontrol akışını düzleştirir (switch dağıtıcı) | K-04 kontrol akışı düzleştirme |
 | **InitOpaque / AddOpaque / UpdateOpaque** | Opak yüklemler ekler; sahte dallar | K-01 opak yüklem, K-03 ölü dal |
 | **EncodeArithmetic** | Aritmetik işlemleri denk karmaşık ifadelerle değiştirir (MBA) | K-02 aritmetik kodlama |
-| **EncodeLiterals** | Sabitleri ve dizgeleri kodlar | K-07 dize kodlama, K-08 sabit dönüşümü |
+| **EncodeLiterals** | Sabitleri ve dizeleri kodlar | K-07 dize kodlama, K-08 sabit dönüşümü |
 | **EncodeData** | Değişkenlerin gösterimini kodlar | K-09 değişken bölme/kodlama |
 | **Split / Merge** | Fonksiyonları böler / birleştirir (yapıyı bulanıklaştırır) | K-06 çağrı/yapı gizleme |
 | **Virtualize** | Fonksiyonu özel bir VM bayt koduna çevirir | K-10 sanallaştırma |
@@ -626,12 +626,12 @@ Eşleme tablosunu soyut bırakmayalım; K-01'i (9. hafta, opak yüklem/döngü) 
 
 Aynı adımları K-07 (dize kodlama) için de tekrarlayalım, çünkü bu kural demo betiğinde de kullanılıyor:
 
-1. **9. haftadaki tanım (hatırlatma):** K-07, `"CEN429-OK"` gibi bir dizgeyi ikili dosyada **düz metin olarak
+1. **9. haftadaki tanım (hatırlatma):** K-07, `"CEN429-OK"` gibi bir dizeyi ikili dosyada **düz metin olarak
    bırakmamak**; XOR gibi tersine çevrilebilir bir kodlamayla saklamak ve yalnız kullanım anında çözmektir — bit bit
    izlenen `0x41 ^ 0x5A` örneği
-   ([Hafta 9, §6](../week-9/cen429-week-9.md#kural-k-07-statik-dizgelerin-kodlanmasi)) orada işlenmişti.
+   ([Hafta 9, §6](../week-9/cen429-week-9.md#kural-k-07-statik-dizelerin-kodlanmasi)) orada işlenmişti.
 2. **Tigress'teki karşılığı:** `--Transform=EncodeLiterals --Functions=erisim_ver`. Bu dönüşüm, hedef fonksiyondaki
-   sabit dizgeleri ve sayısal sabitleri kodlayıp, çalışma anında çözen kod üretir — K-07'nin "elle yazılan" hâlinin
+   sabit dizeleri ve sayısal sabitleri kodlayıp, çalışma anında çözen kod üretir — K-07'nin "elle yazılan" hâlinin
    otomatikleştirilmiş karşılığı (bölüm 2'deki "ÖNCE/SONRA" örneği).
 3. **Doğrulama:** demo betiğindeki gibi bir `strings` denetimi (9. haftanın demosunda olduğu gibi) gizlenmiş
    ikili dosyada `CEN429-OK` metninin **artık görünmediğini** doğrular; bu, K-07'nin "başarı ölçütü"dür.
@@ -718,7 +718,7 @@ otomatik hâlidir; `a + b` gibi basit bir işlemi, aynı sonucu veren ama okunma
 (karma mantıksal-aritmetik) ifadelere çevirir (9. haftanın `(a^b) + 2·(a&b) = a+b` örneğini hatırlayın). **Düşük**
 maliyetlidir; ama 9. haftanın "MBA sadeleştiricilerle açılabilir" uyarısı burada da geçerlidir (bölüm 7).
 
-**4. `EncodeLiterals` — sabit ve dizge kodlama.** K-07'nin (dize kodlama) otomatik hâlidir; yukarıda ayrıntısıyla
+**4. `EncodeLiterals` — sabit ve dize kodlama.** K-07'nin (dize kodlama) otomatik hâlidir; yukarıda ayrıntısıyla
 işledik. **Çok düşük** maliyetli, ama tek başına **zayıf** (çalışırken bellekte açığa çıkar — 9. haftanın "gizleme
 anahtar saklamaz" uyarısı).
 
@@ -876,7 +876,7 @@ sonra gelen bir dönüşümün ürettiği yeni kodu göremez.**
 EncodeLiterals → EncodeArithmetic → Flatten → AddOpaque
 ```
 
-`EncodeLiterals` ilk çalıştığı için yalnızca **orijinal kaynaktaki** (`ornek.c`'deki) sabitleri/dizgeleri kodlar.
+`EncodeLiterals` ilk çalıştığı için yalnızca **orijinal kaynaktaki** (`ornek.c`'deki) sabitleri/dizeleri kodlar.
 `Flatten` üçüncü sırada çalıştığında, düzleştirilmiş `switch` dağıtıcısının **kendi ürettiği** yeni durum sabitlerini
 (`case 1`, `case 2`, ...) `EncodeLiterals` artık **göremez** — çünkü o adım çoktan geçti. Bunun **sakıncası yoktur**,
 çünkü Flatten kendi durum değerlerini zaten dağınık/öngörülemez üretir (bölüm 5'teki not: "değerleri K-02 ile ya da
@@ -953,7 +953,7 @@ int erisim_ver(const char *jeton) {
 | Adım | Uygulanan dönüşüm | Ne değişir? | Maliyet |
 | --- | --- | --- | --- |
 | 0 | (yok) | `strings`, tek dal, tek bayt yamasıyla atlanabilir | — |
-| 1 | EncodeLiterals | `IZIN`/`RED` ve dizgeler düz görünmez | Çok düşük |
+| 1 | EncodeLiterals | `IZIN`/`RED` ve dizeler düz görünmez | Çok düşük |
 | 2 | EncodeArithmetic | Karşılaştırma/hesap karmaşık ifadeye döner | Düşük |
 | 3 | Flatten | Tek dal görünmez; switch dağıtıcı | Orta |
 | 4 | AddOpaque | Sahte dallar, opak koşullar eklenir | Orta |

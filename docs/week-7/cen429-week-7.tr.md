@@ -50,7 +50,7 @@
 | --- | --- | --- | --- |
 | **Güvenlik analizi** | ÖÇ.1 | S2 ürün genel bakışı · S3 mimari ve arayüz tablosu · S4 tehdit ve saldırgan modeli | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [2](../week-2/cen429-week-2.md#18-donem-projesi-bu-hafta-s4) |
 | **Veri güvenliği** | ÖÇ.2 | S5 varlık listesi (taslak) · S7 veri güvenliği ve güvenlik kabuğu matrisi | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [3](../week-3/cen429-week-3.md#17-donem-projesi-bu-hafta) |
-| **C/C++ kod sağlamlaştırma ve RASP** | ÖÇ.3 | S9 kod sağlamlaştırma (temel) · S10 RASP ve tepki politikası | [4](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta), [6](../week-6/cen429-week-6.md#12-donem-projesi-bu-hafta) |
+| **C/C++ kod sağlamlaştırma (hardening) ve RASP** | ÖÇ.3 | S9 kod sağlamlaştırma (temel) · S10 RASP ve tepki politikası | [4](../week-4/cen429-week-4.md#17-donem-projesi-bu-hafta), [6](../week-6/cen429-week-6.md#12-donem-projesi-bu-hafta) |
 | **Proje yönetimi** | ÖÇ.5 | S13 geliştirme ortamı ve süreci, SBOM, değişiklik yönetimi · GitHub deposu ve plan | [1](../week-1/cen429-week-1.md#21-donem-projesi-bu-hafta), [5](../week-5/cen429-week-5.md#15-donem-projesi-bu-hafta) |
 | **Ara rapor** | ÖÇ.7 | Vize sütunundaki bütün bölümler; belge düzeni, kaynaklar | Tümü |
 
@@ -117,7 +117,7 @@ kılavuzunuzda ve deponuzda gösterebiliyor olmalısınız.
     - [ ] S9: derleyici koruma tablosu (`checksec` / `dumpbin`); kapalı kalan koruma varsa gerekçesi.
     - [ ] CERT kurallarına göre tarama; en az beş bulgu düzeltildi ve kural kimliğiyle belgelendi.
     - [ ] Testler ASan + UBSan ile çalıştı; en az bir fuzz hedefi ve sonucu.
-    - [ ] Sürümde günlük yok, hassas dizge `strings` çıktısında yok.
+    - [ ] Sürümde günlük yok, hassas dize (string) `strings` çıktısında yok.
 
 ??? success "5. hafta — Bağımlılıklar ve girdi doğrulama"
     Kaynak: [Hafta 5 · Dönem projesi](../week-5/cen429-week-5.md#15-donem-projesi-bu-hafta)

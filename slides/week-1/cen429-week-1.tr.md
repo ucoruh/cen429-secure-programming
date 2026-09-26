@@ -1291,7 +1291,7 @@ Derleyicinin düşüncesi:
 
 > "`parola` bundan sonra **hiç okunmuyor**. Ona sıfır yazmak sonucu değiştirmez. **Gereksiz — siliyorum.**"
 
-**Ölü yazma giderme** (dead store elimination): hız için iyi, **sırlar için felaket**.
+**Kullanılmayan yazmanın silinmesi** (dead store elimination): hız için iyi, **sırlar için felaket**.
 
 | Platform | Kaldırılamayan silme |
 | --- | --- |
@@ -1333,7 +1333,7 @@ struct oturum { char ad[16]; int yonetici; };
                                               'B'  '\0'
 ```
 
-Küçük uçlu (little-endian): en düşük bayt en düşük adreste.
+Az anlamlı bayt önce (little-endian): en düşük bayt en düşük adreste.
 
 ---
 
@@ -1351,7 +1351,7 @@ C neden bu kadar kolay taşar?
 
 1. Dizi **boyutunu bilmez**
 2. Fonksiyona yalnız **başlangıç adresi** gider
-3. Dizge = `'\0'` ile biten dizi; `strcpy` hedefi **sormaz**
+3. Dize (string) = `'\0'` ile biten dizi; `strcpy` hedefi **sormaz**
 4. Derleyici sınır denetimi **eklemez**
 
 CWE-787 "sınırlar dışına yazma": CWE Top 25'in hep ilk sıralarında
@@ -1382,8 +1382,8 @@ void selamla(const char *ad) {
 
 | Tür | Tipik neden | CWE |
 | --- | --- | --- |
-| Yığın taşması | `strcpy`, `gets`, sınırsız `scanf("%s")` | 121 |
-| Öbek taşması | Yanlış uzunluklu `memcpy` | 122 |
+| Yığın (stack) taşması | `strcpy`, `gets`, sınırsız `scanf("%s")` | 121 |
+| Öbek (heap) taşması | Yanlış uzunluklu `memcpy` | 122 |
 | Bir fazla (off-by-one) | `<=` yerine `<`; `'\0'` için yer yok | 193 |
 | Sınır dışı **okuma** | Karşı tarafın bildirdiği uzunluğa güvenmek | 125 |
 | Tamsayı kaynaklı | `n * boyut` taşar → küçük blok, büyük kopya | 190 → 787 |
@@ -1777,10 +1777,10 @@ void kasa_kapat(KasaAnahtari *a);             /* anahtarı siler */
 
 <!-- _class: yogun -->
 
-# Kâhin ve kod kaldırma
+# Kâhin ve kod sökme
 
 - **Şifre çözme kâhini:** saldırgan `kasa_coz`'u kendi verisiyle çağırır — anahtara gerek yok
-- **Kod kaldırma:** korunan fonksiyonu olduğu gibi kopyalayıp kara kutu gibi çalıştırır
+- **Kod sökme (code lifting):** korunan fonksiyonu olduğu gibi kopyalayıp kara kutu gibi çalıştırır
 
 | Önlem | Fikir |
 | --- | --- |
@@ -1892,7 +1892,7 @@ Sahada sürüm, **anahtar türetmeye** de katılır → sürüm geri alma saldı
 
 | Karar | Seçilen | Gerekçe | Kalan risk |
 | --- | --- | --- | --- |
-| Sürümde günlükleme | Derleme makrosuyla **tamamen kaldırıldı** | Susturulmuş kod dizge olarak kalır | Sahada tanı zor |
+| Sürümde günlükleme | Derleme makrosuyla **tamamen kaldırıldı** | Susturulmuş kod dize olarak kalır | Sahada tanı zor |
 | Hata kodları | Yalnız başarılı/başarısız (**opak**) | Ayrıntı saldırgana ipucu | Ayrı tanı kanalı |
 | Native "debuggable" bayrağı | **Açık** (gerekçeli istisna) | Bütünlük denetimi kendi belleğini okumalı | Debugger algılama ile telafi |
 | Parola türetme süresi | 250 ms | Bekleme ↔ kaba kuvvet dengesi | Çok zayıf parola |

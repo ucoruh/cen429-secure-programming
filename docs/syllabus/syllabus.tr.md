@@ -59,7 +59,7 @@ lang: tr-TR
 
 Bu ders, güvenli yazılım geliştirme tekniklerini anlamaya yönelik kapsamlı bir yaklaşım sunar. Öğrenciler arabellek
 taşması, bellek sızıntıları ve enjeksiyon saldırıları gibi yaygın güvenlik açıklarını ele almak için yazılım koruma
-yöntemlerini öğrenir: veri güvenliği ve kriptografi, C/C++ ve Java için kod sağlamlaştırma, çalışma zamanı uygulama öz
+yöntemlerini öğrenir: veri güvenliği ve kriptografi, C/C++ ve Java için kod sağlamlaştırma (hardening), çalışma zamanı uygulama öz
 koruması (RASP), kod gizleme ve çeşitlendirme, whitebox kriptografi, güvenlik standartları ve sızma testi planlaması.
 Ders, güvenli yazılım geliştirmedeki gerçek dünya uygulamalarına ve en iyi uygulamalara odaklanır. Her konu hatalı kod
 → saldırı → düzeltme sırasıyla, derste yapılan uygulamalarla ve bir sertifikasyon sürecinden geçiyormuş gibi

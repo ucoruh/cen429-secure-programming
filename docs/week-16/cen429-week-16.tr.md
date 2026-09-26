@@ -44,7 +44,7 @@
 | Hafta | Konular (izlence) | Çalışırken odaklanın |
 | --- | --- | --- |
 | [**9** Gelişmiş kod gizleme ve çeşitlendirme](../week-9/cen429-week-9.md) | Gizleme taksonomisi; opak yüklemler, sahte akış, ölü kod; veri kodlama; sanallaştırma tabanlı gizleme; gizlemenin ölçülmesi (güç, dayanıklılık, maliyet) | Gizlemenin amacı ve maliyeti; ölçme ölçütleri; [4. haftadaki](../week-4/cen429-week-4.md) temel teknikler |
-| [**10** Sertifikalar ve kriptografik yöntemler](../week-10/cen429-week-10.md) | Algoritma ve anahtar uzunluğu seçimi; kipler ve dolgu; HMAC, şifrele-sonra-MAC, yeniden oynatma; RSA-OAEP/PSS, Ed25519/X25519; dijital imza; Diffie–Hellman ve araya girme; PKI, X.509, zincir; CRL/OCSP; PKCS#11/SoftHSM; kuantum sonrası | Güvenlik düzeyi tablosu; doğru kip ve dolgu; imza doğrulamasının tuzakları; zincir doğrulamanın dört sorusu |
+| [**10** Sertifikalar ve kriptografik yöntemler](../week-10/cen429-week-10.md) | Algoritma ve anahtar uzunluğu seçimi; kipler ve dolgu; HMAC, önce şifrele, sonra MAC (encrypt-then-MAC), yeniden oynatma; RSA-OAEP/PSS, Ed25519/X25519; dijital imza; Diffie–Hellman ve araya girme; PKI, X.509, zincir; CRL/OCSP; PKCS#11/SoftHSM; kuantum sonrası | Güvenlik düzeyi tablosu; doğru kip ve dolgu; imza doğrulamasının tuzakları; zincir doğrulamanın dört sorusu |
 | [**11** Whitebox kriptografi](../week-11/cen429-week-11.md) | Beyaz kutu ve kara kutu saldırgan modelleri; tablo tabanlı gerçekleştirim; anahtar koruması; bilinen saldırı aileleri ve karşı önlemler; yazılımsal güvenlik modülleri | Saldırgan modelleri; whitebox'ın katmanlı savunmadaki yeri ve sınırları |
 | [**12** Sertifikasyon ve sızma testi planlaması](../week-12/cen429-week-12.md) | Bağımsız değerlendirmenin 13 adımı; standartların test beklentileri; zafiyet değerlendirmesi; sızma testi planı ve raporlama | Değerlendirme hedefi, gereksinim şablonu, bulgu–aksiyon, etki analizi, delta değerlendirme |
 | [**13** Güvenlik gereksinimleri](../week-13/cen429-week-13.md) | İyi gereksinim; izlenebilirlik ve uyum matrisi; devredilen gereksinimler; Ortak Kriterler, EAL; FIPS 140-3; ETSI, GSMA, EMVCo, PCI, MASVS | Gereksinim → önlem → doğrulama → kanıt zinciri; CC ve FIPS kavramları |
@@ -60,12 +60,12 @@
 | --- | --- | --- |
 | CBC | GCM | CBC yalnız gizlilik ve dolgu ister; GCM gizlilik + bütünlük (AEAD), dolgu yok |
 | MAC | İmza | MAC simetrik; imza asimetrik ve inkâr edilemezlik sağlar |
-| Şifrele-sonra-MAC | MAC-sonra-şifrele | İlki doğru sıra; ikincisi dolgu kâhinine açık |
+| Önce şifrele, sonra MAC | MAC-sonra-şifrele | İlki doğru sıra; ikincisi dolgu kâhinine (padding oracle) açık |
 | RSA-OAEP | RSA-PSS | OAEP şifreleme dolgusu, PSS imza dolgusu |
 | Ed25519 | X25519 | Ed25519 imza, X25519 anahtar anlaşması |
 | Kök CA | Ara CA | Kök çevrimdışı, kendini imzalar; ara CA günlük sertifikaları çıkarır |
 | CN | SAN | Ad denetimi SAN'a yapılır |
-| CRL | OCSP | Periyodik liste / anlık sorgu; zımbalama gizlilik ve hız sağlar |
+| CRL | OCSP | Periyodik liste / anlık sorgu; yanıt iliştirme (stapling) gizlilik ve hız sağlar |
 | HSM | SoftHSM | Donanım koruması / yazılım benzetimi (aynı PKCS#11 arayüzü) |
 | ST | PP | Ürüne özgü güvenlik hedefi / ürün sınıfı için ortak gereksinim seti |
 | EAL | Saldırı potansiyeli | Değerlendirmenin derinliği / saldırganın gerektirdiği kaynak |
@@ -108,7 +108,7 @@
     hatasıdır.
 
 ??? question "5. OCSP yanıtlayıcısına ulaşılamadığında sertifikayı kabul etmek hangi örüntüdür? Nasıl azaltılır?"
-    Fail-open (yumuşak başarısızlık). Zımbalama zorunluluğu (Must-Staple) ya da kısa ömürlü sertifikalar.
+    Fail-open (yumuşak başarısızlık). Yanıt iliştirme zorunluluğu (Must-Staple) ya da kısa ömürlü sertifikalar.
 
 ??? question "6. Kimliksiz Diffie–Hellman'a karşı araya girme nasıl engellenir?"
     DH değerleri kimliği bilinen bir anahtarla imzalanır (TLS 1.3'te `CertificateVerify`) ve karşı taraf bu kimliği

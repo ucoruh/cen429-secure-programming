@@ -14,7 +14,7 @@ tags:
 | | |
 | --- | --- |
 | **Tarih** | 23.10.2026 |
-| **Öğrenme çıktıları** | ÖÇ.3 (kod sağlamlaştırma tekniklerini — RASP dâhil — açıklar ve C/C++, Java için uygular) |
+| **Öğrenme çıktıları** | ÖÇ.3 (kod sağlamlaştırma (hardening) tekniklerini — RASP dâhil — açıklar ve C/C++, Java için uygular) |
 | **Süre** | 3 saat (3 × 50 dakika) |
 | **Ön bilgi** | C'de işaretçi, dizi, dosya; [Hafta 1](../week-1/cen429-week-1.md)'den bellek düzeni ve güvenli silme; [Hafta 3](../week-3/cen429-week-3.md)'ten AES-GCM/HMAC/HKDF ve güvenlik kabuğu; [Hafta 4](../week-4/cen429-week-4.md)'ten yama ve tersine mühendislik kavramları |
 | **Uygulamalar** | [`code/week-06`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-06) — 8 demo; Windows'ta `.\demo.ps1`, WSL/Linux'ta `sh demo.sh` |
@@ -621,7 +621,7 @@ bağımsız bir sinyal (`ana_surec_adi` denetimi) daha eklenir; demo çıktısı
 ikisinin toplamıdır. Tek bir alanın okunması yeterli olmasa da, çekirdek düzeyinde tutulan bu bilgi
 **sahtelemesi zor** bir sinyaldir: `TracerPid`'i doğrudan sıfırlamak sürecin kendi belleğinden değil çekirdek
 veri yapısından okunduğu için mümkün değildir — saldırganın bunu gizlemesi ancak `/proc/self/status`'u okuyan
-**kütüphane fonksiyonunu** kancalamasıyla mümkündür, ki bu da tam olarak Bölüm 6'nın konusudur.
+**kütüphane fonksiyonuna** kanca takmasıyla (hooking) mümkündür, ki bu da tam olarak Bölüm 6'nın konusudur.
 
 ### 4.2 Windows karşılığı: `NtGlobalFlag`'teki bitleri okumak
 
@@ -754,7 +754,7 @@ engellemeye razıyım, karşılığında kaç saldırıyı önlerim" dengesi:
 
 ## 6. Kanca ve enstrümantasyon algılama (LD_PRELOAD, Frida)
 
-Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyon kancalama (hooking)** ve **dinamik enstrümantasyon**. Kanca
+Hata ayıklayıcıdan daha sinsi bir tehdit: **fonksiyonlara kanca takma (hooking)** ve **dinamik enstrümantasyon**. Kanca
 (hook), bir fonksiyonun çağrısını araya girip değiştirmektir; enstrümantasyon ise çalışan bir programa kod enjekte
 edip davranışını izleme ya da değiştirme tekniğidir (bunun en yaygın aracı **Frida**'dır). Saldırgan
 programı durdurmadan, çağırdığı fonksiyonları (kendi anti-debug/anti-root kontrollerimiz dâhil) **kendi sürümüyle
@@ -764,7 +764,7 @@ değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek 
     - **1990'lar** — kanca teknikleri IAT (Import Address Table) ve PLT/GOT üzerinde çalışan **elle yazılmış**,
       hedefe özel araçlardı; her hedef için yeniden yazılması gerekiyordu.
     - **2000'ler** — `LD_PRELOAD` (Linux) ve DLL enjeksiyonu (Windows), genel amaçlı ama **statik** (önceden
-      derlenmiş) kancalama yöntemleri olarak yaygınlaştı.
+      derlenmiş) kanca takma yöntemleri olarak yaygınlaştı.
     - **2009** — **Frida** projesinin temelleri atıldı; asıl fark, kanca kodunun **JavaScript ile çalışma
       zamanında** yazılıp enjekte edilebilmesiydi — derleme gerektirmiyordu.
     - **2010'lar–bugün** — Frida, mobil güvenlik testinin standart aracı hâline geldi; RASP'in "kanca algılama"
@@ -1756,22 +1756,22 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | RASP | Çalışma zamanı öz koruması | Uygulamanın içine gömülü, çalışırken kendini koruyan mekanizmalar |
     | Detection / Defense / Deterrence | Algılama / Savunma / Caydırma | RASP'in üç işlevi |
     | MATE | Uçtaki saldırgan | Cihazın sahibi olan saldırgan (beyaz kutu) |
-    | Self-hashing | Öz özetleme | Uygulamanın kendi kod/dosyasını çalışma zamanında özetleyip doğrulaması |
+    | Self-hashing | Kendi kodunun özetini denetleme | Uygulamanın kendi kod/dosyasını çalışma zamanında özetleyip doğrulaması |
     | Tamper | Kurcalama | İkili/veri üzerinde yetkisiz değişiklik |
     | Patch (yama) | Yama | İkili kodu değiştirerek davranışı değiştirme |
     | Anti-debug | Hata ayıklayıcı karşıtı | Bağlı hata ayıklayıcıyı algılama/engelleme |
     | TracerPid | İzleyen süreç kimliği | Linux'ta bir süreci `ptrace` ile izleyen sürecin PID'i |
-    | Hooking (kanca) | Kancalama | Bir fonksiyonu kendi sürümüyle değiştirme (LD_PRELOAD, PLT/GOT, inline) |
+    | Hooking (kanca) | Kanca takma | Bir fonksiyonu kendi sürümüyle değiştirme (LD_PRELOAD, PLT/GOT, inline) |
     | DBI / Frida | Dinamik ikili enstrümantasyon | Çalışan programa kod enjekte edip davranışını değiştirme |
     | Emulator / VM detection | Emülatör/VM algılama | Analiz ortamını ipuçlarından sezme (CPUID, timing) |
     | Root / jailbreak | Kök erişimi | Cihazın güvenlik kısıtlarının kaldırılmış olması |
-    | Attestation | Doğrulama tanıklığı | Cihaz/uygulama bütünlüğünün (çoğu zaman sunucu tarafı) kanıtı |
+    | Attestation | Platform doğrulaması | Cihaz/uygulama bütünlüğünün (çoğu zaman sunucu tarafı) kanıtı |
     | Repackaging | Yeniden paketleme | Uygulamayı açıp değiştirip yeniden paketleme |
     | Control-flow integrity | Kontrol akışı bütünlüğü | Kritik akışın atlanamaz/sıralı olmasını sağlama (sayaç/anahtar zinciri) |
     | Tamper response | Kurcalama tepkisi | Tamper anındaki politika (sil, fail-closed, decoy) |
     | Decoy | Sahte çıktı | Çökmek yerine döndürülen, gerçekten ayırt edilemez sahte sonuç |
     | Device / version binding | Cihaz / sürüm bağlama | Anahtarı belirli cihaza/sürüme bağlayıp başka yerde açılamaz kılma |
-    | Fail-closed | Kapalı kalma | Şüphede işlemi reddetme (güven deposuna düşmeme) |
+    | Fail-closed | Hata durumunda reddetme | Şüphede işlemi reddetme (güven deposuna düşmeme) |
     | Risk skoru / eşik | Risk puanı / sınır değer | Birden çok zayıf sinyalin ağırlıklı toplamı; karar bu toplamın bir eşiği geçip geçmediğine bakar |
     | Risk iştahı (risk appetite) | Risk toleransı | Ürünün yanlış pozitif ile yanlış negatif arasında kabul ettiği denge |
     | `dlsym` / `dladdr` | Sembol çözme / adres bilgisi | Bir fonksiyon adının bellek adresini bulma / bir adresin hangi `.so`'dan geldiğini bulma |

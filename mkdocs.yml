@@ -213,8 +213,7 @@ plugins:
             "Week-14 (Tigress and Diversification)": "Hafta-14 (Tigress ve Çeşitlendirme)"
             "Week-15 (Final Project Demonstrations)": "Hafta-15 (Final Proje Gösterimleri)"
             "Week-16 (Final Exam Period: Quiz-2)": "Hafta-16 (Final Dönemi: Quiz-2)"
-  - tags:
-      tags_file: tags.md
+  - tags
   - minify:
       minify_html: true
       htmlmin_opts:

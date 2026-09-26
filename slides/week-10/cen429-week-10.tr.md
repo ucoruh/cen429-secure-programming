@@ -207,7 +207,7 @@ Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** 
 # CBC + dolgu = risk
 
 - CBC dolgu gerektirir.
-- Yanlış dolgu işleme → **dolgu kâhini** (birazdan).
+- Yanlış dolgu işleme → **dolgu kâhini (padding oracle)** (birazdan).
 - Bu yüzden modern tercih **AEAD**.
 
 ---
@@ -436,7 +436,7 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 # Bu bölümün kuralı · MAC/HMAC
 
 - Bütünlüğü **HMAC** ile sağlayın; düz `H(K‖m)` değil (uzunluk uzatma riski).
-- Şifreleme + MAC birleşiminde sıra **şifrele-sonra-MAC**'tir.
+- Şifreleme + MAC birleşiminde sıra **önce şifrele, sonra MAC (encrypt-then-MAC)**'tir.
 - Etiket/imza karşılaştırması **sabit zamanlı** olmalı; erken çıkışlı fonksiyon kullanmayın.
 
 ---
@@ -1126,7 +1126,7 @@ Bir TLS kurulum kodunu okurken sorun:
 
 ---
 
-# OCSP zımbalama (stapling)
+# OCSP yanıtını iliştirme (stapling)
 
 - Sunucu, OCSP yanıtını **kendisi** getirip sertifikayla sunar.
 - Gizlilik + hız kazanır.

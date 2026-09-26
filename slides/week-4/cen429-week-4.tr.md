@@ -36,8 +36,8 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 
 | Saat | Bölüm | Konu |
 | --- | --- | --- |
-| 1 | 1 | Sağlamlaştırma katmanları · SEI CERT · girdi doğrulama ilkeleri · CERT çiftleri |
-| 2 | 2–4 | Biçim dizisi **Demo 1** · UAF **Demo 2** · tamsayı/UB **Demo 3** · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing **Demo 4** |
+| 1 | 1 | Sağlamlaştırma (hardening) katmanları · SEI CERT · girdi doğrulama ilkeleri · CERT çiftleri |
+| 2 | 2–4 | Biçim dizesi (format string) **Demo 1** · UAF **Demo 2** · tamsayı/UB **Demo 3** · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing **Demo 4** |
 | 3 | 5–7 | Derleyici/OS korumaları **Demo 5** · güvenli derleme hattı (CI) · kod gizleme **Demo 6–7** · uçtan uca · proje |
 
 **Öğrenme çıktısı:** ÖÇ.3 (ikili uygulama korumaları)
@@ -81,7 +81,7 @@ Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** 
 | --- | --- |
 | Sağlamlaştırma katmanları · SEI CERT | Bölüm 1 |
 | Girdi doğrulama ilkeleri | Bölüm 1 |
-| Biçim dizisi açığı | Bölüm 2 |
+| Biçim dizesi açığı | Bölüm 2 |
 | Serbest bırakılmış bellek (UAF) | Bölüm 3 |
 | Tanımsız davranış (UB) | Bölüm 3 |
 | Hata işleme, sinyaller | Bölüm 3 |
@@ -237,9 +237,9 @@ Risk = **önem × olasılık × düzeltme maliyeti**.
 | Kısaltma | Kategori | Örnek |
 | --- | --- | --- |
 | INT | Tamsayılar | INT32-C: işaretli taşmaya izin verme |
-| ARR/STR | Dizi/dizge | STR31-C: yeterli yer ayır |
+| ARR/STR | Dizi/dize (string) | STR31-C: yeterli yer ayır |
 | MEM | Bellek | MEM30-C: bırakılmış belleğe erişme |
-| FIO | Dosya G/Ç | FIO30-C: girdiyi biçim dizgesinden dışla |
+| FIO | Dosya G/Ç | FIO30-C: girdiyi biçim dizesinden dışla |
 
 ---
 
@@ -450,11 +450,11 @@ Böylece bulgu **nesnel** ve **aranabilir** olur.
 
 <!-- _class: bolum -->
 
-# 2. Biçim dizisi açığı
+# 2. Biçim dizesi açığı
 
 ---
 
-# Biçim dizisi açığı — şema
+# Biçim dizesi açığı — şema
 
 ![w:950](assets/h04-07-bicim-dizisi.svg)
 
@@ -467,13 +467,13 @@ printf(kullanici_girdisi);        /* HATALI */
 printf("%s", kullanici_girdisi);  /* DOĞRU */
 ```
 
-İlkinde kullanıcı girdisi bir **biçim dizgesi** olarak yorumlanır.
+İlkinde kullanıcı girdisi bir **biçim dizesi** olarak yorumlanır.
 
 ---
 
 # Neden tehlikeli?
 
-`printf` biçim dizgesindeki `%` belirteçlerini **komut** sayar.
+`printf` biçim dizesindeki `%` belirteçlerini **komut** sayar.
 
 Kullanıcı `%x`, `%s`, `%n` gönderirse programa iş yaptırır.
 
@@ -489,7 +489,7 @@ Kullanıcı `%x`, `%s`, `%n` gönderirse programa iş yaptırır.
 
 # Belirteç · `%s`
 
-- Yığındaki bir değeri **işaretçi** sanar ve o adresteki dizgeyi okur.
+- Yığındaki bir değeri **işaretçi** sanar ve o adresteki dizeyi okur.
 - Rastgele adres → çökme ya da bellek okuma.
 
 ---
@@ -506,15 +506,15 @@ Kullanıcı `%x`, `%s`, `%n` gönderirse programa iş yaptırır.
 
 Sadece `printf` değil:
 
-`syslog`, `fprintf`, `snprintf`, `err`/`warn` — hepsi biçim dizgesi alır.
+`syslog`, `fprintf`, `snprintf`, `err`/`warn` — hepsi biçim dizesi alır.
 
-Kural: biçim dizgesi **her zaman sabit** (FIO30-C).
+Kural: biçim dizesi **her zaman sabit** (FIO30-C).
 
 ---
 
 <!-- _class: yogun -->
 
-# Demo 1 — biçim dizisi
+# Demo 1 — biçim dizesi
 
 `code/week-04/01-format-string` · CWE-134
 
@@ -530,7 +530,7 @@ Kural: biçim dizgesi **her zaman sabit** (FIO30-C).
 
 # Düzeltme · katman katman
 
-1. Biçim dizgesi hep **sabit** (FIO30-C).
+1. Biçim dizesi hep **sabit** (FIO30-C).
 2. Uyarı: `-Wformat -Wformat-security -Werror=format-security`.
 3. Kendi fonksiyonunuzu derleyiciye **denetlettirin**:
 
@@ -894,7 +894,7 @@ Yanlış alarm neredeyse **yok**; ama yalnız **çalışan yoldaki** hatayı bul
 # ASan nasıl çalışır? · gölge bellek
 
 - Her 8 bayt için 1 **gölge bayt**: ne kadarı geçerli?
-- Dizilerin önüne/arkasına **zehirli bölge** (redzone).
+- Dizilerin önüne/arkasına **koruma bölgesi** (redzone).
 - Serbest bloklar **karantinada** bekler.
 - Her erişimden önce gölge denetimi.
 
@@ -907,7 +907,7 @@ struct { char ad[8]; long yetki; } k;
 strcpy(k.ad, uzun_girdi);   /* ad → yetki taşar */
 ```
 
-Aynı yapının **içinde** alandan alana taşma → arada zehirli bölge yok → ASan **görmez** (1. hafta Demo 3).
+Aynı yapının **içinde** alandan alana taşma → arada koruma bölgesi yok → ASan **görmez** (1. hafta Demo 3).
 
 ---
 
@@ -1166,7 +1166,7 @@ Her hatalı adım birleştirmeyi **durdurur**.
 | Derleme | Tek uyarı |
 | Sanitizer'lı test | Herhangi bir rapor |
 | Fuzzing | Yeni çökme (eski corpus = regresyon) |
-| İkili denetimi | Günlük dizgesi, sembol, kapalı koruma |
+| İkili denetimi | Günlük dizesi, sembol, kapalı koruma |
 
 ---
 
@@ -1223,7 +1223,7 @@ Koruma bayraklarının çoğu: Demo 5 `giris_sert`.
 
 # Katman 4 · neden?
 
-- Beyaz kutu saldırgan: dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
+- Beyaz kutu saldırgan: dizeleri okur, fonksiyonları adıyla bulur, denetimi atlar.
 - Gizleme: davranış aynı, **anlaşılması zor**.
 
 ---
@@ -1274,7 +1274,7 @@ Sembol görünürlüğü kapalı · ad anlamsızlaştırma · sabit aritmetik gi
 | --- | --- |
 | Sembolleri gizle | `static`, `-fvisibility=hidden`, `strip -s` |
 | Günlüğü kaldır | Makroyu derlemede **boşalt** |
-| Dizgeleri gizle | Derlemede şifrele, kullanınca çöz, hemen sil |
+| Dizeleri gizle | Derlemede şifrele, kullanınca çöz, hemen sil |
 
 ---
 
@@ -1298,7 +1298,7 @@ Sürümde `GUNLUK_ACIK` tanımlı değil → günlük **hiç derlenmez**.
 if (hata_ayikla) printf("...");  /* KÖTÜ */
 ```
 
-- Dizge ikili dosyada **kalır**.
+- Dize ikili dosyada **kalır**.
 - Saldırgan bayrağı değiştirip günlüğü **yeniden açar**.
 - Doğrusu: derleme anında **çıkar**.
 
@@ -1306,7 +1306,7 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 
 # ⚠️ Dize gizleme ≠ anahtar saklama
 
-- Çözülen dizge kullanım anında **bellekte açık**.
+- Çözülen dize kullanım anında **bellekte açık**.
 - Çözme anahtarı **programın içinde**.
 - Durdurduğu: `strings` gibi **statik** taramalar.
 - Çalışırken inceleyene → RASP (6). Gerçek anahtar → whitebox (11).
@@ -1322,7 +1322,7 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 | Adım | Ne olur? |
 | --- | --- |
 | 1 | `gizli_acik` ve `gizli_kapali` aynı sonuç |
-| 2 `strings` | Açıkta lisans dizgesi ve `[LOG]`; kapalıda yok |
+| 2 `strings` | Açıkta lisans dizesi ve `[LOG]`; kapalıda yok |
 | 3 `nm` | Açıkta `lisans_dogrula`; kapalıda sembol yok |
 | 4 | Windows: adlar PDB'de; kapalı PDB üretmez |
 
@@ -1513,7 +1513,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 - [ ] Testleri ASan + UBSan ile çalıştır.
 - [ ] En az bir fuzz hedefi, ≥ 10 dk.
-- [ ] Sürümde günlük yok; hassas dizge `strings` çıktısında yok.
+- [ ] Sürümde günlük yok; hassas dize `strings` çıktısında yok.
 - [ ] Her dönüş değeri denetli (ERR33-C); `-Werror` ile derleniyor.
 
 **Önlem kartı:** Açıklama → Uygulama → Doğrulama → Kalan risk.
@@ -1570,7 +1570,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **ASan hangi taşmayı göremez?**
 
-**Cevap:** Aynı yapının **içinde** alandan alana taşmayı (aralarında zehirli bölge yoktur).
+**Cevap:** Aynı yapının **içinde** alandan alana taşmayı (aralarında koruma bölgesi yoktur).
 
 ---
 
@@ -1602,7 +1602,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **Günlüğü çalışma anı bayrağıyla susturmak neden yetmez?**
 
-**Cevap:** Dizge ikili dosyada **kalır** ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.
+**Cevap:** Dize ikili dosyada **kalır** ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.
 
 ---
 
@@ -1618,7 +1618,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **Dize gizleme neden anahtar saklama değildir?**
 
-**Cevap:** Çözülen dizge kullanımda bellekte açıktır ve çözme anahtarı programın içindedir; yalnız statik taramayı durdurur.
+**Cevap:** Çözülen dize kullanımda bellekte açıktır ve çözme anahtarı programın içindedir; yalnız statik taramayı durdurur.
 
 ---
 
@@ -1637,7 +1637,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 | Terim | Anlam |
 | --- | --- |
 | UB | Tanımsız davranış |
-| UAF | Kullanım-sonrası-serbest |
+| UAF | Serbest bırakıldıktan sonra kullanma (use-after-free) |
 | CERT/CWE | Kural kitabı / zayıflık kataloğu |
 | Sanitizer | Çalışma anı hata dedektörü |
 | Fuzzing | Rastgele girdiyle çökme arama |

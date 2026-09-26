@@ -74,7 +74,7 @@
     | Zaman | Bölüm | Ne yapılıyor |
     | --- | --- | --- |
     | 0:00–0:25 | 1 | Kara/gri/beyaz kutu modelleri; WBC saldırgan yetenekleri; problem neden zor? |
-    | 0:25–0:50 | 1 | Naif çözümlerin çöküşü: gömülü anahtar, entropi saldırısı, kod taşıma (code lifting) |
+    | 0:25–0:50 | 1 | Naif çözümlerin çöküşü: gömülü anahtar, entropi saldırısı, kod sökme (code lifting) |
     | 0:50–0:55 | Ara | |
     | 0:55–1:40 | 2 | Tablo tabanlı WBC (Chow AES): kısmi değerlendirme, iç/dış kodlama, bijeksiyonlar, tablo boyutu ve hız |
     | 1:40–1:45 | Ara | |
@@ -387,10 +387,10 @@ gerekir. Her biri bir güvenli programlama kuralına dönüşür:
   doğrulanır. **Sonuç:** düz gömülü anahtar bir anahtar koruması değildir.
 - **Kural — Anahtarı yalnız XOR/whitening ile "karıştırma".** Anahtarı bir maskeyle XOR'layıp saklamak da işe
   yaramaz: maske de ikili dosyadadır, program onu çözebiliyorsa saldırgan da çözer.
-- **Kod taşıma (code lifting) tehdidi.** WBC anahtarı tablolara gömse bile, saldırgan **anahtarı çıkarmadan**
+- **Kod sökme (code lifting) tehdidi.** WBC anahtarı tablolara gömse bile, saldırgan **anahtarı çıkarmadan**
   şifreleme/çözme yapan kod parçasını (tablolar + yorumlayıcı) olduğu gibi kopyalayıp kendi programında
   kullanabilir. Anahtarı hiç bilmeden onun işlevini çalar. **Sonuç:** WBC'nin tek başına "anahtarı gizledim"
-  demesi yetmez; kod taşımaya karşı **cihaz/sürüm bağlama** (bölüm 4) gerekir.
+  demesi yetmez; kod sökmeye karşı **cihaz/sürüm bağlama** (bölüm 4) gerekir.
 - **Kural — "Test/hata ayıklama anahtarını" unutmak.** Çok yaygın bir gerçek dünya hatası: geliştirici test
   aşamasında kolaylık olsun diye gerçek anahtarın yerine **sabit bir "test anahtarı"** koyar (`static const
   uint8_t k[16] = {0x00, 0x01, ...}` gibi, ya da bir yapılandırma dosyasında düz metin) ve bunu üretime **taşımayı
@@ -450,7 +450,7 @@ k = kodlanmis_k XOR m = 0x66 XOR 0x5A
 
 **Sonuç.** Maskeleme, anahtarın ikilideki **bit örüntüsünü** değiştirir ama korumayı değiştirmez: program maskeyi
 çözebiliyorsa, aynı hesabı okuyabilen saldırgan da çözer. Bu, tam olarak
-[9. haftanın **K-07 (statik dizge/sabit kodlama)**](../week-9/cen429-week-9.md#kural-k-07-statik-dizgelerin-kodlanmasi)
+[9. haftanın **K-07 (statik dize (string)/sabit kodlama)**](../week-9/cen429-week-9.md#kural-k-07-statik-dizelerin-kodlanmasi)
 kuralının sınırıyla aynı derstir — kodlama tek başına, **çözme anahtarı da yanında duruyorsa**, hiçbir şey
 kazandırmaz.
 
@@ -460,13 +460,13 @@ kazandırmaz.
     kodlama bijeksiyonları (`G`, `F`) hiçbir yerde **açık bir sabit olarak saklanmaz**; kodun kendi **yapısına**
     (tabloların birbirine nasıl bağlandığına) dağıtılır. Bu farkı Bölüm 3'te elle kuracağımız örnekte göreceğiz.
 
-### Kod taşıma (code lifting) — biraz daha derin
+### Kod sökme (code lifting) — biraz daha derin
 
-Yukarıda kod taşımayı tanımladık: saldırganın anahtarı hiç çıkarmadan, tabloları ve onları çalıştıran yorumlayıcıyı
+Yukarıda kod sökmeyi tanımladık: saldırganın anahtarı hiç çıkarmadan, tabloları ve onları çalıştıran yorumlayıcıyı
 **olduğu gibi kopyalayıp** başka bir programda kullanması. Bunun neden ciddi bir tehdit olduğunu bir örnekle
 somutlaştıralım:
 
-!!! example "Kavramsal senaryo: kod taşıma"
+!!! example "Kavramsal senaryo: kod sökme"
     Bir ödeme uygulaması, bir işlemi onaylamak için whitebox AES ile şifrelenmiş bir belirteç (token) üretiyor
     olsun. Saldırgan anahtarı **hiç bilmeden**, whitebox rutinini (tablolar + onu çağıran kod) uygulamadan
     **bütünüyle kopyalayıp** kendi programına yapıştırır. Artık kendi programı da **geçerli belirteçler**
@@ -474,7 +474,7 @@ somutlaştıralım:
     çaldı**.
 
 Bunun WBC'ye özgü olmasının nedeni şudur: normal bir programda (anahtar apaçık bir değişkende) saldırgan zaten
-anahtarı **çıkarıp** istediği yerde kullanabilir; kod taşımaya gerek yoktur. WBC'de ise anahtar **çıkarılamıyor
+anahtarı **çıkarıp** istediği yerde kullanabilir; kod sökmeye gerek yoktur. WBC'de ise anahtar **çıkarılamıyor
 olabilir** (dış kodlamalar güçlüyse), ama tablolar yine de **çalışan bir makine** oluşturur — ve çalışan bir
 makineyi kopyalamak, onun matematiğini çözmekten çoğu zaman **çok daha kolaydır**.
 [9. haftanın **K-06 (çağrı ve bağımlılık gizleme)**](../week-9/cen429-week-9.md#kural-k-06-fonksiyon-cagrilarinin-ve-dis-kutuphane-bagimliliginin-gizlenmesi)
@@ -910,7 +910,7 @@ Girdi --F⁻¹--> [ kodlanmış AES tabloları ağı ] --G--> Çıktı
 
 #### Oyuncak örnekte dış kodlama: neden code lifting'i zorlaştırır?
 
-Bölüm 2'de tanımladığımız kod taşıma tehdidiyle dış kodlamayı birbirine bağlayalım. Oyuncak whitebox'ımıza bir
+Bölüm 2'de tanımladığımız kod sökme tehdidiyle dış kodlamayı birbirine bağlayalım. Oyuncak whitebox'ımıza bir
 girdi dış kodlaması `F` ekleyelim; saldırgan artık fonksiyona **doğrudan** `x` değil, `F(x)` besler:
 
 | x | 0 | 1 | 2 | 3 |
@@ -932,7 +932,7 @@ sıkıya örülüdür.
 
 !!! success "Kısa özet"
     İç kodlama (Adım 3) ve karıştırıcı matris (Adım 4) tek bir tabloya bakan saldırganı yorar; dış kodlama
-    (Adım 5) ise **bütün rutini** başka bir bağlama taşımaya çalışan saldırganı (kod taşıma) yorar. İkisi
+    (Adım 5) ise **bütün rutini** başka bir bağlama taşımaya çalışan saldırganı (kod sökme) yorar. İkisi
     **farklı tehditlere** karşı çalışır — bu yüzden Bölüm 6'da iki ayrı senaryo işledik.
 
 ### Maliyet: WBC bedava değildir
@@ -1120,7 +1120,7 @@ artırır**:
   zorlaştırmaktır.
 - **Anahtar yenileme ve kısa ömür:** Anahtar sık yenilenirse, bir anahtarı çıkarmanın değeri düşer (10. hafta,
   kripto-periyot).
-- **Cihaz/sürüm bağlama:** Kod taşımaya (code lifting) karşı; tablolar yalnız belirli bir cihazda/sürümde anlamlı
+- **Cihaz/sürüm bağlama:** Kod sökmeye (code lifting) karşı; tablolar yalnız belirli bir cihazda/sürümde anlamlı
   olur.
 - **Sunucu tarafı risk denetimi:** Uçtaki koruma ne olursa olsun, işlemin sunucuda ayrıca değerlendirilmesi (hız
   sınırı, anomali, ATC/sayaç denetimi) son ve en güvenilir savunmadır.
@@ -1160,12 +1160,12 @@ de hesaba katmak gerekir — çünkü bir savunmanın amacı saldırıyı imkân
 | BGE (afin eşdeğerlik) | İkiliye salt okunur erişim (statik) | Yüksek — özel algoritma gerekir | Kısmen (belirli tasarımlara özel) |
 | DCA | Programı **çalıştırma** + enstrümantasyon (dinamik) | Orta-yüksek — istatistik bilgisi | Evet, büyük ölçüde |
 | DFA | Programı çalıştırma + **değiştirme** (dinamik, kurcalama) | Yüksek — hata enjeksiyon noktalarını bulmak | Kısmen |
-| Kod taşıma (code lifting) | İkiliyi kopyalama (statik, en düşük çaba) | Düşük — anahtar bilgisi bile gerekmez | Evet |
+| Kod sökme (code lifting) | İkiliyi kopyalama (statik, en düşük çaba) | Düşük — anahtar bilgisi bile gerekmez | Evet |
 
 !!! note "Bu tablo neyi öğretiyor?"
-    Dikkat edin: **en ucuz** saldırı (kod taşıma) en gelişmiş kriptanalitik bilgiyi gerektirmiyor — yalnız
+    Dikkat edin: **en ucuz** saldırı (kod sökme) en gelişmiş kriptanalitik bilgiyi gerektirmiyor — yalnız
     kopyalama. Bu yüzden Bölüm 6'daki iki senaryonun **ikisi de** derste yer alıyor: bir sistem yalnız BGE/DCA/DFA'ya
-    karşı sağlamlaştırılıp kod taşımaya karşı **savunmasız** bırakılabilir. Savunma tasarlarken "hangi saldırı en
+    karşı sağlamlaştırılıp kod sökmeye karşı **savunmasız** bırakılabilir. Savunma tasarlarken "hangi saldırı en
     **ucuz**?" sorusunu da sormak gerekir, yalnız "hangi saldırı en **etkileyici**?" değil.
 
 !!! danger "Ana kural (tekrar): WBC bir katmandır, çözüm değil"
@@ -1328,9 +1328,9 @@ Bu haftanın kurallarını tek bir hikâyede toplayalım (sentetik, savunma ama�
 4. **Dürüst kalan risk:** Yeterince kararlı bir saldırgan tek bir cihazda anahtarı yine de çıkarabilir; ama artık
    bir kopyayı kırmak bütün sistemi açmaz ve çıkarılan anahtarın ömrü kısadır.
 
-### İkinci senaryo: kod taşımaya (code lifting) karşı katmanlar (sentetik)
+### İkinci senaryo: kod sökmeye (code lifting) karşı katmanlar (sentetik)
 
-Aynı yapıyı, bu kez Bölüm 2'de tanımladığımız **kod taşıma** tehdidine karşı işleyelim — çünkü bu tehdit, "anahtarı
+Aynı yapıyı, bu kez Bölüm 2'de tanımladığımız **kod sökme** tehdidine karşı işleyelim — çünkü bu tehdit, "anahtarı
 düz gömme" hatasından **farklı bir hata sınıfına** karşılık gelir ve farklı katmanlar gerektirir.
 
 1. **Hatalı tasarım.** Bir dijital içerik uygulaması (sentetik: bir "lisans doğrulama" bileşeni), whitebox AES
@@ -1350,7 +1350,7 @@ düz gömme" hatasından **farklı bir hata sınıfına** karşılık gelir ve f
      türetilsin; tablolar başka bir cihaza kopyalanınca **farklı** (yanlış) sonuç üretsin.
    - **Sunucu tarafı doğrulama ekle:** lisans yanıtı, sunucuda **ayrıca** denetlensin (ör. beklenmedik cihaz
      sayısından aynı lisansın kullanılması, anomali olarak işaretlensin).
-4. **Dürüst kalan risk.** Dış kodlama ve cihaz bağlama, kod taşımayı **o cihaza özgü hale getirerek**
+4. **Dürüst kalan risk.** Dış kodlama ve cihaz bağlama, kod sökmeyi **o cihaza özgü hale getirerek**
    zorlaştırır; ama saldırgan **o cihazın kendisini** ele geçirirse (ör. cihazın tamamını kopyalarsa), yine de
    çalışan bir kopya elde edebilir. Bu yüzden 3. adımdaki sunucu tarafı denetim, **son savunma hattı** olarak
    kalır — tıpkı ilk senaryodaki gibi.
@@ -1370,7 +1370,7 @@ Bölüm 4'teki "saldırının maliyeti" tablosuyla aynı ruhta:
 | Savunmayı tasarlayıp uygulamak (geliştirici) | Haftalar–aylar | Tasarım, test, performans ayarı, bağımsız değerlendirme (12. hafta) |
 
 !!! note "Bu tablodan ne çıkarmalı?"
-    En **ucuz** saldırılar (entropi taraması, kod taşıma) aynı zamanda en **hızlı** olanlardır — bu yüzden Bölüm
+    En **ucuz** saldırılar (entropi taraması, kod sökme) aynı zamanda en **hızlı** olanlardır — bu yüzden Bölüm
     2 ve 6'da bunlara özel önem verdik. Savunmayı tasarlamak saldırmaktan **çok daha uzun** sürer; bu asimetri
     (Bölüm 2'deki maliyet dengesi) zaman ekseninde de geçerlidir ve savunmacının **neden erken davranması**
     gerektiğini (proje teslim tarihini beklememesi) açıklar.
@@ -1384,7 +1384,7 @@ Bölüm 4'teki "saldırının maliyeti" tablosuyla aynı ruhta:
 | **Hatalı tasarım** | Anahtar `static const` dizide, açık | Whitebox rutini standart AES girdi/çıktısıyla çalışıyor |
 | **İlk saldırı** | Entropi taraması + hata ayıklayıcı doğrulaması | Rutini/tabloları olduğu gibi kopyalama |
 | **Saldırgan anahtarı biliyor mu?** | Saldırının **sonunda** evet | **Hiçbir zaman** — anahtarı hiç görmeden işlevi çalıyor |
-| **Hangi bölümün konusu** | Bölüm 2 (naif çözümler) | Bölüm 2 (kod taşıma) + Bölüm 3, Adım 5 (dış kodlama) |
+| **Hangi bölümün konusu** | Bölüm 2 (naif çözümler) | Bölüm 2 (kod sökme) + Bölüm 3, Adım 5 (dış kodlama) |
 | **Anahtar katman** | TEE/SE ya da WBC tabloları | Dış kodlama (F, G) + cihaz/sürüm bağlama |
 | **Son savunma hattı** | Sunucu risk denetimi | Sunucu risk denetimi |
 
@@ -1414,7 +1414,7 @@ bir kez daha görmenizdir.
    → kurcalama → otomasyon) izledik. Bu altı adım, Bölüm 4'teki bütün saldırıların (BGE=statik, DCA/DFA=dinamik)
    **ön koşuluydu**.
 3. **Bölüm 2 — Problem neden zor?** Naif çözümlerin (düz anahtar, yalnız XOR) neden çöktüğünü **elle hesapladık**
-   (`0x3C XOR 0x5A` örneği). Kod taşıma tehdidini tanıdık. WBC'nin, "9. haftanın gizleme kurallarının kriptografiye
+   (`0x3C XOR 0x5A` örneği). Kod sökme tehdidini tanıdık. WBC'nin, "9. haftanın gizleme kurallarının kriptografiye
    uygulanmış hâli" olduğunu gördük.
 4. **Bölüm 3 — Chow AES, adım adım.** Beş adımı (kısmi değerlendirme → T-box birleştirme → iç kodlama → karıştırıcı
    matris → dış kodlama) **oyuncak bir S-box üzerinde tamamen elle** kurduk: önce anahtarı 4 girdiden de tutarlı
@@ -1558,7 +1558,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
 ??? question "3. Anahtarı sabit diziye gömmek neden koruma değildir? Entropi taraması burada ne işe yarar?"
     Anahtar, ikili içinde **yüksek entropili** bir bayt bloğu olarak durur; kodun içine koymak yalnızca konumunu değiştirir, gizlemez. Entropi taraması ikilideki yüksek-entropili (anahtar benzeri) bölgeleri bulur; demo `--tara` bunu gösterir.
 
-??? question "4. Kod taşıma (code lifting) nedir? WBC, anahtarı hiç bilmeyen bir saldırgana karşı neden savunmasız olabilir? Hangi önlem bunu kapatır?"
+??? question "4. Kod sökme (code lifting) nedir? WBC, anahtarı hiç bilmeyen bir saldırgana karşı neden savunmasız olabilir? Hangi önlem bunu kapatır?"
     **Code lifting:** saldırgan whitebox tabloyu/rutini olduğu gibi kopyalayıp başka bir yerde kullanır — anahtarı hiç çıkarmadan şifreleme/çözme yapar. Bunu **dış kodlama (external encoding)** kapatır: fonksiyonun giriş/çıkışı uygulamaya bağlanır, taşınan rutin başka bağlamda işe yaramaz (ek olarak cihaz bağlama).
 
 ??? question "5. Kısmi değerlendirme `T[x] = S-box[x ⊕ k]` tek başına neden güvensizdir?"
@@ -1609,7 +1609,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
 ??? question "20. SoftHSM ile gerçek bir HSM aynı PKCS#11 arayüzünü sunar; güvenlik açısından temel farkları nedir?"
     Gerçek HSM'de anahtar işlemi **kurcalamaya dirençli, izole bir donanım çip** içinde yapılır. SoftHSM'de aynı işlem **sunucunun normal belleğinde/işleminde** çalışır; arayüz aynı olsa da, sunucu ele geçirilirse SoftHSM'deki anahtar da risk altındadır.
 
-??? question "21. Bölüm 6'daki ikinci senaryoda (kod taşıma), ilk senaryodan (düz gömülü anahtar) farklı olarak saldırgan hangi adımı hiç atmaz ve neden?"
+??? question "21. Bölüm 6'daki ikinci senaryoda (kod sökme), ilk senaryodan (düz gömülü anahtar) farklı olarak saldırgan hangi adımı hiç atmaz ve neden?"
     Saldırgan **anahtarı çıkarma** adımını hiç atmaz (BGE/DCA/DFA'ya gerek duymaz); whitebox rutinini/tabloları anahtarı hiç bilmeden **olduğu gibi kopyalayarak** işlevi çalar.
 
 ??? question "22. Bölüm 5'teki üç varlık örneğinde (oturum belirteci, yerel DB anahtarı, ödeme imzalama anahtarı) WBC hangi satırda tercih ediliyor? Diğer iki satırda neden değil?"
@@ -1643,10 +1643,10 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
     Üç saldırgan modelini (kara/gri/beyaz kutu) birbirinin yerine geçebilir sanmaktır. Gri kutu savunması (ör. sabit zamanlı karşılaştırma) **statik/dinamik whitebox analizine karşı hiçbir şey yapmaz**; her savunma, hangi modeldeki hangi yeteneğe karşı olduğu **açıkça belirtilerek** değerlendirilmelidir.
 
 ??? question "32. Bölüm 6'daki iki senaryoda 'son savunma hattı' olarak hangi katman ortaktır?"
-    **Sunucu tarafı risk denetimi.** Hem düz gömülü anahtar senaryosunda hem de dış kodlamasız rutin (kod taşıma) senaryosunda, istemci tarafındaki bütün katmanlar aşılsa bile, sunucudaki anormal kullanım denetimi son savunma hattı olarak kalır.
+    **Sunucu tarafı risk denetimi.** Hem düz gömülü anahtar senaryosunda hem de dış kodlamasız rutin (kod sökme) senaryosunda, istemci tarafındaki bütün katmanlar aşılsa bile, sunucudaki anormal kullanım denetimi son savunma hattı olarak kalır.
 
 ??? question "33. Bölüm 3'ün beş adımını (kısmi değerlendirme → T-box → iç kodlama → karıştırıcı matris → dış kodlama), her birinin bir önceki adımın hangi eksiğini kapattığını belirterek sırayla özetleyin."
-    Adım 1 anahtarı tabloya gömer ama tablo tek başına S-box ile karşılaştırılıp çözülebilir; Adım 2 gözlem noktası sayısını azaltır ama tek başına yetmez; Adım 3 (iç kodlama) tabloyu tek başına bakan saldırgana karşı maskeler; Adım 4 (karıştırıcı matris) bilgiyi birden çok bit/bayta yayarak tek tabloya bakmayı daha da zorlaştırır; Adım 5 (dış kodlama) bütün rutini uygulamaya bağlayarak kod taşımayı zorlaştırır. Beşi birlikte kullanılır.
+    Adım 1 anahtarı tabloya gömer ama tablo tek başına S-box ile karşılaştırılıp çözülebilir; Adım 2 gözlem noktası sayısını azaltır ama tek başına yetmez; Adım 3 (iç kodlama) tabloyu tek başına bakan saldırgana karşı maskeler; Adım 4 (karıştırıcı matris) bilgiyi birden çok bit/bayta yayarak tek tabloya bakmayı daha da zorlaştırır; Adım 5 (dış kodlama) bütün rutini uygulamaya bağlayarak kod sökmeyi zorlaştırır. Beşi birlikte kullanılır.
 
 ??? question "34. Bölüm 5'teki 'donanım kökü var ama güvenilir değil' tartışmasında, kök erişimi (root/jailbreak) alınmış bir cihazda TEE'nin kendisi neden hâlâ dirençli olabilir?"
     TEE, işlemcinin normal işletim sisteminden **ayrı, yalıtılmış** bir güvenlik sınırıdır; işletim sistemi seviyesindeki bir kök erişimi bu sınırı otomatik olarak **aşmaz**. Ama TEE'ye erişimi yöneten arabirimler güvenilmeyen işletim sisteminden çağrıldığı için, uygulamanın bu arabirimi **doğru ve dikkatli** kullanması yine de gerekir.
@@ -1675,7 +1675,7 @@ terim olursa o bölüme dönüp **bağlamıyla birlikte** okuyun.
 | İç kodlama | Tablolar arası ara değerleri gizli bijeksiyonlarla maskeleme | Bölüm 3, Adım 3 |
 | GF(2) / karıştırıcı matris / tekil olmayan matris | XOR tabanlı doğrusal cebir; bilgiyi bitler arasında yayan, tersi olan matris | Bölüm 0, 3 (Adım 4) |
 | Dış kodlama (F, G) | Fonksiyonun giriş/çıkışını uygulamaya bağlayan en dış katman | Bölüm 3, Adım 5 |
-| Kod taşıma (code lifting) | Anahtarı bilmeden whitebox rutinini kopyalayıp işlevi çalma | Bölüm 2, 6 |
+| Kod sökme (code lifting) | Anahtarı bilmeden whitebox rutinini kopyalayıp işlevi çalma | Bölüm 2, 6 |
 | BGE saldırısı | Afin iç kodlamaları cebirsel olarak çözen ilk kırılma (2004) | Bölüm 4 |
 | DCA | Yürütme izlerine istatistiksel (DPA benzeri) analiz uygulayan saldırı | Bölüm 3, 4 |
 | DFA | Hata enjekte edip çıktı farkından anahtar çıkaran saldırı | Bölüm 4 |
@@ -1684,7 +1684,7 @@ terim olursa o bölüme dönüp **bağlamıyla birlikte** okuyun.
 | TEE / SE | İşlemcinin/donanımın yalıtılmış, anahtar saklamaya uygun güvenli bölgesi | Bölüm 0, 5 |
 | HSM / SoftHSM / PKCS#11 | Anahtar saklayan özel donanım / onun yazılım benzetimi / standart arayüz | Bölüm 0, 5 |
 | Kripto-periyot / anahtar yenileme | Bir anahtarın kullanım ömrü; kısaltmak çıkarılan anahtarın değerini düşürür | [10. hafta](../week-10/cen429-week-10.md), Bölüm 4, 5 |
-| Cihaz/sürüm bağlama | Kodlamaları cihaza özgü hale getirip kod taşımayı işe yaramaz kılma | Bölüm 4, 5, 6 |
+| Cihaz/sürüm bağlama | Kodlamaları cihaza özgü hale getirip kod sökmeyi işe yaramaz kılma | Bölüm 4, 5, 6 |
 
 !!! tip "Sözlüğü nasıl kullanmalısınız?"
     Bir terimi görüp anlamını **hemen** hatırlayamıyorsanız, bu bir eksiklik değil — normaldir. Tabloda "Nerede

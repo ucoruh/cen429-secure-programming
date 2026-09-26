@@ -1152,7 +1152,7 @@ Kontroller geçse **bile** cihaz-bağlı anahtar tutmadı → sır **açılamad�
 
 - Anahtar/veri yalnız **belirli cihazda** anlamlı.
 - Kopyalanırsa (başka cihaz) işe yaramaz.
-- Kod taşımaya (9/11. hafta) karşı.
+- Kod sökmeye (9/11. hafta) karşı.
 
 ---
 
@@ -1329,6 +1329,64 @@ Bu fonksiyon ve onu çağıran akış kritik.
 - Kaç denetim, nerede, hangi tepki?
 - Başarım maliyeti (denetimler yavaşlatır).
 - S10'a yaz.
+
+---
+
+<!-- _class: bolum -->
+
+# Saldırgan ile savunmacı: bir diyalog
+
+<!-- Konuşma notu: Her denetim için "saldırgan ne yapar → savunma ne ekler" döngüsünü gösteriyoruz. Bu, katmanlı savunmanın neden gerekli olduğunu somutlaştırır. -->
+
+---
+
+# Neden bu diyalog?
+
+Güvenlik bir **hamle-karşı hamle** oyunudur.
+
+Her savunmaya bir saldırı, her saldırıya yeni savunma.
+
+Katmanlı savunma bu yüzden gereklidir.
+
+---
+
+# Bütünlük · diyalog
+
+- **Savunma:** self-hashing ekle.
+- **Saldırgan:** özet fonksiyonunu bul, hep "tutuyor" dedirt.
+- **Savunma:** özeti gizle, örtüştür, sonucu davranışa bağla.
+
+---
+
+# Anti-debug · diyalog
+
+- **Savunma:** debugger denetimi ekle.
+- **Saldırgan:** denetimi bul, atla.
+- **Savunma:** çok yöntem + zamanlama + gizleme; tepkiyi gecikmeli yap.
+
+---
+
+# Hook · diyalog
+
+- **Savunma:** fonksiyon baytlarını denetle.
+- **Saldırgan:** kancayı gizle, baytları geri düzelt.
+- **Savunma:** çapraz denetim + sunucu tarafı doğrulama.
+
+---
+
+# Kök · diyalog
+
+- **Savunma:** kök göstergelerini denetle.
+- **Saldırgan:** kök gizleyici kullan.
+- **Savunma:** çok gösterge + sunucu risk skoru; sert tepki değil kısıtlama.
+
+---
+
+# Diyalogdan ders
+
+- Tek savunma her zaman aşılır.
+- Güç: **çokluk + gizlilik + çeşitlilik + sunucu**.
+- Amaç: saldırıyı **ekonomik olmaktan çıkarmak**.
 
 ---
 

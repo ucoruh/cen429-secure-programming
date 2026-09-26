@@ -47,7 +47,7 @@
 | [**1** Giriş ve koruma planı](../week-1/cen429-week-1.md) | CIA; varlık–tehdit–zafiyet–risk; saldırgan modelleri (beyaz kutu); Saltzer–Schroeder ilkeleri; yedi koruma katmanı; koruma planının 7 adımı; arayüz ve varlık tabloları (C/I/I+); STRIDE ve VAD; saldırı ağacı; risk = olasılık × etki; güvenli başlatma; bellek yönetimi hataları; güvenli silme; bölümleme; sürüm kimliği | PATH ile kandırma · bellekte kalan parola · taşmayla yetki yükseltme · işaretli uzunluk | 1.1–1.9, 3.3–3.5, 12.1, 13.2–13.3 |
 | [**2** Zararlı yazılım ve modeller](../week-2/cen429-week-2.md) | Virüs türleri, solucan, truva atı; salgın hızı; kural tabanlı tespit; bütünlük izleme; Bell–LaPadula, Biba, Clark–Wilson; Unix ve Windows erişim denetimi; RBAC; CWE, OWASP Top 10, CVE, CVSS; denetim kaydı ve günlük enjeksiyonu | Kural motoru · bütünlük izleme · salgın · günlük enjeksiyonu · kurcalamaya dayanıklı günlük · ACE · umask · RBAC | 2.1–2.2, 13.11 |
 | [**3** Veri güvenliği](../week-3/cen429-week-3.md) | Verinin üç hali; simetrik/asimetrik/hibrit; AEAD; özet/MAC/imza; CSPRNG ve modulo sapması; nonce, IV, tuz; ECB; PBKDF2/Argon2id; HKDF, ileri gizlilik; anahtar yaşam döngüsü, hiyerarşi, zarflama; TLS 1.3, doğrulama, sabitleme, fail-open; maskeleme, tokenizasyon, takma ad; güvenlik kabukları | AES-GCM · nonce tekrarı · ECB · tur sayısı · HKDF · MITM + sabitleme · SQLite şifreleme · mlock · dört kabuk | 4.9–4.13, 9.1–9.3, 10.7–10.9, 11.1–11.11, 13.2 |
-| [**4** C/C++ sağlamlaştırma](../week-4/cen429-week-4.md) | SEI CERT; girdi doğrulama ilkeleri; biçim dizisi; UAF; tamsayı taşması ve tanımsız davranış; hata işleme, sinyaller; statik analiz; sanitizer'lar; fuzzing; kanarya, FORTIFY, ASLR, NX, RELRO, CFI; kod gizlemeye giriş; düzleştirme | Biçim dizisi · UAF · UBSan · fuzzing · korumalar · sembol/dize · düzleştirme | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
+| [**4** C/C++ sağlamlaştırma (hardening)](../week-4/cen429-week-4.md) | SEI CERT; girdi doğrulama ilkeleri; biçim dizesi (format string); UAF; tamsayı taşması ve tanımsız davranış; hata işleme, sinyaller; statik analiz; sanitizer'lar; fuzzing; kanarya, FORTIFY, ASLR, NX, RELRO, CFI; kod gizlemeye giriş; düzleştirme | Biçim dizesi · UAF · UBSan · fuzzing · korumalar · sembol/dize · düzleştirme | 3.1–3.5, 12.1, 12.3, 12.8, 12.11, 13.1, 13.4–13.5 |
 | [**5** Java ve yorumlanan diller](../week-5/cen429-week-5.md) | Yönetilen dil neyi çözer; SEI CERT Java; enjeksiyonun ortak kökü; SQL, komut, yol geçişi; seri durumdan çıkarma; XXE/XSS; Python/JS, ReDoS; bayt kodu; ProGuard/R8, `-keep`; dize gizleme, yansıma; SBOM, VEX | SQL · komut · yol · bayt kodu · gizleme · SBOM · seri durumdan çıkarma | 3.7, 3.10, 3.11, 1.7 |
 | [**6** RASP](../week-6/cen429-week-6.md) | Algılama–savunma–caydırma; MATE; RASP mimarisi; bütünlük denetimi; hata ayıklayıcı, ortam, kanca algılama; dinamik bellek koruması; root ve imza doğrulama; kontrol akışı sayacı; tepki politikası, decoy, cihaz bağlama; sınırlar | Bütünlük · anti-debug · VM · LD_PRELOAD · akış sayacı · imza · root · RASP motoru | 12.2, 12.12–12.13 (kavram) |
 
@@ -76,7 +76,7 @@
 | Statik analiz | Dinamik analiz / fuzzing | Statik çalıştırmadan, yanlış alarm verebilir; dinamik yalnız çalışan yolu görür ama kesindir |
 | İşaretsiz sarma | İşaretli taşma | Sarma tanımlıdır (mantık hatası); işaretli taşma **tanımsız davranıştır** |
 | Parametreli sorgu | Kaçış karakteri | Parametre iki kanal, asıl çözüm; kaçış ikinci savunma hattı |
-| ProGuard gizleme | Dize gizleme | ProGuard **adları** değiştirir, dizgeleri gizlemez |
+| ProGuard gizleme | Dize gizleme | ProGuard **adları** değiştirir, dizeleri (string) gizlemez |
 | Gizleme | Güvenli kodlama | Gizleme geciktirir; hatayı düzeltmez |
 | Algılama | Tepki | Algılama tek başına işe yaramaz; tepki tetikleyiciden uzak ve örtük olmalı |
 | Maskeleme | Tokenizasyon | Maskeleme gösterimde gizler; tokenizasyon değeri kasadaki gerçek değere bağlı belirteçle değiştirir |
@@ -94,7 +94,7 @@
 | 2 | [2. hafta](../week-2/cen429-week-2.md) | Modeller (BLP, Biba, Clark–Wilson), CWE/CVSS; bir CVSS vektörünü kendin puanla |
 | 3 | [3. hafta](../week-3/cen429-week-3.md) (1) | AEAD, nonce, tuz, KDF, rastgele sayılar; Demo 1–5 |
 | 4 | 3. hafta (2) | Anahtar yönetimi, TLS, sabitleme, maskeleme, kabuklar; Demo 6–9 |
-| 5 | [4. hafta](../week-4/cen429-week-4.md) | CERT çiftleri, biçim dizisi, UAF, UB, korumalar tablosu; Demo 1–7 |
+| 5 | [4. hafta](../week-4/cen429-week-4.md) | CERT çiftleri, biçim dizesi, UAF, UB, korumalar tablosu; Demo 1–7 |
 | 6 | 5–6. haftalar | Enjeksiyon, seri durumdan çıkarma, ProGuard, SBOM; RASP mimarisi ve tepki |
 | 7 | Tekrar | Aşağıdaki örnek soruları süre tutarak çöz; yanlışları ilgili bölümden oku |
 
@@ -129,11 +129,11 @@ Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göste
     birlikte her tahmini pahalı kılar.
 
 ??? question "6. Yığın kanaryası hangi saldırıyı durdurur, hangisini durdurmaz?"
-    Dönüş adresine ulaşan ardışık yığın taşmasını (programı sonlandırarak) durdurur. Kanaryadan önceki değişkenlerin
-    bozulmasını, öbek taşmasını ve sızdırılmış kanaryayı durdurmaz.
+    Dönüş adresine ulaşan ardışık yığın (stack) taşmasını (programı sonlandırarak) durdurur. Kanaryadan önceki değişkenlerin
+    bozulmasını, öbek (heap) taşmasını ve sızdırılmış kanaryayı durdurmaz.
 
-??? question "7. ProGuard'ın dört aşaması nedir? Hangisi dizgeleri gizler?"
-    Küçültme, iyileştirme, gizleme (ad değiştirme), ön doğrulama. Hiçbiri dizgeleri gizlemez.
+??? question "7. ProGuard'ın dört aşaması nedir? Hangisi dizeleri gizler?"
+    Küçültme, iyileştirme, gizleme (ad değiştirme), ön doğrulama. Hiçbiri dizeleri gizlemez.
 
 ??? question "8. RASP'ta 'tepkiyi tetikleyiciden ayırmak' ne demektir? Neden gerekir?"
     Algılama anında hemen çökmek yerine, tepkiyi zaman ve kod olarak uzak bir yerde (ör. sırrı silip decoy döndürerek)
@@ -150,8 +150,8 @@ Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göste
     }
     ```
 
-    İki hata: `sprintf` sınırsız yazar (taşma, STR31-C; `snprintf` kullanılmalı) ve `syslog`'a değişken biçim dizgesi
-    verilmiş (biçim dizisi açığı, FIO30-C; `syslog(LOG_INFO, "%s", tampon)`).
+    İki hata: `sprintf` sınırsız yazar (taşma, STR31-C; `snprintf` kullanılmalı) ve `syslog`'a değişken biçim dizesi
+    verilmiş (biçim dizesi açığı, FIO30-C; `syslog(LOG_INFO, "%s", tampon)`).
 
 ??? question "10. Bu kodda ne yanlış?"
     ```c
@@ -189,7 +189,7 @@ Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göste
     return Files.readAllBytes(kok.resolve(istek));
     ```
 
-    Ham dizge denetimi atlatılabilir (mutlak yol, sembolik bağlantı, kodlanmış biçimler). Önce kanonikleştirip
+    Ham dize denetimi atlatılabilir (mutlak yol, sembolik bağlantı, kodlanmış biçimler). Önce kanonikleştirip
     (`normalize`, `toRealPath`) sonra kök içinde olduğu denetlenmelidir (FIO16-J).
 
 ??? question "14. Bu sabitleme kodunun sorunu nedir?"
@@ -209,7 +209,7 @@ Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göste
     cihaz ve sürüm bağlama, zarflama, gerekirse whitebox; anahtar koda gömülmez.
 
 ??? question "16. Değerlendirici, uygulamanızın hata ayıklama derlemesinin dağıtıldığını fark etti. Hangi bulgular yazılır?"
-    Gizleme yok, sembol ve günlük dizgeleri açık, `debuggable` bayrağı açık (hata ayıklayıcı bağlanabilir), sanitizer ya
+    Gizleme yok, sembol ve günlük dizeleri açık, `debuggable` bayrağı açık (hata ayıklayıcı bağlanabilir), sanitizer ya
     da hata ayıklama kodu olabilir. Sürüm derlemesinin korumaları (checksec) ve günlüğün kaldırıldığı doğrulanmalı.
 
 ??? question "17. Bir ödeme uygulamasında kullanıcı 'bu işlemi ben yapmadım' diyor. Hangi STRIDE harfi? Hangi önlemler kanıt sağlar?"

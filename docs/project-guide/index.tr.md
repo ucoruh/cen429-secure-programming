@@ -734,7 +734,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     **Öne çıkan gereksinimler:**
 
-    - **4.14 İkili uygulama koruması:** ATM yazılımı, yetkisiz DLL enjeksiyonu ve süreç kancalamaya (hooking) karşı korunur.
+    - **4.14 İkili uygulama koruması:** ATM yazılımı, yetkisiz DLL enjeksiyonu ve sürece kanca takmaya (hooking) karşı korunur.
     - **4.3 Aktarımdaki veri:** PIN bloğu ve işlem isteği host'a şifreli ve MAC'li gönderilir.
     - **4.10 RASP:** hata ayıklayıcı bağlama veya bellek dökümü girişimi algılanınca işlem iptal edilir ve oturum sonlandırılır.
     - **4.12 Kriptografi ve sertifikalar:** PIN blok şifreleme düzenine uygun anahtar yönetimi uygulanır.

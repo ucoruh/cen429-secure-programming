@@ -499,7 +499,7 @@ cc -o program gizli.c
 <h1 id="veri-d%C3%B6n%C3%BC%C5%9F%C3%BCmleri">Veri dönüşümleri</h1>
 <ul>
 <li><strong>EncodeArithmetic:</strong> aritmetiği denk karmaşık ifadeyle (MBA) → <strong>K-02</strong></li>
-<li><strong>EncodeLiterals:</strong> sabit ve dizgeleri kodlar (ucuz, neredeyse her zaman uygulanır) → <strong>K-07, K-08</strong></li>
+<li><strong>EncodeLiterals:</strong> sabit ve dizeleri (string) kodlar (ucuz, neredeyse her zaman uygulanır) → <strong>K-07, K-08</strong></li>
 <li><strong>EncodeData:</strong> değişken gösterimini kodlar → <strong>K-09</strong></li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
@@ -1282,7 +1282,7 @@ tigress --Seed=2002 ... --out=gizli_b.c temiz.c
 <header>CEN429 Güvenli Programlama · Hafta 14</header>
 <h1 id="ad%C4%B1m-ad%C4%B1m--ne-olur">Adım adım · ne olur?</h1>
 <ul>
-<li>EncodeLiterals: <code>32</code> ve varsa dizgeler düz görünmez.</li>
+<li>EncodeLiterals: <code>32</code> ve varsa dizeler düz görünmez.</li>
 <li>EncodeArithmetic: karşılaştırma karmaşıklaşır.</li>
 <li>Flatten: tek dönüş noktası görünmez.</li>
 <li>AddOpaque: sahte dallar; &quot;başarı&quot; dalı tek yerde değil.</li>
@@ -1382,7 +1382,7 @@ tigress --Seed=2002 ... --out=gizli_b.c temiz.c
 <ol>
 <li>Davranışın <strong>değişmediğini test et</strong> (birim testi geçmeli); gizleme işlevi bozmamalı.</li>
 <li>İki farklı tohumla üret; ikilileri karşılaştır (<strong>hash/boyut/komut farklı</strong>) ama <strong>aynı girdi→aynı çıktı</strong> (diff/objdump).</li>
-<li><strong>S9</strong> (kod sağlamlaştırma) ve <strong>S15</strong> (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.</li>
+<li><strong>S9</strong> (kod sağlamlaştırma (hardening)) ve <strong>S15</strong> (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.</li>
 </ol>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -1767,7 +1767,7 @@ tigress --Seed=2002 ... --out=gizli_b.c temiz.c
 </thead>
 <tbody>
 <tr>
-<td>Dizge/sabit gizle</td>
+<td>Dize/sabit gizle</td>
 <td>EncodeLiterals</td>
 </tr>
 <tr>

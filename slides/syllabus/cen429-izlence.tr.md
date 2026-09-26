@@ -38,7 +38,7 @@ Dr. Öğr. Üyesi Uğur CORUH
 # Dersin amacı
 
 - Yaygın yazılım güvenlik açıklarını **tanımak**: arabellek taşması, bellek hataları, enjeksiyon
-- Yazılım koruma yöntemlerini **uygulamak**: veri güvenliği ve kriptografi, C/C++ ve Java sağlamlaştırma,
+- Yazılım koruma yöntemlerini **uygulamak**: veri güvenliği ve kriptografi, C/C++ ve Java sağlamlaştırma (hardening),
   çalışma zamanı öz koruması, kod gizleme, whitebox kriptografi
 - Güvenlik standartlarını ve **sızma testi planlamasını** bilmek
 - Her konu: **hatalı kod → saldırı → düzeltme**

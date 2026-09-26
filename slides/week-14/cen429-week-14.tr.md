@@ -377,7 +377,7 @@ Grup grup görelim; her birini bir K-kuralına bağlayacağız.
 # Veri dönüşümleri
 
 - **EncodeArithmetic:** aritmetiği denk karmaşık ifadeyle (MBA) → **K-02**
-- **EncodeLiterals:** sabit ve dizgeleri kodlar (ucuz, neredeyse her zaman uygulanır) → **K-07, K-08**
+- **EncodeLiterals:** sabit ve dizeleri (string) kodlar (ucuz, neredeyse her zaman uygulanır) → **K-07, K-08**
 - **EncodeData:** değişken gösterimini kodlar → **K-09**
 
 ---
@@ -980,7 +980,7 @@ tigress \
 
 # Adım adım · ne olur?
 
-- EncodeLiterals: `32` ve varsa dizgeler düz görünmez.
+- EncodeLiterals: `32` ve varsa dizeler düz görünmez.
 - EncodeArithmetic: karşılaştırma karmaşıklaşır.
 - Flatten: tek dönüş noktası görünmez.
 - AddOpaque: sahte dallar; "başarı" dalı tek yerde değil.
@@ -1050,7 +1050,7 @@ Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
 
 1. Davranışın **değişmediğini test et** (birim testi geçmeli); gizleme işlevi bozmamalı.
 2. İki farklı tohumla üret; ikilileri karşılaştır (**hash/boyut/komut farklı**) ama **aynı girdi→aynı çıktı** (diff/objdump).
-3. **S9** (kod sağlamlaştırma) ve **S15** (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.
+3. **S9** (kod sağlamlaştırma (hardening)) ve **S15** (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.
 
 ---
 
@@ -1358,7 +1358,7 @@ Hepsi aynı çerçeve: maliyet + katman + ölçüm.
 
 | İstediğin | Dönüşüm |
 | --- | --- |
-| Dizge/sabit gizle | EncodeLiterals |
+| Dize/sabit gizle | EncodeLiterals |
 | Hesabı gizle | EncodeArithmetic |
 | Yapıyı gizle | Flatten |
 | Sahte/opak ekle | AddOpaque |

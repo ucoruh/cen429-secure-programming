@@ -730,7 +730,7 @@ Hazır karşılıkları: OpenSSL `CRYPTO_memcmp`, Linux çekirdeğinde `crypto_m
 - [ ] Etiket ve MAC karşılaştırmaları **sabit zamanlı**.
 - [ ] Anahtar tamponları iş bitince siliniyor; bağlam nesneleri serbest bırakılıyor.
 - [ ] Hata iletileri saldırgana ayrıntı vermiyor: "etiket hatası" ile "dolgu hatası" ayrı iletiler olursa, bu fark
-      bir **kâhin** olarak kullanılabilir (CBC dolgu kâhini saldırıları buradan doğmuştur).
+      bir **kâhin** olarak kullanılabilir (CBC dolgu kâhini (padding oracle) saldırıları buradan doğmuştur).
 - [ ] Eskimiş algoritmalar yok: DES/3DES, RC4, MD5, SHA-1 (imzada), ECB.
 
 !!! note "Sahada nasıl uygulanır?"
@@ -1898,7 +1898,7 @@ o katmanda reddedildi. Paket başka bir cihaza taşındığında dış üç kabu
 bağlı en iç kabuk** açılamadı — sır ele geçmedi. Gerçek ürünlerde bu en iç kabuk çoğu zaman **whitebox kripto** olur
 ([Hafta 11](../week-11/cen429-week-11.md)).
 
-Bu kabuk yaklaşımı dönemin geri kalanına köprüdür: native kod sağlamlaştırma ve RASP ([Hafta 4](../week-4/cen429-week-4.md), 6, 9) kabukları
+Bu kabuk yaklaşımı dönemin geri kalanına köprüdür: native kod sağlamlaştırma (hardening) ve RASP ([Hafta 4](../week-4/cen429-week-4.md), 6, 9) kabukları
 **çalışma zamanında** korur; kripto ve anahtar hiyerarşisi ([Hafta 10](../week-10/cen429-week-10.md)) kabukların anahtarlarını doğru üretir ve yönetir;
 whitebox (Hafta 11) en iç kabuğu güçlendirir; sertifikasyon (Hafta 12–13) bütün bu katmanların **kanıtını** ister. Yani
 bu haftanın veri güvenliği bölümü, güvenlik kılavuzunuzun (S5, S7) omurgasıdır ve ilerideki her hafta bir kabuğu daha
@@ -2406,7 +2406,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | Whitebox crypto | Beyaz kutu kriptografi | Anahtarı tablolara gömüp bellekte açık göstermeyen gerçekleştirim |
     | Device binding | Cihaz bağlama | Anahtarı belirli cihaza/sürüme bağlayıp başka yerde açılamaz kılma |
     | Hybrid encryption | Hibrit şifreleme | Asimetrik ile simetrik anahtar taşıyıp veriyi simetrik şifreleme (TLS) |
-    | Encrypt-then-MAC | Önce şifrele sonra MAC | Şifreli metnin üzerine MAC koyma; AEAD'nin içerideki doğru sırası |
+    | Encrypt-then-MAC | Önce şifrele, sonra MAC | Şifreli metnin üzerine MAC koyma; AEAD'nin içerideki doğru sırası |
     | Tokenization | Tokenizasyon | Gerçek değeri anlamsız bir token ile değiştirip kasada saklama |
     | Constant-time compare | Sabit zamanlı karşılaştırma | Sırları/MAC'leri zamanlama sızdırmadan karşılaştırma (`CRYPTO_memcmp`) |
     | AAD | İlişkili veri | AEAD'de şifrelenmeyen ama doğrulanan (bağlanan) ek veri |
@@ -2414,6 +2414,6 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 !!! info "Bir sonraki hafta"
     **[4. hafta](../week-4/cen429-week-4.md) — Kod Sağlamlaştırma: C/C++.** Bu hafta veriyi (anahtarı, açık metni) doğru şifreleme ve anahtar
     yönetimiyle korumayı öğrendik; ama şifreleme kodunun kendisi de bir C/C++ programıdır ve bir arabellek taşması,
-    biçim dizisi açığı ya da tamsayı hatası, bu hafta özenle koruduğumuz anahtarı ve açık metni belleğe sızdırabilir.
+    biçim dizesi (format string) açığı ya da tamsayı hatası, bu hafta özenle koruduğumuz anahtarı ve açık metni belleğe sızdırabilir.
     4. haftada SEI CERT C/C++ kurallarıyla tam olarak bu tür hataları önlemeyi, statik analiz ve sanitizer'larla
     yakalamayı işleyeceğiz.

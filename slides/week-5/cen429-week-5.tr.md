@@ -75,7 +75,7 @@ Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** 
 
 - **Yönetilen dil:** belleği **otomatik** yöneten dil (Java, C#, Python, JS); programcı `malloc`/`free` yapmaz.
 - **GC (çöp toplayıcı):** artık kullanılmayan nesneleri arka planda otomatik temizler; programcı belleği elle bırakmaz.
-- Bu tek fark → çoğu bellek hatası (taşma, kullanım-sonrası-serbest) **ortadan kalkar**; Bölüm 1 bunu ayrıntılı gösterir.
+- Bu tek fark → çoğu bellek hatası (taşma, serbest bırakıldıktan sonra kullanma (use-after-free)) **ortadan kalkar**; Bölüm 1 bunu ayrıntılı gösterir.
 
 ---
 
@@ -514,7 +514,7 @@ Kanonik yol **kökün altında** mı? Değilse reddet.
 
 # Yol geçişi · bu bölümün kuralı
 
-- Ham dizgeye **asla** güvenme (`contains("..")` yetmez).
+- Ham dizeye (string) **asla** güvenme (`contains("..")` yetmez).
 - Önce **kanonikleştir**, sonra **kök içinde mi** diye denetle.
 - Sembolik bağlantıları da çöz (`toRealPath()`); denetimi dosya açıldıktan sonra da tekrarla.
 
@@ -815,7 +815,7 @@ Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
 
 - `.class`/`.jar` bayt kodu, kaynağa **çok yakın** geri çevrilebilir.
 - Araçlar: `javap` (sökme), JD-GUI/CFR/Procyon (tersine derleme).
-- Adlar, dizgeler, yapı büyük ölçüde **görünür**.
+- Adlar, dizeler, yapı büyük ölçüde **görünür**.
 
 ---
 
@@ -970,7 +970,7 @@ Eski ad → yeni ad. Bu dosya, gizlemeyi **tamamen** geri alır.
 
 # ProGuard/R8 · bu bölümün kuralı
 
-- Küçült + iyileştir + gizle; **dizgeleri gizlemez**.
+- Küçült + iyileştir + gizle; **dizeleri gizlemez**.
 - `-keep` yalnız **gerçekten** reflection/JNI ile çağrılana.
 - `mapping.txt` bir **sır**: sakla, dağıtma.
 
@@ -988,16 +988,16 @@ Eski ad → yeni ad. Bu dosya, gizlemeyi **tamamen** geri alır.
 
 ---
 
-# Java'da dizgeler açık
+# Java'da dizeler açık
 
-- `.class` içindeki sabit dizgeler **düz** görünür (`strings`, tersine derleyici).
+- `.class` içindeki sabit dizeler **düz** görünür (`strings`, tersine derleyici).
 - Hassas URL, anahtar parçası, mesajlar sızar.
 
 ---
 
 # Dize gizleme
 
-- Dizgeler derlemede **kodlanır**, kullanımda çözülür.
+- Dizeler derlemede **kodlanır**, kullanımda çözülür.
 - 4. haftadaki kuralla aynı: `strings`'i durdurur, **anahtar saklamaz**.
 - Çözme kodu da bytecode'da → sınırlı koruma.
 
@@ -1067,7 +1067,7 @@ buildTypes { release {
 | --- | --- |
 | Sınıf/metot sayısı | Küçültmeyle azalır |
 | Anlamlı ad oranı | Gizlemeyle çok düşer |
-| Düz metin hassas dizge | Dize gizlemeyle sıfıra iner |
+| Düz metin hassas dize | Dize gizlemeyle sıfıra iner |
 | Paket boyutu | Küçültmeyle azalır |
 | Günlük çağrısı sayısı | Sürümde sıfır |
 | Denetimi bulma süresi | Artar (insan deneyi) |
@@ -1435,7 +1435,7 @@ Beşi de bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **Java bayt kodu neden gizlemeye daha çok ihtiyaç duyar?**
 
-**Cevap:** Bayt kodu yüksek seviyeli, tür ve ad bilgisi taşır; kaynağa çok yakın tersine derlenir. Adlar/dizgeler açık görünür.
+**Cevap:** Bayt kodu yüksek seviyeli, tür ve ad bilgisi taşır; kaynağa çok yakın tersine derlenir. Adlar/dizeler açık görünür.
 
 ---
 

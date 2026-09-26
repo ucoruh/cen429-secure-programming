@@ -185,10 +185,9 @@ def gorsel_olcu(blok, genis_in):
     with Image.open(p) as im:
         gw, gh = im.size
     oran = gh / float(gw)
+    # 'w:NNN' ipucu yok sayılır: görsel içerik genişliğini doldurur, yüksekliği yaz_gorsel'de kalan alana
+    # göre küçültülür (çizimlerin en/boy oranları farklı; sabit genişlik taşmaya yol açıyordu).
     g = genis_in
-    m = re.search(r'w:(\d+)', alt or '')
-    if m:
-        g = min(genis_in, genis_in * (int(m.group(1)) / 1280.0))
     return g, g * oran
 
 
@@ -397,11 +396,19 @@ def donustur(md_yolu, pptx_yolu, logo=None):
             govde_bloklar = [b for b in bloklar if b[0] != 'h1']
             boyut = 18 if sinif == 'yogun' else 20
             alan = (GOVDE_ALT - GOVDE_UST) / 914400
+            # Görseller, metin bloklarından sonra KALAN alana oranı korunarak sığar (HTML temasındaki kuralın
+            # aynısı): uzun bir çizim alttaki maddeleri slayttan taşırmaz. Yazı küçültülürken her görsele en az
+            # 1,5 inç bırakılır.
+            gorsel_sayisi = sum(1 for b in govde_bloklar if b[0] == 'gorsel')
+            metin_bloklari = [b for b in govde_bloklar if b[0] != 'gorsel']
             while boyut > 11:
-                toplam = sum(blok_yuksekligi(b, boyut, GENIS / 914400) + 0.12 for b in govde_bloklar)
+                toplam = sum(blok_yuksekligi(b, boyut, GENIS / 914400) + 0.12 for b in metin_bloklari)
+                toplam += gorsel_sayisi * (1.5 + 0.12)
                 if toplam <= alan:
                     break
                 boyut -= 1
+            metin_toplam = sum(blok_yuksekligi(b, boyut, GENIS / 914400) + 0.12 for b in metin_bloklari)
+            gorsel_alan = (alan - metin_toplam - 0.12 * gorsel_sayisi) / gorsel_sayisi if gorsel_sayisi else 0
             ust = GOVDE_UST
             for b in govde_bloklar:
                 if b[0] == 'liste':
@@ -413,7 +420,7 @@ def donustur(md_yolu, pptx_yolu, logo=None):
                 elif b[0] == 'alinti':
                     yuk = yaz_paragraf(slayt, b[1], ust, boyut, alinti=True)
                 elif b[0] == 'gorsel':
-                    yuk = yaz_gorsel(slayt, b, ust, boyut, (GOVDE_ALT - ust) / 914400)
+                    yuk = yaz_gorsel(slayt, b, ust, boyut, max(0.8, min(gorsel_alan, (GOVDE_ALT - ust) / 914400)))
                 elif b[0] in ('h2', 'h3'):
                     yuk = yaz_paragraf(slayt, f'**{b[1]}**', ust, boyut + 2, TEAL)
                 else:

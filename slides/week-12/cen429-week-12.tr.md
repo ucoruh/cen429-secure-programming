@@ -715,7 +715,7 @@ Ucuz + geniş → pahalı + derin.
 
 # Kod incelemesi · nereye bakılır? (2)
 
-- **Girdi/bellek:** sınır denetimi, tamsayı taşması, biçim dizisi, UAF (4. hafta CERT).
+- **Girdi/bellek:** sınır denetimi, tamsayı taşması, biçim dizesi (format string), UAF (4. hafta CERT).
 - **Sızıntı:** günlükte hassas veri, hatada iç durum.
 - **Atlama:** bir denetimin tek dalla/tek dönüşle atlanabilmesi (9. hafta).
 
@@ -1207,8 +1207,8 @@ Bu kart, projenizin **S16** iskeletidir. Şimdi alanları görelim.
 # Kart · sürüm/hata ayıklama ayrımı
 
 - **Amaç:** sürüm derlemesinde günlük gerçekten kapalı mı?
-- **Adım:** sürüm APK'da `strings` ile günlük dizgesi ara.
-- **Beklenen:** günlük dizgesi yok.
+- **Adım:** sürüm APK'da `strings` ile günlük dizesi (string) ara.
+- **Beklenen:** günlük dizesi yok.
 
 ---
 

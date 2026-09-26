@@ -1332,6 +1332,64 @@ This function and the flow that calls it are critical.
 
 ---
 
+<!-- _class: bolum -->
+
+# Attacker and Defender: A Dialogue
+
+<!-- Speaker note: For every check, we show the "what does the attacker do → what does the defence add" loop. This makes concrete why layered defence is necessary. -->
+
+---
+
+# Why This Dialogue?
+
+Security is a **move-countermove** game.
+
+Every defence gets an attack, every attack gets a new defence.
+
+This is why layered defence is necessary.
+
+---
+
+# Integrity · Dialogue
+
+- **Defence:** add self-hashing.
+- **Attacker:** find the digest function, force it to always say "match."
+- **Defence:** obfuscate the digest check, overlap it, tie the result to a behaviour.
+
+---
+
+# Anti-Debug · Dialogue
+
+- **Defence:** add a debugger check.
+- **Attacker:** find the check, bypass it.
+- **Defence:** many methods + timing + obfuscation; make the response delayed.
+
+---
+
+# Hook · Dialogue
+
+- **Defence:** check the function's bytes.
+- **Attacker:** hide the hook, restore the bytes.
+- **Defence:** cross-checking + server-side verification.
+
+---
+
+# Root · Dialogue
+
+- **Defence:** check root indicators.
+- **Attacker:** use a root-hiding tool.
+- **Defence:** many indicators + a server-side risk score; restriction instead of a harsh response.
+
+---
+
+# The Lesson From the Dialogue
+
+- A single defence is always eventually bypassed.
+- Strength: **multiplicity + secrecy + diversity + the server**.
+- Goal: make the attack **no longer economical**.
+
+---
+
 <!-- _class: yogun -->
 
 # RASP Check Catalogue (1)

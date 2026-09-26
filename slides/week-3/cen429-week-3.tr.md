@@ -1871,9 +1871,9 @@ Konuşma notu: Grupları 3-4 kişi yapın. Etkinlik 1 ve 3 tartışma için en v
 
 # Bir sonraki hafta
 
-**4. hafta — Kod Sağlamlaştırma: C/C++**
+**4. hafta — Kod Sağlamlaştırma (hardening): C/C++**
 
-Bu hafta veriyi (anahtarı, açık metni) doğru şifreleme ve anahtar yönetimiyle korumayı öğrendik; ama şifreleme kodunun kendisi de bir C/C++ programıdır — bir arabellek taşması, biçim dizisi açığı ya da tamsayı hatası, özenle korunan anahtarı ve açık metni belleğe sızdırabilir.
+Bu hafta veriyi (anahtarı, açık metni) doğru şifreleme ve anahtar yönetimiyle korumayı öğrendik; ama şifreleme kodunun kendisi de bir C/C++ programıdır — bir arabellek taşması, biçim dizesi (format string) açığı ya da tamsayı hatası, özenle korunan anahtarı ve açık metni belleğe sızdırabilir.
 
 4\. haftada **SEI CERT C/C++** kurallarıyla tam olarak bu tür hataları önlemeyi, statik analiz ve sanitizer'larla yakalamayı işleyeceğiz.
 

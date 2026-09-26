@@ -978,13 +978,13 @@ GUVENLI:
   sahte 'admin BASARILI' satiri: 0
 ```
 
-✅ Kaçışla (`\xNN`) · ✅ uzunluğu sınırla · ✅ `syslog(LOG_INFO, "%s", girdi)` — girdi asla biçim dizgesi değil
+✅ Kaçışla (`\xNN`) · ✅ uzunluğu sınırla · ✅ `syslog(LOG_INFO, "%s", girdi)` — girdi asla biçim dizesi (format string) değil
 
 <!-- Konuşma notu: Kullanıcı adına gömülü tek bir satır sonu, hiç yaşanmamış bir yönetici girişini günlüğe yazdırdı. Biçim dizgesi tuzağını 4. haftaya köprü olarak anın. -->
 
 ---
 
-# Zafiyetli kod: günlük enjeksiyonu ve biçim dizisi
+# Zafiyetli kod: günlük enjeksiyonu ve biçim dizesi
 
 ```c
 fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
@@ -994,7 +994,7 @@ fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
 syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
 ```
 
-Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğrudan biçim dizgesi** olarak kullanılmamalı:
+Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğrudan biçim dizesi** olarak kullanılmamalı:
 `syslog(LOG_INFO, "%s", girdi)`.
 
 ---
@@ -1013,7 +1013,7 @@ Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğru
 - Kayıt, bir **saldırganın da okuyabileceği** varsayılarak tasarlanır.
 - Günlüğe yazılan her sır, günlük dosyasına erişen **herkese** verilmiş demektir.
 - Kapalı bir bayrakla **susturulmuş** hata ayıklama kodu, ikili dosyada **kalır**.
-- Hem dizgeleriyle bilgi sızdırır hem de **yeniden açılabilir** — bu yüzden sürüm derlemesinde tamamen **çıkarılmalıdır**.
+- Hem dizeleriyle (string) bilgi sızdırır hem de **yeniden açılabilir** — bu yüzden sürüm derlemesinde tamamen **çıkarılmalıdır**.
 
 ---
 

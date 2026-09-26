@@ -84,7 +84,7 @@
 
 !!! info "Bu haftanın kaynakları hakkında"
     Bu hafta iki ana kaynağa dayanır: (1) **güvenli programlama teknik kılavuzu** — sertifikasyondan geçmiş bir mobil
-    ödeme kütüphanesinin **kod sağlamlaştırma karşı önlemlerini** "açıklama / uygulama / sınır" biçiminde listeler; (2)
+    ödeme kütüphanesinin **kod sağlamlaştırma (hardening) karşı önlemlerini** "açıklama / uygulama / sınır" biçiminde listeler; (2)
     **Secure Programming Cookbook** (Viega & Messier), Bölüm 12 "Anti-Tampering". Kılavuzdaki karşı önlemler burada
     **kurallar** olarak, üründen ve gerçek değerlerden arındırılmış biçimde verilir; bütün kod ve değerler
     **sentetiktir**. 4. hafta bu tekniklere giriş yaptı (sembol/dize gizleme, düzleştirmeye giriş); bu hafta aynı
@@ -145,7 +145,7 @@ temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 | Gizlemenin sınırı | Gizleme statik analize karşı gecikme ve otomasyona karşı direnç sağlar; bir sırrın matematiksel gizliliğini (kriptografi) ya da çalışan programda bellekten okumaya karşı korumayı (RASP/whitebox) sağlamaz. | [§3](#3-gizleme-ne-verir-ne-vermez) |
 | Koruma kuralı şablonu | Her gizleme tekniği; neyi korur, hangi tehdide karşı, nasıl, maliyeti, sınırı ve ölçümü veren altı satırlık standart bir şablonla değerlendirilir. | [§4](#4-koruma-kurali-sablonu) |
 | Kontrol akışı kuralları (K-01–K-06) | Opak yüklem/döngü, aritmetik kodlama, sahte işlem/ölü dal, kontrol akışı düzleştirme, rastgele çıkış ve fonksiyon/parametre gizleme; algoritmanın CFG'sini okunmaz kılan kurallardır. | [§5](#5-kontrol-akisi-kurallari-ileri) |
-| Veri gizleme kuralları (K-07–K-09) | Statik dizge kodlama, opak boolean ve değişken bölme/birleştirme; programın işlediği sabitleri, dizgeleri ve değişkenleri gizler. | [§6](#6-veri-gizleme-kurallari) |
+| Veri gizleme kuralları (K-07–K-09) | Statik dize (string) kodlama, opak boolean ve değişken bölme/birleştirme; programın işlediği sabitleri, dizeleri ve değişkenleri gizler. | [§6](#6-veri-gizleme-kurallari) |
 | Program bütünü düzeyinde kurallar (K-10–K-12) | Sanallaştırma tabanlı gizleme, derleyici tabanlı gizleme (O-LLVM) ve kendini değiştiren kod; fonksiyonun makine kodunun kendisini ya da üretim biçimini değiştiren en pahalı ve en güçlü katmandır. | [§7](#7-program-butunu-duzeyinde-kurallar) |
 | Çeşitlendirme (diversification) | Aynı kaynaktan tohuma bağlı, davranışça eş ama yapıca farklı ikili dosyalar üretmek; gizlemenin gücünü değil, bir kırığın diğer kopyalara yayılmasını (ölçeklenmesini) engeller. | [§8](#8-cesitlendirme-tek-kirik-her-yeri-acmasin) |
 | Gizlemenin dört ölçütü | Güç (insan için anlaşılmazlık), dayanıklılık (otomatik araca direnç), gizlilik (fark edilmezlik) ve maliyet (boyut/hız/bakım); bir koruma kararı bu dördü korunan varlığın değerine göre dengeler. | [§9](#9-gizlemenin-olculmesi) |
@@ -255,7 +255,7 @@ Sonuç: `0001 1011` = `0x1B`. Kural basit: aynıysa (`0^0=0`, `1^1=0`) sonuç 0,
 
 Sonuç: `0100 0001` = `0x41` — tam olarak başladığımız bayt. Bunu garanti eden cebirsel kural şudur: `a ^ b ^ b = a ^
 (b ^ b) = a ^ 0 = a` (herhangi bir değer kendisiyle XOR'lanınca 0 verir; 0 ile XOR'lanan değer değişmeden kalır).
-Bölüm 6'daki K-07 kuralında bir dizgeyi tam olarak bu mekanizmayla kodlayıp çözeceğiz; orada aynı bit tablosunu
+Bölüm 6'daki K-07 kuralında bir dizeyi tam olarak bu mekanizmayla kodlayıp çözeceğiz; orada aynı bit tablosunu
 tekrar kuracaksınız, sadece bir bayt yerine bir dizi bayt için.
 
 #### Entropi: bir verinin ne kadar "rastgele" göründüğü
@@ -475,7 +475,7 @@ zaman kural haline geldiğini" netleştiriyoruz.
 | Aile | Neyi gizler? | Örnek kurallar | Bu dersteki yeri |
 | --- | --- | --- | --- |
 | **Düzen (layout)** | Adları, biçimi, meta veriyi | Sembolleri görünmez yap, fonksiyon/dosya adlarını anlamsızlaştır, sürümde günlüğü kaldır | 4. hafta (giriş), bu hafta (derinlik) |
-| **Veri** | Sabitleri, dizgeleri, değişkenleri | Dize kodlama, sabit dönüşümleri, değişken bölme/birleştirme, opak boolean | Bu hafta bölüm 6 |
+| **Veri** | Sabitleri, dizeleri, değişkenleri | Dize kodlama, sabit dönüşümleri, değişken bölme/birleştirme, opak boolean | Bu hafta bölüm 6 |
 | **Kontrol akışı** | Algoritmanın yapısını | Kontrol akışı düzleştirme, opak yüklemler, sahte/ölü dallar, rastgele çıkış | Bu hafta bölüm 5 |
 | **Önleyici (anti-analysis)** | Analiz araçlarının işini | Tersine derleyiciyi yanıltan yapılar, çalışma anında kod çözme | Bu hafta (kavram), [6. hafta](../week-6/cen429-week-6.md) (RASP) |
 | **Sanallaştırma** | Makine kodunun kendisini | Fonksiyonu özel bir sanal makinenin bayt koduna çevirme | Bu hafta (kavram), [14. hafta](../week-14/cen429-week-14.md) (Tigress) |
@@ -483,7 +483,7 @@ zaman kural haline geldiğini" netleştiriyoruz.
 !!! note "Sahada bu aileler birlikte kullanılır"
     Kaynak kılavuzun kod sağlamlaştırma bölümü, yukarıdaki ailelerin neredeyse tamamını **tek bir üründe** listeler:
     paylaşılan kütüphanede sembol görünürlüğünün kapatılması; fonksiyon, dosya ve parametre adlarının el ile
-    anlamsızlaştırılması (asıl adlar iç belgede); aritmetik komutların dönüştürülmesi; statik dizgelerin derleme
+    anlamsızlaştırılması (asıl adlar iç belgede); aritmetik komutların dönüştürülmesi; statik dizelerin derleme
     öncesi kodlanıp kullanım anında çözülüp hemen silinmesi; yalnız "başarılı/başarısız" döndüren opak boolean'lar;
     sonucu değiştirmeyen sahte işlemler ve hiç çalışmayan ölü dallar; kontrol akışı düzleştirme ve hata durumunda
     rastgele bir çıkış noktası; sürümde günlüğün kaldırılması. **Hiçbiri tek başına güçlü değildir; güçleri birlikte
@@ -642,12 +642,12 @@ gerektiğinin somut kanıtıdır — bölüm 9'da bu sayıları tekrar kullanaca
     Öğrenciler genelde hangi tekniği uyguladıklarını (Nasıl) yazar ama **maliyet** ve **ölçüm** satırlarını atlar.
     Bölüm 12'deki değerlendirici notu bunu açıkça söylüyor: ölçülmemiş bir koruma "iddia" sayılır, kanıt sayılmaz.
     **Kural:** altı satırın **hepsi** doldurulmadan bir koruma S9'a yazılmış sayılmaz; en az bir satır "Ölçüm"
-    somut bir sayı ya da gözlem içermelidir (ör. "`strings` çıktısında X dizgesi görünmüyor").
+    somut bir sayı ya da gözlem içermelidir (ör. "`strings` çıktısında X dizesi görünmüyor").
 
 ### İkinci bir işlenmiş örnek: farklı bir varlık için şablonu dolduralım
 
 Şablonun her varlık türüne uyduğunu görmek için, bu kez bölüm 6'da tanıyacağımız bir **veri** koruma kuralını
-dolduralım (fonksiyon değil, bir dizge):
+dolduralım (fonksiyon değil, bir dize):
 
 ```text
 KURAL K-07-uygulama: hata mesajı dizgesine dize kodlama
@@ -660,7 +660,7 @@ KURAL K-07-uygulama: hata mesajı dizgesine dize kodlama
 ```
 
 İki örneği (K-04-uygulama ve K-07-uygulama) yan yana koyduğumuzda fark netleşir: **kontrol akışı** kuralları
-genelde "komut/dal sayısı" ile, **veri** kuralları genelde "görünür dizge/sabit sayısı" ile ölçülür — ama her
+genelde "komut/dal sayısı" ile, **veri** kuralları genelde "görünür dize/sabit sayısı" ile ölçülür — ama her
 ikisinde de şablonun altı satırı **aynı disiplinle** doldurulur. S9'unuzda en az bir kontrol akışı, bir de veri
 kuralı için bu şablonu ayrı ayrı doldurmanız beklenir.
 
@@ -1001,20 +1001,20 @@ projelerde bu satırlar aranmadıkça sahte olduğu belli olmaz.
 
 ## 6. Veri gizleme kuralları
 
-Kontrol akışı algoritmanın yapısını gizler; **veri gizleme** ise programın işlediği **değerleri** gizler: dizgeler,
+Kontrol akışı algoritmanın yapısını gizler; **veri gizleme** ise programın işlediği **değerleri** gizler: dizeler,
 sabitler, tablolar ve değişkenler. Cookbook'un anti-tampering bölümü ile teknik kılavuz burada aynı kuralları
 listeler.
 
 ![Veri gizleme kuralları K-07 – K-09](assets/h09-15-veri-gizleme-kurallari.svg)
 
-### KURAL K-07 — Statik dizgelerin kodlanması
+### KURAL K-07 — Statik dizelerin kodlanması
 
 [4. haftada](../week-4/cen429-week-4.md#15-sembol-dize-ve-gunluk-gizleme) dize gizlemeye giriş yapmış,
 [5. haftada](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi) Java tarafında XOR ile elle
 çözmüştük; burada aynı fikri C/C++ tarafında derinleştiriyoruz.
 
 **Neyi korur?** İkili dosyadaki okunabilir metinleri. Tersine mühendisliğin en ucuz ilk adımı `strings` çalıştırmaktır;
-`"Lisans gecersiz"` ya da bir URL, saldırgana nereye bakacağını söyler. **Nasıl?** Hassas dizgeler **derleme öncesinde
+`"Lisans gecersiz"` ya da bir URL, saldırgana nereye bakacağını söyler. **Nasıl?** Hassas dizeler **derleme öncesinde
 kodlanır** (ör. bir XOR anahtarıyla ya da bir üretim betiğiyle şifrelenir), ikili dosyada kodlanmış hâlde durur,
 **kullanım anında çözülür** ve iş biter bitmez **bellekten silinir**.
 
@@ -1030,7 +1030,7 @@ void kullan(void) {
 
 **Maliyet:** düşük. **Sınır:** çalışan programda çözülmüş dize bellekte görünür; bu bir **statik tarama** önlemidir.
 Çözme anahtarı da ikili dosyadadır — bu yüzden sahada çözme anahtarı **parçalanır ve dağıtılır** ve çözme fonksiyonu
-ek denetimlerle korunur. **Ölçüm:** `strings` çıktısında hassas dizge **bulunmamalı**.
+ek denetimlerle korunur. **Ölçüm:** `strings` çıktısında hassas dize **bulunmamalı**.
 
 **İşlenmiş örnek: yukarıdaki `GIZLI` dizisini elle çözelim.** Kod bloğundaki `GIZLI = {0x3B, 0x2A, 0x2E, 0x2E,
 0x2D}` dizisini, her baytı `0x5A` ile XOR'layarak (bölüm 0'daki bit tablosuyla aynı yöntem) tek tek çözelim:

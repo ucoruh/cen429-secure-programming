@@ -43,12 +43,12 @@
 <tr>
 <td>1</td>
 <td>1</td>
-<td>Sağlamlaştırma katmanları · SEI CERT · girdi doğrulama ilkeleri · CERT çiftleri</td>
+<td>Sağlamlaştırma (hardening) katmanları · SEI CERT · girdi doğrulama ilkeleri · CERT çiftleri</td>
 </tr>
 <tr>
 <td>2</td>
 <td>2–4</td>
-<td>Biçim dizisi <strong>Demo 1</strong> · UAF <strong>Demo 2</strong> · tamsayı/UB <strong>Demo 3</strong> · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing <strong>Demo 4</strong></td>
+<td>Biçim dizesi (format string) <strong>Demo 1</strong> · UAF <strong>Demo 2</strong> · tamsayı/UB <strong>Demo 3</strong> · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing <strong>Demo 4</strong></td>
 </tr>
 <tr>
 <td>3</td>
@@ -110,7 +110,7 @@
 <td>Bölüm 1</td>
 </tr>
 <tr>
-<td>Biçim dizisi açığı</td>
+<td>Biçim dizesi açığı</td>
 <td>Bölüm 2</td>
 </tr>
 <tr>
@@ -322,7 +322,7 @@
 </tr>
 <tr>
 <td>ARR/STR</td>
-<td>Dizi/dizge</td>
+<td>Dizi/dize (string)</td>
 <td>STR31-C: yeterli yer ayır</td>
 </tr>
 <tr>
@@ -333,7 +333,7 @@
 <tr>
 <td>FIO</td>
 <td>Dosya G/Ç</td>
-<td>FIO30-C: girdiyi biçim dizgesinden dışla</td>
+<td>FIO30-C: girdiyi biçim dizesinden dışla</td>
 </tr>
 </tbody>
 </table>
@@ -577,12 +577,12 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="43" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-class="bolum" data-theme="cen429" data-lang="tr" lang="tr" class="bolum" data-marpit-pagination="43" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--class:bolum;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 
-<h1 id="2-bi%C3%A7im-dizisi-a%C3%A7%C4%B1%C4%9F%C4%B1">2. Biçim dizisi açığı</h1>
+<h1 id="2-bi%C3%A7im-dizesi-a%C3%A7%C4%B1%C4%9F%C4%B1">2. Biçim dizesi açığı</h1>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="44" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="44" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
-<h1 id="bi%C3%A7im-dizisi-a%C3%A7%C4%B1%C4%9F%C4%B1--%C5%9Fema">Biçim dizisi açığı — şema</h1>
+<h1 id="bi%C3%A7im-dizesi-a%C3%A7%C4%B1%C4%9F%C4%B1--%C5%9Fema">Biçim dizesi açığı — şema</h1>
 <p><img src="assets/h04-07-bicim-dizisi.svg" alt="" style="width:950px;" /></p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -592,13 +592,13 @@
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c"><span class="hljs-built_in">printf</span>(kullanici_girdisi);        <span class="hljs-comment">/* HATALI */</span>
 <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, kullanici_girdisi);  <span class="hljs-comment">/* DOĞRU */</span>
 </code></pre>
-<p>İlkinde kullanıcı girdisi bir <strong>biçim dizgesi</strong> olarak yorumlanır.</p>
+<p>İlkinde kullanıcı girdisi bir <strong>biçim dizesi</strong> olarak yorumlanır.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="46" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="46" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="neden-tehlikeli">Neden tehlikeli?</h1>
-<p><code>printf</code> biçim dizgesindeki <code>%</code> belirteçlerini <strong>komut</strong> sayar.</p>
+<p><code>printf</code> biçim dizesindeki <code>%</code> belirteçlerini <strong>komut</strong> sayar.</p>
 <p>Kullanıcı <code>%x</code>, <code>%s</code>, <code>%n</code> gönderirse programa iş yaptırır.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -616,7 +616,7 @@
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="belirte%C3%A7--s">Belirteç · <code>%s</code></h1>
 <ul>
-<li>Yığındaki bir değeri <strong>işaretçi</strong> sanar ve o adresteki dizgeyi okur.</li>
+<li>Yığındaki bir değeri <strong>işaretçi</strong> sanar ve o adresteki dizeyi okur.</li>
 <li>Rastgele adres → çökme ya da bellek okuma.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
@@ -635,14 +635,14 @@
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="ayn%C4%B1-hata-ba%C5%9Fka-yerlerde">Aynı hata başka yerlerde</h1>
 <p>Sadece <code>printf</code> değil:</p>
-<p><code>syslog</code>, <code>fprintf</code>, <code>snprintf</code>, <code>err</code>/<code>warn</code> — hepsi biçim dizgesi alır.</p>
-<p>Kural: biçim dizgesi <strong>her zaman sabit</strong> (FIO30-C).</p>
+<p><code>syslog</code>, <code>fprintf</code>, <code>snprintf</code>, <code>err</code>/<code>warn</code> — hepsi biçim dizesi alır.</p>
+<p>Kural: biçim dizesi <strong>her zaman sabit</strong> (FIO30-C).</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="51" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-class="yogun" data-theme="cen429" data-lang="tr" lang="tr" class="yogun" data-marpit-pagination="51" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--class:yogun;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 
-<h1 id="demo-1--bi%C3%A7im-dizisi">Demo 1 — biçim dizisi</h1>
+<h1 id="demo-1--bi%C3%A7im-dizesi">Demo 1 — biçim dizesi</h1>
 <p><code>code/week-04/01-format-string</code> · CWE-134</p>
 <table>
 <thead>
@@ -680,7 +680,7 @@
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="d%C3%BCzeltme--katman-katman">Düzeltme · katman katman</h1>
 <ol>
-<li>Biçim dizgesi hep <strong>sabit</strong> (FIO30-C).</li>
+<li>Biçim dizesi hep <strong>sabit</strong> (FIO30-C).</li>
 <li>Uyarı: <code>-Wformat -Wformat-security -Werror=format-security</code>.</li>
 <li>Kendi fonksiyonunuzu derleyiciye <strong>denetlettirin</strong>:</li>
 </ol>
@@ -1188,7 +1188,7 @@ Dezavantaj: <strong>yanlış alarm</strong> üretir.</p>
 <h1 id="asan-nas%C4%B1l-%C3%A7al%C4%B1%C5%9F%C4%B1r--g%C3%B6lge-bellek">ASan nasıl çalışır? · gölge bellek</h1>
 <ul>
 <li>Her 8 bayt için 1 <strong>gölge bayt</strong>: ne kadarı geçerli?</li>
-<li>Dizilerin önüne/arkasına <strong>zehirli bölge</strong> (redzone).</li>
+<li>Dizilerin önüne/arkasına <strong>koruma bölgesi</strong> (redzone).</li>
 <li>Serbest bloklar <strong>karantinada</strong> bekler.</li>
 <li>Her erişimden önce gölge denetimi.</li>
 </ul>
@@ -1200,7 +1200,7 @@ Dezavantaj: <strong>yanlış alarm</strong> üretir.</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c"><span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> <span class="hljs-type">char</span> ad[<span class="hljs-number">8</span>]; <span class="hljs-type">long</span> yetki; } k;
 <span class="hljs-built_in">strcpy</span>(k.ad, uzun_girdi);   <span class="hljs-comment">/* ad → yetki taşar */</span>
 </code></pre>
-<p>Aynı yapının <strong>içinde</strong> alandan alana taşma → arada zehirli bölge yok → ASan <strong>görmez</strong> (1. hafta Demo 3).</p>
+<p>Aynı yapının <strong>içinde</strong> alandan alana taşma → arada koruma bölgesi yok → ASan <strong>görmez</strong> (1. hafta Demo 3).</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="91" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="91" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
@@ -1557,7 +1557,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 </tr>
 <tr>
 <td>İkili denetimi</td>
-<td>Günlük dizgesi, sembol, kapalı koruma</td>
+<td>Günlük dizesi, sembol, kapalı koruma</td>
 </tr>
 </tbody>
 </table>
@@ -1640,7 +1640,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="katman-4--neden">Katman 4 · neden?</h1>
 <ul>
-<li>Beyaz kutu saldırgan: dizgeleri okur, fonksiyonları adıyla bulur, denetimi atlar.</li>
+<li>Beyaz kutu saldırgan: dizeleri okur, fonksiyonları adıyla bulur, denetimi atlar.</li>
 <li>Gizleme: davranış aynı, <strong>anlaşılması zor</strong>.</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
@@ -1734,7 +1734,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <td>Makroyu derlemede <strong>boşalt</strong></td>
 </tr>
 <tr>
-<td>Dizgeleri gizle</td>
+<td>Dizeleri gizle</td>
 <td>Derlemede şifrele, kullanınca çöz, hemen sil</td>
 </tr>
 </tbody>
@@ -1759,7 +1759,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c"><span class="hljs-keyword">if</span> (hata_ayikla) <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;...&quot;</span>);  <span class="hljs-comment">/* KÖTÜ */</span>
 </code></pre>
 <ul>
-<li>Dizge ikili dosyada <strong>kalır</strong>.</li>
+<li>Dize ikili dosyada <strong>kalır</strong>.</li>
 <li>Saldırgan bayrağı değiştirip günlüğü <strong>yeniden açar</strong>.</li>
 <li>Doğrusu: derleme anında <strong>çıkar</strong>.</li>
 </ul>
@@ -1769,7 +1769,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="%E2%9A%A0%EF%B8%8F-dize-gizleme-%E2%89%A0-anahtar-saklama">⚠️ Dize gizleme ≠ anahtar saklama</h1>
 <ul>
-<li>Çözülen dizge kullanım anında <strong>bellekte açık</strong>.</li>
+<li>Çözülen dize kullanım anında <strong>bellekte açık</strong>.</li>
 <li>Çözme anahtarı <strong>programın içinde</strong>.</li>
 <li>Durdurduğu: <code>strings</code> gibi <strong>statik</strong> taramalar.</li>
 <li>Çalışırken inceleyene → RASP (6). Gerçek anahtar → whitebox (11).</li>
@@ -1795,7 +1795,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 </tr>
 <tr>
 <td>2 <code>strings</code></td>
-<td>Açıkta lisans dizgesi ve <code>[LOG]</code>; kapalıda yok</td>
+<td>Açıkta lisans dizesi ve <code>[LOG]</code>; kapalıda yok</td>
 </tr>
 <tr>
 <td>3 <code>nm</code></td>
@@ -2047,7 +2047,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <ul>
 <li>[ ] Testleri ASan + UBSan ile çalıştır.</li>
 <li>[ ] En az bir fuzz hedefi, ≥ 10 dk.</li>
-<li>[ ] Sürümde günlük yok; hassas dizge <code>strings</code> çıktısında yok.</li>
+<li>[ ] Sürümde günlük yok; hassas dize <code>strings</code> çıktısında yok.</li>
 <li>[ ] Her dönüş değeri denetli (ERR33-C); <code>-Werror</code> ile derleniyor.</li>
 </ul>
 <p><strong>Önlem kartı:</strong> Açıklama → Uygulama → Doğrulama → Kalan risk.</p>
@@ -2098,7 +2098,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="soru-6">Soru 6</h1>
 <p><strong>ASan hangi taşmayı göremez?</strong></p>
-<p><strong>Cevap:</strong> Aynı yapının <strong>içinde</strong> alandan alana taşmayı (aralarında zehirli bölge yoktur).</p>
+<p><strong>Cevap:</strong> Aynı yapının <strong>içinde</strong> alandan alana taşmayı (aralarında koruma bölgesi yoktur).</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="157" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="157" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
@@ -2126,7 +2126,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="soru-10">Soru 10</h1>
 <p><strong>Günlüğü çalışma anı bayrağıyla susturmak neden yetmez?</strong></p>
-<p><strong>Cevap:</strong> Dizge ikili dosyada <strong>kalır</strong> ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.</p>
+<p><strong>Cevap:</strong> Dize ikili dosyada <strong>kalır</strong> ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="161" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="161" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
@@ -2140,7 +2140,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 <header>CEN429 Güvenli Programlama · Hafta 4</header>
 <h1 id="soru-12">Soru 12</h1>
 <p><strong>Dize gizleme neden anahtar saklama değildir?</strong></p>
-<p><strong>Cevap:</strong> Çözülen dizge kullanımda bellekte açıktır ve çözme anahtarı programın içindedir; yalnız statik taramayı durdurur.</p>
+<p><strong>Cevap:</strong> Çözülen dize kullanımda bellekte açıktır ve çözme anahtarı programın içindedir; yalnız statik taramayı durdurur.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="163" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 4" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="163" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 4;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="165">
@@ -2170,7 +2170,7 @@ readelf -s p | grep __stack_chk   <span class="hljs-comment"># kanarya</span>
 </tr>
 <tr>
 <td>UAF</td>
-<td>Kullanım-sonrası-serbest</td>
+<td>Serbest bırakıldıktan sonra kullanma (use-after-free)</td>
 </tr>
 <tr>
 <td>CERT/CWE</td>

@@ -524,7 +524,7 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="42" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 11" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="42" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 11;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="150">
 <header>CEN429 Güvenli Programlama · Hafta 11</header>
-<h1 id="naif-3-tehdidi--kod-ta%C5%9F%C4%B1ma-code-lifting">Naif 3 tehdidi · Kod taşıma (code lifting)</h1>
+<h1 id="naif-3-tehdidi--kod-s%C3%B6kme-code-lifting">Naif 3 tehdidi · Kod sökme (code lifting)</h1>
 <ul>
 <li>Diyelim WBC anahtarı tablolara gömdü.</li>
 <li>Saldırgan anahtarı <strong>hiç çıkarmadan</strong>, şifreleme yapan kod parçasını (tablolar + yorumlayıcı) <strong>olduğu gibi kopyalar</strong>.</li>
@@ -540,11 +540,11 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="44" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 11" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="44" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 11;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="150">
 <header>CEN429 Güvenli Programlama · Hafta 11</header>
-<h1 id="kod-ta%C5%9F%C4%B1ma--kural">Kod taşıma · Kural</h1>
+<h1 id="kod-s%C3%B6kme--kural">Kod sökme · Kural</h1>
 <blockquote>
 <p>WBC'nin &quot;anahtarı gizledim&quot; demesi yetmez.</p>
 </blockquote>
-<p>Kod taşımaya karşı <strong>cihaz/sürüm bağlama</strong> gerekir (birazdan 3. bölüm): tablolar yalnız belirli bir cihazda/sürümde anlamlı olsun.</p>
+<p>Kod sökmeye (code lifting) karşı <strong>cihaz/sürüm bağlama</strong> gerekir (birazdan 3. bölüm): tablolar yalnız belirli bir cihazda/sürümde anlamlı olsun.</p>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="45" data-paginate="true" data-header="CEN429 Güvenli Programlama · Hafta 11" data-footer="RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz" data-theme="cen429" data-lang="tr" lang="tr" data-marpit-pagination="45" style="--paginate:true;--header:CEN429 Güvenli Programlama · Hafta 11;--footer:RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz;--theme:cen429;--lang:tr;" data-marpit-pagination-total="150">
@@ -568,7 +568,7 @@
 </tr>
 <tr>
 <td>(WBC bile)</td>
-<td>kod taşıma → cihaz bağlama gerekir</td>
+<td>kod sökme → cihaz bağlama gerekir</td>
 </tr>
 </tbody>
 </table>
@@ -1195,7 +1195,7 @@ T&#x27;:  E(2) E(3) E(1) E(0) = 0 2 3 1
 <h1 id="kar%C5%9F%C4%B1-%C3%B6nlem-5--cihazs%C3%BCr%C3%BCm-ba%C4%9Flama">Karşı önlem 5 · Cihaz/sürüm bağlama</h1>
 <ul>
 <li>Tablolar yalnız <strong>belirli bir cihazda/sürümde</strong> anlamlı olur</li>
-<li><strong>Kod taşımayı</strong> (code lifting) engeller</li>
+<li><strong>Kod sökmeyi</strong> (code lifting) engeller</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -1471,7 +1471,7 @@ T&#x27;:  E(2) E(3) E(1) E(0) = 0 2 3 1
 <li>DCA için iz toplamak, DFA için hata enjekte etmek zorlaşır</li>
 </ul>
 </li>
-<li><strong>Cihaz/sürüm bağla</strong> → kod taşıma işe yaramaz</li>
+<li><strong>Cihaz/sürüm bağla</strong> → kod sökme işe yaramaz</li>
 </ul>
 <footer>RTEÜ Bilgisayar Mühendisliği · 2026-2027 Güz</footer>
 </section>
@@ -1673,7 +1673,7 @@ T&#x27;:  E(2) E(3) E(1) E(0) = 0 2 3 1
 </thead>
 <tbody>
 <tr>
-<td>Kod taşıma</td>
+<td>Kod sökme</td>
 <td>Anahtarı çıkarmadan kodu kopyalama</td>
 </tr>
 <tr>
@@ -1704,7 +1704,7 @@ T&#x27;:  E(2) E(3) E(1) E(0) = 0 2 3 1
 <li>Üç saldırgan modeli; AES kanıtı hangisini varsayar?</li>
 <li>&quot;Tek turu çalıştır&quot; ve &quot;hata enjekte et&quot; hangi saldırılara zemin?</li>
 <li>Diziye gömülü anahtar neden koruma değil? (entropi)</li>
-<li>Kod taşıma nedir, hangi önlem kapatır?</li>
+<li>Kod sökme nedir, hangi önlem kapatır?</li>
 <li><code>T[x]=S-box[x^k]</code> tek başına neden güvensiz?</li>
 <li>İç ve dış kodlama farkı; dış kodlamanın sınırı?</li>
 </ol>

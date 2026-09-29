@@ -78,15 +78,15 @@
         ```powershell
         cd code
         .\build.ps1
-        cd week-03\01-aes-gcm-dosya
-        .\demo.ps1        # ya da demo.cmd dosyasına çift tıklayın
+        cd week-03\01-aes-gcm-file
+        .\demo.ps1        # or double-click demo.cmd
         ```
 
     === "WSL / Linux"
         ```bash
         cd code
         ./build.sh
-        cd week-03/01-aes-gcm-dosya
+        cd week-03/01-aes-gcm-file
         sh demo.sh
         ```
 
@@ -152,10 +152,15 @@ states** across its lifecycle, and each state has a different threat and a diffe
 !!! note "A short history: the tools for protecting data"
     - **1976** — Diffie & Hellman kick off **public-key** cryptography; **1977** brings the **RSA** and **DES**
       standards.
-    - **2001** — **AES** (Rijndael) replaces DES; today it's the backbone of symmetric encryption.
-    - **2007** — **GCM** becomes a NIST standard: the **AEAD** era begins, giving confidentiality **and**
-      integrity together (this week's main tool).
-    - **1994 → 2018** — SSL (1994–96) → TLS 1.0 (1999) → **TLS 1.3 (2018)**: the standard for data in transit.
+    - **1997–2001** — NIST's open **AES competition**; the winning Belgian **Rijndael** algorithm becomes the
+      **AES** standard (2001), replacing DES. Today it's the backbone of symmetric encryption.
+    - **2004** — David McGrew and John Viega publish **GCM** (Galois/Counter Mode); it becomes an official NIST
+      standard (**SP 800-38D**) in **2007**: the **AEAD** era begins, giving confidentiality **and** integrity
+      together (this week's main tool).
+    - **1995 → 2018** — Netscape's **SSL 2.0** (1995) → the IETF's **TLS 1.0** (1999, RFC 2246) → **TLS 1.3**
+      (2018, RFC 8446): the standard for data in transit.
+    - **2014** — **Heartbleed** (a buffer over-read bug in OpenSSL) showed the whole world how a single bug in a
+      TLS implementation can leak keys and secrets straight out of server memory.
 
     The course's rule follows from this: "don't write your own crypto, use **AEAD**, manage the key correctly."
 
@@ -303,56 +308,55 @@ These three belong to the **integrity** family but prove different things; mixin
 
 ### Demo 1 — Encrypting and tamper-detecting a file with AES-256-GCM
 
-!!! info "Demo 1 · `code/week-03/01-aes-gcm-dosya` · AEAD, NIST SP 800-38D"
+!!! info "Demo 1 · `code/week-03/01-aes-gcm-file` · AEAD, NIST SP 800-38D"
     The program encrypts a file with AES-256-GCM; the output has the form `[12-byte nonce][ciphertext][16-byte
     tag]`. On decryption the tag is verified. Then we flip a byte of the ciphertext, and separately a byte of
     only the tag, and see that decryption is **rejected** both times.
 
-The essence of encryption and decryption (the crypto calls come from the shared `cen429_kripto.h` header; OpenSSL
+The essence of encryption and decryption (the crypto calls come from the shared `cen429_crypto.h` header; OpenSSL
 EVP on Linux, BCrypt on Windows):
 
-```c title="aesgcm.c (özet)"
-/* Şifrele: cik = [nonce][şifreli metin][etiket] */
-kripto_rastgele(nonce, 12);                 /* her mesaja yeni nonce */
-memcpy(cik, nonce, 12);
-kripto_gcm_sifrele(anahtar, nonce, 12, NULL, 0,
-                   duz, duz_boy, cik + 12, etiket);
-memcpy(cik + 12 + duz_boy, etiket, 16);
+```c title="aes_gcm_file.c (excerpt)"
+/* Encrypt: out = [nonce][ciphertext][tag] */
+crypto_random(nonce, 12);                    /* a fresh nonce per message */
+memcpy(out, nonce, 12);
+crypto_gcm_encrypt(key, nonce, 12, NULL, 0,
+                   plain, plain_len, out + 12, tag);
+memcpy(out + 12 + plain_len, tag, 16);
 
-/* Çöz: etiket doğrulanır; tutmazsa ok == 0 */
-int ok = kripto_gcm_coz(anahtar, nonce, 12, NULL, 0,
-                        sc, sc_boy, etiket, duz);
-if (!ok) { /* REDDET: veri kurcalanmış ya da yanlış anahtar */ }
+/* Decrypt: the tag is verified; ok == 0 if it does not match */
+int ok = crypto_gcm_decrypt(key, nonce, 12, NULL, 0,
+                            ct, ct_len, tag, plain);
+if (!ok) { /* REJECT: the data was tampered with, or the key is wrong */ }
 ```
 
 Run it (`.\demo.ps1` on Windows):
 
 ```bash
-cd code/week-03/01-aes-gcm-dosya
+cd code/week-03/01-aes-gcm-file
 sh demo.sh
 ```
 
-**Actual output** captured on WSL (shortened):
+**Actual output** captured on Windows (`.\demo.ps1`, shortened):
 
-```text title="sh demo.sh — çıktı"
-ADIM 2 - Sifrele
-Sifrelendi: cikti/gizli.txt -> cikti/gizli.enc
-   (53 bayt sifreli metin + 12 nonce + 16 etiket)
-Sifreli dosyanin ilk baytlari (nonce + sifreli metin):
-   000000 74 15 41 da 38 0b 86 1e 92 2f 42 eb 1c ac 49 54
-   000010 07 2b 38 e2 3a e4 cd bb fb 7f fb 1c e5 ec a5 36
+```text title="demo.ps1 — output"
+STEP 2 - Encrypt
+Encrypted: output\secret.txt -> output\secret.enc (54 bytes of ciphertext + 12 nonce + 16 tag)
+First 32 bytes of the ciphertext file (nonce + ciphertext):
+   df 05 81 06 c9 4a c6 75 da 63 ed ad f3 8a b9 1a 21 8c 81 aa 55 5e 3f 8e e7 27 9e e7 1c c8 b1 08
 
-ADIM 3 - Dogru sekilde coz (etiket tutar)
-Cozuldu ve DOGRULANDI: ... -> cikti/cozulen.txt (53 bayt)
+STEP 3 - Decrypt correctly (the tag matches)
+Decrypted and VERIFIED: output\secret.enc -> output\decrypted.txt (54 bytes)
    IBAN: TR00 0000 0000 0000 0000 0000 00
-   Bakiye: 12345
+   Balance: 12345
 
-ADIM 4 - Saldiri: sifreli metnin 20. baytini degistir
-DOGRULAMA BASARISIZ: etiket tutmadi, veri kurcalanmis ya da
-yanlis anahtar. Cozme REDDEDILDI.   (cikis kodu 2)
+STEP 4 - Attack: change byte 20 of the ciphertext
+VERIFICATION FAILED: the tag did not match, the data was tampered with, or the key is wrong. Decryption REJECTED.
+   (exit code 2 - decryption rejected)
 
-ADIM 5 - Saldiri: yalniz ETIKETin son baytini degistir
-DOGRULAMA BASARISIZ: ... Cozme REDDEDILDI.   (cikis kodu 2)
+STEP 5 - Attack: change only the last byte of the TAG
+VERIFICATION FAILED: the tag did not match, the data was tampered with, or the key is wrong. Decryption REJECTED.
+   (exit code 2 - the tag did not match)
 ```
 
 What happened, line by line:
@@ -388,6 +392,17 @@ What happened, line by line:
     - [ ] Does the key come from a secure source instead of being embedded in the code?
     - [ ] You're not using AES-CBC/CTR on its own (without a MAC), right?
 
+Watch the animation below to see, step by step, how encryption, the `[nonce][ciphertext][tag]` file format, and
+tag verification work — both a successful decrypt and a tampered byte being rejected.
+
+<iframe class="dsanim" src="../anim/aes-gcm-tag-check.html" title="AES-GCM: encryption and tag verification" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![AES-GCM: encryption and tag verification — step by step](anim/aes-gcm-tag-check.png)
+</div>
+
+Try **correct decrypt** (fits/hard) and the **ciphertext tampered** and **only the tag tampered** edge cases from
+the example picker — or 🎲 for a random message, or type your own text.
+
 ---
 
 ## 3. Random numbers: the invisible foundation of cryptography
@@ -419,11 +434,11 @@ measured the disorder in a file's bytes to tell encrypted/packed content apart; 
 
 ### Mistake 1: seeding with the time
 
-```c title="Hatalı: saniye cinsinden zaman = tahmin edilebilir tohum"
+```c title="Wrong: time in seconds = a predictable seed"
 srand(time(NULL));
-unsigned char anahtar[16];
+unsigned char key[16];
 for (int i = 0; i < 16; i++)
-    anahtar[i] = rand() & 0xFF;
+    key[i] = rand() & 0xFF;
 ```
 
 If an attacker knows which day the key was generated, there are only 86,400 possible seeds for that day. A
@@ -448,11 +463,11 @@ whole sequence is known.
     #include <sys/random.h>
     #include <errno.h>
 
-    int rastgele_bayt(void *tampon, size_t n)
+    int random_bytes(void *buffer, size_t n)
     {
-        unsigned char *p = tampon;
+        unsigned char *p = buffer;
         while (n > 0) {
-            ssize_t r = getrandom(p, n, 0);    /* havuz hazır olana kadar bekler */
+            ssize_t r = getrandom(p, n, 0);    /* blocks until the pool is ready */
             if (r < 0) {
                 if (errno == EINTR) continue;
                 return -1;
@@ -475,9 +490,9 @@ whole sequence is known.
     #include <bcrypt.h>
     #pragma comment(lib, "bcrypt.lib")
 
-    int rastgele_bayt(void *tampon, size_t n)
+    int random_bytes(void *buffer, size_t n)
     {
-        NTSTATUS s = BCryptGenRandom(NULL, (PUCHAR)tampon, (ULONG)n,
+        NTSTATUS s = BCryptGenRandom(NULL, (PUCHAR)buffer, (ULONG)n,
                                      BCRYPT_USE_SYSTEM_PREFERRED_RNG);
         return BCRYPT_SUCCESS(s) ? 0 : -1;
     }
@@ -491,7 +506,7 @@ whole sequence is known.
 
     ```c
     #include <openssl/rand.h>
-    if (RAND_bytes(tampon, (int)n) != 1) { /* hata: ASLA devam etme */ }
+    if (RAND_bytes(buffer, (int)n) != 1) { /* error: NEVER continue */ }
     ```
 
 !!! warning "Check the return value"
@@ -506,17 +521,17 @@ by 6, the values 0–3 come up 43 times each while 4–5 come up 42 times each. 
 generating a random password or a one-time code, some characters coming up more often increases predictability.
 The correct method is **rejection sampling** (Recipe 11.11):
 
-```c title="[0, ust) aralığında sapmasız rastgele tamsayı"
+```c title="Unbiased random integer in [0, upper)"
 #include <stdint.h>
 
-uint32_t aralikta_rastgele(uint32_t ust)
+uint32_t random_in_range(uint32_t upper)
 {
-    uint32_t sinir = (uint32_t)(-ust) % ust;   /* 2^32 mod ust: bu kadar değer "fazla" */
+    uint32_t threshold = (uint32_t)(-upper) % upper;   /* 2^32 mod upper: this many values are "extra" */
     uint32_t r;
     do {
-        rastgele_bayt(&r, sizeof r);
-    } while (r < sinir);                        /* fazlalığı at, yeniden çek */
-    return r % ust;
+        random_bytes(&r, sizeof r);
+    } while (r < threshold);                            /* discard the extra, draw again */
+    return r % upper;
 }
 ```
 
@@ -558,7 +573,7 @@ That way every result comes from exactly the same number of inputs.
 ## 4. Using crypto APIs correctly: AES-GCM step by step
 
 In Demo 1 we encrypted a file with AES-256-GCM and caught tampering. The demo left the work to the helper
-functions inside `code/common/cen429_kripto.h`. In this section we open up the **inside** of those functions: we
+functions inside `code/common/cen429_crypto.h`. In this section we open up the **inside** of those functions: we
 write AES-GCM step by step with OpenSSL's EVP interface and Windows's CNG (BCrypt) interface. The goal is to see
 where mistakes can be made while using a crypto library. The rule still holds: **you don't write your own
 algorithm**, but calling a ready-made algorithm **correctly** is also a skill.
@@ -573,31 +588,31 @@ derivation parameters AAD; if someone changes the iteration count, the tag won't
 
 ### Encrypting with OpenSSL EVP
 
-```c title="aes_gcm.c — şifreleme (OpenSSL 1.1.1 / 3.x)"
+```c title="aes_gcm.c — encryption (OpenSSL 1.1.1 / 3.x)"
 #include <openssl/evp.h>
 
-/* Başarıda şifreli metin uzunluğunu, hatada -1 döndürür. */
-int aes_gcm_sifrele(const unsigned char anahtar[32], const unsigned char nonce[12],
+/* Returns the ciphertext length on success, -1 on error. */
+int aes_gcm_encrypt_example(const unsigned char key[32], const unsigned char nonce[12],
                     const unsigned char *aad, int aad_n,
-                    const unsigned char *acik, int n,
-                    unsigned char *sifreli, unsigned char etiket[16])
+                    const unsigned char *plain, int n,
+                    unsigned char *ciphertext, unsigned char tag[16])
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    int yazilan, toplam = -1;
+    int written, total = -1;
     if (ctx == NULL) return -1;
 
-    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto son;   /* 1 */
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto son;     /* 2 */
-    if (EVP_EncryptInit_ex(ctx, NULL, NULL, anahtar, nonce) != 1) goto son;            /* 3 */
-    if (aad_n > 0 && EVP_EncryptUpdate(ctx, NULL, &yazilan, aad, aad_n) != 1) goto son; /* 4 */
-    if (EVP_EncryptUpdate(ctx, sifreli, &yazilan, acik, n) != 1) goto son;             /* 5 */
-    toplam = yazilan;
-    if (EVP_EncryptFinal_ex(ctx, sifreli + toplam, &yazilan) != 1) { toplam = -1; goto son; } /* 6 */
-    toplam += yazilan;
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, etiket) != 1) toplam = -1; /* 7 */
-son:
-    EVP_CIPHER_CTX_free(ctx);     /* bağlamdaki anahtar malzemesini de temizler */
-    return toplam;
+    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto done;   /* 1 */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto done;     /* 2 */
+    if (EVP_EncryptInit_ex(ctx, NULL, NULL, key, nonce) != 1) goto done;                /* 3 */
+    if (aad_n > 0 && EVP_EncryptUpdate(ctx, NULL, &written, aad, aad_n) != 1) goto done; /* 4 */
+    if (EVP_EncryptUpdate(ctx, ciphertext, &written, plain, n) != 1) goto done;         /* 5 */
+    total = written;
+    if (EVP_EncryptFinal_ex(ctx, ciphertext + total, &written) != 1) { total = -1; goto done; } /* 6 */
+    total += written;
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag) != 1) total = -1; /* 7 */
+done:
+    EVP_CIPHER_CTX_free(ctx);     /* also clears the key material inside the context */
+    return total;
 }
 ```
 
@@ -613,39 +628,39 @@ The steps, in order:
    called**: the tag is computed here.
 7. Retrieve the tag and store it together with the ciphertext.
 
-Every call's return value is checked, and the context is freed at a single exit point (`son:`). In C, this
+Every call's return value is checked, and the context is freed at a single exit point (`done:`). In C, this
 `goto` pattern is the most readable way to avoid resource leaks.
 
 ### Decrypting: don't touch the plaintext before the tag is verified
 
-```c title="aes_gcm.c — çözme"
-/* Başarıda açık metin uzunluğunu; etiket tutmazsa ya da hata olursa -1 döndürür. */
-int aes_gcm_coz(const unsigned char anahtar[32], const unsigned char nonce[12],
+```c title="aes_gcm.c — decryption"
+/* Returns the plaintext length on success, -1 if the tag doesn't hold or on error. */
+int aes_gcm_decrypt_example(const unsigned char key[32], const unsigned char nonce[12],
                 const unsigned char *aad, int aad_n,
-                const unsigned char *sifreli, int n,
-                const unsigned char etiket[16], unsigned char *acik)
+                const unsigned char *ciphertext, int n,
+                const unsigned char tag[16], unsigned char *plain)
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    int yazilan, toplam = -1;
+    int written, total = -1;
     if (ctx == NULL) return -1;
 
-    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto son;
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto son;
-    if (EVP_DecryptInit_ex(ctx, NULL, NULL, anahtar, nonce) != 1) goto son;
-    if (aad_n > 0 && EVP_DecryptUpdate(ctx, NULL, &yazilan, aad, aad_n) != 1) goto son;
-    if (EVP_DecryptUpdate(ctx, acik, &yazilan, sifreli, n) != 1) goto son;
-    toplam = yazilan;
-    /* Beklenen etiketi Final'dan ÖNCE ver */
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void *)etiket) != 1) { toplam = -1; goto son; }
-    if (EVP_DecryptFinal_ex(ctx, acik + toplam, &yazilan) != 1) {
-        OPENSSL_cleanse(acik, (size_t)n);     /* etiket tutmadı: yarı çözülmüş veriyi sil */
-        toplam = -1;
-        goto son;
+    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto done;
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto done;
+    if (EVP_DecryptInit_ex(ctx, NULL, NULL, key, nonce) != 1) goto done;
+    if (aad_n > 0 && EVP_DecryptUpdate(ctx, NULL, &written, aad, aad_n) != 1) goto done;
+    if (EVP_DecryptUpdate(ctx, plain, &written, ciphertext, n) != 1) goto done;
+    total = written;
+    /* Give the expected tag BEFORE Final */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void *)tag) != 1) { total = -1; goto done; }
+    if (EVP_DecryptFinal_ex(ctx, plain + total, &written) != 1) {
+        OPENSSL_cleanse(plain, (size_t)n);     /* tag did not hold: wipe the half-decrypted data */
+        total = -1;
+        goto done;
     }
-    toplam += yazilan;
-son:
+    total += written;
+done:
     EVP_CIPHER_CTX_free(ctx);
-    return toplam;
+    return total;
 }
 ```
 
@@ -663,45 +678,45 @@ son:
     #include <windows.h>
     #include <bcrypt.h>
 
-    int aes_gcm_sifrele_cng(const UCHAR anahtar[32], const UCHAR nonce[12],
-                            UCHAR *aad, ULONG aad_n, const UCHAR *acik, ULONG n,
-                            UCHAR *sifreli, UCHAR etiket[16])
+    int aes_gcm_encrypt_cng_example(const UCHAR key[32], const UCHAR nonce[12],
+                            UCHAR *aad, ULONG aad_n, const UCHAR *plain, ULONG n,
+                            UCHAR *ciphertext, UCHAR tag[16])
     {
         BCRYPT_ALG_HANDLE alg = NULL;
-        BCRYPT_KEY_HANDLE key = NULL;
-        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO bilgi;
-        ULONG yazilan = 0;
-        int sonuc = -1;
+        BCRYPT_KEY_HANDLE keyHandle = NULL;
+        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO info;
+        ULONG written = 0;
+        int result = -1;
 
-        if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(&alg, BCRYPT_AES_ALGORITHM, NULL, 0))) goto son;
+        if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(&alg, BCRYPT_AES_ALGORITHM, NULL, 0))) goto done;
         if (!BCRYPT_SUCCESS(BCryptSetProperty(alg, BCRYPT_CHAINING_MODE,
-                (PUCHAR)BCRYPT_CHAIN_MODE_GCM, sizeof(BCRYPT_CHAIN_MODE_GCM), 0))) goto son;
-        if (!BCRYPT_SUCCESS(BCryptGenerateSymmetricKey(alg, &key, NULL, 0,
-                (PUCHAR)anahtar, 32, 0))) goto son;
+                (PUCHAR)BCRYPT_CHAIN_MODE_GCM, sizeof(BCRYPT_CHAIN_MODE_GCM), 0))) goto done;
+        if (!BCRYPT_SUCCESS(BCryptGenerateSymmetricKey(alg, &keyHandle, NULL, 0,
+                (PUCHAR)key, 32, 0))) goto done;
 
-        BCRYPT_INIT_AUTH_MODE_INFO(bilgi);
-        bilgi.pbNonce = (PUCHAR)nonce; bilgi.cbNonce = 12;
-        bilgi.pbAuthData = aad;        bilgi.cbAuthData = aad_n;
-        bilgi.pbTag = etiket;          bilgi.cbTag = 16;
+        BCRYPT_INIT_AUTH_MODE_INFO(info);
+        info.pbNonce = (PUCHAR)nonce; info.cbNonce = 12;
+        info.pbAuthData = aad;        info.cbAuthData = aad_n;
+        info.pbTag = tag;             info.cbTag = 16;
 
-        if (BCRYPT_SUCCESS(BCryptEncrypt(key, (PUCHAR)acik, n, &bilgi, NULL, 0,
-                                         sifreli, n, &yazilan, 0)))
-            sonuc = (int)yazilan;
-    son:
-        if (key) BCryptDestroyKey(key);
+        if (BCRYPT_SUCCESS(BCryptEncrypt(keyHandle, (PUCHAR)plain, n, &info, NULL, 0,
+                                         ciphertext, n, &written, 0)))
+            result = (int)written;
+    done:
+        if (keyHandle) BCryptDestroyKey(keyHandle);
         if (alg) BCryptCloseAlgorithmProvider(alg, 0);
-        return sonuc;
+        return result;
     }
     ```
 
 === "Decryption"
 
     ```c
-    /* Aynı hazırlık; bilgi.pbTag beklenen etiketi gösterir. */
-    NTSTATUS s = BCryptDecrypt(key, (PUCHAR)sifreli, n, &bilgi, NULL, 0,
-                               acik, n, &yazilan, 0);
-    if (s == STATUS_AUTH_TAG_MISMATCH) {      /* 0xC000A002: kurcalama */
-        SecureZeroMemory(acik, n);
+    /* Same setup; info.pbTag holds the expected tag. */
+    NTSTATUS s = BCryptDecrypt(keyHandle, (PUCHAR)ciphertext, n, &info, NULL, 0,
+                               plain, n, &written, 0);
+    if (s == STATUS_AUTH_TAG_MISMATCH) {      /* 0xC000A002: tampering */
+        SecureZeroMemory(plain, n);
         return -1;
     }
     ```
@@ -716,13 +731,13 @@ If you ever need to compare a tag or a MAC by hand (e.g., in a message signed wi
 `memcmp` stops at the first differing byte; the comparison's duration **leaks** how many bytes were correct. An
 attacker can guess the tag byte by byte by measuring the timing (a timing attack).
 
-```c title="Sabit zamanlı karşılaştırma"
-int sabit_zamanli_esit(const unsigned char *a, const unsigned char *b, size_t n)
+```c title="Constant-time comparison"
+int constant_time_equal(const unsigned char *a, const unsigned char *b, size_t n)
 {
-    unsigned char fark = 0;
+    unsigned char diff = 0;
     for (size_t i = 0; i < n; i++)
-        fark |= a[i] ^ b[i];         /* her baytı mutlaka dolaş */
-    return fark == 0;
+        diff |= a[i] ^ b[i];         /* always walk every byte */
+    return diff == 0;
 }
 ```
 
@@ -784,25 +799,25 @@ message, they fully decrypt the other.
 
 ### Demo 2 — Nonce reuse leaking the XOR of two plaintexts
 
-!!! info "Demo 2 · `code/week-03/02-nonce-tekrari` · nonce reuse"
+!!! info "Demo 2 · `code/week-03/02-nonce-reuse` · nonce reuse"
     The program encrypts two different messages with AES-256-GCM, first with the **same** nonce, then with
     **different** nonces, and compares `C1 ⊕ C2` against `P1 ⊕ P2`.
 
-```text title="sh demo.sh — gerçek çıktı (hex kısaltıldı)"
-Duz metin 1: "Saldiri safagi 06:00'da baslasin!!"
-Duz metin 2: "Toplam bakiye 45000 TL, sifre 1234"
+```text title="nonce_reuse.exe — actual output (hex shortened)"
+Plaintext 1: "Attack begins at dawn, 06:00 hours!"
+Plaintext 2: "Total balance is 45000, PIN is 1234"
 ==============================================================
-KOTU DURUM - iki mesajda da AYNI nonce:
-  C1 xor C2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  P1 xor P2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  ==> C1 xor C2 == P1 xor P2 : anahtar akisi SIZDI!
-  Saldirgan P1'i biliyorsa P2 = (C1 xor C2) xor P1 =
-     "Toplam bakiye 45000 TL, sifre 1234"
+BAD CASE - the SAME nonce for both messages:
+  C1 xor C2 = 151b00000f4b42030906070d16000807 ... 44404015
+  P1 xor P2 = 151b00000f4b42030906070d16000807 ... 44404015
+  ==> C1 xor C2 == P1 xor P2 : the keystream LEAKED!
+  If the attacker knows P1, P2 = (C1 xor C2) xor P1 =
+     "Total balance is 45000, PIN is 1234"
 ==============================================================
-IYI DURUM - her mesaja FARKLI nonce:
-  C1 xor C2 = 21158fbd64978ae63835b80d1f98c02d2 ... 8385c5af
-  P1 xor P2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  ==> C1 xor C2 != P1 xor P2 : sizinti YOK.
+GOOD CASE - a DIFFERENT nonce for each message:
+  C1 xor C2 = 330093b563c381a72339b0180bd1dc2f ... d97fab3
+  P1 xor P2 = 151b00000f4b42030906070d16000807 ... 44404015
+  ==> C1 xor C2 != P1 xor P2 : no leak.
 ```
 
 In the bad case, `C1 ⊕ C2` and `P1 ⊕ P2` come out **byte-for-byte identical**: the keystream cancelled out. The
@@ -833,6 +848,17 @@ different nonces, the relationship disappeared.
     - [ ] If you're using a random nonce, is 96 bits enough for the number of messages involved?
     - [ ] Is it guaranteed that the same `(key, nonce)` pair can't be used for two messages?
 
+Watch the animation below to see how the same nonce encrypts two messages with the same keystream, how
+`C1 xor C2` comes out equal to `P1 xor P2`, and how an attacker who knows one plaintext recovers the other.
+
+<iframe class="dsanim" src="../anim/nonce-reuse.html" title="The danger of nonce reuse" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The danger of nonce reuse — step by step](anim/nonce-reuse.png)
+</div>
+
+Try **the leak with the same nonce** (fits/hard) and the **different nonce, no leak** and **both messages
+identical** edge cases from the example picker — or type your own two equal-length messages.
+
 ### 5.2 ECB leaks patterns
 
 **ECB** (Electronic Codebook), a mode that uses no nonce/IV, encrypts every 16-byte block **independently**. The
@@ -841,29 +867,29 @@ the ciphertext too.
 
 ### Demo 3 — The ECB "penguin": pattern leakage
 
-!!! info "Demo 3 · `code/week-03/03-ecb-desen` · ECB pattern leakage"
+!!! info "Demo 3 · `code/week-03/03-ecb-pattern` · ECB pattern leakage"
     We build a two-color "image" (every pixel is exactly one 16-byte block). Encrypted with AES-128-**ECB** the
     shape is still readable; encrypted with AES-256-**GCM** (CTR-based) the pattern disappears.
 
-```text title="sh demo.sh — gerçek çıktı"
-Orijinal resim (duz metin):
+```text title="ecb_pattern.exe — actual output"
+Original picture (plaintext):
   ################################
   #  ##    ####    ####    ##    #
-  ...  (429 rakamlari)  ...
+  ...  (the digits "429")  ...
   ################################
 ==============================================================
-AES-128-ECB ile sifreli (her blok ilk baytina gore):
+Encrypted with AES-128-ECB (each block by its first byte):
   ================================
   =##==####====####====####==####=
-  ...  ayni sekil hala GORUNUYOR ...
+  ...  the same shape is still VISIBLE ...
   ================================
-  ==> Sekil hala GORUNUYOR: ECB deseni sizdirir.
+  ==> The shape is still VISIBLE: ECB leaks the pattern. DO NOT USE IT.
 ==============================================================
-AES-256-GCM (CTR tabanli) ile sifreli, ayni resim:
+Encrypted with AES-256-GCM (CTR-based), same picture:
   : -..--+%%*-:**% . #*#+*.:+* :..
   *.#*##:*%+###:#-*%==*#-+=%:.=***
-  ...  desen kayboldu, gurultu ...
-  ==> Desen kayboldu: GCM/CTR her blogu farkli sifreler.
+  ...  the pattern is gone, noise ...
+  ==> The pattern is gone: GCM/CTR encrypts every block differently.
 ```
 
 The ECB output only has **two** characters (a background block → one ciphertext block, a shape block → another
@@ -886,6 +912,17 @@ noise.
     - [ ] Did you think about pattern leakage when encrypting images/structured data?
     - [ ] Is the ciphertext output different every time for the same input (thanks to the nonce/IV)?
 
+Watch the animation below encrypt a small picture with both ECB and GCM and see the pattern stay **readable**
+under ECB while it **disappears** under GCM.
+
+<iframe class="dsanim" src="../anim/ecb-vs-gcm-pattern.html" title="ECB leaks the pattern, GCM does not" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ECB leaks the pattern, GCM does not — step by step](anim/ecb-vs-gcm-pattern.png)
+</div>
+
+Try **a small shape** (fits/hard) and the **all background** and **checkerboard** edge cases from the example
+picker — or type your own small 0/1 picture.
+
 ---
 
 ## 6. Key derivation from a password
@@ -907,6 +944,15 @@ derivation function (KDF) does two things:
 | **scrypt** | CPU **+ memory** | When memory-hardness is wanted | RFC 7914 |
 | **Argon2id** | CPU + memory + parallelism | **First choice for new systems** | RFC 9106, OWASP |
 
+!!! note "A short history: password KDFs"
+    - **1999** — Niels Provos and David Mazières publish Bcrypt, a tunable-cost password hashing function built on
+      Blowfish's key schedule.
+    - **2000** — RSA Laboratories' **PKCS #5 v2.0** standard (RFC 2898) defines **PBKDF2**.
+    - **2009** — Colin Percival defines **scrypt**, aiming to make brute force with dedicated hardware (ASIC/FPGA)
+      expensive by requiring memory, not just CPU time (RFC 7914).
+    - **2013–2015** — The Password Hashing Competition (PHC); in **2015** it is won by Alex Biryukov, Daniel Dinu
+      and Dmitry Khovratovich's **Argon2** (Argon2id is later standardized as RFC 9106).
+
 !!! info "Textbook recipe and an update"
     The textbook covers password-based key derivation in **Recipe 4.10** using PBKDF2, recommending 10,000
     rounds. Today that's **far too low**: OWASP (2023) requires **≥ 600,000 rounds** for PBKDF2-HMAC-SHA256, and
@@ -914,32 +960,33 @@ derivation function (KDF) does two things:
 
 ### Demo 4 — Round count, timing, and the importance of salt
 
-!!! info "Demo 4 · `code/week-03/04-parola-anahtar` · PBKDF2, salt, cost"
+!!! info "Demo 4 · `code/week-03/04-password-to-key` · PBKDF2, salt, cost"
     The program derives a key from the same password with PBKDF2: same salt → same key (revealing to a table),
     different salt → different key; and it measures how long derivation takes as the round count grows. If the
     `argon2` tool is available on WSL, an Argon2id comparison is run too.
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-1) TUZUN ONEMI (tur = 100000)
-   tuz A -> anahtar = e1d9214abdcfa793...cad33a816
-   tuz A -> anahtar = e1d9214abdcfa793...cad33a816   (ayni)
-   tuz B -> anahtar = 89cc5979affa2a62...972e020e   (farkli)
+```text title="password_to_key.exe — actual output (Windows)"
+Password: "dog123"
 ==============================================================
-2) TUR SAYISI vs SURE (ayni parola, ayni tuz)
-   tur =     1000  ->      0.37 ms
-   tur =    10000  ->      3.82 ms
-   tur =   100000  ->     39.05 ms
-   tur =   600000  ->    209.55 ms
-   tur =  2000000  ->    628.42 ms
+1) WHY THE SALT MATTERS (rounds = 100000)
+   salt A -> key = 8b3d1913b0a104fa643f2b7b36863c65d1deda204e9f6bf6c1b21443930ec892
+   salt A -> key = 8b3d1913b0a104fa643f2b7b36863c65d1deda204e9f6bf6c1b21443930ec892
+   ^ Same password + the SAME salt -> the SAME key (a table lookup would work)
+   salt B -> key = e9a8193a675ec5dd2366aad2a54d253c655f2c914043858b5a4c8d8b53691290
+   ^ Same password + a DIFFERENT salt -> a DIFFERENT key (the salt does its job)
 ==============================================================
-3) Argon2id ile karsilastirma (argon2 araci varsa)
-   $argon2id$v=19$m=65536,t=3,p=1$...   0.112 seconds
+2) ROUND COUNT vs TIME (same password, same salt)
+   rounds =     1000  ->      1.24 ms
+   rounds =    10000  ->     12.55 ms
+   rounds =   100000  ->    126.75 ms
+   rounds =   600000  ->    824.96 ms
+   rounds =  2000000  ->   2808.32 ms
 ```
 
 - **Salt:** The same password + the same salt gave the **same** key every time (which is why, if the salt were
   fixed, an attacker could build one table and search everyone). The same password + a **different** salt gave a
   completely different key.
-- **Cost:** As the round count went from 1,000 to 2,000,000, the time went from ~0.4 ms to ~628 ms. This is a
+- **Cost:** As the round count went from 1,000 to 2,000,000, the time went from ~1.2 ms to ~2.8 seconds. This is a
   direct multiplier: every attempt an attacker makes gets just as much more expensive. "200 ms at user login" is
   acceptable; for an attacker it means thousands of attempts per second instead of billions.
 - **Argon2id:** It additionally requires **memory** (64 MiB here); this makes parallel brute force with a
@@ -965,6 +1012,19 @@ derivation function (KDF) does two things:
     is stolen (as long as the pepper doesn't leak), the password hashes get one more layer of protection against
     brute force. A salt isn't secret; a pepper is.
 
+Watch the animation below to see how a short round chain (`U1 -> U2 -> ... -> Uₙ`) works and how the same
+password with different salts gives completely different keys; it also shows the real demo's own measured
+round-count-vs-time table.
+
+<iframe class="dsanim" src="../anim/pbkdf2-stretching.html" title="Deriving a key from a password: salt and rounds" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Deriving a key from a password: salt and rounds — step by step](anim/pbkdf2-stretching.png)
+</div>
+
+Try the **4-round chain** (fits) and the **6-round chain** (hard) and the **single round** and **very short
+password** edge cases from the example picker — or type your own password:rounds pair (rounds are capped at 1-6
+for display; the real demo uses 100,000+).
+
 ---
 
 ## 7. Deriving keys from a master secret, session keys, and forward secrecy
@@ -976,6 +1036,11 @@ every session. The tool: **HKDF** (RFC 5869), a two-stage KDF:
 - **Expand:** PRK + an "info" label → a key of the desired length. A different `info` → a different key.
 
 ![Purpose-specific keys derived from a master secret with HKDF Extract and Expand](assets/h03-03-hkdf.svg)
+
+!!! note "A short history: HKDF"
+    **2010** — Hugo Krawczyk formalizes the Extract-then-Expand construction in "Cryptographic Extraction and Key
+    Derivation: The HKDF Scheme"; the IETF publishes it the same year as **RFC 5869**. HKDF is now a basic building
+    block of many protocols, including TLS 1.3's own key schedule.
 
 !!! info "Textbook recipe"
     The textbook covers "generating keys algorithmically from a single master secret" in **Recipe 4.11** and
@@ -989,30 +1054,35 @@ each session, then even if an attacker obtains today's `Kₙ`, they **cannot com
 those sessions' data) backward. TLS 1.3 provides this guarantee with an ephemeral Diffie-Hellman for every
 session (textbook **Recipes 8.20–8.21**).
 
+!!! note "Where the term comes from"
+    "**Perfect forward secrecy**" traces back to Whitfield Diffie, Paul van Oorschot and Michael Wiener's **1992**
+    paper "Authentication and Authenticated Key Exchanges"; today it is usually shortened to just **forward
+    secrecy**.
+
 ![Forward secrecy: a one-way key chain](assets/h03-11-ileri-gizlilik.svg)
 
 ### Demo 5 — Session keys and a forward-secrecy chain with HKDF
 
-!!! info "Demo 5 · `code/week-03/05-hkdf-oturum` · HKDF, session key, forward secrecy"
+!!! info "Demo 5 · `code/week-03/05-hkdf-session` · HKDF, session key, forward secrecy"
 
-```text title="sh demo.sh — gerçek çıktı"
-Tek ana sirdan amaca gore ayri anahtarlar:
-  info='...sifreleme...' -> 2b8b46840fa2d1b1...0e577a55
-  info='...MAC...'       -> 30a302d19ec9ab8e...c55dfa84
-  ^ Ayni sir, farkli info -> farkli anahtar.
+```text title="hkdf_session.exe — actual output"
+Separate keys per purpose, from one master secret:
+  info='...encryption...' -> 5a5ed417c87e3566...0d37002cb
+  info='...MAC...'        -> 4c63a348654a076c...0ce1750e6
+  ^ Same secret, different info -> different key.
 ==============================================================
-ILERI GIZLILIK zinciri: Ki = HKDF(Ki-1), Ki-1 silinir
-  K1 (oturum 1) = 0630f63f015d003e
-  K2 (oturum 2) = def84847df4d9461
-  K3 (oturum 3) = 54b13f0ff3a486ca
-  K4 (oturum 4) = 55524a8f5c09652f
-  ^ Elimizde yalniz K4 var; zincir tek yonlu oldugu icin
-    K4'ten K3, K2, K1 geri hesaplanamaz.
+FORWARD SECRECY chain: Ki = HKDF(Ki-1), Ki-1 is wiped
+  K1 (session 1) = cbbe8fdd0b6ca8be
+  K2 (session 2) = 1113abf7352881e0
+  K3 (session 3) = a99c7ad8e0e6fb6b
+  K4 (session 4) = 4974f0e86d9dcb37
+  ^ We now only have K4. Because the chain is ONE-WAY, K3, K2, K1
+    cannot be recomputed backwards from K4.
 ```
 
 Different `info` labels from the same master secret produced different keys; a key generated for one purpose
 can't be used for another. In the forward-secrecy chain, the old key was wiped at every step with
-`kripto_temizle` (OPENSSL_cleanse/SecureZeroMemory); only the last key remained, and one-wayness preserved the
+`crypto_wipe` (OPENSSL_cleanse/SecureZeroMemory); only the last key remained, and one-wayness preserved the
 history.
 
 !!! success "Rule"
@@ -1036,6 +1106,17 @@ history.
     - [ ] Are **separate** keys derived for encryption and MAC?
     - [ ] Are session keys wiped after use?
     - [ ] The master secret doesn't stay in memory longer than necessary, right?
+
+Watch the animation below to see how `Extract` and `Expand` turn a master secret into purpose-specific keys, then
+how the forward-secrecy chain wipes the old key at every step.
+
+<iframe class="dsanim" src="../anim/hkdf-extract-expand.html" title="HKDF: Extract/Expand and forward secrecy" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HKDF: Extract/Expand and forward secrecy — step by step](anim/hkdf-extract-expand.png)
+</div>
+
+Try the **4-step chain** (fits, same as the real demo) and the **6-step chain** (hard) and the **one-step** and
+**chain that never advances** edge cases from the example picker — or type your own master:steps pair.
 
 ---
 
@@ -1132,17 +1213,17 @@ AAD, an attacker can't change the version field to redirect the app toward an ol
 | TPM | Windows, Linux | Hardware; the key can't be extracted | The key is bound to the device |
 | HSM / cloud KMS | Server | Hardware; the key never leaves the HSM | The server-side standard |
 
-```c title="Windows DPAPI — bir anahtarı kullanıcı hesabına bağlı olarak sarmak"
+```c title="Windows DPAPI — wrap a key bound to the user account"
 #include <windows.h>
 #include <dpapi.h>
 #pragma comment(lib, "crypt32.lib")
 
-int anahtari_sar(const BYTE *anahtar, DWORD n, DATA_BLOB *cikti)
+int wrap_key(const BYTE *key, DWORD n, DATA_BLOB *out)
 {
-    DATA_BLOB giris = { n, (BYTE *)anahtar };
-    /* cikti->pbData, iş bitince LocalFree ile serbest bırakılır */
-    return CryptProtectData(&giris, L"kasa-anahtari", NULL, NULL, NULL,
-                            CRYPTPROTECT_UI_FORBIDDEN, cikti) ? 0 : -1;
+    DATA_BLOB in = { n, (BYTE *)key };
+    /* out->pbData is freed with LocalFree once you're done with it */
+    return CryptProtectData(&in, L"vault-key", NULL, NULL, NULL,
+                            CRYPTPROTECT_UI_FORBIDDEN, out) ? 0 : -1;
 }
 ```
 
@@ -1237,6 +1318,18 @@ called SSL). It's the standard that protects data in transit. Today **TLS 1.3** 
 TLS 1.3's two key features: (1) the handshake finishes in **a single round trip** (fast); (2) the key exchange is
 always done with **ephemeral ECDHE**, meaning **forward secrecy** is on by default (RFC 8446).
 
+Watch the animation below to follow the handshake message order step by step on two lifelines (Client/Server): a
+normal handshake, mutual TLS (mTLS), a handshake aborted by certificate rejection, and an unverifying (insecure)
+client that still completes the handshake — but unsafely.
+
+<iframe class="dsanim" src="../anim/tls13-handshake.html" title="TLS 1.3 handshake: message sequence" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![TLS 1.3 handshake: message sequence — step by step](anim/tls13-handshake.png)
+</div>
+
+Try **a normal handshake** (fits) and **mutual TLS** (hard) and the **aborted** and **insecure** edge cases from
+the example picker.
+
 ### 9.2 The three layers of validation — and the most dangerous trap
 
 A TLS connection means nothing if it doesn't **validate** the certificate the other party presents. Validation
@@ -1272,6 +1365,18 @@ OCSP in detail in **Week 10**.
   **changes** on a later connection, a warning is raised. This is what SSH does (textbook **Recipe 8.19**). It's
   not as strong as a PKI, but it makes interception harder after the first connection.
 
+Watch the animation below to see how the app's embedded **primary** and **backup** pins are compared with the
+pin the server presents: a match, falling back to the backup after a planned key rotation, and an attack attempt
+that matches neither pin.
+
+<iframe class="dsanim" src="../anim/certificate-pinning.html" title="Certificate pinning: primary, backup, mismatch" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Certificate pinning: primary, backup, mismatch — step by step](anim/certificate-pinning.png)
+</div>
+
+Try **matching the primary pin** (fits) and **falling back to the backup pin** (hard) and the **matches neither
+pin** and **a very short server name** edge cases from the example picker.
+
 ### 9.4 What changed from TLS 1.2 to 1.3?
 
 TLS 1.3 isn't just a version bump; it's a **clean simplification**. Older versions had dozens of "cipher suites,"
@@ -1300,35 +1405,35 @@ many of them weak; misconfiguration was a common vulnerability. TLS 1.3 cleaned 
 
 The essence of the client:
 
-```c title="tls_istemci.c (özet)"
-SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);   /* en az TLS 1.2 */
-if (dogrula) {
-    SSL_CTX_load_verify_locations(ctx, ca_pem, NULL);  /* güvenilen CA */
+```c title="tls_client.c (excerpt)"
+SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);   /* at least TLS 1.2 */
+if (verify) {
+    SSL_CTX_load_verify_locations(ctx, ca_pem, NULL);  /* the trusted CA */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
-    SSL_set1_host(ssl, host);                           /* ana makine adı! */
+    SSL_set1_host(ssl, host);                           /* the hostname! */
 }
-/* pin modunda: sunucu ACIK ANAHTARININ (SPKI) SHA-256'si eslesmeli */
+/* in pin mode: the server's PUBLIC KEY's (SPKI) SHA-256 must match */
 i2d_X509_PUBKEY(X509_get_X509_PUBKEY(cert), &der);
-EVP_Digest(der, len, ozet, NULL, EVP_sha256(), NULL);
-if (memcmp(ozet, beklenen_pin, 32) != 0) { /* REDDET */ }
+EVP_Digest(der, len, actual, NULL, EVP_sha256(), NULL);
+if (memcmp(actual, expected_pin, 32) != 0) { /* REJECT */ }
 ```
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-Gercek sunucu SPKI pini (SHA-256): 1dabd67747366675...ac36b3f7c
+```text title="sh demo.sh — actual output (WSL)"
+The real server's SPKI pin (SHA-256): 1dabd67747366675...ac36b3f7c
 ==============================================================
-SENARYO 1 - Guvensiz istemci SALDIRGAN sunucuya:
-[guvensiz] Dogrulama YOK - ne gelirse KABUL (TEHLIKELI).
-   ^ Sahte sertifika kabul edildi. MITM basarili olurdu.
-SENARYO 2 - Dogrulayan istemci GERCEK sunucuya:
-[dogrula] Zincir + hostname DOGRULANDI - KABUL.
-SENARYO 3 - Dogrulayan istemci SALDIRGAN sunucuya:
-[dogrula] EL SIKISMA BASARISIZ - baglanti REDDEDILDI.
-   Sebep: (18: self signed certificate)
-SENARYO 4 - Pinleyen istemci GERCEK sunucuya, DOGRU pin:
-[pin] SPKI pin TUTTU - baglanti KABUL.
-SENARYO 5 - Pinleyen istemci SALDIRGAN sunucuya, GERCEK pin ile:
-[pin] SPKI pin TUTMADI - baglanti REDDEDILDI.
-   ^ Anahtar tutmadi: pinning MITM'i durdurdu.
+SCENARIO 1 - Insecure client to the ATTACKER's server (port 14444):
+[insecure] no verification - ACCEPTS whatever it gets (DANGEROUS).
+   ^ The fake certificate was accepted. A MITM would have succeeded.
+SCENARIO 2 - Verifying client to the REAL server (port 14443):
+[verify] chain + hostname VERIFIED - ACCEPTED.
+SCENARIO 3 - Verifying client to the ATTACKER's server (port 14444):
+[verify] HANDSHAKE FAILED - connection REJECTED.
+   Reason: certificate verification error (18: self signed certificate)
+SCENARIO 4 - Pinning client to the REAL server, with the CORRECT pin:
+[pin] the SPKI pin MATCHED - connection ACCEPTED.
+SCENARIO 5 - Pinning client to the ATTACKER's server, with the REAL pin:
+[pin] the SPKI pin did NOT match - connection REJECTED.
+   ^ The key did not match: pinning stopped the MITM.
 ```
 
 The five scenarios tell a single story: an **unvalidating client** accepts the attacker's fake certificate
@@ -1376,12 +1481,12 @@ validation); the code below is these recipes updated to OpenSSL 1.1.1/3.x.
 
 ### A correct client with OpenSSL: seven steps
 
-```c title="tls_istemci.c — OpenSSL 1.1.1 / 3.x"
+```c title="A correct TLS client, step by step (teaching example — OpenSSL 1.1.1 / 3.x)"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-/* Başarıda okunup yazılabilen bir BIO döndürür; iş bitince BIO_free_all + SSL_CTX_free. */
-BIO *tls_baglan(SSL_CTX **ctx_cikti, const char *ana_makine, const char *port)
+/* Returns a BIO that can be read/written on success; call BIO_free_all + SSL_CTX_free when done. */
+BIO *tls_connect(SSL_CTX **ctx_out, const char *host, const char *port)
 {
     BIO *bio = NULL;
     SSL *ssl = NULL;
@@ -1389,27 +1494,33 @@ BIO *tls_baglan(SSL_CTX **ctx_cikti, const char *ana_makine, const char *port)
     if (!ctx) return NULL;
     SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);             /* 2 */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);                  /* 3 */
-    if (SSL_CTX_set_default_verify_paths(ctx) != 1) goto hata;       /* 4 */
+    if (SSL_CTX_set_default_verify_paths(ctx) != 1) goto fail;       /* 4 */
 
-    if ((bio = BIO_new_ssl_connect(ctx)) == NULL) goto hata;
+    if ((bio = BIO_new_ssl_connect(ctx)) == NULL) goto fail;
     BIO_get_ssl(bio, &ssl);
-    SSL_set_tlsext_host_name(ssl, ana_makine);                       /* 5: SNI */
-    if (SSL_set1_host(ssl, ana_makine) != 1) goto hata;              /* 6: ad denetimi */
-    BIO_set_conn_hostname(bio, ana_makine);
+    SSL_set_tlsext_host_name(ssl, host);                             /* 5: SNI */
+    if (SSL_set1_host(ssl, host) != 1) goto fail;                    /* 6: hostname check */
+    BIO_set_conn_hostname(bio, host);
     BIO_set_conn_port(bio, port);
 
-    if (BIO_do_connect(bio) <= 0 || BIO_do_handshake(bio) <= 0) goto hata;
-    if (SSL_get_verify_result(ssl) != X509_V_OK) goto hata;          /* 7 */
+    if (BIO_do_connect(bio) <= 0 || BIO_do_handshake(bio) <= 0) goto fail;
+    if (SSL_get_verify_result(ssl) != X509_V_OK) goto fail;          /* 7 */
 
-    *ctx_cikti = ctx;
+    *ctx_out = ctx;
     return bio;
-hata:
+fail:
     ERR_print_errors_fp(stderr);
     BIO_free_all(bio);
     SSL_CTX_free(ctx);
     return NULL;
 }
 ```
+
+!!! note "This is not `tls_client.c` itself"
+    `tls_client.c` leaves validation to a single `SSL_connect()` call (OpenSSL runs the handshake
+    internally); the `tls_connect()` above is a teaching example written to show the same seven steps
+    **by hand, through the BIO interface** (the updated form of the textbook's Recipe 9.1/10.7/10.8/10.9).
+    Both carry out the same seven steps.
 
 | Step | What it does | If skipped |
 | --- | --- | --- |
@@ -1424,7 +1535,7 @@ hata:
 !!! warning "Why is step 6 so important?"
     Chain validation only answers "was this certificate signed by a trusted CA?" An attacker can obtain a
     **completely valid** certificate for their own domain. If hostname checking isn't done, the client will also
-    accept `saldirgan.ornek`'s certificate in place of `banka.ornek`. The 2012 study titled "The Most Dangerous
+    accept `attacker.example`'s certificate in place of `bank.example`. The 2012 study titled "The Most Dangerous
     Code in the World" showed that a large number of real applications and libraries skipped exactly this step.
 
 ### Adding pinning: the SPKI digest
@@ -1433,39 +1544,39 @@ Once validation succeeds, the digest of the server's **public key** is compared 
 app. Pinning the public-key info (SPKI) instead of the certificate itself lets the app keep working when the
 certificate is renewed with the same key.
 
-```c title="SPKI SHA-256 sabitleme"
+```c title="SPKI SHA-256 pinning"
 #include <openssl/x509.h>
 #include <openssl/sha.h>
 
-static const unsigned char PINLER[][32] = {
-    { /* birincil anahtarın SPKI SHA-256 özeti (32 bayt) */ },
-    { /* YEDEK anahtarın özeti: çevrimdışı üretilmiş, henüz kullanılmayan */ },
+static const unsigned char TRUSTED_PINS[][32] = {
+    { /* the primary key's SPKI SHA-256 digest (32 bytes) */ },
+    { /* the BACKUP key's digest: generated offline, not yet in use */ },
 };
 
-int pin_denetle(SSL *ssl)
+int check_pin(SSL *ssl)
 {
-    X509 *sert = SSL_get_peer_certificate(ssl);    /* 3.x: SSL_get1_peer_certificate */
-    if (!sert) return 0;
-    X509_PUBKEY *pk = X509_get_X509_PUBKEY(sert);
+    X509 *cert = SSL_get_peer_certificate(ssl);    /* 3.x: SSL_get1_peer_certificate */
+    if (!cert) return 0;
+    X509_PUBKEY *pk = X509_get_X509_PUBKEY(cert);
     int n = i2d_X509_PUBKEY(pk, NULL);
     unsigned char *der = OPENSSL_malloc((size_t)n), *p = der;
-    i2d_X509_PUBKEY(pk, &p);                        /* p ilerler; der başta kalır */
-    unsigned char ozet[32];
-    SHA256(der, (size_t)n, ozet);
+    i2d_X509_PUBKEY(pk, &p);                        /* p advances; der stays at the start */
+    unsigned char digest[32];
+    SHA256(der, (size_t)n, digest);
     OPENSSL_free(der);
-    X509_free(sert);
+    X509_free(cert);
 
-    for (size_t i = 0; i < sizeof PINLER / sizeof PINLER[0]; i++)
-        if (CRYPTO_memcmp(ozet, PINLER[i], 32) == 0)
+    for (size_t i = 0; i < sizeof TRUSTED_PINS / sizeof TRUSTED_PINS[0]; i++)
+        if (CRYPTO_memcmp(digest, TRUSTED_PINS[i], 32) == 0)
             return 1;
-    return 0;                                       /* tutmadı: bağlantıyı KES */
+    return 0;                                       /* no match: CUT the connection */
 }
 ```
 
 Computing a server's SPKI digest from the command line:
 
 ```bash
-openssl s_client -connect sunucu.ornek:443 -servername sunucu.ornek </dev/null 2>/dev/null \
+openssl s_client -connect server.example:443 -servername server.example </dev/null 2>/dev/null \
   | openssl x509 -pubkey -noout \
   | openssl pkey -pubin -outform der \
   | openssl dgst -sha256 -binary | base64
@@ -1497,11 +1608,11 @@ Windows's built-in TLS stack is **Schannel**; apps mostly use it through **WinHT
 counterpart of the WinInet the textbook covers in Recipe 9.4). Unlike OpenSSL, WinHTTP **validates the
 certificate and the hostname by default**. The danger lies in the flags that turn this validation off:
 
-```c title="Asla sürüm derlemesine girmemesi gereken satır"
-DWORD bayraklar = SECURITY_FLAG_IGNORE_UNKNOWN_CA |
+```c title="A line that must never reach a release build"
+DWORD flags = SECURITY_FLAG_IGNORE_UNKNOWN_CA |
                   SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
                   SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
-WinHttpSetOption(istek, WINHTTP_OPTION_SECURITY_FLAGS, &bayraklar, sizeof bayraklar);
+WinHttpSetOption(request, WINHTTP_OPTION_SECURITY_FLAGS, &flags, sizeof flags);
 ```
 
 This line is usually added during development to connect to a self-signed test server, and then **forgotten**.
@@ -1516,13 +1627,13 @@ Below is a simplified, rewritten version of a pinning implementation used in the
 looks correct: it validates the chain first, then compares the server's public key against the key stored in the
 app. Can you spot the bug?
 
-```java title="Sabitleme — sadeleştirilmiş örnek (Java)"
-public void checkServerTrusted(X509Certificate[] zincir, String tur) throws CertificateException {
-    varsayilanDogrulayici.checkServerTrusted(zincir, tur);          // 1. zincir doğrulaması
+```java title="Pinning — simplified example (Java)"
+public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+    defaultValidator.checkServerTrusted(chain, authType);          // 1. chain validation
     try {
-        PublicKey beklenen = depo.getCertificate("ca").getPublicKey();
-        if (!Arrays.equals(beklenen.getEncoded(), zincir[0].getPublicKey().getEncoded()))
-            throw new CertificateException("pin tutmadi");           // 2. sabitleme
+        PublicKey expected = keyStore.getCertificate("ca").getPublicKey();
+        if (!Arrays.equals(expected.getEncoded(), chain[0].getPublicKey().getEncoded()))
+            throw new CertificateException("pin did not match");    // 2. pinning
     } catch (KeyStoreException e) {
         e.printStackTrace();                                         // 3. ???
     }
@@ -1543,9 +1654,9 @@ notable points stood out in the same codebase:
 The correct design is **fail-closed**: if you can't determine a security check's outcome, the outcome is
 "reject."
 
-```java title="Düzeltilmiş: her belirsizlik reddedilir"
+```java title="Fixed: every ambiguity is rejected"
     } catch (KeyStoreException | RuntimeException e) {
-        throw new CertificateException("pin denetimi yapilamadi", e);   // belirsizlik = ret
+        throw new CertificateException("pin check could not be performed", e);   // ambiguity = reject
     }
 ```
 
@@ -1576,12 +1687,12 @@ The correct design is **fail-closed**: if you can't determine a security check's
 === "Command line"
 
     ```bash
-    # Sürüm, şifre takımı ve sertifika zincirini göster; doğrulama hatasında dur
-    openssl s_client -connect sunucu.ornek:443 -servername sunucu.ornek \
+    # Show the version, cipher suite, and certificate chain; stop on a validation error
+    openssl s_client -connect server.example:443 -servername server.example \
                      -verify_return_error -brief </dev/null
 
-    # TLS 1.1'i dene: sunucu reddetmeli
-    openssl s_client -connect sunucu.ornek:443 -tls1_1 </dev/null
+    # Try TLS 1.1: the server should reject it
+    openssl s_client -connect server.example:443 -tls1_1 </dev/null
     ```
 
 === "App behaviour"
@@ -1643,31 +1754,31 @@ threats: one counters a file being stolen, the other counters "the wrong person 
 
 ### Demo 7 — Encrypting a sensitive field in SQLite with AES-GCM
 
-!!! info "Demo 7 · `code/week-03/07-sqlite-alan` · data at rest, field encryption"
-    The program adds two customer records to a SQLite database: the `ad` (name) field is **plain**, and the
-    `kart_sifreli` (card_encrypted) field is a BLOB encrypted with AES-256-GCM. The key isn't embedded in the
-    code; it comes from the `SIM_ANAHTAR` environment variable. When an attacker steals and opens the DB, the
+!!! info "Demo 7 · `code/week-03/07-sqlite-field` · data at rest, field encryption"
+    The program adds two customer records to a SQLite database: the `name` field is **plain**, and the
+    `card_encrypted` field is a BLOB encrypted with AES-256-GCM. The key isn't embedded in the
+    code; it comes from the `SIM_KEY` environment variable. When an attacker steals and opens the DB, the
     card field is nothing but an encrypted byte blob. SQLite is `sqlite3` on Linux and the Windows SDK's built-in
     **winsqlite3** library on Windows; the crypto comes from the shared header.
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-ADIM 1 - Veritabanini kur (hassas alan sifreli)
-Veritabani kuruldu: cikti/musteri.db (2 kayit)
-ADIM 2 - Saldirgan DB dosyasini caldi ve sqlite3 ile aciyor:
-  1|Ayse Yilmaz|D1ED7A3624E0F7C6...A64B373F...  (sifreli)
-  2|Mehmet Kaya|C362F7A33BDEE736...F924DF9F...  (sifreli)
-   ^ Kart alani yalniz sifreli bayt yigini; anahtar yok.
-ADIM 3 - Dogru anahtarla uygulama okuyor (coz ve dogrula):
-   1 | Ayse Yilmaz   | 4242-4242-4242-4242
-   2 | Mehmet Kaya   | 5555-4444-3333-2222
-ADIM 4 - YANLIS anahtarla okuma (GCM etiketi tutmaz):
-   1 | Ayse Yilmaz   | (COZULEMEDI - anahtar yanlis?)
+```text title=".\demo.ps1 — actual output (Windows)"
+STEP 1 - Set up the database (the sensitive field is encrypted)
+Database created: output\customers.db (2 records)
+STEP 2 - An attacker stole the raw DB file and is searching it:
+   'Jane' (name) in the raw DB      : FOUND (the name field is plain)
+   '4242-4242' (card) in the raw DB : NOT THERE - encrypted
+STEP 3 - The application reads with the correct key (decrypt and verify):
+    1 | Jane Doe      | 4242-4242-4242-4242
+    2 | John Smith    | 5555-4444-3333-2222
+STEP 4 - A read attempt with the WRONG key (the GCM tag will not match):
+    1 | Jane Doe      | (COULD NOT DECRYPT - wrong key?)
+    2 | John Smith    | (COULD NOT DECRYPT - wrong key?)
 ```
 
-Even if the attacker opens the DB with `sqlite3`, they see the `ad` field, but the `kart_sifreli` field is
+Even if the attacker opens the DB with `sqlite3`, they see the `name` field, but the `card_encrypted` field is
 nothing but encrypted bytes. The app opens and verifies it correctly with the right key; with the **wrong** key
 the GCM tag doesn't hold, so decryption is rejected (it never silently returns garbage). The Windows demo
-(`.\demo.ps1`) makes the same point by searching the raw DB file instead of using the `sqlite3` tool: `Ayse` (the
+(`.\demo.ps1`) makes the same point by searching the raw DB file instead of using the `sqlite3` tool: `Jane` (the
 plain name) is found, but `4242-4242` (the card) is **not found**, because it's encrypted.
 
 !!! success "Rule"
@@ -1687,6 +1798,17 @@ plain name) is found, but `4242-4242` (the card) is **not found**, because it's 
     - [ ] Does decryption with the wrong key reject rather than silently return garbage (AEAD)?
     - [ ] Are sensitive fields headed to logs/screens masked?
     - [ ] Can't the encrypted field be moved into a different record (bound via AAD)?
+
+Watch the animation below try to read two customer rows' `card_encrypted` field with the correct key and with the
+wrong key: every row decrypts with the right key, and every row is rejected with the wrong one.
+
+<iframe class="dsanim" src="../anim/sqlite-field-encryption.html" title="SQLite field encryption: correct and wrong key" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SQLite field encryption: correct and wrong key — step by step](anim/sqlite-field-encryption.png)
+</div>
+
+Try **the real demo's records, correct key** (fits) and **different records** (hard) and the **wrong key** and
+**very short card fields** edge cases from the example picker — or type your own name:card pairs.
 
 ---
 
@@ -1719,17 +1841,17 @@ The PCI DSS rule for card numbers (PAN) is clear: when a number is displayed, at
 versions of the standard, eight, depending on card type) and the last four digits may be shown; roles that need
 to see the full number for their job are separately defined.
 
-```c title="Kart numarasını görüntüleme için maskele (son 4 hane)"
+```c title="Mask a card number for display (last 4 digits)"
 #include <string.h>
 
-/* "1234567812345678" -> "************5678"; çıktı tamponu en az n+1 bayt */
-void pan_maskele(const char *pan, char *cikti, size_t cikti_boyut)
+/* "1234567812345678" -> "************5678"; out must be at least n+1 bytes */
+void mask_pan(const char *pan, char *out, size_t out_size)
 {
     size_t n = strnlen(pan, 19);
-    if (cikti_boyut < n + 1) { if (cikti_boyut) cikti[0] = '\0'; return; }
+    if (out_size < n + 1) { if (out_size) out[0] = '\0'; return; }
     for (size_t i = 0; i < n; i++)
-        cikti[i] = (i + 4 < n) ? '*' : pan[i];
-    cikti[n] = '\0';
+        out[i] = (i + 4 < n) ? '*' : pan[i];
+    out[n] = '\0';
 }
 ```
 
@@ -1759,11 +1881,11 @@ are." Running the ID number through a plain digest (SHA-256) **isn't enough**: a
 number of possible values, and an attacker can compute and compare the digest of all of them. The correct
 approach is to use **HMAC with a secret key**:
 
-```c title="Anahtarlı takma ad: HMAC-SHA256(anahtar, kimlik_no)"
-/* code/common/cen429_kripto.h */
-unsigned char takma_ad[32];
-kripto_hmac_sha256(takma_anahtari, 32, kimlik_no, strlen(kimlik_no), takma_ad);
-/* Veri kümesinde kimlik_no yerine hex(takma_ad)'ın ilk 16 baytı saklanır */
+```c title="Keyed pseudonym: HMAC-SHA256(key, id_number)"
+/* code/common/cen429_crypto.h */
+unsigned char pseudonym[32];
+crypto_hmac_sha256(pseudonym_key, 32, id_number, strlen(id_number), pseudonym);
+/* the data set stores the first 16 bytes of hex(pseudonym) instead of id_number */
 ```
 
 The key is kept **separate** from the data set. For someone without the key, going from the pseudonym back to
@@ -1775,8 +1897,7 @@ lost or destroyed, the data becomes effectively anonymous.
 Copying real production data into a test environment is one of the most common causes of data leaks: test
 environments are less protected and accessed by more people. In order of preference for test data:
 
-1. **Fully synthetic data:** data generated from scratch, never derived from real records. The safest. Every
-   example in this course follows this path: the card numbers, keys, and IDs are synthetic.
+1. **Fully synthetic data:** data generated from scratch, never derived from real records. The safest option.
 2. **Static masking:** a copy of the production data is taken, the sensitive fields in the copy are permanently
    altered (pseudonym, shuffling, generalization), and only then is it moved into the test environment.
 3. **Dynamic masking:** the data itself isn't changed; the database returns query results masked according to
@@ -1790,21 +1911,21 @@ thing; **guaranteeing** it is another. Two approaches are used together:
 - **Prevention at the source:** sensitive values are kept in a special type, and that type's print function
   always produces masked output. Even if a programmer accidentally logs it, the full value never comes out.
 - **Filtering at the output:** as a final step in the logging library, card-number-like sequences (13–19 digits,
-  passing the Luhn check) and values that follow keys like `parola=`, `token=` are automatically masked.
+  passing the Luhn check) and values that follow keys like `password=`, `token=` are automatically masked.
 
-```c title="Günlük satırında 'parola=' ve 'pin=' değerlerini maskele (basit süzgeç)"
+```c title="Mask 'password=' and 'pin=' values in a log line (a simple filter)"
 #include <string.h>
 #include <ctype.h>
 
-void gunluk_suz(char *satir)
+void log_filter(char *line)
 {
-    static const char *anahtarlar[] = { "parola=", "pin=", "token=" };
-    for (size_t k = 0; k < sizeof anahtarlar / sizeof anahtarlar[0]; k++) {
-        char *p = satir;
-        while ((p = strstr(p, anahtarlar[k])) != NULL) {
-            p += strlen(anahtarlar[k]);
+    static const char *keys[] = { "password=", "pin=", "token=" };
+    for (size_t k = 0; k < sizeof keys / sizeof keys[0]; k++) {
+        char *p = line;
+        while ((p = strstr(p, keys[k])) != NULL) {
+            p += strlen(keys[k]);
             while (*p && !isspace((unsigned char)*p))
-                *p++ = '*';                    /* değeri yerinde maskele */
+                *p++ = '*';                    /* mask the value in place */
         }
     }
 }
@@ -1840,6 +1961,18 @@ void gunluk_suz(char *satir)
     documents how the requirements "error codes must not give the attacker hints" and "sensitive data must not be
     written to logs in the clear" are met (e.g., all logging code is stripped at build time).
 
+Watch the animation below process the same value with three different techniques: partial masking (only the
+first/last characters survive), tokenization (a meaningless token + a protected vault), and pseudonymization (a
+keyed digest).
+
+<iframe class="dsanim" src="../anim/masking.html" title="Data masking: partial masking, tokenization, pseudonymization" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Data masking: partial masking, tokenization, pseudonymization — step by step](anim/masking.png)
+</div>
+
+Try **partial masking** (fits) and **tokenization** (hard) and the **pseudonymization** and **a very short
+value** edge cases from the example picker — or type your own value|technique pair.
+
 ---
 
 ## 13. Data in use: secure erasure in memory and device binding
@@ -1863,19 +1996,19 @@ for **data in use**.
 
 ### Demo 8 — mlock + secure erasure
 
-!!! info "Demo 8 · `code/week-03/08-bellek-silme` · data in use (textbook Recipe 13.2–13.3)"
-    The program sets up three layers: it disables dumps, locks memory, and wipes with `kripto_temizle` once the
+!!! info "Demo 8 · `code/week-03/08-memory-wipe` · data in use (textbook Recipe 13.2–13.3)"
+    The program sets up three layers: it disables dumps, locks memory, and wipes with `crypto_wipe` once the
     job is done; then it confirms the buffer was actually zeroed after wiping. (It doesn't repeat the gcore
     demonstration from Week 1; it adds new layers.)
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-Katman 1 - cokme dokumu kapatildi (RLIMIT_CORE=0): TAMAM
-Katman 2 - mlock ile takasa (swap) yazma engellendi: TAMAM
-Sir kullaniliyor: uzunluk = 20, dolu bayt = 20
-Katman 3 - guvenli silme sonrasi dolu bayt = 0
-   ==> sir bellekten temizlendi.
+```text title="sh demo.sh — actual output (WSL)"
+Layer 1 - crash dump turned off (RLIMIT_CORE=0): OK
+Layer 2 - mlock blocked writing to swap: OK
+Secret in use: length = 23, non-zero bytes = 23
+Layer 3 - non-zero bytes after secure wipe = 0
+   ==> the secret was cleared from memory.
 --------------------------------------------------------------
-OPENSSL_cleanse cagrisi sayisi -> 2
+OPENSSL_cleanse call count -> 2
 ```
 
 On Windows (`.\demo.ps1`) the same three layers are set up with `SetErrorMode` + `VirtualLock` +
@@ -1914,6 +2047,17 @@ shell in Section 14; we'll combine it with RASP in [Week 6](../week-6/cen429-wee
     - [ ] Is the storage key bound to the device/version?
     - [ ] Is the crash dump disabled and is sensitive memory locked?
 
+Watch the animation below step through the three layers (dump prevention, memory locking, secure wipe) that
+protect a secret in memory, and confirm that every byte is really zeroed after the wipe.
+
+<iframe class="dsanim" src="../anim/memory-wipe.html" title="Secure wiping in memory" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Secure wiping in memory — step by step](anim/memory-wipe.png)
+</div>
+
+Try **a medium-length secret** (fits) and **a long secret close to the demo's real one** (hard) and the
+**one-character secret** and **special characters** edge cases from the example picker — or type your own secret text.
+
 ---
 
 ## 14. Security shells: defence in depth made concrete
@@ -1929,26 +2073,30 @@ in transit," "field encryption at rest," and "device binding in use" principles 
 
 ### Demo 9 — Wrapping and unwrapping a key with four shells
 
-!!! info "Demo 9 · `code/week-03/09-guvenlik-kabugu` · defence in depth"
+!!! info "Demo 9 · `code/week-03/09-security-layers` · defence in depth"
     The program wraps a 16-byte secret with four AES-GCM shells in sequence (innermost: a device-bound HKDF key),
     then unwraps it in reverse order. Two attacks: (1) if one bit of the packet is tampered with, the outermost
     shell won't open; (2) if the packet is copied to another device (a different fingerprint), the outer shells
     open but the **innermost device shell** does not.
 
-```text title="sh demo.sh — gerçek çıktı"
-SARMA (dis dunyaya dogru): sir -> K1 -> K2 -> K3 -> K4
-  Kabuk 1 (cihaz baglama)     :  44 bayt
-  Kabuk 4 (kanal/TLS benzeri) : 128 bayt  <- aktarilan paket
-ACMA (ice dogru): K4 -> K3 -> K2 -> K1 -> sir
-  Kabuk 4/3/2/1 acildi: TAMAM
-  Cozulen SIR : deadbeef...ba98  -> sir DOGRU
+```text title="security_layers.exe — actual output"
+WRAPPING (outward): secret -> K1 -> K2 -> K3 -> K4
+  Layer 1 (device binding)     :  44 bytes
+  Layer 4 (channel/TLS-like)   : 128 bytes  <- transmitted packet
+UNWRAPPING (inward): K4 -> K3 -> K2 -> K1 -> secret
+  Layer 4 opened: OK
+  Layer 3 opened: OK
+  Layer 2 opened: OK
+  Layer 1 opened: OK
+  Recovered SECRET : deadbeef0123456789abcdeffedcba98  -> secret CORRECT
 ==============================================================
-SALDIRI 1 - Paketin bir biti kurcalanirsa (Kabuk 4):
-  Kabuk 4 acildi: RED  (GCM etiketi tutmadi)
-SALDIRI 2 - Paket BASKA cihaza kopyalanirsa (yanlis parmak izi):
-  Dis 3 kabuk acildi: TAMAM
-  Kabuk 1 (cihaz baglama) BASKA cihazda acildi: RED
-  ^ Anahtarlar kopyalansa bile sir baska cihazda ACILAMAZ.
+ATTACK 1 - if one bit of the packet is tampered with (Layer 4):
+  Layer 4 opened: REJECTED  (the GCM tag did not match)
+==============================================================
+ATTACK 2 - if the packet is copied to ANOTHER device (wrong fingerprint):
+  Outer 3 layers opened: OK
+  Layer 1 (device binding) opened on the OTHER device: REJECTED
+  ^ Even with the keys copied, the secret CANNOT be opened on another device.
 ```
 
 In the normal flow, the four shells opened in sequence and the secret came back correctly. When a single bit was
@@ -2025,6 +2173,17 @@ How to read the matrix:
     - [ ] Were the shells built with independent keys (does one not hand over another)?
     - [ ] Is the innermost shell bound to the device/version?
     - [ ] Is there a message-level shell for "don't rely on TLS alone"?
+
+Watch the animation below wrap and unwrap a secret through four shells, see a tampered packet get rejected at the
+outermost layer, and see why a packet copied to another device gets stuck at the innermost layer.
+
+<iframe class="dsanim" src="../anim/security-layers.html" title="Security shells: a four-layer defense" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Security shells: a four-layer defense — step by step](anim/security-layers.png)
+</div>
+
+Try **all four layers open successfully** (fits/hard) and the **packet tampered** and **another device** edge
+cases from the example picker — or type your own secret|scenario pair.
 
 ---
 
@@ -2122,12 +2281,12 @@ This week you will write the **data security** sections of your security guide. 
 
 !!! example "Activity 1 — Stop the MITM with your own hands (15 min, pairs)"
     Run Demo 6 under WSL. Then comment out the `SSL_set1_host` line in the `dogrula` (validate) mode inside
-    `tls_istemci.c` and rebuild. What changes when the attacker connects to the server (14444)? Without hostname
+    `tls_client.c` and rebuild. What changes when the attacker connects to the server (14444)? Without hostname
     checking, **which** attacker is still caught, and which one gets through? (Hint: self-signed vs. a different
     name but a valid chain.)
 
 !!! example "Activity 2 — Make the nonce repeat (10 min, individual)"
-    In Demo 1's code, replace `kripto_rastgele(nonce, 12)` with `memset(nonce, 0, 12)` and encrypt two different
+    In Demo 1's code, replace `crypto_random(nonce, 12)` with `memset(nonce, 0, 12)` and encrypt two different
     files. Are the nonce fields at the start of the two ciphertexts the same? Take the XOR of the ciphertexts and
     compare it against the XOR of the plaintexts (like in Demo 2). What do you see? Why is this a security hole?
 
@@ -2152,29 +2311,29 @@ This week you will write the **data security** sections of your security guide. 
     SSL *ssl = SSL_new(ctx);
     SSL_set_fd(ssl, sock);
     if (SSL_connect(ssl) == 1)
-        printf("Baglanti guvenli!\n");
+        printf("Connection secure!\n");
     ```
     ??? success "Answer"
         **No.** There's no `SSL_CTX_set_verify` or `SSL_set1_host`; no validation happens at all. This code
-        accepts every certificate (including the attacker's). The "Baglanti guvenli" (connection secure) message
+        accepts every certificate (including the attacker's). The "Connection secure!" message
         is misleading — there's protection against a passive eavesdropper only, none against an active MITM
         (Demo 6, Scenario 1).
 
 !!! question "Reading 2 — Why is this decryption dangerous?"
     ```c
-    EVP_DecryptUpdate(c, duz, &len, sc, sc_boy);
-    EVP_DecryptFinal_ex(c, duz + len, &len);   /* dönüş değeri okunmuyor */
-    kullan(duz);
+    EVP_DecryptUpdate(c, plain, &len, ct, ct_len);
+    EVP_DecryptFinal_ex(c, plain + len, &len);   /* the return value isn't checked */
+    use(plain);
     ```
     ??? success "Answer"
-        `EVP_DecryptFinal_ex`'s return value (the tag verification in GCM) is **not checked**. `kullan(duz)`
+        `EVP_DecryptFinal_ex`'s return value (the tag verification in GCM) is **not checked**. `use(plain)`
         (use the plaintext) is called even if the tag doesn't hold — tampered data is accepted. If verification
         fails, the output **must not be used** (Demo 1).
 
 !!! question "Reading 3 — Where is this key derivation weak?"
     ```c
-    unsigned char anahtar[32];
-    SHA256((unsigned char*)parola, strlen(parola), anahtar);
+    unsigned char key[32];
+    SHA256((unsigned char*)password, strlen(password), key);
     ```
     ??? success "Answer"
         Single-round, **unsalted** SHA-256 is not a password KDF: it's fast (brute force is cheap), there's no
@@ -2189,8 +2348,8 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 `code/week-03` demos.
 
 ??? question "Exercise 1 — Easy: the power of AAD"
-    Add associated data (AAD) to Demo 1: when encrypting, give `kripto_gcm_sifrele` the AAD `"surum=1"`
-    (version=1); when decrypting, give `"surum=2"` (version=2). What happens? What is AAD for?
+    Add associated data (AAD) to Demo 1: when encrypting, give `crypto_gcm_encrypt` the AAD `"version=1"`;
+    when decrypting, give `"version=2"`. What happens? What is AAD for?
 
     ??? success "Expected result"
         The tag doesn't hold; decryption is rejected. AAD isn't encrypted, but it **is verified**; the encrypted
@@ -2221,7 +2380,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     shell's MAC doesn't hold, at which layer do you stop?
 
 ??? question "Exercise 7 — Hard: verify HKDF by hand"
-    Compare the HKDF in `cen429_kripto.h` against RFC 5869 Test Case 1 (the IKM, salt, and info values are in the
+    Compare the HKDF in `cen429_crypto.h` against RFC 5869 Test Case 1 (the IKM, salt, and info values are in the
     RFC). Is your output byte-for-byte identical to the RFC's OKM? (Hint: the test in `code` already does this.)
 
 ??? question "Exercise 8 — Hard: nonce counter overflow"
@@ -2255,8 +2414,8 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 ??? question "Extra exercise A — Easy: how predictable is rand()?"
     Write a small program that generates a 16-byte "key" with `srand(time(NULL))` and prints the key in hex.
     Then write a second program: it should try every second of the last 10 minutes as a seed and find the same
-    key. How many tries did it take? Then rewrite the first program using `kripto_rastgele()`
-    (`code/common/cen429_kripto.h`).
+    key. How many tries did it take? Then rewrite the first program using `crypto_random()`
+    (`code/common/cen429_crypto.h`).
 
 ??? question "Extra exercise B — Easy: measure modulo bias"
     Generate uniform bytes over 0–255 and produce a million digits with `bayt % 10`; count how many times each

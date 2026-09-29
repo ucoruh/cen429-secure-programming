@@ -1,3 +1,3 @@
-# CEN429 — Hafta 3 demoları
-# İçinde CMakeLists.txt bulunan her alt klasör kendiliğinden eklenir (bkz. cmake/cen429.cmake).
-cen429_hafta_demolari()
+# CEN429 — Week 3 demos
+# Every subfolder containing a CMakeLists.txt is added automatically (see cmake/cen429.cmake).
+cen429_add_week_demos()

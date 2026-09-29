@@ -1,16 +1,16 @@
 #!/bin/sh
-# CEN429 — Hafta 2 — Demo 6: TOCTOU yaris durumu (Linux / WSL)
-# Önce derleyin: ../../build.sh     Sonra: sh demo.sh
-# Her sey demo klasorundeki calisma/ altinda olur; sistem dosyalarina dokunulmaz.
+# CEN429 — Week 2 — Demo 6: a TOCTOU race condition (Linux / WSL)
+# Build first: ../../build.sh     Then: sh demo.sh
+# Everything happens under the demo folder's work/ subfolder; no system file is touched.
 cd "$(dirname "$0")"
 B=bin/linux
-[ -x "$B/yaz" ] || { echo "Once derleyin: ../../build.sh"; exit 1; }
-cizgi() { echo "--------------------------------------------------------------"; }
+[ -x "$B/logwriter" ] || { echo "Build first: ../../build.sh"; exit 1; }
+line() { echo "--------------------------------------------------------------"; }
 
-cizgi; echo "ADIM 1 — GUVENSIZ surum: once denetle, sonra ac (yaris acigi)"
-sh saldiri.sh guvensiz
-cizgi; echo "ADIM 2 — GUVENLI surum: O_NOFOLLOW ile tek adimda ac"
-sh saldiri.sh guvenli
-cizgi; echo "Sonuc: Denetim (lstat) ile kullanim (fopen) arasindaki bosluk"
-echo "saldirganin girebilecegi bir yaristir. Cozum: denetim ve kullanimi"
-echo "tek atomik adimda yapmak (O_NOFOLLOW, O_EXCL, ...)."
+line; echo "STEP 1 - UNSAFE version: check first, then open (the race window)"
+sh attack.sh unsafe
+line; echo "STEP 2 - SAFE version: opens in one step with O_NOFOLLOW"
+sh attack.sh safe
+line; echo "Result: the gap between the check (lstat) and the use (fopen)"
+echo "is a race an attacker can step into. The fix: do the check and the use"
+echo "in one atomic step (O_NOFOLLOW, O_EXCL, ...)."

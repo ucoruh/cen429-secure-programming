@@ -4,154 +4,279 @@ template: main.html
 
 # CEN429 Dönem Projesi — Proje Rehberi
 
+<!-- materyal:basla -->
+
+<div class="materyal" markdown>
+
+[:material-file-pdf-box: Ders notu (PDF)](cen429-proje-rehberi-ders-notu.pdf){ .md-button download="cen429-proje-rehberi-ders-notu.pdf" }
+[:material-file-word-box: Ders notu (DOCX)](cen429-proje-rehberi-ders-notu.docx){ .md-button download="cen429-proje-rehberi-ders-notu.docx" }
+[:material-presentation: Sunum (PDF)](cen429-proje-rehberi-sunum.pdf){ .md-button download="cen429-proje-rehberi-sunum.pdf" }
+[:material-microsoft-powerpoint: Sunum (PPTX)](cen429-proje-rehberi-sunum.pptx){ .md-button download="cen429-proje-rehberi-sunum.pptx" }
+[:material-language-html5: Sunum (HTML, çevrimdışı)](cen429-proje-rehberi-sunum.html){ .md-button download="cen429-proje-rehberi-sunum.html" }
+[:material-folder-zip: Tümünü indir (ZIP)](cen429-proje-rehberi-materyal.zip){ .md-button download="cen429-proje-rehberi-materyal.zip" }
+[:material-fullscreen: Sunumu tam ekran aç](cen429-proje-rehberi-sunum.html){ .md-button .md-button--primary target=_blank }
+
+</div>
+
+<div class="sunum-cercevesi">
+<iframe src="cen429-proje-rehberi-sunum.html" title="Proje Rehberi" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.</p>
+
+<!-- materyal:bitis -->
+
+*CEN429 Güvenli Programlama (eski kodu CE407) · 2026–2027 Güz*
+
 Bu projede, seçtiğiniz bir uygulamayı **sertifikasyon sürecinden geçiyormuş gibi** tasarlayıp geliştireceksiniz:
 bir **C++ konsol uygulaması** ve onun güvenliğini sağlayan bir **dinamik kütüphane (DLL/.so)**. Amaç, dönem boyunca
 öğrendiğiniz güvenlik yöntemlerini **tek bir üründe** birleştirmek ve hepsini bir **güvenlik kılavuzuyla** (S0–S17)
 belgelemektir.
 
+<div class="grid cards" markdown>
+
+-   **Dil ve araçlar**
+
+    ---
+
+    C++ (DLL/.so) · CMake/CTest · SQLite · SoftHSM/PKCS#11 · OpenSSL
+
+-   **Takım**
+
+    ---
+
+    En çok 3 kişi (tek başınıza da olur) · bir konuyu yalnız bir takım alır · 3. haftadan sonra takım değişmez
+
+-   **Vize kontrolü**
+
+    ---
+
+    7. hafta (30.10.2026) · RAP1 — ürünün ilk yarısı
+
+-   **Final kontrolü**
+
+    ---
+
+    15. hafta (25.12.2026) · RAP2 — tam ürün + test sonuçları
+
+</div>
+
 !!! abstract "Kısaca"
-    - **Takım:** 2 kişi (tek başınıza da yapabilirsiniz).
+    - **Takım:** en çok 3 kişi (tek başınıza da yapabilirsiniz); bir konuyu yalnız bir takım alabilir. 3. haftadan (04.10.2026) sonra takım değiştirilemez.
     - **Dil/araçlar:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL.
     - **İki teslim:** **Vize (RAP1)** — ürünün ilk yarısı; **Final (RAP2)** — tam ürün + test **sonuçları**.
     - **Teslimin kalbi:** kodun yanında, sertifikasyon belgesi gibi yazılmış **güvenlik kılavuzu** (S0–S17).
-    - Rubrik ayrıntısı Microsoft Teams'te; bu sayfa gereksinimleri ve haftalarla bağını verir.
+    - Bütün veriler **sentetiktir**; depoda gerçek sır, anahtar ya da kişisel veri bulunmaz.
+    - Ayrıntılı puanlama anahtarı ve kanıt şablonları Microsoft Teams'te paylaşılabilir; bu sayfadaki kriterler ve
+      puanlar bağlayıcıdır.
 
-## 1. Proje planı (başlamadan önce)
+## 1. Takvim
 
-- Başlamadan önce **GitHub**'da bir **proje planı** (Projects/README) oluşturun: iş paketleri, çıktılar, takvim ve
-  takım üyelerinin sorumlulukları.
-- Planı **ders sorumlusuna onaylatın**. Onaysız başlanan proje kabul edilmez.
-- İlerlemeyi bu plandan izleyin; her hafta küçük ve **incelenebilir** commit'ler yapın (1. hafta değişiklik yönetimi).
+| Hafta | Tarih | Etkinlik |
+| --- | --- | --- |
+| 3. hafta sonu | 04.10.2026 | Konu ve takım seçiminin son günü |
+| 4. hafta | 09.10.2026 | Proje planının ders sorumlusuna onaylatılması |
+| 7. hafta | 30.10.2026 | **Vize gösterimi** + ara rapor (RAP1) |
+| 8. hafta | 31.10–08.11.2026 | **Quiz-1** (1–6. haftalar) |
+| 15. hafta | 25.12.2026 | **Final gösterimi** + final raporu (RAP2) |
+| 16. hafta | 04–17.01.2027 | **Quiz-2** (9–14. haftalar) |
 
-## 2. Proje kurulumu
+Haftalık ders içeriğinin tamamı için bkz. [izlence](../syllabus/syllabus.md). Tarihler değişirse duyuru ders
+sınıfından yapılır.
 
-C++ şablonunu **fork** edin ve ders koduyla adlandırın:
+## 2. Değerlendirme yapısı
 
-- `https://github.com/ucoruh/cpp-cmake-ctest-template` → `cen429-proje-ad-soyad-cpp`
+!!! info "Ağırlıklar"
+    - **Vize = 0,6·RAP1 + 0,4·Quiz-1** · **Final = 0,7·RAP2 + 0,3·Quiz-2**
+    - **Başarı notu = 0,4·Vize + 0,6·Final**
+    - **RAP1 (7. hafta):** ürünün ilk yarısı (S2–S5 + temel korumalar). **RAP2 (15. hafta):** tam ürün + S16 sonuçları.
+
+### Öğrenme çıktıları (ÖÇ)
+
+| ÖÇ | Tanım | Bloom düzeyi | Bilgi/Beceri | RAP1 | RAP2 |
+| --- | --- | --- | --- | --- | --- |
+| ÖÇ.1 | Yaygın yazılım güvenlik açıklarını (arabellek taşması, enjeksiyon saldırıları, bellek sızıntıları vb.) tanımlar ve sınıflandırır. | Anlama | BİLGİ | ✓ | ✓ |
+| ÖÇ.2 | Hassas verileri korumak için temel şifreleme yöntemlerini ve güvenli iletişim ilkelerini (SSL/TLS) açıklar. | Anlama | BİLGİ | ✓ | ✓ |
+| ÖÇ.3 | Kod sağlamlaştırma tekniklerini (girdi doğrulama, güvenli bellek yönetimi, RASP, kod gizleme) açıklar ve uygular. | Uygulama | BECERİ | ✓ | ✓ |
+| ÖÇ.4 | Şifreleme ve kimlik doğrulama mekanizmalarını kullanarak güvenli iletişim kanalları kurma ilkelerini açıklar. | Uygulama | BECERİ | ✓ | ✓ |
+| ÖÇ.5 | Güvenli yazılım tasarımı ilkeleriyle (en az ayrıcalık, savunma derinliği vb.) bir koruma planı oluşturur. | Sentez | BECERİ | ✓ | ✓ |
+| ÖÇ.6 | Yazılım güvenlik açıklarını tespit etmek için temel güvenlik incelemesi ve açık değerlendirmesi yapar. | Analiz | BECERİ | ✓ | ✓ |
+| ÖÇ.7 | Güvenli programlama standartlarını (ör. ETSI, EMV, FIPS) ve sızma testi planlaması ilkelerini bilir. | Anlama | BİLGİ | ✓ | ✓ |
+
+Her iki kontrol de bütün öğrenme çıktılarına dokunur; RAP1 temel/erken düzeyi, RAP2 ileri düzeyi ve tam ürünü ölçer.
+
+## 3. Araçlar ve kurulum
+
+| Araç | Ne için | Çıktı | Teslim koşulu |
+| --- | --- | --- | --- |
+| C++ derleyicisi (GCC/Clang/MSVC) | Konsol uygulaması + DLL/.so derlemesi | Çalışan binary | Sürümde hatasız derlenir |
+| CMake + CTest | Derleme sistemi + birim testi | Test raporu | CI'de yeşil |
+| SQLite | Beklemedeki veri deposu | `.db` şeması | AES-GCM ile şifreli kayıt |
+| SoftHSM / PKCS#11 | Anahtar sarma/saklama benzetimi | Anahtar deposu yapılandırması | Kritik anahtarlar sarılı tutulur |
+| OpenSSL | Kriptografi, TLS, imzalama | Kütüphane bağlantısı + sertifikalar | Doğru algoritma/kip/dolgu |
+| Doxygen | Kod belgelendirmesi | PDF/HTML çıktısı | Şablonun ürettiği biçimde teslim |
+| Git / GitHub | Sürüm kontrolü, iş birliği | Commit geçmişi, çekme isteği (pull request) | Özel depo, her iki üyenin de commit'i görünür |
+| GitHub Actions | Sürekli entegrasyon (CI) | Yeşil derleme/test rozeti | Birleştirmeden önce CI yeşil |
+
+**Şablon deposu:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) →
+fork edip `cen429-proje-ad-soyad-cpp` adıyla adlandırın, **özel (private)** yapın, ders sorumlusunu ve varsa takım
+arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin.
 
 !!! tip "Şablonu tam kullanın"
-    Şablon; derleme, **CTest ile birim testi**, dokümantasyon üretimi, test/dokümantasyon kapsamı ölçümü ve paketlemeyi
-    sağlar. Şablon standartlarına uymayan teslimler kabul edilmez. Sürüm (release) üretin; sürüm kimliği ve özet
-    değerlerini kaydedin (12. hafta TOE kimliği).
+    Şablon; derleme, **CTest ile birim testi**, dokümantasyon üretimi, test/dokümantasyon kapsamı ölçümü ve
+    paketlemeyi sağlar. Şablon standartlarına uymayan teslimler kabul edilmez. Sürüm (release) üretin; sürüm kimliği
+    ve özet değerlerini kaydedin (12. hafta TOE kimliği).
 
-## 3. Konu seçimi
+**Proje düzeni:**
 
-Proje konuları bu sayfanın sonundaki **[Ek — Proje konuları listesi](#ek-proje-konulari-listesi)** bölümündedir
-(100 konu). Her konu kutusunda uygulamanın kısa tanımı, temel özellikleri, **korunacak varlıklar** ve o konuda **öne
-çıkan güvenlik gereksinimleri** (4. bölümdeki maddelerle) verilmiştir.
+- `lib/` — güvenlik kütüphanesi (DLL/.so): kriptografi, RASP, kod gizleme, veri koruma fonksiyonları.
+- `app/` — konsol uygulaması: kütüphaneyi kullanan kullanıcı arayüzü.
+- `test/` — CTest birim testleri (kripto ve koruma fonksiyonları).
+
+Geliştirme ortamı kurulumu ve ön bilgi için bkz. [Ön gereksinimler](../prerequisites/index.md).
+
+## 4. Konu seçimi
+
+Proje konuları bu sayfanın sonundaki **Ek — Proje konuları listesi** bölümündedir (100 konu). Her konu kutusunda
+uygulamanın kısa tanımı, temel özellikleri, **korunacak varlıklar** ve o konuda **öne çıkan güvenlik gereksinimleri**
+(5. bölümdeki maddelerle) verilmiştir.
 
 !!! info "Nasıl seçilir?"
-    1. Aşağıdaki listeyi inceleyin ve bir konu seçin.
+    1. Aşağıdaki (sayfa sonundaki) listeyi inceleyin ve bir konu seçin.
     2. Seçiminizi Microsoft Teams'teki **takım ve konu tablosuna** yazın. **Bir konuyu yalnız bir takım alabilir**;
        tabloya ilk yazan takım alır.
-    3. Proje planınızla (1. bölüm) birlikte ders sorumlusuna onaylatın; onaydan sonra konu değiştirilmez.
+    3. Proje planınızla (3. bölüm araçlar ve kurulum ile birlikte hazırlanan plan) birlikte ders sorumlusuna
+       onaylatın; onaydan sonra konu değiştirilmez.
 
-- 4. bölümdeki 15 gereksinimin **hepsi** her projede geçerlidir; konu kutusundaki "öne çıkan gereksinimler", o konuda
-  en doğal ve en çok puan getiren uygulama yerlerini gösterir.
+- 5. bölümdeki 15 gereksinimin **hepsi** her projede geçerlidir; konu kutusundaki "öne çıkan gereksinimler", o
+  konuda en doğal ve en çok puan getiren uygulama yerlerini gösterir.
 - Listede olmayan bir fikriniz varsa, gereksinimleri anlamlı biçimde uygulayabileceğiniz kadar zenginse ders
   sorumlusunun onayıyla seçebilirsiniz.
 - Bu dersi tekrar alıyorsanız **önceki projenizden farklı** bir konu seçin.
 
-## 4. Gereksinimler (checklist)
+## 5. Gereksinimler
 
 Her gereksinimin yanında **hangi haftada işlendiği** ve **kılavuzda hangi bölüme (S)** yazılacağı verilmiştir.
-Her maddeyi ya **karşılayın** ya da **gerekçeli olarak devredin/kapsam dışı bırakın** (13. hafta).
+Aşağıdaki 15 gereksinim, rubrikteki karşılıklarıyla (bkz. 8. Rubrikler) uyumlu olacak şekilde vize ve final
+kapsamına ayrılmıştır; bazı gereksinimlerin ileri düzey yönleri ilerleyen haftalarda derinleşir. Her maddeyi ya
+**karşılayın** ya da **gerekçeli olarak devredin/kapsam dışı bırakın** (13. hafta, S14).
 
-### 4.1 Geliştirme ortamı güvenliği · (Hafta 1, 12 · S13)
+### 5.1 Vize kapsamı (RAP1)
+
+#### 4.1 Geliştirme ortamı güvenliği · (Hafta 1, 12 · S13)
 İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 12](../week-12/cen429-week-12.md)
 
-- Yazılım geliştirme akışı ve **değişiklik yönetimi** (temel çizgi → talep → sınıflandırma → onay → yayın → doğrulama).
+- Yazılım geliştirme akışı ve **değişiklik yönetimi** (temel çizgi → talep → sınıflandırma → onay → yayın →
+  doğrulama).
 - **Git** ile sürüm kontrolü; erişim kaydı; imzalı sürüm.
 - Geliştirme bilgisayarı/sunucu güvenliği (kısa politika).
 
-### 4.2 Kullanımdaki veri güvenliği · (Hafta 3, 6 · S7)
+#### 4.2 Kullanımdaki veri güvenliği · (Hafta 3, 6 · S7)
 İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 6](../week-6/cen429-week-6.md)
 
 - Bellekteki hassas veri kullanımdan sonra **güvenli silinir** (`memset_s` benzeri).
 - Çalışma zamanı veri koruması (gölge kopya/bütünlük — 6. hafta).
 
-### 4.3 Aktarımdaki veri güvenliği · (Hafta 3, 10 · S6, S11)
+#### 4.3 Aktarımdaki veri güvenliği · (Hafta 3, 10 · S6, S11)
 İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md)
 
 - **TLS 1.3**; sertifika zinciri + **SAN** doğrulaması; **sabitleme (pinning)** + yedek pin.
 - Şifrelenmiş **oturum anahtarı**; **cihaz/sürüm bağlama**; bütünlük + kimlik doğrulama; sunucu doğrulama kodu.
 
-### 4.4 Beklemedeki veri güvenliği · (Hafta 3, 10, 11 · S8)
+#### 4.4 Beklemedeki veri güvenliği · (Hafta 3, 10, 11 · S8)
 İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md) · [Hafta 11](../week-11/cen429-week-11.md)
 
 - Dosya/DB şifreleme **AEAD** (AES-GCM); nonce tekrarsız.
 - Hassas anahtarlar için **whitebox** ya da **SoftHSM/PKCS#11**; kararın **gerekçesi** (11. hafta).
 
-### 4.5 Statik varlıkların korunması · (Hafta 1, 4, 9 · S5, S9)
+#### 4.8 Arayüz tanımları ve korunması · (Hafta 1, 4 · S3, S6)
+İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 4](../week-4/cen429-week-4.md)
+
+- Tüm arayüzler erişim kontrolü + kimlik doğrulama ile korunur; girdi **güven sınırında** doğrulanır.
+
+#### 4.9 Kod sağlamlaştırma · (Hafta 4, 9, 14 · S9)
+İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md) · [Hafta 9](../week-9/cen429-week-9.md) · [Hafta 14](../week-14/cen429-week-14.md)
+
+- Opak döngü/yüklem, ad/dosya/dize/aritmetik gizleme, opak boolean, sahte işlem/ölü dal, **kontrol akışı
+  düzleştirme** + rastgele çıkış, sürümde **log kapalı**. Maliyeti **ölçün** (9/14. hafta demoları).
+
+#### 4.10 RASP · (Hafta 6 · S10)
+İlgili haftalar: [Hafta 6](../week-6/cen429-week-6.md)
+
+- Checksum bütünlük denetimi, çağıran uygulama hash/imza doğrulaması, kök/emülatör tespiti, **hook/anti-debug**,
+  kurcalama (tamper) tespiti + yanıt, kontrol akışı sayacı.
+
+#### 4.11 Bellek koruması · (Hafta 4 · S9)
+İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md)
+
+- Derleyici/OS korumaları (yığın koruyucu, PIE, RELRO, NX, CFI); hassas veri kullanım sonrası temizlenir.
+
+### 5.2 Final kapsamı (RAP2)
+
+#### 4.5 Statik varlıkların korunması · (Hafta 1, 4, 9 · S5, S9)
 İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 4](../week-4/cen429-week-4.md) · [Hafta 9](../week-9/cen429-week-9.md)
 
 - Gizli anahtarlar, özet değerleri, kaynak kodu, kaynaklar: şifreleme + erişim kontrolü + gizleme.
 
-### 4.6 Dinamik varlıkların korunması · (Hafta 3, 6 · S5, S8)
+#### 4.6 Dinamik varlıkların korunması · (Hafta 3, 6 · S5, S8)
 İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 6](../week-6/cen429-week-6.md)
 
 - Cihaz/uygulama parmak izleri, oturum verileri, dinamik anahtarlar şifrelenir.
 
-### 4.7 Varlık yönetimi · (Hafta 1, 3, 13 · S5)
+#### 4.7 Varlık yönetimi · (Hafta 1, 3, 13 · S5)
 İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 13](../week-13/cen429-week-13.md)
 
 Her varlık için: **ad, açıklama, konum (tablo/sütun), kaynak, boyut, oluşturma/silme zamanı, varsayılan,
 koruma şeması (C/I/I+)**.
 
-### 4.8 Arayüz tanımları ve korunması · (Hafta 1, 4 · S3, S6)
-İlgili haftalar: [Hafta 1](../week-1/cen429-week-1.md) · [Hafta 4](../week-4/cen429-week-4.md)
-
-- Tüm arayüzler erişim kontrolü + kimlik doğrulama ile korunur; girdi **güven sınırında** doğrulanır.
-
-### 4.9 Kod sağlamlaştırma · (Hafta 4, 9, 14 · S9)
-İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md) · [Hafta 9](../week-9/cen429-week-9.md) · [Hafta 14](../week-14/cen429-week-14.md)
-
-- Opak döngü/yüklem, ad/dosya/dize/aritmetik gizleme, opak boolean, sahte işlem/ölü dal, **kontrol akışı düzleştirme**
-  + rastgele çıkış, sürümde **log kapalı**. Maliyeti **ölçün** (9/14. hafta demoları).
-
-### 4.10 RASP · (Hafta 6 · S10)
-İlgili haftalar: [Hafta 6](../week-6/cen429-week-6.md)
-
-- Checksum bütünlük denetimi, çağıran uygulama hash/imza doğrulaması, kök/emülatör tespiti, **hook/anti-debug**,
-  tamper tespiti + yanıt, kontrol akışı sayacı.
-
-### 4.11 Bellek koruması · (Hafta 4 · S9)
-İlgili haftalar: [Hafta 4](../week-4/cen429-week-4.md)
-
-- Derleyici/OS korumaları (yığın koruyucu, PIE, RELRO, NX, CFI); hassas veri kullanım sonrası temizlenir.
-
-### 4.12 Kriptografi ve sertifikalar · (Hafta 3, 10 · S8, S11)
+#### 4.12 Kriptografi ve sertifikalar · (Hafta 3, 10 · S8, S11)
 İlgili haftalar: [Hafta 3](../week-3/cen429-week-3.md) · [Hafta 10](../week-10/cen429-week-10.md)
 
-- Doğru algoritma/kip/dolgu; imza doğrulaması (`==1`, sürüm kapsamı); SSL/TLS + pinning + karşılıklı kimlik doğrulama.
+- Doğru algoritma/kip/dolgu; imza doğrulaması (`==1`, sürüm kapsamı); SSL/TLS + pinning + karşılıklı kimlik
+  doğrulama.
 
-### 4.13 Sertifikasyon ve sızma testi planı · (Hafta 12, 13 · S16, S14, S17)
+#### 4.13 Sertifikasyon ve sızma testi planı · (Hafta 12, 13 · S16, S14, S17)
 İlgili haftalar: [Hafta 12](../week-12/cen429-week-12.md) · [Hafta 13](../week-13/cen429-week-13.md)
 
 - Standart eşlemesi (ETSI/EMVCo/GSMA/PCI/MASVS); **sızma testi planı** (kapsam, kurallar, yöntem, test kartı) ve
   **sonuçları**; saldırı potansiyeli + CVSS.
 
-### 4.14 İkili uygulama koruması · (Hafta 6, 9, 11, 14 · S9, S10, S15)
+#### 4.14 Binary uygulama koruması · (Hafta 6, 9, 11, 14 · S9, S10, S15)
 İlgili haftalar: [Hafta 6](../week-6/cen429-week-6.md) · [Hafta 9](../week-9/cen429-week-9.md) · [Hafta 11](../week-11/cen429-week-11.md) · [Hafta 14](../week-14/cen429-week-14.md)
 
 - **Tespit** (checksum, anti-debug, emülatör), **savunma** (gizleme, dize/kaynak şifreleme, çağrı gizleme),
   **caydırma** (yanıt/kapanma politikası).
 
-### 4.15 OWASP ve derleme/dağıtım hattı · (Hafta 5, 14 · S13, S15)
+#### 4.15 OWASP ve derleme/dağıtım hattı · (Hafta 5, 14 · S13, S15)
 İlgili haftalar: [Hafta 5](../week-5/cen429-week-5.md) · [Hafta 14](../week-14/cen429-week-14.md)
 
 - OWASP MASVS/ASVS ilkeleri; **SBOM** (CycloneDX) + bağımlılık taraması; gizleme+imzalama içeren derleme hattı.
 
-## 5. Teslim edilecekler
+### 5.3 Her iki kontrolde ortak kurallar
 
-- [ ] **Kaynak kod** (fork edilen şablon, CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu).
-- [ ] **Birim testleri** (kripto ve koruma fonksiyonları) ve **CI** kaydı.
-- [ ] **Güvenlik kılavuzu (S0–S17)** — sertifikasyon belgesinin küçültülmüş modeli (aşağıda).
-- [ ] **Test sonuçları (S16)** — plan değil, **gözlenen** sonuçlar.
-- [ ] **Uyum matrisi (S17)** ve **devredilen gereksinimler (S14)**.
-- [ ] **SBOM** + bağımlılık taraması. Değerler **sentetik**; depoda gerçek sır/kişisel veri **olmayacak**.
+- Değerler **sentetik** olmalı; depoda gerçek sır, anahtar ya da kişisel veri **bulunmaz**.
+- Her gereksinim maddesi kod içinde **görülebilir** olmalı ve güvenlik kılavuzunun ilgili S bölümünde
+  **belgelenmelidir**; belgelenmeyen bir uygulama karşılanmamış sayılır.
+- Bir gereksinim karşılanamıyorsa **gerekçesiyle** S14 (varsayımlar ve devredilenler) bölümüne yazılır; sessizce
+  atlanamaz.
+- Uygulama yalnız kendi bilgisayarınızda (localhost) çalışır; başka bir sisteme veya veriye zarar vermez.
 
-## 6. Güvenlik kılavuzu bölümleri (S0–S17)
+## 6. Teslim edilecekler
+
+### 6.1 Teslim tablosu
+
+| # | Teslim | Biçim | Kural |
+| --- | --- | --- | --- |
+| 1 | Kaynak kod | Git deposu (fork) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu; her committe iki üye de görünür |
+| 2 | Birim testleri + CI kaydı | CTest raporu + CI günlüğü | Kripto ve koruma fonksiyonları test edilir; CI yeşil olmadan birleştirme yok |
+| 3 | Güvenlik kılavuzu (S0–S17) | `.docx`/`.pdf` | Vize: S0–S5 taslak · Final: S0–S17 tam, sertifikasyon belgesinin küçültülmüş modeli |
+| 4 | Test sonuçları (S16) | Kılavuz bölümü | Yalnız final; plan değil, **gözlenen** sonuçlar |
+| 5 | Uyum matrisi (S17) + devredilen gereksinimler (S14) | Kılavuz bölümü | Yalnız final; her devredilen madde gerekçeli |
+| 6 | SBOM + bağımlılık taraması | CycloneDX dosyası | Yalnız final; 4.15 ile birlikte teslim edilir |
+| 7 | Sürüm (release) | Git etiketi | Vize: `midterm-v1.0` · Final: `final-v1.0` |
+| 8 | Gösterim | Canlı sunum (~10 dk) | Vize: 7. hafta · Final: 15. hafta |
+
+### 6.2 Güvenlik kılavuzu bölümleri (S0–S17)
 
 | No | Bölüm | No | Bölüm |
 | --- | --- | --- | --- |
@@ -165,40 +290,155 @@ koruma şeması (C/I/I+)**.
 | S7 | Veri güvenliği + kabuk matrisi | S16 | Güvenlik testi ve **sonuçları** |
 | S8 | Kripto, anahtar yaşam döngüsü | S17 | Gereksinim uyum matrisi |
 
-## 7. Değerlendirme
+### 6.3 Tek ZIP arşivi yapısı
 
-!!! info "Ağırlıklar (izlence)"
-    - **Vize = 0,6·RAP1 + 0,4·Quiz-1** · **Final = 0,7·RAP2 + 0,3·Quiz-2**
-    - **Başarı notu = 0,4·Vize + 0,6·Final**
-    - **RAP1 (7. hafta):** ürünün ilk yarısı (S2–S5 + temel korumalar). **RAP2 (15. hafta):** tam ürün + S16 sonuçları.
+```
+cen429-vize-ad-soyad.zip                  # final teslimi: cen429-final-ad-soyad.zip
+└── cen429-proje-ad-soyad-cpp/            # GitHub deposunun klonu (.gitignore uygulanmış)
+    ├── lib/                              # güvenlik kütüphanesi (DLL/.so)
+    ├── app/                              # konsol uygulaması
+    ├── test/                             # CTest birim testleri
+    ├── docs/                             # Doxygen çıktısı
+    ├── security-guide/                   # S0–S17 güvenlik kılavuzu
+    │   └── cen429-guvenlik-kilavuzu-ad-soyad.docx
+    ├── sbom/                             # CycloneDX SBOM + bağımlılık taraması (final)
+    ├── test-coverage/                    # CTest kapsam raporu
+    └── README.md
+```
 
-| Kriter | ÖÇ | Kılavuzda |
-| --- | --- | --- |
-| Kriptografi uygulaması | ÖÇ.2 | S8 |
-| Güvenli iletişim | ÖÇ.4 | S6, S11 |
-| Varlık yönetimi | ÖÇ.5 | S5, S8 |
-| İkili uygulama korumaları | ÖÇ.3 | S9, S10, S15 |
-| Güvenlik testi ve birim testleri | ÖÇ.6 | S16 |
-| Güvenlik standartları | ÖÇ.7 | S1, S14, S17 |
-| Rapor ve sunum | ÖÇ.7 | Tümü |
+**Adlandırma:** depo `cen429-proje-ad-soyad-cpp`; arşiv `cen429-vize-ad-soyad.zip` / `cen429-final-ad-soyad.zip`;
+güvenlik kılavuzu dosyası `cen429-guvenlik-kilavuzu-ad-soyad.docx`. Rapor/kılavuzun kapak sayfasında **GitHub deposu
+bağlantısı** bulunur.
 
-Ayrıntılı **analitik rubrik** Microsoft Teams'tedir. Her satır bir **kanıt** ister: "karşılandı" diyen satırın
-kanıtı yoksa karşılanmamış sayılır (13. hafta).
+## 7. Takım çalışması ve mühendislik uygulamaları
 
-## 8. Akademik dürüstlük
+- **GitHub Flow:** `main` dalı korumalıdır, doğrudan commit yapılmaz; her iş için ayrı bir özellik dalı (feature
+  branch) açılır, birleştirme **çekme isteği (pull request)** ile yapılır.
+- **Commit mesajı kuralı:** [Conventional Commits](https://www.conventionalcommits.org) biçimi, ör.
+  `feat(crypto): add AES-GCM wrapper`, `fix(rasp): correct debugger detection`, `test(hash): add SHA-256 vectors`.
+- **Çekme isteği + inceleme:** her PR en az bir takım arkadaşınca **incelenir (code review)**; açıklamada ne
+  değiştiği ve nasıl test edildiği yazılır.
+- **Issues + Projects panosu:** her iş bir GitHub Issue'dur; pano sütunları Backlog → In Progress → In Review →
+  Done şeklinde takip edilir.
+- **CI yeşil olmadan birleştirme yok:** GitHub Actions derleme + CTest çalıştırır; kırmızı CI ile `main`'e
+  birleştirme yapılmaz.
+- **Sürüm etiketleri:** vize teslimi `midterm-v1.0`, final teslimi `final-v1.0` olarak etiketlenir (release).
+- **"Bitti" tanımı (Definition of Done):** kod derleniyor ve çalışıyor · yeni genel fonksiyonlar için birim testi
+  var · kapsam düşmedi · PR incelendi ve onaylandı · CI yeşil · güvenlik kılavuzunun ilgili S bölümü güncellendi.
 
-Teslim ettiğiniz her satırı **açıklayabilmelisiniz**; gösterimde takımın her üyesine soru sorulabilir. Başkasının
-kodunu/metnini kullandıysanız kaynağını belirtin. İntihal ve izinsiz kopyalama başarısızlık nedenidir.
+## 8. Rubrikler
+
+Her kriter **1–5** düzeyinde puanlanır ve puan = (düzey ÷ 5) × kriter puanı olarak hesaplanır.
+
+### 8.1 Başarı düzeyleri
+
+| Düzey | Anlamı |
+| --- | --- |
+| **5 — Mükemmel** | Kapsamdaki her şey çalışıyor, test edilmiş ve belgelenmiş; gösterimde adım adım açıklanabiliyor |
+| **4 — İyi** | Küçük eksikler ya da uç durum hataları var; genel olarak tamam ve test edilmiş |
+| **3 — Yeterli** | Temel işlemler çalışıyor; testlerde, belgelerde ya da ölçümlerde belirgin eksikler var |
+| **2 — Zayıf** | Derleniyor ama işlemlerin çoğu yanlış ya da eksik; açıklama zayıf |
+| **1 — Kanıt yok** | Teslim edilmemiş ya da çalışmıyor |
+
+### 8.2 RAP1 — Vize kontrolü rubriği (7. hafta, 100 puan)
+
+| # | Kriter | Kapsam | ÖÇ | Puan |
+| --- | --- | --- | --- | --- |
+| 1 | Tehdit modeli ve varlık listesi | S4, S5 | ÖÇ.1, ÖÇ.5 | 15 |
+| 2 | Veri güvenliği: aktarım, bekleme, kullanım | 4.2–4.4; S7, S8 | ÖÇ.2, ÖÇ.4 | 20 |
+| 3 | Kod sağlamlaştırma ve bellek koruması | 4.9, 4.11; S9 | ÖÇ.3 | 20 |
+| 4 | RASP ve tepki politikası | 4.10; S10 | ÖÇ.3 | 10 |
+| 5 | Geliştirme ortamı ve değişiklik yönetimi | 4.1; S13 | ÖÇ.5 | 10 |
+| 6 | Birim testleri ve CI | — | ÖÇ.6 | 10 |
+| 7 | Güvenlik kılavuzu (S0–S5) ve gösterim | — | ÖÇ.7 | 15 |
+| | **Toplam** | | | **100** |
+
+### 8.3 RAP2 — Final kontrolü rubriği (15. hafta, 100 puan)
+
+| # | Kriter | Kapsam | ÖÇ | Puan |
+| --- | --- | --- | --- | --- |
+| 1 | Kriptografi ve sertifikalar | 4.12; S8, S11 | ÖÇ.2, ÖÇ.4 | 15 |
+| 2 | Binary uygulama koruması, gizleme ve çeşitlendirme | 4.14; S9, S10, S15 | ÖÇ.3 | 20 |
+| 3 | Varlık yönetimi ve dinamik varlıklar | 4.5–4.7; S5 | ÖÇ.5 | 10 |
+| 4 | Güvenlik testi ve gözlenen sonuçlar | 4.13; S16 | ÖÇ.6 | 20 |
+| 5 | Standartlar, uyum matrisi, devredilenler | S1, S14, S17 | ÖÇ.7 | 15 |
+| 6 | OWASP, SBOM ve derleme/dağıtım hattı | 4.15; S13, S15 | ÖÇ.1, ÖÇ.5 | 10 |
+| 7 | Rapor, sunum ve gösterim | — | ÖÇ.7 | 10 |
+| | **Toplam** | | | **100** |
+
+Her satır bir **kanıt** ister: "karşılandı" diyen satırın kanıtı yoksa karşılanmamış sayılır (13. hafta).
+
+## 9. Kabul koşulları
+
+!!! warning "Teslim kabul edilmez, eğer…"
+    - GitHub deposu yoksa, **özel (private)** değilse ya da takım üyelerinin commit'i görünmüyorsa,
+    - gereksinimlerin karşılanma oranı asgari eşiğin altındaysa,
+    - depoda ya da arşivde **binary dosyalar** (derlenmiş `.exe`/`.dll`/`.so`) varsa,
+    - sürüm (release) üretilmemişse,
+    - uygulama Windows ya da WSL/Linux'ta **derlenmiyor/çalışmıyorsa**,
+    - depoda gerçek sır, anahtar ya da kişisel veri varsa (bütün değerler sentetik olmalı),
+    - **intihal** tespit edilmişse.
+
+## 10. Gösterimde sorulacaklar
+
+- **Git/GitHub:** Şablonu doğru adla fork ettiniz mi? Depo özel mi, ders sorumlusu işbirlikçi mi? Her iki üyenin de
+  commit'i var mı? Dal (branch) kullanıldı mı, birleştirme (merge) nasıl yapıldı?
+- **Kurulum-derleme:** Uygulamayı ve kütüphaneyi Windows'ta ve WSL/Linux'ta derleyin; `lib`/`app`/`test` ayrımını ve
+  bağımlılıklarını gösterin.
+- **Konu (satır satır):** Seçtiğiniz güvenlik gereksinimini (ör. AES-GCM ile şifreleme, RASP kurcalama denetimi,
+  kod sağlamlaştırma dönüşümü) kodda satır satır açıklayın; bellek/veri akışını çizerek gösterin.
+- **Test ve belge:** Birim testlerini ve kapsam raporunu açın; güvenlik kılavuzunda ilgili S bölümünü gösterin.
+- **Dosya/veri işlemleri:** Bir kayıt ekleyin, programı kapatıp yeniden açın, verinin şifreli olarak geri geldiğini
+  gösterin.
+- **Programlama:** Bellek yönetimi, işaretçiler, derleyici/OS korumaları (stack canary, ASLR, NX, CFI), hata
+  ayıklayıcıda (debugger) değişken ve yığın (stack) inceleme.
+
+## 11. Mesleki sorumluluk ve akademik dürüstlük
+
+- Teslim ettiğiniz her satırı **açıklayabilmelisiniz**; gösterimde takımın her üyesine soru sorulabilir.
+- Başkasının kodunu/metnini kullandıysanız **kaynağını belirtin**; lisans uyumluluğuna dikkat edin.
+- Bütün örnekler ve değerler **sentetik** olmalıdır; gerçek kişisel veri kullanılmaz.
+- **İntihal** ve izinsiz kopyalama başarısızlık nedenidir; benzerlik denetimi yapılabilir.
+- Takım içi katkı, commit geçmişinden izlenir; başkası adına commit atmak (hayalet commit) intihal sayılır.
 
 !!! warning "Güvenli ve yasal çerçeve"
     Sızma testi yalnız **kendi** projeniz üzerinde yapılır. Örnekler ve değerler **sentetik** olmalı; hiçbir gerçek
     sır, anahtar ya da kişisel veri depoya girmemeli. Uygulamanız başkasının sistemine/verisine zarar vermemeli.
 
+## 12. Sık sorulan sorular
+
+??? question "Takımı tek başıma kurabilir miyim?"
+    Evet. Takım en çok 3 kişidir; tek başınıza da yapabilirsiniz. Takımlar 3. haftanın sonunda (04.10.2026) kesinleşir ve sonra değiştirilemez. Gereksinimler ve rubrik değişmez.
+
+??? question "Konumu onaydan sonra değiştirebilir miyim?"
+    Hayır. Konu, proje planıyla birlikte onaylandıktan sonra değiştirilmez. Değişiklik gerekiyorsa ders sorumlusuyla
+    görüşün.
+
+??? question "Bir gereksinimi tam karşılayamazsam ne olur?"
+    Gerekçenizi güvenlik kılavuzunun S14 (varsayımlar ve devredilenler) bölümüne yazarak devredebilir ya da kapsam
+    dışı bırakabilirsiniz (13. hafta). Sessizce atlanan bir madde karşılanmamış sayılır.
+
+??? question "RAP1'de eksik kalan bir gereksinim RAP2'de tamamlanabilir mi?"
+    Evet, final kapsamı tam ürünü kapsar ve eksikler tamamlanabilir; ancak RAP1 puanı gösterim anındaki duruma göre
+    verilir ve sonradan güncellenmez.
+
+??? question "Güvenlik kılavuzunu hangi biçimde teslim ediyoruz?"
+    `.docx` ya da `.pdf` olarak, sertifikasyon belgesinin küçültülmüş bir modeli gibi, S0–S17 bölümleriyle.
+    Vizede S0–S5 taslağı, finalde S0–S17'nin tamamı beklenir.
+
+??? question "Geç teslim kabul edilir mi?"
+    İzlencedeki kurallar geçerlidir: geç teslim kabul edilmez. Beklenmedik bir durum varsa en kısa sürede ders
+    sorumlusuna bildirin.
+
+??? question "Ayrıntılı puanlama anahtarını nereden bulabilirim?"
+    Bu sayfadaki 8. bölümde kriterler, kapsam ve puanlar verilmiştir; ek kanıt şablonları ve açıklamalar gerekirse
+    Microsoft Teams'te paylaşılır.
+
 ---
 
 ## Ek — Proje konuları listesi
 
-Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). Konular dört gruba ayrılmıştır: **ödeme ve ticaret (01–25)**, **sağlık, eğitim, kamu ve kimlik (26–50)**, **medya, lisans, iletişim ve yazılım tedarik zinciri (51–75)**, **IoT, endüstri, ulaşım ve kurum (76–100)**. Bütün veriler sentetiktir; sunucu tarafı yalnız kendi bilgisayarınızda (localhost) çalışan bir benzetimdir.
+Aşağıdaki konulardan birini seçin (bkz. 4. Konu seçimi). Konular dört gruba ayrılmıştır: **ödeme ve ticaret (01–25)**, **sağlık, eğitim, kamu ve kimlik (26–50)**, **medya, lisans, iletişim ve yazılım tedarik zinciri (51–75)**, **IoT, endüstri, ulaşım ve kurum (76–100)**. Bütün veriler sentetiktir; sunucu tarafı yalnız kendi bilgisayarınızda (localhost) çalışan bir benzetimdir.
 
 ??? example "01 — :material-wallet-outline: Çevrimdışı Ödeme Cüzdanı"
 
@@ -298,7 +538,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.7 Varlık yönetimi:** terminal anahtarının kurulumda güvenli enjeksiyonu ve periyodik rotasyonu planlanır.
     - **4.3 Aktarımdaki veri:** satış özetinin sunucuya gönderimi TLS ve karşılıklı kimlik doğrulama ile yapılır.
-    - **4.14 İkili uygulama koruması:** yürütülebilir dosya kurcalamaya karşı imzalanır, bütünlüğü başlangıçta doğrulanır.
+    - **4.14 Binary uygulama koruması:** yürütülebilir dosya kurcalamaya karşı imzalanır, bütünlüğü başlangıçta doğrulanır.
     - **4.13 Sertifikasyon ve sızma testi planı:** sahte iade/fiş değiştirme senaryolarına karşı test planı tanımlanır.
 
     **Sunucu (localhost benzetimi):** Gün sonu toplamlarını biriktirir; terminal kimliği ve imza doğrulanmadan kayıt kabul etmez.
@@ -325,7 +565,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.4 Beklemedeki veri:** özel anahtar diskte AES-GCM ile şifreli, anahtar SoftHSM'de sarılı olarak tutulur.
     - **4.12 Kriptografi ve sertifikalar:** ECDSA/Ed25519 imzalama, kurtarma ifadesi için onaylı entropi kaynağı.
-    - **4.14 İkili uygulama koruması:** imzalama mantığını içeren kütüphane tersine mühendisliğe karşı sertleştirilir.
+    - **4.14 Binary uygulama koruması:** imzalama mantığını içeren kütüphane tersine mühendisliğe karşı sertleştirilir.
     - **4.9 Kod sağlamlaştırma:** anahtar türetme ve imzalama akışındaki kritik semboller gizlenir.
 
     **Sunucu (localhost benzetimi):** Yalnızca bakiye/işlem geçmişini simüle eden çevrimiçi bileşeni oynar; özel anahtarı asla görmez.
@@ -505,7 +745,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.6 Dinamik varlıkların korunması:** kur listesi yalnız yetkili kanaldan değişir; işlem sırasında değer tutarlılığı denetlenir.
     - **4.7 Varlık yönetimi:** güncel kurun güvenilir kaynaktan periyodik çekilmesi ve önbellek geçerlilik süresi yönetilir.
     - **4.12 Kriptografi ve sertifikalar:** kur güncellemesi sunucu tarafından imzalanır, istemci imzayı doğrulamadan uygulamaz.
-    - **4.9 Kod sağlamlaştırma:** hesaplama mantığı bellek/ikili düzeyde değiştirilmeye karşı sağlamlaştırılır.
+    - **4.9 Kod sağlamlaştırma:** hesaplama mantığı bellek/binary düzeyde değiştirilmeye karşı sağlamlaştırılır.
 
     **Sunucu (localhost benzetimi):** İmzalı kur listesini yayınlar; kasa uygulamaları yalnız bu imzalı listeyi kabul eder.
 
@@ -583,7 +823,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** RSA/ECDSA ile imzalama, sertifika zinciri ve süre kontrolü uygulanır.
     - **4.7 Varlık yönetimi:** imzalama anahtarının üretimi, saklanması ve süresi dolduğunda yenilenmesi planlanır.
     - **4.4 Beklemedeki veri:** özel anahtar SoftHSM/PKCS#11 aracılığıyla sarılı tutulur, uygulama anahtarı göremez.
-    - **4.14 İkili uygulama koruması:** imzalama çağrısını yapan ikili, anahtarı doğrudan dışa aktaramayacak şekilde korunur.
+    - **4.14 Binary uygulama koruması:** imzalama çağrısını yapan binary, anahtarı doğrudan dışa aktaramayacak şekilde korunur.
 
     **Sunucu (localhost benzetimi):** İmzalı fişlerin özetini saklar, QR ile gelen doğrulama isteğinde fişin gerçekliğini teyit eder.
 
@@ -734,7 +974,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     **Öne çıkan gereksinimler:**
 
-    - **4.14 İkili uygulama koruması:** ATM yazılımı, yetkisiz DLL enjeksiyonu ve sürece kanca takmaya (hooking) karşı korunur.
+    - **4.14 Binary uygulama koruması:** ATM yazılımı, yetkisiz DLL enjeksiyonu ve sürece kanca takmaya (hooking) karşı korunur.
     - **4.3 Aktarımdaki veri:** PIN bloğu ve işlem isteği host'a şifreli ve MAC'li gönderilir.
     - **4.10 RASP:** hata ayıklayıcı bağlama veya bellek dökümü girişimi algılanınca işlem iptal edilir ve oturum sonlandırılır.
     - **4.12 Kriptografi ve sertifikalar:** PIN blok şifreleme düzenine uygun anahtar yönetimi uygulanır.
@@ -840,7 +1080,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.5 Statik varlıkların korunması:** belge dosyaları diskte şifreli tutulur ve uygulama dışından doğrudan erişilemez.
     - **4.12 Kriptografi ve sertifikalar:** her belgenin imza zinciri doğrulanır; kök sertifika (benzetim) uygulamaya gömülü ve değiştirilemez tutulur.
     - **4.7 Varlık yönetimi:** belge sürümlerinin uzun süreli arşivlenmesi ve erişim yetkilendirmesi planlanır.
-    - **4.14 İkili uygulama koruması:** imza doğrulama mantığını içeren kütüphane, doğrulamayı atlatacak yamalanmaya karşı korunur.
+    - **4.14 Binary uygulama koruması:** imza doğrulama mantığını içeren kütüphane, doğrulamayı atlatacak yamalanmaya karşı korunur.
 
     **Sunucu (localhost benzetimi):** Paylaşım bağlantısıyla gelen doğrulama isteklerinde belgenin özet/imza kaydını karşılaştırır.
 
@@ -945,7 +1185,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.12 Kriptografi ve sertifikalar:** OpenSSL ile imzalama ve zaman damgası ekleme.
     - **4.5 Statik varlıkların korunması:** form şablonunun bütünlüğü, değiştirilmiş şablonla imzalama engellenir.
-    - **4.14 İkili uygulama koruması:** imzalama fonksiyonunun tersine mühendisliğe karşı korunması.
+    - **4.14 Binary uygulama koruması:** imzalama fonksiyonunun tersine mühendisliğe karşı korunması.
     - **4.9 Kod sağlamlaştırma:** imza adımını atlatmaya yönelik hata ayıklama/patch denemelerine karşı sağlamlaştırma.
 
     **Sunucu (localhost benzetimi):** İmzalanmış formları arşivler, zaman damgası otoritesi rolünü benzetir.
@@ -1145,7 +1385,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     **Öne çıkan gereksinimler:**
 
     - **4.4 Beklemedeki veri:** kitap içeriği AES-GCM ile şifreli; anahtar SoftHSM'de sarılı.
-    - **4.14 İkili uygulama koruması:** okuyucu uygulamanın tersine mühendislikle içerik anahtarını sızdırmasının engellenmesi.
+    - **4.14 Binary uygulama koruması:** okuyucu uygulamanın tersine mühendislikle içerik anahtarını sızdırmasının engellenmesi.
     - **4.10 RASP:** hata ayıklayıcı algılanınca içerik anahtarı bellekten silinir.
     - **4.6 Dinamik varlıkların korunması:** ödünç süresi sayacının sistem saati geri alınarak atlatılmasının engellenmesi.
 
@@ -1222,7 +1462,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** OpenSSL ile imzalama, doğrulama ve zaman damgası.
     - **4.5 Statik varlıkların korunması:** kök/ara sertifikaların uygulamayla birlikte değiştirilemez dağıtılması.
     - **4.1 Geliştirme ortamı güvenliği:** imza özel anahtarının geliştirme/derleme sürecine hiç girmemesi.
-    - **4.14 İkili uygulama koruması:** imzalama fonksiyonunun ayrıştırılmasına/kopyalanmasına karşı koruma.
+    - **4.14 Binary uygulama koruması:** imzalama fonksiyonunun ayrıştırılmasına/kopyalanmasına karşı koruma.
 
     **Sunucu (localhost benzetimi):** Zaman damgası ve sertifika doğrulama hizmeti sunar.
 
@@ -1448,7 +1688,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.4 Beklemedeki veri:** şablon SQLite'ta şifreli, anahtar SoftHSM'de sarılı tutulur.
     - **4.2 Kullanımdaki veri:** şablon yalnız eşleştirme sırasında bellekte açık tutulur, hemen sonra silinir.
     - **4.11 Bellek koruması:** eşleştirme fonksiyonunun bellek dökümüne (dump) karşı korunması.
-    - **4.14 İkili uygulama koruması:** eşleştirme algoritmasının tersine mühendislikle şablon çıkarımına karşı korunması.
+    - **4.14 Binary uygulama koruması:** eşleştirme algoritmasının tersine mühendislikle şablon çıkarımına karşı korunması.
 
     **Sunucu (localhost benzetimi):** Şablonun sürüm/iptal durumunu tutar, yeniden kayıtta eskisini geçersiz kılar.
 
@@ -1500,7 +1740,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.4 Beklemedeki veri:** içerik dosyası AES-GCM ile şifreli; anahtar SoftHSM'de sarılı, cihaza bağlı.
     - **4.6 Dinamik varlıkların korunması:** içerik yalnız oynatma anında parça parça çözülür, tamamı asla diske yazılmaz.
     - **4.11 Bellek koruması:** çözülmüş çerçeveler kullanım sonrası güvenli silinir; ekran görüntüsü/kopyalama engeli denenir.
-    - **4.14 İkili uygulama koruması:** oynatıcı ikili dosyası paketlenir/gizlenir; bellek dökümü ve hata ayıklayıcı bağlanmasına karşı kontrol.
+    - **4.14 Binary uygulama koruması:** oynatıcı binary dosyası paketlenir/gizlenir; bellek dökümü ve hata ayıklayıcı bağlanmasına karşı kontrol.
 
     **Sunucu (localhost benzetimi):** İçerik satın alındığında cihaza bağlı lisans üretir, etkinleştirme sayısını sınırlar.
 
@@ -1527,7 +1767,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** lisans, sunucunun özel anahtarıyla imzalanmış bir blok; istemci yalnız imzayı doğrular.
     - **4.9 Kod sağlamlaştırma:** lisans kontrol noktaları koda dağıtılır, tek bir "if" ile atlatılamaz.
     - **4.6 Dinamik varlıkların korunması:** geçerlilik çalışma zamanında periyodik olarak yeniden denetlenir.
-    - **4.13 Sertifikasyon ve sızma testi planı:** anahtar paylaşımı ve ikili yama (patch) senaryolarına karşı test planı.
+    - **4.13 Sertifikasyon ve sızma testi planı:** anahtar paylaşımı ve binary yama (patch) senaryolarına karşı test planı.
 
     **Sunucu (localhost benzetimi):** Anahtar üretir, imzalar, etkinleştirme sayısını takip eder ve iptal listesi yayınlar.
 
@@ -1554,7 +1794,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.4 Beklemedeki veri:** kayıt dosyası AES-GCM ile şifreli ve HMAC ile imzalı olarak SQLite'ta durur.
     - **4.9 Kod sağlamlaştırma:** anahtar türetme ve bütünlük kontrolü mantığı gizlenir/şaşırtılır.
     - **4.11 Bellek koruması:** kayıt anahtarı bellekte kullanım sonrası güvenli silinir.
-    - **4.14 İkili uygulama koruması:** ikili dosya hex-edit ve statik yama denemelerine karşı korunur.
+    - **4.14 Binary uygulama koruması:** binary dosya hex-edit ve statik yama denemelerine karşı korunur.
 
     **Sunucu (localhost benzetimi):** En son geçerli kayıt sürüm numarasını tutar, geriye giden sürümü reddeder.
 
@@ -1606,7 +1846,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.10 RASP:** hata ayıklayıcı veya bellek düzenleyici bağlanması algılanınca skor gönderimi reddedilir.
     - **4.11 Bellek koruması:** skor ve sayaç değişkenleri şaşırtılır, kontrol toplamıyla izlenir.
     - **4.3 Aktarımdaki veri:** skor gönderimi TLS üzerinden, oturum anahtarıyla imzalı olarak yapılır.
-    - **4.14 İkili uygulama koruması:** istemci ikilisi bellek tarayıcı ve enjeksiyon araçlarına karşı sağlamlaştırılır.
+    - **4.14 Binary uygulama koruması:** istemci ikilisi bellek tarayıcı ve enjeksiyon araçlarına karşı sağlamlaştırılır.
 
     **Sunucu (localhost benzetimi):** Gelen skoru olabilirlik sınırlarına göre denetler, anormal değerleri işaretler.
 
@@ -1778,7 +2018,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     **Korunacak varlıklar:**
 
     - Eklenti imzalama anahtarı — **I**
-    - Eklenti ikili dosyası — **I**
+    - Eklenti binary dosyası — **I**
     - İzin/kapsam tanımı — **I**
     - Güvenilir yayıncı listesi — **I**
 
@@ -1847,17 +2087,17 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
 ??? example "65 — :material-certificate-outline: Kod İmzalama Aracı"
 
-    **Kısa tanım:** Geliştiricinin derlediği ikili dosyaları imzalamak için kullandığı bir araç; imzalama anahtarı
-    yerel bir donanım güvenlik modülü benzetiminde tutulur. Saldırgan imzalama anahtarını çalıp sahte ikili
+    **Kısa tanım:** Geliştiricinin derlediği binary dosyaları imzalamak için kullandığı bir araç; imzalama anahtarı
+    yerel bir donanım güvenlik modülü benzetiminde tutulur. Saldırgan imzalama anahtarını çalıp sahte binary
     imzalamak isteyen biridir.
 
-    **Temel özellikler:** Anahtar çifti oluşturma · İkili dosya özetleme · SoftHSM üzerinden imzalama · İmza
+    **Temel özellikler:** Anahtar çifti oluşturma · Binary dosya özetleme · SoftHSM üzerinden imzalama · İmza
     doğrulama · Genel anahtar/sertifika dışa aktarma
 
     **Korunacak varlıklar:**
 
     - İmzalama özel anahtarı — **C, I+**
-    - İkili dosya özeti — **I**
+    - Binary dosya özeti — **I**
     - Üretilen imza — **I**
     - Anahtar kullanım günlüğü — **I**
 
@@ -1866,7 +2106,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** özel anahtar SoftHSM/PKCS#11 içinde tutulur, hiçbir zaman dışa çıkmaz.
     - **4.1 Geliştirme ortamı güvenliği:** imzalama yalnız yetkili, ağdan izole derleme makinesinde çalışır.
     - **4.13 Sertifikasyon ve sızma testi planı:** anahtar sızıntısı ve yetkisiz imzalama senaryosu test planına dahil edilir.
-    - **4.7 Varlık yönetimi:** imzalanan her ikili dosyanın envanteri ve zaman damgası tutulur.
+    - **4.7 Varlık yönetimi:** imzalanan her binary dosyanın envanteri ve zaman damgası tutulur.
 
     **Sunucu (localhost benzetimi):** Yok; localhost yalnız bir zaman damgalama (timestamping) benzetimi sunar.
 
@@ -2021,7 +2261,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.6 Dinamik varlıkların korunması:** süre kontrolü her oynatmada sunucu zaman damgasıyla yeniden denetlenir.
     - **4.3 Aktarımdaki veri:** indirme ve lisans yenileme TLS ile korunur.
     - **4.12 Kriptografi ve sertifikalar:** lisans imzalı; süre alanı istemci tarafından değiştirilemez.
-    - **4.14 İkili uygulama koruması:** süre kontrolünün atlatılmasına karşı ikili dosya sağlamlaştırılır.
+    - **4.14 Binary uygulama koruması:** süre kontrolünün atlatılmasına karşı binary dosya sağlamlaştırılır.
 
     **Sunucu (localhost benzetimi):** İçerik ve süreli lisansı verir; sunucu saatiyle imzalı son kullanma zamanı üretir.
 
@@ -2100,7 +2340,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** bilet imzalıdır; sahte QR kod üretilemez.
     - **4.6 Dinamik varlıkların korunması:** QR kod kısa aralıklarla yenilenir, ekran görüntüsü paylaşımını zorlaştırır.
     - **4.3 Aktarımdaki veri:** giriş noktası doğrulaması TLS ile sunucuya sorulur.
-    - **4.14 İkili uygulama koruması:** bilet verisinin istemci tarafında değiştirilmesine karşı koruma sağlanır.
+    - **4.14 Binary uygulama koruması:** bilet verisinin istemci tarafında değiştirilmesine karşı koruma sağlanır.
 
     **Sunucu (localhost benzetimi):** Bilet kullanım durumunu tutar; bir bileti yalnız bir kez geçerli sayar, çift kullanımı reddeder.
 
@@ -2126,7 +2366,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.4 Beklemedeki veri:** film dosyası diskte şifreli tutulur.
     - **4.6 Dinamik varlıkların korunması:** süre başlangıcı sunucuyla eşleşir; yerel saat değişikliği süreyi geçersiz kılar.
     - **4.11 Bellek koruması:** çözülmüş kareler bellekte kısa ömürlüdür, kullanım sonrası silinir.
-    - **4.14 İkili uygulama koruması:** süre/oynatma kontrolünün yama ile atlatılmasına karşı sağlamlaştırma yapılır.
+    - **4.14 Binary uygulama koruması:** süre/oynatma kontrolünün yama ile atlatılmasına karşı sağlamlaştırma yapılır.
 
     **Sunucu (localhost benzetimi):** İlk oynatma bildirimini alır, kiralama penceresinin bitiş zamanını imzalı olarak döner.
 
@@ -2263,7 +2503,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     **Öne çıkan gereksinimler:**
 
-    - **4.14 İkili uygulama koruması:** kilometre hesaplama mantığı tersine mühendisliğe karşı sertleştirilir.
+    - **4.14 Binary uygulama koruması:** kilometre hesaplama mantığı tersine mühendisliğe karşı sertleştirilir.
     - **4.9 Kod sağlamlaştırma:** bellek üzerinde değer değiştirmeye (ör. hile motoru) karşı kontrol toplamları kullanılır.
     - **4.4 Beklemedeki veri:** kayıtlar SQLite'ta imzalı ve şifreli tutulur, tekil artan sayaçla korunur.
     - **4.11 Bellek koruması:** kilometre değeri işlem sırasında güvenli bellek bölgesinde tutulur.
@@ -2318,7 +2558,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     **Öne çıkan gereksinimler:**
 
-    - **4.14 İkili uygulama koruması:** uygulamanın hile araçlarıyla (debugger/patch) değiştirilmesine karşı bütünlük denetimi.
+    - **4.14 Binary uygulama koruması:** uygulamanın hile araçlarıyla (debugger/patch) değiştirilmesine karşı bütünlük denetimi.
     - **4.10 RASP:** kurcalama tespit edilince kayıt modu askıya alınır ve olay işaretlenir.
     - **4.12 Kriptografi ve sertifikalar:** günlük özet, cihaz sertifikasıyla imzalanır.
     - **4.4 Beklemedeki veri:** kayıtlar ekleme-yalnız (append-only) yapıda, önceki imza zincire dahil edilerek saklanır.
@@ -2514,7 +2754,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.12 Kriptografi ve sertifikalar:** uçuş planı pilotun özel anahtarıyla imzalanır, sunucu imzayı doğrular.
     - **4.3 Aktarımdaki veri:** plan ve telemetri iletimi TLS ile korunur.
-    - **4.14 İkili uygulama koruması:** yasaklı bölge denetim mantığı atlatmaya karşı sertleştirilir.
+    - **4.14 Binary uygulama koruması:** yasaklı bölge denetim mantığı atlatmaya karşı sertleştirilir.
     - **4.8 Arayüz tanımları ve korunması:** plan gönderim API'si yalnız imzalı ve doğrulanmış planları kabul eder.
 
     **Sunucu (localhost benzetimi):** Onaylı uçuş planlarını ve imzalarını tutar, yasaklı bölgeye giren veya
@@ -2598,7 +2838,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.12 Kriptografi ve sertifikalar:** kart anahtarı oda ve geçerlilik süresinden türetilir, ana anahtar SoftHSM'de sarılı tutulur.
     - **4.4 Beklemedeki veri:** kodlama geçmişi ve anahtar türetme parametreleri şifreli SQLite'ta tutulur.
-    - **4.14 İkili uygulama koruması:** kart kodlama mantığı tersine mühendislikle ana anahtarı ifşa etmeyecek şekilde korunur.
+    - **4.14 Binary uygulama koruması:** kart kodlama mantığı tersine mühendislikle ana anahtarı ifşa etmeyecek şekilde korunur.
     - **4.10 RASP:** hata ayıklayıcı tespit edilince ana anahtar işlemleri durdurulur.
 
     **Sunucu (localhost benzetimi):** Aktif kartların oda/süre bilgisini tutar, süresi dolmuş veya iptal edilmiş
@@ -2708,7 +2948,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     **Öne çıkan gereksinimler:**
 
     - **4.4 Beklemedeki veri:** yerel arabellek şifreli ve ekleme-yalnız biçimde tutulur, geriye dönük düzenleme engellenir.
-    - **4.9 Kod sağlamlaştırma:** ajan ikili dosyası günlük gizleme/temizleme amaçlı yama girişimine karşı sağlamlaştırılır.
+    - **4.9 Kod sağlamlaştırma:** ajan binary dosyası günlük gizleme/temizleme amaçlı yama girişimine karşı sağlamlaştırılır.
     - **4.6 Dinamik varlıkların korunması:** çalışma zamanında ajan sürecine kod enjeksiyonu tespit edilir.
     - **4.15 OWASP ve derleme/dağıtım hattı:** ajan derleme hattında bağımlılık taraması ve imzalı yayınlama zorunludur.
 
@@ -2737,7 +2977,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
 
     - **4.12 Kriptografi ve sertifikalar:** her parça üreticinin özel anahtarıyla imzalanır, istemci yalnız genel anahtarla doğrular.
     - **4.5 Statik varlıkların korunması:** doğrulama anahtarı/sertifika deposu değiştirilmeye karşı bütünlük denetimiyle korunur.
-    - **4.14 İkili uygulama koruması:** doğrulama mantığı, sahte "her zaman geçerli" yamasına karşı sertleştirilir.
+    - **4.14 Binary uygulama koruması:** doğrulama mantığı, sahte "her zaman geçerli" yamasına karşı sertleştirilir.
     - **4.8 Arayüz tanımları ve korunması:** tarama sonucu API'si yalnız tanımlı doğrulama kodlarını döndürür.
 
     **Sunucu (localhost benzetimi):** Bilinen seri numaralarını ve imza durumlarını tutar, daha önce iptal edilmiş
@@ -2823,7 +3063,7 @@ Aşağıdaki konulardan birini seçin (bkz. [3. Konu seçimi](#3-konu-secimi)). 
     - **4.12 Kriptografi ve sertifikalar:** tüm anahtar üretimi/saklama SoftHSM/PKCS#11 üzerinden yapılır, özel anahtar uygulama belleğine asla açık çıkmaz.
     - **4.4 Beklemedeki veri:** sertifika meta verisi ve yedekleme dosyası AES-GCM ile şifreli tutulur.
     - **4.11 Bellek koruması:** imzalama işlemi sırasında kullanılan ara değerler işlem sonrası güvenli silinir.
-    - **4.14 İkili uygulama koruması:** uygulama tersine mühendislikle ana parolayı/anahtarı ifşa etmeyecek şekilde sertleştirilir.
+    - **4.14 Binary uygulama koruması:** uygulama tersine mühendislikle ana parolayı/anahtarı ifşa etmeyecek şekilde sertleştirilir.
     - **4.10 RASP:** hata ayıklayıcı bağlantısı tespit edilince kasa kilitlenir, işlemler reddedilir.
 
     **Sunucu (localhost benzetimi):** Sertifika iptal listesini (CRL benzetimi) ve yenileme isteklerini tutar,

@@ -1,32 +1,32 @@
-﻿# CEN429 — bütün demoları Windows'ta (Visual Studio 2022 derleyicisiyle) derler.
-# Kullanım:  .\build.ps1            temizlemek için:  .\build.ps1 temizle
-# Betik çalışmazsa:  powershell -ExecutionPolicy Bypass -File .\build.ps1
-param([string]$Komut = "")
+# CEN429 — builds every demo on Windows (with the Visual Studio 2022 compiler).
+# Usage:  .\build.ps1            to clean up:  .\build.ps1 clean
+# If the script won't run:  powershell -ExecutionPolicy Bypass -File .\build.ps1
+param([string]$Command = "")
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-if ($Komut -eq "temizle") {
+if ($Command -eq "clean") {
     if (Test-Path build) { Remove-Item -Recurse -Force build }
-    Get-ChildItem -Recurse -Directory -Include bin, dokum | Remove-Item -Recurse -Force
-    "Temizlendi."
+    Get-ChildItem -Recurse -Directory -Include bin, dokum, dump | Remove-Item -Recurse -Force
+    "Cleaned."
     exit 0
 }
 
-# CMake PATH'te yoksa Visual Studio'nun kendi içindeki CMake kullanılır.
+# If CMake isn't on PATH, use the copy bundled inside Visual Studio.
 $cmake = (Get-Command cmake -ErrorAction SilentlyContinue).Source
 if (-not $cmake) {
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vswhere) {
         $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         if ($vs) {
-            $aday = Join-Path $vs "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-            if (Test-Path $aday) { $cmake = $aday }
+            $candidate = Join-Path $vs "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
+            if (Test-Path $candidate) { $cmake = $candidate }
         }
     }
 }
-if (-not $cmake) { throw "CMake bulunamadı. Visual Studio 2022'yi 'C++ ile masaüstü geliştirme' iş yüküyle kurun." }
+if (-not $cmake) { throw "CMake not found. Install Visual Studio 2022 with the 'Desktop development with C++' workload." }
 
 & $cmake --preset windows-msvc | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "Yapılandırma başarısız: & '$cmake' --preset windows-msvc" }
+if ($LASTEXITCODE -ne 0) { throw "Configuration failed: & '$cmake' --preset windows-msvc" }
 & $cmake --build --preset windows-msvc -- /m /v:minimal /nologo
-if ($LASTEXITCODE -ne 0) { throw "Derleme başarısız." }
-"Derleme tamam: ikili dosyalar her demonun bin\windows\ klasöründe."
+if ($LASTEXITCODE -ne 0) { throw "Build failed." }
+"Build complete: binaries are in each demo's bin\windows\ folder."

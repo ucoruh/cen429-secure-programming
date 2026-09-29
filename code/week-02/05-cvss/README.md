@@ -1,42 +1,42 @@
-# Demo 5 — CVSS v3.1 Temel Puan hesaplayıcı
+# Demo 5 — CVSS v3.1 Base Score calculator
 
-**Konu:** CVE ve CVSS puanlama, zafiyet ciddiyeti · **Hafta:** 2
+**Topic:** CVE and CVSS scoring, vulnerability severity · **Week:** 2
 
-## Ne gösteriyor?
+## What it shows
 
-Bir CVSS v3.1 vektörünü (ör. `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`) alıp 0.0–10.0 arası **Temel
-Puanı**, FIRST'ün resmi formülleriyle sıfırdan hesaplar. Sekiz metriğin puanı nasıl etkilediğini elle görmek için
-idealdir. `--ornekler` beş tipik zafiyeti çözer; `test_cvss.py` sonuçları FIRST belgesindeki bilinen değerlerle
-karşılaştırarak doğrular.
+Takes a CVSS v3.1 vector (e.g. `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`) and computes the **Base Score**
+(0.0-10.0) from scratch using FIRST's official formulas. Ideal for seeing, by hand, how the eight metrics affect
+the score. `--examples` solves five typical vulnerabilities; `test_cvss.py` verifies the results against the
+known values in the FIRST specification.
 
-## Çalıştırma
+## Running it
 
-Bu demo **derleme gerektirmez** (Python). `code/` klasöründeki `build.ps1`/`build.sh` diğer demoları derler;
-bu demoyu doğrudan çalıştırabilirsiniz:
+This demo needs **no build** (Python). The `build.ps1`/`build.sh` in the `code/` folder build the other demos;
+you can run this one directly:
 
-| Ortam | Komut |
+| Environment | Command |
 | --- | --- |
-| Windows (PowerShell) | `.\demo.ps1` — ya da `demo.cmd`'ye çift tıklayın |
+| Windows (PowerShell) | `.\demo.ps1` — or double-click `demo.cmd` |
 | WSL / Linux | `sh demo.sh` |
 
-Elle:
+By hand:
 
 ```bash
 python3 cvss.py "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
-python3 cvss.py --ornekler
-python3 test_cvss.py          # bilinen puanlarla karşılaştırır
+python3 cvss.py --examples
+python3 test_cvss.py          # compares against known scores
 ```
 
-Windows'ta `python3` yerine `py -3` kullanın: `py -3 cvss.py --ornekler`.
+On Windows, use `py -3` instead of `python3`: `py -3 cvss.py --examples`.
 
-## Neden güvenli?
+## Why it's safe
 
-Yalnız aritmetik yapar. Ağ isteği yapmaz, dosya yazmaz, hiçbir sisteme dokunmaz.
+It only does arithmetic. It makes no network request, writes no file, and touches no system.
 
-## Kendin dene
+## Try it yourself
 
-- `AV:N`'yi `AV:L` yapın (uzaktan → yerel). Puan neden düşüyor? "Cihaz saldırganın elinde" senaryosunda bu düşüş
-  gerçeği yansıtıyor mu?
-- `S:U`'yu `S:C` yapın (kapsam değişti). Neden puan artıyor? "Kapsam" tam olarak neyi anlatır?
-- Kendi projenizdeki bir zafiyet için bir vektör kurun ve puanlayın. Temel Puan bağlamı (varlığın değeri)
-  içermez — sizin S4 tablonuzda bunu nasıl eklersiniz?
+- Change `AV:N` to `AV:L` (remote → local). Why does the score drop? In the "device is in the attacker's hands"
+  scenario, does that drop reflect reality?
+- Change `S:U` to `S:C` (the scope changed). Why does the score go up? What exactly does "scope" describe?
+- Build a vector for a vulnerability in your own project and score it. The Base Score does not include context
+  (the asset's value) — how would you add that in your own S4 table?

@@ -1,18 +1,18 @@
 #!/bin/sh
-# CEN429 — Hafta 2 — Demo 5: CVSS v3.1 taban puan hesaplayici (Linux / WSL)
-# Derleme gerekmez; Python 3.8+ yeterlidir.  Calistirma: sh demo.sh
+# CEN429 — Week 2 — Demo 5: CVSS v3.1 base score calculator (Linux / WSL)
+# No build needed; Python 3.8+ is enough.  Run with: sh demo.sh
 cd "$(dirname "$0")"
 PY=python3
 command -v "$PY" >/dev/null || PY=python
-command -v "$PY" >/dev/null || { echo "Python 3 gerekli: sudo apt install python3"; exit 1; }
-cizgi() { echo "--------------------------------------------------------------"; }
+command -v "$PY" >/dev/null || { echo "Python 3 is required: sudo apt install python3"; exit 1; }
+line() { echo "--------------------------------------------------------------"; }
 
-cizgi; echo "ADIM 1 — Hazir zafiyet vektorlerini puanla"
-"$PY" cvss.py --ornekler
-cizgi; echo "ADIM 2 — Tek bir vektoru elle puanla"
+line; echo "STEP 1 - Score the built-in vulnerability vectors"
+"$PY" cvss.py --examples
+line; echo "STEP 2 - Score a single vector by hand"
 echo "\$ python3 cvss.py CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
 "$PY" cvss.py "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
-cizgi; echo "ADIM 3 — Dogrulama: FIRST v3.1 belgesindeki puanlarla karsilastir"
+line; echo "STEP 3 - Verification: compare against the FIRST v3.1 specification's scores"
 "$PY" test_cvss.py
-cizgi; echo "Sonuc: Ayni acik, kimlik/etkilesim/kapsam degisince farkli puan alir."
-echo "Puan onceligi verir; ama baglami (varliginiz) siz eklersiniz."
+line; echo "Result: the same flaw scores differently once authentication/interaction/scope change."
+echo "The score sets a priority; but you add the context (the value of your asset)."

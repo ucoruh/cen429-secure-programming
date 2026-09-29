@@ -1,0 +1,18 @@
+# CEN429 - Week 2 - Attack tree: the multi-attribute version
+# The same "Obtain the payment key" tree; every leaf now also has a time (in
+# days) and a skill (1-5 expertise) figure besides the cost (person-days). The
+# program picks the cheapest path and also reports that path's total time and
+# the highest skill it requires.
+# Goal: thinking in terms of several attributes, not a single number (cost).
+
+GOAL: Obtain the payment key
+  AND Copy and decrypt the local database
+    LEAF Gain root privilege             cost=3 time=2 skill=3
+    LEAF Recover the database key        cost=6 time=5 skill=4
+  OR Read it from memory during use
+    LEAF Read memory with a debugger               cost=2 time=1 skill=2
+    LEAF Take a memory dump and search for the key  cost=2 time=1 skill=2
+    LEAF Hook the function                          cost=4 time=3 skill=4
+  AND Eavesdrop between the server and the phone
+    LEAF Break TLS / get a fake certificate accepted  cost=7 time=6 skill=5
+    LEAF Break message-level encryption               cost=8 time=7 skill=5

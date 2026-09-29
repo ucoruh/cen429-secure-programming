@@ -4,155 +4,283 @@ template: main.html
 
 # CEN429 Term Project — Project Guide
 
+<!-- materyal:basla -->
+
+<div class="materyal" markdown>
+
+[:material-file-pdf-box: Lecture notes (PDF)](cen429-proje-rehberi-ders-notu.pdf){ .md-button download="cen429-proje-rehberi-ders-notu.pdf" }
+[:material-file-word-box: Lecture notes (DOCX)](cen429-proje-rehberi-ders-notu.docx){ .md-button download="cen429-proje-rehberi-ders-notu.docx" }
+[:material-presentation: Slides (PDF)](cen429-proje-rehberi-sunum.pdf){ .md-button download="cen429-proje-rehberi-sunum.pdf" }
+[:material-microsoft-powerpoint: Slides (PPTX)](cen429-proje-rehberi-sunum.pptx){ .md-button download="cen429-proje-rehberi-sunum.pptx" }
+[:material-language-html5: Slides (HTML, offline)](cen429-proje-rehberi-sunum.html){ .md-button download="cen429-proje-rehberi-sunum.html" }
+[:material-folder-zip: Download all (ZIP)](cen429-proje-rehberi-materyal.zip){ .md-button download="cen429-proje-rehberi-materyal.zip" }
+[:material-fullscreen: Open slides full screen](cen429-proje-rehberi-sunum.html){ .md-button .md-button--primary target=_blank }
+
+</div>
+
+<div class="sunum-cercevesi">
+<iframe src="cen429-proje-rehberi-sunum.html" title="Project Guide" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Click inside the slides and use the arrow keys; use the button at the bottom right of the slides or the link above for full screen.</p>
+
+<!-- materyal:bitis -->
+
+*CEN429 Secure Programming (formerly CE407) · Fall 2026–2027*
+
 In this project you design and build a chosen application **as if it were going through a certification process**:
 a **C++ console application** plus a **dynamic library (DLL/.so)** that provides its security. The goal is to combine
-every security technique you learn during the term into **one product** and document all of it in a **security guide**
-(S0–S17).
+every security technique you learn during the term into **one product** and document all of it in a **security
+guide** (S0–S17).
+
+<div class="grid cards" markdown>
+
+-   **Language and tools**
+
+    ---
+
+    C++ (DLL/.so) · CMake/CTest · SQLite · SoftHSM/PKCS#11 · OpenSSL
+
+-   **Team**
+
+    ---
+
+    At most 3 students (working alone is fine) · each topic goes to one team only · no team changes after week 3
+
+-   **Midterm checkpoint**
+
+    ---
+
+    Week 7 (30.10.2026) · RAP1 — first half of the product
+
+-   **Final checkpoint**
+
+    ---
+
+    Week 15 (25.12.2026) · RAP2 — full product + test results
+
+</div>
 
 !!! abstract "At a glance"
-    - **Team:** 2 students (you may work alone).
+    - **Team:** at most 3 students (you may also work alone); each topic can be taken by only one team. Teams cannot change after week 3 (04.10.2026).
     - **Language/tools:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL.
-    - **Two deliveries:** **Midterm (RAP1)** — first half of the product; **Final (RAP2)** — full product + test **results**.
-    - **Heart of the delivery:** alongside the code, a **security guide** written like a certification document (S0–S17).
-    - Detailed rubric is on Microsoft Teams; this page gives the requirements and how they map to the weeks.
+    - **Two deliveries:** **Midterm (RAP1)** — first half of the product; **Final (RAP2)** — full product + test
+      **results**.
+    - **Heart of the delivery:** alongside the code, a **security guide** written like a certification document
+      (S0–S17).
+    - All data is **synthetic**; no real secret, key, or personal data may enter the repository.
+    - A detailed scoring key and evidence templates may be shared on Microsoft Teams; the criteria and points on
+      this page are binding.
 
-## 1. Project plan (before you start)
+## 1. Calendar
 
-- Create a **project plan** on **GitHub** (Projects/README): work packages, deliverables, schedule, member roles.
-- Get it **approved by the instructor**. Projects started without approval are not accepted.
-- Track progress from the plan; make small, **reviewable** commits each week (Week 1, change management).
+| Week | Date | Event |
+| --- | --- | --- |
+| End of week 3 | 04.10.2026 | Last day to choose your topic and team |
+| Week 4 | 09.10.2026 | Project plan approved by the instructor |
+| Week 7 | 30.10.2026 | **Midterm demo** + interim report (RAP1) |
+| Week 8 | 31.10–08.11.2026 | **Quiz-1** (weeks 1–6) |
+| Week 15 | 25.12.2026 | **Final demo** + final report (RAP2) |
+| Week 16 | 04–17.01.2027 | **Quiz-2** (weeks 9–14) |
 
-## 2. Project setup
+The full weekly content plan is in the [syllabus](../syllabus/syllabus.md). Any date change is announced in the
+course classroom.
 
-**Fork** the C++ template and name it with the course code:
+## 2. Assessment structure
 
-- `https://github.com/ucoruh/cpp-cmake-ctest-template` → `cen429-project-name-surname-cpp`
+!!! info "Weights"
+    - **Midterm = 0.6·RAP1 + 0.4·Quiz-1** · **Final = 0.7·RAP2 + 0.3·Quiz-2**
+    - **Course grade = 0.4·Midterm + 0.6·Final**
+    - **RAP1 (Week 7):** first half of the product (S2–S5 + basic protections). **RAP2 (Week 15):** full product +
+      S16 results.
+
+### Learning outcomes (LO)
+
+| LO | Definition | Bloom level | Knowledge/Skill | RAP1 | RAP2 |
+| --- | --- | --- | --- | --- | --- |
+| LO.1 | Identifies and classifies common software vulnerabilities (buffer overflow, injection attacks, memory leaks, etc.). | Understand | KNOWLEDGE | ✓ | ✓ |
+| LO.2 | Explains basic encryption methods and secure communication principles (SSL/TLS) for protecting sensitive data. | Understand | KNOWLEDGE | ✓ | ✓ |
+| LO.3 | Explains code hardening techniques (input validation, secure memory management, RASP, code obfuscation) and applies them. | Apply | SKILL | ✓ | ✓ |
+| LO.4 | Explains the principles of building secure communication channels using encryption and authentication mechanisms. | Apply | SKILL | ✓ | ✓ |
+| LO.5 | Creates a protection plan using secure software design principles (least privilege, defence in depth, etc.). | Synthesize | SKILL | ✓ | ✓ |
+| LO.6 | Performs a basic security review and vulnerability assessment to detect software vulnerabilities. | Analyze | SKILL | ✓ | ✓ |
+| LO.7 | Knows secure programming standards (e.g. ETSI, EMV, FIPS) and the principles of penetration test planning. | Understand | KNOWLEDGE | ✓ | ✓ |
+
+Both checkpoints touch every learning outcome; RAP1 measures the basic/early level, RAP2 the advanced level and the
+full product.
+
+## 3. Tools and setup
+
+| Tool | Purpose | Output | Delivery condition |
+| --- | --- | --- | --- |
+| C++ compiler (GCC/Clang/MSVC) | Building the console app + DLL/.so | Working binary | Builds without errors in release |
+| CMake + CTest | Build system + unit testing | Test report | Green in CI |
+| SQLite | Data-at-rest store | `.db` schema | Records encrypted with AES-GCM |
+| SoftHSM / PKCS#11 | Key-wrapping/storage simulation | Key-store configuration | Critical keys stay wrapped |
+| OpenSSL | Cryptography, TLS, signing | Library linkage + certificates | Correct algorithm/mode/padding |
+| Doxygen | Source documentation | PDF/HTML output | Delivered in the template's format |
+| Git / GitHub | Version control, collaboration | Commit history, pull request | Private repository, both members' commits visible |
+| GitHub Actions | Continuous integration (CI) | Green build/test badge | CI green before merging |
+
+**Template repository:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) —
+fork it, name it `cen429-project-name-surname-cpp`, make it **private**, and add the instructor and your teammate
+(if any) as **collaborators**.
 
 !!! tip "Use the template fully"
-    The template provides build, **CTest unit testing**, documentation generation, test/doc coverage, and packaging.
-    Deliverables that do not follow the template are not accepted. Produce releases; record version id and digests
-    (Week 12 TOE identity).
+    The template provides build, **CTest unit testing**, documentation generation, test/documentation coverage, and
+    packaging. Deliverables that do not follow the template are not accepted. Produce releases; record the version
+    id and digests (Week 12 TOE identity).
 
-## 3. Topic selection
+**Project layout:**
 
-Project topics are listed in the **[Appendix — Project topic list](#appendix-project-topic-list)** at the end of
-this page (100 topics). Each topic box gives a short description of the application, its key features, the
-**assets to protect**, and the **security requirements that stand out** for that topic (using the items in
-Section 4).
+- `lib/` — security library (DLL/.so): cryptography, RASP, code obfuscation, data-protection functions.
+- `app/` — console application: the user interface that uses the library.
+- `test/` — CTest unit tests (crypto and protection functions).
+
+For environment setup and background knowledge, see [Prerequisites](../prerequisites/index.md).
+
+## 4. Topic selection
+
+Project topics are listed in the **Appendix — Project topic list** at the end of this page (100 topics). Each topic
+box gives a short description of the application, its key features, the **assets to protect**, and the **security
+requirements that stand out** for that topic (using the items in Section 5).
 
 !!! info "How to choose"
-    1. Browse the list below and choose one topic.
+    1. Browse the list at the end of the page and choose one topic.
     2. Record your choice in the **team and topic spreadsheet** on Microsoft Teams. **Each topic can be taken by
        only one team**; the first team to record it gets it.
-    3. Have it approved by the instructor together with your project plan (Section 1); once approved, the topic
-       cannot be changed.
+    3. Have it approved by the instructor together with your project plan (prepared alongside Section 3, Tools and
+       setup); once approved, the topic cannot be changed.
 
-- **All** 15 requirements in Section 4 apply to every project; the "highlighted requirements" in a topic box show
+- **All** 15 requirements in Section 5 apply to every project; the "highlighted requirements" in a topic box show
   where they fit most naturally and earn the most credit for that topic.
-- If you have an idea that is not on the list, you may choose it with the instructor's approval, provided it is rich
-  enough to apply the requirements meaningfully.
+- If you have an idea that is not on the list, you may choose it with the instructor's approval, provided it is
+  rich enough to apply the requirements meaningfully.
 - If you are retaking this course, choose a topic **different from your previous project**.
 
-## 4. Requirements (checklist)
+## 5. Requirements
 
-Each requirement notes **which week it is taught** and **which guide section (S)** it is documented in. Meet each item,
-or **defer/scope-out with justification** (Week 13).
+Each requirement notes **which week it is taught** and **which guide section (S)** it is documented in. The 15
+requirements below are grouped into midterm and final scope to match the rubric (see Section 8, Rubrics); the
+advanced aspects of some requirements deepen in later weeks. Meet each item, or **defer/scope it out with
+justification** (Week 13, S14).
 
-### 4.1 Development environment security · (Weeks 1, 12 · S13)
+### 5.1 Midterm scope (RAP1)
+
+#### 4.1 Development environment security · (Weeks 1, 12 · S13)
 Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 12](../week-12/cen429-week-12.md)
 
-- Software development flow and **change management** (baseline → request → classify → approve → release → verify).
+- Software development flow and **change management** (baseline → request → classify → approve → release →
+  verify).
 - Version control with **Git**; access logging; signed releases.
 - Development host/server security (short policy).
 
-### 4.2 Data-in-use security · (Weeks 3, 6 · S7)
+#### 4.2 Data-in-use security · (Weeks 3, 6 · S7)
 Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 6](../week-6/cen429-week-6.md)
 
 - Sensitive data in memory is **wiped securely** after use (`memset_s`-like).
 - Runtime data protection (shadow copy / integrity — Week 6).
 
-### 4.3 Data-in-transit security · (Weeks 3, 10 · S6, S11)
+#### 4.3 Data-in-transit security · (Weeks 3, 10 · S6, S11)
 Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md)
 
 - **TLS 1.3**; certificate chain + **SAN** validation; **pinning** + backup pin.
 - Encrypted **session key**; **device/version binding**; integrity + authentication; server verification code.
 
-### 4.4 Data-at-rest security · (Weeks 3, 10, 11 · S8)
+#### 4.4 Data-at-rest security · (Weeks 3, 10, 11 · S8)
 Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md) · [Week 11](../week-11/cen429-week-11.md)
 
 - File/DB encryption with **AEAD** (AES-GCM); non-repeating nonce.
 - For sensitive keys, **whitebox** or **SoftHSM/PKCS#11**; **justify** the choice (Week 11).
 
-### 4.5 Static asset protection · (Weeks 1, 4, 9 · S5, S9)
-Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 4](../week-4/cen429-week-4.md) · [Week 9](../week-9/cen429-week-9.md)
-
-- Secret keys, digests, source code, resources: encryption + access control + obfuscation.
-
-### 4.6 Dynamic asset protection · (Weeks 3, 6 · S5, S8)
-Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 6](../week-6/cen429-week-6.md)
-
-- Device/app fingerprints, session data, dynamic keys are encrypted.
-
-### 4.7 Asset management · (Weeks 1, 3, 13 · S5)
-Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 3](../week-3/cen429-week-3.md) · [Week 13](../week-13/cen429-week-13.md)
-
-Per asset: **name, description, location (table/column), source, size, creation/destruction time, default,
-protection scheme (C/I/I+)**.
-
-### 4.8 Interface definitions and protection · (Weeks 1, 4 · S3, S6)
+#### 4.8 Interface definitions and protection · (Weeks 1, 4 · S3, S6)
 Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 4](../week-4/cen429-week-4.md)
 
 - All interfaces protected with access control + authentication; input validated at the **trust boundary**.
 
-### 4.9 Code hardening · (Weeks 4, 9, 14 · S9)
+#### 4.9 Code hardening · (Weeks 4, 9, 14 · S9)
 Related weeks: [Week 4](../week-4/cen429-week-4.md) · [Week 9](../week-9/cen429-week-9.md) · [Week 14](../week-14/cen429-week-14.md)
 
 - Opaque loops/predicates, name/file/string/arithmetic obfuscation, opaque booleans, bogus ops/dead branches,
   **control-flow flattening** + random exit, logging **off** in release. **Measure** the cost (Week 9/14 demos).
 
-### 4.10 RASP · (Week 6 · S10)
+#### 4.10 RASP · (Week 6 · S10)
 Related weeks: [Week 6](../week-6/cen429-week-6.md)
 
 - Checksum integrity, caller hash/signature verification, root/emulator detection, **hook/anti-debug**, tamper
   detection + response, control-flow counter.
 
-### 4.11 Memory protection · (Week 4 · S9)
+#### 4.11 Memory protection · (Week 4 · S9)
 Related weeks: [Week 4](../week-4/cen429-week-4.md)
 
 - Compiler/OS protections (stack canary, PIE, RELRO, NX, CFI); sensitive memory cleared after use.
 
-### 4.12 Cryptography and certificates · (Weeks 3, 10 · S8, S11)
+### 5.2 Final scope (RAP2)
+
+#### 4.5 Static asset protection · (Weeks 1, 4, 9 · S5, S9)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 4](../week-4/cen429-week-4.md) · [Week 9](../week-9/cen429-week-9.md)
+
+- Secret keys, digests, source code, resources: encryption + access control + obfuscation.
+
+#### 4.6 Dynamic asset protection · (Weeks 3, 6 · S5, S8)
+Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 6](../week-6/cen429-week-6.md)
+
+- Device/app fingerprints, session data, dynamic keys are encrypted.
+
+#### 4.7 Asset management · (Weeks 1, 3, 13 · S5)
+Related weeks: [Week 1](../week-1/cen429-week-1.md) · [Week 3](../week-3/cen429-week-3.md) · [Week 13](../week-13/cen429-week-13.md)
+
+Per asset: **name, description, location (table/column), source, size, creation/destruction time, default,
+protection scheme (C/I/I+)**.
+
+#### 4.12 Cryptography and certificates · (Weeks 3, 10 · S8, S11)
 Related weeks: [Week 3](../week-3/cen429-week-3.md) · [Week 10](../week-10/cen429-week-10.md)
 
-- Correct algorithm/mode/padding; signature verification (`==1`, version coverage); SSL/TLS + pinning + mutual auth.
+- Correct algorithm/mode/padding; signature verification (`==1`, version coverage); SSL/TLS + pinning + mutual
+  authentication.
 
-### 4.13 Certification and penetration test plan · (Weeks 12, 13 · S16, S14, S17)
+#### 4.13 Certification and penetration test plan · (Weeks 12, 13 · S16, S14, S17)
 Related weeks: [Week 12](../week-12/cen429-week-12.md) · [Week 13](../week-13/cen429-week-13.md)
 
-- Standards mapping (ETSI/EMVCo/GSMA/PCI/MASVS); **penetration test plan** (scope, rules, methodology, test card) and
-  its **results**; attack potential + CVSS.
+- Standards mapping (ETSI/EMVCo/GSMA/PCI/MASVS); **penetration test plan** (scope, rules, methodology, test card)
+  and its **results**; attack potential + CVSS.
 
-### 4.14 Binary application protection · (Weeks 6, 9, 11, 14 · S9, S10, S15)
+#### 4.14 Binary application protection · (Weeks 6, 9, 11, 14 · S9, S10, S15)
 Related weeks: [Week 6](../week-6/cen429-week-6.md) · [Week 9](../week-9/cen429-week-9.md) · [Week 11](../week-11/cen429-week-11.md) · [Week 14](../week-14/cen429-week-14.md)
 
-- **Detection** (checksum, anti-debug, emulator), **defence** (obfuscation, string/resource encryption, call hiding),
-  **deterrence** (response/shutdown policy).
+- **Detection** (checksum, anti-debug, emulator), **defence** (obfuscation, string/resource encryption, call
+  hiding), **deterrence** (response/shutdown policy).
 
-### 4.15 OWASP and build/deploy pipeline · (Weeks 5, 14 · S13, S15)
+#### 4.15 OWASP and build/deploy pipeline · (Weeks 5, 14 · S13, S15)
 Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen429-week-14.md)
 
 - OWASP MASVS/ASVS principles; **SBOM** (CycloneDX) + dependency scan; build pipeline with obfuscation + signing.
 
-## 5. Deliverables
+### 5.3 Rules for both checkpoints
 
-- [ ] **Source code** (forked template, CMake/CTest, C++ DLL/.so + SQLite + SoftHSM).
-- [ ] **Unit tests** (crypto and protection functions) and a **CI** record.
-- [ ] **Security guide (S0–S17)** — a scaled-down model of a certification document (below).
-- [ ] **Test results (S16)** — not a plan, the **observed** results.
-- [ ] **Compliance matrix (S17)** and **deferred requirements (S14)**.
-- [ ] **SBOM** + dependency scan. All values **synthetic**; **no** real secret/personal data in the repo.
+- All values must be **synthetic**; no real secret, key, or personal data may be in the repository.
+- Every requirement item must be **visible** in the code and **documented** in the matching S section of the
+  security guide; an undocumented implementation counts as unmet.
+- If a requirement cannot be met, record the **justification** in S14 (assumptions and deferrals); it cannot be
+  silently skipped.
+- The application runs only on your own computer (localhost); it must not harm any other system or data.
 
-## 6. Security guide sections (S0–S17)
+## 6. Deliverables
+
+### 6.1 Deliverables table
+
+| # | Deliverable | Format | Rule |
+| --- | --- | --- | --- |
+| 1 | Source code | Git repository (fork) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM integration; both members' commits visible |
+| 2 | Unit tests + CI record | CTest report + CI log | Crypto and protection functions are tested; no merge without green CI |
+| 3 | Security guide (S0–S17) | `.docx`/`.pdf` | Midterm: S0–S5 draft · Final: S0–S17 complete, a scaled-down model of a certification document |
+| 4 | Test results (S16) | Guide section | Final only; not a plan, the **observed** results |
+| 5 | Compliance matrix (S17) + deferred requirements (S14) | Guide section | Final only; every deferred item is justified |
+| 6 | SBOM + dependency scan | CycloneDX file | Final only; delivered together with 4.15 |
+| 7 | Release | Git tag | Midterm: `midterm-v1.0` · Final: `final-v1.0` |
+| 8 | Demo | Live presentation (~10 min) | Midterm: Week 7 · Final: Week 15 |
+
+### 6.2 Security guide sections (S0–S17)
 
 | No | Section | No | Section |
 | --- | --- | --- | --- |
@@ -166,40 +294,155 @@ Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen4
 | S7 | Data security + shell matrix | S16 | Security testing and **results** |
 | S8 | Crypto, key lifecycle | S17 | Requirement compliance matrix |
 
-## 7. Assessment
+### 6.3 Single ZIP archive structure
 
-!!! info "Weights (syllabus)"
-    - **Midterm = 0.6·RAP1 + 0.4·Quiz-1** · **Final = 0.7·RAP2 + 0.3·Quiz-2**
-    - **Course grade = 0.4·Midterm + 0.6·Final**
-    - **RAP1 (Week 7):** first half (S2–S5 + basic protections). **RAP2 (Week 15):** full product + S16 results.
+```
+cen429-midterm-name-surname.zip           # final delivery: cen429-final-name-surname.zip
+└── cen429-project-name-surname-cpp/      # clone of the GitHub repo (gitignore applied)
+    ├── lib/                              # security library (DLL/.so)
+    ├── app/                              # console application
+    ├── test/                             # CTest unit tests
+    ├── docs/                             # Doxygen output
+    ├── security-guide/                   # S0–S17 security guide
+    │   └── cen429-security-guide-name-surname.docx
+    ├── sbom/                             # CycloneDX SBOM + dependency scan (final)
+    ├── test-coverage/                    # CTest coverage report
+    └── README.md
+```
 
-| Criterion | LO | In the guide |
-| --- | --- | --- |
-| Cryptography implementation | LO.2 | S8 |
-| Secure communication | LO.4 | S6, S11 |
-| Asset management | LO.5 | S5, S8 |
-| Binary application protections | LO.3 | S9, S10, S15 |
-| Security testing and unit tests | LO.6 | S16 |
-| Security standards | LO.7 | S1, S14, S17 |
-| Report and presentation | LO.7 | All |
+**Naming:** repository `cen429-project-name-surname-cpp`; archive `cen429-midterm-name-surname.zip` /
+`cen429-final-name-surname.zip`; security guide file `cen429-security-guide-name-surname.docx`. The cover page of
+the report/guide must include the **GitHub repository link**.
 
-The detailed **analytic rubric** is on Microsoft Teams. Every row needs **evidence**: a "met" row without evidence
-counts as unmet (Week 13).
+## 7. Team workflow and engineering practices
 
-## 8. Academic integrity
+- **GitHub Flow:** `main` is protected and never committed to directly; each task gets its own feature branch,
+  merged through a **pull request**.
+- **Commit message convention:** [Conventional Commits](https://www.conventionalcommits.org), e.g.
+  `feat(crypto): add AES-GCM wrapper`, `fix(rasp): correct debugger detection`, `test(hash): add SHA-256 vectors`.
+- **Pull request + review:** every PR is **reviewed** by at least one teammate; the description states what
+  changed and how it was tested.
+- **Issues + Projects board:** every task is a GitHub Issue; the board is tracked through Backlog → In Progress →
+  In Review → Done.
+- **No merge without green CI:** GitHub Actions runs the build and CTest; a red CI blocks merging into `main`.
+- **Version tags:** the midterm delivery is tagged `midterm-v1.0`, the final delivery `final-v1.0` (release).
+- **Definition of Done:** the code builds and runs · new public functions have unit tests · coverage did not drop ·
+  the PR was reviewed and approved · CI is green · the matching S section of the security guide was updated.
 
-You must be able to **explain** every line you submit; any team member may be questioned during the demo. Cite sources
-if you reuse code/text. Plagiarism and unauthorized copying cause failure.
+## 8. Rubrics
+
+Each criterion is scored on a **1–5** scale: points = (level ÷ 5) × criterion points.
+
+### 8.1 Achievement levels
+
+| Level | Meaning |
+| --- | --- |
+| **5 — Excellent** | Everything in scope works, is tested and documented; can be explained step by step in the demo |
+| **4 — Good** | Minor gaps or edge-case bugs; complete and tested overall |
+| **3 — Adequate** | Basic operations work; clear gaps in tests, documentation or measurements |
+| **2 — Poor** | Compiles, but most operations are wrong or missing; weak explanation |
+| **1 — No evidence** | Not submitted or not working |
+
+### 8.2 RAP1 — Midterm checkpoint rubric (Week 7, 100 points)
+
+| # | Criterion | Scope | LO | Points |
+| --- | --- | --- | --- | --- |
+| 1 | Threat model and asset list | S4, S5 | LO.1, LO.5 | 15 |
+| 2 | Data security: in transit, at rest, in use | 4.2–4.4; S7, S8 | LO.2, LO.4 | 20 |
+| 3 | Code hardening and memory protection | 4.9, 4.11; S9 | LO.3 | 20 |
+| 4 | RASP and response policy | 4.10; S10 | LO.3 | 10 |
+| 5 | Development environment and change management | 4.1; S13 | LO.5 | 10 |
+| 6 | Unit tests and CI | — | LO.6 | 10 |
+| 7 | Security guide (S0–S5) and demo | — | LO.7 | 15 |
+| | **Total** | | | **100** |
+
+### 8.3 RAP2 — Final checkpoint rubric (Week 15, 100 points)
+
+| # | Criterion | Scope | LO | Points |
+| --- | --- | --- | --- | --- |
+| 1 | Cryptography and certificates | 4.12; S8, S11 | LO.2, LO.4 | 15 |
+| 2 | Binary application protection, obfuscation and diversification | 4.14; S9, S10, S15 | LO.3 | 20 |
+| 3 | Asset management and dynamic assets | 4.5–4.7; S5 | LO.5 | 10 |
+| 4 | Security testing and observed results | 4.13; S16 | LO.6 | 20 |
+| 5 | Standards, compliance matrix, deferrals | S1, S14, S17 | LO.7 | 15 |
+| 6 | OWASP, SBOM and build/deploy pipeline | 4.15; S13, S15 | LO.1, LO.5 | 10 |
+| 7 | Report, presentation and demo | — | LO.7 | 10 |
+| | **Total** | | | **100** |
+
+Every row needs **evidence**: a "met" row without evidence counts as unmet (Week 13).
+
+## 9. Acceptance conditions
+
+!!! warning "Submissions are not accepted if…"
+    - there is no GitHub repository, it is not **private**, or team members have no commits,
+    - the proportion of requirements met is below the minimum threshold,
+    - the repository or archive contains **binary files** (compiled `.exe`/`.dll`/`.so`),
+    - no release has been produced,
+    - the application does not **build/run** on Windows or WSL/Linux,
+    - the repository contains a real secret, key, or personal data (all values must be synthetic),
+    - **plagiarism** is detected.
+
+## 10. Questions asked in the demo
+
+- **Git/GitHub:** Did you fork the template with the correct name? Is the repository private, is the instructor a
+  collaborator? Do both members have commits? Were branches used, how were merges resolved?
+- **Setup and build:** Build the application and the library on Windows and in WSL/Linux; show the `lib`/`app`/`test`
+  split and their dependencies.
+- **Topic (line by line):** Explain your chosen security requirement (e.g. AES-GCM encryption, RASP tamper check, a
+  code-hardening transform) line by line in the code; draw the memory/data flow.
+- **Tests and documentation:** Open the unit tests and coverage report; show the matching S section of the
+  security guide.
+- **File/data operations:** Add a record, close and reopen the program, show that the data comes back encrypted.
+- **Programming:** Memory management, pointers, compiler/OS protections (stack canary, ASLR, NX, CFI), inspecting
+  variables and the stack in a debugger.
+
+## 11. Professional responsibility and academic integrity
+
+- You must be able to **explain** every line you submit; any team member may be questioned during the demo.
+- Cite the source if you reuse someone else's code or text; watch for license compatibility.
+- All examples and values must be **synthetic**; no real personal data may be used.
+- **Plagiarism** and unauthorized copying cause failure; similarity checks may be run.
+- Individual contribution is tracked from the commit history; committing on someone else's behalf (a ghost commit)
+  counts as plagiarism.
 
 !!! warning "Safe and legal frame"
-    Penetration testing is only done on **your own** project. Examples and values must be **synthetic**; no real secret,
-    key, or personal data may enter the repo. Your application must not harm anyone else's system or data.
+    Penetration testing is only done on **your own** project. Examples and values must be **synthetic**; no real
+    secret, key, or personal data may enter the repo. Your application must not harm anyone else's system or data.
+
+## 12. Frequently asked questions
+
+??? question "Can I form a team by myself?"
+    Yes. The team is at most 3 students; you may also work alone. Teams are fixed at the end of week 3 (04.10.2026) and cannot change afterwards. The requirements and rubric do not change.
+
+??? question "Can I change my topic after it is approved?"
+    No. Once a topic is approved together with the project plan, it cannot be changed. If you need a change,
+    discuss it with the instructor.
+
+??? question "What happens if I cannot fully meet a requirement?"
+    You may defer it or scope it out by recording your justification in S14 (assumptions and deferrals) of the
+    security guide (Week 13). An item silently skipped counts as unmet.
+
+??? question "Can a requirement left incomplete at RAP1 be finished at RAP2?"
+    Yes, the final scope covers the full product and gaps can be completed; however, the RAP1 grade reflects the
+    state at the time of that demo and is not updated afterwards.
+
+??? question "In what format do we submit the security guide?"
+    As a `.docx` or `.pdf`, structured like a scaled-down certification document, with sections S0–S17. A draft of
+    S0–S5 is expected at midterm, and the complete S0–S17 at final.
+
+??? question "Are late submissions accepted?"
+    The rules in the syllabus apply: late submissions are not accepted. Notify the instructor as soon as possible
+    if something unexpected happens.
+
+??? question "Where can I find the detailed scoring key?"
+    Section 8 on this page gives the criteria, scope and points; additional evidence templates and clarifications
+    may be shared on Microsoft Teams if needed.
 
 ---
 
 ## Appendix — Project topic list
 
-Choose one of the topics below (see [3. Topic selection](#3-topic-selection)). The topics are in four groups: **payments and commerce (01–25)**, **health, education, public services and identity (26–50)**, **media, licensing, communication and the software supply chain (51–75)**, **IoT, industry, transport and the enterprise (76–100)**. All data is synthetic; the server side is a simulation running only on your own computer (localhost).
+Choose one of the topics below (see 4. Topic selection). The topics are in four groups: **payments and commerce (01–25)**, **health, education, public services and identity (26–50)**, **media, licensing, communication and the software supply chain (51–75)**, **IoT, industry, transport and the enterprise (76–100)**. All data is synthetic; the server side is a simulation running only on your own computer (localhost).
 
 ??? example "01 — :material-wallet-outline: Offline Payment Wallet"
 

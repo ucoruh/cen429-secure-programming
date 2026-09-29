@@ -238,6 +238,15 @@ The last three bytes are **`03 03 03`**: the number of missing bytes (16 − 13 
 
 ---
 
+# PKCS#7 · Padding and the Check — Animation
+
+<iframe class="dsanim" src="anim/pkcs7-padding.html?mode=slide&lang=en" title="PKCS#7 padding"></iframe>
+
+<!-- Speaker note: padding added + three checks (length, last-byte range, every padding byte). Which
+corruption stops at which check. -->
+
+---
+
 # GCM · the Modern Choice (AEAD)
 
 - **AES-GCM:** confidentiality **and** integrity together.
@@ -265,6 +274,24 @@ The last three bytes are **`03 03 03`**: the number of missing bytes (16 − 13 
 - An AEAD alternative to AES-GCM.
 - Fast when there is no hardware AES support.
 - The same nonce rule applies.
+
+---
+
+# Comparing the Modes — Animation
+
+<iframe class="dsanim" src="anim/block-cipher-modes.html?mode=slide&lang=en" title="Block cipher modes"></iframe>
+
+<!-- Speaker note: Same message, four modes. ECB: pattern leaks (same byte = same output). CBC: flipping one bit
+garbles that block and flips the SAME bit one block later. CTR: flipping one bit changes EXACTLY one bit. The
+GCM-like mode: tampering is REJECTED on tag mismatch. -->
+
+---
+
+# Modes · Edge Case
+
+<iframe class="dsanim" src="anim/block-cipher-modes.html?mode=slide&lang=en&example=edge-gcm-reject" title="GCM-like mode: tampering rejected"></iframe>
+
+<!-- Speaker note: GCM's fail-closed behavior — no plaintext at all when the tag doesn't match. -->
 
 ---
 
@@ -376,6 +403,15 @@ valid new tag; the receiver catches the mismatch.
 
 ---
 
+# HMAC · Inner/Outer Digest — Animation
+
+<iframe class="dsanim" src="anim/hmac-inner-outer.html?mode=slide&lang=en" title="HMAC inner/outer digest"></iframe>
+
+<!-- Speaker note: K' xor ipad -> inner digest (with the message); K' xor opad -> outer digest (with the
+inner digest) = the tag. Compare a short/long/exactly-one-block key. -->
+
+---
+
 # Constant-Time Comparison
 
 ```c
@@ -415,6 +451,15 @@ constant-time comparison; `memcmp`/`==` leaves an open door to a timing attack.
 - **MAC-then-encrypt:** open to the padding oracle.
 - **Encrypt-and-MAC:** the MAC can leak the plaintext.
 - The correct way: **encrypt-then-MAC** (or AEAD, which already does this).
+
+---
+
+# Why the Order Matters — Animation
+
+<iframe class="dsanim" src="anim/encrypt-then-mac-order.html?mode=slide&lang=en" title="Encrypt-then-MAC vs MAC-then-encrypt"></iframe>
+
+<!-- Speaker note: same tamper, two orders. EtM always rejects with the SAME failure (MAC). MtE can report TWO
+DIFFERENT failures (padding / MAC) depending on what the tamper corrupted — that's the padding-oracle shape. -->
 
 ---
 
@@ -477,6 +522,15 @@ constant-time comparison; `memcmp`/`==` leaves an open door to a timing attack.
 
 ---
 
+# Toy RSA · End to End — Animation
+
+<iframe class="dsanim" src="anim/rsa-toy.html?mode=slide&lang=en" title="Toy RSA"></iframe>
+
+<!-- Speaker note: the classic p=61, q=53, e=17 example. n, phi, d; encrypt/decrypt/sign/verify are the same
+exponentiation, only the exponent changes. Why a tampered signature and the wrong public key fail. -->
+
+---
+
 # OAEP vs PSS
 
 - **OAEP:** RSA **encryption** padding.
@@ -525,6 +579,15 @@ that is why it is never used directly for encryption.
 - **Ed25519:** the modern **signature** algorithm.
 - **X25519:** modern **key agreement** (DH).
 - Common mix-up: Ed25519 signs, X25519 exchanges keys.
+
+---
+
+# ECDH · Point Addition — Animation
+
+<iframe class="dsanim" src="anim/ecdh-toy.html?mode=slide&lang=en" title="ECDH point addition"></iframe>
+
+<!-- Speaker note: inside X25519/Ed25519 it's POINT ADDITION ON A CURVE instead of exponentiation. Same DH
+idea, different math. Mallory intercepting still gives two different keys. -->
 
 ---
 
@@ -639,6 +702,15 @@ A negative error value is also treated as "true." The correct check is `r == 1`.
 
 ---
 
+# Signature Verification · Three Scenarios — Animation
+
+<iframe class="dsanim" src="anim/digital-signature-tamper.html?mode=slide&lang=en" title="Digital signature verification"></iframe>
+
+<!-- Speaker note: correct signature accepted; document tampered after signing -> rejected; a message signed
+with the attacker's own key, checked against the REAL public key -> rejected. -->
+
+---
+
 # Signature · the Digest Rule
 
 - A signature is really the signing of a **digest**.
@@ -718,11 +790,26 @@ an AES key; it is first passed through a **KDF** (HKDF) to derive session keys.
 # MITM · Diagram
 
 ```text
-Ali ↔ [Saldırgan] ↔ Veli
-     iki ayrı DH; saldırgan ortada
+Alice ↔ [Attacker] ↔ Bob
+     two separate DH exchanges; the attacker sits in the middle
 ```
 
 Both sides think "I've established a secure channel."
+
+---
+
+# DH and MITM — Animation
+
+<iframe class="dsanim" src="anim/diffie-hellman-mitm.html?mode=slide&lang=en" title="Diffie–Hellman and the man-in-the-middle"></iframe>
+
+<!-- Speaker note: the classic p=23, g=5 example. First the honest exchange (Alice/Bob reach the same key).
+Then Mallory intercepts: Alice gets one key, Bob gets a DIFFERENT key — both are really talking to Mallory. -->
+
+---
+
+# DH/MITM · Edge Case
+
+<iframe class="dsanim" src="anim/diffie-hellman-mitm.html?mode=slide&lang=en&example=edge-mitm" title="Mallory intercepts"></iframe>
 
 ---
 
@@ -1065,6 +1152,21 @@ Given the intermediate certificate, the chain is complete.
 
 ---
 
+# Chain Validation · Six Scenarios — Animation
+
+<iframe class="dsanim" src="anim/x509-chain-validation.html?mode=slide&lang=en" title="X.509 chain validation"></iframe>
+
+<!-- Speaker note: missing intermediate, expired, wrong root, CA:FALSE issuer, wrong hostname, complete chain
+— all answer the same four questions. -->
+
+---
+
+# Chain · Edge Case (Expired)
+
+<iframe class="dsanim" src="anim/x509-chain-validation.html?mode=slide&lang=en&example=edge-expired" title="Expired certificate"></iframe>
+
+---
+
 # Turning Off Certificate Validation
 
 ```c
@@ -1167,6 +1269,15 @@ revocation checking works **independently** of validity checking.
 
 ---
 
+# CRL vs OCSP — Animation
+
+<iframe class="dsanim" src="anim/crl-ocsp-revocation.html?mode=slide&lang=en" title="CRL and OCSP"></iframe>
+
+<!-- Speaker note: OCSP is always LIVE. A CRL is cacheable but can go STALE — once nextUpdate passes it must
+say "stale," not "good." In the edge case a stale CRL does NOT show the revocation. -->
+
+---
+
 # ⚠️ The Fail-Open Trap
 
 - **Accepting** a certificate when OCSP is unreachable = fail-open.
@@ -1220,6 +1331,16 @@ revocation checking works **independently** of validity checking.
 # Signing with PKCS#11 — Diagram
 
 ![w:900](assets/h10-14-pkcs11-imzalama.svg)
+
+---
+
+# The Key Never Leaves — Animation
+
+<iframe class="dsanim" src="anim/hsm-pkcs11-key-use.html?mode=slide&lang=en" title="HSM/PKCS#11 key use"></iframe>
+
+<!-- Speaker note: generate_keypair() returns only a HANDLE. sign(handle, data) computes the signature INSIDE
+the HSM. An unknown/destroyed handle is rejected; a signature made under one handle does not verify under
+another. -->
 
 ---
 

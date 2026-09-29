@@ -1,116 +1,117 @@
 # -*- coding: utf-8 -*-
-# CEN429 - Hafta 5 - Demo 6: Yazilim Malzeme Listesi (SBOM) uretimi
+# CEN429 - Week 5 - Demo 6: Software Bill of Materials (SBOM) generation
 #
-# Demo, kendi olusturdugu sentetik jar'lardan (cikti/lib/) bir CycloneDX 1.5
-# JSON SBOM'u uretir: her bilesen icin ad, surum, purl ve SHA-256. Ardindan
-# kucuk, SENTETIK bir "bilinen zafiyetli surumler" listesiyle eslestirip uyarir.
+# The demo produces a CycloneDX 1.5 JSON SBOM from its own synthetic jars
+# (output/lib/): name, version, purl and SHA-256 for each component. It then
+# matches them against a small, SYNTHETIC "known vulnerable versions" list and
+# warns.
 #
-# HIC INDIRME GEREKTIRMEZ (yerlesik zipfile, hashlib, json). Butun bilesen adlari
-# ve surumleri sentetiktir; gercek bir kutuphane/CVE degildir. Gercek olay
-# (Log4Shell, 2021) yalnizca README ve ders sayfasinda ANLATILIR.
+# NO DOWNLOAD REQUIRED (uses only the built-in zipfile, hashlib, json). Every
+# component name and version is synthetic; not a real library or CVE. The real
+# incident (Log4Shell, 2021) is only DESCRIBED in the README and the lecture page.
 import hashlib
 import json
 import os
 import sys
 import zipfile
 
-BURASI = os.path.dirname(os.path.abspath(__file__))
-CIKTI = os.path.join(BURASI, "cikti")
-LIBDIR = os.path.join(CIKTI, "lib")
-SBOM = os.path.join(CIKTI, "sbom.cyclonedx.json")
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUTPUT = os.path.join(HERE, "output")
+LIB_DIR = os.path.join(OUTPUT, "lib")
+SBOM_PATH = os.path.join(OUTPUT, "sbom.cyclonedx.json")
 
-# Sentetik bilesenler: (grup, ad, surum). Hepsi uydurma.
-BILESENLER = [
-    ("ornek.grup", "kayit-kutuphanesi", "1.2.0"),
-    ("ornek.grup", "json-arac", "2.5.1"),
-    ("ornek.grup", "gunluk-cekirdek", "2.14.0"),
-    ("ornek.grup", "sifreleme-yardimci", "3.0.4"),
+# Synthetic components: (group, name, version). All made up.
+COMPONENTS = [
+    ("example.group", "record-library", "1.2.0"),
+    ("example.group", "json-tool", "2.5.1"),
+    ("example.group", "log-core", "2.14.0"),
+    ("example.group", "crypto-helper", "3.0.4"),
 ]
 
-# Sentetik "bilinen zafiyetli surumler" listesi (gercek CVE degil).
-ZAFIYETLI = {
-    "gunluk-cekirdek": {
-        "surumler": ["2.0.0", "2.14.0", "2.15.0"],
+# Synthetic "known vulnerable versions" list (not a real CVE database).
+VULNERABLE = {
+    "log-core": {
+        "versions": ["2.0.0", "2.14.0", "2.15.0"],
         "id": "CEN429-2026-0001",
-        "aciklama": "Bicimli mesajda uzaktan kod calistirma (sentetik ornek).",
-        "duzeltilen": "2.17.1",
+        "description": "Remote code execution via a formatted message (synthetic example).",
+        "fixed_in": "2.17.1",
     },
-    "json-arac": {
-        "surumler": ["2.5.1"],
+    "json-tool": {
+        "versions": ["2.5.1"],
         "id": "CEN429-2026-0002",
-        "aciklama": "Guvensiz seri durumdan cikarma (sentetik ornek).",
-        "duzeltilen": "2.6.0",
+        "description": "Unsafe deserialization (synthetic example).",
+        "fixed_in": "2.6.0",
     },
 }
 
 
-def cizgi():
+def line():
     print("-" * 62)
 
 
-def jar_uret():
-    """Sentetik jar dosyalari olustur (her biri kucuk bir zip)."""
-    if not os.path.isdir(LIBDIR):
-        os.makedirs(LIBDIR)
-    for grup, ad, surum in BILESENLER:
-        yol = os.path.join(LIBDIR, ad + "-" + surum + ".jar")
+def build_jars():
+    """Create the synthetic jar files (each one a small zip)."""
+    if not os.path.isdir(LIB_DIR):
+        os.makedirs(LIB_DIR)
+    for group, name, version in COMPONENTS:
+        path = os.path.join(LIB_DIR, name + "-" + version + ".jar")
         manifest = (
             "Manifest-Version: 1.0\r\n"
-            "Implementation-Title: " + ad + "\r\n"
-            "Implementation-Version: " + surum + "\r\n"
-            "Implementation-Vendor-Id: " + grup + "\r\n\r\n"
+            "Implementation-Title: " + name + "\r\n"
+            "Implementation-Version: " + version + "\r\n"
+            "Implementation-Vendor-Id: " + group + "\r\n\r\n"
         )
-        with zipfile.ZipFile(yol, "w", zipfile.ZIP_DEFLATED) as z:
+        with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
             z.writestr("META-INF/MANIFEST.MF", manifest)
-            # Icerik farkli olsun diye kucuk bir yer tutucu sinif dosyasi.
-            z.writestr("ornek/Sinif.txt", "sentetik icerik: " + ad + surum)
+            # A tiny placeholder class file so the content differs per component.
+            z.writestr("example/Class.txt", "synthetic content: " + name + version)
 
 
-def sha256(yol):
+def sha256(path):
     h = hashlib.sha256()
-    with open(yol, "rb") as f:
-        for parca in iter(lambda: f.read(65536), b""):
-            h.update(parca)
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
     return h.hexdigest()
 
 
-def manifesten_oku(yol):
-    """Jar manifest'inden ad ve surumu oku (yoksa dosya adindan cikar)."""
-    ad, surum, grup = None, None, "ornek.grup"
+def read_manifest(path):
+    """Read name and version from a jar's manifest (fall back to the file name)."""
+    name, version, group = None, None, "example.group"
     try:
-        with zipfile.ZipFile(yol) as z:
-            metin = z.read("META-INF/MANIFEST.MF").decode("utf-8", "replace")
-        for satir in metin.splitlines():
-            if satir.startswith("Implementation-Title:"):
-                ad = satir.split(":", 1)[1].strip()
-            elif satir.startswith("Implementation-Version:"):
-                surum = satir.split(":", 1)[1].strip()
-            elif satir.startswith("Implementation-Vendor-Id:"):
-                grup = satir.split(":", 1)[1].strip()
+        with zipfile.ZipFile(path) as z:
+            text = z.read("META-INF/MANIFEST.MF").decode("utf-8", "replace")
+        for entry in text.splitlines():
+            if entry.startswith("Implementation-Title:"):
+                name = entry.split(":", 1)[1].strip()
+            elif entry.startswith("Implementation-Version:"):
+                version = entry.split(":", 1)[1].strip()
+            elif entry.startswith("Implementation-Vendor-Id:"):
+                group = entry.split(":", 1)[1].strip()
     except (KeyError, zipfile.BadZipFile):
         pass
-    if not ad or not surum:
-        taban = os.path.basename(yol)[:-4]
-        ad, _, surum = taban.rpartition("-")
-    return grup, ad, surum
+    if not name or not version:
+        base = os.path.basename(path)[:-4]
+        name, _, version = base.rpartition("-")
+    return group, name, version
 
 
-def sbom_uret():
-    bilesenler = []
-    for dosya in sorted(os.listdir(LIBDIR)):
-        if not dosya.endswith(".jar"):
+def build_sbom():
+    components = []
+    for filename in sorted(os.listdir(LIB_DIR)):
+        if not filename.endswith(".jar"):
             continue
-        yol = os.path.join(LIBDIR, dosya)
-        grup, ad, surum = manifesten_oku(yol)
-        ozet = sha256(yol)
-        purl = "pkg:maven/" + grup + "/" + ad + "@" + surum
-        bilesenler.append({
+        path = os.path.join(LIB_DIR, filename)
+        group, name, version = read_manifest(path)
+        digest = sha256(path)
+        purl = "pkg:maven/" + group + "/" + name + "@" + version
+        components.append({
             "type": "library",
-            "group": grup,
-            "name": ad,
-            "version": surum,
+            "group": group,
+            "name": name,
+            "version": version,
             "purl": purl,
-            "hashes": [{"alg": "SHA-256", "content": ozet}],
+            "hashes": [{"alg": "SHA-256", "content": digest}],
         })
     bom = {
         "bomFormat": "CycloneDX",
@@ -118,58 +119,58 @@ def sbom_uret():
         "version": 1,
         "metadata": {"component": {
             "type": "application",
-            "name": "cen429-ornek-uygulama",
+            "name": "cen429-sample-app",
             "version": "0.1.0",
         }},
-        "components": bilesenler,
+        "components": components,
     }
-    with open(SBOM, "w", encoding="utf-8") as f:
+    with open(SBOM_PATH, "w", encoding="utf-8") as f:
         json.dump(bom, f, ensure_ascii=False, indent=2)
-    return bilesenler
+    return components
 
 
-def zafiyet_tara(bilesenler):
-    bulgular = []
-    for b in bilesenler:
-        kayit = ZAFIYETLI.get(b["name"])
-        if kayit and b["version"] in kayit["surumler"]:
-            bulgular.append((b, kayit))
-    return bulgular
+def scan_for_vulnerabilities(components):
+    findings = []
+    for c in components:
+        record = VULNERABLE.get(c["name"])
+        if record and c["version"] in record["versions"]:
+            findings.append((c, record))
+    return findings
 
 
 def main():
-    jar_uret()
-    bilesenler = sbom_uret()
+    build_jars()
+    components = build_sbom()
 
-    cizgi()
-    print("ADIM 1 - lib/ altindaki jar'lardan CycloneDX 1.5 SBOM uretildi")
-    print("   Cikti: " + os.path.relpath(SBOM, BURASI))
-    print("   " + str(len(bilesenler)) + " bilesen bulundu:")
-    print("   %-22s %-8s %s" % ("ad", "surum", "SHA-256 (ilk 16)"))
-    for b in bilesenler:
+    line()
+    print("STEP 1 - CycloneDX 1.5 SBOM generated from the jars in lib/")
+    print("   Output: " + os.path.relpath(SBOM_PATH, HERE))
+    print("   " + str(len(components)) + " component(s) found:")
+    print("   %-22s %-8s %s" % ("name", "version", "SHA-256 (first 16)"))
+    for c in components:
         print("   %-22s %-8s %s..." % (
-            b["name"], b["version"], b["hashes"][0]["content"][:16]))
+            c["name"], c["version"], c["hashes"][0]["content"][:16]))
 
-    cizgi()
-    print("ADIM 2 - purl (paket URL) ornekleri")
-    for b in bilesenler:
-        print("   " + b["purl"])
+    line()
+    print("STEP 2 - purl (package URL) examples")
+    for c in components:
+        print("   " + c["purl"])
 
-    cizgi()
-    print("ADIM 3 - Bilinen (sentetik) zafiyetli surumlerle eslestirme")
-    bulgular = zafiyet_tara(bilesenler)
-    if not bulgular:
-        print("   Uyari yok.")
-    for b, k in bulgular:
-        print("   [UYARI] " + b["name"] + " " + b["version"]
-              + "  (" + k["id"] + ")")
-        print("           " + k["aciklama"])
-        print("           Cozum: >= " + k["duzeltilen"] + " surumune yukselt.")
+    line()
+    print("STEP 3 - Matching against the (synthetic) known-vulnerable-version list")
+    findings = scan_for_vulnerabilities(components)
+    if not findings:
+        print("   No warnings.")
+    for c, record in findings:
+        print("   [WARNING] " + c["name"] + " " + c["version"]
+              + "  (" + record["id"] + ")")
+        print("             " + record["description"])
+        print("             Fix: upgrade to >= " + record["fixed_in"] + ".")
 
-    cizgi()
-    print("Sonuc: SBOM (CycloneDX/SPDX), 'hangi bilesen hangi surumde' sorusuna")
-    print("makine-okur cevaptir. Zafiyet veritabanlariyla eslesince, bir sonraki")
-    print("Log4Shell'de saniyeler icinde 'etkilendim mi?' yanitini verir.")
+    line()
+    print("Result: an SBOM (CycloneDX/SPDX) is a machine-readable answer to 'which")
+    print("component, which version'. Matched against vulnerability databases, it")
+    print("answers 'am I affected?' in seconds the next time there is a Log4Shell.")
 
 
 if __name__ == "__main__":

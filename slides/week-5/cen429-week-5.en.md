@@ -277,17 +277,17 @@ All share the **same** root and the **same** fix logic.
 # Buggy code
 
 ```java
-String q = "SELECT * FROM kul WHERE ad = '" + ad + "'";
-stmt.executeQuery(q);   // HATALI: ad komuta karışır
+String q = "SELECT * FROM users WHERE name = '" + name + "'";
+stmt.executeQuery(q);   // WRONG: name leaks into the query
 ```
 
-What if `ad` contains a quote and SQL?
+What if `name` contains a quote and SQL?
 
 ---
 
 # Attack · example
 
-The user enters this as `ad`:
+The user enters this as `name`:
 
 ```text
 ' OR '1'='1
@@ -296,7 +296,7 @@ The user enters this as `ad`:
 The query becomes:
 
 ```sql
-SELECT * FROM kul WHERE ad = '' OR '1'='1'
+SELECT * FROM users WHERE name = '' OR '1'='1'
 ```
 
 `'1'='1'` is always true → **all rows** are returned.
@@ -305,7 +305,7 @@ SELECT * FROM kul WHERE ad = '' OR '1'='1'
 
 # Why did it happen?
 
-- `ad` was concatenated into the query **text**.
+- `name` was concatenated into the query **text**.
 - The quote closed the data and moved into the **command** part.
 - Data and command got **mixed**.
 
@@ -321,12 +321,28 @@ SELECT * FROM kul WHERE ad = '' OR '1'='1'
 
 ```java
 PreparedStatement ps =
-    con.prepareStatement("SELECT * FROM kul WHERE ad = ?");
-ps.setString(1, ad);    // ad yalnız VERİ
+    con.prepareStatement("SELECT * FROM users WHERE name = ?");
+ps.setString(1, name);    // name is only DATA
 ps.executeQuery();
 ```
 
-`?` is a **parameter**; `ad` is never interpreted as a command.
+`?` is a **parameter**; `name` is never interpreted as a command.
+
+---
+
+# SQL injection — animation
+
+<iframe class="dsanim" src="anim/sql-injection.html?mode=slide&lang=en&example=hard-classic-bypass" title="SQL injection: string concatenation and a parameterized query"></iframe>
+
+<!-- Speaker note: The first quote typed into the password field closes the string literal; every character after it is now read as SQL SYNTAX, not DATA. In a parameterized query the same characters stay a single VALUE. Show the "Edge case" examples from the picker too. -->
+
+---
+
+# SQL injection — edge case: even a single quote is harmless in a parameterized query
+
+<iframe class="dsanim" src="anim/sql-injection.html?mode=slide&lang=en&example=edge-secure-any-quote" title="Edge case: a parameterized query, even a single quote is harmless"></iframe>
+
+<!-- Speaker note: The same dangerous character (a single quote) this time in a parameterized query: the query's STRUCTURE never changes, the quote stays just part of the VALUE. -->
 
 ---
 
@@ -390,7 +406,7 @@ What if `host` contains a shell metacharacter?
 As `host`:
 
 ```text
-example.com; rm -rf veri
+example.com; rm -rf data
 ```
 
 The shell runs this as **two commands**: `ping` **and** `rm`.
@@ -415,6 +431,22 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 
 - **No shell**; `host` is a single **argument**.
 - Metacharacters are not interpreted.
+
+---
+
+# Command injection — animation
+
+<iframe class="dsanim" src="anim/command-injection.html?mode=slide&lang=en&example=hard-semicolon" title="Command injection: a shell string vs. an argv list"></iframe>
+
+<!-- Speaker note: The shell tokenizes the text first; a bare ';'/'&' token means "start a new command", not "another argument". In an argv list the same characters stay inside ONE argument, the shell never runs at all. -->
+
+---
+
+# Command injection — edge case: the same attack hits the allow-list first
+
+<iframe class="dsanim" src="anim/command-injection.html?mode=slide&lang=en&example=edge-secure-semicolon" title="Edge case: the same hostile input hits the allow-list, argv is never even tested"></iframe>
+
+<!-- Speaker note: `runSecure` runs `isAllowed(name)` first; this input is REJECTED right there, `buildSecureArgs`/`ProcessBuilder` is never even called. Two independent layers of defence: the allow-list, and the argv list. -->
 
 ---
 
@@ -457,28 +489,28 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 # Buggy code
 
 ```java
-File f = new File("yuklenen/" + adi);  // HATALI
+File f = new File("uploads/" + name);  // WRONG
 ```
 
-What if `adi` contains `../`?
+What if `name` contains `../`?
 
 ---
 
 # Attack · example
 
-As `adi`:
+As `name`:
 
 ```text
 ../../etc/passwd
 ```
 
-Result: `yuklenen/../../etc/passwd` → **outside** the allowed folder.
+Result: `uploads/../../etc/passwd` → **outside** the allowed folder.
 
 ---
 
 # Why did it happen?
 
-- `adi` was appended **directly** into the file path.
+- `name` was appended **directly** into the file path.
 - The `../` sequence was read by the interpreter (the file system) as "go up a folder."
 - There was no check: whether the folder was left was never even asked.
 
@@ -487,12 +519,28 @@ Result: `yuklenen/../../etc/passwd` → **outside** the allowed folder.
 # Correct · canonicalise + root check
 
 ```java
-Path kok = Paths.get("yuklenen").toRealPath();
-Path hedef = kok.resolve(adi).normalize().toRealPath();
-if (!hedef.startsWith(kok)) throw new SecurityException();
+Path root = Paths.get("uploads").toRealPath();
+Path target = root.resolve(name).normalize().toRealPath();
+if (!target.startsWith(root)) throw new SecurityException();
 ```
 
 Is the canonical path **inside the root**? If not, reject.
+
+---
+
+# Path traversal — animation
+
+<iframe class="dsanim" src="anim/path-traversal.html?mode=slide&lang=en&example=hard-parent-escape" title="Path traversal: canonicalization and the root check"></iframe>
+
+<!-- Speaker note: The request is processed segment by segment; a '..' while already at the root is an attempt to leave the root. The insecure path reads without ever checking; the secure path canonicalizes and checks against the root. -->
+
+---
+
+# Path traversal — edge case: the secure version rejects the same attack
+
+<iframe class="dsanim" src="anim/path-traversal.html?mode=slide&lang=en&example=edge-secure-rejects" title="Edge case: the secure version rejects ../secret.txt"></iframe>
+
+<!-- Speaker note: The same '../secret.txt' request, this time through resolveSafely: the canonical path lands outside the root, so it returns null and the file is never read. -->
 
 ---
 
@@ -608,7 +656,7 @@ What if `giris` comes from an untrusted source?
 
 ```java
 ObjectInputFilter f = ObjectInputFilter.Config
-    .createFilter("com.uygulama.*;!*");  // yalnız izinli sınıflar
+    .createFilter("com.app.*;!*");  // allowed classes only
 ois.setObjectInputFilter(f);
 ```
 
@@ -616,11 +664,27 @@ If a single class is expected, a narrower pattern also works:
 
 ```java
 ois.setObjectInputFilter(ObjectInputFilter.Config
-  .createFilter("com.uygulama.Oturum;!*"));  // yalnız bu sınıf
+  .createFilter("com.app.Session;!*"));  // this class only
 ```
 
 - **Allow list**: only the expected classes.
 - Also set a depth/size limit (against DoS).
+
+---
+
+# Deserialization — animation
+
+<iframe class="dsanim" src="anim/deserialization.html?mode=slide&lang=en&example=hard-unfiltered-gadget" title="Unsafe deserialization: the allow-list check"></iframe>
+
+<!-- Speaker note: An unfiltered stream instantiates whatever class it names, no matter what. A filtered stream checks the class name against the allow-list pattern first; no match -> InvalidClassException, the class is never built at all. -->
+
+---
+
+# Deserialization — edge case: the filter rejects an unexpected class
+
+<iframe class="dsanim" src="anim/deserialization.html?mode=slide&lang=en&example=edge-filtered-rejects-other" title="Edge case: the allow-list rejects an unexpected class"></iframe>
+
+<!-- Speaker note: This time ObjectInputFilter IS active; the class name in the stream matches no part of the pattern, InvalidClassException is thrown, the object is NEVER built. -->
 
 ---
 
@@ -727,11 +791,11 @@ dbf.setFeature(
 # Python · `eval` example (code)
 
 ```python
-deger = eval(girdi)                 # HATALI: herhangi bir Python ifadesi
+value = eval(input_text)                 # WRONG: any Python expression
 
 import ast
-deger = ast.literal_eval(girdi)     # Daha iyi: yalnız sabitler
-deger = int(girdi)                  # En iyisi: beklenen türü ayrıştır
+value = ast.literal_eval(input_text)     # Better: literals only
+value = int(input_text)                  # Best: parse the expected type
 ```
 
 Rule: user data must **never** reach `eval`.
@@ -822,7 +886,7 @@ Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
 # `javap` example
 
 ```bash
-javap -c -p Uygulama.class    # bayt kodunu sök
+javap -c -p Application.class    # disassemble the bytecode
 ```
 
 - Method names, calls, constants are visible.
@@ -835,16 +899,32 @@ javap -c -p Uygulama.class    # bayt kodunu sök
 # `javap` output — what is visible?
 
 ```text
-private static final java.lang.String GECERLI_PIN;
-public boolean pinDogru(java.lang.String);
+private static final java.lang.String VALID_PIN;
+static boolean pinCorrect(java.lang.String);
   Code:
-     0: aload_1
-     1: ldc           #7    // String 4729
-     3: invokevirtual #9    // String.equals
+     0: ldc           #9    // String 4729
+     2: aload_0
+     3: invokevirtual #11   // String.equals
      6: ireturn
 ```
 
-There is no source code, but the **constant** (`4729`), the **names** (`GECERLI_PIN`, `pinDogru`) and the **logic** ("compare the input against this constant") are plainly visible.
+There is no source code, but the **constant** (`4729`), the **names** (`VALID_PIN`, `pinCorrect`) and the **logic** ("compare the input against this constant") are plainly visible.
+
+---
+
+# From bytecode to source — animation
+
+<iframe class="dsanim" src="anim/bytecode-decompile.html?mode=slide&lang=en&example=hard-pin-correct" title="From bytecode to source: mapping with javap"></iframe>
+
+<!-- Speaker note: The four bytecode instructions (ldc, aload_0, invokevirtual, ireturn) map one at a time onto source fragments; by the end, `return VALID_PIN.equals(entered);` is fully reconstructed. -->
+
+---
+
+# From bytecode to source — edge case: the license check, wrong year
+
+<iframe class="dsanim" src="anim/bytecode-decompile.html?mode=slide&lang=en&example=edge-license-wrong-year" title="Edge case: the license check, the wrong year"></iframe>
+
+<!-- Speaker note: The same four bytecode instructions this time for `licenseValid`; the candidate does not match `LICENSE_KEY` exactly, so the logic read from the bytecode gives `false`. -->
 
 ---
 
@@ -902,7 +982,7 @@ Three jobs:
 # Name obfuscation example
 
 ```text
-LisansDenetleyici.dogrula()  →  a.b()
+LicenseChecker.verify()  →  a.b()
 ```
 
 - Meaningful names disappear.
@@ -917,15 +997,15 @@ LisansDenetleyici.dogrula()  →  a.b()
 - If obfuscation changes the name, the call **breaks**.
 
 ```proguard
--keep class com.uygulama.Api { public *; }
+-keep class com.app.Api { public *; }
 ```
 
 For multiple entry points and annotation-marked members:
 
 ```proguard
--keep class com.uygulama.PublicApi { public *; }
+-keep class com.app.PublicApi { public *; }
 -keepclassmembers class * {
-    @com.uygulama.Reflected *;
+    @com.app.Reflected *;
 }
 ```
 
@@ -946,6 +1026,14 @@ For multiple entry points and annotation-marked members:
 
 ---
 
+# ProGuard/R8 — animation
+
+<iframe class="dsanim" src="anim/proguard-renaming.html?mode=slide&lang=en&example=edge-keep-everything" title="ProGuard/R8: the member-renaming map"></iframe>
+
+<!-- Speaker note: Every member is either kept because it matches a -keep rule, or renamed to a short a/b/c-style name. In this edge case -keep covers EVERY member -- nothing gets renamed, obfuscation accomplishes nothing. -->
+
+---
+
 # The mapping file
 
 - R8 produces a `mapping.txt`: obfuscated name → real name.
@@ -959,9 +1047,9 @@ For multiple entry points and annotation-marked members:
 # Mapping file · example (`mapping.txt`)
 
 ```text
-com.ornek.odeme.KartYoneticisi -> com.ornek.a:
-    android.content.Context baglam -> a
-    boolean varsayilanKartiAyarla(java.lang.String) -> b
+com.example.payment.CardManager -> com.example.a:
+    android.content.Context context -> a
+    boolean setDefaultCard(java.lang.String) -> b
 ```
 
 Old name → new name. This file **completely** undoes the obfuscation.
@@ -1003,9 +1091,17 @@ Old name → new name. This file **completely** undoes the obfuscation.
 
 ---
 
+# String obfuscation — animation
+
+<iframe class="dsanim" src="anim/string-decryption.html?mode=slide&lang=en&example=edge-zero-key" title="Runtime string decryption: XOR-based hiding"></iframe>
+
+<!-- Speaker note: The encrypted byte array is processed byte by byte, building the decrypted string live. In this edge case the key is 0x00 -- the "encrypted" bytes are already identical to the plain text; a "0" XOR key hides nothing. -->
+
+---
+
 # ⚠️ Reflection conflicts with obfuscation
 
-- A call by name (`getMethod("dogrula")`) breaks **after** obfuscation.
+- A call by name (`getMethod("verify")`) breaks **after** obfuscation.
 - Fix: either `-keep`, or drop reflection and call directly.
 - Reducing reflection is good for both security and obfuscation.
 
@@ -1153,8 +1249,8 @@ buildTypes { release {
 {
   "bomFormat": "CycloneDX",
   "components": [{
-    "type": "library", "name": "ornek-json", "version": "1.2.0",
-    "purl": "pkg:maven/com.ornek/ornek-json@1.2.0"
+    "type": "library", "name": "example-json", "version": "1.2.0",
+    "purl": "pkg:maven/com.example/example-json@1.2.0"
   }]
 }
 ```
@@ -1168,6 +1264,22 @@ Every component: name, version, **purl** (an ecosystem-independent, uniform iden
 - **VEX (Vulnerability Exploitability eXchange):** shares "I have this flaw, but it is **not exploitable**" information.
 - Reduces noise: not every CVE is a panic.
 - Accompanies the SBOM.
+
+---
+
+# SBOM → CVE matching — animation
+
+<iframe class="dsanim" src="anim/sbom-cve-match.html?mode=slide&lang=en&example=hard-real-sbom-two-hits" title="SBOM dependency tree → CVE matching"></iframe>
+
+<!-- Speaker note: Every component is checked, one at a time, by name AND exact version against the known-vulnerable list. This example is Demo 6's real SBOM -- two components (log-core, json-tool) get flagged. -->
+
+---
+
+# SBOM → CVE matching — edge case: the fixed version is no longer flagged
+
+<iframe class="dsanim" src="anim/sbom-cve-match.html?mode=slide&lang=en&example=edge-fixed-version-passes" title="Edge case: log-core on the fixed version, no longer flagged"></iframe>
+
+<!-- Speaker note: Same name, `log-core`, but the version is now 2.17.1 (the fixed release) -- `if record and version in record["versions"]` now gives `no`, no warning at all. This is why matching the EXACT version matters. -->
 
 ---
 
@@ -1235,8 +1347,8 @@ dependency-check --scan . --format HTML
 An application that logs a user in with a username and password.
 
 ```java
-String q = "SELECT * FROM kul WHERE ad='" + ad +
-           "' AND parola='" + p + "'";
+String q = "SELECT * FROM users WHERE name='" + name +
+           "' AND password='" + p + "'";
 ```
 
 Where is the mistake?
@@ -1248,10 +1360,10 @@ Where is the mistake?
 
 # Step 1 · the attacker's input
 
-Into the `ad` field:
+Into the `name` field:
 
 ```text
-yonetici' --
+admin' --
 ```
 
 `--` starts a **comment** in SQL; everything after it is ignored.
@@ -1261,10 +1373,10 @@ yonetici' --
 # Step 2 · what does the query become?
 
 ```sql
-SELECT * FROM kul WHERE ad='yonetici' -- ' AND parola='...'
+SELECT * FROM users WHERE name='admin' -- ' AND password='...'
 ```
 
-The password check stayed **inside the comment** → an `yonetici` login with no password.
+The password check stayed **inside the comment** → an `admin` login with no password.
 
 ---
 
@@ -1280,12 +1392,12 @@ The password check stayed **inside the comment** → an `yonetici` login with no
 
 ```java
 PreparedStatement ps = con.prepareStatement(
-  "SELECT * FROM kul WHERE ad=? AND parola_ozet=?");
-ps.setString(1, ad);
-ps.setString(2, ozetle(p));
+  "SELECT * FROM users WHERE name=? AND password_hash=?");
+ps.setString(1, name);
+ps.setString(2, hash(p));
 ```
 
-`ad` and the password are now **data**; `--` has no effect.
+`name` and the password are now **data**; `--` has no effect.
 
 ---
 
@@ -1403,7 +1515,7 @@ All five were covered earlier in this deck; here they are gathered in one glance
 
 **Which two steps close off path traversal?**
 
-**Answer:** Canonicalisation (`normalize`/`toRealPath`) + a root check (`startsWith(kok)`). Plus a file-name allow list.
+**Answer:** Canonicalisation (`normalize`/`toRealPath`) + a root check (`startsWith(root)`). Plus a file-name allow list.
 
 ---
 

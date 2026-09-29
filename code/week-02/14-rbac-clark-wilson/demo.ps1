@@ -1,15 +1,15 @@
-﻿# CEN429 - Hafta 2 - Demo 14: RBAC + gorev ayriligi + Clark-Wilson (Windows)
-# Once derleyin: ..\..\build.ps1   Sonra: .\demo.ps1
-# Simulator; hicbir dosyaya, aga ya da sistem ayarina dokunmaz.
+# CEN429 - Week 2 - Demo 14: RBAC + separation of duty + Clark-Wilson (Windows)
+# Build first: ..\..\build.ps1   Then: .\demo.ps1
+# A simulator; it touches no file, network, or system setting.
 Set-Location $PSScriptRoot
 $B = "bin\windows"
-if (-not (Test-Path "$B\banka.exe")) { "Once derleyin: ..\..\build.ps1"; exit 1 }
-function Cizgi { "--------------------------------------------------------------" }
+if (-not (Test-Path "$B\bank.exe")) { "Build first: ..\..\build.ps1"; exit 1 }
+function Line { "--------------------------------------------------------------" }
 
-Cizgi; "Senaryo: senaryo.txt (roller, kisitlar, TP'ler ve adimlar)"
-& ".\$B\banka.exe" senaryo.txt
+Line; "Scenario: scenario.txt (roles, constraints, TPs, and steps)"
+& ".\$B\bank.exe" scenario.txt
 
-Cizgi; "Sonuc: RBAC 'kim hangi islemi' der; Clark-Wilson 'veriye yalniz"
-"sertifikali islemle dokun, dis girdiyi dogrula, her seyi deftere yaz,"
-"gorevleri ayir' der. Hatali ama sertifikali bir TP'yi E-kurallari"
-"durduramaz; onu IVP (butunluk dogrulama) yakalar."
+Line; "Result: RBAC says 'who may do which operation'; Clark-Wilson says"
+"'touch data only through a certified transaction, validate external input,"
+"write everything to the ledger, separate duties'. The E-rules cannot stop a"
+"broken but certified TP; the IVP (integrity verification) is what catches it."

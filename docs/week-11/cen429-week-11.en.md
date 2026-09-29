@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "This week's working demo"
-    `code/week-11/01-oyuncak-tablo` — Toy whitebox: the unencoded table leaks the key, the encoded table stops the naive read.
-    · `code/week-11/02-gomulu-anahtar` — The embedded (naive) key is physically present in the binary → the key in the software is not protected.
+    `code/week-11/01-toy-table` — Toy whitebox: the unencoded table leaks the key, the encoded table stops the naive read.
+    · `code/week-11/02-embedded-key` — The embedded (naive) key is physically present in the binary → the key in the software is not protected.
 
-    Run it: from the `code` folder, once `./build.sh` (on Windows `.\build.ps1`), then from the demo folder's `bin/linux` (on Windows `bin\windows`). Step-by-step commands are in the box below. Entirely synthetic and safe; it does not harm the student's computer.
+    Run it: from the `code` folder, once `./build.sh` (on Windows `.\build.ps1`), then from the demo folder's `bin/linux` (on Windows `bin\windows`). Step-by-step commands are in the box below.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
@@ -43,17 +43,17 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-11\01-oyuncak-tablo
-    .\bin\windows\oyuncak_wb.exe
-    cd ..\02-gomulu-anahtar
-    .\bin\windows\gomulu.exe --tara
+    cd week-11\01-toy-table
+    .\bin\windows\toy_table.exe
+    cd ..\02-embedded-key
+    .\bin\windows\embedded_key.exe --scan
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-11/01-oyuncak-tablo && ./bin/linux/oyuncak_wb
-    cd ../02-gomulu-anahtar && ./bin/linux/gomulu --tara
+    cd week-11/01-toy-table && ./bin/linux/toy_table
+    cd ../02-embedded-key && ./bin/linux/embedded_key --scan
     ```
 
     **Expected output:** The naive table `T[x]=S[x⊕k]` **leaks** the secret key (`0x3C`); the encoded table **does not leak it** (same encryption, different internal structure). The second demo finds the key embedded in its own binary with an **entropy scan** → "embedding a key in an array is not protection".
@@ -269,6 +269,17 @@ attacker has the following capabilities (read these as **what the defence has to
     9) and RASP ([Week 6](../week-6/cen429-week-6.md)) methods together.** In other words, WBC is **not presented as a standalone solution**
     even in its first sentence.
 
+Try the table above yourself: below, 10-16 scenarios show one at a time which attacker model each falls into, and
+which of the five capabilities (IO, SC, MEM, COD, MOD) that model has.
+
+<iframe class="dsanim" src="../anim/attacker-models.html" title="Black / grey / white box: which capabilities does the attacker have?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Black / grey / white box — step by step](anim/attacker-models.png)
+</div>
+
+Try the **Normal** (12 mixed scenarios), **Hard** (16 scenarios) and **edge-case** (all white-box / all black-box)
+examples, or generate your own random scenario list with 🎲.
+
 ### A concrete example: a session of a white-box attacker (step-by-step narrative)
 
 Let's not leave the capability list above abstract; let's follow, step by step from start to finish, **what an
@@ -424,6 +435,18 @@ Each one turns into a secure programming rule:
   **reduce** the real risk. An assessor ([Week 12](../week-12/cen429-week-12.md)) scans test/debug paths with **the same rigour** as production
   code.
 
+Let's not leave the first rule (a key embedded in a fixed array) abstract. The `code/week-11/02-embedded-key`
+demo's `search_bytes()` function slides a 16-byte window across the binary and compares it to the key pattern —
+exactly what an entropy scan does. The animation below walks through that scan step by step.
+
+<iframe class="dsanim" src="../anim/embedded-key-scan.html" title="Finding an embedded key in a binary" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Finding an embedded key in a binary — step by step](anim/embedded-key-scan.png)
+</div>
+
+Try the **Normal** (the key is found early), **Hard** (the key is near the end) and **edge-case** (the key is
+absent entirely, the scan returns `-1`) examples, or generate your own binary size and key position with 🎲.
+
 !!! danger "This week's main rule, up front"
     No published pure-software whitebox design has ever remained unbroken. So we will learn WBC not as **"magic
     that secures the key"**, but as **"a layer that delays key extraction and only makes sense together with the
@@ -550,6 +573,23 @@ The classic idea of WBC is Chow and colleagues' 2002 AES implementation. Its det
 operations, matrix constructions) will not be asked in this course's exam; but you need to understand its
 **idea**, and especially its **cost** and its **limit**. We proceed step by step and conceptually.
 
+### First, one round of AES: from scratch, step by step
+
+Before we talk about "baking" into a table, let's see what we are baking. AES places the 16-byte block into a
+4x4 "state" matrix **column by column** (FIPS-197); a round consists of **SubBytes** (every byte passes through
+a fixed table), **ShiftRows** (row `r` rotates left by `r` bytes), **MixColumns** (the columns get mixed — real
+AES uses a GF(2^8) matrix here, out of exam scope, see Section 0) and **AddRoundKey** (XOR with the round key).
+The animation below builds this step by step, using this week's own toy S-box (built below) instead of the real
+AES S-box.
+
+<iframe class="dsanim" src="../anim/aes-round-structure.html" title="The AES round structure from scratch" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The AES round structure — step by step](anim/aes-round-structure.png)
+</div>
+
+Try the **Normal** (sequential byte values), **Hard** (mixed byte values) and **edge-case** (an all-zero state
+and key) examples, or generate your own 16-byte block and key with 🎲.
+
 ### Step 1 — Partial evaluation: "bake" the key into a table
 
 In one round, AES first XORs the state byte with the round key, then passes it through the S-box. For a fixed
@@ -609,9 +649,32 @@ The attacker can no longer compute `S-box⁻¹[T'[x]]`, because they would first
 know `G`. Step 2 breaks, so Step 3 doesn't work either.
 
 !!! tip "See this for yourself in the demo"
-    The `code/week-11/01-oyuncak-tablo` demo produces exactly these two tables: on the **naive** table, the three
+    The `code/week-11/01-toy-table` demo produces exactly these two tables: on the **naive** table, the three
     steps above find the key (`0x3C`); on the **encoded** table, the same steps fail. The run commands are in the
     "Run the demo yourself" box at the top of this page.
+
+The animation below runs `toy_table.c`'s own code (`build_tables`, `naive_table`, `encoded_table`) step by step:
+watch the key get "baked" first into the naive table, then into the encoded table.
+
+<iframe class="dsanim" src="../anim/toy-table-wbc.html" title="Table-based whitebox: folding the key into a table" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Table-based whitebox — step by step](anim/toy-table-wbc.png)
+</div>
+
+Try the **Normal** (the real demo key `0x3C`), **Hard** (a different key, 16 inputs) and **edge-case** (a zero
+key) examples, or generate your own key and input count with 🎲.
+
+So why does the difference between these two tables matter so much? The animation below runs `toy_table.c`'s own
+`naive_recover()` function step by step, showing exactly how the key is read **straight** out of the naive table,
+and why that same read collapses at the **first** step against the encoded table.
+
+<iframe class="dsanim" src="../anim/table-key-leak.html" title="Why a table leaks the key" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Why a table leaks the key — step by step](anim/table-key-leak.png)
+</div>
+
+Try the **Normal**, **Hard** and **edge-case** (zero key) examples; watch the exact same `naive_recover` logic
+**succeed** on the naive table and **fail** on the encoded table in both.
 
 ### A fully hand-built example: a 4-element "toy S-box"
 
@@ -721,7 +784,7 @@ but since they don't know `G`, they **cannot extract** `k` this way.
     chained `G`s, and, on top of that, mixing matrices (Step 4).
 
 !!! tip "See this for yourself in the demo (again)"
-    The **encoded table** in the `code/week-11/01-oyuncak-tablo` demo is the real-AES-scale version of the `T'`
+    The **encoded table** in the `code/week-11/01-toy-table` demo is the real-AES-scale version of the `T'`
     logic above: the same three-step attack is attempted, and it produces inconsistent/wrong results — just like
     the `1, 3, 1, 3` we saw by hand here.
 
@@ -1131,6 +1194,18 @@ though the encodings stay fixed, AES's own mathematics (the S-box's non-linearit
     telemetry (is there a sign of attack?), and with a plan for "this design will fall one day too — what do we
     do then?" This is [Week 10](../week-10/cen429-week-10.md)'s crypto-period idea applied to whitebox.
 
+Let's see the differential/fault comparison idea at toy scale: compare a **correct** and a **faulted** run of the
+same input, and watch when the difference carries information. **This is not a working attack tool** — real
+DFA/DCA statistically combine hundreds to thousands of comparisons like this one.
+
+<iframe class="dsanim" src="../anim/dca-differential.html" title="A differential/fault comparison at toy scale" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![A differential/fault comparison — step by step](anim/dca-differential.png)
+</div>
+
+Try the **Normal** (fault bit 0), **Hard** (fault bit 7, 16 inputs) and **edge-case** (a zero fault mask — the
+difference is always zero) examples, or generate your own key and fault position with 🎲.
+
 ### WhibOx: why does an independent trial matter?
 
 WhibOx is a series of competitions in which academics and companies submit their own WB-AES designs **publicly**,
@@ -1292,6 +1367,19 @@ used?
 present hardware root" and "value isn't low". In row 1, WBC is **unnecessary cost**; in row 3, WBC is
 **unnecessary risk** (since there's no need to put the key on the client at all, not putting it there is always
 safer).
+
+Let's apply the same decision to 12-16 assets instead of three. The animation below asks all six layers (`OBF`,
+`WBC`, `ROTATE`, `BIND`, `AUDIT`, `HWROOT`) one at a time for every asset; watch how the `wbc` decision **always**
+activates four layers **together**, while the `plain` decision activates **none** of them (which is why it's
+"never").
+
+<iframe class="dsanim" src="../anim/layered-defence.html" title="Where does WBC sit in layered defence?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Where does WBC sit in layered defence — step by step](anim/layered-defence.png)
+</div>
+
+Try the **Normal** (12 assets, all four decisions represented), **Hard** (16 assets) and **edge-case** (all WBC /
+all hardware-root) examples, or generate your own asset list with 🎲.
 
 ### What does "a hardware root exists but isn't trustworthy" mean?
 
@@ -1594,7 +1682,7 @@ category.
     No, this is not **expected** within the scope of this course. The five steps in Section 3 (partial evaluation
     → T-box → internal encoding → mixing matrix → external encoding) should be understood **at the conceptual
     level**; you're not required to write a full Chow AES implementation in your project. The simple encoded-table
-    idea in the demo (`01-oyuncak-tablo`) is an example at the **level** expected of you in your project.
+    idea in the demo (`01-toy-table`) is an example at the **level** expected of you in your project.
 
 ??? question "We keep our key in an environment variable; is that enough for S8?"
     An environment variable is **a bit better than a key hard-coded into the code** (it isn't found directly by
@@ -1785,7 +1873,7 @@ category.
     correlation) became concrete in Sections 1, 3, and 4. The **defence chain** (TEE/SE/HSM → WBC → rotation +
     device binding + server auditing) came together in Sections 5 and 6.
 
-??? question "36. Which of this week's hand-worked examples can you match the naive and encoded tables of the `01-oyuncak-tablo` demo to?"
+??? question "36. Which of this week's hand-worked examples can you match the naive and encoded tables of the `01-toy-table` demo to?"
     The **naive table** matches the idea of Section 3's `T[x] = S[x XOR k]` (Steps A–C, which give the real key
     consistently from all 4 entries). The **encoded table** matches the idea of `T'[x] = G(T[x])` (the same
     attack now giving contradictory, wrong results such as `1, 3, 1, 3`).

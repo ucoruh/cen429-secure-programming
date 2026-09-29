@@ -1,16 +1,16 @@
-﻿# CEN429 - Hafta 2 - Demo 6: TOCTOU yaris durumu (yalniz Linux / WSL)
-# Bu demo Unix'e ozgudur: sembolik bag, O_NOFOLLOW ve POSIX dosya API'si kullanir.
-# Windows'ta derlenmez; asagidaki adimlarla WSL icinde calistirin.
+# CEN429 - Week 2 - Demo 6: a TOCTOU race condition (Linux / WSL only)
+# This demo is Unix-specific: it uses symbolic links, O_NOFOLLOW, and the POSIX file API.
+# It does not build on Windows; run it inside WSL with the steps below.
 Set-Location $PSScriptRoot
-"Bu demo yalniz Linux / WSL icinde calisir (TOCTOU sembolik bag yarisi)."
+"This demo only runs on Linux / WSL (the TOCTOU symbolic-link race)."
 ""
-"WSL kuruluysa, bu klasorden soyle calistirin:"
+"If WSL is installed, run it from this folder like this:"
 "  wsl sh -c 'cd `"$($PWD.Path -replace '\\','/' -replace '^C:','/mnt/c')`" && sh ../../build.sh && sh demo.sh'"
 ""
-"Ya da bir WSL / Ubuntu terminalinde:"
-"  cd <bu klasor>"
-"  sh ../../build.sh    # bir kez derle"
+"Or, in a WSL / Ubuntu terminal:"
+"  cd <this folder>"
+"  sh ../../build.sh    # build once"
 "  sh demo.sh"
 ""
-"Windows'ta guvenli benzetim yapilamaz cunku sembolik bag olusturmak yonetici"
-"yetkisi ister; bu derste hicbir demo yonetici yetkisi istemez."
+"A safe simulation cannot be done on Windows because creating a symbolic link"
+"needs administrator privilege; no demo in this course ever needs that."

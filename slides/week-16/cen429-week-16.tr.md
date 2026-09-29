@@ -223,7 +223,7 @@ Konuşma notu: Quiz-2 dönemi: 9-14. haftaların kavramlarını tekrar ediyoruz;
 
 **Tohum (`--Seed`) ne sağlar?**
 
-**Cevap:** Çeşitlendirme; aynı dönüşümler farklı tohumla farklı ikili üretir, bir kopyaya yazılan saldırı diğerinde çalışmaz.
+**Cevap:** Çeşitlendirme; aynı dönüşümler farklı tohumla farklı binary üretir, bir kopyaya yazılan saldırı diğerinde çalışmaz.
 
 ---
 

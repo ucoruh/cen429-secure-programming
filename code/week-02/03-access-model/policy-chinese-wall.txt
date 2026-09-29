@@ -1,0 +1,43 @@
+# CEN429 - Week 2 - Chinese Wall (Brewer-Nash, 1989) example
+# A consultancy firm: a consultant who reads one company's data in a given
+# CONFLICT-OF-INTEREST CLASS (e.g. two banks) can no LONGER access the other
+# one's. The rule depends on history; requests are processed IN ORDER.
+# Levels are not used (everyone is at the same level); only company and class
+# matter.
+
+MODEL   CW
+
+LEVEL   D  0
+
+SUBJECT consultant1  D
+SUBJECT consultant2  D
+
+OBJECT  a_balance_sheet  D
+OBJECT  b_balance_sheet  D
+OBJECT  x_report         D
+OBJECT  market_summary   D
+
+#       object            company  conflict class
+COMPANY a_balance_sheet   BankA    bank
+COMPANY b_balance_sheet   BankB    bank
+COMPANY x_report          OilX     oil
+COMPANY market_summary    -        -          # sanitized, open to everyone
+
+RIGHT   *  *  rw
+
+# consultant1 reads BankA: first access, free
+REQUEST consultant1  read   a_balance_sheet
+# OilX is in a different class: free
+REQUEST consultant1  read   x_report
+# BankB is in the same class, and BankA was already read: the wall has closed
+REQUEST consultant1  read   b_balance_sheet
+# Writing (the *-property): if someone who has read OilX's data writes to the
+# BankA file, OilX's information could leak to everyone who can read BankA -> deny
+REQUEST consultant1  write  a_balance_sheet
+# consultant2 only works with BankB: reads and writes it
+REQUEST consultant2  read   b_balance_sheet
+REQUEST consultant2  write  b_balance_sheet
+# The sanitized market summary is open to everyone: reading is free
+REQUEST consultant2  read   market_summary
+# But someone who has read bank data cannot write to the public summary
+REQUEST consultant2  write  market_summary

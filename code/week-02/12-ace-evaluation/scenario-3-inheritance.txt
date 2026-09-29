@@ -1,0 +1,24 @@
+# CEN429 - Week 2 - Demo 12, scenario 3: INHERITANCE
+# ACEs coming (inherited) from the parent folder come AFTER the ACEs written
+# directly on the file (explicit ones). That's why an explicit ALLOW beats an
+# inherited DENY.
+
+SCENARIO 3a - an inherited DENY, an explicit ALLOW (canonical order)
+TOKEN zoe  Intern,Users
+OWNER    mark
+ACE ALLOW Intern   WRITE
+ACE DENY  Intern   WRITE,DELETE       INHERITED
+ACE ALLOW Users    READ,EXECUTE      INHERITED
+REQUEST WRITE
+REQUEST DELETE
+
+# Breaking inheritance: icacls /inheritance:r removes inherited ACEs,
+# /inheritance:d instead preserves them by converting them to explicit ACEs.
+SCENARIO 3b - inheritance broken (removed)
+TOKEN zoe  Intern,Users
+OWNER    mark
+ACE ALLOW Intern   WRITE
+ACE DENY  Intern   WRITE,DELETE       INHERITED
+ACE ALLOW Users    READ,EXECUTE      INHERITED
+BREAK_INHERITANCE remove
+REQUEST READ

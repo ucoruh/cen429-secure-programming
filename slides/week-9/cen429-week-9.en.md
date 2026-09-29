@@ -136,8 +136,8 @@ We will see values like `0x5A` in the code; these are just numbers.
 - Property: `a ^ b ^ b == a` → **it undoes itself**.
 
 ```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
+c = a ^ 0x5A;   /* encode */
+a = c ^ 0x5A;   /* decode */
 ```
 
 It is heavily used in obfuscation because it is reversible.
@@ -155,7 +155,7 @@ If an attacker sees a high-entropy block in a binary, they say "there might be a
 
 # Function, Branch, Condition
 
-- **Function:** a block of code that does one job (`erisim_ver`).
+- **Function:** a block of code that does one job (`grant_access`).
 - **Branch:** a fork in the road, like an `if`.
 - **Condition:** the expression that decides which way the branch goes.
 
@@ -246,8 +246,9 @@ Cryptography assumes a **black box**; that assumption collapses on delivery.
 
 - **1976** — Diffie & Hellman: the idea of "incomprehensible but working" (protection **through effort**)
 - **1997** — Collberg et al. **taxonomy** + *potency–resilience–stealth–cost* (this course's five families)
+- **2000** — Wang et al.: **control-flow flattening** — precise analysis is **NP-hard** in general (K-04)
 - **2001** — Barak et al.: perfect obfuscation is **impossible** → not "unbreakability" but **cost**
-- **2002** — Chow et al. **whitebox AES** (week 11) · **2010s** **Tigress**, O-LLVM (week 14)
+- **2002** — Chow et al. **whitebox AES** (week 11) · **2015** Obfuscator-LLVM (Junod et al., K-11) · Tigress (week 14)
 
 > Obfuscation is a **practical delaying** discipline built on top of an **impossibility theorem**.
 
@@ -444,6 +445,22 @@ symbol hiding · name obfuscation · arithmetic transform · string encoding · 
 
 ---
 
+# Animation · Five Families, One Function
+
+<iframe class="dsanim" src="anim/five-obfuscation-families.html?mode=slide&lang=en" title="The five obfuscation families"></iframe>
+
+<!-- Speaker note: show the four families on real grant_access/obfuscated.c lines, then run the dispatcher live against 10 tokens to confirm behavior is preserved. -->
+
+---
+
+# Animation · Five Families — Edge Case (all valid)
+
+<iframe class="dsanim" src="anim/five-obfuscation-families.html?mode=slide&lang=en&example=edge-all-valid" title="Five families — edge case"></iframe>
+
+<!-- Speaker note: all 10 tokens are valid — the dispatcher runs the full traversal every time, always GRANTED. -->
+
+---
+
 # What Obfuscation GIVES
 
 - A **delay** against static analysis (`strings`, symbols, decompilation)
@@ -483,13 +500,13 @@ Mistaking obfuscation for **storing a key**.
 # The "Protection Rule" Template
 
 ```text
-KURAL K-xx: <teknik>
-  Neyi korur?  : hangi varlık / kod bölümü
-  Hangi tehdit?: statik / dinamik / otomatik / kurcalama
-  Nasıl?       : bir cümle (kavram)
-  Maliyet      : boyut, hız, bakım, hata ayıklama
-  Sınır        : neyi korumaz
-  Ölçüm        : etkinlik nasıl doğrulanır
+RULE K-xx: <technique>
+  What does it protect? : which asset / code section
+  Against which threat? : static / dynamic / automated / tampering
+  How?                   : one sentence (concept)
+  Cost                   : size, speed, maintenance, debugging
+  Limit                  : what it does not protect
+  Measurement            : how effectiveness is verified
 ```
 
 ---
@@ -508,6 +525,22 @@ Obfuscation is not "present/absent."
 # Four Metrics — Diagram
 
 ![w:950](assets/h09-08-dort-olcut.svg)
+
+---
+
+# Animation · Protection Rule Template
+
+<iframe class="dsanim" src="anim/protection-rule-template.html?mode=slide&lang=en" title="Protection rule template"></iframe>
+
+<!-- Speaker note: 5 real rules x 2 assets (measured grant_access, conceptual lisans_dogrula) — stress which one was measured and which is illustrative. -->
+
+---
+
+# Animation · Protection Rule Template — Edge Case (conceptual asset only)
+
+<iframe class="dsanim" src="anim/protection-rule-template.html?mode=slide&lang=en&example=edge-asset-b-only" title="Protection rule template — edge case"></iframe>
+
+<!-- Speaker note: all 10 rows are lisans_dogrula — no measurement at all; use this to make the "measured" vs "illustrated" distinction crystal clear. -->
 
 ---
 
@@ -547,7 +580,7 @@ In this section we add the rules that **strengthen** it:
 
 K-01 opaque predicate · K-02 arithmetic encoding · K-03 bogus/dead · K-04 flattening (in depth) · K-05 random exit · K-06 call hiding
 
-All examples are **synthetic**, built around a single check: `erisim_ver`.
+All examples are **synthetic**, built around a single check: `grant_access`.
 
 ---
 
@@ -575,8 +608,8 @@ All examples are **synthetic**, built around a single check: `erisim_ver`.
 # K-01 · Opaque Predicate Example
 
 ```c
-/* x*(x+1) daima çifttir → sonuç daima true */
-static int opak_dogru(unsigned x) {
+/* x*(x+1) is always even → result is always true */
+static int opaque_true(unsigned x) {
     return ((x * (x + 1)) & 1u) == 0;
 }
 ```
@@ -588,10 +621,10 @@ The programmer knows: it is **always true**. Static analysis cannot easily prove
 # K-01 · How Is It Used?
 
 ```c
-if (opak_dogru(sayac)) {
-    durum = gercek_adim(durum);   /* daima buraya girer */
+if (opaque_true(counter)) {
+    state = real_step(state);   /* always entered */
 } else {
-    durum = sahte_adim(durum);    /* ölü yol: hiç çalışmaz */
+    state = fake_step(state);    /* dead path: never runs */
 }
 ```
 
@@ -620,6 +653,22 @@ The guide makes loops a separate rule:
 - **Limit:** well-known opaque predicate patterns are recognised automatically
 - **Countermeasure:** diversify (section 5)
 - **Measurement:** basic block count before/after
+
+---
+
+# Animation · Opaque Predicate Insertion
+
+<iframe class="dsanim" src="anim/opaque-predicate-insertion.html?mode=slide&lang=en" title="Opaque predicate insertion"></iframe>
+
+<!-- Speaker note: sweep grant_access's real opaque_zero(x)=(x*(x+1))&1 over many x; all come out 0. Then show the real use line (40). -->
+
+---
+
+# Animation · Opaque Predicate — Edge Case (large values)
+
+<iframe class="dsanim" src="anim/opaque-predicate-insertion.html?mode=slide&lang=en&example=edge-extremes" title="Opaque predicate — edge case"></iframe>
+
+<!-- Speaker note: even at large x values just under the JS safe-integer bound, the identity still comes out 0. -->
 
 ---
 
@@ -653,8 +702,8 @@ Same result, complex appearance. (MBA = mixed boolean-arithmetic)
 # K-02 · Hide the Constant
 
 ```c
-/* 0x2A doğrudan yazılmaz; iki parçadan üretilir */
-static uint8_t esik(void) {
+/* 0x2A is not written directly; produced from two parts */
+static uint8_t threshold(void) {
     uint8_t a = 0x37, b = 0x1D;
     return (uint8_t)(a ^ b);   /* = 0x2A */
 }
@@ -711,19 +760,19 @@ The guide makes these **separate** rules. The difference is critical:
 # K-03 · Bogus Operation Example
 
 ```c
-crc = crc32_guncelle(crc, veri, n);
-crc ^= (sabit ^ sabit);   /* = crc; sonuç aynı */
+crc = crc32_update(crc, data, n);
+crc ^= (constant ^ constant);   /* = crc; result unchanged */
 ```
 
-`sabit ^ sabit == 0` → the CRC does not change, but the code gets more crowded.
+`constant ^ constant == 0` → the CRC does not change, but the code gets more crowded.
 
 ---
 
 # K-03 · Dead Branch Example
 
 ```c
-if (opak_yanlis()) {        /* daima false */
-    sahte_kontrol();        /* hiç çalışmaz */
+if (opaque_false()) {        /* always false */
+    fake_check();        /* never runs */
 }
 ```
 
@@ -768,14 +817,14 @@ The algorithm's **structure**:
 # K-04 · Template
 
 ```c
-int durum = BASLA;
-for (;;) switch (durum) {
-  case BASLA: durum = ADIM1; break;
-  case ADIM1: durum = kosul ? ADIM2 : HATA; break;
-  case ADIM2: durum = BITIR; break;
-  case HATA:  return RED;
-  case BITIR: return IZIN;
-  default:    return RED;   /* rastgele çıkış (K-05) */
+int state = START;
+for (;;) switch (state) {
+  case START: state = STEP1; break;
+  case STEP1: state = condition ? STEP2 : FAIL; break;
+  case STEP2: state = DONE; break;
+  case FAIL:  return DENIED;
+  case DONE: return GRANTED;
+  default:    return DENIED;   /* random exit (K-05) */
 }
 ```
 
@@ -829,6 +878,22 @@ We said back in week 4: an experienced analyst can solve this template fairly qu
 
 ---
 
+# Animation · Control-Flow Flattening
+
+<iframe class="dsanim" src="anim/flow-flattening-dispatcher.html?mode=slide&lang=en" title="Control-flow flattening"></iframe>
+
+<!-- Speaker note: run clean.c's natural if-chain against obfuscated.c's switch dispatcher side by side, same tokens. -->
+
+---
+
+# Animation · Flattening — Edge Case (shortest path)
+
+<iframe class="dsanim" src="anim/flow-flattening-dispatcher.html?mode=slide&lang=en&example=flat-all-wrong-length" title="Flattening — edge case"></iframe>
+
+<!-- Speaker note: all wrong length — the dispatcher never reaches DECODE/COMPARE, falling to default by the shortest path. -->
+
+---
+
 <!-- _class: bolum -->
 
 # K-05 · Random Exit
@@ -849,13 +914,13 @@ The attacker typically:
 # K-05 · How?
 
 ```c
-if (!imza_gecerli(p)) {
-    durum = kararsiz_deger();  /* switch'te tanımsız → default */
+if (!signature_valid(p)) {
+    state = unpredictable_value();  /* not defined in the switch → default */
     break;
 }
 ```
 
-There is no direct `return RED`; the state goes to an unpredictable value.
+There is no direct `return DENIED`; the state goes to an unpredictable value.
 
 ---
 
@@ -999,13 +1064,13 @@ The cheapest attack step: `strings`.
 # K-07 · Example (Synthetic)
 
 ```c
-static const uint8_t GIZLI[] = {0x3B,0x2A,0x2E,0x2E,0x2D};
-void kullan(void) {
-    char tmp[sizeof GIZLI];
-    for (size_t i=0;i<sizeof GIZLI;i++)
-        tmp[i] = GIZLI[i] ^ 0x5A;      /* çöz */
-    isle(tmp, sizeof GIZLI);
-    memset_s_benzeri(tmp, sizeof tmp); /* hemen sil */
+static const uint8_t HIDDEN[] = {0x3B,0x2A,0x2E,0x2E,0x2D};
+void use(void) {
+    char tmp[sizeof HIDDEN];
+    for (size_t i=0;i<sizeof HIDDEN;i++)
+        tmp[i] = HIDDEN[i] ^ 0x5A;      /* decode */
+    process(tmp, sizeof HIDDEN);
+    secure_wipe(tmp, sizeof tmp); /* wipe immediately */
 }
 ```
 
@@ -1027,6 +1092,22 @@ Again: string obfuscation stops `strings`, it does **not** protect a **key**.
 
 - For the key → whitebox (week 11) or hardware
 - **Measurement:** the sensitive string **must not** be found in `strings` output
+
+---
+
+# Animation · String Encryption
+
+<iframe class="dsanim" src="anim/string-encryption.html?mode=slide&lang=en" title="String encryption"></iframe>
+
+<!-- Speaker note: ENCODED[]'s real lifetime -- encoded at rest, decoded, wiped IMMEDIATELY; then show the cycle repeating every call. -->
+
+---
+
+# Animation · String Encryption — Edge Case (never valid)
+
+<iframe class="dsanim" src="anim/string-encryption.html?mode=slide&lang=en&example=edge-never-valid" title="String encryption — edge case"></iframe>
+
+<!-- Speaker note: none of the 10 tokens are valid — the decode+wipe cycle still runs identically every single time; confirm it live. -->
 
 ---
 
@@ -1059,11 +1140,11 @@ Functions return an **opaque return code** instead of a plain boolean.
 # K-08 · Example (Concept)
 
 ```c
-typedef struct { uint32_t a, b; } Karar;
-static Karar izin_ver(void) {
-    return (Karar){ 0xA3C1u, 0x5C3Eu };  /* a ^ b == 0xFFFF */
+typedef struct { uint32_t a, b; } Decision;
+static Decision allow(void) {
+    return (Decision){ 0xA3C1u, 0x5C3Eu };  /* a ^ b == 0xFFFF */
 }
-static int karar_izin_mi(Karar k) {
+static int decision_grants(Decision k) {
     return (k.a ^ k.b) == 0xFFFFu;
 }
 ```
@@ -1080,6 +1161,22 @@ The calling side verifies **both fields**.
 - **Limit:** solvable with enough scrutiny
 - **Goal:** block a single-byte patch and crude branch-flipping
 - **Measurement:** **independent points > 1** needed to flip the result
+
+---
+
+# Animation · Data Encoding (Opaque Boolean)
+
+<iframe class="dsanim" src="anim/data-encoding.html?mode=slide&lang=en" title="Data encoding: opaque boolean"></iframe>
+
+<!-- Speaker note: plain int result (0/1) side by side with Decision{a,b} -- which one gives its meaning away instantly in a memory dump? -->
+
+---
+
+# Animation · Data Encoding — Edge Case (all granted)
+
+<iframe class="dsanim" src="anim/data-encoding.html?mode=slide&lang=en&example=edge-all-granted" title="Data encoding — edge case"></iframe>
+
+<!-- Speaker note: all 10 tokens valid -- a^b is 0xFFFF every single time, never anything else. -->
 
 ---
 
@@ -1253,6 +1350,22 @@ If the attacker can crack one copy and distribute the patch/script to **everyone
 
 ---
 
+<!-- _class: yogun -->
+
+# Origin: an Idea Borrowed from Biology
+
+- **1993** — Fred Cohen, "Operating System Protection Through Program Evolution": software that changes the
+  system **over time** → the root of **diversification in time**
+- **1997** — Forrest, Somayaji, Ackley, "Building Diverse Computer Systems" (HotOS): randomizing without changing
+  behaviour (e.g., stack-frame size) can disrupt even a buffer overflow → the root of **diversification in space**
+
+> In nature, diversity keeps a disease from killing an **entire** species, only the individuals without
+> resistance; in software the same idea keeps one crack from opening **every** copy.
+
+<!-- Speaker note: both papers are 30+ years old; Tigress's --Seed compresses this idea into a single flag (week 14). -->
+
+---
+
 # What Is Diversification?
 
 Producing binaries from the same source that are **behaviourally equivalent, structurally different**.
@@ -1288,6 +1401,22 @@ Works together with key/version renewal (week 10).
 - The higher the difference, the lower the odds that an attack on one works on the other
 
 Write this metric into S9.
+
+---
+
+# Animation · Diversification
+
+<iframe class="dsanim" src="anim/diversification.html?mode=slide&lang=en" title="Diversification: two seeds, same behavior"></iframe>
+
+<!-- Speaker note: SEED=1001 vs SEED=2002 -- MASK/ENCODED differ, but GRANTED/DENIED agrees across 10 tokens; show it live. -->
+
+---
+
+# Animation · Diversification — Edge Case (length never matches)
+
+<iframe class="dsanim" src="anim/diversification.html?mode=slide&lang=en&example=edge-length-extremes" title="Diversification — edge case"></iframe>
+
+<!-- Speaker note: both seeds reject instantly by the shortest path -- agreement holds on every path, not just the full one. -->
 
 ---
 
@@ -1394,6 +1523,22 @@ size ./program_temiz ./program_gizli   # boyut
 
 ---
 
+# Animation · Measuring Obfuscation
+
+<iframe class="dsanim" src="anim/obfuscation-metrics.html?mode=slide&lang=en" title="Measuring obfuscation"></iframe>
+
+<!-- Speaker note: show the real 27->49 instruction / 4->9 branch-call numbers, then the dynamic cost (steps per token) live across 10 tokens. -->
+
+---
+
+# Animation · Metrics — Edge Case (most expensive path)
+
+<iframe class="dsanim" src="anim/obfuscation-metrics.html?mode=slide&lang=en&example=edge-all-valid" title="Metrics — edge case"></iframe>
+
+<!-- Speaker note: all valid tokens -- the dispatcher takes the longest (6-step) path every time, dynamic cost maxed out. -->
+
+---
+
 <!-- _class: yogun -->
 
 # The Four Metrics Trade Off
@@ -1439,6 +1584,22 @@ We learn these **to test our own defence** — not to attack.
 - Opaque predicates and flattening can be undone this way
 
 **Resilience rule:** tie opaque predicates to structures that are expensive to solve (factorization, hashing), grow the state space — but **measure the cost**.
+
+---
+
+# Animation · Deobfuscation
+
+<iframe class="dsanim" src="anim/deobfuscation.html?mode=slide&lang=en" title="Deobfuscation: symbolic simplification"></iframe>
+
+<!-- Speaker note: constant-fold the real opaque_zero via a periodicity proof (x mod 2); then stress R-04/R-05/R-07 are STILL standing -- resilience != cost. -->
+
+---
+
+# Animation · Deobfuscation — Edge Case (alternating parity)
+
+<iframe class="dsanim" src="anim/deobfuscation.html?mode=slide&lang=en&example=edge-alternating-parity" title="Deobfuscation — edge case"></iframe>
+
+<!-- Speaker note: x=0..9 in order -- shows the period (2) directly, making "just the 2 residue classes are enough" concrete. -->
 
 ---
 
@@ -1516,7 +1677,7 @@ But the document notes, next to every one of them: **"not strong on its own."**
 
 # The Goal of This Example
 
-We take a single synthetic check (`erisim_ver`) and protect it **layer by layer**.
+We take a single synthetic check (`grant_access`) and protect it **layer by layer**.
 
 At every step: what was added · what we gained · what we paid.
 
@@ -1527,10 +1688,10 @@ At every step: what was added · what we gained · what we paid.
 # Step 0 · Unprotected Start
 
 ```c
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton))
-        return IZIN;      /* tek dal, tek dönüş */
-    return RED;
+int grant_access(const char *token) {
+    if (token_valid(token))
+        return GRANTED;      /* single branch, single return */
+    return DENIED;
 }
 ```
 
@@ -1540,7 +1701,7 @@ int erisim_ver(const char *jeton) {
 
 # Step 0 · What Does the Attacker Do?
 
-- `strings` → `IZIN`/`RED` and the related strings
+- `strings` → `GRANTED`/`DENIED` and the related strings
 - Decompile → a single `if`, two returns
 - Flip the failure branch to success (a single byte)
 
@@ -1551,8 +1712,8 @@ int erisim_ver(const char *jeton) {
 # Step 1 · K-07 Encode the String/Constant
 
 ```c
-/* IZIN/RED ve dizgeler artık düz görünmez */
-static int izin_kodu(void){ return 0x9E ^ 0x9F; } /* =1 */
+/* GRANTED/DENIED and strings no longer appear in plain text */
+static int grant_code(void){ return 0x9E ^ 0x9F; } /* =1 */
 ```
 
 - **Gain:** `strings` does not find the sensitive text
@@ -1574,8 +1735,8 @@ The first layer is the cheapest and gives the highest return.
 # Step 2 · K-02 Arithmetic Encoding
 
 ```c
-/* karşılaştırma karmaşık ama denk bir ifadeye döner */
-int esik = ((a ^ b) + 2*(a & b));   /* = a + b */
+/* comparison turns into a complex but equivalent expression */
+int threshold = ((a ^ b) + 2*(a & b));   /* = a + b */
 ```
 
 - **Gain:** the constant/computation is not directly readable
@@ -1586,12 +1747,12 @@ int esik = ((a ^ b) + 2*(a & b));   /* = a + b */
 # Step 3 · K-04 Flatten
 
 ```c
-int durum = BASLA;
-for(;;) switch(durum){
-  case BASLA: durum = kontrol()?ADIM:HATA; break;
-  case ADIM:  durum = BITIR; break;
-  case HATA:  return RED;
-  case BITIR: return IZIN;
+int state = START;
+for(;;) switch(state){
+  case START: state = check()?STEP:FAIL; break;
+  case STEP:  state = DONE; break;
+  case FAIL:  return DENIED;
+  case DONE: return GRANTED;
 }
 ```
 
@@ -1610,7 +1771,7 @@ No single `if` anymore; the order lives in the state variable.
 # Step 4 · K-05 Random Exit
 
 ```c
-if (!kontrol()) { durum = kararsiz_deger(); break; } /* →default */
+if (!check()) { state = unpredictable_value(); break; } /* →default */
 ```
 
 - **Where** the error was caught cannot be read from the flow
@@ -1621,8 +1782,8 @@ if (!kontrol()) { durum = kararsiz_deger(); break; } /* →default */
 # Step 5 · K-03 Bogus + Dead
 
 ```c
-crc ^= (s ^ s);            /* sahte işlem: sonuç aynı */
-if (opak_yanlis()) sahte(); /* ölü dal: çalışmaz */
+crc ^= (s ^ s);            /* bogus operation: result unchanged */
+if (opaque_false()) fake(); /* dead branch: never runs */
 ```
 
 - The real logic sits in a crowd
@@ -1633,8 +1794,8 @@ if (opak_yanlis()) sahte(); /* ölü dal: çalışmaz */
 # Step 6 · K-08 Opaque Boolean
 
 ```c
-Karar k = izin_ver();               /* a^b==0xFFFF */
-if (karar_izin_mi(k)) uygula();
+Decision k = allow();               /* a^b==0xFFFF */
+if (decision_grants(k)) apply();
 ```
 
 - The result is not a plain 0/1 → a single byte cannot flip it

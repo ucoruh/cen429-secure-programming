@@ -1,0 +1,46 @@
+# CEN429 — Week 2 — Bell–LaPadula (confidentiality) sample policy
+# Military classification analogy: a higher level = more secret.
+# Rule: "no read up, no write down".
+
+MODEL   BLP
+
+LEVEL   Public     0
+LEVEL   Secret     1
+LEVEL   TopSecret  2
+
+# Subjects (users) and their clearance levels
+SUBJECT clerk    Public
+SUBJECT officer  Secret
+SUBJECT general  TopSecret
+
+# Objects (documents) and their classification levels
+OBJECT  notice     Public
+OBJECT  plan       Secret
+OBJECT  operation  TopSecret
+
+# DAC matrix: let's say the owner has given everyone generous permission (so
+# we can see what BLP does on its own). In reality DAC and MAC are applied
+# together.
+RIGHT   clerk    notice     rw
+RIGHT   clerk    plan       rw
+RIGHT   clerk    operation  rw
+RIGHT   officer  notice     rw
+RIGHT   officer  plan       rw
+RIGHT   officer  operation  rw
+RIGHT   general  notice     rw
+RIGHT   general  plan       rw
+RIGHT   general  operation  rw
+
+# --- Requests ---
+# clerk reads/writes something at their own level: no problem
+REQUEST clerk    read   notice
+REQUEST clerk    write  notice
+# clerk wants to read a more secret document: BLP says "no read up"
+REQUEST clerk    read   operation
+# general reads the top-secret document: their own level, no problem
+REQUEST general  read   operation
+# general writes top-secret information into a public document (a leak!):
+# BLP's "no write down" blocks this
+REQUEST general  write  notice
+# clerk may write to a more secret document (writing up is allowed under BLP)
+REQUEST clerk    write  operation

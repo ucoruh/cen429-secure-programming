@@ -1,2 +1,2 @@
-# CEN429 - Hafta 9 demolari (Gelismis kod gizleme ve cesitlendirme)
-cen429_hafta_demolari()
+# CEN429 - Week 9 demos (Advanced obfuscation and diversification)
+cen429_add_week_demos()

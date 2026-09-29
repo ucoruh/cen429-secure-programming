@@ -215,9 +215,16 @@ layer exists to catch what the previous one missed.
 
 ## 2. SEI CERT C/C++: the rulebook for secure coding
 
+Saying "this line looks dangerous to me" in a code review is not enough — you need to give the evaluator a
+concrete rule ID and a rationale. So where do these rules come from, who writes them, and why do they all look
+the same? That is this section's topic.
+
 The CERT division of Carnegie Mellon University's Software Engineering Institute (SEI) publishes **secure coding
 standards** for C, C++, and Java. These standards collect hundreds of rules — distilled from real vulnerabilities
 — into a single format, and are one of the core documents certification labs consult during source code review.
+Think of it less like reading a guidebook and more like a **dictionary**: every rule, just like a dictionary
+entry, is written in the exact same fixed shape (ID, statement, example, fix) — so an evaluator browsing
+thousands of rules finds the same structure every time.
 
 ![The four parts of an SEI CERT rule](assets/h04-15-cert-kural-anatomisi.svg)
 
@@ -283,13 +290,13 @@ Let's learn to read a rule not as "good advice" but as a **measurable risk**. Ta
 violates MEM31-C ("free dynamic memory once you are done with it"):
 
 ```c title="MEM31-C violation: a block leaks on every request"
-void istek_isle(const char *veri)
+void handle_request(const char *data)
 {
-    char *tampon = malloc(64);          /* a NEW block on every call */
-    if (!tampon) return;
-    snprintf(tampon, 64, "%s", veri);
-    isle(tampon);
-    /* free(tampon) MISSING: the pointer is lost when the function returns, the block is never freed */
+    char *buffer = malloc(64);          /* a NEW block on every call */
+    if (!buffer) return;
+    snprintf(buffer, 64, "%s", data);
+    process(buffer);
+    /* free(buffer) MISSING: the pointer is lost when the function returns, the block is never freed */
 }
 ```
 
@@ -305,8 +312,8 @@ Accumulation in 24 hours      : 43.9 MB * 24 ≈ 1,053.6 MB ≈ 1.03 GB/day
 
 64 bytes alone looks harmless; but it accumulates on a **long-running server** and, over days, exhausts memory and
 crashes the program (CWE-401, resource leak). This calculation turns into a concrete, prioritizable sentence in a
-code review report — "MEM31-C violation, `istek_isle()`, ~44 MB/hour leak, fix: add `free(tampon)` at the end of
-the function" — which is far more powerful than saying "I think memory management is missing here."
+code review report — "MEM31-C violation, `handle_request()`, ~44 MB/hour leak, fix: add `free(buffer)` at the end
+of the function" — which is far more powerful than saying "I think memory management is missing here."
 
 !!! danger "Common mistake: dismissing a small leak as unimportant"
     Thinking "64 bytes, no big deal" and deferring the leak turns into a cumulative denial of service in
@@ -376,7 +383,7 @@ principles in Recipe 3.1 still hold today; let's turn them into a daily checklis
 The smallest but most frequently mishandled example of input validation is reading a number:
 
 ```c title="Wrong: atoi cannot report an error"
-int adet = atoi(argv[1]);    /* "abc" → 0, "99999999999" → undefined, "12abc" → 12 */
+int count = atoi(argv[1]);    /* "abc" → 0, "99999999999" → undefined, "12abc" → 12 */
 ```
 
 ```c title="Correct: strtol + full validation"
@@ -385,16 +392,16 @@ int adet = atoi(argv[1]);    /* "abc" → 0, "99999999999" → undefined, "12abc
 #include <stdlib.h>
 
 /* 0 on success; -1 if invalid or out of range */
-int sayi_oku(const char *s, long en_az, long en_cok, long *sonuc)
+int read_number(const char *s, long min_val, long max_val, long *result)
 {
-    char *son;
+    char *end;
     errno = 0;
-    long v = strtol(s, &son, 10);
-    if (son == s)            return -1;   /* no digits at all */
-    if (*son != '\0')        return -1;   /* trailing junk character: "12abc" */
-    if (errno == ERANGE)     return -1;   /* did not fit in a long */
-    if (v < en_az || v > en_cok) return -1;  /* business-rule range */
-    *sonuc = v;
+    long value = strtol(s, &end, 10);
+    if (end == s)              return -1;   /* no digits at all */
+    if (*end != '\0')          return -1;   /* trailing junk character: "12abc" */
+    if (errno == ERANGE)       return -1;   /* did not fit in a long */
+    if (value < min_val || value > max_val) return -1;  /* business-rule range */
+    *result = value;
     return 0;
 }
 ```
@@ -409,89 +416,89 @@ In network protocols and file formats, data is usually laid out as `[type][lengt
 the way to this week's fuzzing demo, the source of many bugs is **trusting the length field**:
 
 ```c title="Safely reading a length-prefixed record"
-/* tampon: incoming data, kalan: bytes remaining in the buffer */
-int kayit_oku(const uint8_t *tampon, size_t kalan, Kayit *k)
+/* buffer: incoming data, remaining: bytes remaining in the buffer */
+int read_record(const uint8_t *buffer, size_t remaining, Record *rec)
 {
-    if (kalan < 3) return -1;                         /* not even a header */
-    k->tur = tampon[0];
-    uint16_t uzunluk = (uint16_t)(tampon[1] << 8 | tampon[2]);
-    if (uzunluk > kalan - 3) return -1;               /* declared > received: REJECT */
-    if (uzunluk > sizeof k->veri) return -1;          /* doesn't fit the destination: REJECT */
-    memcpy(k->veri, tampon + 3, uzunluk);
-    k->uzunluk = uzunluk;
-    return 3 + uzunluk;                               /* bytes consumed */
+    if (remaining < 3) return -1;                        /* not even a header */
+    rec->type = buffer[0];
+    uint16_t length = (uint16_t)(buffer[1] << 8 | buffer[2]);
+    if (length > remaining - 3) return -1;               /* declared > received: REJECT */
+    if (length > sizeof rec->data) return -1;             /* doesn't fit the destination: REJECT */
+    memcpy(rec->data, buffer + 3, length);
+    rec->length = length;
+    return 3 + length;                                    /* bytes consumed */
 }
 ```
 
 The two checks are different from each other and both are necessary: one protects the **source** (is there
 really this much data in the incoming buffer?), the other protects the **destination** (does this much data fit
-in the buffer?). The expression `kalan - 3` does not wrap, thanks to the earlier `kalan < 3` check; the **order**
-of the checks matters too.
+in the buffer?). The expression `remaining - 3` does not wrap, thanks to the earlier `remaining < 3` check; the
+**order** of the checks matters too.
 
-### Worked example: tracing `kayit_oku` byte by byte
+### Worked example: tracing `read_record` byte by byte
 
-Let's not leave the function above abstract; let's trace it line by line with real bytes. Suppose `kalan = 8`
+Let's not leave the function above abstract; let's trace it line by line with real bytes. Suppose `remaining = 8`
 bytes arrive from the network and the contents are as follows (hex, then meaning):
 
 | Offset | Byte (hex) | Meaning |
 | --- | --- | --- |
-| 0 | `01` | `tur` field = 1 |
+| 0 | `01` | `type` field = 1 |
 | 1 | `00` | high byte of the length |
 | 2 | `05` | low byte of the length |
 | 3–7 | `48 45 4C 4C 4F` | `"HELLO"` (5 bytes of data) |
 
 The function processes the following steps **in order**:
 
-```text title="Step-by-step execution (kalan = 8, well-behaved input)"
-1) is kalan < 3?                8 < 3  → NO, continue.
-2) k->tur = tampon[0]           = 0x01
-3) uzunluk = tampon[1]<<8 | tampon[2]
+```text title="Step-by-step execution (remaining = 8, well-behaved input)"
+1) is remaining < 3?            8 < 3  → NO, continue.
+2) rec->type = buffer[0]        = 0x01
+3) length = buffer[1]<<8 | buffer[2]
             = (0x00 << 8) | 0x05
             = 0x0000 | 0x0005
             = 5
-4) is uzunluk > kalan - 3?      kalan - 3 = 8 - 3 = 5;  5 > 5  → NO, continue.
-5) is uzunluk > sizeof(k->veri)?  (if k->veri is 64 bytes) 5 > 64 → NO, continue.
-6) memcpy(k->veri, tampon+3, 5)   → k->veri = "HELLO"
-7) return 3 + uzunluk = 3 + 5 = 8   (bytes consumed; the WHOLE of kalan, consistent)
+4) is length > remaining - 3?  remaining - 3 = 8 - 3 = 5;  5 > 5  → NO, continue.
+5) is length > sizeof(rec->data)?  (if rec->data is 64 bytes) 5 > 64 → NO, continue.
+6) memcpy(rec->data, buffer+3, 5)  → rec->data = "HELLO"
+7) return 3 + length = 3 + 5 = 8   (bytes consumed; the WHOLE of remaining, consistent)
 ```
 
 Now let's trace an input where the attacker has changed **only the length field**, leaving the rest of the data
-untouched (`kalan` is still 8, but the declared length is now much larger than the real data):
+untouched (`remaining` is still 8, but the declared length is now much larger than the real data):
 
 | Offset | Byte | Meaning |
 | --- | --- | --- |
-| 0 | `01` | `tur` = 1 |
+| 0 | `01` | `type` = 1 |
 | 1 | `FF` | high byte of the length |
 | 2 | `FF` | low byte of the length |
 | 3–7 | `48 45 4C 4C 4F` | still 5 bytes of real data |
 
-```text title="Step-by-step execution (kalan = 8, attacker input)"
-1) is kalan < 3?                8 < 3 → NO, continue.
-2) k->tur = tampon[0]           = 0x01
-3) uzunluk = tampon[1]<<8 | tampon[2]
+```text title="Step-by-step execution (remaining = 8, attacker input)"
+1) is remaining < 3?            8 < 3 → NO, continue.
+2) rec->type = buffer[0]        = 0x01
+3) length = buffer[1]<<8 | buffer[2]
             = (0xFF << 8) | 0xFF
             = 0xFF00 | 0x00FF
             = 0xFFFF = 65,535
-4) is uzunluk > kalan - 3?      65,535 > 5  → YES → REJECT, the function returns -1.
+4) is length > remaining - 3?  65,535 > 5  → YES → REJECT, the function returns -1.
    (memcpy is NEVER reached)
 ```
 
-The check kicks in at exactly this point: `tampon` really **has** only 5 bytes of data, but the field **says** "65,535
-bytes are coming." Without the check, step 4 would be skipped, `memcpy(k->veri, tampon+3, 65535)` would be called,
-and the read would go **far beyond** the bounds of the `tampon` array — this is CWE-125 (out-of-bounds read), and
-exactly the bug this week's Demo 4 finds with fuzzing. Even making `uzunluk` a `uint16_t` is not enough by itself:
-a 16-bit field can carry at most 65,535, but that can still be far larger than the actual amount of data
-(`kalan - 3`); real safety comes **not from the field width but from the comparison**.
+The check kicks in at exactly this point: `buffer` really **has** only 5 bytes of data, but the field **says**
+"65,535 bytes are coming." Without the check, step 4 would be skipped, `memcpy(rec->data, buffer+3, 65535)` would
+be called, and the read would go **far beyond** the bounds of the `buffer` array — this is CWE-125 (out-of-bounds
+read), and exactly the bug this week's Demo 4 finds with fuzzing. Even making `length` a `uint16_t` is not enough
+by itself: a 16-bit field can carry at most 65,535, but that can still be far larger than the actual amount of
+data (`remaining - 3`); real safety comes **not from the field width but from the comparison**.
 
 !!! danger "Common mistake: making a length field `uint16_t`/`uint32_t` and assuming it 'fits'"
     A field's data type bounds the **largest value it can hold**; it does not guarantee that **the incoming data
-    really has that many bytes**. A `uint16_t uzunluk` holds at most 65,535, but the buffer may still contain only
+    really has that many bytes**. A `uint16_t length` holds at most 65,535, but the buffer may still contain only
     a handful of real bytes. The type choice is not something you can relax about; the actual validation is the
     comparison (step 4).
 
 !!! success "Rule"
-    Always compare a declared length field against **the number of bytes that actually arrived** (`kalan`) and
-    against **the destination buffer's size** (`sizeof k->veri`); if either one falls short, the data is
+    Always compare a declared length field against **the number of bytes that actually arrived** (`remaining`)
+    and against **the destination buffer's size** (`sizeof rec->data`); if either one falls short, the data is
     **rejected** — it is never truncated or "fixed up" with a default value (principle 5, above).
 
 !!! note "How it's done in the field"
@@ -513,14 +520,14 @@ to spot the bug first, then read the explanation.
 ### STR31-C: sufficient space for a string and its terminator
 
 ```c title="Wrong"
-char kopya[16];
-strcpy(kopya, ad);                       /* overflows if ad is longer than 15 characters */
+char copy[16];
+strcpy(copy, name);                      /* overflows if name is longer than 15 characters */
 ```
 
 ```c title="Compliant"
-char kopya[16];
-int n = snprintf(kopya, sizeof kopya, "%s", ad);
-if (n < 0 || (size_t)n >= sizeof kopya) {
+char copy[16];
+int n = snprintf(copy, sizeof copy, "%s", name);
+if (n < 0 || (size_t)n >= sizeof copy) {
     /* truncated: don't use it, or return an error */
 }
 ```
@@ -529,34 +536,34 @@ if (n < 0 || (size_t)n >= sizeof kopya) {
 equal to or greater than the buffer size, the output has been **truncated**. A truncated path or command can mean
 something different.
 
-**Numerical check:** the string `ad = "Mehmet Ali Kaya Demir"` is **21 characters** long (including spaces,
-excluding the `\0`). `char kopya[16]` can hold only 15 characters plus the `\0` terminator (16 bytes = 15 + 1).
-When `snprintf(kopya, 16, "%s", ad)` is called:
+**Numerical check:** the string `name = "Mehmet Ali Kaya Demir"` is **21 characters** long (including spaces,
+excluding the `\0`). `char copy[16]` can hold only 15 characters plus the `\0` terminator (16 bytes = 15 + 1).
+When `snprintf(copy, 16, "%s", name)` is called:
 
 ```text title="snprintf's truncation behaviour, in numbers"
 Actual length to write (n)       : 21
-Buffer size (sizeof kopya)       : 16
-n >= sizeof kopya ?               : 21 >= 16 → YES → TRUNCATED
-What actually ends up in kopya   : "Mehmet Ali Kaya" (first 15 characters) + '\0'
+Buffer size (sizeof copy)        : 16
+n >= sizeof copy ?               : 21 >= 16 → YES → TRUNCATED
+What actually ends up in copy    : "Mehmet Ali Kaya" (first 15 characters) + '\0'
 ```
 
 Had `strcpy` been used, there would have been no check at all, and the 21-character string would be copied into
 the 16-byte buffer with no bounds checking, overflowing the neighbouring memory by **5 bytes** (21 − 16).
 `snprintf` prevents the overflow; but **silently truncating** is itself a bug — if a user named "Mehmet Ali Kaya
 Demir" is stored in the system as "Mehmet Ali Kaya," two different users could end up with the same truncated
-name. This is why the check in the compliant solution, `if (n < 0 || (size_t)n >= sizeof kopya)`, is
+name. This is why the check in the compliant solution, `if (n < 0 || (size_t)n >= sizeof copy)`, is
 **mandatory**: the truncation must be noticed and either rejected or handled by allocating a larger buffer.
 
 ### INT30-C: unsigned operations must not wrap
 
 ```c title="Wrong"
-size_t kalan = toplam - okunan;          /* a gigantic number if okunan > toplam */
-memcpy(hedef, kaynak + okunan, kalan);
+size_t remaining = total - read_count;   /* a gigantic number if read_count > total */
+memcpy(dest, src + read_count, remaining);
 ```
 
 ```c title="Compliant"
-if (okunan > toplam) return HATA;
-size_t kalan = toplam - okunan;
+if (read_count > total) return ERROR;
+size_t remaining = total - read_count;
 ```
 
 Unsigned subtraction cannot go below zero, it **wraps**: `3 - 5` produces `SIZE_MAX - 1`. The order is checked
@@ -569,14 +576,14 @@ before the subtraction.
 The real mathematical result : -2
 Its modular equivalent       : -2 + 2^64 = 2^64 - 2
 2^64                          : 18,446,744,073,709,551,616
-2^64 - 2                      : 18,446,744,073,709,551,614   ← "kalan" becomes this gigantic number
+2^64 - 2                      : 18,446,744,073,709,551,614   ← "remaining" becomes this gigantic number
 SIZE_MAX (2^64 - 1)           : 18,446,744,073,709,551,615
 Comparison                    : 2^64 - 2 = SIZE_MAX - 1  ✓ (matches the claim in the text exactly)
 ```
 
-If this `kalan` value is passed to `memcpy(hedef, kaynak + okunan, kalan)`, the function is asked to copy about
-**18.4 quadrillion gigabytes**; since memory cannot possibly be that large, the processor keeps reading past the
-region pointed to by `kaynak` until it hits an unmapped page and the program crashes with a **segmentation
+If this `remaining` value is passed to `memcpy(dest, src + read_count, remaining)`, the function is asked to copy
+about **18.4 quadrillion gigabytes**; since memory cannot possibly be that large, the processor keeps reading past
+the region pointed to by `src` until it hits an unmapped page and the program crashes with a **segmentation
 fault** (or, if it reaches a mapped but foreign region, leaks information instead). On a **32-bit** system
 (`size_t` 4 bytes) the same calculation gives `2³² − 2 = 4,294,967,294` — smaller, but still many times larger
 than the buffer's real size; the outcome is the same.
@@ -584,16 +591,16 @@ than the buffer's real size; the outcome is the same.
 ### MEM30-C: do not access freed memory
 
 ```c title="Wrong: accessing the next node while freeing in the loop"
-for (Dugum *d = bas; d != NULL; d = d->sonraki)
-    free(d);                              /* d->sonraki is read AFTER the free */
+for (Node *n = head; n != NULL; n = n->next)
+    free(n);                              /* n->next is read AFTER the free */
 ```
 
 ```c title="Compliant"
-Dugum *d = bas;
-while (d != NULL) {
-    Dugum *sonraki = d->sonraki;          /* read it first */
-    free(d);
-    d = sonraki;
+Node *n = head;
+while (n != NULL) {
+    Node *next = n->next;                 /* read it first */
+    free(n);
+    n = next;
 }
 ```
 
@@ -603,15 +610,15 @@ expression reads the field of a node that has already been freed inside the loop
 ### EXP33-C: do not read uninitialized memory
 
 ```c title="Wrong"
-int sonuc;
-if (kosul) sonuc = hesapla();
-return sonuc;                             /* a random value if kosul is false */
+int result;
+if (condition) result = compute();
+return result;                            /* a random value if condition is false */
 ```
 
 ```c title="Compliant"
-int sonuc = HATA_KODU;                    /* safe default */
-if (kosul) sonuc = hesapla();
-return sonuc;
+int result = ERROR_CODE;                  /* safe default */
+if (condition) result = compute();
+return result;
 ```
 
 An uninitialized local variable carries whatever value used to sit at that stack location — which could even be a
@@ -621,15 +628,15 @@ permission" or "error" ([Week 1](../week-1/cen429-week-1.md)'s secure-default pr
 ### ERR33-C: detect library errors
 
 ```c title="Wrong"
-FILE *f = fopen(yol, "rb");
-fread(tampon, 1, sizeof tampon, f);       /* f == NULL if fopen fails */
+FILE *f = fopen(path, "rb");
+fread(buffer, 1, sizeof buffer, f);       /* f == NULL if fopen fails */
 ```
 
 ```c title="Compliant"
-FILE *f = fopen(yol, "rb");
-if (f == NULL) return HATA;
-size_t n = fread(tampon, 1, sizeof tampon, f);
-if (n < sizeof tampon && ferror(f)) { fclose(f); return HATA; }
+FILE *f = fopen(path, "rb");
+if (f == NULL) return ERROR;
+size_t n = fread(buffer, 1, sizeof buffer, f);
+if (n < sizeof buffer && ferror(f)) { fclose(f); return ERROR; }
 fclose(f);
 ```
 
@@ -645,16 +652,31 @@ Treating a partially read structure as fully read is just another form of readin
 
 ## 5. Format string vulnerability (Recipe 3.2)
 
+Picture a web server's log line: `printf(the_username_the_user_typed)` may have run fine for years — users
+normally type ordinary names. Then one day someone types `%x%x%x%x` into the username field. What happens?
+The program doesn't crash, doesn't even print an error; the screen fills with **meaningless hexadecimal
+numbers**. What are those numbers really the value of, and why did the program print them at all? That is
+exactly this section's question.
+
+!!! note "Brief history: format string vulnerabilities"
+    Format string vulnerabilities became widely recognized in **1999–2000** through real vulnerabilities in
+    widely used software such as **wu-ftpd**, a popular FTP server: attackers could feed user data into logging
+    calls that used it as a format string, leaking information or even achieving remote code execution. These
+    incidents taught the security community that a "harmless-looking" marker like `%n` is actually a **write
+    primitive**, and led compilers to respond with warnings like `-Wformat-security` and libraries with runtime
+    checks like `_FORTIFY_SOURCE` (part of the defense race we saw in [§1](#1-what-is-code-hardening)).
+
 The first argument to the `printf` family is a **format string**: markers inside it such as `%d`, `%s`, `%x` tell
 the function "take an argument of this type off the stack and print it in this format." The function **does not
 know** how many arguments were actually passed; it does whatever the format string says. If the format string
-comes from the user, the user has effectively given the function a command.
+comes from the user, the user has effectively given the function a command — like telling a waiter "relay this
+note to the kitchen" versus opening the kitchen door for the customer and saying "shout whatever you want."
 
 ![Format string vulnerability: incorrect and correct usage](assets/h04-07-bicim-dizisi.svg)
 
 ```c title="Wrong and correct"
-printf(kullanici_girdisi);           /* WRONG: the input is interpreted as the format string */
-printf("%s", kullanici_girdisi);     /* CORRECT: the input is only data */
+printf(user_input);                  /* WRONG: the input is interpreted as the format string */
+printf("%s", user_input);            /* CORRECT: the input is only data */
 ```
 
 ### Why is it dangerous?
@@ -668,7 +690,7 @@ printf("%s", kullanici_girdisi);     /* CORRECT: the input is only data */
 How harmful this is depends on the platform and the protections in place; but even the mildest outcome is an
 **information leak**: a key sitting on the stack, an address (which weakens ASLR), or a canary value could be
 read. The same bug shows up in `syslog`, `fprintf`, `snprintf`, `err`/`warn`, and every function that takes a
-format string; in [Week 2](../week-2/cen429-week-2.md) we saw this exact `syslog(LOG_INFO, kullanici_girdisi)` bug in an audit log.
+format string; in [Week 2](../week-2/cen429-week-2.md) we saw this exact `syslog(LOG_INFO, user_input)` bug in an audit log.
 
 ### Worked example: what does `%x` read from the stack? Step by step
 
@@ -679,39 +701,39 @@ follow the classic, simple model (all arguments on the stack), then add today's 
 
 **1) Simplified model — all arguments sit consecutively on the stack**
 
-In `sizinti.c` the call is `printf(tampon)` — only **1** real argument (the format string itself) is passed, no
-other value is given. If the user writes `"%x.%x.%x.%x.%x.%x"` into `tampon`, `printf` sees **6** `%x` markers in
+In `leak.c` the call is `printf(buffer)` — only **1** real argument (the format string itself) is passed, no
+other value is given. If the user writes `"%x.%x.%x.%x.%x.%x"` into `buffer`, `printf` sees **6** `%x` markers in
 the format string and proceeds on the assumption "6 more arguments are coming." But in reality none were **sent**.
 The only thing `printf` can do is well-defined: for each `%x`, look at "the position where the next argument
 should be" and print the bytes found there **as if they were a number**, in hexadecimal. In this simple model,
-those positions are the stack cells directly above the call — that is, the region holding `sizinti()`'s **own
+those positions are the stack cells directly above the call — that is, the region holding `main()`'s **own
 local variables**:
 
-```text title="Declaration order in sizinti.c (stack frame, conceptual)"
-volatile unsigned gizli_deger = 0x5ECE7u;   /* the function's local variable #1 */
-char tampon[64];                            /* the function's local variable #2, holds the user's input */
+```text title="Declaration order in leak.c (stack frame, conceptual)"
+volatile unsigned secret_value = 0x5ECE7u;   /* the function's local variable #1 */
+char buffer[64];                            /* the function's local variable #2, holds the user's input */
 ```
 
 These two variables sit **next to each other** in the **same stack frame** (the exact order and any gap between
 them can vary with the compiler and flags; what matters is that both are in the same frame, close together). When
-`printf(tampon)` is called, the format string itself is already inside `tampon` — meaning the **place being read**
+`printf(buffer)` is called, the format string itself is already inside `buffer` — meaning the **place being read**
 and the **format string doing the reading** are in the same memory region. If enough `%x` markers are supplied,
-the scan sooner or later reaches the 4-byte cell where `gizli_deger` sits:
+the scan sooner or later reaches the 4-byte cell where `secret_value` sits:
 
 ```text title="The steps of the '%x' scan (simplified, conceptual argument order)"
 1. %x  → the value at argument position #1  (e.g. a random byte left over from an earlier call)
 2. %x  → the value at argument position #2  (random)
 3. %x  → the value at argument position #3  (random)
    ...
-N. %x  → argument position #N lands exactly on the cell holding gizli_deger
+N. %x  → argument position #N lands exactly on the cell holding secret_value
          → printf reads these 4 bytes as an unsigned int and prints it in hex
          → WHAT APPEARS ON SCREEN: "5ece7"
 ```
 
-The demo program verifies this independently: the code first prints `gizli_deger` to the screen **deliberately**,
-via `printf("...0x%05x...", gizli_deger)` (as a control); then, when `sizinti '%x.%x.%x...'` is run, the **same
+The demo program verifies this independently: the code first prints `secret_value` to the screen **deliberately**,
+via `printf("...0x%05x...", secret_value)` (as a control); then, when `leak '%x.%x.%x...'` is run, the **same
 `5ece7` value** is seen reappearing in the output of the `%x` scan. The two outputs matching is proof that the
-leaked value really is `gizli_deger` — not a random number, but a value read from the program's **own** memory.
+leaked value really is `secret_value` — not a random number, but a value read from the program's **own** memory.
 
 **2) The 64-bit difference — why the first few `%x` markers behave differently**
 
@@ -719,10 +741,10 @@ The "everything's on the stack" model above is exactly correct for the x86 **32-
 and it is the classic teaching model for format string attacks. On today's 64-bit Linux/Windows builds, however,
 the x86-64 System V ABI carries the first **6** integer/pointer arguments in **processor registers** (`RSI`,
 `RDX`, `RCX`, `R8`, `R9` — `RDI` is reserved for the format string itself) instead of the stack; only arguments
-beyond the sixth go on the stack. The result: in a `printf(tampon)` call, the first few `%x` markers do not read a
+beyond the sixth go on the stack. The result: in a `printf(buffer)` call, the first few `%x` markers do not read a
 stack cell at all — they read whatever values happen **by chance** to be sitting in those registers at that
 moment (left over from earlier calls, e.g., `snprintf`, or `printf`'s own setup); only the `%x` markers **after**
-the 6th one reach the stack, and therefore the region where `gizli_deger` also lives. This is exactly why the demo
+the 6th one reach the stack, and therefore the region where `secret_value` also lives. This is exactly why the demo
 script gradually increases the number of `%x` markers (step 2): how many `%x` markers are needed varies with the
 compiler, the optimisation level, and the platform; the **mechanism** is what the student needs to see, not a
 specific fixed number.
@@ -744,14 +766,14 @@ defence (fixing the format string).
 
 !!! danger "Common mistake: assuming 'the input has no `%` in it, so it's fine'"
     Looking at a code review and thinking "this input is just a username, no one's going to type `%n`," and
-    approving the `printf(girdi)` call anyway, is the most common thing to miss. Validation must look at **the
+    approving the `printf(input)` call anyway, is the most common thing to miss. Validation must look at **the
     shape of the call, not the content of the input**: a variable string must never be placed in the format
     parameter position — what the input contains is irrelevant.
 
 !!! success "Rule"
     The rule is one sentence, with no exceptions: **the format string must always be a fixed text literal; user
-    data may only appear as the argument of a marker such as `%s`.** `printf("%s", girdi)` — never
-    `printf(girdi)`.
+    data may only appear as the argument of a marker such as `%s`.** `printf("%s", input)` — never
+    `printf(input)`.
 
 This mechanism is a concrete example of the "violation of memory read/write bounds" family of bugs we saw in
 [Week 1](../week-1/cen429-week-1.md): `%x` performs an **out-of-bounds read**, `%n` performs an **out-of-bounds write** — the difference is that
@@ -762,7 +784,7 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 ### Demo 1 — Format string vulnerability
 
 !!! info "Demo 1 · `code/week-04/01-format-string` · CWE-134 · Recipe 3.2"
-    The `sizinti` program prints the text it is given with `printf(metin)`; a synthetic "secret value" sits in the
+    The `leak` program prints the text it is given with `printf(buffer)`; a synthetic "secret value" sits in the
     program's memory. First we check whether the compiler warns about this line, then we show the secret value
     leaking via `%x` markers and how `%n` is stopped on different platforms. In the last step, the fixed version
     prints the same input only as text.
@@ -784,11 +806,23 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 | Step | What is done? | What is seen? | Lesson |
 | --- | --- | --- | --- |
 | 0 | Build | GCC/Clang `-Wformat-security` warns; MSVC's C compiler stays silent, `/analyze` catches it | Turn on warnings and count them as **errors** |
-| 1 | `sizinti Merhaba` | Normal output | — |
-| 2 | `sizinti '%x.%x.%x…'` | The stack is dumped in hex; the secret value appears in the output | Information leak |
-| 3 | `sizinti 'AAAA%n'` | On Linux the unprotected version crashes; on Windows the C runtime rejects `%n` | Platform difference |
-| 4 | `sizinti_denetimli 'AAAA%n'` | `_FORTIFY_SOURCE` catches `%n` targeting writable memory and stops the program | Protection layer |
-| 5 | `sizinti_guvenli '…%n…'` | Markers are printed only as text | **The actual fix** |
+| 1 | `leak Hello` | Normal output | — |
+| 2 | `leak '%x.%x.%x…'` | The stack is dumped in hex; the secret value appears in the output | Information leak |
+| 3 | `leak 'AAAA%n'` | On Linux the unprotected version crashes; on Windows the C runtime rejects `%n` | Platform difference |
+| 4 | `leak_checked 'AAAA%n'` | `_FORTIFY_SOURCE` catches `%n` targeting writable memory and stops the program | Protection layer |
+| 5 | `leak_secure '…%n…'` | Markers are printed only as text | **The actual fix** |
+
+Watch the animation below to follow, step by step, how `%x` scans the argument slots on the stack in order,
+where it reaches the secret value, and what `%n` would do next (conceptually).
+
+<iframe class="dsanim" src="../anim/format-string.html" title="Format string vulnerability: %x scans the stack" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Format string vulnerability — step by step](anim/format-string.png)
+</div>
+
+Try the presets **found** (normal), **leak on the very last marker** (hard), and the edge cases **not enough
+markers**, **what %n would do**, and **the secure version** — or roll 🎲 for a random marker-count/target-position
+pair, or type your own values.
 
 ### The fix and its layers of defence
 
@@ -803,15 +837,15 @@ injection the data becomes part of a query, here the data is interpreted as a fo
 
 ```c title="Have the compiler check your own logging function"
 #if defined(__GNUC__)
-#  define BICIM_DENETLE(a, b) __attribute__((format(printf, a, b)))
+#  define FORMAT_CHECK(a, b) __attribute__((format(printf, a, b)))
 #else
-#  define BICIM_DENETLE(a, b)
+#  define FORMAT_CHECK(a, b)
 #endif
 
-void gunluk_yaz(int duzey, const char *bicim, ...) BICIM_DENETLE(2, 3);
+void log_write(int level, const char *format, ...) FORMAT_CHECK(2, 3);
 
-gunluk_yaz(1, kullanici);          /* the compiler now warns here */
-gunluk_yaz(1, "%s", kullanici);    /* correct */
+log_write(1, user);                /* the compiler now warns here */
+log_write(1, "%s", user);          /* correct */
 ```
 
 !!! question "How does an evaluator test this?"
@@ -823,9 +857,24 @@ gunluk_yaz(1, "%s", kullanici);    /* correct */
 
 ## 6. Use-after-free and double free
 
+Picture a hotel room: you checked out, but you didn't return the key card — you just kept it in your pocket. The
+hotel cleaned the room and gave it to another guest. Your key card still **opens** the door — but what's behind
+it is no longer your belongings, it's the **new guest's**. Programming has the same problem: a pointer (the key
+card) can still be held even after the memory (the room) is "returned" via `free()` (a **dangling pointer**);
+once the memory manager hands that empty room to the next requester, the old key still works, but it now points
+at someone else's data.
+
 [Week 1, §17](../week-1/cen429-week-1.md#17-memory-management-and-security) gave us, at a basic level, the theory
 of memory management bugs, the ownership rule, and why use-after-free is dangerous. In this section we trace the
 same bug byte by byte in a running program and see how C++ eliminates most of these bugs **by design**.
+
+!!! note "Why is this still a live topic?"
+    Use-after-free is a different family of memory bug from the classic stack overflow of the 1988 Morris Worm
+    we saw in [§1](#1-what-is-code-hardening), but it comes from the same root (manual memory management). It has
+    remained one of the most common bug classes in the security-update notes of major browser engines (Chrome,
+    Firefox, Safari) for years; that's why projects like Chrome now enforce policies pushing toward C++ tools
+    like `unique_ptr`/`shared_ptr` and toward memory-safe languages (Rust) — exactly why the "encoding ownership
+    in the type" idea below matters.
 
 ![The use-after-free chain](assets/h04-08-uaf.svg)
 
@@ -844,65 +893,75 @@ operating system updates fall into this class.
 
 ### Worked example: reallocating the same block, step by step
 
-Let's trace Demo 2's `struct oturum` byte by byte:
+Let's trace Demo 2's `struct session` byte by byte:
 
 ```c
-struct oturum {
-    void (*eylem)(void);   /* a function pointer on a 64-bit system: 8 bytes */
-    char  rol[16];         /* 16 bytes */
+struct session {
+    void (*action)(void);   /* a function pointer on a 64-bit system: 8 bytes */
+    char  role[16];          /* 16 bytes */
 };
 ```
 
-**Size calculation:** on a 64-bit system a pointer is 8 bytes. `8 (eylem) + 16 (rol) = 24 bayt`; since 24 is
+**Size calculation:** on a 64-bit system a pointer is 8 bytes. `8 (action) + 16 (role) = 24 bytes`; since 24 is
 already a multiple of 8, the compiler does not need to add any padding bytes —
-`sizeof(struct oturum) == 24`. The memory layout, in terms of offset:
+`sizeof(struct session) == 24`. The memory layout, in terms of offset:
 
 | Offset (bytes) | Field | Size |
 | --- | --- | --- |
-| 0–7 | `eylem` (function pointer) | 8 bytes |
-| 8–23 | `rol` (string) | 16 bytes |
+| 0–7 | `action` (function pointer) | 8 bytes |
+| 8–23 | `role` (string) | 16 bytes |
 
-Now let's trace the `kip_uaf()` function step by step:
+Now let's trace the real `uaf.c`'s `mode_uaf()` function step by step (the line numbers are the file's real
+lines):
 
-```text title="Step by step: reusing the same 24-byte block"
-1) o = malloc(24)
+```text title="Step by step: reusing the same 24-byte block (uaf.c)"
+1) s = malloc(sizeof *s)              -- uaf.c:32
    The memory manager finds a free 24-byte block and hands it back, say, at address A.
-   o → A
+   s → A
 
-2) o->eylem = normal_panel     → A+0..7  = the address of normal_panel
-   strcpy(o->rol, "user")      → A+8..12 = 'u','s','e','r','\0'  (A+13..23 old/random bytes)
+2) s->action = normal_panel           -- uaf.c:34  → A+0..7  = the address of normal_panel
+   strcpy(s->role, "user")            -- uaf.c:35  → A+8..12 = 'u','s','e','r','\0'  (A+13..23 old/random bytes)
 
-3) free(o)
+3) free(s)                            -- uaf.c:38
    The memory manager marks the block at address A as "free." Many memory managers (e.g.
    glibc's tcache) write a "next free block" pointer INSIDE THE FREE BLOCK ITSELF so they can
    hand it straight back to the NEXT request of the same size — the freed memory changes
-   SILENTLY. The `o` variable still points to A (the compiler never resets it) → DANGLING POINTER.
+   SILENTLY. The `s` variable still points to A (the compiler never resets it) → DANGLING POINTER.
 
-4) sahte = malloc(24)
+4) fake = malloc(sizeof *s)           -- uaf.c:43
    24 bytes are requested from the memory manager again. Because the block just freed at A is an EXACT SIZE
    MATCH, most allocators (LIFO / "last in, first out" free-list order) hand back that SAME ADDRESS A.
-   sahte → A     (o still → A: BOTH NOW POINT AT THE SAME BLOCK)
+   fake → A     (s still → A: BOTH NOW POINT AT THE SAME BLOCK)
 
-5) sahte->eylem = yonetici_panel   → A+0..7  = the address of yonetici_panel  (OVERWRITES the old value)
-   strcpy(sahte->rol, "admin")     → A+8..13 = 'a','d','m','i','n','\0'
+5) fake->action = admin_panel         -- uaf.c:44  → A+0..7  = the address of admin_panel  (OVERWRITES the old value)
+   strcpy(fake->role, "admin")        -- uaf.c:45  → A+8..13 = 'a','d','m','i','n','\0'
 
-6) printf("%s", o->rol)
-   o still points to A; the byte sequence read at A+8 is now "admin" (written by sahte in step 5).
-   o's own data looks unchanged, but the physical memory HAS CHANGED → "admin" is read, not "user".
+6) printf(..., s->role)               -- uaf.c:49
+   s still points to A; the byte sequence read at A+8 is now "admin" (written by fake in step 5).
+   s's own data looks unchanged, but the physical memory HAS CHANGED → on runs where the allocator DID
+   hand back address A, "admin" is read instead of "user" (see the warning below — this is not guaranteed).
 
-7) o->eylem()
-   The pointer read from A+0..7 is now the address of yonetici_panel (overwritten in step 5).
-   The program calls yonetici_panel(), NOT normal_panel().
+7) s->action()                        -- uaf.c:51
+   The pointer read from A+0..7 is now the address of admin_panel (overwritten in step 5) — again, only
+   if the allocator handed back A. The program may call admin_panel() instead of normal_panel().
 ```
 
-Result: the `o` pointer was never modified even once (it still holds the same `A` address); but because the
-memory **it points to** was reused by another object, everything read through `o` is now that new object's data.
-This is a concrete violation of the ownership theory (Week 1): `o` and `sahte` have behaved as **two different
+Result: the `s` pointer was never modified even once (it still holds the same `A` address); but because the
+memory **it points to** was reused by another object, everything read through `s` is now that new object's data.
+This is a concrete violation of the ownership theory (Week 1): `s` and `fake` have behaved as **two different
 owners** of the same block, whereas a block should belong to **exactly one owner at any given time** (MEM30-C).
 
+!!! warning "Why step 6-7's outcome can change from run to run"
+    Steps 6 and 7 above assume the allocator's `malloc` after `free(s)` **really does** hand back the same address
+    A — common with LIFO free-list allocators (like glibc's tcache), but not something the C standard
+    **guarantees**. Depending on the compiler/library version, `fake` might land at a different address; in that
+    case `s->role` still reads "user" and `s->action()` still calls `normal_panel`. Either way, the read is still
+    **access to freed memory through a dangling pointer** (undefined behavior) — the outcome "looking harmless"
+    does not make it safe. ASan catches this every time, regardless of outcome (see the report below).
+
 !!! danger "Common mistake: not resetting `p` after `free(p)`"
-    The `free(o)` call only tells the memory manager "you can reclaim this block"; it does not modify the `o`
-    variable **itself** — `o` still holds the old address. Code that accidentally writes `o->...` on the next line
+    The `free(s)` call only tells the memory manager "you can reclaim this block"; it does not modify the `s`
+    variable **itself** — `s` still holds the old address. Code that accidentally writes `s->...` on the next line
     no longer knows **whose** memory it is touching.
 
 !!! success "Rule"
@@ -912,7 +971,7 @@ owners** of the same block, whereas a block should belong to **exactly one owner
 
 ### Demo 2 — Use-after-free and double free
 
-!!! info "Demo 2 · `code/week-04/02-kullanim-sonrasi` · CWE-416, CWE-415 · CERT MEM30-C, MEM31-C"
+!!! info "Demo 2 · `code/week-04/02-use-after-free` · CWE-416, CWE-415 · CERT MEM30-C, MEM31-C"
     In the program, a "session" object held on the heap (a user role and a function pointer) is freed but the
     pointer is not reset. A new block, allocated afterward at the same size, then takes the old session's place,
     and the dangling pointer reads this new data: the role changes, and the function pointer calls the program's
@@ -922,44 +981,57 @@ owners** of the same block, whereas a block should belong to **exactly one owner
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-04\02-kullanim-sonrasi
+    cd code\week-04\02-use-after-free
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-04/02-kullanim-sonrasi
+    cd code/week-04/02-use-after-free
     sh demo.sh
     ```
 
 | Step | Target | What is seen? | Lesson |
 | --- | --- | --- | --- |
-| 1 | `uaf uaf` (unprotected) | The freed block fills with a new object; the role flips from `user` to `admin` | UAF = privilege escalation |
-| 2 | `uaf_asan uaf` | ASan reports `heap-use-after-free`; it shows **where** the block was allocated, freed, and used | The sanitizer gives you the bug's origin |
-| 3 | `uaf cift` (unprotected) | Double free; the memory manager either notices the corruption and halts, or undefined behaviour follows | The allocator's internal structures are corrupted |
-| 4 | `uaf_asan cift` | ASan reports `attempting double-free` | — |
-| 5 | `uaf_guvenli` | `free` + `NULL`, single owner, single free point | Both bugs are gone |
+| 1 | `uaf uaf` (unprotected) | `1) Session opened: role=user` then `2) Session freed`; step 3-4's outcome depends on the allocator (see the warning above) | UAF = undefined behavior, sometimes privilege escalation |
+| 2 | `uaf_asan uaf` | ASan reports `heap-use-after-free` (or `access-violation` on Windows); it shows **where** the block was allocated, freed, and used | The sanitizer catches the bug regardless of outcome |
+| 3 | `uaf double` (unprotected) | Double free; the memory manager either notices the corruption and halts, or undefined behaviour follows | The allocator's internal structures are corrupted |
+| 4 | `uaf_asan double` | ASan reports `attempting double-free` | — |
+| 5 | `uaf_secure` | `free` + `NULL`, single owner, single free point | Both bugs are gone |
+
+Watch the animation below to follow, step by step, how a small heap works, how a block goes onto the free list
+after `free`, and how the next `malloc` hands it back (or how the free list gets corrupted on a double-free).
+
+<iframe class="dsanim" src="../anim/use-after-free.html" title="Use-after-free and double-free" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Use-after-free and double-free — step by step](anim/use-after-free.png)
+</div>
+
+Try the presets **normal UAF** (3 noise pairs), **hard** (5 noise pairs), the edge cases **the bare mechanism**
+(no noise) and **double-free** — or roll 🎲 for a random operation sequence.
 
 ### Reading an ASan report: three stack traces
 
-In a UAF report, ASan gives **three** locations; all three are needed to fix the bug:
+In a UAF report, ASan gives **three** locations; all three are needed to fix the bug. The real `uaf.c` does the
+allocation, the free, and the use **all inside the same `mode_uaf()` function**, so all three traces name that
+one function, at different lines:
 
 ```text
 ERROR: AddressSanitizer: heap-use-after-free on address 0x6020000000f0
 READ of size 8 ...
-    #0 in oturum_kullan  uaf.c:48        <- 1. USE: where the bug was observed
+    #0 in mode_uaf  uaf.c:49        <- 1. USE: where the bug was observed (reading s->role)
 freed by thread T0 here:
     #0 in free
-    #1 in oturum_kapat   uaf.c:31        <- 2. FREE: ownership ended here
+    #1 in mode_uaf  uaf.c:38        <- 2. FREE: ownership ended here (free(s))
 previously allocated by thread T0 here:
     #0 in malloc
-    #1 in oturum_ac      uaf.c:22        <- 3. ALLOCATION: where the object was born
+    #1 in mode_uaf  uaf.c:32        <- 3. ALLOCATION: where the object was born (s = malloc(...))
 ```
 
 The fix is most often at **location 2**: the code that frees the object made an ownership decision that the other
-pointers were never told about. (The function names and line numbers here are illustrative; the demo's real report
-has the same structure.)
+pointers were never told about. (The address `0x6020000000f0` is from one example run; the real address changes
+every run under ASLR, but the line numbers are fixed by `uaf.c` itself.)
 
 ### C++: encoding ownership in the type
 
@@ -975,15 +1047,15 @@ In C, ownership is a **contract**; in C++ it can be made **part of the type**:
 ```cpp title="weak_ptr instead of a dangling pointer"
 #include <memory>
 
-struct Oturum { std::string rol; };
+struct Session { std::string role; };
 
-std::shared_ptr<Oturum> aktif = std::make_shared<Oturum>(Oturum{"user"});
-std::weak_ptr<Oturum>   onbellek = aktif;      // NOT an owner, only an observer
+std::shared_ptr<Session> active = std::make_shared<Session>(Session{"user"});
+std::weak_ptr<Session>   cached = active;      // NOT an owner, only an observer
 
-aktif.reset();                                 // the session ended, the object was destroyed
+active.reset();                                // the session ended, the object was destroyed
 
-if (auto o = onbellek.lock()) {                // is the object still alive?
-    kullan(*o);
+if (auto s = cached.lock()) {                  // is the object still alive?
+    use(*s);
 } else {
     /* the object is gone: a dangling pointer never reaches OLD memory */
 }
@@ -998,8 +1070,22 @@ if (auto o = onbellek.lock()) {                // is the object still alive?
 
 ## 7. Integers and undefined behaviour (Recipe 3.5)
 
+A simple question: if you have `INT_MAX` (2,147,483,647, the largest value an `int` can hold) and add `1` to it,
+what happens? Intuition says "maybe it stays stuck at the maximum" or "maybe it raises an error." What actually
+happens according to the C standard is: **anything can happen** — the compiler ASSUMES this situation never
+occurs and generates code accordingly. This section's topic is C's most surprising, least understood concept:
+**undefined behaviour** (UB).
+
 In [Week 1](../week-1/cen429-week-1.md#16-integers-and-the-signed-length-bug) we saw a signed length turn into a huge number when converted to `size_t`. In this section we cover the
-whole family of integer bugs and one of C's most surprising concepts: **undefined behaviour**.
+whole family of integer bugs in depth.
+
+!!! note "Intuition: why is 'undefined' so dangerous?"
+    An ordinary bug (e.g. division by zero) usually gives a **predictable** result (a crash, an infinite value).
+    Undefined behaviour is different: the standard gives **no guarantee at all**, so the compiler is free to
+    assume that code path never runs and **reorganize** the surrounding code accordingly — an overflow that
+    looks "harmless" with today's compiler can behave completely differently with tomorrow's compiler version
+    (or even just a different optimization level). SEI CERT C's `INT` rule family and UBSan (§10) exist
+    precisely to eliminate this unpredictability.
 
 ![The signed value -1 turning into SIZE_MAX](assets/h04-09-tamsayi.svg)
 
@@ -1016,11 +1102,11 @@ Integer bugs often look harmless on their own; their danger shows up when they g
 calculation**:
 
 ```c title="Wrong: the multiplication wraps, a small block is allocated"
-uint32_t adet = girdi_oku();                 /* attacker: 0x40000001 */
-uint32_t boyut = adet * sizeof(uint32_t);    /* 0x40000001 * 4 = 4 (wrapped!) */
-uint32_t *dizi = malloc(boyut);              /* a 4-byte block */
-for (uint32_t i = 0; i < adet; i++)
-    dizi[i] = oku();                          /* heap overflow */
+uint32_t count = read_input();                 /* attacker: 0x40000001 */
+uint32_t size = count * sizeof(uint32_t);    /* 0x40000001 * 4 = 4 (wrapped!) */
+uint32_t *array = malloc(size);              /* a 4-byte block */
+for (uint32_t i = 0; i < count; i++)
+    array[i] = read_value();                          /* heap overflow */
 ```
 
 **Numerical check:** `0x40000001` in hexadecimal is **1,073,741,825** in decimal. `sizeof(uint32_t)` is always 4
@@ -1031,13 +1117,13 @@ Real product (as if there were no 32-bit limit) : 1,073,741,825 * 4 = 4,294,967,
 Largest value a uint32_t can hold               : 2^32 - 1 = 4,294,967,295
 Does 4,294,967,300 fit?                          : NO (overflows by 5 bytes: 4,294,967,300 - 4,294,967,295 = 5)
 Wrapping to 32 bits (mod 2^32)                   : 4,294,967,300 mod 4,294,967,296 = 4
-→ value STORED in the boyut variable             : 4  (bytes!)
+→ value STORED in the size variable             : 4  (bytes!)
 ```
 
 The `malloc(4)` call allocates only a **4-byte** block (one `uint32_t`). But the loop runs
-`dizi[i] = oku();` `adet` (1,073,741,825) times — each writing 4 bytes, attempting to write a total of
+`array[i] = read_value();` `count` (1,073,741,825) times — each writing 4 bytes, attempting to write a total of
 `1,073,741,825 * 4 = 4,294,967,300` bytes (≈ 4 GB), even though the allocated block is only 4 bytes. Starting
-with the very first assignment (`dizi[1]`), a **heap overflow** begins, corrupting neighbouring memory structures
+with the very first assignment (`array[1]`), a **heap overflow** begins, corrupting neighbouring memory structures
 (the allocator's own bookkeeping data, other objects).
 
 ### Worked example: `(int)-1` converted to a `size_t`
@@ -1046,11 +1132,11 @@ This is the most common and most dangerous form of INT31-C: a function returns a
 caller unknowingly stores it in an **unsigned** variable.
 
 ```c title="A classic mistake: -1 silently converted to a size_t"
-int uzunluk_hesapla(const char *s) { /* returns -1 on error */ return calisti_mi(s) ? (int)strlen(s) : -1; }
+int compute_length(const char *s) { /* returns -1 on error */ return is_valid(s) ? (int)strlen(s) : -1; }
 
-int n = uzunluk_hesapla(girdi);
-size_t boyut = n;                 /* if n == -1: CONVERTED, UNCHECKED */
-memcpy(hedef, kaynak, boyut);     /* boyut is now a gigantic number */
+int n = compute_length(input);
+size_t size = n;                 /* if n == -1: CONVERTED, UNCHECKED */
+memcpy(dest, src, size);     /* size is now a gigantic number */
 ```
 
 The conversion happens in two conceptual steps (the C standard's rule for converting signed to unsigned):
@@ -1067,11 +1153,11 @@ Step 3 — 2^64 - 1 numerically:
     2^64        = 18,446,744,073,709,551,616
     2^64 - 1    = 18,446,744,073,709,551,615   = SIZE_MAX (on a 64-bit system)
 
-Result: boyut = 18,446,744,073,709,551,615   (approximately 18.4 QUADRILLION gigabytes)
+Result: size = 18,446,744,073,709,551,615   (approximately 18.4 QUADRILLION gigabytes)
 ```
 
-If `memcpy(hedef, kaynak, boyut)` is called with this value, the processor tries to read this many bytes starting
-at the `kaynak` address; since real physical/virtual memory is nowhere near that large, the read almost
+If `memcpy(dest, src, size)` is called with this value, the processor tries to read this many bytes starting
+at the `src` address; since real physical/virtual memory is nowhere near that large, the read almost
 immediately hits an unmapped page and the program crashes with a **segmentation fault** — often misdiagnosed as
 "crashed somewhere random," when the cause is actually completely **determinable**. On a **32-bit** system
 (`size_t` 4 bytes) the same calculation gives `2^32 − 1 = 4,294,967,295` (≈4.3 billion); smaller, but still a
@@ -1085,7 +1171,7 @@ number that is many times larger than any real buffer's size.
 
 !!! success "Rule"
     An error code must always be checked in **its own signed type**, **before it is assigned to an unsigned
-    variable**: `int n = uzunluk_hesapla(s); if (n < 0) { /* hata */ } size_t boyut = (size_t)n;` — the conversion
+    variable**: `int n = compute_length(s); if (n < 0) { /* error */ } size_t size = (size_t)n;` — the conversion
     happens only **after** `n` has been **proven** non-negative.
 
 ### Boundary values at a glance
@@ -1117,7 +1203,7 @@ access, and the like. This does not mean "the program crashes" — it means **th
 situation never happens**, and optimizes the code accordingly.
 
 ```c title="The compiler can delete the check"
-int ekle_ve_denetle(int x)
+int add_and_check(int x)
 {
     if (x + 100 < x)          /* intended as "if it overflows, the result gets smaller" */
         return -1;            /* but signed overflow is UB: the compiler MAY DELETE this branch */
@@ -1160,28 +1246,28 @@ overflow **never occurred** and delete a check that relies on it.
 #include <stdbool.h>
 
 /* 1) Compare against the bound before the operation (portable) */
-bool guvenli_topla(int a, int b, int *sonuc)
+bool safe_add(int a, int b, int *result)
 {
     if ((b > 0 && a > INT_MAX - b) || (b < 0 && a < INT_MIN - b))
         return false;
-    *sonuc = a + b;
+    *result = a + b;
     return true;
 }
 
 /* 2) GCC/Clang builtins: return true if it overflows */
-bool guvenli_carp(size_t a, size_t b, size_t *sonuc)
+bool safe_multiply(size_t a, size_t b, size_t *result)
 {
-    return !__builtin_mul_overflow(a, b, sonuc);
+    return !__builtin_mul_overflow(a, b, result);
 }
 ```
 
 The C23 standard made the same job portable with `ckd_add`, `ckd_sub`, `ckd_mul` (`<stdckdint.h>`). On MSVC,
-functions like `SizeTMult` and `ULongAdd` in `<intsafe.h>` can be used. When allocating memory, `calloc(adet,
-boyut)` or `reallocarray` check the multiplication for overflow on your behalf (Week 1).
+functions like `SizeTMult` and `ULongAdd` in `<intsafe.h>` can be used. When allocating memory, `calloc(count,
+size)` or `reallocarray` check the multiplication for overflow on your behalf (Week 1).
 
 ### Demo 3 — Undefined behaviour and UBSan
 
-!!! info "Demo 3 · `code/week-04/03-tanimsiz-davranis` · CWE-190, CWE-758 · CERT INT32-C, INT34-C"
+!!! info "Demo 3 · `code/week-04/03-undefined-behavior` · CWE-190, CWE-758 · CERT INT32-C, INT34-C"
     The program tries three undefined behaviours in turn: signed overflow (`INT_MAX + 1`), an invalid bit shift,
     and a misaligned memory access. On an x86 processor most of these "work" silently and produce a wrong result.
     The version compiled with **UndefinedBehaviorSanitizer** (UBSan, `-fsanitize=undefined`) reports each one at
@@ -1191,20 +1277,31 @@ boyut)` or `reallocarray` check the multiplication for overflow on your behalf (
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-04\03-tanimsiz-davranis
+    cd code\week-04\03-undefined-behavior
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-04/03-tanimsiz-davranis
+    cd code/week-04/03-undefined-behavior
     sh demo.sh
     ```
 
 A UBSan report has the following shape: `ub.c:27:15: runtime error: signed integer overflow: 2147483647 + 1 cannot
 be represented in type 'int'`. The **type**, **location**, and **values** of the error are all given on a single
 line. UBSan's overhead is lower than ASan's; many projects turn both on together in test builds.
+
+Watch the animation below to follow, step by step, how the unchecked addition silently wraps for many `add`
+values while `x = INT_MAX` stays fixed, and how `checked_add` catches the exact same overflow BEFORE adding.
+
+<iframe class="dsanim" src="../anim/integer-overflow.html" title="Signed integer overflow: INT_MAX + add" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Signed integer overflow — step by step](anim/integer-overflow.png)
+</div>
+
+Try the presets **mixed sign** (normal), **extreme values** (hard), the edge cases **includes zero** and **the
+secure version rejects the same mix** — or roll 🎲 for a random list of `add` values.
 
 !!! tip "Compiler options for integer bugs"
     - `-Wconversion -Wsign-conversion` (GCC/Clang), `/W4` and `/w44365` (MSVC, in C++ mode): surface hidden
@@ -1263,8 +1360,8 @@ arguments; they learn it by trusting the caller's word (the format string). If t
 arguments don't match, the result is undefined:
 
 ```c
-long long buyuk = 5000000000LL;
-printf("%d\n", buyuk);          /* type mismatch: should be %lld */
+long long big = 5000000000LL;
+printf("%d\n", big);            /* type mismatch: should be %lld */
 printf("%s\n");                 /* no argument: a random value is read from the stack */
 ```
 
@@ -1284,25 +1381,25 @@ data structures get corrupted. This is also the root cause of a real SSH server 
 ```c title="Correct pattern: the handler only sets a flag"
 #include <signal.h>
 
-static volatile sig_atomic_t durdur = 0;
+static volatile sig_atomic_t stop = 0;
 
-static void isleyici(int sig)
+static void handler(int sig)
 {
     (void)sig;
-    durdur = 1;                 /* only this: async-signal-safe */
+    stop = 1;                   /* only this: async-signal-safe */
 }
 
 int main(void)
 {
     struct sigaction sa = {0};
-    sa.sa_handler = isleyici;
+    sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGTERM, &sa, NULL);
 
-    while (!durdur) {
+    while (!stop) {
         /* the real work; cleanup and logging happen outside the loop, in normal flow */
     }
-    temizle_ve_cik();
+    cleanup_and_exit();
 }
 ```
 
@@ -1338,9 +1435,9 @@ false alarms; dynamic analysis only sees the paths that actually run, but whatev
 | Commercial | Coverity, Klocwork, Polyspace | Deep analysis and reporting on large codebases | High |
 
 ```bash title="Scanning a C file with several tools"
-gcc -fanalyzer -Wall -Wextra -c ayristir.c
-clang-tidy ayristir.c -checks='-*,cert-*,bugprone-*,clang-analyzer-security*' -- -I.
-cppcheck --enable=warning,portability --addon=cert ayristir.c
+gcc -fanalyzer -Wall -Wextra -c parser.c
+clang-tidy parser.c -checks='-*,cert-*,bugprone-*,clang-analyzer-security*' -- -I.
+cppcheck --enable=warning,portability --addon=cert parser.c
 ```
 
 ### Data-flow analysis: source → sink
@@ -1375,6 +1472,13 @@ In Week 1 we briefly saw AddressSanitizer for the first time, catching an overfl
 ([Week 1, §14](../week-1/cen429-week-1.md#14-buffer-overflows-how-they-happen-how-to-prevent-them)). This week we
 go deep into the whole sanitizer family, ASan's internal mechanism (shadow memory), and how to read a report line
 by line.
+
+!!! note "Brief history: sanitizers"
+    **AddressSanitizer (ASan)** was developed by Google engineers and published in **2012**, both in an academic
+    paper (USENIX ATC) and as an addition to the LLVM/GCC compilers. Before it, tools for catching memory errors
+    at runtime (e.g. Valgrind) were far slower (10–50×); ASan's compiler-embedded design, running at only about
+    2× slowdown, made it practical to run a sanitizer on **every test build by default**. UBSan, MSan, and TSan
+    are sibling tools the same team produced in the following years.
 
 A **sanitizer** is a checking layer the compiler adds to a program: it checks, at runtime, whether every memory
 access, every integer operation, or every thread access is valid, and gives a detailed report at the first bug.
@@ -1440,28 +1544,30 @@ ub.c:33:15: runtime error: shift exponent 31 is too large for 32-bit type 'int'
 ub.c:43:14: runtime error: load of misaligned address 0x... for type 'int', which requires 4 byte alignment
 ```
 
-Let's read an ASan report the same way — **what each line says** (when a buffer overflow is caught in Demo 5's
-`giris_sert` target):
+Let's read an ASan report the same way — **what each line says**. Demo 5's `overflow_hardened` target uses `/GS`
+(a stack canary), not ASan, as we just saw in §12. But this exact kind of
+overflow (`overflow.c`'s `copy_in`) would be reported like this if it were built with ASan (the format is
+identical to the real ASan output you saw in Demos 1-4):
 
 ```text title="ASan buffer overflow report, line by line"
 ==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffee...
 WRITE of size 1 at 0x7ffee... thread T0
     #0 in strcpy
-    #1 in kopyala tasma.c:24          <- WHICH LINE: the write happened here
-    #2 in main tasma.c:35
+    #1 in copy_in overflow.c:23          <- WHICH LINE: the write happened here
+    #2 in main overflow.c:34
 ```
 
 - `==12345==` → the operating system's process id (PID); it helps tell reports apart when more than one process
   is running at once.
 - `ERROR: AddressSanitizer: stack-buffer-overflow` → the **class** of the error: this is a **stack** buffer
   overflow (not heap) — other classes like `heap-buffer-overflow` or `heap-use-after-free` are reported in the
-  same format.
+  same format (Demo 4's `parser.c` showed a real `heap-buffer-overflow`).
 - `WRITE of size 1` → the operation was a **write** (a read would say `READ`), and it was **1 byte** wide (`strcpy`
   copies 1 character at a time).
 - `#0`, `#1`, `#2` → the **call stack**: the error occurred inside `strcpy` (`#0`), `strcpy` was called from the
-  `kopyala` function (`#1`, `tasma.c:24`), and `kopyala` was called from `main` (`#2`, `tasma.c:35`). In a code
-  review, **the line to look at** is almost always at position `#1` — `#0` is most often library code (`strcpy`);
-  the real bug is on the caller's side.
+  `copy_in` function (`#1`, `overflow.c:23`), and `copy_in` was called from `main` (`#2`, `overflow.c:34`). In a
+  code review, **the line to look at** is almost always at position `#1` — `#0` is most often library code
+  (`strcpy`); the real bug is on the caller's side.
 
 !!! success "Rule"
     When reading a sanitizer report, first find the **error class** (the top line), then **the caller's line**
@@ -1483,6 +1589,18 @@ the textbook was written in 2003; today it is a standard security test for every
 operating system kernels. Google's OSS-Fuzz service for open source projects has found tens of thousands of bugs
 over the years.
 
+!!! note "Brief history: fuzzing"
+    - **1990** — Barton Miller and his team at the University of Wisconsin publish the first systematic study
+      that fed random (malformed) input to UNIX utilities and measured how many crashed — the academic origin
+      of both the term and the idea of "fuzz testing."
+    - **2013** — Michal Zalewski's **AFL** (American Fuzzy Lop) turns coverage-guided feedback into an
+      accessible, easy-to-use tool, moving fuzzing from "research lab" into everyday development practice; it
+      quickly finds a large number of real-world vulnerabilities.
+    - **libFuzzer** (part of the LLVM project) turns AFL's coverage-guided approach into a library that runs
+      **inside** the program's own process (no separate process launch, via the `LLVMFuzzerTestOneInput`
+      interface we see in this week's `fuzz.c`), typically used together with ASan — this week's Demo 4 uses
+      exactly this tool.
+
 ### How does coverage-guided fuzzing work?
 
 Modern fuzzers (libFuzzer, AFL++, honggfuzz) don't just generate random input; they measure **which code paths**
@@ -1502,19 +1620,19 @@ of times a second, with a different byte sequence each time:
 ```c title="fuzz.c — the libFuzzer target"
 #include <stddef.h>
 #include <stdint.h>
-#include "ayristir.h"
+#include "parser.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t *veri, size_t boyut)
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    ayristir(veri, boyut);      /* the function under test; the return value doesn't matter */
-    return 0;                   /* never return anything other than 0 */
+    parse_document((const unsigned char *)data, size);
+    return 0;
 }
 ```
 
 ```bash
-clang -g -O1 -fsanitize=fuzzer,address fuzz.c ayristir.c -o fuzz_ayristir
-mkdir -p corpus && cp tohum/*.bin corpus/
-./fuzz_ayristir corpus/ -max_total_time=10     # a session capped at 10 seconds
+clang -g -O1 -fsanitize=fuzzer,address fuzz.c parser.c -o fuzz_parser
+mkdir -p corpus && cp seeds/*.bin corpus/
+./fuzz_parser corpus/ -max_total_time=10     # a session capped at 10 seconds
 ```
 
 The properties of a good target: it is **fast** (no network, disk, or `sleep`), **deterministic** (the same input
@@ -1527,7 +1645,7 @@ always gives the same result), **leaves no state behind** (every call is indepen
     A small parser reads records in the `[type][length][data…]` format but never compares the length field to the
     incoming data. libFuzzer, by tracking code coverage, finds a crashing input in at most 10 seconds; ASan reports
     the bug at the exact location. The fixed parser is then fuzzed for the same amount of time and no bug is
-    produced. Fuzzing is always time-bounded, and output is written only under the demo folder's `fuzz-cikti/`.
+    produced. Fuzzing is always time-bounded, and output is written only under the demo folder's `fuzz-out/`.
 
 === "Windows (PowerShell)"
 
@@ -1545,11 +1663,33 @@ always gives the same result), **leaves no state behind** (every call is indepen
 
 | Step | What happens? |
 | --- | --- |
-| 1 | Normal input (`tohum/normal.bin`) parses without issue |
+| 1 | Normal input (`seeds/normal.bin`) parses without issue |
 | 2 | The buggy parser is fuzzed with libFuzzer; a crashing input is found |
 | 3 | The input found is replayed against the ASan build; a full error report |
 | 4 | The fixed parser is fuzzed for the same amount of time; no crash |
-| 5 | The fixed version safely rejects the `tohum/cokerten.bin` file |
+| 5 | The fixed version safely rejects the `seeds/crash.bin` file |
+
+First, let's see byte by byte how the parser itself **validates** its input (or fails to, in the buggy version) —
+this makes clear WHY what the fuzzer finds is dangerous:
+
+<iframe class="dsanim" src="../anim/input-validation.html" title="Input validation: an allow-list parser" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Input validation — step by step](anim/input-validation.png)
+</div>
+
+Try the presets **10 well-formed records** (normal), **mixed** (hard), the edge cases **all malformed** and **the
+secure version handles the same mix** — or roll 🎲 for a random record list.
+
+Now let's watch the fuzzer itself — the coverage-guided loop: every candidate is run, its coverage is measured,
+it is kept if it opened new coverage and discarded otherwise, and the session stops the moment a crash is found.
+
+<iframe class="dsanim" src="../anim/fuzzing-loop.html" title="Coverage-guided fuzzing loop" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Coverage-guided fuzzing loop — step by step](anim/fuzzing-loop.png)
+</div>
+
+Try the presets **normal** (crash at candidate 9), **hard** (a longer session), the edge cases **crash on the
+very first candidate** and **no crash is ever found** — or roll 🎲 for a random candidate list.
 
 If clang is not installed (`sudo apt install -y clang` on Ubuntu 20.04), CMake skips the libFuzzer targets and the
 demo shows the bug via the ASan replay build instead. On Windows, libFuzzer runs through Visual Studio's
@@ -1563,7 +1703,7 @@ demo shows the bug via the ASan replay build instead. On Windows, libFuzzer runs
 
 !!! danger "Common mistake: running the fuzzer without a sanitizer"
     A fuzzer only looks for **crashes**; on a target compiled without a sanitizer, an out-of-bounds read like
-    Section 3's `kayit_oku` often passes **without crashing** (if the byte read happens to sit on a mapped page).
+    Section 3's `read_record` often passes **without crashing** (if the byte read happens to sit on a mapped page).
     Fuzzing's value multiplies on a target compiled **together with** ASan/UBSan: the sanitizer also catches input
     that doesn't crash the program but does corrupt memory.
 
@@ -1582,6 +1722,20 @@ go through each one's internal mechanism and what it stops and doesn't stop, one
 **prevents** bugs; compiler and operating system protections **make a bug harder to exploit** once one slips
 through. The textbook mentions only the stack protector among these (StackGuard, ProPolice, MSVC `/GS`)
 (Recipe 3.3); ASLR, DEP/NX, RELRO, and control-flow integrity became widespread after the textbook was written.
+
+!!! note "Brief history: when did each protection arrive?"
+    - **1998** — Crispin Cowan's **StackGuard** was the first widely used compiler protection to place a
+      "canary" value before the return address and check it on function return; IBM's **ProPolice** (around
+      2000) and later GCC/Clang's built-in `-fstack-protector` refined the same idea.
+    - **2001** — the PaX project brought **ASLR** (address space layout randomization) to the Linux kernel, plus
+      a software emulation of NX (making data pages non-executable) even on hardware without native support.
+    - **2003–2004** — OpenBSD's **W^X** policy (a memory page is either writable or executable, never both,
+      2003) and Windows XP SP2's **DEP** (2004, using most modern CPUs' hardware NX bit) carried this
+      protection into mainstream operating systems.
+
+    All three waves follow the same pattern: a research/open-source project proves the idea first, then
+    mainstream compilers and operating systems make it the **default** — concrete milestones of the defense
+    race we saw in [§1](#1-what-is-code-hardening).
 
 ![Compiler and operating system protection layers](assets/h04-02-derleyici-os-korumalari.svg)
 
@@ -1623,15 +1777,15 @@ don't need the canary") is a mistake — each one is broken down separately belo
 
 **Stack canary — what happens at the memory level?**
 
-Take Demo 5's `tasma.c`: `char tampon[64]; strcpy(tampon, girdi);`. When the protection is **on**
-(`giris_sert`), the compiler **automatically** adds an extra region to the stack frame in the following order
+Take Demo 5's `overflow.c`: `char buffer[64]; strcpy(buffer, input);`. When the protection is **on**
+(`overflow_hardened`), the compiler **automatically** adds an extra region to the stack frame in the following order
 (addresses from high to low, in the direction the stack grows):
 
 ```text title="Layout of a protected stack frame (conceptual, high address to low)"
 [ return address         ]  ← execution returns here once the function ends (8 bytes, on 64-bit)
 [ saved frame pointer    ]  ← the caller's frame pointer (8 bytes)
 [ C A N A R Y            ]  ← written on function ENTRY, checked on function EXIT (8 bytes, on 64-bit)
-[ tampon[64]             ]  ← where strcpy writes; the OVERFLOW GROWS UPWARD FROM HERE
+[ buffer[64]             ]  ← where strcpy writes; the OVERFLOW GROWS UPWARD FROM HERE
 ```
 
 The code the compiler adds when entering the function copies a **random** value — generated once by the operating
@@ -1639,11 +1793,11 @@ system at process startup (glibc's `__stack_chk_guard`, usually from `/dev/urand
 before the function returns, a **second** piece of compiler-added code reads this cell's value again and
 **compares** it against the starting value:
 
-```text title="If strcpy(tampon, girdi) is called with an 80-character input"
-Capacity of tampon           : 64 bytes
-Length of girdi              : 80 bytes (+ terminator)
+```text title="If strcpy(buffer, input) is called with an 80-character input"
+Capacity of buffer           : 64 bytes
+Length of input              : 80 bytes (+ terminator)
 Overflow amount              : 80 - 64 = 16 bytes
-First 64 bytes               : fill tampon (as intended)
+First 64 bytes               : fill buffer (as intended)
 Next 8 bytes (65-72)         : overwrite the CANARY cell → the canary is CORRUPTED
 Remaining byte(s)            : advance toward the saved frame/return address
 
@@ -1651,7 +1805,7 @@ Check on function return: read_canary == starting_canary ?
    NO → __stack_chk_fail() is called → "*** stack smashing detected ***" → abort()
 ```
 
-When the protection is **off** (`giris_zayif`), this extra region and comparison don't exist at all; the same
+When the protection is **off** (`overflow_weak`), this extra region and comparison don't exist at all; the same
 80-byte input is written straight over the saved frame and the return address — the program either "returns" to a
 random address (usually invalid, so it crashes), or keeps running with memory silently corrupted.
 
@@ -1662,7 +1816,7 @@ random address (usually invalid, so it crashes), or keeps running with memory si
    (`-fstack-protector` does not always reorder every variable), that variable can be affected by an overflow
    while the canary is never touched and the function returns "normally."
 2. **The heap is not protected at all.** The canary exists only in **stack** frames; heap objects such as Demo 2's
-   `malloc`-based `struct oturum` have no such protection.
+   `malloc`-based `struct session` have no such protection.
 3. **If the canary itself can be leaked, the protection becomes meaningless.** This is one of the most important
    connections within this week: Section 5's format string vulnerability can read **any** 8 bytes on the stack
    with `%x` — the canary is one of those eight-byte groups. The attacker first **learns the canary's real value**
@@ -1733,8 +1887,8 @@ privilege flag, as in Week 1 Demo 3).
 
 ### Demo 5 — Turning protections on and off
 
-!!! info "Demo 5 · `code/week-04/05-derleyici-korumalari` · CWE-121 · Recipe 3.3"
-    The same overflow bug is compiled twice: with protections **off** (`giris_zayif`) and **on** (`giris_sert`).
+!!! info "Demo 5 · `code/week-04/05-compiler-protections` · CWE-121 · Recipe 3.3"
+    The same overflow bug is compiled twice: with protections **off** (`overflow_weak`) and **on** (`overflow_hardened`).
     When a long input overflows the 64-byte buffer, the canary is corrupted in the hardened version and the
     program halts safely; in the weak version the overflow silently corrupts memory or the program crashes. Then a
     script checks the protections in both binaries: `readelf` on Linux, `dumpbin` on Windows (no Developer
@@ -1743,20 +1897,32 @@ privilege flag, as in Week 1 Demo 3).
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-04\05-derleyici-korumalari
+    cd code\week-04\05-compiler-protections
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-04/05-derleyici-korumalari
+    cd code/week-04/05-compiler-protections
     sh demo.sh
     ```
 
 The message seen in the hardened version is proof that the protection **worked**: on Linux,
 `*** stack smashing detected ***: terminated`; on Windows, exit code `0xC0000409` (stack buffer overflow). The
 program has crashed; but control flow was never hijacked.
+
+Watch the animation below to follow, step by step, how `strcpy` fills `buffer[64]` with an overflowing input,
+reaches the CANARY, then the saved frame pointer and the return address — and how the hardened build's canary
+catches it.
+
+<iframe class="dsanim" src="../anim/compiler-protections.html" title="Stack canary: what happens when buffer[64] overflows?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Stack canary — step by step](anim/compiler-protections.png)
+</div>
+
+Try the presets **fits** (no overflow), **hardened build catches it** (hard), the edge cases **weak build has no
+canary**, **exactly 64 characters**, and **reaches all the way to the return address**.
 
 ### Auditing a binary's protections
 
@@ -1785,7 +1951,7 @@ program has crashed; but control flow was never hijacked.
     **GCC/Clang:** `-O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -pie -Wl,-z,relro,-z,now
     -fcf-protection -Wall -Wextra -Wformat=2 -Werror=format-security`. **MSVC:** `/O2 /GS /sdl /guard:cf
     /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT /CETCOMPAT /W4`. In the course demos, most of these flags (canary,
-    FORTIFY, PIE, full RELRO; on Windows `/GS`, `/guard:cf`, ASLR, DEP) are turned on for Demo 5's `giris_sert`
+    FORTIFY, PIE, full RELRO; on Windows `/GS`, `/guard:cf`, ASLR, DEP) are turned on for Demo 5's `overflow_hardened`
     target; you add them to your own project's `CMakeLists.txt` yourself. OpenSSF's "Compiler Options Hardening
     Guide for C and C++" keeps an up-to-date list.
 
@@ -1825,7 +1991,7 @@ integration (CI) pipeline is how this kind of regression gets caught.
 
 The course's demo infrastructure (`code/cmake/cen429.cmake`) offers a small model of this pipeline by compiling
 the same source file in different modes. Note: the modes change the source code and a few flags; most of the
-release protection flags are only turned on for Demo 5's `giris_sert` target:
+release protection flags are only turned on for Demo 5's `overflow_hardened` target:
 
 | Mode | Purpose | Flags (summary) |
 | --- | --- | --- |
@@ -1861,6 +2027,14 @@ program's behaviour harder to **understand**, without changing that behaviour.
 This week we only **introduce** obfuscation: what it gives, what it does not, and three simple measures. The full
 catalogue of obfuscation rules and how to measure them come in [Week 9](../week-9/cen429-week-9.md#3-what-does-obfuscation-give-and-what-does-it-not-give);
 applying the same rules automatically with a tool comes in [Week 14](../week-14/cen429-week-14.md#1-what-is-source-to-source-obfuscation).
+
+!!! note "Brief history: the academic origin of code obfuscation"
+    The first work to **systematically** classify code obfuscation is Christian Collberg, Clark Thomborson, and
+    Douglas Low's **1997** technical report *"A Taxonomy of Obfuscating Transformations."* It splits obfuscation
+    techniques into **layout**, **data**, **control-flow**, and **preventive** families, and proposes measuring
+    each technique by its **potency** (how much it increases complexity), **resilience** (how well it resists
+    automated tools), and **cost** (runtime/size overhead) — this is still the framework in use today (the table
+    below, and the measurement section in Week 9, both follow this classification).
 
 ![The difference between a remote attacker and the owner of the device](assets/h04-17-iki-saldirgan-modeli.svg)
 
@@ -1906,7 +2080,7 @@ obfuscation raises maintenance cost; that's why it is applied only to sensitive 
 ## 15. Symbol, string, and log hiding
 
 The first step of reverse engineering is usually the simplest one: looking at the **readable text** and **function
-names** inside the binary. A function named `lisans_dogrula` or a string like `"Lisans geçersiz"` tells the
+names** inside the binary. A function named `license_verify` or a string like `"invalid"` tells the
 attacker exactly where to look. This is why the first and cheapest layer of obfuscation is stripping this
 information out of the binary.
 
@@ -1921,13 +2095,13 @@ information out of the binary.
 | **Hide sensitive strings** | Encrypt or scramble at compile time, decrypt at the point of use, and **immediately wipe** it (Recipe 12.11) | A `strings` scan cannot find the sensitive constants |
 
 ```c title="Logging macro: generates no code at all in the release build"
-#ifdef GUNLUK_ACIK
-#  define GUNLUK(...) fprintf(stderr, __VA_ARGS__)
+#ifdef LOG_ENABLED
+#  define LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
-#  define GUNLUK(...) ((void)0)       /* neither the string nor the call end up in the binary */
+#  define LOG(...) ((void)0)       /* neither the string nor the call end up in the binary */
 #endif
 
-GUNLUK("[LOG] license check: %s\n", sonuc ? "passed" : "failed");
+LOG("[LOG] license check: %s\n", result ? "passed" : "failed");
 ```
 
 Silencing logging with a **runtime** flag (`if (hata_ayiklama) printf(...)`) is not enough: the string stays in
@@ -1943,22 +2117,22 @@ usually a deliberate decision recorded in the trade-off log (e.g., writing only 
 
 ### Demo 6 — Symbol and string leakage
 
-!!! info "Demo 6 · `code/week-04/06-sembol-dize` · CWE-200, CWE-215 · Recipe 12.11"
-    The same small license check is compiled twice: `gizli_acik` (symbols, log strings, and a synthetic license
-    key all exposed) and `gizli_kapali` (logging compiled out, the string scrambled at compile time, symbols
+!!! info "Demo 6 · `code/week-04/06-symbol-strings` · CWE-200, CWE-215 · Recipe 12.11"
+    The same small license check is compiled twice: `secret_exposed` (symbols, log strings, and a synthetic license
+    key all exposed) and `secret_hidden` (logging compiled out, the string scrambled at compile time, symbols
     stripped). Both run the same way; the difference shows up in the binary.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-04\06-sembol-dize
+    cd code\week-04\06-symbol-strings
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-04/06-sembol-dize
+    cd code/week-04/06-symbol-strings
     sh demo.sh
     ```
 
@@ -1966,8 +2140,19 @@ usually a deliberate decision recorded in the trade-off log (e.g., writing only 
 | --- | --- |
 | 1 | Both versions give the same result |
 | 2 | `strings`: the license string and `[LOG]` lines appear in the exposed version; they are absent in the hidden version |
-| 3 | `nm`: `lisans_dogrula` appears in the exposed version; the symbol is absent in the hidden version |
+| 3 | `nm`: `license_verify` appears in the exposed version; the symbol is absent in the hidden version |
 | 4 | Windows: function names live in the PDB file, not the EXE; the hidden version does not produce a PDB, and its strings are hidden |
+
+Watch the animation below to follow, step by step, how every byte of the secret string is XOR'd with the key at
+compile time, and how the symbols visible with `nm` differ between the exposed and hidden builds.
+
+<iframe class="dsanim" src="../anim/symbol-string-hiding.html" title="String and symbol hiding: XOR + strip" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![String and symbol hiding — step by step](anim/symbol-string-hiding.png)
+</div>
+
+Try the presets **exposed build** (normal), **hidden build** (hard), the edge cases **a small key** and **key
+0x00 — hides nothing** — or roll 🎲 for a random text/key pair.
 
 ---
 
@@ -1982,14 +2167,14 @@ comes in [Week 9 as rule K-04](../week-9/cen429-week-9.md#5-control-flow-rules-a
 ![Control flow before and after flattening](assets/h04-19-duzlestirme-giris.svg)
 
 ```c title="Flattening template"
-int durum = 1;
+int state = 1;
 for (;;) {
-    switch (durum) {
-    case 1: /* step 1 */  durum = 2; break;
-    case 2: /* step 2 */  durum = (kosul ? 3 : 4); break;
-    case 3: /* success path */ durum = 5; break;
-    case 4: /* failure path */ return BASARISIZ;
-    case 5: return BASARILI;
+    switch (state) {
+    case 1: /* step 1 */  state = 2; break;
+    case 2: /* step 2 */  state = (condition ? 3 : 4); break;
+    case 3: /* success path */ state = 5; break;
+    case 4: /* failure path */ return FAILURE;
+    case 5: return SUCCESS;
     }
 }
 ```
@@ -2010,35 +2195,58 @@ combined with other techniques:
 
 ### Demo 7 — Control-flow flattening
 
-!!! info "Demo 7 · `code/week-04/07-akis-duzlestirme` · Recipe 12.3"
+!!! info "Demo 7 · `code/week-04/07-flow-flattening` · Recipe 12.3"
     A small PIN check is written in two forms: the natural `if` chain (`pin.c`) and a hand-flattened form
-    (`pin_duz.c`). The two versions give the same result for the same PINs (the correct PIN is synthetic); but
+    (`pin_flattened.c`). The two versions give the same result for the same PINs (the correct PIN is synthetic); but
     their machine code and control-flow graphs differ. In the last step, the **cost** of flattening is shown
     through a timing measurement.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-04\07-akis-duzlestirme
+    cd code\week-04\07-flow-flattening
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-04/07-akis-duzlestirme
+    cd code/week-04/07-flow-flattening
     sh demo.sh
     ```
 
 | Step | What happens? |
 | --- | --- |
 | 1 | Both versions give the same result for the same PINs |
-| 2 | `objdump` / `dumpbin` is used to compare `pin_dogrula`'s machine code: the flattened version has far more branches |
+| 2 | `objdump` / `dumpbin` is used to compare `pin_verify`'s machine code: the flattened version has far more branches |
 | 3 | Timing: the flattened version is slower |
+
+Watch the animation below to follow, step by step, how the plain version takes a direct `if` chain while the
+flattened version walks the dispatcher from `state=0` again for EVERY guess, hopping from state to state.
+
+<iframe class="dsanim" src="../anim/flow-flattening.html" title="Control-flow flattening: the dispatcher state machine" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Control-flow flattening — step by step](anim/flow-flattening.png)
+</div>
+
+Try the presets **plain version** (normal), **flattened version** (hard), the edge cases **every guess correct**
+and **every guess has the wrong length** — or roll 🎲 for a random guess list.
 
 This demo is the hand-made counterpart to what we will do **automatically** in [Week 14](../week-14/cen429-week-14.md) with Tigress's
 `--Transform=Flatten` transformation. We will cover how to measure obfuscation's effectiveness (strength,
 resilience, cost) in Week 9.
+
+Flattening the control flow alone is not enough: a reverse engineer can still step through the dispatcher and work
+it out. **Opaque predicates** are a second layer that makes that even harder — watch the animation below prove,
+experimentally, that `(x*x) % 4` is never 2 for any integer (so one branch ALWAYS goes the same way).
+
+<iframe class="dsanim" src="../anim/opaque-predicate.html" title="Opaque predicate: (x*x) % 4 is never 2" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Opaque predicate — step by step](anim/opaque-predicate.png)
+</div>
+
+Try the presets **10 small positive x values** (normal), **mixed negative and large** (hard), the edge cases
+**near the INT bounds** and **wrong PIN, still independent of x** — or roll 🎲 for a random list of x values.
 
 ### Function name hiding, allocation obfuscation, and dynamic encryption: the concept
 
@@ -2102,8 +2310,8 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     now produces new warnings.
 
 ??? question "Exercise 3 — Medium: overflow checking"
-    Write a function that allocates memory for `n` items of `struct kayit`, first with
-    `malloc(n * sizeof(struct kayit))`, then with `__builtin_mul_overflow`, then with `calloc`. Compare the
+    Write a function that allocates memory for `n` items of `struct record`, first with
+    `malloc(n * sizeof(struct record))`, then with `__builtin_mul_overflow`, then with `calloc`. Compare the
     behaviour of the three versions for `n = SIZE_MAX / 2`.
 
 ??? question "Exercise 4 — Medium: hunting undefined behaviour with UBSan"
@@ -2116,7 +2324,7 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     input that found it into a regression test.
 
 ??? question "Exercise 6 — Medium: protection table"
-    Extract the protection tables for Demo 5's `giris_zayif` and `giris_sert` targets. Which flag changed which
+    Extract the protection tables for Demo 5's `overflow_weak` and `overflow_hardened` targets. Which flag changed which
     row? Add the same flags to your own project and extract the table again. How much do the binaries' size and
     runtime differ?
 
@@ -2125,7 +2333,7 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     using SIG30-C. Then fix the handler so it only sets a `volatile sig_atomic_t` flag.
 
 ??? question "Exercise 8 — Hard: the cost of flattening"
-    Apply Demo 7's `pin_dogrula` function to a function in your own project (by hand). Measure the time and binary
+    Apply Demo 7's `pin_verify` function to a function in your own project (by hand). Measure the time and binary
     size; write the result into Section S9 as a trade-off line.
 
 ---
@@ -2192,11 +2400,11 @@ Write the first draft of your security guide's **S9 "Code hardening"** section:
     the stack/register; because the attacker writes the format string themselves, they can place a byte sequence
     of their own choosing at this "address" position.
 
-??? question "15. In Demo 2, why does `sahte = malloc(24)` get the same address as `o`?"
-    The block freed by `free(o)` is exactly 24 bytes (`sizeof(struct oturum) = 8 + 16`). Memory managers (e.g.,
+??? question "15. In Demo 2, why does `fake = malloc(sizeof *s)` get the same address as `s`?"
+    The block freed by `free(s)` is exactly 24 bytes (`sizeof(struct session) = 8 + 16`). Memory managers (e.g.,
     glibc's tcache) satisfy the next request in the same size class from the block that was just freed, following
-    the LIFO ("last in, first out") free-list principle; this is why `sahte` most often gets the same address as
-    `o`.
+    the LIFO ("last in, first out") free-list principle; this is why `fake` most often gets the same address as
+    `s` (though the C standard does not guarantee it — see the warning in §6).
 
 ??? question "16. Why should `p = NULL;` be written immediately after `free(p)`?"
     `free(p)` only returns the block to the memory manager; it does not modify the `p` variable, so `p` still

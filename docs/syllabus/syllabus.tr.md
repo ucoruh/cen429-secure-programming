@@ -118,7 +118,7 @@ vize ve final haftalarının içinde** yapılır, böylece her öğrenci katıla
 | [11](../week-11/cen429-week-11.md) | 27.11.2026 | Whitebox kriptografi: beyaz kutu ve kara kutu saldırgan modelleri; whitebox AES ve DES uygulamaları (tablo tabanlı gerçekleştirim); whitebox kriptografi ile anahtar koruması; bilinen saldırılar (diferansiyel hesaplama ve hata analizi) ve karşı önlemler; yazılım tabanlı güvenlik çözümleri (ör. SoftHSM ile yazılımsal güvenlik modülü). | 2, 3 |
 | [12](../week-12/cen429-week-12.md) | 04.12.2026 | Güvenlik sertifikasyonları ve sızma testi planlaması: ETSI ve EMV güvenlik standartları; PCI DSS ve ISO/IEC 27001 kapsamındaki güvenlik testleri; güvenlik incelemesi ve zafiyet değerlendirme (kod incelemesi, statik ve dinamik analiz, fuzzing); sızma testi planı: kapsam, kurallar, yöntem (OWASP WSTG ve MASTG, PTES) ve raporlama. | 5, 6, 7 |
 | [13](../week-13/cen429-week-13.md) | 11.12.2026 | Güvenlik gereksinimleri: ETSI, GSMA ve EMV güvenlik gereksinimleri; Ortak Kriterler (ISO/IEC 15408) ve EAL düzeyleri; FIPS 140-3 gereksinimleri; gereksinimlerin yazılım planına ve varlık yönetimine aktarılması. | 5, 7 |
-| [14](../week-14/cen429-week-14.md) | 18.12.2026 | Tigress ve çeşitlendirme: Tigress ile C kaynak kodu dönüşümleri (kontrol akışı düzleştirme, sanallaştırma, sabit ve aritmetik kodlama, opak yüklemler, fonksiyon bölme ve birleştirme); gizleme yöntemlerinin birleştirilmesi; çeşitlendirme ile her kopya için farklı ikili; saldırılara karşı savunma ve gizlenmiş kodun analize dayanıklılığının değerlendirilmesi. | 3 |
+| [14](../week-14/cen429-week-14.md) | 18.12.2026 | Tigress ve çeşitlendirme: Tigress ile C kaynak kodu dönüşümleri (kontrol akışı düzleştirme, sanallaştırma, sabit ve aritmetik kodlama, opak yüklemler, fonksiyon bölme ve birleştirme); gizleme yöntemlerinin birleştirilmesi; çeşitlendirme ile her kopya için farklı binary; saldırılara karşı savunma ve gizlenmiş kodun analize dayanıklılığının değerlendirilmesi. | 3 |
 | [15](../week-15/cen429-week-15.md) | 25.12.2026 | **Final proje gösterimleri** ve final proje raporu teslimi. | 1–7 |
 | [16](../week-16/cen429-week-16.md) | 04–17.01.2027 | **Final sınav dönemi — Quiz-2** (9–14. haftalar). | 2–7 |
 
@@ -182,7 +182,7 @@ rubrikleri** (kriterler, puanlar, ilişkili öğrenme çıktıları ve başarı 
 
 Rubrik kriterleri (ritim): **vize kontrolü** — güvenlik analizi (ÖÇ.1), veri güvenliği (ÖÇ.2), C/C++ kod
 sağlamlaştırma ve RASP teknikleri (ÖÇ.3), proje yönetimi (ÖÇ.5), ara rapor (ÖÇ.7); **final kontrolü** — kriptografi
-uygulaması (ÖÇ.2), güvenli iletişim (ÖÇ.4), varlık yönetimi (ÖÇ.5), ikili uygulama korumaları (ÖÇ.3), güvenlik testi
+uygulaması (ÖÇ.2), güvenli iletişim (ÖÇ.4), varlık yönetimi (ÖÇ.5), binary uygulama korumaları (ÖÇ.3), güvenlik testi
 ve birim testleri (ÖÇ.6), güvenlik standartları, final rapor ve sunum (ÖÇ.7).
 
 $$

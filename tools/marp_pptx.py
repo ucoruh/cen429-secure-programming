@@ -2,6 +2,12 @@
 
 Marp'ın PPTX çıktısı her slaytı resim olarak gömer (büyük ve düzenlenemez). Bu modül başlık, liste, tablo, kod,
 alıntı ve konuşma notlarını PowerPoint'in kendi nesneleriyle yazar. Slayt sınıfları: baslik, bolum, yogun, sema.
+
+Animasyonlar (tools/dsanim): bir slayt bir işlem animasyonunu şöyle gömer:
+    <iframe class="dsanim" src="anim/AD.html?mode=slide&lang=xx" ...></iframe>
+PowerPoint bu HTML oynatıcıyı çalıştıramaz; onun yerine ilgili animasyon GIF'i (anim/AD.<dil>.gif,
+tools/dsanim/build.py tarafından üretilir) iframe'in kaplayacağı alana gömülür. Animasyon adı her zaman
+iframe'in src'sinden okunur — burada hiçbir animasyon adı sabit yazılmaz.
 """
 import math
 import os
@@ -26,6 +32,11 @@ G, Y = Inches(13.333), Inches(7.5)
 SOL, SAG = Inches(0.7), Inches(0.7)
 GOVDE_UST, GOVDE_ALT = Inches(1.45), Inches(6.85)
 GENIS = G - SOL - SAG
+
+KAYNAK_KLASOR = None    # donustur() tarafından ayarlanır: kaynak .md'nin klasörü (slides/week-N)
+SU_ANKI_DIL = 'tr'      # donustur() tarafından ayarlanır: üretilen destenin dili (anim GIF seçimi için)
+
+_ANIM_CERCEVE = re.compile(r'^<iframe\s+class="dsanim"\s+(?:[^>"]|"[^"]*")*\bsrc="([^"]+?)"(?:[^>"]|"[^"]*")*>\s*</iframe>$')  # sorgu dahil tam src
 
 
 # ------------------------------------------------------------------ ayrıştırma
@@ -69,6 +80,11 @@ def cozumle(metin):
     while i < len(satirlar):
         s = satirlar[i]
         if not s.strip():
+            i += 1
+            continue
+        anim = _ANIM_CERCEVE.match(s.strip())
+        if anim:
+            bloklar.append(('anim', anim.group(1)))
             i += 1
             continue
         if s.startswith('```'):
@@ -156,9 +172,6 @@ def calistir_yaz(paragraf, metin, boyut, renk=KOYU, kalin=False):
 
 
 # ------------------------------------------------------------------ görseller
-KAYNAK_KLASOR = None
-
-
 def gorsel_yolu(yol):
     """Markdown'daki göreli yolu gerçek dosyaya çevirir. PPTX SVG alamadığı için
     PNG kardeşi tercih edilir. Slayt kaynağı slides/week-N altında, görseller ise
@@ -176,10 +189,41 @@ def gorsel_yolu(yol):
     return None
 
 
+def anim_gif_goreli_yol(src, dil, ornekli=True):
+    """'anim/hanoi.html?...' + 'tr' -> 'anim/hanoi.tr.gif' (ad her zaman iframe'in src'sinden alınır);
+    &example=<on_ayar> ile -> 'anim/hanoi--<on_ayar>.tr.gif' (tools/dsanim/build.py, destelerin
+    &example= ile açtığı her ön ayar için bu GIF'i ayrıca üretir)."""
+    yol, _, sorgu = src.partition('?')
+    p = pathlib.PurePosixPath(yol)
+    orn = re.search(r'(?:^|&|&amp;)example=([\w-]+)', sorgu)
+    if ornekli and orn:
+        return str(p.parent / f'{p.stem}--{orn.group(1)}.{dil}.gif')
+    return str(p.parent / f'{p.stem}.{dil}.gif')
+
+
+def anim_gif_coz(src, dil):
+    """Bir animasyon iframe'inin src'sini ('anim/AD.html') anim/AD.<dil>.gif dosyasına çözer; dosya
+    slides/week-N/anim altında ya da (daha sık) docs/week-N/anim altında (ders notunun yanında) olabilir."""
+    if KAYNAK_KLASOR is None:
+        return None
+    kok = pathlib.Path(KAYNAK_KLASOR)
+    for goreli in (anim_gif_goreli_yol(src, dil), anim_gif_goreli_yol(src, dil, False)):  # önce ön ayarlı, yoksa varsayılan
+        for a in (kok / goreli, kok.parent.parent / 'docs' / kok.name / goreli):
+            if a.exists():
+                return a
+    return None
+
+
+def medya_yolu(blok):
+    """Bir 'gorsel' ya da 'anim' bloğunun gerçek dosyasını döndürür (PNG/JPG ya da animasyon GIF'i)."""
+    if blok[0] == 'anim':
+        return anim_gif_coz(blok[1], SU_ANKI_DIL)
+    return gorsel_yolu(blok[2])
+
+
 def gorsel_olcu(blok, genis_in):
-    """(genişlik_in, yükseklik_in) — Marp 'w:NNN' ipucunu da dikkate alır."""
-    _, alt, yol = blok
-    p = gorsel_yolu(yol)
+    """(genişlik_in, yükseklik_in) — görsel ya da animasyon GIF'i için; Marp 'w:NNN' ipucunu yok sayar."""
+    p = medya_yolu(blok)
     if not p:
         return 0.0, 0.0
     with Image.open(p) as im:
@@ -192,13 +236,14 @@ def gorsel_olcu(blok, genis_in):
 
 
 def yaz_gorsel(slayt, blok, ust, boyut, kalan_in):
+    """Bir 'gorsel' ya da 'anim' (animasyon GIF'i) bloğunu slayta resim olarak ekler."""
     g, y = gorsel_olcu(blok, GENIS / 914400)
     if g <= 0:
         return 0.0
     if kalan_in and y > kalan_in:
         oran = kalan_in / y
         g, y = g * oran, kalan_in
-    p = gorsel_yolu(blok[2])
+    p = medya_yolu(blok)
     sol = SOL + int((GENIS - Inches(g)) / 2)
     slayt.shapes.add_picture(str(p), sol, ust, width=Inches(g), height=Inches(y))
     return y
@@ -240,7 +285,7 @@ def blok_yuksekligi(blok, boyut, genislik_in):
             en_uzun = max(satir_sayisi(h, tb, genislik_in / sutun) for h in r) if r else 1
             toplam += en_uzun * tb * 1.3 / 72 + 0.12
         return toplam + 0.15
-    if tur == 'gorsel':
+    if tur in ('gorsel', 'anim'):
         return gorsel_olcu(blok, genislik_in)[1]
     if tur in ('h2', 'h3'):
         return boyut * 1.5 / 72 + 0.1
@@ -357,9 +402,12 @@ def cerceve(slayt, bilgi, no, logo, koyu=False):
         calistir_yaz(tf.paragraphs[0], str(no), 10, renk)
 
 
-def donustur(md_yolu, pptx_yolu, logo=None):
-    global KAYNAK_KLASOR
+def donustur(md_yolu, pptx_yolu, logo=None, dil='tr'):
+    """Bir Marp Markdown destesini (md_yolu) pptx_yolu'na çevirir. `dil`, <iframe class="dsanim"> slaytlarında
+    hangi dilin animasyon GIF'inin (anim/AD.<dil>.gif) gömüleceğini seçer."""
+    global KAYNAK_KLASOR, SU_ANKI_DIL
     KAYNAK_KLASOR = os.path.dirname(os.path.abspath(md_yolu))
+    SU_ANKI_DIL = dil
     md = open(md_yolu, encoding='utf-8').read()
     bilgi, govde = on_bilgi(md)
     sunum = Presentation()
@@ -396,11 +444,11 @@ def donustur(md_yolu, pptx_yolu, logo=None):
             govde_bloklar = [b for b in bloklar if b[0] != 'h1']
             boyut = 18 if sinif == 'yogun' else 20
             alan = (GOVDE_ALT - GOVDE_UST) / 914400
-            # Görseller, metin bloklarından sonra KALAN alana oranı korunarak sığar (HTML temasındaki kuralın
-            # aynısı): uzun bir çizim alttaki maddeleri slayttan taşırmaz. Yazı küçültülürken her görsele en az
-            # 1,5 inç bırakılır.
-            gorsel_sayisi = sum(1 for b in govde_bloklar if b[0] == 'gorsel')
-            metin_bloklari = [b for b in govde_bloklar if b[0] != 'gorsel']
+            # Görseller ve animasyon GIF'leri, metin bloklarından sonra KALAN alana oranı korunarak sığar
+            # (HTML temasındaki kuralın aynısı): uzun bir çizim alttaki maddeleri slayttan taşırmaz. Yazı
+            # küçültülürken her medyaya en az 1,5 inç bırakılır.
+            gorsel_sayisi = sum(1 for b in govde_bloklar if b[0] in ('gorsel', 'anim'))
+            metin_bloklari = [b for b in govde_bloklar if b[0] not in ('gorsel', 'anim')]
             while boyut > 11:
                 toplam = sum(blok_yuksekligi(b, boyut, GENIS / 914400) + 0.12 for b in metin_bloklari)
                 toplam += gorsel_sayisi * (1.5 + 0.12)
@@ -419,7 +467,7 @@ def donustur(md_yolu, pptx_yolu, logo=None):
                     yuk = yaz_kod(slayt, b, ust, boyut)
                 elif b[0] == 'alinti':
                     yuk = yaz_paragraf(slayt, b[1], ust, boyut, alinti=True)
-                elif b[0] == 'gorsel':
+                elif b[0] in ('gorsel', 'anim'):
                     yuk = yaz_gorsel(slayt, b, ust, boyut, max(0.8, min(gorsel_alan, (GOVDE_ALT - ust) / 914400)))
                 elif b[0] in ('h2', 'h3'):
                     yuk = yaz_paragraf(slayt, f'**{b[1]}**', ust, boyut + 2, TEAL)

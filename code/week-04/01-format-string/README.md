@@ -1,40 +1,40 @@
-# Demo 1 — Biçim dizisi (format string) açığı
+# Demo 1 — Format string vulnerability
 
-**Konu:** Kullanıcı denetimli biçim dizisi (CWE-134) · **Hafta:** 4 ·
-**Kitap:** Viega & Messier, Tarif 3.2 (biçimlendirme işlevlerine saldırıları önleme)
+**Topic:** User-controlled format string (CWE-134) · **Week:** 4 ·
+**Book:** Viega & Messier, Recipe 3.2 (preventing attacks against formatting functions)
 
-## Ne gösteriyor?
+## What it shows
 
-`printf(kullanici)` gibi bir çağrı, "ekrana ne yazdıracağını" kullanıcıya sorar. Kullanıcı biçim belirteci
-(`%x`, `%p`, `%n`) yazarsa program bunları **komut** gibi işler:
+A call like `printf(user_text)` asks the user "what should be written to the screen?" If the user types a format
+specifier (`%x`, `%p`, `%n`), the program treats it as a **command**:
 
-- `%x` / `%p` → yığından değer **okur** (bilgi sızıntısı; programın gizli değeri sızar),
-- `%n` → belleğe **yazar** (çökme, giderek kod çalıştırma).
+- `%x` / `%p` → **reads** a value off the stack (information leak; the program's secret value leaks),
+- `%n` → **writes** to memory (crash, eventually code execution).
 
-Düzeltme tek satırdır: `printf("%s", kullanici)` — veri her zaman **argüman**, biçim her zaman **sabit**.
+The fix is one line: `printf("%s", user_text)` — data is always an **argument**, the format is always **constant**.
 
-| Adım | Ne olur | Ders |
+| Step | What happens | Lesson |
 | --- | --- | --- |
-| 0 | Derleyici uyarısı | GCC/Clang `-Wformat-security` uyarır; MSVC C derleyicisi susar, `/analyze` yakalar |
-| 1 | `sizinti Merhaba` | Normal |
-| 2 | `sizinti '%x.%x...'` | Yığın hex olarak dökülür; gizli değer (`0x5ece7`) sızar |
-| 3 | `sizinti 'AAAA%n'` | Linux korumasız: `SIGSEGV` · Windows: CRT `%n`'i durdurur |
-| 4 | `sizinti_denetimli 'AAAA%n'` | Linux `_FORTIFY_SOURCE`: `*** %n in writable segment detected ***` |
-| 5 | `sizinti_guvenli '...%n...'` | `%n` artık yalnız metin: güvenli |
+| 0 | Compiler warning | GCC/Clang `-Wformat-security` warns; MSVC's C compiler is silent by default, `/analyze` catches it |
+| 1 | `leak Hello` | Normal |
+| 2 | `leak '%x.%x...'` | The stack is dumped as hex; the secret value (`0x5ece7`) leaks |
+| 3 | `leak 'AAAA%n'` | Linux unprotected: `SIGSEGV` · Windows: the CRT blocks `%n` |
+| 4 | `leak_checked 'AAAA%n'` | Linux `_FORTIFY_SOURCE`: `*** %n in writable segment detected ***` |
+| 5 | `leak_secure '...%n...'` | `%n` is now just text: safe |
 
-## Çalıştırma
+## Running it
 
-Önce bütün demoları bir kez derleyin (`code/` klasöründe): Windows `.\build.ps1` · WSL / Linux `./build.sh`.
-Sonra bu klasörde: Windows `.\demo.ps1` (ya da `demo.cmd`) · WSL / Linux `sh demo.sh`.
+First build all the demos once (inside the `code/` folder): Windows `.\build.ps1` · WSL / Linux `./build.sh`.
+Then, inside this folder: Windows `.\demo.ps1` (or `demo.cmd`) · WSL / Linux `sh demo.sh`.
 
-## Neden güvenli?
+## Why it's safe
 
-- Bütün belirteçler yalnız **bu programın kendi belleğini** okur/yazar. Çökebilecek adımlar Linux'ta
-  `prlimit --core=1:1 timeout` ile, Windows'ta `demo_hazirla()` ile sınırlanır; hata penceresi açılmaz,
-  çökme dökümü yazılmaz, sistem ayarı değişmez.
+- Every specifier only reads/writes **this program's own memory**. Steps that could crash are bounded on Linux
+  with `prlimit --core=1:1 timeout`, on Windows with `demo_prepare()`; no error dialog opens, no crash dump is
+  written, no system setting changes.
 
-## Kendiniz deneyin
+## Try it yourself
 
-1. `%n` yerine `%s` verin: `sizinti '%s %s %s'`. Ne olur, neden? (İpucu: `%s` bir işaretçi bekler.)
-2. `sizinti_guvenli`'de `printf("%s", argv[1])` yerine `printf(argv[1])` yazıp yeniden derleyin. Açık geri geldi mi?
-3. Linux'ta `sizinti_denetimli`'yi `objdump -d` ile inceleyin: `printf` yerine `__printf_chk` çağrısını bulun.
+1. Give `%s` instead of `%n`: `leak '%s %s %s'`. What happens, and why? (Hint: `%s` expects a pointer.)
+2. In `leak_secure`, replace `printf("%s", argv[1])` with `printf(argv[1])` and rebuild. Is the bug back?
+3. On Linux, inspect `leak_checked` with `objdump -d`: find the call to `__printf_chk` instead of `printf`.

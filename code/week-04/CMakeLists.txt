@@ -1,8 +1,3 @@
-# CEN429 - Hafta 4 demolari (Kod saglamlastirma: C/C++)
-add_subdirectory(01-format-string)
-add_subdirectory(02-kullanim-sonrasi)
-add_subdirectory(03-tanimsiz-davranis)
-add_subdirectory(04-fuzzing)
-add_subdirectory(05-derleyici-korumalari)
-add_subdirectory(06-sembol-dize)
-add_subdirectory(07-akis-duzlestirme)
+# CEN429 — Week 4 demos (Code hardening: C/C++)
+# Every subfolder that has a CMakeLists.txt is added automatically (see cmake/cen429.cmake).
+cen429_add_week_demos()

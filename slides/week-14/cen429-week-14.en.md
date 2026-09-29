@@ -42,9 +42,11 @@ Speaker note: This week Tigress automates week 9's manual obfuscation rules usin
 # A Brief History — Source-to-Source Obfuscation and Diversification
 
 - **1993** — Cohen: the idea of **diversification** (same function, different binary)
-- **1997** — Collberg et al.'s obfuscation taxonomy (the foundation of week 9)
-- **2013** — **Obfuscator-LLVM**: compiler-based obfuscation
-- **2010s** — **Tigress**: source-to-source + virtualisation + diversification for C
+- **1997** — Collberg et al.'s obfuscation taxonomy; the same year, Forrest et al. argue for **diversification**
+  from a separate root
+- **2002** — Necula et al., CIL: the infrastructure Tigress is built on
+- **~2012–13** — **Tigress**: source-to-source + virtualisation + diversification for C
+- **2015** — **Obfuscator-LLVM**: compiler-based obfuscation
 - **2016–17** — Banescu et al. **measure resilience** with Tigress+KLEE
 
 > Main rule: **resilience ↔ cost**; protection is chosen in proportion to the value of the asset.
@@ -265,10 +267,10 @@ The maintenance cost stays with the **readable source**; the distributed source 
 # Basic Flow · a Single Transform
 
 ```bash
-# girdi: temiz.c → çıktı: gizli.c
-tigress --Transform=Flatten --Functions=erisim_ver \
-        --out=gizli.c temiz.c
-cc -o program gizli.c
+# girdi: source.c → çıktı: variant.c
+tigress --Transform=Flatten --Functions=grant_access \
+        --out=variant.c source.c
+cc -o program variant.c
 ```
 
 ---
@@ -435,6 +437,24 @@ That's why Virtualize is targeted only at **small, critical** functions; via `--
 
 ---
 
+# Animation · One Transform, Step by Step
+
+<iframe class="dsanim" src="anim/transform-step-by-step.html?mode=slide&lang=en" title="One transform, step by step: Flatten / EncodeArithmetic / AddOpaque"></iframe>
+
+<!-- Speaker note: start with flatten-granted, show how case 7341 hides the decision; then arith-typical to
+verify the MBA identity. -->
+
+---
+
+# Animation · Edge Case: Seed 0
+
+<iframe class="dsanim" src="anim/transform-step-by-step.html?mode=slide&lang=en&example=opaque-seed-zero"></iframe>
+
+<!-- Speaker note: even at q=0, (q*q)%4 can never be 2 — the predicate is still always true; real
+fallback_transform.py lines. -->
+
+---
+
 <!-- _class: bolum -->
 
 # Combining Transforms in Sequence
@@ -453,18 +473,18 @@ In Tigress, this means applying transforms **in sequence**.
 
 ```bash
 tigress \
-  --Transform=EncodeLiterals   --Functions=erisim_ver \
-  --Transform=EncodeArithmetic --Functions=erisim_ver \
-  --Transform=Flatten          --Functions=erisim_ver \
-  --Transform=AddOpaque        --Functions=erisim_ver \
-  --out=gizli.c temiz.c
+  --Transform=EncodeLiterals   --Functions=grant_access \
+  --Transform=EncodeArithmetic --Functions=grant_access \
+  --Transform=Flatten          --Functions=grant_access \
+  --Transform=AddOpaque        --Functions=grant_access \
+  --out=variant.c source.c
 ```
 
 ---
 
 # What Does the Pipeline Do?
 
-The single check (`erisim_ver`):
+The single check (`grant_access`):
 
 1. Encode constants/strings
 2. Encode its arithmetic
@@ -472,6 +492,24 @@ The single check (`erisim_ver`):
 4. Strengthen with opaque predicates
 
 = the automatic version of what week 9's K-04 called "strengthened flattening."
+
+---
+
+# Animation · Source-to-Source Pipeline
+
+<iframe class="dsanim" src="anim/source-to-source-pipeline.html?mode=slide&lang=en" title="Source-to-source pipeline: source.c → transform → source.c → compiler → binary"></iframe>
+
+<!-- Speaker note: start with the normal preset (Tigress, two transforms); show students that the behavior-check
+row runs once per token. -->
+
+---
+
+# Animation · Edge Case: Corrupted Variant
+
+<iframe class="dsanim" src="anim/source-to-source-pipeline.html?mode=slide&lang=en&example=edge-corrupted-variant"></iframe>
+
+<!-- Speaker note: show how a hand-corrupted variant.c that changes behavior makes pipeline_check.py FAIL — the
+concrete proof behind "never hand-edit variant.c." -->
 
 ---
 
@@ -497,12 +535,12 @@ This connects to week 12's "S16 results."
 
 ---
 
-# Starting Point · temiz.c
+# Starting Point · source.c
 
 ```c
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;  /* tek dal */
-    return RED;
+int grant_access(const char *token) {
+    if (token_is_valid(token)) return GRANTED;  /* tek dal */
+    return DENIED;
 }
 ```
 
@@ -512,7 +550,7 @@ Unprotected: a single branch, bypassed with `strings` and a single-byte patch.
 
 # Step 0 · The Attacker
 
-- `strings` → `IZIN`/`RED`
+- `strings` → `GRANTED`/`DENIED`
 - Reverse-compile → a single `if`
 - Turn the failure branch into success
 
@@ -527,7 +565,7 @@ Time: minutes.
 | Step | Transform | What Changes | Cost |
 | --- | --- | --- | --- |
 | 0 | — | Bypassed with a single-byte patch | — |
-| 1 | EncodeLiterals | IZIN/RED no longer plain | Very low |
+| 1 | EncodeLiterals | GRANTED/DENIED no longer plain | Very low |
 | 2 | EncodeArithmetic | Comparison complex | Low |
 | 3 | Flatten | Single branch not visible | Moderate |
 | 4 | AddOpaque | Bogus branches | Moderate |
@@ -542,6 +580,24 @@ Time: minutes.
 - Where you stop: **asset value** + **the cost you measured**.
 
 Step 5 (Virtualize) is unnecessary for most checks.
+
+---
+
+# Animation · Effect of Order: Scope and Signature
+
+<iframe class="dsanim" src="anim/transform-stacking-order.html?mode=slide&lang=en" title="Effect of transform stacking order: scope and signature"></iframe>
+
+<!-- Speaker note: start with code-then-structure; show that EncodeLiterals only encodes constants visible so
+far, and that sign is always the last stage. -->
+
+---
+
+# Animation · Edge Case: Signing Too Early
+
+<iframe class="dsanim" src="anim/transform-stacking-order.html?mode=slide&lang=en&example=sign-too-early"></iframe>
+
+<!-- Speaker note: if signing happens first, every later stage invalidates it — live proof of the "what if
+signing runs before obfuscation" scenario. -->
 
 ---
 
@@ -625,9 +681,9 @@ Tigress does this with a **seed**:
 
 ```bash
 tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_a.c temiz.c
+        --Functions=grant_access --out=gizli_a.c source.c
 tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_b.c temiz.c
+        --Functions=grant_access --out=gizli_b.c source.c
 ```
 
 `gizli_a` and `gizli_b` do the same job; their machine code is **different**.
@@ -640,6 +696,24 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 - **In time:** each version gets a new seed → an old attack breaks on the new version.
 
 Works together with week 10's key/version renewal.
+
+---
+
+# Animation · Diversification with Seeds
+
+<iframe class="dsanim" src="anim/diversification-seeds.html?mode=slide&lang=en" title="Diversification with seeds: same source, different bytes, same behavior"></iframe>
+
+<!-- Speaker note: three-seeds preset — show each seed's mask and encoded bytes side by side; all different
+bytes, same GRANTED/DENIED behavior. -->
+
+---
+
+# Animation · Edge Case: A Forgotten Seed
+
+<iframe class="dsanim" src="anim/diversification-seeds.html?mode=slide&lang=en&example=edge-same-seed-twice"></iframe>
+
+<!-- Speaker note: reusing the same seed twice gives identical bytes — diversification did NOT happen; this is
+why section 9's "one seed per release" rule exists. -->
 
 ---
 
@@ -724,7 +798,7 @@ The figures are an example; you write **your own** measurements.
 program_temiz:
   boyut: 100 KB
   işlem süresi: 1.00× (referans)
-  erisim_ver temel blok: 5
+  grant_access temel blok: 5
 ```
 
 ```text
@@ -739,6 +813,23 @@ boyut: 131 KB   (+%31)
 süre:  1.80×
 blok:  40
 ```
+
+---
+
+# Animation · Measuring: Size, Time, Instructions, Similarity
+
+<iframe class="dsanim" src="anim/obfuscation-measurement.html?mode=slide&lang=en" title="Measuring obfuscation and diversification: size, time, instruction count, similarity"></iframe>
+
+<!-- Speaker note: two-different-seeds preset — open the table row by row; instructions/branches are
+seed-independent, size/similarity are seed-dependent. -->
+
+---
+
+# Animation · Edge Case: Both "Seeds" Are the Original
+
+<iframe class="dsanim" src="anim/obfuscation-measurement.html?mode=slide&lang=en&example=edge-both-zero"></iframe>
+
+<!-- Speaker note: seed 0 means "the original itself"; the table then shows 100% similarity to itself. -->
 
 ---
 
@@ -845,7 +936,7 @@ Let's go step by step.
 
 # Step 1 · Preparation
 
-- Write a small, synthetic program (e.g., `erisim_ver`).
+- Write a small, synthetic program (e.g., `grant_access`).
 - Show with unit tests that it **works correctly**.
 - This is your "clean" baseline.
 
@@ -856,8 +947,8 @@ Let's go step by step.
 ```bash
 tigress --Transform=EncodeLiterals --Transform=EncodeArithmetic \
         --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli.c temiz.c
-cc -o program_gizli gizli.c
+        --Functions=grant_access --out=variant.c source.c
+cc -o program_gizli variant.c
 ```
 
 Apply a transform pipeline.
@@ -899,8 +990,8 @@ Write down the size and time difference.
 - Show that the two binaries are different (byte difference).
 
 ```bash
-tigress --Seed=1001 ... --out=gizli_a.c temiz.c
-tigress --Seed=2002 ... --out=gizli_b.c temiz.c
+tigress --Seed=1001 ... --out=gizli_a.c source.c
+tigress --Seed=2002 ... --out=gizli_b.c source.c
 ```
 
 ---
@@ -922,6 +1013,23 @@ This table goes directly into **S9/S15**.
 - Tigress only on **your own** code.
 - The example program does not **harm** the computer: it does not change system settings, does not touch the network.
 - All values are **synthetic**.
+
+---
+
+# Animation · In-Class Flow
+
+<iframe class="dsanim" src="anim/in-class-flow.html?mode=slide&lang=en" title="In-class flow: obfuscate → compare → measure → diversify"></iframe>
+
+<!-- Speaker note: all-pass preset — open the four stages (OBFUSCATE/COMPARE/MEASURE/DIVERSIFY) in order; show
+how they line up with pipeline_check.py's real lines. -->
+
+---
+
+# Animation · Edge Case: Mismatch + Reused Seed
+
+<iframe class="dsanim" src="anim/in-class-flow.html?mode=slide&lang=en&example=edge-mismatch-and-same-seed"></iframe>
+
+<!-- Speaker note: show where the flow reports FAILED when a token mismatches AND the seed is reused. -->
 
 ---
 
@@ -973,7 +1081,7 @@ tigress \
   --Transform=Flatten \
   --Transform=AddOpaque \
   --Functions=dosya_saglam \
-  --out=gizli.c temiz.c
+  --out=variant.c source.c
 ```
 
 ---
@@ -1103,6 +1211,23 @@ Your project's **S15** section, after the midterm, documents exactly this.
 - The pipeline runs in continuous integration (CI).
 - Every version: unit tests + size/speed measurement **automatic**.
 - If behaviour breaks, the build **stops**.
+
+---
+
+# Animation · CI Pipeline, Per-Release Seed
+
+<iframe class="dsanim" src="anim/build-deployment-pipeline.html?mode=slide&lang=en" title="Placing obfuscation in the build/deployment pipeline: CI, per-release seed"></iframe>
+
+<!-- Speaker note: three-clean-releases preset — show three releases (v1.0/v1.1/v1.2) each passing all six
+stages; the S15 record is exactly this. -->
+
+---
+
+# Animation · Edge Case: A Reused Seed
+
+<iframe class="dsanim" src="anim/build-deployment-pipeline.html?mode=slide&lang=en&example=edge-seed-reused"></iframe>
+
+<!-- Speaker note: show v1.3 reusing v1.0's seed, and how record-version catches it. -->
 
 ---
 

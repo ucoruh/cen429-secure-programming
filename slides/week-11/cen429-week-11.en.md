@@ -264,6 +264,22 @@ Crypto was designed for **black box**; we're in **white box**.
 
 ---
 
+# Attacker Models (Animation)
+
+<iframe class="dsanim" src="anim/attacker-models.html?mode=slide&lang=en" title="Black / grey / white box: which capabilities does the attacker have?"></iframe>
+
+<!-- Speaker note: walk through the 12 scenarios one at a time; stress how each model starts from IO alone and gains more capabilities. -->
+
+---
+
+# Attacker Models — Edge Case: All White Box
+
+<iframe class="dsanim" src="anim/attacker-models.html?mode=slide&lang=en&example=edge-all-white" title="Edge case: all white box"></iframe>
+
+<!-- Speaker note: show that in white box, MOD and COD are ALWAYS present — this is exactly what WBC targets. -->
+
+---
+
 # Here's the Problem
 
 AES is mathematically strong. But:
@@ -409,6 +425,22 @@ This is exactly Week 9's rule: "string hiding doesn't store the key."
 
 ---
 
+# Finding an Embedded Key by Scanning (Animation)
+
+<iframe class="dsanim" src="anim/embedded-key-scan.html?mode=slide&lang=en" title="Finding an embedded key in a binary"></iframe>
+
+<!-- Speaker note: show the 16-byte window sliding across the binary step by step, and stopping the moment it matches. -->
+
+---
+
+# Embedded-Key Scan — Edge Case: Key Absent
+
+<iframe class="dsanim" src="anim/embedded-key-scan.html?mode=slide&lang=en&example=edge-not-found" title="Edge case: the key is absent"></iframe>
+
+<!-- Speaker note: show the scan trying every window and returning -1 — this never happens in the real demo, since the key sits inside its own binary. -->
+
+---
+
 # Naive 2 · "Scramble" With XOR
 
 ```c
@@ -508,6 +540,22 @@ No math on the exam; **the idea and the limit** are.
 2. Pass the result through the **S-box**: `S-box[x ^ k]`
 
 Can these two steps be combined for a fixed `k`? Yes.
+
+---
+
+# The AES Round From Scratch (Animation)
+
+<iframe class="dsanim" src="anim/aes-round-structure.html?mode=slide&lang=en" title="The AES round structure from scratch"></iframe>
+
+<!-- Speaker note: stress that the 4x4 state fills column by column, and the order of the four steps (SubBytes, ShiftRows, MixColumns, AddRoundKey). -->
+
+---
+
+# AES Round — Edge Case: All Zero
+
+<iframe class="dsanim" src="anim/aes-round-structure.html?mode=slide&lang=en&example=edge-all-zero" title="Edge case: an all-zero state and key"></iframe>
+
+<!-- Speaker note: show that even with an all-zero input, the output isn't zero, because of the S-box's own constant term (0x0D). -->
 
 ---
 
@@ -611,6 +659,30 @@ T:     2 3 1 0
 Knowing that `T[x] = S-box[x ^ k]`, they try which `k` fits: `k=1` fits.
 
 > **Result:** an unencoded table gives the key away. This is exactly why internal/external encoding exists.
+
+---
+
+# Folding the Key Into a Table (Animation)
+
+<iframe class="dsanim" src="anim/toy-table-wbc.html?mode=slide&lang=en" title="Table-based whitebox: folding the key into a table"></iframe>
+
+<!-- Speaker note: follow toy_table.c's real code; stress that the naive and encoded tables produce different bytes for the same x. -->
+
+---
+
+# Why a Table Leaks the Key (Animation)
+
+<iframe class="dsanim" src="anim/table-key-leak.html?mode=slide&lang=en" title="Why a table leaks the key"></iframe>
+
+<!-- Speaker note: show k0 staying constant all the way to x=255 on the naive table, and breaking immediately at x=1 on the encoded table. -->
+
+---
+
+# Table Leak — Edge Case: Zero Key
+
+<iframe class="dsanim" src="anim/table-key-leak.html?mode=slide&lang=en&example=edge-zero-key" title="Edge case: a zero key"></iframe>
+
+<!-- Speaker note: stress that even with k=0 the naive table still leaks, and the encoded table still blocks recovery. -->
 
 ---
 
@@ -944,6 +1016,22 @@ Because they're general and **portable**, they threaten every design.
 
 ---
 
+# A Differential/Fault Comparison at Toy Scale (Animation)
+
+<iframe class="dsanim" src="anim/dca-differential.html?mode=slide&lang=en" title="A differential/fault comparison at toy scale"></iframe>
+
+<!-- Speaker note: stress that the difference between the correct and faulted output is NOT zero for most inputs, but no single one gives up the key alone. -->
+
+---
+
+# Differential Comparison — Edge Case: Zero Fault Mask
+
+<iframe class="dsanim" src="anim/dca-differential.html?mode=slide&lang=en&example=edge-zero-fault" title="Edge case: a zero fault mask"></iframe>
+
+<!-- Speaker note: show that with no fault (mask=0x00) the difference is ALWAYS zero, i.e. carries no information at all. -->
+
+---
+
 # So What Do We Do? (Countermeasures)
 
 Research hasn't stopped; but no countermeasure says "now it's secure."
@@ -1116,6 +1204,22 @@ In order, from weakest to strongest.
 - If a hardware root (TEE/SE/HSM) exists, **use it**
 - WBC is a **trade-off** solution for when there's **no** hardware root
 - Always: together with key rotation + device binding + server checking
+
+---
+
+# Where Does WBC Sit in Layered Defence? (Animation)
+
+<iframe class="dsanim" src="anim/layered-defence.html?mode=slide&lang=en" title="Where does WBC sit in layered defence?"></iframe>
+
+<!-- Speaker note: stress that the wbc decision ALWAYS activates four layers (WBC, ROTATE, BIND, AUDIT) together. -->
+
+---
+
+# Layered Defence — Edge Case: All WBC
+
+<iframe class="dsanim" src="anim/layered-defence.html?mode=slide&lang=en&example=edge-all-wbc" title="Edge case: all WBC"></iframe>
+
+<!-- Speaker note: show that even with no hardware root at all, the same four layers always arrive together. -->
 
 ---
 

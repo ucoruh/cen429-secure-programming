@@ -1,0 +1,87 @@
+# CEN429 - Week 2 - Demo 14: RBAC + separation of duty + Clark-Wilson
+# A small account ledger. All names and amounts are SYNTHETIC.
+
+# ---------- Setup (the security administrator; not traced) ----------
+ROLE TELLER
+ROLE SENIOR_TELLER
+ROLE APPROVER
+ROLE AUDITOR
+ROLE CERTIFIER
+INHERITS SENIOR_TELLER TELLER    # RBAC1: a senior teller gets the teller's rights
+GRANT TELLER          DEPOSIT
+GRANT TELLER          WITHDRAW
+GRANT SENIOR_TELLER   TRANSFER
+GRANT APPROVER        APPROVE
+GRANT AUDITOR         IVP
+GRANT AUDITOR         LEDGER_READ
+SSD  TELLER APPROVER             # RBAC2 static: the same person cannot hold both
+SSD  CERTIFIER TELLER
+SSD  CERTIFIER APPROVER
+DSD  TELLER AUDITOR              # RBAC2 dynamic: both cannot be active in the same session
+USER alice
+USER bob
+USER carl
+USER dana
+USER eve
+ASSIGN alice  TELLER
+ASSIGN bob    SENIOR_TELLER
+ASSIGN carl   APPROVER
+ASSIGN dana   TELLER
+ASSIGN dana   AUDITOR
+ASSIGN eve    CERTIFIER
+CDI account_A 12000
+CDI account_B  8000
+CERTIFIED DEPOSIT      account_A,account_B
+CERTIFIED WITHDRAW     account_A,account_B
+CERTIFIED TRANSFER     account_A,account_B
+CERTIFIED APPROVE      account_A,account_B
+CERTIFIED IVP          -
+CERTIFIED LEDGER_READ  -
+APPROVAL_THRESHOLD 5000
+START
+
+# ---------- 1. RBAC: assignment, hierarchy, separation of duty ----------
+SECTION 1 - RBAC: role assignment and separation of duty (SSD/DSD)
+ASSIGN carl TELLER                # SSD(TELLER,APPROVER) -> DENY
+ASSIGN bob APPROVER                # SENIOR_TELLER covers TELLER -> SSD DENY
+SESSION guest TELLER               # E3: an unrecognized user
+SESSION dana TELLER,AUDITOR        # DSD -> DENY
+SESSION dana AUDITOR
+SESSION alice TELLER
+SESSION bob SENIOR_TELLER
+SESSION carl APPROVER
+SESSION eve CERTIFIER
+
+# ---------- 2. Clark-Wilson: well-formed transactions ----------
+SECTION 2 - Clark-Wilson: only a certified TP touches a CDI
+RUN alice DEPOSIT account_A 250
+RUN alice DEPOSIT account_A -500     # C5: external input cannot enter unvalidated
+RUN alice DEPOSIT account_A 12abc
+DIRECT_WRITE alice account_A 1000000 # E1: writing to a CDI while bypassing the TP
+RUN alice TRANSFER account_A account_B 100   # E2: TELLER has no TRANSFER grant
+RUN bob TRANSFER account_A account_B 700     # RBAC1: a senior teller
+RUN bob WITHDRAW account_B 999999            # C2: a balance may never go negative
+
+# ---------- 3. Separation of duty: the two-person rule ----------
+SECTION 3 - Separation of duty: a large transfer needs a second person's approval
+RUN bob TRANSFER account_B account_A 6000    # above the threshold -> a request
+RUN bob APPROVE 1                            # E2: bob is not an APPROVER
+RUN carl APPROVE 1                           # C3: a different person approves
+RUN dana IVP
+
+# If the admin removes the SSD by mistake, the in-TP check still protects us
+SSD_REMOVE TELLER APPROVER
+ASSIGN carl SENIOR_TELLER
+SESSION carl APPROVER,SENIOR_TELLER
+RUN carl TRANSFER account_A account_B 5500
+RUN carl APPROVE 2                           # C3: their own request -> DENY
+
+# ---------- 4. A certification mistake and the IVP ----------
+SECTION 4 - If a broken TP gets certified, the IVP catches it
+RUN eve TRANSFER account_A account_B 10      # E4: a certifier cannot run a TP
+CERTIFY eve BAD_TRANSFER account_A,account_B
+GRANT SENIOR_TELLER BAD_TRANSFER
+RUN bob BAD_TRANSFER account_A account_B 3000
+LEDGER_DELETE dana 5                          # C4: the ledger is append-only
+RUN dana IVP
+RUN dana LEDGER_READ

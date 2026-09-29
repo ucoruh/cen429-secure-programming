@@ -87,7 +87,7 @@ tags:
         ```powershell
         cd code
         .\build.ps1
-        cd week-03\01-aes-gcm-dosya
+        cd week-03\01-aes-gcm-file
         .\demo.ps1        # ya da demo.cmd dosyasına çift tıklayın
         ```
 
@@ -95,13 +95,13 @@ tags:
         ```bash
         cd code
         ./build.sh
-        cd week-03/01-aes-gcm-dosya
+        cd week-03/01-aes-gcm-file
         sh demo.sh
         ```
 
     === "Visual Studio 2022"
         `Dosya > Aç > Klasör > code/` deyin; üstteki yapılandırmadan **"Windows (MSVC)"** ya da **"WSL (GCC)"** seçin;
-        **Derle > Tümünü Derle**. İkili dosyalar her demonun `bin\windows` ya da `bin/linux` klasörüne düşer.
+        **Derle > Tümünü Derle**. Binary dosyalar her demonun `bin\windows` ya da `bin/linux` klasörüne düşer.
 
     Kurulum ayrıntıları ve güvenlik kuralları: [`code/README.md`](https://github.com/ucoruh/cen429-secure-programming/blob/main/code/README.md).
 
@@ -158,9 +158,14 @@ de savunması da farklıdır:
 
 !!! note "Kısa tarihçe: veriyi korumanın araçları"
     - **1976** — Diffie & Hellman **açık anahtarlı** kriptografiyi başlatır; **1977** **RSA** ve **DES** standardı gelir.
-    - **2001** — **AES** (Rijndael) DES'in yerini alır; bugün simetrik şifrelemenin omurgasıdır.
-    - **2007** — **GCM** NIST standardı olur: gizlilik **ve** bütünlüğü birlikte veren **AEAD** çağı başlar (bu haftanın ana aracı).
-    - **1994 → 2018** — SSL (1994–96) → TLS 1.0 (1999) → **TLS 1.3 (2018)**: aktarımdaki verinin standardı.
+    - **1997–2001** — NIST'in açık **AES yarışması**; kazanan Belçikalı **Rijndael** algoritması, DES'in yerini alan
+      **AES** standardı olur (2001). Bugün simetrik şifrelemenin omurgasıdır.
+    - **2004** — David McGrew ve John Viega, **GCM** (Galois/Counter Mode) kipini yayımlar; **2007**'de NIST **SP
+      800-38D** ile resmî standart olur: gizlilik **ve** bütünlüğü birlikte veren **AEAD** çağı başlar (bu haftanın ana aracı).
+    - **1995 → 2018** — Netscape'in **SSL 2.0**'ı (1995) → IETF'nin **TLS 1.0**'ı (1999, RFC 2246) → **TLS 1.3**
+      (2018, RFC 8446): aktarımdaki verinin standardı.
+    - **2014** — **Heartbleed** (OpenSSL'de bir arabellek aşırı okuma açığı), TLS uygulamasındaki tek bir hatanın
+      sunucu belleğindeki anahtarları ve sırları nasıl sızdırabileceğini bütün dünyaya gösterdi.
 
     Dersin kuralı buradan çıkar: "kendi kriptonu yazma, **AEAD** kullan, anahtarı doğru yönet".
 
@@ -300,56 +305,55 @@ Bu üçü **bütünlük** ailesindendir ama farklı şeyler kanıtlarlar; karı�
 
 ### Demo 1 — AES-256-GCM ile dosya şifreleme ve kurcalama tespiti
 
-!!! info "Demo 1 · `code/week-03/01-aes-gcm-dosya` · AEAD, NIST SP 800-38D"
+!!! info "Demo 1 · `code/week-03/01-aes-gcm-file` · AEAD, NIST SP 800-38D"
     Program bir dosyayı AES-256-GCM ile şifreliyor; çıktı `[12 bayt nonce][şifreli metin][16 bayt etiket]` biçiminde.
     Çözerken etiket doğrulanıyor. Sonra şifreli metnin bir baytını, ardından yalnız etiketin bir baytını değiştirip
     çözmenin **reddedildiğini** görüyoruz.
 
-Şifreleme ve çözmenin özü (kripto çağrıları ortak `cen429_kripto.h` başlığından gelir; Linux'ta OpenSSL EVP, Windows'ta
+Şifreleme ve çözmenin özü (kripto çağrıları ortak `cen429_crypto.h` başlığından gelir; Linux'ta OpenSSL EVP, Windows'ta
 BCrypt):
 
-```c title="aesgcm.c (özet)"
-/* Şifrele: cik = [nonce][şifreli metin][etiket] */
-kripto_rastgele(nonce, 12);                 /* her mesaja yeni nonce */
-memcpy(cik, nonce, 12);
-kripto_gcm_sifrele(anahtar, nonce, 12, NULL, 0,
-                   duz, duz_boy, cik + 12, etiket);
-memcpy(cik + 12 + duz_boy, etiket, 16);
+```c title="aes_gcm_file.c (özet)"
+/* Encrypt: out = [nonce][ciphertext][tag] */
+crypto_random(nonce, 12);                    /* a fresh nonce per message */
+memcpy(out, nonce, 12);
+crypto_gcm_encrypt(key, nonce, 12, NULL, 0,
+                   plain, plain_len, out + 12, tag);
+memcpy(out + 12 + plain_len, tag, 16);
 
-/* Çöz: etiket doğrulanır; tutmazsa ok == 0 */
-int ok = kripto_gcm_coz(anahtar, nonce, 12, NULL, 0,
-                        sc, sc_boy, etiket, duz);
-if (!ok) { /* REDDET: veri kurcalanmış ya da yanlış anahtar */ }
+/* Decrypt: the tag is verified; ok == 0 if it does not match */
+int ok = crypto_gcm_decrypt(key, nonce, 12, NULL, 0,
+                            ct, ct_len, tag, plain);
+if (!ok) { /* REJECT: the data was tampered with, or the key is wrong */ }
 ```
 
 Çalıştırın (Windows'ta `.\demo.ps1`):
 
 ```bash
-cd code/week-03/01-aes-gcm-dosya
+cd code/week-03/01-aes-gcm-file
 sh demo.sh
 ```
 
-WSL'de alınan **gerçek çıktı** (kısaltılmış):
+**Gerçek çıktı** (Windows `.\demo.ps1`, kısaltılmış):
 
-```text title="sh demo.sh — çıktı"
-ADIM 2 - Sifrele
-Sifrelendi: cikti/gizli.txt -> cikti/gizli.enc
-   (53 bayt sifreli metin + 12 nonce + 16 etiket)
-Sifreli dosyanin ilk baytlari (nonce + sifreli metin):
-   000000 74 15 41 da 38 0b 86 1e 92 2f 42 eb 1c ac 49 54
-   000010 07 2b 38 e2 3a e4 cd bb fb 7f fb 1c e5 ec a5 36
+```text title="demo.ps1 — çıktı"
+STEP 2 - Encrypt
+Encrypted: output\secret.txt -> output\secret.enc (54 bytes of ciphertext + 12 nonce + 16 tag)
+First 32 bytes of the ciphertext file (nonce + ciphertext):
+   df 05 81 06 c9 4a c6 75 da 63 ed ad f3 8a b9 1a 21 8c 81 aa 55 5e 3f 8e e7 27 9e e7 1c c8 b1 08
 
-ADIM 3 - Dogru sekilde coz (etiket tutar)
-Cozuldu ve DOGRULANDI: ... -> cikti/cozulen.txt (53 bayt)
+STEP 3 - Decrypt correctly (the tag matches)
+Decrypted and VERIFIED: output\secret.enc -> output\decrypted.txt (54 bytes)
    IBAN: TR00 0000 0000 0000 0000 0000 00
-   Bakiye: 12345
+   Balance: 12345
 
-ADIM 4 - Saldiri: sifreli metnin 20. baytini degistir
-DOGRULAMA BASARISIZ: etiket tutmadi, veri kurcalanmis ya da
-yanlis anahtar. Cozme REDDEDILDI.   (cikis kodu 2)
+STEP 4 - Attack: change byte 20 of the ciphertext
+VERIFICATION FAILED: the tag did not match, the data was tampered with, or the key is wrong. Decryption REJECTED.
+   (exit code 2 - decryption rejected)
 
-ADIM 5 - Saldiri: yalniz ETIKETin son baytini degistir
-DOGRULAMA BASARISIZ: ... Cozme REDDEDILDI.   (cikis kodu 2)
+STEP 5 - Attack: change only the last byte of the TAG
+VERIFICATION FAILED: the tag did not match, the data was tampered with, or the key is wrong. Decryption REJECTED.
+   (exit code 2 - the tag did not match)
 ```
 
 Satır satır ne oldu:
@@ -384,6 +388,17 @@ Satır satır ne oldu:
     - [ ] Anahtar koda gömülü değil, güvenli bir kaynaktan mı geliyor?
     - [ ] AES-CBC/CTR'yi tek başına (MAC'siz) kullanmıyorsunuz, değil mi?
 
+Aşağıdaki animasyonda şifreleme, dosya biçimi `[nonce][şifreli metin][etiket]` ve etiket doğrulamasının adım adım
+nasıl işlediğini — hem başarılı çözmeyi hem de kurcalanmış bir baytın nasıl reddedildiğini — izleyin.
+
+<iframe class="dsanim" src="../anim/aes-gcm-tag-check.html" title="AES-GCM: şifreleme ve etiket doğrulama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![AES-GCM: şifreleme ve etiket doğrulama — adım adım](anim/aes-gcm-tag-check.png)
+</div>
+
+Örnek seçiciden **doğru çözme** (uyar/zor) ile **şifreli metin kurcalandı** ve **yalnız etiket kurcalandı** (uç
+durumlar) senaryolarını deneyin — ya da 🎲 ile rastgele bir mesaj üretin, ya da kendi metninizi yazın.
+
 ---
 
 ## 3. Rastgele sayılar: kriptografinin görünmez temeli
@@ -417,9 +432,9 @@ göreceğimiz gibi) çıktı da tahmin edilebilir hale gelir.
 
 ```c title="Hatalı: saniye cinsinden zaman = tahmin edilebilir tohum"
 srand(time(NULL));
-unsigned char anahtar[16];
+unsigned char key[16];
 for (int i = 0; i < 16; i++)
-    anahtar[i] = rand() & 0xFF;
+    key[i] = rand() & 0xFF;
 ```
 
 Saldırgan anahtarın hangi gün üretildiğini biliyorsa, olası tohum sayısı bir günde yalnız 86.400'dür. Bir dizüstü
@@ -444,11 +459,11 @@ dizi bilinir.
     #include <sys/random.h>
     #include <errno.h>
 
-    int rastgele_bayt(void *tampon, size_t n)
+    int random_bytes(void *buffer, size_t n)
     {
-        unsigned char *p = tampon;
+        unsigned char *p = buffer;
         while (n > 0) {
-            ssize_t r = getrandom(p, n, 0);    /* havuz hazır olana kadar bekler */
+            ssize_t r = getrandom(p, n, 0);    /* blocks until the pool is ready */
             if (r < 0) {
                 if (errno == EINTR) continue;
                 return -1;
@@ -471,9 +486,9 @@ dizi bilinir.
     #include <bcrypt.h>
     #pragma comment(lib, "bcrypt.lib")
 
-    int rastgele_bayt(void *tampon, size_t n)
+    int random_bytes(void *buffer, size_t n)
     {
-        NTSTATUS s = BCryptGenRandom(NULL, (PUCHAR)tampon, (ULONG)n,
+        NTSTATUS s = BCryptGenRandom(NULL, (PUCHAR)buffer, (ULONG)n,
                                      BCRYPT_USE_SYSTEM_PREFERRED_RNG);
         return BCRYPT_SUCCESS(s) ? 0 : -1;
     }
@@ -486,7 +501,7 @@ dizi bilinir.
 
     ```c
     #include <openssl/rand.h>
-    if (RAND_bytes(tampon, (int)n) != 1) { /* hata: ASLA devam etme */ }
+    if (RAND_bytes(buffer, (int)n) != 1) { /* error: NEVER continue */ }
     ```
 
 !!! warning "Dönüş değerini denetleyin"
@@ -501,17 +516,17 @@ bölünmediği için 0–3 değerleri 43'er kez, 4–5 değerleri 42'şer kez ç
 parola ya da tek kullanımlık kod üretirken bazı karakterlerin daha sık çıkması tahmin edilebilirliği artırır.
 Doğru yöntem **reddetmedir** (Tarif 11.11):
 
-```c title="[0, ust) aralığında sapmasız rastgele tamsayı"
+```c title="[0, upper) aralığında sapmasız rastgele tamsayı"
 #include <stdint.h>
 
-uint32_t aralikta_rastgele(uint32_t ust)
+uint32_t random_in_range(uint32_t upper)
 {
-    uint32_t sinir = (uint32_t)(-ust) % ust;   /* 2^32 mod ust: bu kadar değer "fazla" */
+    uint32_t threshold = (uint32_t)(-upper) % upper;   /* 2^32 mod upper: this many values are "extra" */
     uint32_t r;
     do {
-        rastgele_bayt(&r, sizeof r);
-    } while (r < sinir);                        /* fazlalığı at, yeniden çek */
-    return r % ust;
+        random_bytes(&r, sizeof r);
+    } while (r < threshold);                    /* discard the extra, draw again */
+    return r % upper;
 }
 ```
 
@@ -553,7 +568,7 @@ sayıda girdiden gelir.
 
 ## 4. Kripto API'lerini doğru kullanmak: adım adım AES-GCM
 
-Demo 1'de AES-256-GCM ile bir dosyayı şifreledik ve kurcalamayı yakaladık. Demo, işi `code/common/cen429_kripto.h`
+Demo 1'de AES-256-GCM ile bir dosyayı şifreledik ve kurcalamayı yakaladık. Demo, işi `code/common/cen429_crypto.h`
 içindeki yardımcı fonksiyonlara bıraktı. Bu bölümde o fonksiyonların **içini** açıyoruz: OpenSSL'in EVP arayüzü ve
 Windows'un CNG (BCrypt) arayüzüyle AES-GCM'yi adım adım yazacağız. Amaç, bir kripto kütüphanesini kullanırken
 nerede hata yapılabileceğini görmektir. Kural hâlâ geçerlidir: **kendi algoritmanızı yazmazsınız**, ama hazır
@@ -572,28 +587,28 @@ yineleme sayısını değiştirirse etiket tutmaz.
 ```c title="aes_gcm.c — şifreleme (OpenSSL 1.1.1 / 3.x)"
 #include <openssl/evp.h>
 
-/* Başarıda şifreli metin uzunluğunu, hatada -1 döndürür. */
-int aes_gcm_sifrele(const unsigned char anahtar[32], const unsigned char nonce[12],
+/* Returns the ciphertext length on success, -1 on error. */
+int aes_gcm_encrypt_example(const unsigned char key[32], const unsigned char nonce[12],
                     const unsigned char *aad, int aad_n,
-                    const unsigned char *acik, int n,
-                    unsigned char *sifreli, unsigned char etiket[16])
+                    const unsigned char *plain, int n,
+                    unsigned char *ciphertext, unsigned char tag[16])
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    int yazilan, toplam = -1;
+    int written, total = -1;
     if (ctx == NULL) return -1;
 
-    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto son;   /* 1 */
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto son;     /* 2 */
-    if (EVP_EncryptInit_ex(ctx, NULL, NULL, anahtar, nonce) != 1) goto son;            /* 3 */
-    if (aad_n > 0 && EVP_EncryptUpdate(ctx, NULL, &yazilan, aad, aad_n) != 1) goto son; /* 4 */
-    if (EVP_EncryptUpdate(ctx, sifreli, &yazilan, acik, n) != 1) goto son;             /* 5 */
-    toplam = yazilan;
-    if (EVP_EncryptFinal_ex(ctx, sifreli + toplam, &yazilan) != 1) { toplam = -1; goto son; } /* 6 */
-    toplam += yazilan;
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, etiket) != 1) toplam = -1; /* 7 */
-son:
-    EVP_CIPHER_CTX_free(ctx);     /* bağlamdaki anahtar malzemesini de temizler */
-    return toplam;
+    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto done;   /* 1 */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto done;     /* 2 */
+    if (EVP_EncryptInit_ex(ctx, NULL, NULL, key, nonce) != 1) goto done;                /* 3 */
+    if (aad_n > 0 && EVP_EncryptUpdate(ctx, NULL, &written, aad, aad_n) != 1) goto done; /* 4 */
+    if (EVP_EncryptUpdate(ctx, ciphertext, &written, plain, n) != 1) goto done;         /* 5 */
+    total = written;
+    if (EVP_EncryptFinal_ex(ctx, ciphertext + total, &written) != 1) { total = -1; goto done; } /* 6 */
+    total += written;
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag) != 1) total = -1; /* 7 */
+done:
+    EVP_CIPHER_CTX_free(ctx);     /* also clears the key material inside the context */
+    return total;
 }
 ```
 
@@ -608,39 +623,39 @@ Adımlar sırasıyla:
    zorunludur**: etiket burada hesaplanır.
 7. Etiketi al ve şifreli metinle birlikte sakla.
 
-Her çağrının dönüş değeri denetleniyor ve tek bir çıkış noktasında (`son:`) bağlam serbest bırakılıyor. C'de
+Her çağrının dönüş değeri denetleniyor ve tek bir çıkış noktasında (`done:`) bağlam serbest bırakılıyor. C'de
 kaynak sızıntısını önlemenin en okunaklı yolu bu `goto` kalıbıdır.
 
 ### Çözme: etiket doğrulanmadan açık metne dokunma
 
 ```c title="aes_gcm.c — çözme"
-/* Başarıda açık metin uzunluğunu; etiket tutmazsa ya da hata olursa -1 döndürür. */
-int aes_gcm_coz(const unsigned char anahtar[32], const unsigned char nonce[12],
+/* Returns the plaintext length on success, -1 if the tag doesn't hold or on error. */
+int aes_gcm_decrypt_example(const unsigned char key[32], const unsigned char nonce[12],
                 const unsigned char *aad, int aad_n,
-                const unsigned char *sifreli, int n,
-                const unsigned char etiket[16], unsigned char *acik)
+                const unsigned char *ciphertext, int n,
+                const unsigned char tag[16], unsigned char *plain)
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    int yazilan, toplam = -1;
+    int written, total = -1;
     if (ctx == NULL) return -1;
 
-    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto son;
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto son;
-    if (EVP_DecryptInit_ex(ctx, NULL, NULL, anahtar, nonce) != 1) goto son;
-    if (aad_n > 0 && EVP_DecryptUpdate(ctx, NULL, &yazilan, aad, aad_n) != 1) goto son;
-    if (EVP_DecryptUpdate(ctx, acik, &yazilan, sifreli, n) != 1) goto son;
-    toplam = yazilan;
-    /* Beklenen etiketi Final'dan ÖNCE ver */
-    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void *)etiket) != 1) { toplam = -1; goto son; }
-    if (EVP_DecryptFinal_ex(ctx, acik + toplam, &yazilan) != 1) {
-        OPENSSL_cleanse(acik, (size_t)n);     /* etiket tutmadı: yarı çözülmüş veriyi sil */
-        toplam = -1;
-        goto son;
+    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) goto done;
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 12, NULL) != 1) goto done;
+    if (EVP_DecryptInit_ex(ctx, NULL, NULL, key, nonce) != 1) goto done;
+    if (aad_n > 0 && EVP_DecryptUpdate(ctx, NULL, &written, aad, aad_n) != 1) goto done;
+    if (EVP_DecryptUpdate(ctx, plain, &written, ciphertext, n) != 1) goto done;
+    total = written;
+    /* Give the expected tag BEFORE Final */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void *)tag) != 1) { total = -1; goto done; }
+    if (EVP_DecryptFinal_ex(ctx, plain + total, &written) != 1) {
+        OPENSSL_cleanse(plain, (size_t)n);     /* tag did not hold: wipe the half-decrypted data */
+        total = -1;
+        goto done;
     }
-    toplam += yazilan;
-son:
+    total += written;
+done:
     EVP_CIPHER_CTX_free(ctx);
-    return toplam;
+    return total;
 }
 ```
 
@@ -657,45 +672,45 @@ son:
     #include <windows.h>
     #include <bcrypt.h>
 
-    int aes_gcm_sifrele_cng(const UCHAR anahtar[32], const UCHAR nonce[12],
-                            UCHAR *aad, ULONG aad_n, const UCHAR *acik, ULONG n,
-                            UCHAR *sifreli, UCHAR etiket[16])
+    int aes_gcm_encrypt_cng_example(const UCHAR key[32], const UCHAR nonce[12],
+                            UCHAR *aad, ULONG aad_n, const UCHAR *plain, ULONG n,
+                            UCHAR *ciphertext, UCHAR tag[16])
     {
         BCRYPT_ALG_HANDLE alg = NULL;
-        BCRYPT_KEY_HANDLE key = NULL;
-        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO bilgi;
-        ULONG yazilan = 0;
-        int sonuc = -1;
+        BCRYPT_KEY_HANDLE keyHandle = NULL;
+        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO info;
+        ULONG written = 0;
+        int result = -1;
 
-        if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(&alg, BCRYPT_AES_ALGORITHM, NULL, 0))) goto son;
+        if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(&alg, BCRYPT_AES_ALGORITHM, NULL, 0))) goto done;
         if (!BCRYPT_SUCCESS(BCryptSetProperty(alg, BCRYPT_CHAINING_MODE,
-                (PUCHAR)BCRYPT_CHAIN_MODE_GCM, sizeof(BCRYPT_CHAIN_MODE_GCM), 0))) goto son;
-        if (!BCRYPT_SUCCESS(BCryptGenerateSymmetricKey(alg, &key, NULL, 0,
-                (PUCHAR)anahtar, 32, 0))) goto son;
+                (PUCHAR)BCRYPT_CHAIN_MODE_GCM, sizeof(BCRYPT_CHAIN_MODE_GCM), 0))) goto done;
+        if (!BCRYPT_SUCCESS(BCryptGenerateSymmetricKey(alg, &keyHandle, NULL, 0,
+                (PUCHAR)key, 32, 0))) goto done;
 
-        BCRYPT_INIT_AUTH_MODE_INFO(bilgi);
-        bilgi.pbNonce = (PUCHAR)nonce; bilgi.cbNonce = 12;
-        bilgi.pbAuthData = aad;        bilgi.cbAuthData = aad_n;
-        bilgi.pbTag = etiket;          bilgi.cbTag = 16;
+        BCRYPT_INIT_AUTH_MODE_INFO(info);
+        info.pbNonce = (PUCHAR)nonce; info.cbNonce = 12;
+        info.pbAuthData = aad;        info.cbAuthData = aad_n;
+        info.pbTag = tag;             info.cbTag = 16;
 
-        if (BCRYPT_SUCCESS(BCryptEncrypt(key, (PUCHAR)acik, n, &bilgi, NULL, 0,
-                                         sifreli, n, &yazilan, 0)))
-            sonuc = (int)yazilan;
-    son:
-        if (key) BCryptDestroyKey(key);
+        if (BCRYPT_SUCCESS(BCryptEncrypt(keyHandle, (PUCHAR)plain, n, &info, NULL, 0,
+                                         ciphertext, n, &written, 0)))
+            result = (int)written;
+    done:
+        if (keyHandle) BCryptDestroyKey(keyHandle);
         if (alg) BCryptCloseAlgorithmProvider(alg, 0);
-        return sonuc;
+        return result;
     }
     ```
 
 === "Çözme"
 
     ```c
-    /* Aynı hazırlık; bilgi.pbTag beklenen etiketi gösterir. */
-    NTSTATUS s = BCryptDecrypt(key, (PUCHAR)sifreli, n, &bilgi, NULL, 0,
-                               acik, n, &yazilan, 0);
+    /* Aynı hazırlık; info.pbTag beklenen etiketi gösterir. */
+    NTSTATUS s = BCryptDecrypt(keyHandle, (PUCHAR)ciphertext, n, &info, NULL, 0,
+                               plain, n, &written, 0);
     if (s == STATUS_AUTH_TAG_MISMATCH) {      /* 0xC000A002: kurcalama */
-        SecureZeroMemory(acik, n);
+        SecureZeroMemory(plain, n);
         return -1;
     }
     ```
@@ -711,12 +726,12 @@ Etiketi ya da bir MAC'i elle karşılaştırmanız gerekirse (ör. HMAC ile imza
 bayt bayt tahmin edip süreyi ölçerek doğru değere ulaşabilir (zamanlama saldırısı).
 
 ```c title="Sabit zamanlı karşılaştırma"
-int sabit_zamanli_esit(const unsigned char *a, const unsigned char *b, size_t n)
+int constant_time_equal(const unsigned char *a, const unsigned char *b, size_t n)
 {
-    unsigned char fark = 0;
+    unsigned char diff = 0;
     for (size_t i = 0; i < n; i++)
-        fark |= a[i] ^ b[i];         /* her baytı mutlaka dolaş */
-    return fark == 0;
+        diff |= a[i] ^ b[i];         /* always walk every byte */
+    return diff == 0;
 }
 ```
 
@@ -775,25 +790,25 @@ diğerini tamamen çözer.
 
 ### Demo 2 — Nonce tekrarının iki düz metnin XOR'unu sızdırması
 
-!!! info "Demo 2 · `code/week-03/02-nonce-tekrari` · nonce yeniden kullanımı"
+!!! info "Demo 2 · `code/week-03/02-nonce-reuse` · nonce yeniden kullanımı"
     Program iki farklı mesajı önce **aynı** nonce ile, sonra **farklı** nonce ile AES-256-GCM ile şifreliyor ve
     `C1 ⊕ C2` ile `P1 ⊕ P2`'yi karşılaştırıyor.
 
-```text title="sh demo.sh — gerçek çıktı (hex kısaltıldı)"
-Duz metin 1: "Saldiri safagi 06:00'da baslasin!!"
-Duz metin 2: "Toplam bakiye 45000 TL, sifre 1234"
+```text title="nonce_reuse.exe — gerçek çıktı (hex kısaltıldı)"
+Plaintext 1: "Attack begins at dawn, 06:00 hours!"
+Plaintext 2: "Total balance is 45000, PIN is 1234"
 ==============================================================
-KOTU DURUM - iki mesajda da AYNI nonce:
-  C1 xor C2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  P1 xor P2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  ==> C1 xor C2 == P1 xor P2 : anahtar akisi SIZDI!
-  Saldirgan P1'i biliyorsa P2 = (C1 xor C2) xor P1 =
-     "Toplam bakiye 45000 TL, sifre 1234"
+BAD CASE - the SAME nonce for both messages:
+  C1 xor C2 = 151b00000f4b42030906070d16000807 ... 44404015
+  P1 xor P2 = 151b00000f4b42030906070d16000807 ... 44404015
+  ==> C1 xor C2 == P1 xor P2 : the keystream LEAKED!
+  If the attacker knows P1, P2 = (C1 xor C2) xor P1 =
+     "Total balance is 45000, PIN is 1234"
 ==============================================================
-IYI DURUM - her mesaja FARKLI nonce:
-  C1 xor C2 = 21158fbd64978ae63835b80d1f98c02d2 ... 8385c5af
-  P1 xor P2 = 070e1c08081f4942120a0f18024914050 ... 5c1215
-  ==> C1 xor C2 != P1 xor P2 : sizinti YOK.
+GOOD CASE - a DIFFERENT nonce for each message:
+  C1 xor C2 = 330093b563c381a72339b0180bd1dc2f ... d97fab3
+  P1 xor P2 = 151b00000f4b42030906070d16000807 ... 44404015
+  ==> C1 xor C2 != P1 xor P2 : no leak.
 ```
 
 Kötü durumda `C1 ⊕ C2` ile `P1 ⊕ P2` **birebir aynı** çıktı: anahtar akışı iptal oldu. Program bir mesajı bilen
@@ -820,6 +835,17 @@ saldırganın diğerini `(C1 ⊕ C2) ⊕ P1` ile tamamen çözdüğünü de gös
     - [ ] Rastgele nonce kullanıyorsanız 96 bit yeterli mesaj sayısı için mi?
     - [ ] Aynı `(anahtar, nonce)` çifti iki mesajda kullanılamaz, doğru mu?
 
+Aşağıdaki animasyonda aynı nonce'un iki mesajı nasıl aynı anahtar akışıyla şifrelediğini, `C1 xor C2`'nin
+`P1 xor P2`'ye nasıl eşit çıktığını ve saldırganın bilinen bir düz metinle diğerini nasıl kurtardığını izleyin.
+
+<iframe class="dsanim" src="../anim/nonce-reuse.html" title="Nonce tekrarının tehlikesi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Nonce tekrarının tehlikesi — adım adım](anim/nonce-reuse.png)
+</div>
+
+Örnek seçiciden **aynı nonce ile sızıntı** (uyar/zor) ile **farklı nonce, sızıntı yok** ve **iki mesaj da aynı**
+(uç durumlar) senaryolarını deneyin — ya da kendi iki eş uzunluklu mesajınızı yazın.
+
 ### 5.2 ECB deseni sızdırır
 
 Nonce/IV kullanmayan bir kip olan **ECB** (Electronic Codebook), her 16 baytlık bloğu **bağımsız** şifreler. Aynı düz
@@ -827,29 +853,29 @@ metin bloğu **her zaman** aynı şifreli bloğu verir; bu yüzden verideki tekr
 
 ### Demo 3 — ECB "pengueni": desen sızıntısı
 
-!!! info "Demo 3 · `code/week-03/03-ecb-desen` · ECB desen sızıntısı"
+!!! info "Demo 3 · `code/week-03/03-ecb-pattern` · ECB desen sızıntısı"
     İki renkli bir "resim" kuruyoruz (her piksel tam bir 16 baytlık blok). AES-128-**ECB** ile şifrelenince şekil hâlâ
     okunur kalır; AES-256-**GCM** (CTR tabanlı) ile şifrelenince desen kaybolur.
 
-```text title="sh demo.sh — gerçek çıktı"
-Orijinal resim (duz metin):
+```text title="ecb_pattern.exe — gerçek çıktı"
+Original picture (plaintext):
   ################################
   #  ##    ####    ####    ##    #
   ...  (429 rakamlari)  ...
   ################################
 ==============================================================
-AES-128-ECB ile sifreli (her blok ilk baytina gore):
+Encrypted with AES-128-ECB (each block by its first byte):
   ================================
   =##==####====####====####==####=
   ...  ayni sekil hala GORUNUYOR ...
   ================================
-  ==> Sekil hala GORUNUYOR: ECB deseni sizdirir.
+  ==> The shape is still VISIBLE: ECB leaks the pattern. DO NOT USE IT.
 ==============================================================
-AES-256-GCM (CTR tabanli) ile sifreli, ayni resim:
+Encrypted with AES-256-GCM (CTR-based), same picture:
   : -..--+%%*-:**% . #*#+*.:+* :..
   *.#*##:*%+###:#-*%==*#-+=%:.=***
   ...  desen kayboldu, gurultu ...
-  ==> Desen kayboldu: GCM/CTR her blogu farkli sifreler.
+  ==> The pattern is gone: GCM/CTR encrypts every block differently.
 ```
 
 ECB çıktısında yalnız **iki** karakter var (arka plan bloğu → bir şifreli blok, şekil bloğu → başka bir şifreli blok);
@@ -870,6 +896,17 @@ akışıyla şifrelendiği için çıktı gürültüdür.
     - [ ] Görüntü/yapılandırılmış veri şifrelerken desen sızıntısını düşündünüz mü?
     - [ ] Şifreli çıktı, aynı girdi için her seferinde farklı mı (nonce/IV sayesinde)?
 
+Aşağıdaki animasyonda küçük bir resmi hem ECB hem GCM ile şifreleyip desenin ECB'de nasıl **okunur kaldığını**,
+GCM'de nasıl **kaybolduğunu** izleyin.
+
+<iframe class="dsanim" src="../anim/ecb-vs-gcm-pattern.html" title="ECB deseni sızdırır, GCM sızdırmaz" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ECB deseni sızdırır, GCM sızdırmaz — adım adım](anim/ecb-vs-gcm-pattern.png)
+</div>
+
+Örnek seçiciden **küçük bir şekil** (uyar/zor) ile **tamamı arka plan** ve **dama tahtası** (uç durumlar)
+desenlerini deneyin — ya da kendi 0/1 desenli küçük resminizi yazın.
+
 ---
 
 ## 6. Paroladan anahtar türetme
@@ -889,36 +926,50 @@ iki iş yapar:
 | **scrypt** | CPU **+ bellek** | Bellek-zor isteniyorsa | RFC 7914 |
 | **Argon2id** | CPU + bellek + paralellik | **Yeni sistemlerde birinci tercih** | RFC 9106, OWASP |
 
+!!! note "Kısa tarihçe: parola KDF'leri"
+    - **1999** — Niels Provos ve David Mazières, Bcrypt algoritmasını (Blowfish'in anahtar çizelgelemesine dayanan,
+      ayarlanabilir maliyetli bir parola özetleme fonksiyonu) yayımlar.
+    - **2000** — RSA Laboratories'in **PKCS #5 v2.0** standardı (RFC 2898), **PBKDF2**'yi tanımlar.
+    - **2009** — Colin Percival, **scrypt**'i tanımlar; amaç özel donanımla (ASIC/FPGA) kaba kuvveti bellek
+      gereksinimiyle pahalılaştırmaktır (RFC 7914).
+    - **2013–2015** — Password Hashing Competition (PHC); **2015**'te Alex Biryukov, Daniel Dinu ve Dmitry
+      Khovratovich'in **Argon2**'si kazanır (Argon2id, RFC 9106 ile standartlaşır).
+
 !!! info "Kitap tarifi ve güncelleme"
     Kitap paroladan anahtar türetmeyi **tarif 4.10**'da PBKDF2 ile, 10.000 tur önererek anlatır. Bugün bu **çok
     düşüktür**: OWASP (2023) PBKDF2-HMAC-SHA256 için **≥ 600.000 tur** ister; mümkünse **Argon2id** tercih edilir.
 
 ### Demo 4 — Tur sayısı, süre ve tuzun önemi
 
-!!! info "Demo 4 · `code/week-03/04-parola-anahtar` · PBKDF2, tuz, maliyet"
+!!! info "Demo 4 · `code/week-03/04-password-to-key` · PBKDF2, tuz, maliyet"
     Program aynı paroladan PBKDF2 ile anahtar türetir: aynı tuz → aynı anahtar (tabloya açıklık), farklı tuz → farklı
     anahtar; ve tur sayısı arttıkça geçen süreyi ölçer. WSL'de `argon2` aracı varsa Argon2id karşılaştırması da yapılır.
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-1) TUZUN ONEMI (tur = 100000)
-   tuz A -> anahtar = e1d9214abdcfa793...cad33a816
-   tuz A -> anahtar = e1d9214abdcfa793...cad33a816   (ayni)
-   tuz B -> anahtar = 89cc5979affa2a62...972e020e   (farkli)
+```text title="password_to_key.exe — gerçek çıktı (Windows)"
+Password: "dog123"
 ==============================================================
-2) TUR SAYISI vs SURE (ayni parola, ayni tuz)
-   tur =     1000  ->      0.37 ms
-   tur =    10000  ->      3.82 ms
-   tur =   100000  ->     39.05 ms
-   tur =   600000  ->    209.55 ms
-   tur =  2000000  ->    628.42 ms
+1) WHY THE SALT MATTERS (rounds = 100000)
+   salt A -> key = 8b3d1913b0a104fa643f2b7b36863c65d1deda204e9f6bf6c1b21443930ec892
+   salt A -> key = 8b3d1913b0a104fa643f2b7b36863c65d1deda204e9f6bf6c1b21443930ec892
+   ^ Same password + the SAME salt -> the SAME key (a table lookup would work)
+   salt B -> key = e9a8193a675ec5dd2366aad2a54d253c655f2c914043858b5a4c8d8b53691290
+   ^ Same password + a DIFFERENT salt -> a DIFFERENT key (the salt does its job)
 ==============================================================
-3) Argon2id ile karsilastirma (argon2 araci varsa)
-   $argon2id$v=19$m=65536,t=3,p=1$...   0.112 seconds
+2) ROUND COUNT vs TIME (same password, same salt)
+   rounds =     1000  ->      1.24 ms
+   rounds =    10000  ->     12.55 ms
+   rounds =   100000  ->    126.75 ms
+   rounds =   600000  ->    824.96 ms
+   rounds =  2000000  ->   2808.32 ms
+   ^ As the round count grows, every password guess gets more expensive.
 ```
+
+Argon2id karşılaştırması yalnız WSL/Linux'ta, `argon2` aracı kuruluysa çalışır (`demo.sh`'ın 3. adımı); Windows demosu
+(`.\demo.ps1`) yalnız açıklamayı yazdırır (bkz. aşağıdaki not).
 
 - **Tuz:** Aynı parola + aynı tuz her seferinde **aynı** anahtarı verdi (bu yüzden tuz sabitse saldırgan bir kez tablo
   kurup herkesi arar). Aynı parola + **farklı** tuz tamamen farklı anahtar verdi.
-- **Maliyet:** Tur sayısı 1.000'den 2.000.000'a çıkınca süre ~0,4 ms'den ~628 ms'ye çıktı. Bu doğrudan çarpandır:
+- **Maliyet:** Tur sayısı 1.000'den 2.000.000'a çıkınca süre ~1,2 ms'den ~2,8 saniyeye çıktı. Bu doğrudan çarpandır:
   saldırganın her parola denemesi de o kadar pahalılaşır. "Kullanıcı girişinde 200 ms" kabul edilebilir; saldırgan için
   saniyede milyarlarca deneme yerine binlerce deneme demektir.
 - **Argon2id:** Ek olarak **bellek** (burada 64 MiB) ister; GPU/ASIC ile paralel kaba kuvveti PBKDF2'den daha çok
@@ -943,6 +994,18 @@ iki iş yapar:
     (HSM) tutulan gizli bir **biber (pepper)** de eklenebilir. Böylece yalnız veritabanı çalınırsa (biber sızmadıkça)
     parola özetleri kaba kuvvete karşı bir kat daha korunur. Tuz gizli değildir; biber gizlidir.
 
+Aşağıdaki animasyonda küçük bir tur zincirinin (`U1 -> U2 -> ... -> Uₙ`) nasıl işlediğini ve aynı parolanın farklı
+tuzlarla nasıl tamamen farklı anahtarlar verdiğini izleyin; gerçek demodan ölçülen tur-süre tablosu da gösterilir.
+
+<iframe class="dsanim" src="../anim/pbkdf2-stretching.html" title="Paroladan anahtar türetme: tuz ve tur" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Paroladan anahtar türetme: tuz ve tur — adım adım](anim/pbkdf2-stretching.png)
+</div>
+
+Örnek seçiciden **4 turluk zincir** (uyar) ile **6 turluk zincir** (zor) ve uç durumlardaki **tek tur** ile **çok
+kısa parola**yı deneyin — ya da kendi parola:tur çiftinizi yazın (gösterim için tur sayısı 1-6 ile sınırlıdır;
+gerçek demo 100.000+ tur kullanır).
+
 ---
 
 ## 7. Ana sırdan anahtar türetme, oturum anahtarları ve ileri gizlilik
@@ -954,6 +1017,11 @@ Araç: **HKDF** (RFC 5869), iki aşamalı bir KDF:
 - **Expand:** PRK + "info" etiketi → istenen boyda anahtar. Farklı `info` → farklı anahtar.
 
 ![HKDF Extract ve Expand ile ana sırdan amaca özel anahtarlar](assets/h03-03-hkdf.svg)
+
+!!! note "Kısa tarihçe: HKDF"
+    **2010** — Hugo Krawczyk, "Cryptographic Extraction and Key Derivation: The HKDF Scheme" makalesiyle Extract-then-
+    Expand yapısını biçimselleştirir; IETF bunu **2010**'da **RFC 5869** olarak yayımlar. HKDF bugün TLS 1.3'ün anahtar
+    çizelgesi dahil birçok protokolün temel yapıtaşıdır.
 
 !!! info "Kitap tarifi"
     Kitap **tarif 4.11**'de "tek bir ana sırdan algoritmayla anahtar üretme" ve **4.13**'te anahtar malzemesini güvenli
@@ -967,29 +1035,34 @@ Anahtarları bir **tek yönlü zincir** olarak türetirsek — `K0 = ana sır`, 
 verisini) **hesaplayamaz**. TLS 1.3 bu güvenceyi her oturumda geçici Diffie-Hellman ile sağlar (kitap **tarif
 8.20–8.21**).
 
+!!! note "Terimin kökeni"
+    "**Perfect forward secrecy**" terimi, Whitfield Diffie, Paul van Oorschot ve Michael Wiener'ın **1992**'de
+    yayımlanan "Authentication and Authenticated Key Exchanges" makalesine kadar uzanır; bugün kısaca **forward
+    secrecy** (ileri gizlilik) olarak anılır.
+
 ![İleri gizlilik: tek yönlü anahtar zinciri](assets/h03-11-ileri-gizlilik.svg)
 
 ### Demo 5 — HKDF ile oturum anahtarları ve ileri gizlilik zinciri
 
-!!! info "Demo 5 · `code/week-03/05-hkdf-oturum` · HKDF, oturum anahtarı, ileri gizlilik"
+!!! info "Demo 5 · `code/week-03/05-hkdf-session` · HKDF, oturum anahtarı, ileri gizlilik"
 
-```text title="sh demo.sh — gerçek çıktı"
-Tek ana sirdan amaca gore ayri anahtarlar:
-  info='...sifreleme...' -> 2b8b46840fa2d1b1...0e577a55
-  info='...MAC...'       -> 30a302d19ec9ab8e...c55dfa84
-  ^ Ayni sir, farkli info -> farkli anahtar.
+```text title="hkdf_session.exe — gerçek çıktı"
+Separate keys per purpose, from one master secret:
+  info='...encryption...' -> 5a5ed417c87e3566...0d37002cb
+  info='...MAC...'        -> 4c63a348654a076c...0ce1750e6
+  ^ Same secret, different info -> different key.
 ==============================================================
-ILERI GIZLILIK zinciri: Ki = HKDF(Ki-1), Ki-1 silinir
-  K1 (oturum 1) = 0630f63f015d003e
-  K2 (oturum 2) = def84847df4d9461
-  K3 (oturum 3) = 54b13f0ff3a486ca
-  K4 (oturum 4) = 55524a8f5c09652f
-  ^ Elimizde yalniz K4 var; zincir tek yonlu oldugu icin
-    K4'ten K3, K2, K1 geri hesaplanamaz.
+FORWARD SECRECY chain: Ki = HKDF(Ki-1), Ki-1 is wiped
+  K1 (session 1) = cbbe8fdd0b6ca8be
+  K2 (session 2) = 1113abf7352881e0
+  K3 (session 3) = a99c7ad8e0e6fb6b
+  K4 (session 4) = 4974f0e86d9dcb37
+  ^ We now only have K4. Because the chain is ONE-WAY, K3, K2, K1
+    cannot be recomputed backwards from K4.
 ```
 
 Aynı ana sırdan farklı `info` etiketleriyle farklı anahtarlar çıktı; bir amaç için üretilen anahtar başka amaca
-kullanılamaz. İleri gizlilik zincirinde her adımda eski anahtar `kripto_temizle` (OPENSSL_cleanse/SecureZeroMemory) ile
+kullanılamaz. İleri gizlilik zincirinde her adımda eski anahtar `crypto_wipe` (OPENSSL_cleanse/SecureZeroMemory) ile
 silindi; elde yalnız son anahtar kaldı ve tek yönlülük geçmişi korudu.
 
 !!! success "Kural"
@@ -1012,6 +1085,17 @@ silindi; elde yalnız son anahtar kaldı ve tek yönlülük geçmişi korudu.
     - [ ] Şifreleme ve MAC için **ayrı** anahtarlar mı türetiliyor?
     - [ ] Oturum anahtarları kullanımdan sonra siliniyor mu?
     - [ ] Ana sır bellekte gereğinden uzun durmuyor, değil mi?
+
+Aşağıdaki animasyonda `Extract` ve `Expand`'in ana sırdan nasıl amaca özel anahtarlar ürettiğini, sonra ileri
+gizlilik zincirinin her adımda eski anahtarı nasıl sildiğini izleyin.
+
+<iframe class="dsanim" src="../anim/hkdf-extract-expand.html" title="HKDF: Extract/Expand ve ileri gizlilik" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HKDF: Extract/Expand ve ileri gizlilik — adım adım](anim/hkdf-extract-expand.png)
+</div>
+
+Örnek seçiciden **4 adımlık zincir** (uyar, gerçek demoyla aynı) ile **6 adımlık zincir** (zor) ve uç durumlardaki
+**tek adım** ile **hiç ilerlemeyen zincir**i deneyin — ya da kendi ana_sır:adım çiftinizi yazın.
 
 ---
 
@@ -1108,12 +1192,12 @@ alanını değiştirip uygulamayı eski, zayıf bir anahtara yönlendiremez.
 #include <dpapi.h>
 #pragma comment(lib, "crypt32.lib")
 
-int anahtari_sar(const BYTE *anahtar, DWORD n, DATA_BLOB *cikti)
+int wrap_key(const BYTE *key, DWORD n, DATA_BLOB *out)
 {
-    DATA_BLOB giris = { n, (BYTE *)anahtar };
-    /* cikti->pbData, iş bitince LocalFree ile serbest bırakılır */
-    return CryptProtectData(&giris, L"kasa-anahtari", NULL, NULL, NULL,
-                            CRYPTPROTECT_UI_FORBIDDEN, cikti) ? 0 : -1;
+    DATA_BLOB in = { n, (BYTE *)key };
+    /* out->pbData is freed with LocalFree once you're done with it */
+    return CryptProtectData(&in, L"vault-key", NULL, NULL, NULL,
+                            CRYPTPROTECT_UI_FORBIDDEN, out) ? 0 : -1;
 }
 ```
 
@@ -1205,6 +1289,18 @@ kırık kabul edilir ve bırakılmıştır (POODLE, BEAST gibi saldırılar).
 TLS 1.3'ün iki kilit özelliği: (1) el sıkışma **tek gidiş-dönüşte** biter (hızlı); (2) anahtar değişimi her zaman
 **geçici (ephemeral) ECDHE** ile yapılır, yani **ileri gizlilik** varsayılan olarak açıktır (RFC 8446).
 
+Aşağıdaki animasyonda el sıkışma mesajlarının sırasını iki yaşam çizgisi (İstemci/Sunucu) üzerinde adım adım
+izleyin: normal el sıkışma, karşılıklı TLS (mTLS), sertifika reddiyle yarıda kesilen el sıkışma ve doğrulamasız
+(güvensiz) bir istemcinin yine de tamamlanan ama korunmasız el sıkışması.
+
+<iframe class="dsanim" src="../anim/tls13-handshake.html" title="TLS 1.3 el sıkışması: mesaj sırası" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![TLS 1.3 el sıkışması: mesaj sırası — adım adım](anim/tls13-handshake.png)
+</div>
+
+Örnek seçiciden **normal el sıkışma** (uyar) ile **karşılıklı TLS** (zor) ve uç durumlardaki **yarıda kesilen**
+ile **doğrulamasız** senaryoları deneyin.
+
 ### 9.2 Doğrulamanın üç katmanı — ve en tehlikeli tuzak
 
 Bir TLS bağlantısı, karşı tarafın sunduğu sertifikayı **doğrulamazsa** hiçbir şey ifade etmez. Doğrulama üç sorudan
@@ -1237,6 +1333,18 @@ zincirleri, CRL ve OCSP'yi **[Hafta 10](../week-10/cen429-week-10.md)**'da ayrı
   uyarılır. SSH'ın yaptığı budur (kitap **tarif 8.19**). PKI kadar güçlü değildir ama ilk bağlantıdan sonra araya
   girmeyi zorlaştırır.
 
+Aşağıdaki animasyonda uygulamaya gömülü **birincil** ve **yedek** pin ile sunucunun sunduğu pinin nasıl
+karşılaştırıldığını izleyin: eşleşme, planlı anahtar rotasyonuyla yedeğe düşme ve hiçbir pinle eşleşmeyen bir
+saldırı denemesi.
+
+<iframe class="dsanim" src="../anim/certificate-pinning.html" title="Sertifika sabitleme: birincil, yedek, uyuşmazlık" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Sertifika sabitleme: birincil, yedek, uyuşmazlık — adım adım](anim/certificate-pinning.png)
+</div>
+
+Örnek seçiciden **birincil pinle eşleşme** (uyar) ile **yedek pine düşme** (zor) ve uç durumlardaki **hiçbir
+pinle eşleşmeme** ile **çok kısa sunucu adı**nı deneyin.
+
 ### 9.4 TLS 1.2'den 1.3'e ne değişti?
 
 TLS 1.3 yalnız bir sürüm artışı değil, **temiz bir sadeleşmedir**. Eski sürümlerde onlarca "şifre takımı" (cipher
@@ -1264,35 +1372,35 @@ suite) vardı ve birçoğu zayıftı; yanlış yapılandırma yaygın bir açık
 
 İstemcinin özü:
 
-```c title="tls_istemci.c (özet)"
-SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);   /* en az TLS 1.2 */
-if (dogrula) {
-    SSL_CTX_load_verify_locations(ctx, ca_pem, NULL);  /* güvenilen CA */
+```c title="tls_client.c (özet)"
+SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);   /* at least TLS 1.2 */
+if (verify) {
+    SSL_CTX_load_verify_locations(ctx, ca_pem, NULL);  /* the trusted CA */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
-    SSL_set1_host(ssl, host);                           /* ana makine adı! */
+    SSL_set1_host(ssl, host);                           /* the hostname! */
 }
-/* pin modunda: sunucu ACIK ANAHTARININ (SPKI) SHA-256'si eslesmeli */
+/* in pin mode: the server's PUBLIC KEY's (SPKI) SHA-256 must match */
 i2d_X509_PUBKEY(X509_get_X509_PUBKEY(cert), &der);
-EVP_Digest(der, len, ozet, NULL, EVP_sha256(), NULL);
-if (memcmp(ozet, beklenen_pin, 32) != 0) { /* REDDET */ }
+EVP_Digest(der, len, actual, NULL, EVP_sha256(), NULL);
+if (memcmp(actual, expected_pin, 32) != 0) { /* REJECT */ }
 ```
 
 ```text title="sh demo.sh — gerçek çıktı (WSL)"
-Gercek sunucu SPKI pini (SHA-256): 1dabd67747366675...ac36b3f7c
+The real server's SPKI pin (SHA-256): 1dabd67747366675...ac36b3f7c
 ==============================================================
-SENARYO 1 - Guvensiz istemci SALDIRGAN sunucuya:
-[guvensiz] Dogrulama YOK - ne gelirse KABUL (TEHLIKELI).
-   ^ Sahte sertifika kabul edildi. MITM basarili olurdu.
-SENARYO 2 - Dogrulayan istemci GERCEK sunucuya:
-[dogrula] Zincir + hostname DOGRULANDI - KABUL.
-SENARYO 3 - Dogrulayan istemci SALDIRGAN sunucuya:
-[dogrula] EL SIKISMA BASARISIZ - baglanti REDDEDILDI.
-   Sebep: (18: self signed certificate)
-SENARYO 4 - Pinleyen istemci GERCEK sunucuya, DOGRU pin:
-[pin] SPKI pin TUTTU - baglanti KABUL.
-SENARYO 5 - Pinleyen istemci SALDIRGAN sunucuya, GERCEK pin ile:
-[pin] SPKI pin TUTMADI - baglanti REDDEDILDI.
-   ^ Anahtar tutmadi: pinning MITM'i durdurdu.
+SCENARIO 1 - Insecure client to the ATTACKER's server (port 14444):
+[insecure] no verification - ACCEPTS whatever it gets (DANGEROUS).
+   ^ The fake certificate was accepted. A MITM would have succeeded.
+SCENARIO 2 - Verifying client to the REAL server (port 14443):
+[verify] chain + hostname VERIFIED - ACCEPTED.
+SCENARIO 3 - Verifying client to the ATTACKER's server (port 14444):
+[verify] HANDSHAKE FAILED - connection REJECTED.
+   Reason: certificate verification error (18: self signed certificate)
+SCENARIO 4 - Pinning client to the REAL server, with the CORRECT pin:
+[pin] the SPKI pin MATCHED - connection ACCEPTED.
+SCENARIO 5 - Pinning client to the ATTACKER's server, with the REAL pin:
+[pin] the SPKI pin did NOT match - connection REJECTED.
+   ^ The key did not match: pinning stopped the MITM.
 ```
 
 Beş senaryo tek bir hikâye anlatır: **doğrulamasız istemci** saldırganın sahte sertifikasını sorgusuz kabul eder (MITM
@@ -1337,12 +1445,12 @@ aşağıdaki kod bu tariflerin OpenSSL 1.1.1/3.x'e güncellenmiş halidir.
 
 ### OpenSSL ile doğru bir istemci: yedi adım
 
-```c title="tls_istemci.c — OpenSSL 1.1.1 / 3.x"
+```c title="Doğru bir TLS istemcisi, adım adım (öğretici örnek — OpenSSL 1.1.1 / 3.x)"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-/* Başarıda okunup yazılabilen bir BIO döndürür; iş bitince BIO_free_all + SSL_CTX_free. */
-BIO *tls_baglan(SSL_CTX **ctx_cikti, const char *ana_makine, const char *port)
+/* Returns a BIO that can be read/written on success; call BIO_free_all + SSL_CTX_free when done. */
+BIO *tls_connect(SSL_CTX **ctx_out, const char *host, const char *port)
 {
     BIO *bio = NULL;
     SSL *ssl = NULL;
@@ -1350,27 +1458,32 @@ BIO *tls_baglan(SSL_CTX **ctx_cikti, const char *ana_makine, const char *port)
     if (!ctx) return NULL;
     SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);             /* 2 */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);                  /* 3 */
-    if (SSL_CTX_set_default_verify_paths(ctx) != 1) goto hata;       /* 4 */
+    if (SSL_CTX_set_default_verify_paths(ctx) != 1) goto fail;       /* 4 */
 
-    if ((bio = BIO_new_ssl_connect(ctx)) == NULL) goto hata;
+    if ((bio = BIO_new_ssl_connect(ctx)) == NULL) goto fail;
     BIO_get_ssl(bio, &ssl);
-    SSL_set_tlsext_host_name(ssl, ana_makine);                       /* 5: SNI */
-    if (SSL_set1_host(ssl, ana_makine) != 1) goto hata;              /* 6: ad denetimi */
-    BIO_set_conn_hostname(bio, ana_makine);
+    SSL_set_tlsext_host_name(ssl, host);                             /* 5: SNI */
+    if (SSL_set1_host(ssl, host) != 1) goto fail;                    /* 6: hostname check */
+    BIO_set_conn_hostname(bio, host);
     BIO_set_conn_port(bio, port);
 
-    if (BIO_do_connect(bio) <= 0 || BIO_do_handshake(bio) <= 0) goto hata;
-    if (SSL_get_verify_result(ssl) != X509_V_OK) goto hata;          /* 7 */
+    if (BIO_do_connect(bio) <= 0 || BIO_do_handshake(bio) <= 0) goto fail;
+    if (SSL_get_verify_result(ssl) != X509_V_OK) goto fail;          /* 7 */
 
-    *ctx_cikti = ctx;
+    *ctx_out = ctx;
     return bio;
-hata:
+fail:
     ERR_print_errors_fp(stderr);
     BIO_free_all(bio);
     SSL_CTX_free(ctx);
     return NULL;
 }
 ```
+
+!!! note "Bu, `tls_client.c`'in kendisi değil"
+    `tls_client.c` doğrulamayı tek bir `SSL_connect()` çağrısına bırakır (OpenSSL el sıkışmayı içeride yürütür);
+    yukarıdaki `tls_connect()` aynı yedi adımı **BIO arayüzüyle elle** göstermek için yazılmış öğretici bir örnektir
+    (kitabın Tarif 9.1/10.7/10.8/10.9'unun güncellenmiş hâli). İkisi de aynı yedi adımı uygular.
 
 | Adım | Ne yapar? | Atlanırsa |
 | --- | --- | --- |
@@ -1384,8 +1497,8 @@ hata:
 
 !!! warning "Adım 6 neden bu kadar önemli?"
     Zincir doğrulaması yalnız "bu sertifikayı güvenilir bir CA imzalamış mı?" sorusunu cevaplar. Saldırgan kendi
-    alan adı için **tamamen geçerli** bir sertifika alabilir. Ad denetimi yapılmazsa, istemci `banka.ornek` yerine
-    `saldirgan.ornek` sertifikasını da kabul eder. 2012'de yayımlanan "dünyanın en tehlikeli kodu" başlıklı
+    alan adı için **tamamen geçerli** bir sertifika alabilir. Ad denetimi yapılmazsa, istemci `bank.example` yerine
+    `attacker.example` sertifikasını da kabul eder. 2012'de yayımlanan "dünyanın en tehlikeli kodu" başlıklı
     çalışma, çok sayıda gerçek uygulamanın ve kütüphanenin tam olarak bu adımı atladığını göstermişti.
 
 ### Sabitlemeyi eklemek: SPKI özeti
@@ -1398,35 +1511,35 @@ uygulamanın çalışmaya devam etmesini sağlar.
 #include <openssl/x509.h>
 #include <openssl/sha.h>
 
-static const unsigned char PINLER[][32] = {
-    { /* birincil anahtarın SPKI SHA-256 özeti (32 bayt) */ },
-    { /* YEDEK anahtarın özeti: çevrimdışı üretilmiş, henüz kullanılmayan */ },
+static const unsigned char TRUSTED_PINS[][32] = {
+    { /* the primary key's SPKI SHA-256 digest (32 bytes) */ },
+    { /* the BACKUP key's digest: generated offline, not yet in use */ },
 };
 
-int pin_denetle(SSL *ssl)
+int check_pin(SSL *ssl)
 {
-    X509 *sert = SSL_get_peer_certificate(ssl);    /* 3.x: SSL_get1_peer_certificate */
-    if (!sert) return 0;
-    X509_PUBKEY *pk = X509_get_X509_PUBKEY(sert);
+    X509 *cert = SSL_get_peer_certificate(ssl);    /* 3.x: SSL_get1_peer_certificate */
+    if (!cert) return 0;
+    X509_PUBKEY *pk = X509_get_X509_PUBKEY(cert);
     int n = i2d_X509_PUBKEY(pk, NULL);
     unsigned char *der = OPENSSL_malloc((size_t)n), *p = der;
-    i2d_X509_PUBKEY(pk, &p);                        /* p ilerler; der başta kalır */
-    unsigned char ozet[32];
-    SHA256(der, (size_t)n, ozet);
+    i2d_X509_PUBKEY(pk, &p);                        /* p advances; der stays at the start */
+    unsigned char digest[32];
+    SHA256(der, (size_t)n, digest);
     OPENSSL_free(der);
-    X509_free(sert);
+    X509_free(cert);
 
-    for (size_t i = 0; i < sizeof PINLER / sizeof PINLER[0]; i++)
-        if (CRYPTO_memcmp(ozet, PINLER[i], 32) == 0)
+    for (size_t i = 0; i < sizeof TRUSTED_PINS / sizeof TRUSTED_PINS[0]; i++)
+        if (CRYPTO_memcmp(digest, TRUSTED_PINS[i], 32) == 0)
             return 1;
-    return 0;                                       /* tutmadı: bağlantıyı KES */
+    return 0;                                       /* no match: CUT the connection */
 }
 ```
 
 Bir sunucunun SPKI özetini komut satırından hesaplamak:
 
 ```bash
-openssl s_client -connect sunucu.ornek:443 -servername sunucu.ornek </dev/null 2>/dev/null \
+openssl s_client -connect server.example:443 -servername server.example </dev/null 2>/dev/null \
   | openssl x509 -pubkey -noout \
   | openssl pkey -pubin -outform der \
   | openssl dgst -sha256 -binary | base64
@@ -1459,10 +1572,10 @@ kullanır (kitabın Tarif 9.4'te anlattığı WinInet'in güncel karşılığı)
 ve ana makine adını **varsayılan olarak doğrular**. Tehlike, bu doğrulamayı kapatan bayraklardadır:
 
 ```c title="Asla sürüm derlemesine girmemesi gereken satır"
-DWORD bayraklar = SECURITY_FLAG_IGNORE_UNKNOWN_CA |
+DWORD flags = SECURITY_FLAG_IGNORE_UNKNOWN_CA |
                   SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
                   SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
-WinHttpSetOption(istek, WINHTTP_OPTION_SECURITY_FLAGS, &bayraklar, sizeof bayraklar);
+WinHttpSetOption(request, WINHTTP_OPTION_SECURITY_FLAGS, &flags, sizeof flags);
 ```
 
 Bu satır genellikle geliştirme sırasında kendi imzalı bir test sunucusuna bağlanmak için eklenir ve **unutulur**.
@@ -1477,12 +1590,12 @@ bakışta doğru görünür: önce zinciri doğruluyor, sonra sunucunun açık a
 karşılaştırıyor. Hatayı bulabilir misiniz?
 
 ```java title="Sabitleme — sadeleştirilmiş örnek (Java)"
-public void checkServerTrusted(X509Certificate[] zincir, String tur) throws CertificateException {
-    varsayilanDogrulayici.checkServerTrusted(zincir, tur);          // 1. zincir doğrulaması
+public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+    defaultValidator.checkServerTrusted(chain, authType);          // 1. chain validation
     try {
-        PublicKey beklenen = depo.getCertificate("ca").getPublicKey();
-        if (!Arrays.equals(beklenen.getEncoded(), zincir[0].getPublicKey().getEncoded()))
-            throw new CertificateException("pin tutmadi");           // 2. sabitleme
+        PublicKey expected = keyStore.getCertificate("ca").getPublicKey();
+        if (!Arrays.equals(expected.getEncoded(), chain[0].getPublicKey().getEncoded()))
+            throw new CertificateException("pin did not match");    // 2. pinning
     } catch (KeyStoreException e) {
         e.printStackTrace();                                         // 3. ???
     }
@@ -1505,7 +1618,7 @@ belirleyemiyorsanız, sonuç "reddet"tir.
 
 ```java title="Düzeltilmiş: her belirsizlik reddedilir"
     } catch (KeyStoreException | RuntimeException e) {
-        throw new CertificateException("pin denetimi yapilamadi", e);   // belirsizlik = ret
+        throw new CertificateException("pin check could not be performed", e);   // ambiguity = reject
     }
 ```
 
@@ -1537,11 +1650,11 @@ belirleyemiyorsanız, sonuç "reddet"tir.
 
     ```bash
     # Sürüm, şifre takımı ve sertifika zincirini göster; doğrulama hatasında dur
-    openssl s_client -connect sunucu.ornek:443 -servername sunucu.ornek \
+    openssl s_client -connect server.example:443 -servername server.example \
                      -verify_return_error -brief </dev/null
 
     # TLS 1.1'i dene: sunucu reddetmeli
-    openssl s_client -connect sunucu.ornek:443 -tls1_1 </dev/null
+    openssl s_client -connect server.example:443 -tls1_1 </dev/null
     ```
 
 === "Uygulama davranışı"
@@ -1597,30 +1710,30 @@ kişinin ekranda/logda görmesine".
 
 ### Demo 7 — SQLite'ta hassas alanı AES-GCM ile şifreleme
 
-!!! info "Demo 7 · `code/week-03/07-sqlite-alan` · beklemede veri, alan şifreleme"
-    Program bir SQLite veritabanına iki müşteri kaydı ekler: `ad` alanı **açık**, `kart_sifreli` alanı AES-256-GCM ile
-    şifreli BLOB. Anahtar koda gömülü değil; `SIM_ANAHTAR` ortam değişkeninden gelir. Saldırgan DB'yi çalıp açtığında
+!!! info "Demo 7 · `code/week-03/07-sqlite-field` · beklemede veri, alan şifreleme"
+    Program bir SQLite veritabanına iki müşteri kaydı ekler: `name` alanı **açık**, `card_encrypted` alanı AES-256-GCM ile
+    şifreli BLOB. Anahtar koda gömülü değil; `SIM_KEY` ortam değişkeninden gelir. Saldırgan DB'yi çalıp açtığında
     kart alanı yalnız şifreli bayt yığınıdır. SQLite Linux'ta `sqlite3`, Windows'ta Windows SDK'nın yerleşik
     **winsqlite3** kütüphanesidir; kripto ortak başlıktan.
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-ADIM 1 - Veritabanini kur (hassas alan sifreli)
-Veritabani kuruldu: cikti/musteri.db (2 kayit)
-ADIM 2 - Saldirgan DB dosyasini caldi ve sqlite3 ile aciyor:
-  1|Ayse Yilmaz|D1ED7A3624E0F7C6...A64B373F...  (sifreli)
-  2|Mehmet Kaya|C362F7A33BDEE736...F924DF9F...  (sifreli)
-   ^ Kart alani yalniz sifreli bayt yigini; anahtar yok.
-ADIM 3 - Dogru anahtarla uygulama okuyor (coz ve dogrula):
-   1 | Ayse Yilmaz   | 4242-4242-4242-4242
-   2 | Mehmet Kaya   | 5555-4444-3333-2222
-ADIM 4 - YANLIS anahtarla okuma (GCM etiketi tutmaz):
-   1 | Ayse Yilmaz   | (COZULEMEDI - anahtar yanlis?)
+```text title=".\demo.ps1 — gerçek çıktı (Windows)"
+STEP 1 - Set up the database (the sensitive field is encrypted)
+Database created: output\customers.db (2 records)
+STEP 2 - An attacker stole the raw DB file and is searching it:
+   'Jane' (name) in the raw DB      : FOUND (the name field is plain)
+   '4242-4242' (card) in the raw DB : NOT THERE - encrypted
+STEP 3 - The application reads with the correct key (decrypt and verify):
+    1 | Jane Doe      | 4242-4242-4242-4242
+    2 | John Smith    | 5555-4444-3333-2222
+STEP 4 - A read attempt with the WRONG key (the GCM tag will not match):
+    1 | Jane Doe      | (COULD NOT DECRYPT - wrong key?)
+    2 | John Smith    | (COULD NOT DECRYPT - wrong key?)
 ```
 
-Saldırgan `sqlite3` ile DB'yi açsa bile `ad` alanını görür ama `kart_sifreli` alanı yalnız şifreli bayttır. Doğru
+Saldırgan `sqlite3` ile DB'yi açsa bile `name` alanını görür ama `card_encrypted` alanı yalnız şifreli bayttır. Doğru
 anahtarla uygulama açıp doğrular; **yanlış** anahtarla GCM etiketi tutmadığı için çözme reddedilir (sessizce çöp
 döndürmez). Windows demosu (`.\demo.ps1`) `sqlite3` aracı yerine ham DB dosyasında arama yaparak aynı noktayı
-gösterir: `Ayse` (açık ad) bulunur, `4242-4242` (kart) **bulunmaz** çünkü şifrelidir.
+gösterir: `Jane` (açık ad) bulunur, `4242-4242` (kart) **bulunmaz** çünkü şifrelidir.
 
 !!! success "Kural"
     Hassas alanları veritabanına yazmadan **önce** uygulama katmanında AEAD ile şifreleyin. Anahtarı koda gömmeyin;
@@ -1638,6 +1751,17 @@ gösterir: `Ayse` (açık ad) bulunur, `4242-4242` (kart) **bulunmaz** çünkü 
     - [ ] Yanlış anahtarla çözme sessizce çöp döndürmüyor, reddediyor mu (AEAD)?
     - [ ] Loglara/ekrana giden hassas alanlar maskeleniyor mu?
     - [ ] Şifreli alan başka bir kayda taşınamıyor mu (AAD ile bağlama)?
+
+Aşağıdaki animasyonda iki müşteri satırının `card_encrypted` alanını doğru ve yanlış anahtarla okuma denemesini
+izleyin: doğru anahtarla her satır çözülür, yanlış anahtarla HER satır reddedilir.
+
+<iframe class="dsanim" src="../anim/sqlite-field-encryption.html" title="SQLite alan şifreleme: doğru ve yanlış anahtar" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SQLite alan şifreleme: doğru ve yanlış anahtar — adım adım](anim/sqlite-field-encryption.png)
+</div>
+
+Örnek seçiciden **gerçek demonun kayıtları, doğru anahtar** (uyar) ile **farklı kayıtlar** (zor) ve uç
+durumlardaki **yanlış anahtar** ile **çok kısa kart alanları**nı deneyin — ya da kendi ad:kart çiftlerinizi yazın.
 
 ---
 
@@ -1673,14 +1797,14 @@ roller ayrıca tanımlanır.
 ```c title="Kart numarasını görüntüleme için maskele (son 4 hane)"
 #include <string.h>
 
-/* "1234567812345678" -> "************5678"; çıktı tamponu en az n+1 bayt */
-void pan_maskele(const char *pan, char *cikti, size_t cikti_boyut)
+/* "1234567812345678" -> "************5678"; out must be at least n+1 bytes */
+void mask_pan(const char *pan, char *out, size_t out_size)
 {
     size_t n = strnlen(pan, 19);
-    if (cikti_boyut < n + 1) { if (cikti_boyut) cikti[0] = '\0'; return; }
+    if (out_size < n + 1) { if (out_size) out[0] = '\0'; return; }
     for (size_t i = 0; i < n; i++)
-        cikti[i] = (i + 4 < n) ? '*' : pan[i];
-    cikti[n] = '\0';
+        out[i] = (i + 4 < n) ? '*' : pan[i];
+    out[n] = '\0';
 }
 ```
 
@@ -1707,11 +1831,11 @@ Analiz ya da test için "aynı kişinin kayıtlarını bir araya getirebilmek am
 numarasını düz bir özetten (SHA-256) geçirmek **yetmez**: 11 haneli bir kimlik numarasının olası değer sayısı küçüktür
 ve saldırgan hepsinin özetini hesaplayıp karşılaştırabilir. Doğrusu, **gizli bir anahtarla HMAC** kullanmaktır:
 
-```c title="Anahtarlı takma ad: HMAC-SHA256(anahtar, kimlik_no)"
-/* code/common/cen429_kripto.h */
-unsigned char takma_ad[32];
-kripto_hmac_sha256(takma_anahtari, 32, kimlik_no, strlen(kimlik_no), takma_ad);
-/* Veri kümesinde kimlik_no yerine hex(takma_ad)'ın ilk 16 baytı saklanır */
+```c title="Anahtarlı takma ad: HMAC-SHA256(key, id_number)"
+/* code/common/cen429_crypto.h */
+unsigned char pseudonym[32];
+crypto_hmac_sha256(pseudonym_key, 32, id_number, strlen(id_number), pseudonym);
+/* the data set stores the first 16 bytes of hex(pseudonym) instead of id_number */
 ```
 
 Anahtar veri kümesinden **ayrı** tutulur. Anahtarı olmayan için takma addan kimlik numarasına dönmek, olası bütün
@@ -1723,8 +1847,7 @@ imha edilirse, veri fiilen anonimleşir.
 Gerçek üretim verisinin test ortamına kopyalanması, en sık görülen veri sızıntısı nedenlerinden biridir: test
 ortamları daha az korunur, daha çok kişi erişir. Test verisi için sırasıyla tercih edilecekler:
 
-1. **Tamamen sentetik veri:** Gerçek kayıtlardan hiç türetilmemiş, üretilmiş veri. En güvenlisi. Bu dersteki bütün
-   örnekler bu yolu izler: kart numaraları, anahtarlar ve kimlikler sentetiktir.
+1. **Tamamen sentetik veri:** Gerçek kayıtlardan hiç türetilmemiş, üretilmiş veri. En güvenli seçenek.
 2. **Statik maskeleme:** Üretim verisinin bir kopyası alınır, kopyadaki hassas alanlar kalıcı olarak değiştirilir
    (takma ad, karıştırma, genelleme) ve ancak ondan sonra test ortamına taşınır.
 3. **Dinamik maskeleme:** Veri değiştirilmez; veritabanı sorgu sonucunu kullanıcının rolüne göre maskeleyerek döndürür.
@@ -1738,21 +1861,21 @@ Kural bir şeydir, onu **garanti etmek** başka. İki yaklaşım birlikte kullan
 - **Kaynakta önleme:** Hassas veriler özel bir türde tutulur ve bu türün yazdırma fonksiyonu her zaman maskeli çıktı
   verir. Programcı yanlışlıkla günlüğe yazsa bile tam değer çıkmaz.
 - **Çıkışta süzme:** Günlük kütüphanesinin son adımında, kart numarasına benzeyen (13–19 haneli, Luhn denetimini
-  geçen) diziler ve `parola=`, `token=` gibi anahtarlardan sonra gelen değerler otomatik olarak maskelenir.
+  geçen) diziler ve `password=`, `token=` gibi anahtarlardan sonra gelen değerler otomatik olarak maskelenir.
 
-```c title="Günlük satırında 'parola=' ve 'pin=' değerlerini maskele (basit süzgeç)"
+```c title="Günlük satırında 'password=' ve 'pin=' değerlerini maskele (basit süzgeç)"
 #include <string.h>
 #include <ctype.h>
 
-void gunluk_suz(char *satir)
+void log_filter(char *line)
 {
-    static const char *anahtarlar[] = { "parola=", "pin=", "token=" };
-    for (size_t k = 0; k < sizeof anahtarlar / sizeof anahtarlar[0]; k++) {
-        char *p = satir;
-        while ((p = strstr(p, anahtarlar[k])) != NULL) {
-            p += strlen(anahtarlar[k]);
+    static const char *keys[] = { "password=", "pin=", "token=" };
+    for (size_t k = 0; k < sizeof keys / sizeof keys[0]; k++) {
+        char *p = line;
+        while ((p = strstr(p, keys[k])) != NULL) {
+            p += strlen(keys[k]);
             while (*p && !isspace((unsigned char)*p))
-                *p++ = '*';                    /* değeri yerinde maskele */
+                *p++ = '*';                    /* mask the value in place */
         }
     }
 }
@@ -1787,6 +1910,17 @@ void gunluk_suz(char *satir)
     saldırgana ipucu vermemeli" ve "hassas veri açık olarak günlüğe yazılmamalı" gereksinimlerinin nasıl karşılandığı
     (ör. bütün günlüklerin derleme anında kaldırılması) ayrıca belgelenir.
 
+Aşağıdaki animasyonda aynı değerin üç farklı teknikle nasıl işlendiğini izleyin: kısmi maskeleme (yalnız ilk/son
+karakterler kalır), tokenizasyon (anlamsız bir simge + korumalı kasa) ve takma adlandırma (anahtarlı özet).
+
+<iframe class="dsanim" src="../anim/masking.html" title="Veri maskeleme: kısmi maskeleme, tokenizasyon, takma adlandırma" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Veri maskeleme: kısmi maskeleme, tokenizasyon, takma adlandırma — adım adım](anim/masking.png)
+</div>
+
+Örnek seçiciden **kısmi maskeleme** (uyar) ile **tokenizasyon** (zor) ve uç durumlardaki **takma adlandırma** ile
+**çok kısa bir değer**i deneyin — ya da kendi değer|teknik çiftinizi yazın.
+
 ---
 
 ## 13. Kullanımda veri: bellekte güvenli silme ve cihaz bağlama
@@ -1810,18 +1944,18 @@ katmanlarını ekliyoruz.
 
 ### Demo 8 — mlock + güvenli silme
 
-!!! info "Demo 8 · `code/week-03/08-bellek-silme` · kullanımda veri (kitap tarif 13.2–13.3)"
-    Program üç katmanı kurar: dökümü kapatır, belleği kilitler, işi bitince `kripto_temizle` ile siler; silme sonrası
+!!! info "Demo 8 · `code/week-03/08-memory-wipe` · kullanımda veri (kitap tarif 13.2–13.3)"
+    Program üç katmanı kurar: dökümü kapatır, belleği kilitler, işi bitince `crypto_wipe` ile siler; silme sonrası
     tamponun gerçekten sıfırlandığını doğrular. (Hafta 1'deki gcore gösterimini tekrarlamaz; yeni katmanlar ekler.)
 
 ```text title="sh demo.sh — gerçek çıktı (WSL)"
-Katman 1 - cokme dokumu kapatildi (RLIMIT_CORE=0): TAMAM
-Katman 2 - mlock ile takasa (swap) yazma engellendi: TAMAM
-Sir kullaniliyor: uzunluk = 20, dolu bayt = 20
-Katman 3 - guvenli silme sonrasi dolu bayt = 0
-   ==> sir bellekten temizlendi.
+Layer 1 - crash dump turned off (RLIMIT_CORE=0): OK
+Layer 2 - mlock blocked writing to swap: OK
+Secret in use: length = 23, non-zero bytes = 23
+Layer 3 - non-zero bytes after secure wipe = 0
+   ==> the secret was cleared from memory.
 --------------------------------------------------------------
-OPENSSL_cleanse cagrisi sayisi -> 2
+OPENSSL_cleanse call count -> 2
 ```
 
 Windows'ta (`.\demo.ps1`) aynı üç katman `SetErrorMode` + `VirtualLock` + `SecureZeroMemory` ile kurulur; çıktı da
@@ -1849,13 +1983,24 @@ birleştireceğiz.
 !!! question "Değerlendirici nasıl test eder?"
     Değerlendirici ödeme sırasında ve sonrasında bellek dökümü alıp anahtarı arar; ayrıca dosyaları başka bir cihaza
     kopyalayıp orada açılıp açılmadığını dener. Güvenli silmenin gerçekten yapıldığını (ve derleyicinin kaldırmadığını)
-    ikili dosyanın makine kodundan doğrular.
+    binary dosyanın makine kodundan doğrular.
 
 !!! warning "Sık hatalar ve kontrol listesi"
     - [ ] Sır `memset` ile değil, kaldırılamaz bir işlevle mi siliniyor?
     - [ ] Sırrın gereksiz kopyaları (loglar, geçici tamponlar, `String`) var mı?
     - [ ] Depolama anahtarı cihaza/sürüme bağlı mı?
     - [ ] Çökme dökümü kapalı ve hassas bellek kilitli mi?
+
+Aşağıdaki animasyonda üç katmanın (döküm engelleme, bellek kilitleme, güvenli silme) bir sırrı bellekte adım adım
+nasıl koruduğunu ve silme sonrası her baytın gerçekten sıfırlandığını izleyin.
+
+<iframe class="dsanim" src="../anim/memory-wipe.html" title="Bellekte güvenli silme" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bellekte güvenli silme — adım adım](anim/memory-wipe.png)
+</div>
+
+Örnek seçiciden **orta uzunlukta bir sır** (uyar) ile **demonun gerçek sırrına yakın, uzun bir sır** (zor) ve uç
+durumlardaki **tek karakterlik sır** ile **özel karakterler**i deneyin — ya da kendi sır metninizi yazın.
 
 ---
 
@@ -1872,25 +2017,29 @@ Saldırganın sırra ulaşması için **dört kabuğu da** sırayla açması ger
 
 ### Demo 9 — Bir anahtarı dört kabukla sarıp açmak
 
-!!! info "Demo 9 · `code/week-03/09-guvenlik-kabugu` · derinlemesine savunma"
+!!! info "Demo 9 · `code/week-03/09-security-layers` · derinlemesine savunma"
     Program 16 baytlık bir sırrı sırayla dört AES-GCM kabuğuyla sarar (en iç: cihaza bağlı HKDF anahtarı), sonra ters
     sırada açar. İki saldırı: (1) paketin bir biti kurcalanırsa en dış kabuk açılmaz; (2) paket başka bir cihaza
     (farklı parmak izi) kopyalanırsa dış kabuklar açılsa bile **en iç cihaz kabuğu** açılmaz.
 
-```text title="sh demo.sh — gerçek çıktı"
-SARMA (dis dunyaya dogru): sir -> K1 -> K2 -> K3 -> K4
-  Kabuk 1 (cihaz baglama)     :  44 bayt
-  Kabuk 4 (kanal/TLS benzeri) : 128 bayt  <- aktarilan paket
-ACMA (ice dogru): K4 -> K3 -> K2 -> K1 -> sir
-  Kabuk 4/3/2/1 acildi: TAMAM
-  Cozulen SIR : deadbeef...ba98  -> sir DOGRU
+```text title="security_layers.exe — gerçek çıktı"
+WRAPPING (outward): secret -> K1 -> K2 -> K3 -> K4
+  Layer 1 (device binding)     :  44 bytes
+  Layer 4 (channel/TLS-like)   : 128 bytes  <- transmitted packet
+UNWRAPPING (inward): K4 -> K3 -> K2 -> K1 -> secret
+  Layer 4 opened: OK
+  Layer 3 opened: OK
+  Layer 2 opened: OK
+  Layer 1 opened: OK
+  Recovered SECRET : deadbeef0123456789abcdeffedcba98  -> secret CORRECT
 ==============================================================
-SALDIRI 1 - Paketin bir biti kurcalanirsa (Kabuk 4):
-  Kabuk 4 acildi: RED  (GCM etiketi tutmadi)
-SALDIRI 2 - Paket BASKA cihaza kopyalanirsa (yanlis parmak izi):
-  Dis 3 kabuk acildi: TAMAM
-  Kabuk 1 (cihaz baglama) BASKA cihazda acildi: RED
-  ^ Anahtarlar kopyalansa bile sir baska cihazda ACILAMAZ.
+ATTACK 1 - if one bit of the packet is tampered with (Layer 4):
+  Layer 4 opened: REJECTED  (the GCM tag did not match)
+==============================================================
+ATTACK 2 - if the packet is copied to ANOTHER device (wrong fingerprint):
+  Outer 3 layers opened: OK
+  Layer 1 (device binding) opened on the OTHER device: REJECTED
+  ^ Even with the keys copied, the secret CANNOT be opened on another device.
 ```
 
 Normal akışta dört kabuk sırayla açıldı ve sır doğru geri geldi. Tek bir bit kurcalanınca en dış GCM etiketi tuttu ve
@@ -1964,6 +2113,17 @@ Matrisin okunuşu:
     - [ ] Kabuklar bağımsız anahtarlarla mı kuruldu (biri diğerini vermiyor)?
     - [ ] En iç kabuk cihaza/sürüme bağlı mı?
     - [ ] "Yalnız TLS'e güvenmeme" için mesaj düzeyi bir kabuk var mı?
+
+Aşağıdaki animasyonda bir sırrın dört kabukla nasıl sarılıp açıldığını, kurcalanan bir paketin en dış katmanda
+nasıl reddedildiğini ve başka bir cihaza kopyalanan paketin neden en iç katmanda takılıp kaldığını izleyin.
+
+<iframe class="dsanim" src="../anim/security-layers.html" title="Güvenlik kabukları: dört katmanlı savunma" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Güvenlik kabukları: dört katmanlı savunma — adım adım](anim/security-layers.png)
+</div>
+
+Örnek seçiciden **dört katman da başarıyla açılıyor** (uyar/zor) ile uç durumlardaki **paket kurcalandı** ve
+**başka cihaz** senaryolarını deneyin — ya da kendi sır|senaryo çiftinizi yazın.
 
 ---
 
@@ -2057,13 +2217,13 @@ Bu hafta güvenlik kılavuzunuzun **veri güvenliği** bölümlerini yazacaksın
 
 ## 18. Sınıf etkinlikleri
 
-!!! example "Etkinlik 1 — MITM'i kendi elinizle durdurun (15 dk, ikili)"
-    Demo 6'yı WSL'de çalıştırın. Sonra `tls_istemci.c`'de `dogrula` modundaki `SSL_set1_host` satırını yoruma alıp
+!!! example "Etkinlik 1 — MITM'i kendi elinizle durdurun (15 dk, binary)"
+    Demo 6'yı WSL'de çalıştırın. Sonra `tls_client.c`'de `verify` modundaki `SSL_set1_host` satırını yoruma alıp
     yeniden derleyin. Saldırgan sunucuya (14444) bağlanınca ne değişir? Ana makine adı denetimi olmadan **hangi**
     saldırgan hâlâ yakalanır, hangisi kaçar? (İpucu: kendi imzalı vs. farklı ad ama geçerli zincir.)
 
 !!! example "Etkinlik 2 — Nonce'u tekrarlatın (10 dk, bireysel)"
-    Demo 1'in kodunda `kripto_rastgele(nonce, 12)` yerine `memset(nonce, 0, 12)` yazıp iki farklı dosyayı şifreleyin.
+    Demo 1'in kodunda `crypto_random(nonce, 12)` yerine `memset(nonce, 0, 12)` yazıp iki farklı dosyayı şifreleyin.
     İki şifreli metnin başındaki nonce alanları aynı mı? Şifreli metinlerin XOR'unu alıp düz metinlerin XOR'uyla
     karşılaştırın (Demo 2'deki gibi). Ne görüyorsunuz? Neden bu bir güvenlik açığı?
 
@@ -2087,27 +2247,27 @@ Bu hafta güvenlik kılavuzunuzun **veri güvenliği** bölümlerini yazacaksın
     SSL *ssl = SSL_new(ctx);
     SSL_set_fd(ssl, sock);
     if (SSL_connect(ssl) == 1)
-        printf("Baglanti guvenli!\n");
+        printf("Connection secure!\n");
     ```
     ??? success "Cevap"
         **Hayır.** `SSL_CTX_set_verify` ve `SSL_set1_host` yok; hiçbir doğrulama yapılmıyor. Bu kod her sertifikayı
-        (saldırganınki dahil) kabul eder. "Baglanti guvenli" mesajı yanıltıcıdır — yalnız pasif dinleyiciye karşı
+        (saldırganınki dahil) kabul eder. "Connection secure!" mesajı yanıltıcıdır — yalnız pasif dinleyiciye karşı
         koruma vardır, aktif MITM'e karşı yoktur (Demo 6, Senaryo 1).
 
 !!! question "Okuma 2 — Bu çözme neden tehlikeli?"
     ```c
-    EVP_DecryptUpdate(c, duz, &len, sc, sc_boy);
-    EVP_DecryptFinal_ex(c, duz + len, &len);   /* dönüş değeri okunmuyor */
-    kullan(duz);
+    EVP_DecryptUpdate(c, plain, &len, ct, ct_len);
+    EVP_DecryptFinal_ex(c, plain + len, &len);   /* dönüş değeri okunmuyor */
+    use(plain);
     ```
     ??? success "Cevap"
         `EVP_DecryptFinal_ex`'in dönüş değeri (GCM'de etiket doğrulaması) **kontrol edilmiyor**. Etiket tutmasa bile
-        `kullan(duz)` çağrılıyor — kurcalanmış veri kabul edilir. Doğrulama başarısızsa çıktı **kullanılmamalı** (Demo 1).
+        `use(plain)` çağrılıyor — kurcalanmış veri kabul edilir. Doğrulama başarısızsa çıktı **kullanılmamalı** (Demo 1).
 
 !!! question "Okuma 3 — Bu anahtar türetme nerede zayıf?"
     ```c
-    unsigned char anahtar[32];
-    SHA256((unsigned char*)parola, strlen(parola), anahtar);
+    unsigned char key[32];
+    SHA256((unsigned char*)password, strlen(password), key);
     ```
     ??? success "Cevap"
         Tek turlu, **tuzsuz** SHA-256 bir parola KDF'si değildir: hızlıdır (kaba kuvvet ucuz), tuz yoktur (rainbow
@@ -2120,8 +2280,8 @@ Bu hafta güvenlik kılavuzunuzun **veri güvenliği** bölümlerini yazacaksın
 Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarınızda, `code/week-03` demoları üzerinde yapılır.
 
 ??? question "Alıştırma 1 — Kolay: AAD'nin gücü"
-    Demo 1'e ilişkili veri (AAD) ekleyin: şifrelerken `kripto_gcm_sifrele`'ye AAD olarak `"surum=1"` verin, çözerken
-    `"surum=2"` verin. Ne olur? AAD ne işe yarar?
+    Demo 1'e ilişkili veri (AAD) ekleyin: şifrelerken `crypto_gcm_encrypt`'ye AAD olarak `"version=1"` verin, çözerken
+    `"version=2"` verin. Ne olur? AAD ne işe yarar?
 
     ??? success "Beklenen sonuç"
         Etiket tutmaz, çözme reddedilir. AAD şifrelenmez ama **doğrulanır**; şifreli gövde başka bir bağlama
@@ -2151,7 +2311,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     tutmazsa hangi katmanda durursunuz?
 
 ??? question "Alıştırma 7 — Zor: HKDF'yi elle doğrulayın"
-    `cen429_kripto.h`'daki HKDF'yi RFC 5869 Test Case 1 ile karşılaştırın (IKM, tuz, info değerleri RFC'de). Çıktınız
+    `cen429_crypto.h`'daki HKDF'yi RFC 5869 Test Case 1 ile karşılaştırın (IKM, tuz, info değerleri RFC'de). Çıktınız
     RFC'nin OKM'siyle birebir aynı mı? (İpucu: `code`'daki test bunu zaten yapıyor.)
 
 ??? question "Alıştırma 8 — Zor: Nonce sayacı taşması"
@@ -2183,7 +2343,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 ??? question "Ek alıştırma A — Kolay: rand() ne kadar tahmin edilebilir?"
     `srand(time(NULL))` ile 16 baytlık bir "anahtar" üreten küçük bir program yazın ve anahtarı onaltılık yazdırın.
     Sonra ikinci bir program yazın: son 10 dakikanın her saniyesini tohum olarak deneyip aynı anahtarı bulsun. Kaç
-    denemede buldu? Ardından ilk programı `kripto_rastgele()` (`code/common/cen429_kripto.h`) ile yeniden yazın.
+    denemede buldu? Ardından ilk programı `crypto_random()` (`code/common/cen429_crypto.h`) ile yeniden yazın.
 
 ??? question "Ek alıştırma B — Kolay: modulo sapmasını ölçün"
     0–255 arasında tekdüze baytlar üretip `bayt % 10` ile bir milyon rakam çıkarın; her rakamın kaç kez çıktığını

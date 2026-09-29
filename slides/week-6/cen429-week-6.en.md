@@ -210,10 +210,10 @@ A single "is it rooted?" check is easily bypassed; dozens of different checks to
 # Weak Design — a Single Decision Point
 
 ```c
-if (hata_ayiklayici_var() || root_var() || butunluk_bozuk())
-    return HATA;         /* bu tek satırı değiştiren
-                             her şeyi atlatır */
-anahtari_coz();
+if (debugger_present() || is_rooted() || integrity_broken())
+    return ERROR;         /* patching this one line
+                             bypasses everything */
+decrypt_key();
 ```
 
 An attacker who flips a single comparison bypasses **the entire protection**.
@@ -347,7 +347,7 @@ Multi-point, cross-checked, hidden, and data-dependent checks **together** build
 
 # Demo 1 · Runtime Integrity Checking
 
-`code/week-06/01-butunluk-hmac` — self-hashing, HMAC-SHA-256.
+`code/week-06/01-integrity-hmac` — self-hashing, HMAC-SHA-256.
 
 - The textbook (Viega & Messier, Recipe 12.2) does this with **CRC32**; **CRC32 is not cryptographic**, an attacker can easily adjust bytes to make the CRC match. We use **HMAC-SHA-256** (needs a secret key).
 - The program computes its own binary file's digest and records it as the **golden value**.
@@ -358,17 +358,33 @@ Multi-point, cross-checked, hidden, and data-dependent checks **together** build
 # Demo 1 · The Core of the Code
 
 ```c
-/* Kendi yolunu bul, dosyayı oku, HMAC hesapla */
-oz_yol(yol, sizeof(yol));
-dosya_oku(yol, &veri, &boy);
-kripto_hmac_sha256(RASP_ANAHTAR, 32, veri, boy, ozet);
+/* Find own path, read the file, compute HMAC */
+self_path(path, sizeof(path));
+read_file(path, &data, &size);
+crypto_hmac_sha256(RASP_KEY, 32, data, size, digest);
 
-/* sabit zamanli karsilastirma */
-unsigned char fark = 0;
+/* constant-time comparison */
+unsigned char diff = 0;
 for (int i = 0; i < 32; i++)
-    fark |= beklenen[i] ^ ozet[i];
-if (fark == 0) { /* TAMAM */ } else { /* YAMA */ }
+    diff |= expected[i] ^ digest[i];
+if (diff == 0) { /* OK */ } else { /* PATCH */ }
 ```
+
+---
+
+# Integrity check (animation)
+
+<iframe class="dsanim" src="anim/integrity-hmac.html?mode=slide&lang=en" title="Self-integrity check: when one byte is patched"></iframe>
+
+<!-- Speaker note: show how the bytes fold into a digest one at a time, then how the "golden" value is compared against the re-read bytes. -->
+
+---
+
+# Integrity check — edge case: first byte patched
+
+<iframe class="dsanim" src="anim/integrity-hmac.html?mode=slide&lang=en&example=edge-first-byte" title="Edge case: exactly 10 bytes, the first byte is patched"></iframe>
+
+<!-- Speaker note: it doesn't matter WHERE in the file the patch is — the avalanche effect changes the whole digest either way. -->
 
 ---
 
@@ -377,16 +393,16 @@ if (fark == 0) { /* TAMAM */ } else { /* YAMA */ }
 # Demo 1 · Actual Output
 
 ```text
-ADIM 2 - Normal calisma: butunluk dogrulanir (yama yok)
-Beklenen   : bae498a6a982279a8...ee4d01e6
-Hesaplanan : bae498a6a982279a8...ee4d01e6
-SONUC: BUTUNLUK TAMAM - hedef degismemis.
+STEP 2 - Normal run: integrity verifies OK (no patch)
+Expected   : 5aeaf45226dbb29af7...b55115de4
+Computed   : 5aeaf45226dbb29af7...b55115de4
+RESULT: INTEGRITY OK - target unchanged.
 
-ADIM 3 - Saldiri: kopyanin 1 bayti degistiriliyor
-ADIM 4 - Yamali kopyanin HMAC'i karsilastiriliyor
-Beklenen   : bae498a6a982279a8...ee4d01e6
-Hesaplanan : 05fb42748cb5b573...131c6705
-SONUC: YAMA ALGILANDI - hedef degistirilmis!
+STEP 3 - Attack: 1 byte of the copy is changed
+STEP 4 - The patched copy's HMAC is compared
+Expected   : 5aeaf45226dbb29af7...b55115de4
+Computed   : c47c35687dc205b93a...aca0ec8a
+RESULT: PATCH DETECTED - target was modified!
 ```
 
 Changing a single byte completely changed the digest (the avalanche effect).
@@ -477,17 +493,33 @@ Debugger single-stepping **slows down** the work.
 
 # Demo 2 · Debugger Detection
 
-`code/week-06/02-hata-ayiklayici` — anti-debug, read-only.
+`code/week-06/02-debugger-detection` — anti-debug, read-only.
 
 - The program looks at several independent signals and **changes nothing**.
 - It doesn't even self-`ptrace`; it only **reads** `/proc` and PEB fields.
 - `demo.sh` runs the program first normally, then under `gdb`.
 
 ```c
-/* /proc/self/status icinden TracerPid oku */
+/* Read TracerPid from /proc/self/status */
 long tp = tracer_pid();
-if (tp > 0) supheli++;   /* bir surec bizi izliyor */
+if (tp > 0) suspicious++;   /* a process is watching us */
 ```
+
+---
+
+# Debugger detection (animation)
+
+<iframe class="dsanim" src="anim/debugger-presence.html?mode=slide&lang=en" title="Debugger detection: TracerPid + parent process name"></iframe>
+
+<!-- Speaker note: show /proc/self/status being scanned line by line, and how the scan stops as soon as TracerPid is found. -->
+
+---
+
+# Debugger detection — edge case: gdb attached
+
+<iframe class="dsanim" src="anim/debugger-presence.html?mode=slide&lang=en&example=gdb-attached" title="Hard: under gdb, both signals suspicious"></iframe>
+
+<!-- Speaker note: TracerPid and the parent process name both fire at once, giving "detected (2 signals)". -->
 
 ---
 
@@ -496,17 +528,17 @@ if (tp > 0) supheli++;   /* bir surec bizi izliyor */
 # Demo 2 · Actual Output (WSL)
 
 ```text
-ADIM 1 - Normal calisma (hata ayiklayici YOK)
-1) /proc/self/status TracerPid : 0 (izleyen yok)
-2) Ana surec (parent) adi      : sh
-SONUC: Temiz - izleyen bir arac gorunmuyor.
+STEP 1 - Normal run (NO debugger)
+1) /proc/self/status TracerPid : 0 (no tracer)
+2) Parent process name         : sh
+RESULT: clean - no tracing tool visible.
 
-ADIM 2 - gdb altinda calistir
-1) /proc/self/status TracerPid : 2909 (IZLENIYOR)
-SONUC: Hata ayiklayici/izleme ARACI algilandi (2 sinyal).
+STEP 2 - Run under gdb
+1) /proc/self/status TracerPid : 41885 (TRACED)
+RESULT: a debugger/tracing TOOL was detected (2 signal(s)).
 ```
 
-Without a debugger, TracerPid is **0**; under gdb it came out **2909** (>0).
+Without a debugger, TracerPid is **0**; under gdb it came out **41885** (>0).
 
 ---
 
@@ -594,22 +626,38 @@ Collect multiple independent signals, tie the result to a behaviour, **delay** t
 
 # Demo 3 · VM/Emulator and Timing
 
-`code/week-06/03-ortam-zamanlama` — only reads a CPU instruction and the clock.
+`code/week-06/03-environment-timing` — only reads a CPU instruction and the clock.
 
 ```text
-(A) CPUID.1:ECX[31] hipervizor biti : VAR
-    Hipervizor satici imzasi        : (gizli/bos)
-(B) 2.000.000 islem suresi          : 0.806 ms
-SONUC: Hipervizor GORULDU.
+(A) CPUID.1:ECX[31] hypervisor bit    : PRESENT
+    Hypervisor vendor signature        : "Microsoft Hv"
+(B) time for 2,000,000 iterations      : 0.662 ms
+RESULT: a hypervisor was SEEN.
 ```
 
-This output was captured on a **real** WSL2 machine.
+This output was captured on a **real** Windows laptop (Hyper-V).
+
+---
+
+# VM/emulator detection (animation)
+
+<iframe class="dsanim" src="anim/environment-timing.html?mode=slide&lang=en" title="VM/emulator detection: CPUID + timing"></iframe>
+
+<!-- Speaker note: show how the hypervisor bit is read, then how the 12-byte vendor signature is assembled byte by byte. -->
+
+---
+
+# VM/emulator detection — edge case: blank vendor signature
+
+<iframe class="dsanim" src="anim/environment-timing.html?mode=slide&lang=en&example=edge-blank-vendor" title="Edge case: a hypervisor is present but the vendor signature is entirely blank"></iframe>
+
+<!-- Speaker note: even with the hypervisor bit PRESENT, the vendor signature can come back entirely blank — another reason it's not proof by itself. -->
 
 ---
 
 # ⚠️ The Most Important Lesson: False Positives
 
-- The output above said the hypervisor **"IS PRESENT."**
+- The output above said the hypervisor **"IS PRESENT"** AND the vendor signature is **visible** (`"Microsoft Hv"`).
 - But this is **not** an analysis environment — it's an ordinary developer machine!
 - On modern Windows, most machines report a hypervisor because of **Hyper-V, WSL2, VBS**.
 
@@ -651,6 +699,14 @@ Use a risk score instead of a harsh response; the result is evaluated together w
 <!-- _class: bolum -->
 
 # 6. Hook and Instrumentation Detection
+
+---
+
+# Brief History — From Static to Dynamic
+
+- **1990s** — IAT/PLT-GOT hooks: hand-written, target-specific tools.
+- **2000s** — `LD_PRELOAD` / DLL injection: general-purpose but **static**.
+- **2013–2014** — **Frida** emerged: hook code is written **in JavaScript at runtime**, no compilation needed.
 
 ---
 
@@ -725,7 +781,7 @@ void *p = dlsym(RTLD_DEFAULT, "time");
 
 ```c
 Dl_info info;
-dladdr(p, &info);   /* fonksiyonu saglayan .so */
+dladdr(p, &info);   /* the .so that provides the function */
 ```
 
 - `dladdr` tells you **which shared object (.so)** an address comes from.
@@ -736,7 +792,7 @@ dladdr(p, &info);   /* fonksiyonu saglayan .so */
 # Step 3 · Check Whether It's Legitimate
 
 ```c
-int kanca = !mesru_mi(info.dli_fname);
+int hook = !is_legitimate(info.dli_fname);
 ```
 
 - The expected source is **libc**, the **vDSO**, or the dynamic loader.
@@ -760,20 +816,36 @@ int kanca = !mesru_mi(info.dli_fname);
 
 ---
 
+# LD_PRELOAD symbol resolution order (animation)
+
+<iframe class="dsanim" src="anim/preload-hook-resolution.html?mode=slide&lang=en" title="LD_PRELOAD symbol resolution order"></iframe>
+
+<!-- Speaker note: show the load order of loaded objects, and the order the dynamic loader tries when resolving `time`. -->
+
+---
+
+# LD_PRELOAD order — edge case: hook right after vDSO
+
+<iframe class="dsanim" src="anim/preload-hook-resolution.html?mode=slide&lang=en&example=edge-immediately-after-vdso" title="Edge case: the hook loads right after vDSO, before libc"></iframe>
+
+<!-- Speaker note: it doesn't matter WHERE in the list the hook sits — ANY hook that loads before libc wins. -->
+
+---
+
 <!-- _class: kucuk -->
 
 # Demo 4 · LD_PRELOAD Hooking — Actual Output
 
 ```text
-ADIM 1 - Normal calisma (LD_PRELOAD yok)
+STEP 1 - Normal run (no LD_PRELOAD)
    time     -> linux-vdso.so.1
    getenv   -> /lib/x86_64-linux-gnu/libc.so.6
-SONUC: Temiz - preload/kanca gorunmuyor.
+RESULT: clean - no preload/hook visible.
 
-ADIM 2 - Saldiri: sahte kanca YALNIZ bu surece yukleniyor
-   time     -> bin/linux/libsahtekanca.so (KANCA!)
-   time(NULL) dondurdu : 1234567890 (sabit sahte deger)
-SONUC: Fonksiyon kancasi / preload ALGILANDI (2 sinyal).
+STEP 2 - Attack: the fake hook is loaded ONLY into this process
+   time     -> bin/linux/libfake_hook.so (HOOK!)
+   time(NULL) returned : 1234567890 (fixed fake value)
+RESULT: function hook / preload DETECTED (2 signal(s)).
 ```
 
 In the clean run, `time` resolved from the kernel's **vDSO** — this is **legitimate**, not a hook.
@@ -798,6 +870,15 @@ Verify the **source** of critical functions (`dlsym`+`dladdr`); check multiple f
 <!-- _class: bolum -->
 
 # 7. Dynamic Memory Protection
+
+---
+
+# Brief History — "Only in RAM" Is Not Enough
+
+- **2008** — Halderman and co-authors, in **"Cold Boot Attacks,"** showed DRAM retains its contents for
+  **seconds to minutes** after power loss; they recovered full-disk-encryption keys from memory by cooling
+  a laptop and rebooting it.
+- This is the **direct** motivation for the "short lifetime" and "never leave it in the clear" countermeasures.
 
 ---
 
@@ -837,11 +918,11 @@ All of these require the attacker to **access** process memory (debugger, OS int
 # Protected Value · Concept
 
 ```c
-typedef struct { uint32_t deger; uint32_t golge; uint32_t ozet; } Korunan;
-/* okuma: deger == ~golge ve ozet doğru mu? */
+typedef struct { uint32_t value; uint32_t shadow; uint32_t mac; } Protected;
+/* read: is value == ~shadow, and is mac correct? */
 ```
 
-If the attacker changes only `deger` (value), the inconsistency is caught.
+If the attacker changes only `value`, the inconsistency is caught.
 
 ---
 
@@ -892,6 +973,14 @@ An inconsistency must be tied to a response — silently ignoring it defeats the
 
 ---
 
+# Brief History — Package Signing
+
+- **Android 1.0 (2008)** — original APK signing (v1): a modified APK cannot carry the original signature.
+- **Android 7.0 Nougat (2016)** — **APK Signature Scheme v2**: signs the whole APK, not file by file.
+- **Android 9 Pie (2018)** — **v3** added **key rotation** support to the same principle.
+
+---
+
 # From Root Indicator to Decision — Diagram
 
 ![w:900](assets/h06-14-kok-gosterge-karar.svg)
@@ -938,19 +1027,51 @@ An inconsistency must be tied to a response — silently ignoring it defeats the
 
 ---
 
+# Root/Privilege Indicator Scan (animation)
+
+<iframe class="dsanim" src="anim/root-indicator-scan.html?mode=slide&lang=en" title="Root/privilege indicator scan"></iframe>
+
+<!-- Speaker note: show the scan of 14 known indicators, and how the privilege level adds to the score. -->
+
+---
+
+# Root Indicator — edge case: multiple marks + elevated
+
+<iframe class="dsanim" src="anim/root-indicator-scan.html?mode=slide&lang=en&example=edge-multiple-marks" title="Edge case: several indicators + elevated privilege"></iframe>
+
+<!-- Speaker note: as indicators pile up the signal count rises — still not "proof" alone, but a bigger contribution to the risk score. -->
+
+---
+
+# Component Signature Verification (animation)
+
+<iframe class="dsanim" src="anim/component-signature.html?mode=slide&lang=en" title="Component signature verification: catching repackaging"></iframe>
+
+<!-- Speaker note: show build-time signing and pre-load verification side by side. -->
+
+---
+
+# Component Signature — edge case: truncated module
+
+<iframe class="dsanim" src="anim/component-signature.html?mode=slide&lang=en&example=edge-truncated" title="Edge case: the module was TRUNCATED (the last byte removed)"></iframe>
+
+<!-- Speaker note: not just APPENDING a byte — REMOVING one also breaks the signature; length matters too. -->
+
+---
+
 <!-- _class: kucuk -->
 
 # Demo 6 and 7 · Actual Outputs
 
 ```text
-# Demo 7 (kök/ayrıcalık göstergesi)
-Ayricalik seviyesi : normal kullanici
-[BULUNDU] cikti/sahte_su (ek isaret)
-SONUC: Ayricalikli/riskli ortam GOSTERGESI var.
+# Demo 7 (root/privilege indicator)
+Privilege level : normal user
+[FOUND] output\fake_su (extra indicator)
+RESULT: an elevated/risky environment INDICATOR is present.
 
-# Demo 6 (bileşen imzası)
-Modul imzasi TUTMADI -> YENIDEN PAKETLENMIS.
-Yukleme REDDEDILDI.
+# Demo 6 (component signature)
+Module signature DID NOT HOLD -> REPACKAGED.
+Loading REJECTED.
 ```
 
 Both demos work by **only reading/verifying**; they don't change the system.
@@ -971,10 +1092,18 @@ Cryptographically verify every dynamically loaded component **before** loading i
 
 ---
 
+# Brief History — From Tamper-Resistance to CFI
+
+- **1996** — Aucsmith: distributed integrity checks that **cross-check** each other.
+- **2001** — the Collberg/Thomborson taxonomy; Chang/Atallah's **"guard"** idea — multiple checkers.
+- **2005** — Abadi, Budiu, Erlingsson, Ligatti formally defined **Control-Flow Integrity (CFI)**.
+
+---
+
 # Why Isn't a Single `if` Enough?
 
 ```c
-if (imza_gecerli()) devam();   /* tek nokta */
+if (signature_valid()) proceed();   /* single point */
 ```
 
 - The attacker **patches** this single branch → the check is skipped.
@@ -998,9 +1127,9 @@ if (imza_gecerli()) devam();   /* tek nokta */
 
 # Dual Counters
 
-- Two independent counters (one increasing, one decreasing).
-- Their sum/relationship must stay fixed.
-- The attacker has to change **both, consistently**.
+- `count` (how many checkpoints ran) + `visited_mask` (which checkpoints ran, a bit set).
+- Both are **separate** from the HMAC chain and give a readable diagnostic — but neither decides alone.
+- Even if the attacker patches these, the real key still comes only from the **HMAC chain** (Demo 5).
 
 ---
 
@@ -1012,20 +1141,36 @@ if (imza_gecerli()) devam();   /* tek nokta */
 
 ---
 
+# Control-Flow Counter (animation)
+
+<iframe class="dsanim" src="anim/flow-counter.html?mode=slide&lang=en" title="Control-flow counter: the expected path vs. a skipped check"></iframe>
+
+<!-- Speaker note: show how the stages build the golden chain, then compare it against the actual run order. -->
+
+---
+
+# Control-Flow Counter — edge case: wrong order
+
+<iframe class="dsanim" src="anim/flow-counter.html?mode=slide&lang=en&example=edge-reordered" title="Edge case: every stage present, but in the WRONG order"></iframe>
+
+<!-- Speaker note: even with every stage present, the wrong ORDER breaks the chain — the double counter alone can't catch this, the HMAC chain does. -->
+
+---
+
 <!-- _class: kucuk -->
 
 # Demo 5 · Skip Attack — Actual Output
 
 ```text
-SENARYO 1 - Normal: kontroller sirayla calisir
-SONUC: ODEME ONAYLANDI -> "ODEME-ONAYI-TOKEN-4242"
+SCENARIO 1 - normal: every checkpoint runs in order
+RESULT: PAYMENT APPROVED -> "PAYMENT-APPROVAL-TOKEN-4242"
 
-SENARYO 2 - Saldiri: kontroller tamamen ATLANIR
-   (uyari: sayac=0 iz=0x0 beklenen=3/0x7)
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). decoy doner
+SCENARIO 2 - skip: the checks are SKIPPED entirely
+   (warning: count=0 visited_mask=0x0 expected=3/0x7)
+RESULT: PAYMENT DENIED (wrong chain key). a decoy is returned
 
-SENARYO 4 - Saldiri: kontroller YANLIS SIRADA calisir
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). decoy doner
+SCENARIO 4 - reorder: the checks run in the WRONG ORDER
+RESULT: PAYMENT DENIED (wrong chain key). a decoy is returned
 ```
 
 When checks are skipped or their order is broken, the chain comes out different; the **real result couldn't be produced**.
@@ -1088,11 +1233,28 @@ Tie security checks to a **control-flow counter** and, where possible, to a **da
 
 # The Detect → Decide → Respond Loop
 
-Demo 8 (`code/week-06/08-tamper-yanit`) combines this loop into a single **self-protection engine**:
+Demo 8 (`code/week-06/08-tamper-response`) combines this loop into a single **self-protection engine**:
 
 1. A series of checks **run** (integrity, anti-debug, environment...).
 2. The secret is **wrapped** with a device-bound key (HKDF + AES-GCM).
-3. When tampering is detected, the engine **erases** the secret, raises a flag, and returns a **decoy**.
+3. The number of failed checks (and whether the device matches) is turned into a four-state
+   **response policy** (`NORMAL`/`WARN`/`DEGRADE`/`LOCK`) — not a binary clean/tamper decision.
+
+---
+
+# RASP Pipeline: Detect → Decide → Respond (animation)
+
+<iframe class="dsanim" src="anim/rasp-pipeline.html?mode=slide&lang=en" title="RASP pipeline: detect → decide → respond"></iframe>
+
+<!-- Speaker note: show how the checks collapse into a "failed count", then how that count turns into a state and a concrete response. -->
+
+---
+
+# RASP Pipeline — edge case: device mismatch despite passing checks
+
+<iframe class="dsanim" src="anim/rasp-pipeline.html?mode=slide&lang=en&example=edge-device-mismatch-all-pass" title="Edge case: every check passed but the device mismatches → still LOCK"></iframe>
+
+<!-- Speaker note: a device mismatch jumps straight to LOCK, INDEPENDENTLY of how many checks passed. -->
 
 ---
 
@@ -1101,10 +1263,10 @@ Demo 8 (`code/week-06/08-tamper-yanit`) combines this loop into a single **self-
 # Step A · Detect (Scenario 1 — Normal)
 
 ```text
-SENARYO 1 - Normal: kontroller gecer, cihaz dogru -> sir acilir
-SONUC: TEMIZ. Sir acildi ve islem yapiliyor
-       -> "ODEME-ANAHTARI-7C4A"
-(sir kullanildiktan sonra bellekten guvenle silindi)
+SCENARIO 1 - normal: 0 failed checks, device matches -> NORMAL
+RESULT: NORMAL. The secret opened and is in use
+        -> "PAYMENT-KEY-7C4A"
+(the secret was safely wiped from memory after use)
 ```
 
 Checks **passed**, the device was correct → the secret was opened, used, and immediately **erased**.
@@ -1113,32 +1275,52 @@ Checks **passed**, the device was correct → the secret was opened, used, and i
 
 <!-- _class: kucuk -->
 
-# Step B · Decide (Scenario 2 — Tamper)
+# Step B · Decide (Scenario: warn/degrade)
 
 ```text
-SENARYO 2 - Tamper: bir kontrol basarisiz -> sil + decoy + bayrak
-SONUC: TAMPER ALGILANDI -> algilama kontrolu basarisiz
-   Politika: sir silindi, tamper bayragi kaldirildi,
-   olay kaydedildi.
-   Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...
+SCENARIO 2 - warn: 1 failed check -> WARN
+RESULT: WARN. One weak signal is not worth degrading
+        service over. The secret still opened.
+
+SCENARIO 3 - degrade: 2 failed checks -> DEGRADE
+RESULT: DEGRADE. Multiple signals -> full trust withdrawn.
+RESULT-VALUE: PAYM**** (redacted)
 ```
 
-One check **failed** → the engine **decided**: erase + log + decoy.
+One check failed → the engine **still** opened the secret, just logged it (`WARN`). Two checks failed → the secret was erased, a **redacted** result came back (`DEGRADE`).
 
 ---
 
 <!-- _class: kucuk -->
 
-# Step C · Respond (Scenario 3 — a Different Device)
+# Step C · Respond (Scenario: lock / a different device)
 
 ```text
-SENARYO 3 - Baska cihaz: kontroller gecer ama
-            cihaz anahtari tutmaz
-SONUC: TAMPER ALGILANDI -> cihaz/surum baglama tutmadi
-   (klonlama?) ... decoy doner
+SCENARIO 4 - lock: 3 failed checks -> LOCK
+RESULT: LOCK -> detection checks failed (tamper)
+
+SCENARIO 5 - other-device: checks pass, device key
+             does not hold -> LOCK
+RESULT: LOCK -> device/version binding failed (cloned?)
 ```
 
-**Even though** checks passed, the device-bound key didn't match → the secret **couldn't be opened**. This is the innermost layer of Week 3's security shell.
+**Even though** checks passed, the device-bound key didn't match → the secret **couldn't be opened**; three failed checks lead to the same `LOCK` state. This is the innermost layer of Week 3's security shell.
+
+---
+
+# Response Policy State Machine (animation)
+
+<iframe class="dsanim" src="anim/tamper-response-policy.html?mode=slide&lang=en" title="Response policy state machine: warn → degrade → lock"></iframe>
+
+<!-- Speaker note: show how every call on a monitoring timeline gets classified into one of the four states. -->
+
+---
+
+# State Machine — edge case: always LOCK
+
+<iframe class="dsanim" src="anim/tamper-response-policy.html?mode=slide&lang=en&example=edge-all-device-mismatch" title="Edge case: checks always pass but the device NEVER matches → always LOCK"></iframe>
+
+<!-- Speaker note: even with zero failed checks, a device mismatch ALWAYS leads to LOCK. -->
 
 ---
 
@@ -1276,9 +1458,9 @@ Let's protect a synthetic "license check" with RASP:
 # Step 1 · The Point to Protect
 
 ```c
-int lisans_gecerli(void) {
-    /* ... kontrol ... */
-    return sonuc;   /* saldırganın hedefi */
+int license_is_valid(void) {
+    /* ... check ... */
+    return result;   /* the attacker's target */
 }
 ```
 
@@ -1303,7 +1485,7 @@ This function and the flow that calls it are critical.
 
 # Step 4 · Tie the Result to a Behaviour
 
-- `lisans_gecerli`'s result is not plain true/false.
+- `license_is_valid`'s result is not plain true/false.
 - The integrity + anti-debug indicators feed into the result's **computation**.
 - If there's tampering, the function behaves **incorrectly**.
 

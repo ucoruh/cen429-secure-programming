@@ -1,45 +1,46 @@
-# Demo 6 — TOCTOU yarış durumu (CWE-367)
+# Demo 6 — A TOCTOU race condition (CWE-367)
 
-**Konu:** Zafiyet sınıflandırma (CWE-367: Time-of-check Time-of-use), Unix erişim denetimi · **Hafta:** 2 ·
-**Kitap:** Viega & Messier, Tarif 2.3 (bir kullanıcının dosyaya erişimini denetleme; TOCTOU yarışları)
+**Topic:** Vulnerability classification (CWE-367: Time-of-check Time-of-use), Unix access control · **Week:** 2 ·
+**Book:** Viega & Messier, Recipe 2.3 (checking a user's access to a file; TOCTOU races)
 
-## Ne gösteriyor?
+## What it shows
 
-Bir "günlük yazıcısı" programı, yazmadan önce "bu dosyaya yazmam güvenli mi?" diye denetler. **Güvensiz** sürüm
-önce `lstat()` ile bakar, sonra `fopen()` ile açar. İki işlem arasında saldırgan hedefi bir **sembolik bağla**
-değiştirirse, program denetlediğinden başka bir dosyaya yazar. **Güvenli** sürüm `O_NOFOLLOW | O_CREAT` ile açar;
-denetim ve kullanım tek atomik adımda olduğu için sembolik bağı reddeder.
+A "log writer" program checks "is it safe for me to write to this file?" before writing. The **unsafe** version
+looks with `lstat()` first, then opens with `fopen()`. If an attacker replaces the target with a **symbolic
+link** between the two operations, the program writes to a different file than the one it checked. The **safe**
+version opens with `O_NOFOLLOW | O_CREAT`; because the check and the use happen in one atomic step, it refuses
+the symbolic link.
 
-| Adım | Sürüm | Sonuç |
+| Step | Version | Result |
 | --- | --- | --- |
-| 1 | Güvensiz (denetle → sonra aç) | Yazı `gizli_hedef.txt`'e yönlendirilir: **saldırı başarılı** |
-| 2 | Güvenli (`O_NOFOLLOW`) | Sembolik bağ reddedilir: **saldırı engellenir** |
+| 1 | Unsafe (check → then open) | The write is redirected to `secret_target.txt`: **the attack succeeds** |
+| 2 | Safe (`O_NOFOLLOW`) | The symbolic link is refused: **the attack is blocked** |
 
-## Çalıştırma
+## Running it
 
-Bu demo **yalnız Linux / WSL** üzerinde çalışır (sembolik bağ, `O_NOFOLLOW` ve POSIX dosya API'si). Windows'ta
-derlenmez; `demo.ps1` WSL'de nasıl çalıştırılacağını yazar.
+This demo runs **only on Linux / WSL** (symbolic links, `O_NOFOLLOW`, and the POSIX file API). It does not build
+on Windows; `demo.ps1` explains how to run it under WSL.
 
-Önce bütün demoları bir kez derleyin (`code/` klasöründe, WSL/Linux): `./build.sh` (ya da Visual Studio'da
-**WSL (GCC)** yapılandırmasıyla **Tümünü Derle**). Sonra bu klasörde:
+First build all the demos once (inside the `code/` folder, on WSL/Linux): `./build.sh` (or in Visual Studio,
+**Build All** with the **WSL (GCC)** configuration). Then, inside this folder:
 
-| Ortam | Komut |
+| Environment | Command |
 | --- | --- |
 | WSL / Linux | `sh demo.sh` |
-| Windows | `.\demo.ps1` — WSL'de nasıl çalıştıracağınızı gösterir |
+| Windows | `.\demo.ps1` — shows you how to run it under WSL |
 
-## Neden güvenli? (etik)
+## Why it's safe (ethics)
 
-- Bütün dosyalar **`calisma/` alt klasöründe** üretilir; hiçbir sistem dosyasına dokunulmaz.
-- Yönetici (sudo) yetkisi **gerekmez**; hiçbir sistem ayarı değişmez.
-- `gizli_hedef.txt`, saldırının "korunması gereken dosya"yı temsil eden zararsız bir demo dosyasıdır.
-- Yarışı derste görünür kılmak için program `TOCTOU_GECIKME_US` ortam değişkeniyle küçük bir gecikme uygular;
-  gerçek saldırıda bu gecikmeye gerek yoktur (saldırgan defalarca dener).
+- Every file is produced **inside the `work/` subfolder**; no system file is touched.
+- Administrator (sudo) rights are **never needed**; no system setting changes.
+- `secret_target.txt` is a harmless demo file standing in for "the file the attack needs to protect."
+- To make the race visible in class, the program adds a small delay through the `TOCTOU_DELAY_US` environment
+  variable; a real attack does not need this delay (the attacker simply retries many times).
 
-## Kendin dene
+## Try it yourself
 
-- `TOCTOU_GECIKME_US` gecikmesini 0 yapın (saldırı betiğinden `export` satırını çıkarın). Saldırı hâlâ tutuyor mu?
-  Neden gerçek saldırganlar denemeyi otomatikleştirir?
-- Güvenli sürümde `O_NOFOLLOW`'u kaldırın. Şimdi hangi sürüm gibi davranıyor?
-- Bu açığın CWE numarası nedir? Aynı ailedeki "geçici dosya" açığı (CWE-377) nasıl önlenir? (İpucu: `O_EXCL`,
-  `mkstemp`.)
+- Set the `TOCTOU_DELAY_US` delay to 0 (remove the `export` line from the attack script). Does the attack still
+  work? Why do real attackers automate the attempt?
+- Remove `O_NOFOLLOW` from the safe version. Which version does it now behave like?
+- What is this vulnerability's CWE number? How is the "temp file" vulnerability in the same family (CWE-377)
+  prevented? (Hint: `O_EXCL`, `mkstemp`.)

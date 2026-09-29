@@ -64,7 +64,7 @@ bugün de geçerlidir, yalnız araçlar güncellenmiştir.
 Kayıt, bir saldırganın da okuyabileceği varsayılarak tasarlanır. Günlüğe yazılan her sır, günlük
 dosyasına erişen herkese verilmiş demektir. Bu yüzden öğretim üyesinin yöntemlerinden biri, sürüm
 derlemesinde hata ayıklama günlüğünü koddan tamamen çıkarmaktır: kapalı bir bayrakla susturulmuş günlük
-kodu ikili dosyada kalır ve hem dizgeleriyle bilgi sızdırır hem de yeniden açılabilir.
+kodu binary dosyada kalır ve hem dizgeleriyle bilgi sızdırır hem de yeniden açılabilir.
 
 ### Demo 10 — Günlük enjeksiyonu (CWE-117)
 

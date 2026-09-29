@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "Bu haftanın çalışan demosu"
-    `code/week-09/01-manuel-gizleme` — Manuel gizleme + maliyet olcumu: ayni davranis, sir gizli, `objdump` ile olculen maliyet.
-    · `code/week-09/02-cesitlendirme` — Çeşitlendirme: aynı kaynak iki tohumla derlenir → davranışça eş, yapıca farklı ikili.
+    `code/week-09/01-manual-obfuscation` — Elle gizleme ve maliyet ölçümü: aynı davranış, gizli sır, `objdump` ile ölçülen maliyet.
+    · `code/week-09/02-diversification` — Çeşitlendirme: aynı kaynak iki tohumla derlenir → davranışça eş, yapıca farklı binary.
 
-    Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
+    Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından.
 
 
 !!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
@@ -43,19 +43,19 @@
     ```powershell
     # Windows (PowerShell) — 'code' klasöründe
     .\build.ps1                                    # tüm demoları bir kez derle
-    cd week-09\01-manuel-gizleme
-    .\bin\windows\erisim_temiz.exe CEN429-OK     # korumasız sürüm
-    .\bin\windows\erisim_gizli.exe CEN429-OK     # gizli sürüm — çıktı AYNI
+    cd week-09\01-manual-obfuscation
+    .\bin\windows\access_clean.exe CEN429-OK     # korumasız sürüm
+    .\bin\windows\access_obfuscated.exe CEN429-OK     # gizli sürüm — çıktı AYNI
     ```
 
     ```sh
     # WSL / Linux — 'code' klasöründe
     ./build.sh
-    cd week-09/01-manuel-gizleme
+    cd week-09/01-manual-obfuscation
     sh demo.sh                                     # açıklamalı tam akış
     ```
 
-    **Beklenen çıktı:** İki sürüm de `CEN429-OK` için **aynı** "erişim verildi" satırını basar (davranış korundu). `strings` çıktısında `CEN429-OK` **temizde görünür, gizlide görünmez** (K-07 dize kodlama). `objdump` ölçümü: `erisim_ver` **~28 komut / 3 dal → ~51 komut / 6 dal** (maliyet arttı). İkinci demo (`02-cesitlendirme`) aynı kaynağı iki tohumla derler → **davranış aynı, ikili farklı**.
+    **Beklenen çıktı:** İki sürüm de `CEN429-OK` için **aynı** "erişim verildi" satırını basar (davranış korundu). `strings` çıktısında `CEN429-OK` **temizde görünür, gizlide görünmez** (K-07 dize kodlama). `objdump` ölçümü: `grant_access` **27 komut / 4 dal-çağrı → 49 komut / 9 dal-çağrı** (maliyet arttı). İkinci demo (`02-diversification`) aynı kaynağı iki tohumla derler → **davranış aynı, binary farklı**.
 
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. **Kod gizlemeyi** (obfuscation) bir güvenlik **kuralı/karşı önlemi** olarak tanımlamak; her tekniği "neyi korur,
@@ -114,17 +114,17 @@ temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
   ([Hafta 2, §6](../week-2/cen429-week-2.md#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir)), H3'te
   rastgele sayı üretiminin temelinde
   ([Hafta 3, §3](../week-3/cen429-week-3.md#3-rastgele-sayilar-kriptografinin-gorunmez-temeli)) gördük. Bu hafta
-  aynı ölçütü, bir saldırganın ikili dosyada yüksek entropili blokları (anahtar, şifreli veri) ayırt etmesi
+  aynı ölçütü, bir saldırganın binary dosyada yüksek entropili blokları (anahtar, şifreli veri) ayırt etmesi
   bağlamında sayısal bir örnekle derinleştiriyoruz (aşağıdaki "Ön bilgi").
 - **Derleme bayrağı, `strings` ve sembol tablosu** — derleyiciye verilen seçenekler (`-O2`, `-Wall`, `-DGUNLUK_ACIK`; aynı kaynak bayrağa göre günlüklü ya da
-  günlüksüz derlenebilir) ve bir ikili
+  günlüksüz derlenebilir) ve bir binary
   dosyanın okunabilir metinlerini/isim listesini gösteren araçlar; H4'te bunları ilk kez tanımlamış, gizlemenin
   giriş seviyesindeki adımlarını görmüştük
   ([Hafta 4, §15](../week-4/cen429-week-4.md#15-sembol-dize-ve-gunluk-gizleme)). Bu hafta K-06/K-07 aynı ipuçlarını
   daha ileri düzeyde kapatıyor.
-- **Tersine derleme** — bir ikili/bayt kodunu geri, okunabilir bir koda yaklaştırma işlemi; H5'te JVM bayt kodu
+- **Tersine derleme** — bir binary/bayt kodunu geri, okunabilir bir koda yaklaştırma işlemi; H5'te JVM bayt kodu
   üzerinde gördük ([Hafta 5, §10](../week-5/cen429-week-5.md#10-bayt-kodu-ve-tersine-derleme)). Bu hafta aynı
-  fikri native (C/C++) ikili dosyalar ve Ghidra/IDA gibi araçlarla genişletiyoruz.
+  fikri native (C/C++) binary dosyalar ve Ghidra/IDA gibi araçlarla genişletiyoruz.
 - **XOR** — iki bit farklıysa 1, aynıysa 0 veren işlem; `a^b^b=a` özelliği sayesinde kendini geri alır. H5'te Java
   dize gizlemede XOR'u elle çözmüştük
   ([Hafta 5, §12](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi)). Bu hafta aynı mekanizmayı
@@ -134,7 +134,7 @@ temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
   saldırgan okur. Ne kaydedilir/kaydedilmez ve kurcalamaya
   dayanıklı günlükleri H2'de ayrıntılı işlemiştik
   ([Hafta 2, §9](../week-2/cen429-week-2.md#9-guvenlik-denetim-kaydi-kanit-olarak-gunluk)). Bu hafta yalnız "sürüm
-  ikili dosyasında günlüğün kaldırılması" düzen kuralı olarak §2'de kısaca geçiyor.
+  binary dosyasında günlüğün kaldırılması" düzen kuralı olarak §2'de kısaca geçiyor.
 
 ### Bu haftanın kavram haritası
 
@@ -147,37 +147,37 @@ temel bilgiler ise "Ön bilgi" başlıkları altında sıfırdan anlatılır.
 | Kontrol akışı kuralları (K-01–K-06) | Opak yüklem/döngü, aritmetik kodlama, sahte işlem/ölü dal, kontrol akışı düzleştirme, rastgele çıkış ve fonksiyon/parametre gizleme; algoritmanın CFG'sini okunmaz kılan kurallardır. | [§5](#5-kontrol-akisi-kurallari-ileri) |
 | Veri gizleme kuralları (K-07–K-09) | Statik dize (string) kodlama, opak boolean ve değişken bölme/birleştirme; programın işlediği sabitleri, dizeleri ve değişkenleri gizler. | [§6](#6-veri-gizleme-kurallari) |
 | Program bütünü düzeyinde kurallar (K-10–K-12) | Sanallaştırma tabanlı gizleme, derleyici tabanlı gizleme (O-LLVM) ve kendini değiştiren kod; fonksiyonun makine kodunun kendisini ya da üretim biçimini değiştiren en pahalı ve en güçlü katmandır. | [§7](#7-program-butunu-duzeyinde-kurallar) |
-| Çeşitlendirme (diversification) | Aynı kaynaktan tohuma bağlı, davranışça eş ama yapıca farklı ikili dosyalar üretmek; gizlemenin gücünü değil, bir kırığın diğer kopyalara yayılmasını (ölçeklenmesini) engeller. | [§8](#8-cesitlendirme-tek-kirik-her-yeri-acmasin) |
+| Çeşitlendirme (diversification) | Aynı kaynaktan tohuma bağlı, davranışça eş ama yapıca farklı binary dosyalar üretmek; gizlemenin gücünü değil, bir kırığın diğer kopyalara yayılmasını (ölçeklenmesini) engeller. | [§8](#8-cesitlendirme-tek-kirik-her-yeri-acmasin) |
 | Gizlemenin dört ölçütü | Güç (insan için anlaşılmazlık), dayanıklılık (otomatik araca direnç), gizlilik (fark edilmezlik) ve maliyet (boyut/hız/bakım); bir koruma kararı bu dördü korunan varlığın değerine göre dengeler. | [§9](#9-gizlemenin-olculmesi) |
 | Deobfuscation | Sembolik yürütme, ifade sadeleştirme ve kalıp tanıma gibi saldırganın otomatik araçları; dayanıklılığı ölçmenin tek yolu bu araçları gerçekten çalıştırıp sonucu gözlemlemektir. | [§10](#10-deobfuscation-karsi-tarafin-araclari-ve-dayaniklilik-kurali) |
 | Katmanlı savunmada gizlemenin yeri | Gizleme bellek güvenliği, RASP, whitebox kriptografi ve kripto/anahtar yenilemenin yerine geçmez; her katmanın "geciktirme süresi" saldırı potansiyeli değerlendirmesinde ayrı ayrı sayılır. | [§11](#11-katmanli-savunmada-gizlemenin-yeri) |
 
-### Ön bilgi: ikili dosyalar, tersine mühendislik ve temel yapı taşları
+### Ön bilgi: binary dosyalar, tersine mühendislik ve temel yapı taşları
 
-Bu haftanın konusu **kod gizleme**dir; gizlemeyi anlamak için önce bir ikili dosyanın nasıl üretildiğini ve bir
+Bu haftanın konusu **kod gizleme**dir; gizlemeyi anlamak için önce bir binary dosyanın nasıl üretildiğini ve bir
 saldırganın onu nasıl okuduğunu bilmek gerekir. Aşağıdaki kavramların hiçbiri önceki haftalarda öğretilmedi;
 tanımlardan sonra gelen işlenmiş örnekler bu hafta boyunca sürekli kullanacağımız araçlardır.
 
-#### Kaynak koddan ikiliye: derleyici, makine kodu ve assembly
+#### Kaynak koddan binary'ye: derleyici, makine kodu ve assembly
 
 **Kaynak kod**, sizin yazdığınız, insanın okuyabildiği program metnidir (ör. bir C dosyası):
 `int topla(int a, int b) { return a + b; }`. Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 **Derleyici** (compiler),
-kaynak kodu **makine koduna** çeviren programdır (gcc, clang); **ikili dosya** (binary) ise derleme sonucudur,
+kaynak kodu **makine koduna** çeviren programdır (gcc, clang); **binary dosya** (binary) ise derleme sonucudur,
 bilgisayarın doğrudan çalıştırdığı dosyadır (`.exe`, `.so`).
 
-![Derleyici ne yapar: kaynaktan ikiliye](assets/h09-13-derleme-zinciri.svg)
+![Derleyici ne yapar: kaynaktan binary'ye](assets/h09-13-derleme-zinciri.svg)
 
 **Makine kodu**, işlemcinin anladığı sayısal komutlardır; **assembly** ise makine kodunun insana biraz daha okunur
-hâlidir (`mov`, `cmp`, `jmp`). İkili dosyayı açtığınızda gördüğünüz şey budur.
+hâlidir (`mov`, `cmp`, `jmp`). Binary dosyayı açtığınızda gördüğünüz şey budur.
 
 #### Tersine mühendislik ve tersine derleyici
 
-**Tersine mühendislik** (reverse engineering), bir ikili dosyaya bakıp programın ne yaptığını anlamaya
-çalışmaktır — saldırganın temel işi budur. **Tersine derleyici** (decompiler), ikili dosyayı geri, okunabilir koda
-yakın bir biçime çeviren araçtır (örnekler: Ghidra, IDA); amacı, kaynağa erişimi olmayan birinin ikiliye bakarak
+**Tersine mühendislik** (reverse engineering), bir binary dosyaya bakıp programın ne yaptığını anlamaya
+çalışmaktır — saldırganın temel işi budur. **Tersine derleyici** (decompiler), binary dosyayı geri, okunabilir koda
+yakın bir biçime çeviren araçtır (örnekler: Ghidra, IDA); amacı, kaynağa erişimi olmayan birinin binary'ye bakarak
 mantığı çıkarsamasıdır. (H5'te bunun JVM bayt kodu üzerindeki karşılığını görmüştük — bkz. yukarıdaki "Önceki
-haftalardan gelenler"; burada aynı fikri native ikili dosyalara taşıyoruz.)
+haftalardan gelenler"; burada aynı fikri native binary dosyalara taşıyoruz.)
 
 **Tersine derleyici çıktısı neye benzer?** Elimizde yalnız bir `.exe`/`.so` dosyası olduğunu, kaynak kodu
 görmediğimizi hayal edelim. `int topla(int a, int b) { return a + b; }` fonksiyonunu bir tersine derleyicide
@@ -191,7 +191,7 @@ undefined4 FUN_00401020(int param_1, int param_2)
 ```
 
 Dikkat edin: `topla`, `a`, `b` gibi **anlamlı adlar kaybolmuştur** (kaynak dosyada vardı, yalnız derleyicinin
-ürettiği ikili dosyada saklı değildi); araç kendi ürettiği `FUN_00401020` (adres tabanlı) ve `param_1`, `param_2`
+ürettiği binary dosyada saklı değildi); araç kendi ürettiği `FUN_00401020` (adres tabanlı) ve `param_1`, `param_2`
 gibi **jenerik** adları kullanır. Ama **mantık korunur**: toplama işlemi hâlâ açıkça görünür. Bu, gizlemenin neden
 yalnız **adları** değiştirmenin (düzen ailesi) yeterli olmadığının somut kanıtıdır — bir tersine derleyici zaten
 adları kaybetmiş bir şekilde çalışır; asıl mücadele **mantığı** (kontrol akışı ve veri) okunmaz kılmaktır, bu da
@@ -223,8 +223,8 @@ gizli" değildir, yalnız insan için okuma kolaylığı farklıdır (hex kısa,
 **XOR** (`^`), iki bit farklıysa 1, aynıysa 0 veren işlemdir. Özelliği: `a ^ b ^ b == a` → **kendini geri alır**:
 
 ```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
+c = a ^ 0x5A;   /* encode */
+a = c ^ 0x5A;   /* decode */
 ```
 
 Gizlemede çok kullanılır çünkü tersine çevrilebilir (H5'te Java dize gizlemede XOR'u elle çözmüştük — bkz.
@@ -261,7 +261,7 @@ tekrar kuracaksınız, sadece bir bayt yerine bir dizi bayt için.
 #### Entropi: bir verinin ne kadar "rastgele" göründüğü
 
 **Entropi**, bir verinin ne kadar "rastgele" göründüğünün ölçüsüdür; kriptografik anahtarlar **yüksek entropili**
-görünür (düzensiz baytlar). Saldırgan, ikilide yüksek entropili bir blok görürse "burada anahtar olabilir" der.
+görünür (düzensiz baytlar). Saldırgan, binary'de yüksek entropili bir blok görürse "burada anahtar olabilir" der.
 (H2'de şifreli/paketli içerik tespitinde, H3'te rastgele sayı üretiminde gördüğümüz ölçütün aynısıdır — bkz.
 yukarıdaki "Önceki haftalardan gelenler"; burada sayısal bir örnekle derinleştiriyoruz.)
 
@@ -276,7 +276,7 @@ dizideki her farklı bayt değerinin **görülme olasılığına** bakar: `H = -
   entropi değeri.
 
 Gerçek bir kriptografik anahtar, yüzlerce baytlık ölçekte "dizi B" gibi görünür: baytlar arasında tekrar eden bir
-desen yoktur, her bayt değeri hemen hemen eşit olasılıkla çıkar. Bir saldırgan ikili dosyayı tarayan bir araçla
+desen yoktur, her bayt değeri hemen hemen eşit olasılıkla çıkar. Bir saldırgan binary dosyayı tarayan bir araçla
 gezdiğinde, "dizi A" gibi düşük entropili bloklarla (sabit metinler, sıfır doldurmalar, tekrar eden yapılar) "dizi
 B" gibi yüksek entropili blokları (anahtarlar, sıkıştırılmış ya da şifreli veri) istatistiksel olarak ayırt
 edebilir — az önceki tanımdaki "saldırgan yüksek entropili bir blok görürse anahtar olabilir der" cümlesinin
@@ -284,7 +284,7 @@ sayısal karşılığı tam olarak budur.
 
 #### Fonksiyon, dal, temel blok ve kontrol akışı grafiği (CFG)
 
-**Fonksiyon**, bir işi yapan kod bloğudur (`erisim_ver`); **dal (branch)**, `if` gibi bir yol ayrımıdır; **koşul**,
+**Fonksiyon**, bir işi yapan kod bloğudur (`grant_access`); **dal (branch)**, `if` gibi bir yol ayrımıdır; **koşul**,
 dalın hangi yöne gideceğini belirleyen ifadedir. **Temel blok (basic block)**, dalsız, baştan sona akan komut
 dizisidir — bir `if` gelince blok biter, iki yeni blok başlar; program, temel blokların birbirine bağlanmasıdır.
 **CFG** (Control Flow Graph), temel blokları **düğüm**, geçişleri **kenar** yapan şemadır — programın "yol
@@ -295,25 +295,25 @@ haritası"dır.
 **Somut bir örnekle "temel blok" ve "CFG" kavramlarını birleştirelim.** Bölüm 5'te tekrar göreceğimiz şu küçük
 fonksiyonu ele alalım:
 
-```c title="denetim: üç temel bloklu küçük bir fonksiyon"
-int denetim(int girdi) {
-    int a = girdi + 1;      /* Blok 1 */
-    if (a > 10) {            /* Blok 2 */
-        return HATA;
+```c title="check: üç temel bloklu küçük bir fonksiyon"
+int check(int input) {
+    int a = input + 1;      /* Block 1 */
+    if (a > 10) {            /* Block 2 */
+        return FAIL;
     }
-    return a * 2;             /* Blok 3 */
+    return a * 2;             /* Block 3 */
 }
 ```
 
-Bu fonksiyonu temel bloklara ayıralım: **Blok 1** (`a = girdi + 1` ve `if` koşulunun hesaplanması) dalsız akar,
-`if`'e geldiği an biter. **Blok 2** koşul `doğru` ise `return HATA`'ya gider — bu tek satırlık ayrı bir blok
+Bu fonksiyonu temel bloklara ayıralım: **Blok 1** (`a = input + 1` ve `if` koşulunun hesaplanması) dalsız akar,
+`if`'e geldiği an biter. **Blok 2** koşul `doğru` ise `return FAIL`'e gider — bu tek satırlık ayrı bir blok
 (**Blok 2a**). Koşul `yanlış` ise **Blok 2b**'ye (`return a*2`) geçilir. CFG'nin düğümleri bu üç blok
 (1, 2a, 2b), kenarları ise aralarındaki geçişlerdir:
 
 | Düğüm (temel blok) | İçeriği | Giden kenarlar |
 | --- | --- | --- |
-| Blok 1 | `a = girdi+1`; `if (a>10)` hesapla | → Blok 2a (koşul doğru) veya Blok 2b (koşul yanlış) |
-| Blok 2a | `return HATA` | (çıkış — kenar yok) |
+| Blok 1 | `a = input+1`; `if (a>10)` hesapla | → Blok 2a (koşul doğru) veya Blok 2b (koşul yanlış) |
+| Blok 2a | `return FAIL` | (çıkış — kenar yok) |
 | Blok 2b | `return a*2` | (çıkış — kenar yok) |
 
 Toplam: **3 düğüm, 2 kenar**. Bir tersine derleyici bu grafiği çizdiğinde, "girdi 10'dan büyükse hata, değilse iki
@@ -336,7 +336,7 @@ projede en sık yapılan kavramsal hatalardan biridir:
   yoktur; yalnız çaba ve zaman maliyeti yükseltir (bölüm 1'deki "Kural 1").
 
 Bu ayrım önemlidir çünkü K-07'de göreceğimiz "dize **kodlama**" tam olarak **encoding**'dir (XOR ile), **encryption**
-değildir — çözme anahtarı da ikili dosyanın içinde durur, bu yüzden matematiksel bir gizlilik iddia edilmez; yalnız
+değildir — çözme anahtarı da binary dosyanın içinde durur, bu yüzden matematiksel bir gizlilik iddia edilmez; yalnız
 `strings` gibi statik araçları yavaşlatır. Bölüm 3'te bunu "gizleme anahtar saklamaz" kuralıyla tekrar göreceğiz.
 
 ### Hızlı sözlük: bu haftanın İngilizce terimleri
@@ -376,7 +376,7 @@ Dersin ilk haftasında ([Hafta 1, §3](../week-1/cen429-week-1.md#3-saldirgan-ki
 modellerini ayırmıştık. Ağdan girdi gönderen bir saldırgana karşı savunmamız girdi
 doğrulama, bellek güvenliği ve kriptografiydi. Ama bir mobil uygulamayı, bir masaüstü programını ya da bir gömülü
 kütüphaneyi kullanıcıya **teslim ettiğimizde**, saldırgan artık programın kendisine sahiptir. Bu tehdit modeline
-literatürde **MATE** (Man-At-The-End, "uçtaki insan") ya da **beyaz kutu** denir: saldırgan ikili dosyayı bir tersine
+literatürde **MATE** (Man-At-The-End, "uçtaki insan") ya da **beyaz kutu** denir: saldırgan binary dosyayı bir tersine
 derleyicide açabilir, adım adım çalıştırabilir, belleği okuyup değiştirebilir, istediği kadar deneyebilir. Sunucu
 tarafındaki hiçbir güvenlik denetimi burada geçerli değildir; çünkü kod saldırganın makinesinde çalışır.
 
@@ -385,9 +385,10 @@ tarafındaki hiçbir güvenlik denetimi burada geçerli değildir; çünkü kod 
 !!! note "Kısa tarihçe: kod gizleme nereden geldi?"
     - **1976** — Diffie & Hellman, bir programı "anlaşılmaz ama çalışır" kılma fikrini ilk kez tartışır (gizlilik-yoluyla değil, **çaba-yoluyla** koruma).
     - **1997** — Collberg, Thomborson ve Low ilk **gizleme taksonomisini** (düzen · veri · kontrol akışı · önleyici) ve *güç–dayanıklılık–gizlilik–maliyet* çerçevesini yayımlar. Bu dersteki **beş aile** buradan gelir.
+    - **2000** — Wang, Hill, Knight ve Davidson, "Software Tamper Resistance: Obstructing Static Analysis of Programs" adlı raporlarında **kontrol akışı düzleştirmeyi** (control-flow flattening) tanıtır: dolaylı adresleme ile birleştirilmiş sahte göstergelerle dönüştürülmüş bir programın kesin analizinin genel durumda **NP-zor** olduğunu gösterirler. Bu dersteki **K-04** buradan gelir (bölüm 5).
     - **2001** — Barak vd. "kusursuz (kara-kutu) gizleme genel olarak **imkânsızdır**" teoremini kanıtlar → gizleme bu yüzden "kırılamazlık" değil, **maliyet** olarak öğretilir.
     - **2002** — Chow vd. **whitebox AES** ile anahtarı yazılıma gömme fikrini başlatır ([11. hafta](../week-11/cen429-week-11.md)).
-    - **2010'lar** — DRM, mobil bankacılık ve oyun sektörü gizlemeyi yaygınlaştırır; **Tigress** (Collberg) ve **Obfuscator-LLVM** işi araç hâline getirir ([14. hafta](../week-14/cen429-week-14.md)).
+    - **2010'lar** — DRM, mobil bankacılık ve oyun sektörü gizlemeyi yaygınlaştırır; **Tigress** (Collberg) ve **Obfuscator-LLVM** (Junod, Rinaldini, Wehrli ve Michielin, **2015**, SPRO çalıştayı — bkz. bölüm 7, K-11) işi araç hâline getirir ([14. hafta](../week-14/cen429-week-14.md)).
 
     Yani gizleme, akademik bir **imkânsızlık** sonucunun üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
 
@@ -440,7 +441,7 @@ Kural 1'i havada bırakmayalım; basit bir maliyet-fayda hesabıyla somutlaştı
 (gerçek bir sözleşme ya da ürün rakamı değildir), amaç yalnız akıl yürütme biçimini göstermektir:
 
 1. Deneyimli bir tersine mühendisin saatlik "pazar değeri"nin **500 TL** olduğunu varsayalım.
-2. Hiç gizleme uygulanmamış bir ikili dosyada, `lisans_dogrula` gibi adı kendini ele veren bir fonksiyonu bulup
+2. Hiç gizleme uygulanmamış bir binary dosyada, `lisans_dogrula` gibi adı kendini ele veren bir fonksiyonu bulup
    mantığını çıkarmak **10 dakika (1/6 saat)** sürsün. Saldırganın maliyeti: `500 × (1/6) ≈ 83 TL`.
 3. Bu hafta öğreneceğimiz üç kuralı (kontrol akışı düzleştirme K-04 + opak yüklem K-01 + dize kodlama K-07) birlikte
    uyguladığımızda, aynı analiz **40 saate** çıksın (bu tür süreler gerçek projelerde ölçülür, tahmin edilmez —
@@ -496,16 +497,16 @@ Taksonomiyi soyut bırakmayalım. Aşağıdaki küçük (sentetik) fonksiyonda, 
 yorum satırlarıyla işaretleyelim:
 
 ```c title="Beş aile tek fonksiyonda (kavram gösterimi)"
-/* DÜZEN (layout): fonksiyon adı 'esik_hesapla' değil, anlamsız 'f7' */
+/* LAYOUT: the function name isn't 'threshold_compute' but the meaningless 'f7' */
 int f7(int x) {
-    /* VERİ (data): 0x2A sabiti doğrudan yazılmıyor, iki parçadan üretiliyor (K-02, bölüm 6) */
-    uint8_t esik = (uint8_t)(0x37 ^ 0x1D);
+    /* DATA: the 0x2A constant isn't written directly, it's produced from two parts (K-02, section 6) */
+    uint8_t threshold = (uint8_t)(0x37 ^ 0x1D);
 
-    /* KONTROL AKIŞI (control flow): opak yüklem ile dallanma (K-01, bölüm 5) */
+    /* CONTROL FLOW: branching via an opaque predicate (K-01, section 5) */
     if (((x * (x + 1)) & 1u) == 0u) {
-        return esik;          /* gerçek yol: x*(x+1) her zaman çift olduğu için buraya HER ZAMAN girilir */
+        return threshold;     /* real path: since x*(x+1) is always even, this is ALWAYS entered */
     }
-    return 0;                 /* ÖNLEYİCİ (anti-analysis) amaçlı ölü dal: hiç çalışmaz, analisti oyalar */
+    return 0;                 /* ANTI-ANALYSIS dead branch: never runs, just distracts the analyst */
 }
 ```
 
@@ -513,6 +514,17 @@ Beşinci aile — **sanallaştırma** — bu küçük örnekte yok, çünkü san
 tamamının makine koduna** uygulanır (bölüm 7, K-10). Bu örnek şunu göstermek içindir: gerçek kodda beş aile **iç
 içe** yaşar; bir satırı okurken "bu hangi ailenin işi?" diye sorabilmek, kaynağın "hepsi birlikte kullanılmalı"
 uyarısını somutlaştırır.
+
+Şimdi bu dört aileyi kavramsal `f7` örneğinde değil, bu haftanın **gerçek** `grant_access` fonksiyonunda, gerçek
+satır numaralarıyla görelim — sonra aynı fonksiyonu 10 jetonla çalıştırıp davranışın korunduğunu doğrulayalım:
+
+<iframe class="dsanim" src="../anim/five-obfuscation-families.html" title="Gizlemenin beş ailesi: tek fonksiyonda hepsi bir arada" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Gizlemenin beş ailesi — adım adım](anim/five-obfuscation-families.png)
+</div>
+
+**Normal**, **zor** ve iki **uç durum** hazır örneği deneyin, 🎲 ile rastgele jeton kümesi üretin ya da kendi
+jetonlarınızı yazın.
 
 !!! danger "Sık yapılan hata: tek bir aileyi uygulayıp 'gizledim' sanmak"
     Yeni başlayan bir geliştirici genelde yalnız **düzen** ailesini uygular (adları anlamsızlaştırır) ve işi bitmiş
@@ -571,15 +583,15 @@ ve **vermedikleri** şunlardır:
 Tablodaki "verir/vermez" ayrımını bir zaman çizelgesine dökelim. İki sürümü de düşünün: **korumasız** ve **bu
 haftanın kurallarıyla korunmuş**.
 
-**Korumasız ikili dosyada saldırganın ilk 10 dakikası:**
+**Korumasız binary dosyada saldırganın ilk 10 dakikası:**
 
 1. `strings program.exe` çalıştırır → `"CEN429-OK"`, `"Erisim reddedildi"` gibi dizeler doğrudan görünür (0. dakika).
-2. Tersine derleyiciyi açar, sembol tablosunda `erisim_ver`, `lisans_dogrula` gibi adları görür (2. dakika).
+2. Tersine derleyiciyi açar, sembol tablosunda `grant_access`, `lisans_dogrula` gibi adları görür (2. dakika).
 3. Fonksiyonun CFG'sini okur: tek bir `if/else`, hangi dalın "izin", hangisinin "red" olduğu bir bakışta bellidir
    (5. dakika).
 4. Karşılaştırma değerini (`"CEN429-OK"`) bulur, kendi girdisiyle test eder, doğrular (10. dakika). **İş bitmiştir.**
 
-**Bu haftanın kurallarıyla korunmuş ikili dosyada aynı 10 dakika:**
+**Bu haftanın kurallarıyla korunmuş binary dosyada aynı 10 dakika:**
 
 1. `strings` çalıştırır → K-07 sayesinde dizeler görünmez; eline bir ipucu geçmez (0. dakika).
 2. Sembol tablosuna bakar → K-06 ve düzen ailesi sayesinde tanınan bir ad yoktur (2. dakika).
@@ -625,18 +637,18 @@ Soyut kalmasın diye, bu bölümün başındaki "Bu haftanın çalışan demosu"
 sayılarıyla (K-04'ün demoda uygulanmış hâli) şablonu tam olarak dolduralım:
 
 ```text
-KURAL K-04-uygulama: erisim_ver fonksiyonuna kontrol akışı düzleştirme
+KURAL K-04-uygulama: grant_access fonksiyonuna kontrol akışı düzleştirme
   Neyi korur?       : erişim denetiminin akış sırası (CEN429-OK karşılaştırmasının nerede/nasıl yapıldığı)
   Hangi tehdide karşı?: statik analiz (tersine derleyicide CFG okuma), tek-bayt/tek-dal yama saldırısı
   Nasıl?            : switch tabanlı dağıtıcı (K-04) + opak yüklem (K-01) + rastgele çıkış (K-05)
-  Maliyet           : komut sayısı 28 → 51 (+82%), dal sayısı 3 → 6 (+100%) — objdump ile ölçüldü
+  Maliyet           : komut sayısı 27 → 49 (+%81,5), dal/çağrı sayısı 4 → 9 (+%125) — objdump ile ölçüldü
   Sınır             : yalnız düzleştirme; sembolik yürütmeyle geri açılabilir (bölüm 10); veri hâlâ K-07 ister
   Ölçüm             : objdump çıktısında komut/dal sayısı karşılaştırması (bu haftanın demosu, adım adım kılavuzda)
 ```
 
-Maliyet satırındaki yüzdeleri doğrulayalım: komut sayısında artış `(51 − 28) / 28 × 100 ≈ %82,1`; dal sayısında
-artış `(6 − 3) / 3 × 100 = %100` (tam iki katına çıkmış). Bu, "Ölçüm" satırının **iddia değil rakam** olması
-gerektiğinin somut kanıtıdır — bölüm 9'da bu sayıları tekrar kullanacağız.
+Maliyet satırındaki yüzdeleri doğrulayalım: komut sayısında artış `(49 − 27) / 27 × 100 ≈ %81,5`; dal/çağrı
+sayısında artış `(9 − 4) / 4 × 100 = %125` (ikiden fazla katına çıkmış). Bu, "Ölçüm" satırının **iddia değil
+rakam** olması gerektiğinin somut kanıtıdır — bölüm 9'da bu sayıları tekrar kullanacağız.
 
 !!! danger "Sık yapılan hata: şablonun yalnız 'Nasıl' satırını doldurup 'Ölçüm' satırını boş bırakmak"
     Öğrenciler genelde hangi tekniği uyguladıklarını (Nasıl) yazar ama **maliyet** ve **ölçüm** satırlarını atlar.
@@ -664,6 +676,17 @@ genelde "komut/dal sayısı" ile, **veri** kuralları genelde "görünür dize/s
 ikisinde de şablonun altı satırı **aynı disiplinle** doldurulur. S9'unuzda en az bir kontrol akışı, bir de veri
 kuralı için bu şablonu ayrı ayrı doldurmanız beklenir.
 
+Şablonu şimdi 5 gerçek kuralın (R-01, R-04, R-05, R-07, R-08) tümü için, iki farklı varlıkta (bu haftanın ÖLÇÜLMÜŞ
+`grant_access`ı ve bölüm 9'un kavramsal `lisans_dogrula` örneği) dolu görelim — ikisini KARIŞTIRMAMAK önemli:
+
+<iframe class="dsanim" src="../anim/protection-rule-template.html" title="Koruma kuralı şablonu: 5 kural, 2 varlık, 10 dolu satır" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Koruma kuralı şablonu — adım adım](anim/protection-rule-template.png)
+</div>
+
+**Normal** (10 satırın tamamı), **zor** (yalnız ölçülmüş `grant_access`, tekrarlı) ve iki **uç durum** (yalnız
+kavramsal varlık; tek kural iki varlıkta) örneğini deneyin.
+
 ---
 
 ## 5. Kontrol akışı kuralları (ileri)
@@ -671,7 +694,7 @@ kuralı için bu şablonu ayrı ayrı doldurmanız beklenir.
 Derlenmiş bir fonksiyonun **kontrol akışı grafiği** (CFG) algoritmanın iskeletini gösterir: hangi denetim hangi sırayla
 yapılıyor, hangi dal başarıya gidiyor. Beyaz kutu saldırganın ilk işi bu iskeleti çıkarmaktır. Kontrol akışı gizleme
 kuralları, bu iskeleti okunamaz kılar. 4. haftada düzleştirmeye giriş yaptık; burada onu **güçlendiren** kuralları
-ekliyoruz. Bütün örnekler sentetiktir ve tek bir küçük denetim (`erisim_ver`) üzerinden anlatılır.
+ekliyoruz. Bütün örnekler sentetiktir ve tek bir küçük denetim (`grant_access`) üzerinden anlatılır.
 
 ![Kontrol akışı düzleştirme öncesi ve sonrası](assets/h09-04-duzlestirme.svg)
 
@@ -682,13 +705,13 @@ bildiği ama analiz aracının kolayca çözemediği bir ifadeyle (**opak yükle
 doğru olan ama bunu statik olarak kanıtlaması zor bir aritmetik özdeşliktir:
 
 ```c title="Opak yüklem: her zaman true, ama statik analiz kolay kanıtlayamaz"
-/* x*(x+1) her zaman çifttir → (x*(x+1)) % 2 == 0 daima doğrudur. */
-static int opak_dogru(unsigned x) { return ((x * (x + 1)) & 1u) == 0; }
+/* x*(x+1) is always even → (x*(x+1)) % 2 == 0 is always true. */
+static int opaque_true(unsigned x) { return ((x * (x + 1)) & 1u) == 0; }
 
-if (opak_dogru(sayac)) {          /* gerçek yol: daima buraya girer */
-    durum = gercek_adim(durum);
+if (opaque_true(counter)) {          /* real path: always entered */
+    state = real_step(state);
 } else {
-    durum = sahte_adim(durum);    /* ölü yol: hiç çalışmaz ama analizde gerçek görünür */
+    state = fake_step(state);    /* dead path: never runs, but looks real under analysis */
 }
 ```
 
@@ -704,7 +727,7 @@ if (opak_dogru(sayac)) {          /* gerçek yol: daima buraya girer */
     | 4 | 5 | 20 | evet |
     | 7 | 8 | 56 | evet |
 
-    Demek ki `(x * (x+1)) & 1` **her zaman 0**'dır, yani `opak_dogru(x)` **her x için `true`** döner. Program
+    Demek ki `(x * (x+1)) & 1` **her zaman 0**'dır, yani `opaque_true(x)` **her x için `true`** döner. Program
     çalışırken daima "gerçek yol"a girer.
 
     **Peki neden buna 'opak' diyoruz?** Çünkü bunu *biz* biliyoruz; **statik analiz aracı bilmiyor**. Araç kodu
@@ -724,32 +747,43 @@ düzleştirmenin içine gizlenir**, gövde küçük bloklara bölünür ve yinel
 **Maliyet:** düşük–orta (fazladan aritmetik ve dal). **Sınır:** iyi bilinen opak yüklem kalıpları (kütüphaneler)
 otomatik tanınabilir; bu yüzden çeşitlendirilmeleri gerekir. **Ölçüm:** düzleştirme öncesi/sonrası temel blok sayısı.
 
+Bu haftanın demosunda aynı fikir `grant_access`in `opaque_zero(x) = (x*(x+1)) & 1` ifadesiyle kullanılıyor — bir
+`if` değil, doğrudan `state` hesabına katılan bir **opak sabit**. Aşağıda bunu birçok `x` değeri için tarayıp
+gerçekten her zaman `0` döndüğünü, sonra gerçek kullanım satırını görelim:
+
+<iframe class="dsanim" src="../anim/opaque-predicate-insertion.html" title="Opak yüklem ekleme: (x*(x+1)) & 1 asla 1 değildir" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Opak yüklem ekleme — adım adım](anim/opaque-predicate-insertion.png)
+</div>
+
+**Normal**, **zor** ve iki **uç durum** hazır örneği deneyin, ya da 🎲 ile kendi `x` kümenizi üretin.
+
 **İşlenmiş örnek: opak bir döngü sınırını elle izleyelim.** Kılavuzun "döngü sınırı CFG'den okunamaz" iddiasını
 sayılarla doğrulayalım. Gerçek yineleme sınırımız `3` olsun, ama bunu doğrudan yazmak yerine ikinci bir **her zaman
 doğru** opak yüklemle örtelim:
 
 ```c title="Opak döngü: gerçek sınır (3) kodda açıkça görünmez"
-static int hep_dogru(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) her zaman çift — bkz. yukarısı */
+static int always_true(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) is always even — see above */
 
 unsigned i = 0;
-while (hep_dogru(i) && i < GERCEK_SINIR) {   /* GERCEK_SINIR = 3, ayrı bir sabitte tanımlı (K-02 ile kodlanabilir) */
-    isle(i);
+while (always_true(i) && i < REAL_LIMIT) {   /* REAL_LIMIT = 3, defined in a separate constant (can be encoded with K-02) */
+    process(i);
     i++;
 }
 ```
 
-Elle izleyelim (`GERCEK_SINIR = 3`):
+Elle izleyelim (`REAL_LIMIT = 3`):
 
-| Adım | `i` | `hep_dogru(i)` hesabı | Sonuç | `i < 3`? | Döngü gövdesi çalışır mı? |
+| Adım | `i` | `always_true(i)` hesabı | Sonuç | `i < 3`? | Döngü gövdesi çalışır mı? |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | `0*0+0=0`, `0 & 1 = 0` | true | evet | evet → `isle(0)`, `i=1` |
-| 2 | 1 | `1*1+1=2`, `2 & 1 = 0` | true | evet | evet → `isle(1)`, `i=2` |
-| 3 | 2 | `2*2+2=6`, `6 & 1 = 0` | true | evet | evet → `isle(2)`, `i=3` |
+| 1 | 0 | `0*0+0=0`, `0 & 1 = 0` | true | evet | evet → `process(0)`, `i=1` |
+| 2 | 1 | `1*1+1=2`, `2 & 1 = 0` | true | evet | evet → `process(1)`, `i=2` |
+| 3 | 2 | `2*2+2=6`, `6 & 1 = 0` | true | evet | evet → `process(2)`, `i=3` |
 | 4 | 3 | `3*3+3=12`, `12 & 1 = 0` | true | **hayır** (`3 < 3` yanlış) | **hayır**, döngü biter |
 
-Sonuç: döngü tam olarak **3 kez** çalışır (`i = 0, 1, 2`), tıpkı beklendiği gibi. Ama dikkat: `hep_dogru(i)` **her
-zaman** `true` döner — bu yüzden bir analiz aracı, döngünün ne zaman biteceğini anlamak için `hep_dogru`'yu değil
-`i < GERCEK_SINIR` karşılaştırmasını izlemek zorundadır; ve `hep_dogru`'nun her zaman doğru olduğunu **kanıtlamak**
+Sonuç: döngü tam olarak **3 kez** çalışır (`i = 0, 1, 2`), tıpkı beklendiği gibi. Ama dikkat: `always_true(i)` **her
+zaman** `true` döner — bu yüzden bir analiz aracı, döngünün ne zaman biteceğini anlamak için `always_true`'yu değil
+`i < REAL_LIMIT` karşılaştırmasını izlemek zorundadır; ve `always_true`'nun her zaman doğru olduğunu **kanıtlamak**
 için de yukarıdaki tam-sayı özdeşliğini çözmesi gerekir. İki ayrı analiz yükü aynı satıra binmiştir.
 
 ### KURAL K-02 — Aritmetik komutların kodlanması
@@ -761,8 +795,8 @@ yazılmaz, çalışma anında küçük bir hesapla üretilir:
 
 ```c title="Sabit dönüşümü: 0x2A doğrudan görünmez"
 
-/* 0x2A yerine iki parçadan üret; ikili dosyada '0x2A' araması sonuç vermez. */
-static uint8_t esik(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
+/* Produce it from two parts instead of 0x2A; a '0x2A' search in the binary returns nothing. */
+static uint8_t threshold(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
 ```
 
 **Maliyet:** düşük. **Sınır:** modern tersine derleyiciler ve `arybo`/`msynth` gibi araçlar birçok MBA ifadesini
@@ -780,25 +814,25 @@ iddiasını **sayılarla** kanıtlayalım (`a = 5`, `b = 3`):
 | `(a ^ b) + 2·(a & b)` | `6 + 2·1 = 6 + 2` | `8` |
 
 İkisi de `8` — özdeşlik doğrulandı. Bu, dört bitlik her `a,b` çifti için geçerli bir cebirsel kimliktir (taşıma
-bitini `2·(a&b)` terimi telafi eder); derleyici bunu `a+b` yerine üretirse, ikili dosyada düz bir "toplama" görünmez,
+bitini `2·(a&b)` terimi telafi eder); derleyici bunu `a+b` yerine üretirse, binary dosyada düz bir "toplama" görünmez,
 üç ayrı komut (XOR, AND, kaydırma+toplama) görünür.
 
-Aynı mantıkla kuraldaki `esik()` fonksiyonunun ürettiği `0x2A` sabitini de doğrulayalım (`a = 0x37`, `b = 0x1D`):
+Aynı mantıkla kuraldaki `threshold()` fonksiyonunun ürettiği `0x2A` sabitini de doğrulayalım (`a = 0x37`, `b = 0x1D`):
 
 | Bit | `0x37` | `0x1D` | XOR |
 | --- | --- | --- | --- |
 | 7–4 | `0011` | `0001` | `0010` |
 | 3–0 | `0111` | `1101` | `1010` |
 
-Sonuç: `0010 1010` = `0x2A` — kod bloğundaki yorumla birebir örtüşüyor. İkili dosyada `0x2A` değeri **hiçbir yerde**
+Sonuç: `0010 1010` = `0x2A` — kod bloğundaki yorumla birebir örtüşüyor. Binary dosyada `0x2A` değeri **hiçbir yerde**
 tek bir bayt olarak durmaz; yalnız `0x37` ve `0x1D` durur, `strings`/bayt taramasıyla `0x2A` aranırsa **sonuç
 çıkmaz**.
 
 !!! danger "Sık yapılan hata: dönüşümü yalnız derleme-zamanı sabitler üzerinde yapmak"
-    `esik()` örneğini `#define ESIK ((0x37) ^ (0x1D))` gibi bir önişlemci makrosuyla yazarsanız, derleyici **sabit
-    katlama (constant folding)** yaparken bu ifadeyi derleme sırasında kendisi hesaplar ve ikili dosyaya doğrudan
-    `0x2A`'yı gömer — MBA dönüşümü kaynakta var, **ikilide yok**. **Kural:** dönüşümün gerçekten çalışma anında
-    (runtime'da) hesaplandığını, derleme anında sadeleştirilmediğini derlenmiş ikili dosyada (`objdump`/`strings`
+    `threshold()` örneğini `#define THRESHOLD ((0x37) ^ (0x1D))` gibi bir önişlemci makrosuyla yazarsanız, derleyici **sabit
+    katlama (constant folding)** yaparken bu ifadeyi derleme sırasında kendisi hesaplar ve binary dosyaya doğrudan
+    `0x2A`'yı gömer — MBA dönüşümü kaynakta var, **binary'de yok**. **Kural:** dönüşümün gerçekten çalışma anında
+    (runtime'da) hesaplandığını, derleme anında sadeleştirilmediğini derlenmiş binary dosyada (`objdump`/`strings`
     ile) **doğrulayın**; bölüm 0'daki "derleme bayrağı" ayrımı burada da geçerlidir — optimizasyon açıkken test
     edin.
 
@@ -812,31 +846,31 @@ Kılavuz bu ikisini **ayrı** kurallar olarak yazar ve aradaki fark önemlidir:
 | --- | --- | --- |
 | Çalışır mı? | **Evet**, çalışır ama sonucu değiştirmez | **Hayır**, hiç çalışmaz (opak yüklemle korunur) |
 | Amaç | Gerçek işlemleri kalabalık içinde gizlemek | Analiste sahte bir yürütme yolu göstermek |
-| Örnek | Bir CRC hesabına `x ^ x` eklemek (sonuç değişmez) | `if (opak_yanlis()) { ... }` içindeki kod |
+| Örnek | Bir CRC hesabına `x ^ x` eklemek (sonuç değişmez) | `if (opaque_false()) { ... }` içindeki kod |
 
 ```c title="Sahte işlem: sonucu değiştirmez, kodu kalabalıklaştırır"
-crc = crc32_guncelle(crc, veri, n);
-crc ^= (sabit ^ sabit);   /* = crc; sahte işlem, sonuç aynı */
+crc = crc32_update(crc, data, n);
+crc ^= (constant ^ constant);   /* = crc; bogus operation, result unchanged */
 ```
 
 **Neyi korur?** Gerçek mantığı, onu çevreleyen anlamsız ama makul görünen kodla. **Maliyet:** düşük (sahte işlem)
 –orta (ölü dallar CFG'yi büyütür). **Sınır:** ölü kod eleme yapan bir analiz aracı, opak yüklem çözülürse ölü dalı
 atabilir; bu yüzden opak yüklemin kalitesine bağlıdır. **Ölçüm:** ölü dalların gerçek dallardan ayırt edilme süresi.
 
-**İşlenmiş örnek: sahte işlem gerçekten sonucu değiştirmiyor mu?** Yukarıdaki `crc ^= (sabit ^ sabit)` satırını sayı
-ile doğrulayalım (`sabit = 0x11` olsun): `sabit ^ sabit = 0x11 ^ 0x11 = 0x00` (herhangi bir değer kendisiyle
+**İşlenmiş örnek: sahte işlem gerçekten sonucu değiştirmiyor mu?** Yukarıdaki `crc ^= (constant ^ constant)` satırını sayı
+ile doğrulayalım (`constant = 0x11` olsun): `constant ^ constant = 0x11 ^ 0x11 = 0x00` (herhangi bir değer kendisiyle
 XOR'lanınca her zaman `0` verir — bölüm 0'daki XOR özdeşliğinin aynısı). `crc ^= 0x00` işlemi `crc`'yi **değiştirmez**
-(`x ^ 0 = x`). Yani `sabit` ne olursa olsun bu satır matematiksel olarak her zaman etkisizdir; kalabalıklaştırma
+(`x ^ 0 = x`). Yani `constant` ne olursa olsun bu satır matematiksel olarak her zaman etkisizdir; kalabalıklaştırma
 etkisi yalnız **derlenmiş komut sayısında**dır, `crc`'nin değerinde değil.
 
 !!! danger "Sık yapılan hata: sahte işlemi derleyicinin sessizce silmesi"
     Optimize edici bir derleyici (`-O2`, `-O3`), sonucu hiçbir yerde kullanılmayan ya da matematiksel olarak
-    etkisiz olduğu **kanıtlanabilen** bir işlemi ölü kod (dead code) sayıp **tamamen kaldırabilir**. `crc ^= (sabit ^
-    sabit)` gibi bir satır, derleyici sabit-katlama yaparsa `crc ^= 0` görür, bunu da hiçbir şey yapmıyor diye siler
+    etkisiz olduğu **kanıtlanabilen** bir işlemi ölü kod (dead code) sayıp **tamamen kaldırabilir**. `crc ^= (constant ^
+    constant)` gibi bir satır, derleyici sabit-katlama yaparsa `crc ^= 0` görür, bunu da hiçbir şey yapmıyor diye siler
     — gizleme, siz fark etmeden ortadan kalkar. **Kural:** sahte işlemlerde kullanılan değerler **çalışma anında**
     belirlenmeli (ör. bir girdiye ya da opak yükleme bağlı), derleme anında sabitlenmemeli; ayrıca gizlemeyi hep
-    **optimizasyon açık** derlenmiş ikili üzerinde (bölüm 0'da tanımlanan derleme bayrağıyla) doğrulayın — "kaynakta
-    var, ikilide yok" sık karşılaşılan bir sürprizdir.
+    **optimizasyon açık** derlenmiş binary üzerinde (bölüm 0'da tanımlanan derleme bayrağıyla) doğrulayın — "kaynakta
+    var, binary'de yok" sık karşılaşılan bir sürprizdir.
 
 ### KURAL K-04 — Kontrol akışı düzleştirme (derin)
 
@@ -844,16 +878,21 @@ etkisi yalnız **derlenmiş komut sayısında**dır, `crc`'nin değerinde değil
 bilgisini. **Nasıl?** Kılavuzun deyişiyle, **dikey** kontrol akışı **yatay** hale getirilir: bütün temel bloklar tek
 bir döngü içindeki bir `switch` dağıtıcısına taşınır; sıra yalnız bir **durum değişkeninden** okunur.
 
+**Kökeni:** bu teknik akademik olarak Wang, Hill, Knight ve Davidson'ın **2000** tarihli "Software Tamper
+Resistance: Obstructing Static Analysis of Programs" raporuna dayanır — dolaylı adresleme (aliased pointer) ile
+birleştirilen düzleştirmenin, programı statik olarak kesin çözmeyi genel durumda **NP-zor** kıldığını
+kanıtlamışlardır (bölüm 1'deki tarihçe kutusu).
+
 ```c title="Düzleştirme şablonu (4. haftadan; burada güçlendiriyoruz)"
-int durum = BASLA;
+int state = START;
 for (;;) {
-    switch (durum) {
-    case BASLA:  durum = ADIM1; break;
-    case ADIM1:  durum = kosul ? ADIM2 : HATA; break;
-    case ADIM2:  durum = BITIR; break;
-    case HATA:   return RED;
-    case BITIR:  return IZIN;
-    default:     return RED;          /* rastgele çıkış buraya düşer (K-05) */
+    switch (state) {
+    case START:  state = STEP1; break;
+    case STEP1:  state = condition ? STEP2 : FAIL; break;
+    case STEP2:  state = DONE; break;
+    case FAIL:   return DENIED;
+    case DONE:   return GRANTED;
+    default:     return DENIED;          /* random exit lands here (K-05) */
     }
 }
 ```
@@ -877,43 +916,54 @@ sayısı, bir denetimi izlemek için gereken süre.
 başlayalım:
 
 ```c title="Düzleştirme öncesi: doğal (dikey) akış"
-int denetim(int girdi) {
-    int a = girdi + 1;      /* Blok 1 */
-    if (a > 10) {            /* Blok 2 */
-        return HATA;
+int check(int input) {
+    int a = input + 1;      /* Block 1 */
+    if (a > 10) {            /* Block 2 */
+        return FAIL;
     }
-    return a * 2;             /* Blok 3 */
+    return a * 2;             /* Block 3 */
 }
 ```
 
 Bu üç bloğu, K-04'teki şablonla düzleştirilmiş haline elle taşıyalım:
 
 ```c title="Düzleştirme sonrası: aynı üç blok, tek switch içinde"
-int denetim(int girdi) {
-    int durum = B1, a = 0;
+int check(int input) {
+    int state = S1, a = 0;
     for (;;) {
-        switch (durum) {
-        case B1: a = girdi + 1; durum = B2; break;
-        case B2: durum = (a > 10) ? B_HATA : B3; break;
-        case B3: return a * 2;
-        case B_HATA: return HATA;
-        default: return HATA;      /* rastgele çıkış buraya düşer (K-05) */
+        switch (state) {
+        case S1: a = input + 1; state = S2; break;
+        case S2: state = (a > 10) ? S_FAIL : S3; break;
+        case S3: return a * 2;
+        case S_FAIL: return FAIL;
+        default: return FAIL;      /* random exit lands here (K-05) */
         }
     }
 }
 ```
 
-`girdi = 4` için elle izleyelim: `durum=B1` → `a = 4+1 = 5`, `durum=B2`. `durum=B2` → `a(5) > 10` yanlış, `durum=B3`.
-`durum=B3` → `return 5*2 = 10`. **İki sürüm de aynı `girdi` için aynı `10` değerini döndürür** — davranış korunmuştur,
+`input = 4` için elle izleyelim: `state=S1` → `a = 4+1 = 5`, `state=S2`. `state=S2` → `a(5) > 10` yanlış, `state=S3`.
+`state=S3` → `return 5*2 = 10`. **İki sürüm de aynı `input` için aynı `10` değerini döndürür** — davranış korunmuştur,
 yalnız akışın **şekli** değişmiştir: doğal sürümde üç blok art arda okunurken, düzleştirilmiş sürümde hepsi tek bir
-`switch`'in eşit mesafedeki dalları gibi görünür ve aralarındaki **doğal komşuluk bilgisi** (B1'den sonra hep B2
-gelir) CFG'den silinmiştir; artık yalnız `durum` değişkeninin çalışma anındaki değerinden okunabilir.
+`switch`'in eşit mesafedeki dalları gibi görünür ve aralarındaki **doğal komşuluk bilgisi** (S1'den sonra hep S2
+gelir) CFG'den silinmiştir; artık yalnız `state` değişkeninin çalışma anındaki değerinden okunabilir.
 
 !!! danger "Sık yapılan hata: durum değerlerini ardışık bırakmak"
-    `B1=1, B2=2, B3=3, B_HATA=4` gibi ardışık sabitler kullanmak, düzleştirmenin **görünüşte** var ama gerçekte zayıf
+    `S1=1, S2=2, S3=3, S_FAIL=4` gibi ardışık sabitler kullanmak, düzleştirmenin **görünüşte** var ama gerçekte zayıf
     olmasına yol açar: bir analist `case` sırasını okuyarak orijinal akışı kolayca tahmin eder. **Kural:** durum
     değerleri K-02 ile (aritmetik kodlama) ya da rastgele, dağınık sabitlerle üretilmeli; art arda gelen tam
     sayılar olmamalıdır — aksi hâlde düzleştirme yalnızca **görsel gürültü** eklemiş olur, gerçek koruma sağlamaz.
+
+Şimdi bunu kavramsal `check` örneği yerine bu haftanın **gerçek** demosunda görelim: `clean.c`'nin doğal
+if-zinciri ile `obfuscated.c`'nin `switch` dağıtıcısı, aynı 10 jetonla yan yana.
+
+<iframe class="dsanim" src="../anim/flow-flattening-dispatcher.html" title="Kontrol akışı düzleştirme: dağıtıcı durum makinesi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Kontrol akışı düzleştirme — adım adım](anim/flow-flattening-dispatcher.png)
+</div>
+
+**Normal** (düz sürüm) ve **zor** (düzleştirilmiş sürüm, aynı jetonlar) örneklerini karşılaştırın; iki **uç durum**
+(hepsi geçerli, hepsi yanlış uzunlukta) dağıtıcının en kısa ve en uzun yollarını gösterir.
 
 ### KURAL K-05 — Kontrol akışından rastgele çıkış
 
@@ -924,8 +974,8 @@ ve fonksiyon `default` dalından çıkar. Başarılı çıkış da aynı yöntem
 akışta birbirine benzer.
 
 ```c title="Rastgele çıkış: hata noktası akıştan okunamaz"
-if (!imza_gecerli(p)) {
-    durum = kararsiz_deger();   /* switch'te tanımlı olmayan bir değer → default */
+if (!signature_valid(p)) {
+    state = unpredictable_value();   /* a value not defined in the switch → default */
     break;
 }
 ```
@@ -934,7 +984,7 @@ if (!imza_gecerli(p)) {
 bul ve tersine çevir" saldırısının süresi; ideal olarak tek bir bayt yaması denetimi atlatmaya yetmemeli.
 
 !!! danger "Sık yapılan hata: bütün hata durumları için aynı sentinel değeri kullanmak"
-    Eğer `kararsiz_deger()` her zaman aynı sabiti (ör. hep `0xDEADBEEF`) döndürüyorsa, saldırgan ikili dosyada bu
+    Eğer `unpredictable_value()` her zaman aynı sabiti (ör. hep `0xDEADBEEF`) döndürüyorsa, saldırgan binary dosyada bu
     sabiti bir kez `grep` ile arayıp **bütün** hata noktalarını tek seferde bulur — rastgele çıkışın amacı tam
     tersine döner. **Kural:** sentinel değer her çağrı noktasında **farklı** olmalı (K-11'deki tohuma bağlı üretim
     ya da her çağrı yerinde ayrı bir sabit); aksi hâlde "rastgele çıkış" aslında **tek bir sabit imza** haline gelir
@@ -948,43 +998,43 @@ derinleştiriyoruz.
 
 **Neyi korur?** "Şu fonksiyon `memcmp` çağırıyor, demek ki bir karşılaştırma yapıyor" gibi ipuçlarını. Standart
 kütüphane çağrıları, saldırgana bir fonksiyonun ne yaptığını doğrudan söyler. **Nasıl?** Kritik yollarda standart
-kütüphane fonksiyonları **kendi iç sürümleriyle** değiştirilir (ör. sabit zamanlı kendi `esit_mi` fonksiyonunuz),
+kütüphane fonksiyonları **kendi iç sürümleriyle** değiştirilir (ör. sabit zamanlı kendi `is_equal` fonksiyonunuz),
 böylece bağlantı çözümleyicide tanınan bir ad görünmez. Kılavuz ayrıca **fonksiyon parametrelerinin gizlenmesini** ve
 **sahte parametreler** eklenmesini de ayrı kurallar olarak listeler: gerçek parametrelerin yanına hiç kullanılmayan
 sahte parametreler konur; imza, saldırgan için yanıltıcı olur.
 
 **Maliyet:** düşük–orta (kendi sürümleri bakım ister). **Sınır:** davranış analizi yine de ne yaptığını gösterebilir;
-bu bir **gecikme** kuralıdır. **Ölçüm:** ikili dosyada tanınan kütüphane çağrılarının sayısı.
+bu bir **gecikme** kuralıdır. **Ölçüm:** binary dosyada tanınan kütüphane çağrılarının sayısı.
 
 **İşlenmiş örnek: `memcmp` yerine kendi sabit zamanlı karşılaştırmanız.** Kural, standart `memcmp`'yi tanınabilir
 olduğu için değiştirmemizi söylüyor; ama asıl kazanç [3. haftadan](../week-3/cen429-week-3.md) tanıdık bir yan kanal kapatmaktır:
 
 ```c title="Sabit zamanlı karşılaştırma (kavram)"
-static int sabit_zamanli_esit_mi(const uint8_t *a, const uint8_t *b, size_t n) {
-    uint8_t fark = 0;
+static int constant_time_equals(const uint8_t *a, const uint8_t *b, size_t n) {
+    uint8_t diff = 0;
     for (size_t i = 0; i < n; i++) {
-        fark |= (uint8_t)(a[i] ^ b[i]);   /* her bayt işlenir, ilk uyuşmazlıkta DURMAZ */
+        diff |= (uint8_t)(a[i] ^ b[i]);   /* every byte is processed, does NOT stop at the first mismatch */
     }
-    return fark == 0;                      /* tek karşılaştırma, dizinin sonunda */
+    return diff == 0;                      /* a single comparison, at the end of the array */
 }
 ```
 
-`a = {0x41,0x42,0x43}`, `b = {0x41,0x00,0x43}` için izleyelim: `i=0`: `0x41^0x41=0x00`, `fark = 0x00`. `i=1`:
-`0x42^0x00=0x42`, `fark = 0x00 | 0x42 = 0x42`. `i=2`: `0x43^0x43=0x00`, `fark = 0x42 | 0x00 = 0x42`. Döngü **her
-zaman üç adım da çalışır**, `i=1`'de uyuşmazlık bulunduğunda erken çıkmaz; sonunda `fark = 0x42 ≠ 0`, `esit_mi`
+`a = {0x41,0x42,0x43}`, `b = {0x41,0x00,0x43}` için izleyelim: `i=0`: `0x41^0x41=0x00`, `diff = 0x00`. `i=1`:
+`0x42^0x00=0x42`, `diff = 0x00 | 0x42 = 0x42`. `i=2`: `0x43^0x43=0x00`, `diff = 0x42 | 0x00 = 0x42`. Döngü **her
+zaman üç adım da çalışır**, `i=1`'de uyuşmazlık bulunduğunda erken çıkmaz; sonunda `diff = 0x42 ≠ 0`, `constant_time_equals`
 `0` (false) döner. Standart bir `memcmp` ya da elle yazılmış `for (...) if (a[i]!=b[i]) return 0;` ise `i=1`'de
 **erken döner** — bu, uyuşmazlığın **nerede** olduğunu çalışma süresinden sızdırabilen klasik bir zamanlama
-kanalıdır (3. haftadaki `CRYPTO_memcmp` kuralının aynısı). K-06'nın kazancı iki katlıdır: hem `memcmp` adı ikili
+kanalıdır (3. haftadaki `CRYPTO_memcmp` kuralının aynısı). K-06'nın kazancı iki katlıdır: hem `memcmp` adı binary
 dosyada görünmez hem de karşılaştırma sabit zamanlıdır.
 
 **Sahte parametre örneği.** Kuralın ikinci kısmı — sahte parametreler — imzayı yanıltıcı yapar:
 
 ```c title="Sahte parametre: imza yanıltıcı hâle gelir"
-/* Gerçek imza: int erisim_kontrol(const char *kod); */
-int erisim_kontrol(const char *kod, int gunluk_seviyesi, void *ayarlar) {
-    (void)gunluk_seviyesi;   /* kullanılmıyor — sahte parametre */
-    (void)ayarlar;           /* kullanılmıyor — sahte parametre */
-    return sabit_zamanli_esit_mi((const uint8_t *)kod, GERCEK_KOD, GERCEK_KOD_UZUNLUK);
+/* Real signature: int access_check(const char *code); */
+int access_check(const char *code, int log_level, void *settings) {
+    (void)log_level;   /* unused — bogus parameter */
+    (void)settings;           /* unused — bogus parameter */
+    return constant_time_equals((const uint8_t *)code, REAL_CODE, REAL_CODE_LENGTH);
 }
 ```
 
@@ -1013,29 +1063,29 @@ listeler.
 [5. haftada](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi) Java tarafında XOR ile elle
 çözmüştük; burada aynı fikri C/C++ tarafında derinleştiriyoruz.
 
-**Neyi korur?** İkili dosyadaki okunabilir metinleri. Tersine mühendisliğin en ucuz ilk adımı `strings` çalıştırmaktır;
+**Neyi korur?** Binary dosyadaki okunabilir metinleri. Tersine mühendisliğin en ucuz ilk adımı `strings` çalıştırmaktır;
 `"Lisans gecersiz"` ya da bir URL, saldırgana nereye bakacağını söyler. **Nasıl?** Hassas dizeler **derleme öncesinde
-kodlanır** (ör. bir XOR anahtarıyla ya da bir üretim betiğiyle şifrelenir), ikili dosyada kodlanmış hâlde durur,
+kodlanır** (ör. bir XOR anahtarıyla ya da bir üretim betiğiyle şifrelenir), binary dosyada kodlanmış hâlde durur,
 **kullanım anında çözülür** ve iş biter bitmez **bellekten silinir**.
 
 ```c title="Dize kodlama: kullan ve hemen sil (sentetik)"
-static const uint8_t GIZLI[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* "merhaba" değil; sentetik */
-void kullan(void) {
-    char tmp[sizeof GIZLI];
-    for (size_t i = 0; i < sizeof GIZLI; i++) tmp[i] = GIZLI[i] ^ 0x5A;  /* çöz */
-    isle(tmp, sizeof GIZLI);
-    memset_s_benzeri(tmp, sizeof tmp);   /* kullanımdan hemen sonra sil (3. hafta) */
+static const uint8_t HIDDEN[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* not "merhaba"; synthetic */
+void use(void) {
+    char tmp[sizeof HIDDEN];
+    for (size_t i = 0; i < sizeof HIDDEN; i++) tmp[i] = HIDDEN[i] ^ 0x5A;  /* decode */
+    process(tmp, sizeof HIDDEN);
+    secure_wipe(tmp, sizeof tmp);   /* wipe immediately after use (week 3) */
 }
 ```
 
 **Maliyet:** düşük. **Sınır:** çalışan programda çözülmüş dize bellekte görünür; bu bir **statik tarama** önlemidir.
-Çözme anahtarı da ikili dosyadadır — bu yüzden sahada çözme anahtarı **parçalanır ve dağıtılır** ve çözme fonksiyonu
+Çözme anahtarı da binary dosyadadır — bu yüzden sahada çözme anahtarı **parçalanır ve dağıtılır** ve çözme fonksiyonu
 ek denetimlerle korunur. **Ölçüm:** `strings` çıktısında hassas dize **bulunmamalı**.
 
-**İşlenmiş örnek: yukarıdaki `GIZLI` dizisini elle çözelim.** Kod bloğundaki `GIZLI = {0x3B, 0x2A, 0x2E, 0x2E,
+**İşlenmiş örnek: yukarıdaki `HIDDEN` dizisini elle çözelim.** Kod bloğundaki `HIDDEN = {0x3B, 0x2A, 0x2E, 0x2E,
 0x2D}` dizisini, her baytı `0x5A` ile XOR'layarak (bölüm 0'daki bit tablosuyla aynı yöntem) tek tek çözelim:
 
-| İndeks | `GIZLI[i]` | `^ 0x5A` (bit hesabı) | Sonuç (hex) | ASCII |
+| İndeks | `HIDDEN[i]` | `^ 0x5A` (bit hesabı) | Sonuç (hex) | ASCII |
 | --- | --- | --- | --- | --- |
 | 0 | `0x3B` = `0011 1011` | `0011 1011 ^ 0101 1010` | `0110 0001` = `0x61` | `'a'` |
 | 1 | `0x2A` = `0010 1010` | `0010 1010 ^ 0101 1010` | `0111 0000` = `0x70` | `'p'` |
@@ -1044,13 +1094,13 @@ ek denetimlerle korunur. **Ölçüm:** `strings` çıktısında hassas dize **bu
 | 4 | `0x2D` = `0010 1101` | `0010 1101 ^ 0101 1010` | `0111 0111` = `0x77` | `'w'` |
 
 Çözülen bayt dizisi `"apttw"` — kod yorumundaki "`merhaba` değil; sentetik" ifadesiyle tutarlı: gerçek bir dizeyi
-değil, **mekanizmayı** gösteriyoruz. Önemli olan şudur: ikili dosyada duran baytlar `{0x3B, 0x2A, 0x2E, 0x2E,
+değil, **mekanizmayı** gösteriyoruz. Önemli olan şudur: binary dosyada duran baytlar `{0x3B, 0x2A, 0x2E, 0x2E,
 0x2D}`'dir; `strings` bu baytları çalıştırıp XOR uygulamaz, olduğu gibi okumaya çalışır ve okunabilir bir metin
 bulamaz (bu beş bayt yazdırılabilir ASCII aralığının dışına düşebilir ya da anlamsız görünür) — saldırganın ilk ve
 en ucuz adımı (bölüm 3'teki "ilk 10 dakika") burada **boşa çıkar**.
 
 !!! danger "Sık yapılan hata: `memset` ile 'sildim' sanmak"
-    Kod örneğindeki `memset_s_benzeri(tmp, sizeof tmp)` satırı özellikle **sıradan `memset` değil** özel bir
+    Kod örneğindeki `secure_wipe(tmp, sizeof tmp)` satırı özellikle **sıradan `memset` değil** özel bir
     fonksiyon çağırır; bunun nedeni derleyici optimizasyonlarıdır. Eğer bir değişken kullanıldıktan hemen sonra
     kapsam dışına çıkıyorsa (fonksiyon bitiyorsa), optimize edici derleyici "bu `memset` çağrısının hiçbir gözlenen
     etkisi yok" diye **ölü depolama elemesi (dead store elimination)** yaparak siler — çözülmüş sır bellekte
@@ -1062,6 +1112,17 @@ en ucuz adımı (bölüm 3'teki "ilk 10 dakika") burada **boşa çıkar**.
     Dize gizleme, `strings` gibi statik taramaları durdurur; **anahtar** korumak için değildir. Bu 1. bölümdeki
     "gizleme anahtar saklamaz" kuralının somut halidir. Gerçek anahtarlar için whitebox ([11. hafta](../week-11/cen429-week-11.md)) ya da donanım.
 
+Şimdi `HIDDEN`/`apttw` kavramsal örneği yerine bu haftanın **gerçek** `obfuscated.c` kodunu — `ENCODED[]`in tüm
+yaşam döngüsünü (kodlu bekler → kullanım anında çözülür → hemen silinir) — görelim:
+
+<iframe class="dsanim" src="../anim/string-encryption.html" title="Dize şifreleme: kodlu bekler, kullanım anında çözülür, hemen silinir" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Dize şifreleme — adım adım](anim/string-encryption.png)
+</div>
+
+**Normal**, **zor** (geçerli jeton tekrar tekrar — silme her seferinde çalışıyor mu?) ve iki **uç durum** örneğini
+deneyin.
+
 ### KURAL K-08 — Sabit dönüşümleri, opak boolean ve fonksiyon boolean dönüşleri
 
 Kılavuz güvenlik sonuçlarının nasıl temsil edileceğini ayrı bir kural yapar. Bir denetimin sonucunu düz bir `0`/`1`
@@ -1070,10 +1131,10 @@ boolean** kuralı, doğru/yanlış değerini **birden çok değere bağlı** ve 
 tutar. Fonksiyonlar da düz boolean yerine bu tür **opak dönüş kodları** verir.
 
 ```c title="Opak boolean: tek bayt yaması sonucu çeviremez (kavram)"
-/* "izin" değeri tek bir sabit değil; iki durumdan türetilir ve çağıran taraf ikisini de doğrular. */
-typedef struct { uint32_t a, b; } Karar;
-static Karar izin_ver(void)  { return (Karar){ 0xA3C1u, 0x5C3Eu }; } /* a ^ b == 0xFFFF */
-static int  karar_izin_mi(Karar k) { return (k.a ^ k.b) == 0xFFFFu; }
+/* The "allow" value isn't a single constant; it's derived from two states, and the caller verifies both. */
+typedef struct { uint32_t a, b; } Decision;
+static Decision allow(void)  { return (Decision){ 0xA3C1u, 0x5C3Eu }; } /* a ^ b == 0xFFFF */
+static int  decision_grants(Decision k) { return (k.a ^ k.b) == 0xFFFFu; }
 ```
 
 **Maliyet:** düşük. **Sınır:** yeterince incelenirse çözülür; amacı tek-bayt yamayı ve kaba dal-çevirmeyi
@@ -1102,7 +1163,7 @@ birbirinin **bit-tersi** olacak şekilde seçilmiş (`A=1010` ↔ `5=0101`, `3=0
 | 7–4 | `0`=`0000` | `3`=`0011` | `3` |
 | 3–0 | `0`=`0000` | `E`=`1110` | `E` |
 
-Sonuç: `0xFF3E` — `0xFFFF`'e **eşit değil**. `karar_izin_mi` fonksiyonu `(k.a ^ k.b) == 0xFFFFu` kontrolünde `false`
+Sonuç: `0xFF3E` — `0xFFFF`'e **eşit değil**. `decision_grants` fonksiyonu `(k.a ^ k.b) == 0xFFFFu` kontrolünde `false`
 döner: tek baytlık kaba bir yama, "izin"i tetiklemeyi **başaramaz**. Saldırganın işe yaraması için hem `a`'nın hem
 `b`'nin **birbiriyle tutarlı** biçimde değiştirilmesi gerekir — bu da tek nokta yerine en az iki bağımsız noktayı
 aynı anda bulup değiştirmesini gerektirir; "Ölçüm" satırındaki "bağımsız nokta sayısı > 1" ifadesinin sayısal
@@ -1110,10 +1171,20 @@ karşılığı tam olarak budur.
 
 !!! danger "Sık yapılan hata: karşılaştırma sabitini (`0xFFFF`) her yerde aynı bırakmak"
     Yukarıdaki mekanizma tek başına güçlü görünse de, eğer projede **her** opak boolean denetimi aynı `0xFFFFu`
-    sabitiyle karşılaştırıyorsa, bir saldırgan ikili dosyada bu sabiti bir kez bulup **bütün** izin noktalarının
+    sabitiyle karşılaştırıyorsa, bir saldırgan binary dosyada bu sabiti bir kez bulup **bütün** izin noktalarının
     deseni hakkında fikir sahibi olur — K-05'teki "aynı sentinel'i her yerde kullanmak" hatasının aynısı. **Kural:**
     her fonksiyon/denetim için **farklı** bir hedef sabit (ör. `0xA5C3`, `0x3D71`, ...) kullanın; sabitin kendisi de
     K-02 ile kodlanabilir.
+
+Bu haftanın demosunda aynı fikir `obfuscated.c`nin `Decision{a,b}`sinde: saf `int result` (0/1) ile karşılaştırmalı
+olarak görelim — bellek dökümünde hangisi anlamı hemen ele veriyor?
+
+<iframe class="dsanim" src="../anim/data-encoding.html" title="Veri kodlama: opak boolean, tek bitin iki alana bölünmesi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Veri kodlama: opak boolean — adım adım](anim/data-encoding.png)
+</div>
+
+**Normal**, **zor** (GRANTED/DENIED dönüşümlü) ve iki **uç durum** örneğini deneyin.
 
 ### KURAL K-09 — Değişken bölme, birleştirme ve dizi yeniden yapılandırma
 
@@ -1129,28 +1200,28 @@ kalıbından tanınma süresi.
 olsun. Bunu tek bir 4 baytlık blok olarak tutmak yerine, iki ayrı 16-bit **parça**ya bölelim:
 
 ```c title="Değişken bölme ve yeniden birleştirme"
-uint16_t yuksek = 0x1234;   /* üst 16 bit — ayrı bir değişkende, belki ayrı bir yapıda */
-uint16_t dusuk  = 0xABCD;   /* alt 16 bit — koddaki başka bir yerde tutulur */
+uint16_t high = 0x1234;   /* upper 16 bits — in a separate variable, perhaps a separate struct */
+uint16_t low  = 0xABCD;   /* lower 16 bits — kept somewhere else in the code */
 
-uint32_t deger = ((uint32_t)yuksek << 16) | dusuk;   /* kullanım anında yeniden birleştirilir */
+uint32_t value = ((uint32_t)high << 16) | low;   /* re-merged at the moment of use */
 ```
 
-Doğrulayalım: `yuksek << 16` işlemi `0x1234`'ü 16 bit sola kaydırır → `0x12340000`. Bunu `dusuk = 0x0000ABCD` ile
+Doğrulayalım: `high << 16` işlemi `0x1234`'ü 16 bit sola kaydırır → `0x12340000`. Bunu `low = 0x0000ABCD` ile
 `OR`'larsak: `0x12340000 | 0x0000ABCD = 0x1234ABCD` — orijinal değeri tam olarak geri verir.
 
 Bunun neden işe yaradığını bellek tarayan bir araç gözünden düşünelim: böyle bir araç genelde "art arda duran 4
 (ya da 16/32) baytlık, yüksek entropili bir blok" arar — bu, bölüm 0'daki entropi tanımının pratikte kullanıldığı
-yerdir (ör. bir AES anahtarının bellekte "dizi B" gibi görünmesi). `yuksek` ve `dusuk` ayrı değişkenlerde, hatta
+yerdir (ör. bir AES anahtarının bellekte "dizi B" gibi görünmesi). `high` ve `low` ayrı değişkenlerde, hatta
 derleyicinin seçimine bağlı olarak bellekte **bitişik olmayan** adreslerde durabilir; taranan blok artık 4 bayt
 değil, iki ayrı 2 baytlık parçadır ve aralarında "bu ikisi birleşince bir anahtar oluşturur" bilgisi kodda **açıkça
 yazmaz**, yalnız birleştirme ifadesinde gizlidir.
 
 !!! danger "Sık yapılan hata: birleştirilmiş değeri erken üretip uzun süre bellekte tutmak"
-    Bölme/birleştirmenin kazancı, yalnız **kullanım anında** birleştirme yapıldığı sürece geçerlidir. Eğer `deger`
+    Bölme/birleştirmenin kazancı, yalnız **kullanım anında** birleştirme yapıldığı sürece geçerlidir. Eğer `value`
     değişkeni fonksiyonun başında bir kez hesaplanıp fonksiyon boyunca (ya da bir yapı içinde kalıcı olarak)
     saklanırsa, artık ortada yine tek, bütün ve tanınabilir bir 32-bit blok vardır — K-09'un kazandırdığı avantaj
     kaybolur. **Kural:** birleştirmeyi yalnız **tam ihtiyaç duyulan anda** yapın, kullanımdan hemen sonra K-07'deki
-    gibi (`memset_s` ile) temizleyin; parçaları (`yuksek`, `dusuk`) ayrı tutmak, birleşik hâli sürekli saklamaktan
+    gibi (`memset_s` ile) temizleyin; parçaları (`high`, `low`) ayrı tutmak, birleşik hâli sürekli saklamaktan
     her zaman daha güvenlidir.
 
 ## 7. Program bütünü düzeyinde kurallar
@@ -1160,7 +1231,7 @@ yazmaz**, yalnız birleştirme ifadesinde gizlidir.
 ![Sanallaştırma: bytecode ve yorumlayıcı](assets/h09-06-sanallastirma.svg)
 
 **Neyi korur?** Bir fonksiyonun **makine kodunun kendisini**. **Nasıl?** Fonksiyon, gerçek makine komutları yerine
-**özel bir sanal makinenin (VM) bayt koduna** çevrilir; ikili dosyaya bu bayt kodu ile onu yorumlayan küçük bir
+**özel bir sanal makinenin (VM) bayt koduna** çevrilir; binary dosyaya bu bayt kodu ile onu yorumlayan küçük bir
 yorumlayıcı gömülür. Saldırgan artık tanıdık makine kodunu değil, önce çözmesi gereken **özel bir komut kümesini**
 görür.
 
@@ -1176,15 +1247,15 @@ gerçek bir toplama komutu **olmadan** hesaplamak:
 
 ```c title="Sanallaştırma fikri (küçük, kavramsal örnek — gerçek Tigress çıktısı değildir)"
 enum { OP_PUSH, OP_ADD, OP_RET };
-uint8_t kod[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* '5 + 7 hesapla' bayt kodu */
+uint8_t bytecode[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* bytecode for 'compute 5 + 7' */
 
-int yorumla(const uint8_t *kod, size_t n) {
-    int yigin[8], sp = 0, pc = 0;
+int interpret(const uint8_t *bytecode, size_t n) {
+    int stack[8], sp = 0, pc = 0;
     for (;;) {
-        switch (kod[pc++]) {
-        case OP_PUSH: yigin[sp++] = kod[pc++]; break;
-        case OP_ADD:  { int b = yigin[--sp], a = yigin[--sp]; yigin[sp++] = a + b; } break;
-        case OP_RET:  return yigin[--sp];
+        switch (bytecode[pc++]) {
+        case OP_PUSH: stack[sp++] = bytecode[pc++]; break;
+        case OP_ADD:  { int b = stack[--sp], a = stack[--sp]; stack[sp++] = a + b; } break;
+        case OP_RET:  return stack[--sp];
         }
     }
 }
@@ -1199,15 +1270,15 @@ Elle izleyelim (yığın `sp`, program sayacı `pc`):
 | 3 | 4 | `OP_ADD` | `b=7`, `a=5` çıkar, `a+b=12` it | `[12]` | 1 |
 | 4 | 5 | `OP_RET` | `12`'yi döndür | — | — |
 
-Sonuç `12 = 5 + 7` — doğru. Şimdi bir tersine mühendisin ne gördüğüne bakalım: ikili dosyada `yorumla` diye genel
+Sonuç `12 = 5 + 7` — doğru. Şimdi bir tersine mühendisin ne gördüğüne bakalım: binary dosyada `interpret` diye genel
 amaçlı, `switch`'li bir döngü ve ayrı bir yerde `{0, 5, 0, 7, 1, 2}` gibi bir bayt dizisi görür. **"5 artı 7"** diye
-bir komut **hiçbir yerde yoktur**; toplama, bu altı baytın `yorumla`'nın belirli bir sırayla işlenmesiyle ortaya
-çıkan bir **yan etkidir**. Analist gerçek mantığı anlamak için önce `yorumla`'nın kendisini (VM'i) çözmek, sonra her
+bir komut **hiçbir yerde yoktur**; toplama, bu altı baytın `interpret`'in belirli bir sırayla işlenmesiyle ortaya
+çıkan bir **yan etkidir**. Analist gerçek mantığı anlamak için önce `interpret`'in kendisini (VM'i) çözmek, sonra her
 bayt kodu sürümünü ayrı ayrı yorumlamak zorundadır — K-10'un "maliyet yüksek ama VM bir kez çözülürse hepsi açılır"
-sınırının kaynağı da tam burada görülür: `yorumla` fonksiyonunun kendisi tek bir yerdir, o çözülünce bütün bayt kodu
+sınırının kaynağı da tam burada görülür: `interpret` fonksiyonunun kendisi tek bir yerdir, o çözülünce bütün bayt kodu
 dizileri okunabilir hâle gelir.
 
-**Maliyeti kabaca büyüklük mertebesiyle görelim.** Yukarıdaki `yorumla` fonksiyonunu bir daha inceleyin: `5 + 7`
+**Maliyeti kabaca büyüklük mertebesiyle görelim.** Yukarıdaki `interpret` fonksiyonunu bir daha inceleyin: `5 + 7`
 gibi tek bir toplama işlemi için gerçek makine kodunda **bir** komut (`add`) yeterliyken, yorumlayıcı sürümde her
 adım şunları gerektirir: bayt kodunu oku (`kod[pc++]`), `switch` ile hangi işlem olduğuna karar ver, yığından
 değer(ler) çek, işlemi yap, sonucu yığına koy, program sayacını ilerlet. Tek bir "toplama" en az 5-6 gerçek makine
@@ -1239,10 +1310,16 @@ LLVM tabanlı gizleyiciler (Obfuscator-LLVM ve türevleri) düzleştirme, sahte 
 geçişlerini derleme sırasında otomatik uygular. Avantajı: kaynak kodu okunur kalır, koruma bir derleme
 seçeneğidir; her sürümde farklı tohum (**seed**) vererek çeşitlendirme kolaydır. **Maliyet:** orta; başarım etkisi
 seçilen geçişlere bağlıdır. **Sınır:** iyi bilinen geçişlerin ürettiği kalıplar tanınabilir; araç sürümüyle güncel
-kalmak gerekir. **Ölçüm:** aynı geçişlerin farklı tohumlarla ürettiği ikili dosyalar arasındaki fark (çeşitlendirme
+kalmak gerekir. **Ölçüm:** aynı geçişlerin farklı tohumlarla ürettiği binary dosyalar arasındaki fark (çeşitlendirme
 ölçütü, bölüm 5).
 
-**Kavramsal örnek: aynı kaynak, iki tohum, iki farklı ikili.** Aynı `erisim_ver` kaynağını bir O-LLVM tabanlı
+**Kökeni:** Obfuscator-LLVM, Junod, Rinaldini, Wehrli ve Michielin tarafından **2015**'te "Obfuscator-LLVM —
+Software Protection for the Masses" başlığıyla IEEE/ACM SPRO (Software Protection) çalıştayında sunulmuştur:
+LLVM'in dil-bağımsız ara temsili (IR) üzerinde çalışan geçişler (düzleştirme, sahte kontrol akışı, komut
+değiştirme) olarak uygulanır — bu bölümdeki K-01/K-02/K-04 kurallarının **otomatikleştirilmiş, derleyici
+düzeyindeki** hâli budur.
+
+**Kavramsal örnek: aynı kaynak, iki tohum, iki farklı binary.** Aynı `grant_access` kaynağını bir O-LLVM tabanlı
 derleyiciyle iki kez, yalnız `--Seed` değerini değiştirerek derlediğimizi düşünelim. Kaynak kod **birebir aynıdır**;
 değişen şeyler derleyicinin **rastgele seçimleridir**:
 
@@ -1252,7 +1329,7 @@ değişen şeyler derleyicinin **rastgele seçimleridir**:
 | Hangi opak yüklem kalıbı seçilir (K-01) | `x*(x+1)` ailesinden biri | aynı aileden **başka** bir özdeşlik |
 | Temel blokların `switch` içindeki sırası | bir permütasyon | başka bir permütasyon |
 
-**Ne değişmez?** `erisim_ver("CEN429-OK")` çağrıldığında iki ikili de **aynı** sonucu döner — kaynak kod ve
+**Ne değişmez?** `grant_access("CEN429-OK")` çağrıldığında iki binary de **aynı** sonucu döner — kaynak kod ve
 davranış birebir aynıdır, yalnız derlenmiş **şekil** farklıdır. Bu, bölüm 8'de "çeşitlendirme" başlığı altında
 göreceğimiz tam olgudur; O-LLVM bunu elle yapmak yerine derleme sırasında otomatik üretir.
 
@@ -1265,7 +1342,7 @@ göreceğimiz tam olgudur; O-LLVM bunu elle yapmak yerine derleme sırasında ot
 
 ### KURAL K-12 — Kendini değiştiren kod ve dinamik şifreleme (kavram, dikkatli)
 
-**Neyi korur?** En hassas kod bölümlerini, ikili dosyada **şifreli** tutarak. **Nasıl?** Bölüm ikili dosyada şifreli
+**Neyi korur?** En hassas kod bölümlerini, binary dosyada **şifreli** tutarak. **Nasıl?** Bölüm binary dosyada şifreli
 durur; yalnız çalışacağı an belleğe çözülür, çalışır ve sonra yeniden şifrelenir ya da silinir. **Maliyet:** yüksek
 ve **risklidir**: modern işletim sistemlerinin bellek korumalarıyla (DEP/NX, yazılabilir-ve-çalıştırılabilir sayfa
 ayrımı, W^X) doğrudan çatışır; yanlış uygulanırsa hem çöker hem de yeni bir açık yaratır. **Sınır:** çalışırken bir
@@ -1338,10 +1415,29 @@ kuralı"nın söylediği şey.
 
 1. bölümdeki "Kural 2 — otomasyonu kır" burada somutlaşır. Bir saldırgan bir kopyayı kırdığında, ürettiği yamayı ya
 da betiği **bütün kullanıcılara** dağıtabiliyorsa, bir kırık her yeri açar. **Çeşitlendirme** (diversification), aynı
-kaynaktan **farklı ama davranışça eş** ikili dosyalar üretmektir; böylece bir kopyaya karşı geliştirilen otomatik
+kaynaktan **farklı ama davranışça eş** binary dosyalar üretmektir; böylece bir kopyaya karşı geliştirilen otomatik
 saldırı diğerlerinde çalışmaz.
 
-![Aynı kaynaktan farklı tohumlarla farklı ikililer](assets/h09-07-cesitlendirme.svg)
+### Kökeni ve tarihçesi: biyolojiden ödünç bir fikir
+
+Çeşitlendirmenin güvenlik fikri işletim sistemleri araştırmasından gelir, doğrudan biyolojiden esinlenerek:
+
+- **1993** — Fred Cohen, "Operating System Protection Through Program Evolution" (*Computers & Security*, Cilt 12,
+  Sayı 6) makalesinde, korunacak sistemi kendini **zaman içinde** değiştiren bir yazılımla donatma fikrini önerir:
+  bugünün programı yarınkinden farklı olsun ki saldırganın bulduğu bir zayıflık kalıcı olmasın. Bu, aşağıdaki
+  **zamanda çeşitlendirme** fikrinin köküdür.
+- **1997** — Stephanie Forrest, Anil Somayaji ve David Ackley, "Building Diverse Computer Systems" (6. Hot Topics
+  in Operating Systems — HotOS — çalıştayı) makalesinde, biyolojik popülasyonlardaki **çeşitliliğin** neden
+  sağlamlık kattığını bilgisayar sistemlerine taşırlar: davranışı değiştirmeyen rastgeleleştirilmiş dönüşümlerin
+  (ör. yığın çerçevesinin boyutunu rastgele değiştirmek) basit bir arabellek taşması saldırısını bile
+  bozabileceğini gösterirler. Bu, aşağıdaki **uzayda çeşitlendirme** fikrinin köküdür.
+
+İki makale de aynı gözlemi paylaşır: doğada çeşitlilik tek bir zayıflığın **tüm popülasyonu** yok etmesini önler
+(bir hastalık türün tamamını değil, yalnız dirençsiz bireyleri öldürür); yazılımda da aynı fikir tek bir kırığın
+**tüm kopyaları** açmasını önler. [14. haftada](../week-14/cen429-week-14.md) Tigress'in `--Seed` seçeneği bu
+otuz yıllık fikri tek bir komut satırı bayrağına indirger.
+
+![Aynı kaynaktan farklı tohumlarla farklı binary'ler](assets/h09-07-cesitlendirme.svg)
 
 - **Uzayda çeşitlendirme:** her yapı (build) ya da her dağıtım farklı bir **tohumla** gizlenir; opak yüklemler, sahte
   bloklar ve durum değerleri kopyadan kopyaya değişir.
@@ -1352,13 +1448,13 @@ saldırı diğerlerinde çalışmaz.
 On [dördüncü haftada](../week-4/cen429-week-4.md) Tigress'in `RandomFuns`, `--Seed` ve dönüşüm birleştirme özellikleriyle bunu araçla üreteceğiz.
 
 !!! example "Çeşitlendirme etkinliği: basit bir ölçüt"
-    Aynı kaynağı iki farklı tohumla derleyin. İki ikili dosyanın korunan fonksiyonlarını karşılaştırın: bayt düzeyinde
+    Aynı kaynağı iki farklı tohumla derleyin. İki binary dosyanın korunan fonksiyonlarını karşılaştırın: bayt düzeyinde
     fark oranı ne kadar yüksekse, bir kopyaya yazılan bir saldırının diğerinde çalışma olasılığı o kadar düşüktür.
     Ölçütü S9'a yazın.
 
 **İşlenmiş örnek: fark oranını sayısal hesaplayalım.** Yukarıdaki ölçütü somut bir sayıya dökelim. Diyelim korunan
-`erisim_ver` fonksiyonunun düzleştirilmiş hâli ikili dosyada **512 bayt** yer kaplıyor. İki farklı tohumla üretilen
-ikili dosyalarda bu fonksiyonu bayt bayt karşılaştırdığımızda **340 baytın** farklı çıktığını ölçtük (varsayımsal
+`grant_access` fonksiyonunun düzleştirilmiş hâli binary dosyada **512 bayt** yer kaplıyor. İki farklı tohumla üretilen
+binary dosyalarda bu fonksiyonu bayt bayt karşılaştırdığımızda **340 baytın** farklı çıktığını ölçtük (varsayımsal
 ama gerçekçi bir demo sonucu):
 
 ```text
@@ -1372,6 +1468,13 @@ derleyicinin değiştiremeyeceği sabit parçalar). Bir saldırgan Kopya A'da bu
 şu değeri yaz, denetim hep izin versin") doğrudan Kopya B'ye uygularsa, o ofsette artık **farklı bir komut**
 bulunduğu için yama ya işe yaramaz ya da programı çökertir. Bu, 1. bölümdeki "Kural 2 — otomasyonu kır"ın sayısal
 kanıtıdır.
+
+**Bu haftanın gerçek ölçümü (varsayımsal örnekten ayrı).** `demo.sh`/`demo.ps1` çalıştırıldığında (`02-diversification`),
+`access_seed1001` ve `access_seed2002` ikilileri **tüm dosya düzeyinde** karşılaştırıldığında (Linux `cmp -l`) **~29
+bayt** farklı çıktı; `grant_access` fonksiyonunun kendisi her iki tohumda da **50 komuttan** oluşuyor — aynı sayıda
+komut, ama `MASK`e bağlı farklı sabitlerle kodlanmış. Yukarıdaki 512/340 bayt örneği yalnız **kavramsal** bir
+gösterimdir (tek bir fonksiyonun bayt düzeyinde farkını izole ölçmedik); gerçek sayı burada, ikili dosyanın tamamı
+içindir.
 
 !!! danger "Sık yapılan hata: derleyici optimizasyon düzeyini değiştirmeyi çeşitlendirme sanmak"
     "`-O2` yerine `-O3` ile derledim, artık iki farklı ikilim var" demek çeşitlendirme **değildir**. Optimizasyon
@@ -1395,6 +1498,17 @@ sürümde eski betik geçersiz kalır (zamanda çeşitlendirme + anahtar yenilem
     12'deki S9 yazınızda çeşitlendirmeyi yalnız "bir kere uyguladım" değil, "her sürümde tekrar uygulanan bir
     süreç" olarak tanımlayın.
 
+Bu haftanın gerçek `02-diversification` demosunda aynı kaynak (`diversified.c`), iki farklı `SEED` ile derlenmiş:
+`MASK` ve dağıtıcının `C0..C3` durumları tohuma göre değişir, ama `grant_access` her iki tohumda da AYNI
+GRANTED/DENIED cevabını verir. Aşağıda bunu 10 jetonla doğrulayalım:
+
+<iframe class="dsanim" src="../anim/diversification.html" title="Çeşitlendirme: iki tohum, aynı davranış, farklı ikili" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Çeşitlendirme — adım adım](anim/diversification.png)
+</div>
+
+**Normal**, **zor** (aynı uzunlukta, farklı içerik) ve iki **uç durum** örneğini deneyin.
+
 ## 9. Gizlemenin ölçülmesi
 
 Bir koruma kararını savunmak için onu **ölçmek** gerekir. Collberg'in çerçevesi gizlemeyi dört boyutta değerlendirir;
@@ -1414,30 +1528,40 @@ Bu dört ölçüt bir **ödünleşimdir**: gücü ve dayanıklılığı artırd�
 karmaşık kod daha çok dikkat çeker). İyi bir mühendislik kararı, **korunan varlığın değerine** göre bu dördü
 dengeler.
 
-### İşlenmiş örnek: dört ölçütü `erisim_ver` üzerinde sayılarla dolduralım
+### İşlenmiş örnek: dört ölçütü `grant_access` üzerinde sayılarla dolduralım
 
-Bölüm 4'te tanıdığımız gerçek demo ölçümlerini (**28 → 51 komut**, **3 → 6 dal**) burada dört ölçüte dağıtalım:
+Bölüm 4'te tanıdığımız gerçek demo ölçümlerini (**27 → 49 komut**, **4 → 9 dal/çağrı**) burada dört ölçüte dağıtalım:
 
 **Güç (potency).** Basit bir yaklaşık ölçüt olarak McCabe'in **çevrimsel karmaşıklık** fikrini kabaca kullanalım:
 tek girişli/çıkışlı bir fonksiyon için `karmaşıklık ≈ dal_sayısı + 1`.
 
 ```text
-Öncesi : 3 dal + 1 = 4
-Sonrası: 6 dal + 1 = 7
-Artış  : (7 − 4) / 4 × 100 = %75
+Öncesi : 4 dal/çağrı + 1 = 5
+Sonrası: 9 dal/çağrı + 1 = 10
+Artış  : (10 − 5) / 5 × 100 = %100
 ```
 
-Karmaşıklık `4`'ten `7`'ye, yani **%75** artmış: bir insan analistin fonksiyonu elle çizip anlaması artık %75 daha
-fazla "yol" barındırıyor.
+Karmaşıklık `5`'ten `10`'a, yani **%100** artmış (tam iki katına çıkmış): bir insan analistin fonksiyonu elle çizip
+anlaması artık iki katı kadar "yol" barındırıyor.
 
 **Maliyet (cost).** Komut sayısındaki artışı aynı şekilde hesaplayalım:
 
 ```text
-(51 − 28) / 28 × 100 ≈ %82,1
+(49 − 27) / 27 × 100 ≈ %81,5
 ```
 
-Yani bu tek kuralın (K-04 + K-01 + K-05) uygulanması, fonksiyonu **%82** daha büyük ve muhtemelen biraz daha yavaş
+Yani bu tek kuralın (K-04 + K-01 + K-05) uygulanması, fonksiyonu **%81,5** daha büyük ve muhtemelen biraz daha yavaş
 yapmıştır — bu, bölüm 4'teki koruma kuralı şablonunun "Maliyet" satırına yazılacak somut sayıdır.
+
+Bu iki gerçek sayıyı (statik ölçüm) ve ayrıca **dinamik** maliyeti (her çağrıda kaç adım gerçekten çalışıyor,
+10 jeton üzerinden) aşağıda görelim:
+
+<iframe class="dsanim" src="../anim/obfuscation-metrics.html" title="Gizlemenin ölçülmesi: güç, dayanıklılık, maliyet, gizlilik" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Gizlemenin ölçülmesi — adım adım](anim/obfuscation-metrics.png)
+</div>
+
+**Normal**, **zor** (dağıtıcı çoğunlukla tam dolaşıyor) ve iki **uç durum** (en ucuz/en pahalı yol) örneğini deneyin.
 
 **Dayanıklılık (resilience) ve gizlilik (stealth).** Bu ikisi, yalnız komut/dal sayarak ölçülemez; dayanıklılık için
 gerçek bir deobfuscation aracı çalıştırıp (bölüm 10) "geri açma" süresini/başarısını ölçmek, gizlilik için gizlenmiş
@@ -1446,7 +1570,7 @@ kodun istatistiksel olarak "normal" koddan ayrılıp ayrılmadığına (ör. ano
 sonraki bölümün konusudur.
 
 !!! danger "Sık yapılan hata: yalnızca maliyeti ölçüp 'güçlü' demek"
-    "İkili dosya %82 büyüdü, demek ki iyi korundu" sonucu yanlıştır — büyüme yalnız **maliyeti** gösterir, kırılmaya
+    "Binary dosya %81,5 büyüdü, demek ki iyi korundu" sonucu yanlıştır — büyüme yalnız **maliyeti** gösterir, kırılmaya
     karşı **dayanıklılığı** göstermez (bölüm 10'da göreceğimiz gibi zayıf bir opak yüklem, çok komut eklese de bir
     çözücü tarafından saniyeler içinde açılabilir). **Kural:** dört ölçütü ayrı ayrı raporlayın; yalnız birini
     (genelde en kolay ölçülebilen "maliyet"i) öne çıkarıp diğerlerini atlamayın.
@@ -1464,7 +1588,7 @@ sonraki bölümün konusudur.
   bölüm 9'un "maliyet" ölçütü burada "gereksiz maliyet eklemeyin" yönünde de çalışır.
 - **Varlık B — lisans anahtarının doğrulandığı `lisans_dogrula` fonksiyonu.** Değeri yüksektir (bölüm 1'deki
   sayısal örnekte yıllık 100.000 TL'lik bir gelire bağlıydı). Karar: K-04 + K-01 + K-05 + K-08 + çeşitlendirme
-  birlikte uygulanır; toplam maliyet (bölüm 9'da ölçtüğümüz gibi **%82** komut artışı) kabul edilir çünkü korunan
+  birlikte uygulanır; toplam maliyet (bölüm 9'da ölçtüğümüz gibi **%81,5** komut artışı) kabul edilir çünkü korunan
   varlığın değeri bunu haklı çıkarır.
 
 Bu karşılaştırma, "her fonksiyona aynı gizleme düzeyini uygulamak" yaklaşımının **hem gereksiz maliyetli hem de
@@ -1493,11 +1617,11 @@ dayandığını ölçer. Ders için çıkarım nettir: **dayanıklılık bir idd
 
 ### Sembolik yürütme K-01'deki opak yüklemi nasıl kırar? Adım adım
 
-Bölüm 5'teki `opak_dogru(x) = ((x*(x+1)) & 1) == 0` yüklemine dönelim; o bölümdeki uyarı kutusu bunun "klasik bir
+Bölüm 5'teki `opaque_true(x) = ((x*(x+1)) & 1) == 0` yüklemine dönelim; o bölümdeki uyarı kutusu bunun "klasik bir
 kalıp, modern araçların kütüphanelerinde tanınır" olduğunu söylemişti. Şimdi **neden** böyle olduğunu görelim.
 
 Bir sembolik yürütme aracı (KLEE gibi), programı **somut** değerlerle (`x = 5` gibi) değil, `x`'i bilinmeyen bir
-**sembol** olarak tutup çalıştırır. `if (opak_dogru(x))` satırına geldiğinde, aracın sorması gereken soru şudur:
+**sembol** olarak tutup çalıştırır. `if (opaque_true(x))` satırına geldiğinde, aracın sorması gereken soru şudur:
 
 > "`x`'in **her** değeri için `((x*(x+1)) & 1) == 0` doğru mudur, yoksa bunu yanlış yapan bir `x` var mıdır?"
 
@@ -1513,6 +1637,16 @@ başına yeterli görmüyor, [14. haftada](../week-14/cen429-week-14.md) tohumla
 da bir karma fonksiyonun tersini almaya dayanan) yüklemler öneriyordu — şimdi bu önerinin **nedenini** de görmüş
 olduk.
 
+Aynı fikri bu haftanın **gerçek** `obfuscated.c`sindeki `opaque_zero`ya uygulayalım — değerlendiricinin gözünden,
+periyodik kanıttan sabit katlamaya (constant folding) kadar:
+
+<iframe class="dsanim" src="../anim/deobfuscation.html" title="Deobfuscation: sembolik sadeleştirme bir opak yüklemi nasıl kırar" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Deobfuscation — adım adım](anim/deobfuscation.png)
+</div>
+
+**Normal**, **zor** ve iki **uç durum** (periyodu doğrudan gösteren sıralı çift/tek dahil) örneğini deneyin.
+
 ### MBA sadeleştiriciler K-02'yi nasıl açar?
 
 K-02'deki `(a ^ b) + 2·(a & b) = a + b` gibi bir ifade, insana karmaşık görünse de sonlu bir **doğruluk tablosu**
@@ -1526,7 +1660,7 @@ kalır — iki zayıf katman, birlikte tek katmandan daha güçlüdür.
 
 ### Kalıp tanıma K-04/K-11'i nasıl hedefler?
 
-Bir "kalıp tanıma" aracı, ikili dosyayı tarayıp bilinen **yapısal imzaları** arar: tek bir döngü içinde büyük bir
+Bir "kalıp tanıma" aracı, binary dosyayı tarayıp bilinen **yapısal imzaları** arar: tek bir döngü içinde büyük bir
 `switch`, ardışık olmayan ama sabit bir kümeden gelen durum değerleri, `default` dalından çıkan bir hata yolu —
 tam olarak K-04'ün şablonu. O-LLVM gibi popüler araçların ürettiği düzleştirme şekli de zamanla "tanınan" bir imza
 hâline gelmiştir (bir yazılımın hangi gizleme aracıyla derlendiğini tahmin eden akademik çalışmalar bile vardır).
@@ -1613,7 +1747,7 @@ göre değişir, burada yalnız **yönü** gösteriyoruz):
 | **Gereken zaman** | Saldırı kaç saat/gün sürer? | Hepsi — özellikle K-04 (CFG'yi büyütür) ve K-10 (VM'i çözmek zaman ister) |
 | **Gereken uzmanlık** | Genel beceri mi, uzman bilgisi mi gerekir? | K-01/K-02 (MBA, opak yüklem bilgisi), K-10 (VM tersine mühendisliği) |
 | **Hedef bilgisi** | Saldırgan kaynak koda/tasarıma ne kadar hakim? | K-06 (iç fonksiyon adları/imzaları gizlenince "hedef bilgisi" düşer) |
-| **Fırsat penceresi** | Saldırgan ikiliye ne kadar süre erişebilir? | Çeşitlendirme (bölüm 8) + K-12 (kısa açık pencere) bu süreyi daraltır |
+| **Fırsat penceresi** | Saldırgan binary'ye ne kadar süre erişebilir? | Çeşitlendirme (bölüm 8) + K-12 (kısa açık pencere) bu süreyi daraltır |
 | **Gerekli ekipman** | Genel araç mı, özel/pahalı araç mı gerekir? | Sembolik yürütmeye dirençli yüklemler (bölüm 10) "genel araç yetmez" durumuna iter |
 
 Bu beş soru, sertifikasyon dünyasında yaygın kullanılan **saldırı potansiyeli** değerlendirme yaklaşımlarının ortak
@@ -1640,7 +1774,7 @@ Vize sonrası projenizin S9 bölümünü **ileri** düzeye taşıyın:
 1. **Koruma tablosu:** En kritik iki–üç kod bölümü için (ör. lisans/lisanslama, anahtar türetme, bütünlük denetimi)
    1. bölümdeki **"koruma kuralı" şablonunu** doldurun: neyi korur, hangi tehdide karşı, nasıl, maliyet, sınır, ölçüm.
 2. **Ölçüm:** En az bir teknik için gizleme öncesi/sonrası bir ölçüt verin (ör. `strings` çıktısındaki hassas dize
-   sayısı; CFG düğüm sayısı; ikili boyut ve bir işlemin süresi).
+   sayısı; CFG düğüm sayısı; binary boyut ve bir işlemin süresi).
 3. **Çeşitlendirme kararı:** Çeşitlendirme uygulayacak mısınız? Uygulamayacaksanız **neden** (gerekçe de bir yanıttır).
 4. **Sınır ve kalan risk:** Her koruma için neyi **korumadığını** açıkça yazın. "Bu dize gizleme anahtarı korumaz;
    anahtar için S8'deki whitebox/donanım kullanılır" gibi.
@@ -1658,7 +1792,8 @@ S9 — İleri sağlamlaştırma (örnek taslak)
      Neyi korur?        : lisans anahtarının doğrulama sırası
      Hangi tehdide karşı?: statik CFG okuma, tek-bayt yama
      Nasıl?             : switch dağıtıcı + x*(x+1) tabanlı opak yüklem + öngörülemeyen hata çıkışı
-     Maliyet             : komut 28→51 (+%82), dal 3→6 (+%100) [objdump ile ölçüldü]
+     Maliyet             : komut 27→49 (+%81,5), dal/çağrı 4→9 (+%125) [bu haftanın gerçek grant_access
+                            ölçümüyle aynı büyüklükte; lisans_dogrula bu derste ayrıca ölçülmedi]
      Sınır               : sembolik yürütmeye (bölüm 10) karşı zayıf; veri hâlâ K-07 ile korunmalı
      Ölçüm               : objdump çıktısı (ek A), CFG düğüm/kenar sayısı
 
@@ -1694,7 +1829,7 @@ kopyalanıp doğrudan başka bir projeye yazılmamalıdır.
       korumaz" gibi bölüm 3'ün temel uyarısı unutulmadı mı?
     - [ ] Hiçbir yerde "kırılamaz", "aşılamaz" gibi mutlak bir ifade **kullanılmadı** mı (bölüm 1'deki Barak vd.
       uyarısı)?
-    - [ ] Optimizasyon açık (`-O2`/`-O3`) derlenmiş ikili üzerinde test edildi mi (K-02/K-03'teki "derleyici sessizce
+    - [ ] Optimizasyon açık (`-O2`/`-O3`) derlenmiş binary üzerinde test edildi mi (K-02/K-03'teki "derleyici sessizce
       siler" hatasına karşı)?
 
 !!! tip "Değerlendirici gözüyle"
@@ -1732,7 +1867,7 @@ kopyalanıp doğrudan başka bir projeye yazılmamalıdır.
     **Güç:** insan analizciyi ne kadar zorlaştırır. **Dayanıklılık:** otomatik deobfuscation araçlarına direnç. **Gizlilik:** gizlemenin fark edilmezliği (normal görünme). **Maliyet:** performans/boyut cezası. Başlıca ödünleşimler: dayanıklılık ↔ maliyet ve güç ↔ gizlilik (güçlü gizleme çoğu zaman daha 'anormal' görünür).
 
 ??? question "10. Çeşitlendirme gizlemenin gücünü mü, ölçeklenmesini mi engeller? Basit bir etkinlik ölçütü önerin."
-    **Ölçeklenmesini** engeller: tek bir kopyanın gücünü artırmaz ama bir kırığın tüm kopyalara/kullanıcılara **yayılmasını** engeller. Ölçüt: aynı kaynaktan iki tohumla üretilen ikililerin farklılık oranı (farklı bayt/komut yüzdesi) + her iki ikilinin aynı girdiye aynı çıktıyı verdiğini gösteren davranış testi.
+    **Ölçeklenmesini** engeller: tek bir kopyanın gücünü artırmaz ama bir kırığın tüm kopyalara/kullanıcılara **yayılmasını** engeller. Ölçüt: aynı kaynaktan iki tohumla üretilen binary'lerin farklılık oranı (farklı bayt/komut yüzdesi) + her iki binary'nin aynı girdiye aynı çıktıyı verdiğini gösteren davranış testi.
 
 ??? question "11. Sembolik yürütme (KLEE gibi) hangi gizleme kurallarını zorlar? Dayanıklılığı artırmak için ne yaparsınız, maliyeti nasıl kontrol edersiniz?"
     KLEE yolları otomatik çözerek basit opak yüklem ve düzleştirmeyi kırabilir. Dayanıklılık için yüklemleri **sembolik yürütmeye dayanıklı** yaparsınız (girdi bağımlı, kriptografik, yol patlaması yaratan). Maliyeti, bu pahalı dönüşümleri yalnız kritik fonksiyonlara uygulayıp önce/sonra ölçerek kontrol edersiniz.
@@ -1744,28 +1879,28 @@ kopyalanıp doğrudan başka bir projeye yazılmamalıdır.
     `0x41 ^ 0x5A = 0x1B`, sonra `0x1B ^ 0x5A = 0x41` — başladığınız bayta geri dönersiniz. Bunu garanti eden kural `a ^ b ^ b = a ^ (b ^ b) = a ^ 0 = a`dır: herhangi bir değer kendisiyle XOR'lanınca `0` verir, `0` ile XOR'lanan değer değişmeden kalır. Bu, K-07'deki dize kodlama/çözmenin ve genel olarak "XOR tersine çevrilebilir" iddiasının matematiksel temelidir.
 
 ??? question "14. `[0x41,0x41,0x41,0x41]` dizisinin Shannon entropisi neden 0 bit/sembol, `[0x3F,0xA1,0x08,0xC7]` dizisininki neden 2 bit/semboldür? Bunun bir saldırgan için pratik anlamı nedir?"
-    Birinci dizide tek bir değerin olasılığı `p=1`, `log2(1)=0`, dolayısıyla `H=0` — tamamen öngörülebilir. İkinci dizide dört farklı değer eşit olasılıkla (`p=1/4`) görülür: `H = -4·(1/4·log2(1/4)) = -4·(1/4·(-2)) = 2` bit/sembol, bu dört sembollük alfabede ulaşılabilecek en yüksek değerdir. Pratikte: bir saldırgan ikili dosyayı tararken düşük entropili (tekrar eden) bloklarla yüksek entropili (anahtar/şifreli veri olabilecek) blokları istatistiksel olarak ayırt edebilir; yüksek entropi "burada bir sır olabilir" ipucudur.
+    Birinci dizide tek bir değerin olasılığı `p=1`, `log2(1)=0`, dolayısıyla `H=0` — tamamen öngörülebilir. İkinci dizide dört farklı değer eşit olasılıkla (`p=1/4`) görülür: `H = -4·(1/4·log2(1/4)) = -4·(1/4·(-2)) = 2` bit/sembol, bu dört sembollük alfabede ulaşılabilecek en yüksek değerdir. Pratikte: bir saldırgan binary dosyayı tararken düşük entropili (tekrar eden) bloklarla yüksek entropili (anahtar/şifreli veri olabilecek) blokları istatistiksel olarak ayırt edebilir; yüksek entropi "burada bir sır olabilir" ipucudur.
 
 ??? question "15. `(a ^ b) + 2·(a & b)` ifadesinin `a + b`'ye eşit olduğunu `a=5, b=3` için doğrulayın. Bu tür ifadelere ne ad verilir ve tek başına neden yeterince güçlü değildir?"
     `a+b = 5+3 = 8`. `a^b = 0101^0011 = 0110 = 6`; `a&b = 0101&0011 = 0001 = 1`; `(a^b)+2·(a&b) = 6+2 = 8`. İkisi eşit — özdeşlik doğrulandı. Bu tür ifadelere **mixed boolean-arithmetic (MBA)** denir (K-02). Tek başına yeterince güçlü değildir çünkü `arybo`/`msynth` gibi ifade sadeleştiriciler, küçük bit genişliklerinde doğruluk tablosu üreterek bu tür ifadeleri kısa sürede orijinal hâline (`a+b`) indirger; gücünü ancak kontrol akışı gizlemeyle (K-04) birleşince kazanır.
 
-??? question "16. K-08'deki opak boolean örneğinde `a=0xA3C1, b=0x5C3E` iken `a^b` neden `0xFFFF`'tir? Saldırgan yalnız `a`'nın alt baytını (`0xC1→0x00`) değiştirirse `karar_izin_mi` ne döner?"
-    Dört nibble de birbirinin bit-tersi olduğu için (`A=1010`↔`5=0101`, `3=0011`↔`C=1100`, `C=1100`↔`3=0011`, `1=0001`↔`E=1110`) XOR'ları hep `1111=F` verir, toplamda `0xFFFF`. `a`'nın alt baytı `0x00` yapılırsa yeni `a=0xA300`; `0xA300^0x5C3E = 0xFF3E ≠ 0xFFFF`, dolayısıyla `karar_izin_mi` **false (red)** döner — tek bayt yaması saldırıyı başaramaz, çünkü `a` ve `b`'nin **birlikte** tutarlı değişmesi gerekir.
+??? question "16. K-08'deki opak boolean örneğinde `a=0xA3C1, b=0x5C3E` iken `a^b` neden `0xFFFF`'tir? Saldırgan yalnız `a`'nın alt baytını (`0xC1→0x00`) değiştirirse `decision_grants` ne döner?"
+    Dört nibble de birbirinin bit-tersi olduğu için (`A=1010`↔`5=0101`, `3=0011`↔`C=1100`, `C=1100`↔`3=0011`, `1=0001`↔`E=1110`) XOR'ları hep `1111=F` verir, toplamda `0xFFFF`. `a`'nın alt baytı `0x00` yapılırsa yeni `a=0xA300`; `0xA300^0x5C3E = 0xFF3E ≠ 0xFFFF`, dolayısıyla `decision_grants` **false (red)** döner — tek bayt yaması saldırıyı başaramaz, çünkü `a` ve `b`'nin **birlikte** tutarlı değişmesi gerekir.
 
 ??? question "17. `0x1234ABCD` değeri K-09'daki gibi iki 16-bit parçaya nasıl bölünüp geri birleştirilir? Bu tekniğin bellek taramasına karşı işe yaramasının nedeni nedir?"
-    Bölme: `yuksek=0x1234`, `dusuk=0xABCD`. Birleştirme: `(yuksek<<16)|dusuk`; `0x1234<<16 = 0x12340000`, bunu `0x0000ABCD` ile OR'lamak `0x1234ABCD` verir — orijinal değer geri gelir. İşe yaramasının nedeni: bellek tarayan araçlar genelde "art arda duran, sabit boyutlu, yüksek entropili bir blok" arar (ör. 16/32 baytlık bir anahtar deseni); değer iki ayrı, birbirine bitişik olmayan değişkene bölünürse bu "tek blok" deseni ortadan kalkar.
+    Bölme: `high=0x1234`, `low=0xABCD`. Birleştirme: `(high<<16)|low`; `0x1234<<16 = 0x12340000`, bunu `0x0000ABCD` ile OR'lamak `0x1234ABCD` verir — orijinal değer geri gelir. İşe yaramasının nedeni: bellek tarayan araçlar genelde "art arda duran, sabit boyutlu, yüksek entropili bir blok" arar (ör. 16/32 baytlık bir anahtar deseni); değer iki ayrı, birbirine bitişik olmayan değişkene bölünürse bu "tek blok" deseni ortadan kalkar.
 
 ??? question "18. Bölüm 7'deki küçük bytecode örneğinde `{OP_PUSH,5,OP_PUSH,7,OP_ADD,OP_RET}` çalıştırıldığında yığın (stack) nasıl değişir, sonuç nedir? Bir analist bu sonucu neden doğrudan 'kaynak kodda' göremez?"
-    Sırasıyla: `OP_PUSH 5` → yığın `[5]`; `OP_PUSH 7` → yığın `[5,7]`; `OP_ADD` → `7` ve `5` yığından çıkar, `5+7=12` yığına girer → `[12]`; `OP_RET` → `12` döner. Sonuç `12`. Analist bunu kaynakta göremez çünkü "toplama" diye bir komut yoktur — toplama, `yorumla` fonksiyonunun bu altı baytı belirli bir sırayla işlemesinin **yan etkisidir**; önce yorumlayıcının (VM'in) kendisi çözülmelidir.
+    Sırasıyla: `OP_PUSH 5` → yığın `[5]`; `OP_PUSH 7` → yığın `[5,7]`; `OP_ADD` → `7` ve `5` yığından çıkar, `5+7=12` yığına girer → `[12]`; `OP_RET` → `12` döner. Sonuç `12`. Analist bunu kaynakta göremez çünkü "toplama" diye bir komut yoktur — toplama, `interpret` fonksiyonunun bu altı baytı belirli bir sırayla işlemesinin **yan etkisidir**; önce yorumlayıcının (VM'in) kendisi çözülmelidir.
 
 ??? question "19. K-03'teki bir sahte işlem (`crc ^= sabit^sabit`), optimize edici bir derleyici (`-O2`) tarafından neden tamamen silinebilir? Bunu önlemek için ne yapılır?"
-    `sabit^sabit` her zaman `0`'dır (bölüm 0'daki XOR özdeşliği: bir değer kendisiyle XOR'lanınca `0` verir) ve `crc^=0` `crc`'yi değiştirmez. Derleyici bunu sabit-katlamayla fark edip "hiçbir gözlenen etkisi yok" diyerek **ölü kod eleme** ile siler; gizleme siz fark etmeden ortadan kalkar. Önlem: sahte işlemde kullanılan değerleri çalışma anında (girdiye/opak yükleme bağlı) belirleyin, derleme anında sabitlemeyin; gizlemeyi her zaman optimizasyon açık derlenmiş ikili üzerinde doğrulayın.
+    `sabit^sabit` her zaman `0`'dır (bölüm 0'daki XOR özdeşliği: bir değer kendisiyle XOR'lanınca `0` verir) ve `crc^=0` `crc`'yi değiştirmez. Derleyici bunu sabit-katlamayla fark edip "hiçbir gözlenen etkisi yok" diyerek **ölü kod eleme** ile siler; gizleme siz fark etmeden ortadan kalkar. Önlem: sahte işlemde kullanılan değerleri çalışma anında (girdiye/opak yükleme bağlı) belirleyin, derleme anında sabitlemeyin; gizlemeyi her zaman optimizasyon açık derlenmiş binary üzerinde doğrulayın.
 
-??? question "20. Bölüm 8'deki örnekte 512 baytlık bir fonksiyonun iki tohumla üretilen ikili dosyaları arasında 340 bayt farklıysa fark oranı yüzde kaçtır? Bu oran neyi gösterir, neyi göstermez?"
+??? question "20. Bölüm 8'deki örnekte 512 baytlık bir fonksiyonun iki tohumla üretilen binary dosyaları arasında 340 bayt farklıysa fark oranı yüzde kaçtır? Bu oran neyi gösterir, neyi göstermez?"
     `fark_orani = 340/512×100 ≈ %66,4`. Bu, iki kopyanın kod düzeyinde ne kadar **farklı** göründüğünü gösterir — bir kopyaya yazılan bayt-düzeyi bir yamanın diğer kopyada aynı ofsette işe yaramama olasılığının yüksek olduğunu ima eder. Göstermediği şey: tek bir kopyanın **gücünü** (potency/resilience) artırmaz; yalnızca bir kırığın **ölçeklenmesini** zorlaştırır (bölüm 8'in ana iddiası).
 
-??? question "21. Bu haftanın demosunda `erisim_ver` düzleştirme sonrası 28→51 komuta, 3→6 dala çıkıyor. Basit çevrimsel karmaşıklık (dal+1) öncesi/sonrası kaçtır, yüzde kaç artmıştır? Bu hangi ölçütü (bölüm 9) temsil eder?"
-    Öncesi: `3+1=4`. Sonrası: `6+1=7`. Artış: `(7-4)/4×100=%75`. Bu, bölüm 9'daki dört ölçütten **güç (potency)**'yi temsil eder — bir insan analistin fonksiyonu anlaması için izlemesi gereken yol sayısının bir yaklaşık göstergesidir; komut sayısındaki `%82` artış ise aynı örnekte **maliyet (cost)** ölçütünü temsil eder.
+??? question "21. Bu haftanın demosunda `grant_access` düzleştirme sonrası 27→49 komuta, 4→9 dal/çağrıya çıkıyor. Basit çevrimsel karmaşıklık (dal+1) öncesi/sonrası kaçtır, yüzde kaç artmıştır? Bu hangi ölçütü (bölüm 9) temsil eder?"
+    Öncesi: `4+1=5`. Sonrası: `9+1=10`. Artış: `(10-5)/5×100=%100`. Bu, bölüm 9'daki dört ölçütten **güç (potency)**'yi temsil eder — bir insan analistin fonksiyonu anlaması için izlemesi gereken yol sayısının bir yaklaşık göstergesidir; komut sayısındaki `%81,5` artış ise aynı örnekte **maliyet (cost)** ölçütünü temsil eder.
 
 ??? question "22. Sembolik yürütme, K-01'deki `((x*(x+1))&1)==0` opak yüklemini neden 'klasik ve zayıf' kılar? Bir çözücü bunu nasıl kanıtlar?"
     Sembolik yürütme `x`'i somut değil sembolik tutar ve "her `x` için bu ifade doğru mu?" sorusunu bir kısıt çözücüye sorar. Çözücü `x`'i çift/tek diye ikiye ayırarak (çiftse `x=2k`, tekse `x=2k+1`) her iki durumda da `x*(x+1)`'in `2`'nin katı olduğunu, dolayısıyla `&1=0` olduğunu birkaç adımda kanıtlar. Kanıt saniyeler sürdüğü için ölü dal otomatik elenir; bu yüzden [14. haftada](../week-14/cen429-week-14.md) çözücüye daha dirençli (çarpanlara ayırmaya/karma değerlere dayalı) yüklemler önerilir.
@@ -1777,7 +1912,7 @@ kopyalanıp doğrudan başka bir projeye yazılmamalıdır.
     Kod, normal (başarılı) yol dışında hataya düşerse bellekte **kalıcı olarak açık (çözülmüş)** kalır; "açık pencere" tanımdaki gibi kısa değil, sonsuz hâle gelir ve bir bellek dökümü bunu her zaman yakalayabilir. Kural: yeniden şifreleme adımını dilin "her zaman çalışır" yapısına bağlayın (C'de `goto temizle:`, C++'ta RAII/yıkıcı, Java/Kotlin'de `finally`); başarı ve hata yollarını ayrı ayrı ele alıp birini unutmayın.
 
 ??? question "25. 'Kodlama (encoding)', 'şifreleme (encryption)' ve 'gizleme (obfuscation)' arasındaki fark nedir? K-07'deki 'dize kodlama' bunlardan hangisidir?"
-    **Kodlama:** veriyi başka bir gösterime çevirir, matematiksel gizlilik iddiası yoktur (ör. XOR). **Şifreleme:** anahtara dayalı, ispatlanabilir güvenlik sağlar (ör. AES-GCM, [3. hafta](../week-3/cen429-week-3.md)); doğru anahtar olmadan çözülemez. **Gizleme:** kodun insan tarafından anlaşılmasını zorlaştırır, matematiksel bir güvenlik iddiası taşımaz. K-07'deki "dize kodlama" bir **encoding**'dir (XOR ile); çözme anahtarı da ikili dosyada durduğu için **encryption** değildir, yalnız statik taramayı (`strings`) yavaşlatır.
+    **Kodlama:** veriyi başka bir gösterime çevirir, matematiksel gizlilik iddiası yoktur (ör. XOR). **Şifreleme:** anahtara dayalı, ispatlanabilir güvenlik sağlar (ör. AES-GCM, [3. hafta](../week-3/cen429-week-3.md)); doğru anahtar olmadan çözülemez. **Gizleme:** kodun insan tarafından anlaşılmasını zorlaştırır, matematiksel bir güvenlik iddiası taşımaz. K-07'deki "dize kodlama" bir **encoding**'dir (XOR ile); çözme anahtarı da binary dosyada durduğu için **encryption** değildir, yalnız statik taramayı (`strings`) yavaşlatır.
 
 ??? question "26. Taksonomideki beş aile neden 'aşağıdan yukarı güç ve maliyet artar' sırasıyla dizilir? Düzen ailesi neden en zayıfıdır?"
     Bir ailenin gücü, programın **davranışını üreten mekanizmaya ne kadar yakın** olduğuyla orantılıdır. Düzen ailesi yalnız isimleri/meta veriyi değiştirir, davranışı üreten hiçbir şeye dokunmaz — bu yüzden en ucuz ama en zayıf katmandır (bölüm 0'daki tersine derleyici örneğinde görüldüğü gibi, adlar zaten kaybolur ama mantık kalır). Sanallaştırma ise makine kodunun kendisini değiştirdiği için hem en güçlü hem en pahalı uçtadır.

@@ -1,0 +1,19 @@
+# CEN429 - Week 2 - Demo 12, scenario 5: OWNER_RIGHTS and privileges
+# If an OWNER_RIGHTS (S-1-3-4) ACE is present, the owner's implicit
+# READ_CONTROL/WRITE_DAC rights go away; the owner only gets what that ACE
+# grants. A privilege, on the other hand, is an authority independent of the DACL.
+
+SCENARIO 5a - blocking the owner from changing permissions with OWNER_RIGHTS
+TOKEN alice  Users
+OWNER    alice
+ACE ALLOW OWNER_RIGHTS  READ,WRITE
+REQUEST WRITE
+REQUEST WRITE_DAC
+
+SCENARIO 5b - the TAKE_OWNERSHIP privilege bypasses the DACL
+TOKEN operator  BackupOperators
+PRIVILEGE TAKE_OWNERSHIP
+OWNER    mark
+ACE ALLOW mark  FULL
+REQUEST READ
+REQUEST TAKE_OWNER

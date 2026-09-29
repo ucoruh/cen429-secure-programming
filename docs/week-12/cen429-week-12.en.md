@@ -31,12 +31,11 @@
 <!-- materyal:bitis -->
 
 !!! example "This week's working demos"
-    `code/week-12/01-birim-test` — Unit test runner: verifies security functions with test cards (S16 results).
-    · `code/week-12/02-saldiri-potansiyeli` — Attack-potential calculator: five factors → resistance level (low = serious finding).
+    `code/week-12/01-unit-test` — Unit test runner: verifies security functions with test cards (S16 results).
+    · `code/week-12/02-attack-potential` — Attack-potential calculator: five factors → resistance level (low = serious finding).
 
     Run: once in the `code` folder run `./build.sh` (`.\build.ps1` on Windows), then from `bin/linux` (`bin\windows` on
-    Windows) inside the demo folder. Step-by-step commands are in the box below. Fully synthetic and safe; it will not
-    harm a student's computer.
+    Windows) inside the demo folder. Step-by-step commands are in the box below.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
@@ -45,17 +44,17 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-12\01-birim-test
-    .\bin\windows\birim_test.exe
-    cd ..\02-saldiri-potansiyeli
-    .\bin\windows\saldiri_potansiyeli.exe
+    cd week-12\01-unit-test
+    .\bin\windows\unit_test.exe
+    cd ..\02-attack-potential
+    .\bin\windows\attack_potential.exe
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-12/01-birim-test && ./bin/linux/birim_test
-    cd ../02-saldiri-potansiyeli && ./bin/linux/saldiri_potansiyeli
+    cd week-12/01-unit-test && ./bin/linux/unit_test
+    cd ../02-attack-potential && ./bin/linux/attack_potential
     ```
 
     **Expected output:** the unit test runner checks two security functions with **test cards**; for each test it
@@ -259,13 +258,20 @@ such-and-such date."
 ![The developer's word versus independent evaluation](assets/h12-04-bagimsiz-degerlendirme.svg)
 
 !!! note "A short history: security evaluation and certification"
-    - **1985** — the US **TCSEC** ("Orange Book"): the first formal security-evaluation criteria.
+    - **1983 → 1985** — the US **TCSEC** ("Orange Book"): the first formal security-evaluation criteria
+      (published 1983, revised 1985).
     - **1991–1993** — European **ITSEC** and Canadian **CTCPEC**.
-    - **1999** — these merge under **Common Criteria (ISO/IEC 15408)**; the **EAL** assurance scale comes from here
-      ([week 13](../week-13/cen429-week-13.md)).
-    - **2001** — **OWASP** is founded (application security testing culture); **PTES** and **NIST SP 800-115**
-      later standardize penetration-testing methodologies.
-    - **2005 → 2023** — the **CVSS** vulnerability severity score (v2 → v3.1 → v4.0).
+    - **1994** — the US **FIPS 140-1**: the first formal evaluation standard for cryptographic modules (FIPS
+      140-3, in section 1's table, continues this line).
+    - **1999** — TCSEC/ITSEC/CTCPEC merge under **Common Criteria (ISO/IEC 15408)**; the **EAL** assurance scale
+      comes from here ([week 13](../week-13/cen429-week-13.md)).
+    - **2001** — **OWASP** is founded (application security testing culture).
+    - **2004** — **PCI DSS** version 1.0 is published (for organizations and software that handle card data).
+    - **2005** — Common Criteria's shared evaluation methodology, **CEM (ISO/IEC 18045)**, is published.
+    - **2005 → 2023** — the **CVSS** vulnerability severity score (v1 → v2 → v3.1 → v4.0).
+    - **2008** — **NIST SP 800-115** ("Technical Guide to Information Security Testing and Assessment") is
+      published.
+    - **2009** — **PTES** (Penetration Testing Execution Standard) begins.
     - **2010s** — **OWASP MASVS/MASTG** for mobile, **ETSI EN 303 645** for consumer IoT.
 
     The common idea in one sentence: **a vendor cannot approve its own product** — independent, evidence-based
@@ -378,7 +384,7 @@ standard; a team asks the question: "is this certificate's **cost** worth the **
 Let's read the short history at the start of this section again, this time with the "why" question — each step is
 actually a response to a real **trust crisis**:
 
-- Before TCSEC (1985), the US government could not find a **common criterion** to evaluate security claims; every
+- Before TCSEC (1983/1985), the US government could not find a **common criterion** to evaluate security claims; every
   vendor used its own definition of "secure" — comparison was impossible.
 - Common Criteria (1999) was created to solve a problem caused by the US/European/Canadian criteria
   (TCSEC/ITSEC/CTCPEC) being **separately** developed and **incomparable** with each other — so that the same
@@ -463,6 +469,15 @@ for the life of the product.
 | **11. Delta assessment** | Only the changed part is re-evaluated; the laboratory asks for the marked-up documents, the impact analysis, the file list, and the new TOE identity | Delta report | — |
 | **12. Trade-off and residual risk** | The cost of every protection is measured, decisions are justified, residual risk is written explicitly | Trade-off record | Week 1 |
 | **13. Change management** | Baseline → request → classification → approval → development and testing → release → verification | Process records | S13 |
+
+Walk the 13 steps yourself, changing the finding count to see whether the Continuity phase runs or is skipped.
+
+<iframe class="dsanim" src="../anim/evaluation-process-pipeline.html" title="The evaluation process: 13 steps, three phases" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The evaluation process — step by step](anim/evaluation-process-pipeline.png)
+</div>
+
+Try **Normal** (no findings at all), **Hard** (several findings) and the two edge cases (**exactly one finding**, **the most findings**); 🎲 lets you pick your own finding count.
 
 !!! note "How it's done in the field"
     The guide that is the source of the "How it's done in the field" notes we see every week of this course is
@@ -704,6 +719,15 @@ void isle(const char *disaridan_gelen)
 **Comparison:** logic bugs like SQLi are strong for code review and SAST, weak for fuzzing; memory bugs are very
 strong for fuzzing and sanitizers. **That's why section 3's order (code review → SAST → DAST/sanitizer → fuzzing →
 penetration test) passes every bug class through at least one point where a method is strong.**
+
+Run the five methods side by side over a mixed sample of memory- and logic-class findings and watch how many each one catches.
+
+<iframe class="dsanim" src="../anim/vulnerability-assessment-methods.html" title="Vulnerability-assessment methods side by side" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Vulnerability-assessment methods — step by step](anim/vulnerability-assessment-methods.png)
+</div>
+
+Compare **Normal** (a mixed sample) against the two edge cases (**all memory bugs**, **all logic bugs**); the difference is immediate.
 
 !!! danger "Common mistake: running fuzzing for a few seconds and saying 'no findings'"
     Fuzzing works by **accumulating coverage**; in the first few seconds only shallow paths are tried. Saying
@@ -1000,6 +1024,15 @@ What the total score maps to:
 | 20–24 | VERY HIGH |
 | 25+ | BEYOND (only a highly capable attacker) |
 
+Pick the five factors' levels and follow the program's real code (`rating()`) step by step to see which branch the total score falls into.
+
+<iframe class="dsanim" src="../anim/attack-potential-calculator.html" title="Attack potential calculator: 5 factors → total → rating" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Attack potential calculator — step by step](anim/attack-potential-calculator.png)
+</div>
+
+Try **Normal** (license check, unprotected), **Hard** (the same check, protected) and the two edge cases (**every factor at level 0**, **secure-element extraction**); 🎲 lets you enter your own five levels.
+
 #### End-to-end example: scoring a finding from start to finish
 
 **Scenario.** "A license check in a release build depended on a branch that a **proficient** (not expert) user
@@ -1016,7 +1049,7 @@ Let's read and score the five factors one by one:
 | 5 | Equipment | free disassembler | standard/free | **0** |
 
 ```text
-Toplam = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  TEMEL
+Total = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  BASIC
 ```
 
 **Result: BASIC level = low resistance = serious finding.** In the report, this is written as "close this first."
@@ -1026,22 +1059,22 @@ check. The same attack now: takes a week (4), requires an **expert** (6), learni
 **restricted knowledge** (3), the server-side check makes attempts **restricted** (4), equipment is still free (0):
 
 ```text
-Toplam = 4 + 6 + 3 + 4 + 0 = 17       →  14 ≤ 17 ≤ 19  →  YÜKSEK
+Total = 4 + 6 + 3 + 4 + 0 = 17       →  14 ≤ 17 ≤ 19  →  HIGH
 ```
 
 So the control moved the finding from level **BASIC (3)** to level **HIGH (17)**. Instead of saying "I added a
 control," we spoke **with a measurement** — this is exactly the sentence to write into S16.
 
 !!! tip "Produce the same numbers in the demo"
-    The `code/week-12/02-saldiri-potansiyeli` demo implements this scale. Give the factor levels as arguments (in
+    The `code/week-12/02-attack-potential` demo implements this scale. Give the factor levels as arguments (in
     order: time expertise knowledge opportunity equipment):
 
     ```sh
-    ./bin/linux/saldiri_potansiyeli 0 1 0 0 0     # korumasız hâl  -> puan 3  (TEMEL)
-    ./bin/linux/saldiri_potansiyeli 1 2 1 1 0     # korumalı hâl   -> puan 17 (YÜKSEK)
+    ./bin/linux/attack_potential 0 1 0 0 0     # unprotected -> score 3  (BASIC)
+    ./bin/linux/attack_potential 1 2 1 1 0     # protected   -> score 17 (HIGH)
     ```
 
-    On Windows: `.\bin\windows\saldiri_potansiyeli.exe 0 1 0 0 0`. Run it with no arguments and it scores three
+    On Windows: `.\bin\windows\attack_potential.exe 0 1 0 0 0`. Run it with no arguments and it scores three
     built-in example findings (license patch · WBC key extraction · secure-element cracking).
 
 #### Second end-to-end example: a scenario at the opposite end of the scale ("secure-element cracking")
@@ -1067,16 +1100,16 @@ Let's score the five factors one by one with the same simplified scale (the scor
 | 5 | Equipment | focused ion beam, special measurement probe | bespoke (Level 2) | **7** |
 
 ```text
-Toplam = 19 + 8 + 11 + 10 + 7 = 55        →  55 >= 25  →  OTESI (yalniz cok yetenekli saldirgan)
+Total = 19 + 8 + 11 + 10 + 7 = 55        →  55 >= 25  →  BEYOND (only a highly capable attacker)
 ```
 
 **Result: BEYOND level = very high resistance = low-priority finding** (still not zero risk — a highly resourced
 attacker may have access; the report writes this as "residual risk," as we'll see in sections 6 and 12).
 
 !!! tip "Verify it in the demo"
-    Run the `code/week-12/02-saldiri-potansiyeli` demo **with no arguments**; the third built-in example ("Guvenli
-    oge (SE) kirma") computes exactly `SURE[3] + UZMAN[3] + BILGI[3] + FIRSAT[2] + EKIPMAN[2] = 19+8+11+10+7 = 55`
-    and prints `puan=55 -> OTESI` to the screen — producing **exactly** the same result as the hand calculation
+    Run the `code/week-12/02-attack-potential` demo **with no arguments**; the third built-in example ("Secure
+    element key extraction") computes exactly `ELAPSED_TIME[3] + EXPERTISE[3] + KNOWLEDGE[3] + OPPORTUNITY[2] + EQUIPMENT[2] = 19+8+11+10+7 = 55`
+    and prints `score=55 -> BEYOND` to the screen — producing **exactly** the same result as the hand calculation
     above.
 
 **Comparing the three results:**
@@ -1089,7 +1122,7 @@ attacker may have access; the report writes this as "residual risk," as we'll se
 
 #### Extra exercise: let's hand-verify the demo's third built-in example
 
-We saw the two extreme examples (3 and 55); let's also hand-calculate the demo's second built-in finding ("WBC key
+We saw the two extreme examples (3 and 55); let's also hand-calculate the demo's second built-in finding ("White-box key
 extraction") and compare it with the tool's output.
 
 "Extracting a key from a white-box cryptography implementation; the attacker applies a differential analysis
@@ -1107,11 +1140,11 @@ available analysis tool) equipment."
 | 5 | Equipment | specialized (Level 1) | **4** |
 
 ```text
-Toplam = 10 + 8 + 7 + 4 + 4 = 33        ->  33 >= 25  ->  OTESI
+Total = 10 + 8 + 7 + 4 + 4 = 33        ->  33 >= 25  ->  BEYOND
 ```
 
-In the demo, the command `./bin/linux/saldiri_potansiyeli 2 3 2 1 1` (order: time expertise knowledge opportunity
-equipment) verifies the same result (`puan=33 -> OTESI`) — matching exactly the "WBC anahtar cikarma (DCA)" example
+In the demo, the command `./bin/linux/attack_potential 2 3 2 1 1` (order: time expertise knowledge opportunity
+equipment) verifies the same result (`score=33 -> BEYOND`) — matching exactly the "White-box key extraction (DCA)" example
 embedded in the code. This shows that even a scenario that at first glance seems "much harder than the license
 patch but not as extreme as SE cracking" can quickly climb into the **BEYOND** band once the five factors are
 summed together; the numbers can come out **higher** than the intuitive "moderately hard" feeling — which is why
@@ -1202,6 +1235,15 @@ resolutions**:
     **cost** or **impact** dimensions. **Rule:** both are written for every serious finding; the fact that they come
     out different is not a mistake, it is an **expected** situation (they answer different questions).
 
+Score the same finding on both axes (a simplified CVSS-style score and the real `attack_potential.c` code) and see how the priority comes out.
+
+<iframe class="dsanim" src="../anim/cvss-vs-attack-potential.html" title="The same finding, two scores: CVSS-style and attack potential" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![CVSS-style score vs. attack potential — step by step](anim/cvss-vs-attack-potential.png)
+</div>
+
+Compare **Normal** (both agree: URGENT), **Hard** (large impact but a very hard attack: monitored) and the two edge cases (**lowest on both axes**, **highest on both axes**).
+
 ### Chained attacks: combining multiple vulnerabilities
 
 At the end of section 2 we said "in a well-designed product, the attacker is forced to **chain** several controls";
@@ -1233,6 +1275,15 @@ Evaluation is not a "pass/fail" stamp, it's an **improvement cycle**. For every 
 4. **Closure:** some findings can also close as "not a security vulnerability, a good-practice suggestion."
 
 This cycle is the source of the **finding–action list** ([week 7](../week-7/cen429-week-7.md)) expected in your post-midterm project.
+
+Watch several findings go through the same four stages and end up closed, accepted, not-applicable, or still open.
+
+<iframe class="dsanim" src="../anim/finding-recommendation-action-impact.html" title="Finding → recommendation → action → closure cycle" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Finding-recommendation-action-closure cycle — step by step](anim/finding-recommendation-action-impact.png)
+</div>
+
+Compare **Normal** (most closed) against **Hard** (many still open) and the two edge cases (**all closed**, **none closed**).
 
 ### Security impact analysis and delta assessment
 
@@ -1446,6 +1497,15 @@ and **debatable**:
     **one** test card for it: purpose, precondition, steps, expected/observed result, attack potential. The goal
     isn't to find a flaw, it's to learn **how to write a proper test card**.
 
+See the whole plan as a tree: scope is the root, each threat is its own branch, each test case a leaf; coverage is computed automatically.
+
+<iframe class="dsanim" src="../anim/pentest-plan-tree.html" title="Penetration-test plan tree: scope → threat → test case → coverage" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Penetration-test plan tree — step by step](anim/pentest-plan-tree.png)
+</div>
+
+Try **Normal** (most test cases ran, one FAILED), **Hard** (many not run yet) and the two edge cases (**nothing run**, **100% coverage**).
+
 ### An example of a filled-in test card
 
 Below is a **truly filled-in** version of the eight-field template — a test directly tied to [Week 3, §2](../week-3/cen429-week-3.md#2-encryption-fundamentals-which-tool-protects-what)'s AES-GCM/AEAD
@@ -1514,6 +1574,15 @@ A good security report is not a "you failed" list, it's a **decision-ready** doc
 - **Residual risk:** risks that weren't closed or were transferred, with justification. This section **cannot be
   skipped**: the part of a report that earns the most trust is actually not "we solved everything" but the sentence
   "we couldn't solve this, here's why."
+
+Fill in the five sections and watch how the "ready for production" verdict follows from whether any open URGENT finding remains.
+
+<iframe class="dsanim" src="../anim/report-structure.html" title="Report structure: five sections and the production-readiness verdict" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Report structure — step by step](anim/report-structure.png)
+</div>
+
+Compare **Normal** (no open urgent findings → READY) with **Hard** (one open urgent finding → NOT READY) and the two edge cases (**all closed**, **all open and urgent**).
 
 !!! tip "Critical-reading exercise"
     Read a short finding text given to you as a class together: was this finding's attack potential rated
@@ -1612,6 +1681,15 @@ another. Both are wrong:
    **result** is.
 4. **Finding–action:** pour your midterm feedback into a finding–action table.
 5. **Residual risk:** write down the risks you haven't closed and why.
+
+Follow the `code/week-12/01-unit-test` demo's real `card()` code: every test card is marked PASS/FAIL, and the exit code equals the number failed — exactly the table S16 asks for.
+
+<iframe class="dsanim" src="../anim/unit-test-runner.html" title="Unit test runner: test cards" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Unit test runner — step by step](anim/unit-test-runner.png)
+</div>
+
+Try **Normal** (the real program — all six cards PASS), **Hard** (an extended card set, a mixed result) and the two edge cases (**exactly one card FAILS**, **every card FAILS**).
 
 ### Why item 4 matters especially: your midterm feedback is already a set of "findings"
 

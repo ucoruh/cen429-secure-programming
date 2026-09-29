@@ -65,14 +65,14 @@
 !!! tip "Prepare the lab in advance"
     The demos compile on both **Windows** (Visual Studio 2022 Community, MSVC) and **WSL/Linux** (GCC). One
     source, two platforms: for SHA-256 and AES, Windows uses the operating system's BCrypt library and Linux
-    uses OpenSSL (`code/common/cen429_kripto.h`); on Windows you do not need to install OpenSSL separately.
+    uses OpenSSL (`code/common/cen429_crypto.h`); on Windows you do not need to install OpenSSL separately.
 
     === "Windows (PowerShell)"
         ```powershell
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming\code
         .\build.ps1
-        cd week-02\01-imza-tarayici ; .\demo.ps1
+        cd week-02\01-signature-scanner ; .\demo.ps1
         ```
 
     === "WSL / Linux"
@@ -80,7 +80,7 @@
         sudo apt install -y build-essential cmake libssl-dev python3
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming/code && ./build.sh
-        cd week-02/01-imza-tarayici && sh demo.sh
+        cd week-02/01-signature-scanner && sh demo.sh
         ```
 
     In Visual Studio: **File > Open > Folder** → `code` → select the **Windows (MSVC)** or **WSL (GCC)**
@@ -344,7 +344,7 @@ first minute was not the defence — it was that **the network bandwidth had fil
 
 ### Demo 09 — Worm Epidemic Simulation
 
-!!! info "Demo 09 · `code/week-02/09-salgin-simulasyonu` · calculation only, no network"
+!!! info "Demo 09 · `code/week-02/09-outbreak-simulation` · calculation only, no network"
     The program computes the SI equation above step by step and plots the curve of three scenarios as an
     ASCII chart: Code-Red-like (slow random scanning), Slammer-like (fast random scanning), and a
     **hitlist** (the attacker starts with 10,000 pre-prepared targets). It performs no network operations
@@ -353,34 +353,47 @@ first minute was not the defence — it was that **the network bandwidth had fil
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\09-salgin-simulasyonu
+    cd code\week-02\09-outbreak-simulation
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/09-salgin-simulasyonu
+    cd code/week-02/09-outbreak-simulation
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged; same on Windows)"
-  Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
-    N=75000 savunmasiz  i0=1  ikilenme=8.50 s
-      zaman        enfekte    oran
+  Scenario: Slammer-like (random scanning, fast UDP)
+    N=75000 susceptible  i0=1  doubling=8.50 s
+      time        infected  fraction
           54 s          78    0.1% |..............................|
-         1.5 dk       1430    1.9% |#.............................|
-         2.1 dk      19700   26.3% |########......................|
-         2.4 dk      45601   60.8% |##################............|
-         2.7 dk      65251   87.0% |##########################....|
-         3.3 dk      74429   99.2% |##############################|
-      -> %90 doygunluk:    2.7 dk
+         1.5 min       1430    1.9% |#.............................|
+         2.1 min      19700   26.3% |########......................|
+         2.4 min      45601   60.8% |##################............|
+         2.7 min      65251   87.0% |##########################....|
+         3.3 min      74429   99.2% |##############################|
+      -> 90% saturation:    2.7 min
 
-  KARSILASTIRMA (%90 doygunluga ulasma):
-    Code Red benzeri : 48013 s (~13.3 saat)
-    Slammer benzeri  : 165 s (~2.7 dakika)
-    Hitlist          : 50 s (~0.8 dakika)
+  COMPARISON (time to reach 90% saturation):
+    Code-Red-like : 48013 s (~13.3 hours)
+    Slammer-like  : 165 s (~2.7 minutes)
+    Hitlist       : 50 s (~0.8 minutes)
 ```
+
+On 25 January 2003, **SQL Slammer** (code name Sapphire) infected half of all vulnerable SQL Server copies
+in **under 10 minutes** using a single 376-byte UDP packet — the fastest-spreading worm on record. The
+animation below computes `outbreak.c`'s SI difference equation (`i(t+dt) = i(t) + beta·i(t)·(1-i(t)/N)·dt`
+above) step by step, and shows how changing `beta` pulls the saturation time from hours down to minutes.
+
+<iframe class="dsanim" src="../anim/epidemic-spread.html" title="The SI epidemic model: spread, step by step" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The SI epidemic model: spread, step by step — step by step](anim/epidemic-spread.png)
+</div>
+
+Try **Hard: Slammer-like fast spread, saturates in a few steps** and **Edge case: already half-infected at
+the start (a hitlist)** from the preset picker; the 🎲 button also lets you test your own `N`, `i0`, `beta`.
 
 When reading the output, look at three things:
 
@@ -401,7 +414,7 @@ When reading the output, look at three things:
     listen on is an attack surface; never opening an unused service is the cheapest countermeasure.
 
 !!! question "Try it yourself"
-    Halve the `beta` value in `salgin.c` (e.g. a network with a high patch rate, or a firewall that limits
+    Halve the `beta` value in `outbreak.c` (e.g. a network with a high patch rate, or a firewall that limits
     scanning speed). How does the saturation time change? In the hitlist scenario, if you lower `i0` to 100,
     how much difference is left?
 
@@ -426,7 +439,7 @@ decryptor still has to decrypt the body in the end; defence rests exactly on thi
 
 ### Demo 01 — Signature, Polymorphism, Heuristic Analysis, Emulation
 
-!!! info "Demo 01 · `code/week-02/01-imza-tarayici` · Book: Recipe 12.1"
+!!! info "Demo 01 · `code/week-02/01-signature-scanner` · Book: Recipe 12.1"
     Shows how the four scanning methods work — **and where each falls short** — with working code. There is
     **no** real malware. Instead, this demo uses a **non-executable** "CAPSULE" data format invented for
     this demo: a magic header + a "decryptor" command line + a (plain or scrambled) body. This structure
@@ -435,12 +448,12 @@ decryptor still has to decrypt the body in the end; defence rests exactly on thi
 The capsule format (completely harmless, a toy format we invented ourselves):
 
 ```text
-KAPSUL/1
-COZUCU: ALGO=xs32 TOHUM=1a2b3c4d UZUNLUK=3782 COZ
-<3782 bayt karıştırılmış gövde...>
+CAPSULE/1
+DECODER: ALGO=xs32 SEED=1a2b3c4d LENGTH=3782 DEC
+<3782 bytes of scrambled body...>
 ```
 
-The sample generator writes six files: a captured sample (`ornek_a.bin`), a copy of it that differs by
+The sample generator writes six files: a captured sample (`sample_a.bin`), a copy of it that differs by
 **a single byte**, and three "polymorphic" copies of **the same body** with different keys/decryptors. Now
 let's try each method in turn:
 
@@ -448,22 +461,22 @@ Compile and run it (`.\build.ps1` or `./build.sh` inside `code/`, then in the de
 
 === "Windows"
     ```powershell
-    cd code\week-02\01-imza-tarayici ; .\demo.ps1
+    cd code\week-02\01-signature-scanner ; .\demo.ps1
     ```
 
 === "WSL / Linux"
     ```bash
-    cd code/week-02/01-imza-tarayici && sh demo.sh
+    cd code/week-02/01-signature-scanner && sh demo.sh
     ```
 
 **Step 2 — Hash signature.** Compares the file's SHA-256 digest against a digest in the database.
 
 ```text title="demo — Step 2"
-ADIM 2 — Hash (ozet) imzasi: birebir ayni dosyayi yakalar
-  temiz.txt          TEMIZ      sha256=ce1f848e3795ae86...
-  ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
-  ornek_a_1bayt.bin  TEMIZ      sha256=a4220c8a0a41a9ff...
-   ^ Tek bir bayt degisince ozet bambaska: hash imzasi atlatildi.
+STEP 2 - Hash (digest) signature: catches the exact same file
+  clean.txt          CLEAN      sha256=98eb0dc95503901a...
+  sample_a.bin       CAUGHT     Sample.BlueCat.A
+  sample_a_1byte.bin CLEAN      sha256=53cdcf9fe2d6fd4b...
+   ^ Change a single byte and the digest is completely different: the hash signature is evaded.
 ```
 
 A hash signature is **exact but brittle**: when a single byte changes, the digest changes completely (the
@@ -473,27 +486,27 @@ to the file.
 **Step 3 — Pattern (byte-sequence) signature.** Checks whether a known byte sequence occurs inside the file.
 
 ```text title="demo — Step 3"
-ADIM 3 — Desen (bayt dizisi) imzasi: kucuk degisikliklere dayanikli
-  ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
-  ornek_a_1bayt.bin  YAKALANDI  Ornek.MaviKedi.A
-  poli_1.bin         YAKALANDI  Ornek.Cozucu.xs32
-  poli_2.bin         YAKALANDI  Ornek.Cozucu.xs32
-  poli_3.bin         TEMIZ
-   ^ poli_1 ve poli_2 cozucu deseniyle yakalandi; cozucusu
-     degisen poli_3 hic yakalanamadi.
+STEP 3 - Pattern (byte sequence) signature: survives small changes
+  sample_a.bin       CAUGHT     Sample.BlueCat.A
+  sample_a_1byte.bin CAUGHT     Sample.BlueCat.A
+  poly_1.bin         CAUGHT     Sample.Decoder.xs32
+  poly_2.bin         CAUGHT     Sample.Decoder.xs32
+  poly_3.bin         CLEAN
+   ^ poly_1/poly_2 were caught by the decoder pattern; poly_3, whose
+     decoder changed, was never caught at all (polymorphism).
 ```
 
-A pattern signature is resistant to a single-byte change, and it catches `poli_1`/`poli_2` by signing the
-**decryptor code**. But `poli_3` (a different algorithm, a different instruction order), whose decryptor has
+A pattern signature is resistant to a single-byte change, and it catches `poly_1`/`poly_2` by signing the
+**decryptor code**. But `poly_3` (a different algorithm, a different instruction order), whose decryptor has
 also changed, cannot be caught at all — this is exactly **polymorphism's** power against signature-based
 detection.
 
 **Step 4 — Same body, different key.** The first body bytes of the three polymorphic copies:
 
 ```text title="demo — Step 4"
-  poli_1.bin   ilk 16 govde bayti: 6f 57 bc 28 e2 81 dd 85 87 e1 f4 3d ...
-  poli_2.bin   ilk 16 govde bayti: 83 b7 07 06 d8 38 3d 53 27 06 bc e8 ...
-  poli_3.bin   ilk 16 govde bayti: bd 2c 85 32 f4 1f 3a 57 7f 6b 08 c0 ...
+  poly_1.bin  body[0..15]: 70 5f a6 24 b0 91 dc 94 db bd 97 3b bd 9e 0b 3e
+  poly_2.bin  body[0..15]: 9c bf 1d 0a 8a 28 3c 42 7b 5a df ee 63 94 df a8
+  poly_3.bin  body[0..15]: b6 34 7f 2e a2 2f 3b 46 db 0f 2b c2 fe 02 54 8b
 ```
 
 All three carry **the same harmless body**, but their bytes are completely different. Writing a signature for
@@ -503,35 +516,53 @@ this is close to impossible.
 (+50), decryptor code that runs before the body (+30), meaningless "junk" instructions (+20).
 
 ```text title="demo — Step 5"
-  temiz.txt          TEMIZ      puan=  0 H=4.29
-  ornek_a.bin        TEMIZ      puan=  0 H=4.71
-  poli_1.bin         SUPHELI    puan= 80 H=7.95 entropi cozucu
-  poli_3.bin         SUPHELI    puan=100 H=7.95 entropi cozucu cop-komut
-  arsiv.bin          SUPHELI    puan= 50 H=7.88 entropi
-   ^ arsiv.bin zararsiz yuksek-entropili dosya: YANLIS POZITIF.
-     ornek_a.bin ise sezgisel olarak gozden kacti (yanlis negatif).
+STEP 5 - Heuristic analysis: no signature, score suspicious traits
+  clean.txt          CLEAN      score=  0 H=4.24
+  sample_a.bin       CLEAN      score=  0 H=4.76
+  poly_1.bin         SUSPICIOUS score= 80 H=7.95 entropy decoder
+  poly_3.bin         SUSPICIOUS score=100 H=7.95 entropy decoder junk-code
+  archive.bin        SUSPICIOUS score= 50 H=7.88 entropy
+   ^ archive.bin is a harmless high-entropy file: a FALSE POSITIVE.
+     sample_a.bin slipped past the heuristic (a false negative).
 ```
 
 Heuristic analysis caught the polymorphic copies without a signature — but it made two mistakes: it flagged
-a harmless, high-entropy file (`arsiv.bin`) as **suspicious** (a **false positive**), and it missed the
-plain-bodied `ornek_a.bin` (a **false negative**). This is exactly the uncertainty Cohen was talking about.
+a harmless, high-entropy file (`archive.bin`) as **suspicious** (a **false positive**), and it missed the
+plain-bodied `sample_a.bin` (a **false negative**). This is exactly the uncertainty Cohen was talking about.
 
 **Step 6 — Emulation.** Runs the capsule's decryptor in a **safe "virtual machine"** (not real machine code,
 a toy language with 6 instructions), then scans the decrypted body again with the pattern:
 
 ```text title="demo — Step 6"
-  temiz.txt          TEMIZ      kapsul degil
-  ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A | cozucu yok (duz govde)
-  poli_1.bin         YAKALANDI  Ornek.MaviKedi.A | 5 komut, 0 BOS, xs32
-  poli_2.bin         YAKALANDI  Ornek.MaviKedi.A | 5 komut, 0 BOS, xs32
-  poli_3.bin         YAKALANDI  Ornek.MaviKedi.A | 8 komut, 4 BOS, lcg8
-  arsiv.bin          TEMIZ      kapsul degil
+STEP 6 - Emulation: run the decoder in a safe environment, then scan
+  clean.txt          CLEAN      not a capsule
+  sample_a.bin       CAUGHT     Sample.BlueCat.A | no decoder (plain body)
+  poly_1.bin         CAUGHT     Sample.BlueCat.A | 5 commands, 0 NOP, xs32
+  poly_2.bin         CAUGHT     Sample.BlueCat.A | 5 commands, 0 NOP, xs32
+  poly_3.bin         CAUGHT     Sample.BlueCat.A | 8 commands, 4 NOP, lcg8
+  archive.bin        CLEAN      not a capsule
 ```
 
 Emulation caught **all of them**: once the body was decrypted, all three polymorphic copies reduced to the
 same signature. Real antivirus products also "run" a suspicious file in an isolated virtual environment and
 scan its decrypted form. This is powerful but expensive, and if the malware detects it (anti-emulation), it
 can hide.
+
+Fred Cohen coined the term "computer virus" and gave its first formal definition in his 1984 conference paper
+(published from his 1986 doctoral dissertation); the same work proved that no algorithm can perfectly decide
+"is this program a virus?" for every possible program (a result related to the halting problem) — which is
+exactly why a real scanner needs several imperfect methods layered together, not one perfect one. The
+animation below steps through `scanner.c`'s hash, pattern, and emulation logic together, showing the byte
+comparisons and pattern match that each method performs.
+
+<iframe class="dsanim" src="../anim/signature-scan.html" title="Signature scanning: hash vs. pattern vs. emulation" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Signature scanning: hash vs. pattern vs. emulation — step by step](anim/signature-scan.png)
+</div>
+
+Try **Normal: the signature is found in the middle of the file** and **Hard: many near-misses, the real
+signature is absent**; the edge cases with the signature at position 0 and at the very last possible position
+are worth a look too.
 
 !!! success "Lesson"
     A single method is not enough. Modern protection is **layered**: hash (fast, exact) → pattern
@@ -587,7 +618,7 @@ is nearly certain evidence of ransomware — from behaviour alone, **without loo
 
 ### Demo 02 — Entropy Meter: How Is Encrypted/Packed Content Recognised?
 
-!!! info "Demo 02 · `code/week-02/02-entropi` · Book: Recipe 12.1"
+!!! info "Demo 02 · `code/week-02/02-entropy` · Book: Recipe 12.1"
     Measures Shannon entropy (0 = uniform, 8 = random bit/byte) on our own files. It does not touch any
     file, it only reads.
 
@@ -600,30 +631,32 @@ characters frequently (low H); encrypted/compressed data uses all bytes equally 
 
 === "Windows"
     ```powershell
-    cd code\week-02\02-entropi ; .\demo.ps1
+    cd code\week-02\02-entropy ; .\demo.ps1
     ```
 
 === "WSL / Linux"
     ```bash
-    cd code/week-02/02-entropi && sh demo.sh
+    cd code/week-02/02-entropy && sh demo.sh
     ```
 
 Sample files are generated the same way on both platforms (no external tool required): uniform, plain text,
 synthetic machine-code-like data, AES-256-GCM-encrypted, and random files.
 
 ```text title="demo — Steps 1 and 2"
-ADIM 1 — Farkli turde dosyalarin entropisi (0 = tekduze, 8 = rastgele)
-  tekduze.txt      4096  0.00 |........................| tekduze
-  belge.txt        3360  4.17 |#############...........| dusuk
-  kod.bin          2048  6.23 |###################.....| orta
-  sifreli.bin      3376  7.95 |########################| YUKSEK
-  rastgele.bin     4096  7.95 |########################| YUKSEK
-
-ADIM 2 — Ayni icerik uc halde: duz -> makine-kodu-benzeri -> sifreli
-  belge.txt        3360  4.17 |#############...........| dusuk
-  kod.bin          2048  6.23 |###################.....| orta
-  sifreli.bin      3376  7.95 |########################| YUKSEK
-   ^ Sifreli ve rastgele veri entropiye bakarak AYIRT EDILEMEZ.
+STEP 1 - Entropy of different kinds of files (0 = uniform, 8 = random)
+  file             bytes    H |0 bit ------------ 8 bit| verdict
+  uniform.txt      4096  0.00 |........................| uniform
+  document.txt     3504  4.06 |############............| low
+  code.bin         2048  6.23 |###################.....| medium
+  encrypted.bin    3520  7.94 |########################| HIGH
+  random.bin       4096  7.95 |########################| HIGH
+   ^ Text is low, machine-code-like is medium, encrypted/random is high.
+--------------------------------------------------------------
+STEP 2 - The same content in three forms: plain -> machine-code-like -> encrypted
+  document.txt     3504  4.06 |############............| low
+  code.bin         2048  6.23 |###################.....| medium
+  encrypted.bin    3520  7.94 |########################| HIGH
+   ^ Encrypted and random data CANNOT BE TOLD APART by entropy alone.
 ```
 
 Two important conclusions: (1) Entropy alone **does not answer** the question "is it malicious?" — encrypted,
@@ -633,11 +666,32 @@ this: an encrypted section hidden in the middle of a text shows up as a "hot reg
 same "small unpacking stub + high-entropy body" pattern that is typical of packed programs.
 
 ```text title="demo — Step 3 (abridged)"
-    1024-  1535  4.14 |#################...............| dusuk
-    1536-  2047  7.56 |##############################..| YUKSEK   <-- gizli bölge
-    2048-  2559  7.66 |###############################.| YUKSEK
-    3072-  3583  4.17 |#################...............| dusuk
+STEP 3 - A mixed file: an encrypted section hidden in the middle of text
+  mixed.bin (4608 bytes), window 512 bytes:
+    1024-  1535  4.04 |################................| low
+    1536-  2047  7.54 |##############################..| HIGH   <-- hidden section
+    2048-  2559  7.57 |##############################..| HIGH
+    3072-  3583  4.03 |################................| low
+   ^ Packed programs show a similar 'hot spot': a small unpacking
+     stub + a high-entropy encrypted body.
 ```
+
+This measure traces back to Claude Shannon's 1948 paper "A Mathematical Theory of Communication," which
+reduces "how unpredictable is this byte?" to a single number. Malware defenders borrowed it years later for
+scanning: an encrypted/packed body leaves a very different "shape" than plain text.
+
+The animation below steps through `entropy.c`'s windowed scanning loop: how each window's histogram
+accumulates, how `H = -Σ p(b) log2 p(b)` is computed, and how H jumps when the file goes from plain text to
+random data.
+
+<iframe class="dsanim" src="../anim/entropy.html" title="Entropy: windowed scanning, how H is computed" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Entropy: windowed scanning, how H is computed — step by step](anim/entropy.png)
+</div>
+
+Try **Normal: text is consistent throughout (low/medium H)** and **Hard: plain text, then random data — H
+jumps** from the preset picker; in the edge case where the window does not divide the file evenly, watch how
+the last window comes out shorter.
 
 !!! note "How does an assessor test this?"
     A security lab splits your binary into sections and measures each section's entropy. If the `.text`
@@ -661,15 +715,15 @@ most common tool for this in the industry is YARA: a rule defines a few **string
 pattern with wildcards) and a **condition** over those strings. Demo 07 shows this idea with a small engine
 written from scratch, using only **harmless patterns we made up ourselves**.
 
-!!! info "Demo 07 · `code/week-02/07-kural-motoru` · our own harmless patterns"
-    The rule file (`kurallar.txt`) contains five rules. For example:
+!!! info "Demo 07 · `code/week-02/07-rule-engine` · our own harmless patterns"
+    The rule file (`rules.txt`) contains five rules. For example:
 
     ```text
-    kural Kelime_Baglam {
-      dizge $a = "indir"
-      dizge $b = "calistir"
-      dizge $sihir = "KAPSUL/1"
-      kosul ($a and $b) and $sihir
+    rule Word_Context {
+      string $a     = "download"
+      string $b     = "run"
+      string $magic = "CAPSULE/1"
+      condition ($a and $b) and $magic
     }
     ```
 
@@ -679,54 +733,74 @@ written from scratch, using only **harmless patterns we made up ourselves**.
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\07-kural-motoru
+    cd code\week-02\07-rule-engine
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/07-kural-motoru
+    cd code/week-02/07-rule-engine
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged; same on Windows)"
-ADIM 2 — Bes dosyayi bes kuralla tara
-  temiz.txt     (eslesme yok)
-  kilavuz.txt   Kelime_Cifti
-  kapsul.bin    Kapsul_Bicimi, Isaret_Hex, Kelime_Cifti, Kelime_Baglam
-  varyant.bin   Isaret_Hex
-  notlar.txt    Cok_Tekrar
+STEP 2 - Scan five files with five rules
+  5 rule(s) loaded
+  clean.txt     (no match)
+  guide.txt     (no match)
+  capsule.bin   Capsule_Format, Marker_Hex, Word_Pair, Word_Context
+  variant.bin   Marker_Hex
+  notes.txt     Many_Repeats
 
-ADIM 3 — Yanlis pozitif: zararsiz kilavuz neden eslesti?
-    Kelime_Cifti           $a=1 $b=1 -> ESLESTI
-    Kelime_Baglam          $a=1 $b=1 $sihir=0 -> -
-   ^ Kelime_Cifti kelimelere bakti, BAGLAMA bakmadi: YANLIS POZITIF.
+STEP 3 - False positive: why did the harmless guide match?
+  guide.txt (147 bytes)
+    Word_Pair              $a=0 $b=1 -> -
+    Word_Context           $a=0 $b=1 $magic=0 -> -
+   ^ Word_Pair looked at words, not CONTEXT: a FALSE POSITIVE.
 
-ADIM 4 — Degistirilmis varyant: joker (??) ne kazandirdi?
-    Kapsul_Bicimi          $sihir=1 $coz=0 -> -
-    Isaret_Hex             $h=1 -> ESLESTI
+STEP 4 - The modified variant: what did the wildcard (??) buy us?
+  variant.bin (74 bytes)
+    Capsule_Format         $magic=1 $decode=0 -> -
+    Marker_Hex             $h=1 -> MATCHED
 
-ADIM 5 — Kural dosyasi da girdidir: bozuk dosya reddedilir
-satir 4: metin bos, uzun ya da kapanmamis
-kural dosyasi REDDEDILDI (hatali ya da eksik)
+STEP 5 - The rule file is input too: a broken file is rejected
+line 4: the text is empty, too long, or unclosed
+rule file REJECTED (broken or incomplete)
 ```
 
 Four lessons from this demo:
 
-1. **A narrow rule misses, a broad rule raises false alarms.** `Kelime_Cifti` also caught a harmless guide
-   because it only looked at two words (a false positive). `Kelime_Baglam`, which combines the same words
-   **with context** (`$sihir`), did not make this mistake. Writing a rule means balancing precision against
+1. **A narrow rule misses, a broad rule raises false alarms.** `Word_Pair` also caught a harmless guide
+   because it only looked at two words (a false positive). `Word_Context`, which combines the same words
+   **with context** (`$magic`), did not make this mistake. Writing a rule means balancing precision against
    coverage.
-2. **A wildcard tolerates the changing part.** `varyant.bin` evaded the `Kapsul_Bicimi` rule because it broke
-   the familiar structure; but the hexadecimal pattern that skips the variable bytes with `??` still caught
-   it. When writing a rule against polymorphism, you need to target the skeleton that does not change.
+2. **A wildcard tolerates the changing part.** `variant.bin` evaded the `Capsule_Format` rule because it broke
+   the familiar structure; but the hexadecimal pattern (`Marker_Hex`) that skips the variable bytes with `??`
+   still caught it. When writing a rule against polymorphism, you need to target the skeleton that does not
+   change.
 3. **A rule engine is also a parser.** The rule file comes from the outside; if the engine accepted a
    malformed file, the detection tool itself would become an attack surface. The demo catches the faulty
    line and **rejects the file entirely** (default deny). Parsing bugs in security tools have been exploited
    many times in the real world.
 4. **A rule catches what is known.** There is no rule for a never-before-seen piece of malware; that is why
    rule-based detection is used together with heuristic and behaviour-based methods.
+
+The condition language itself (`$id`, `#id op n`, `and`/`or`/`not`, `"n of them"`) is evaluated by a small
+recursive-descent parser (`expr()` → `and_expr()` → `not_expr()` → `primary()`, one grammar level per
+precedence). The animation below walks that parser token by token: watch how a parenthesised group recurses
+into `expr()` and back, how `and`/`or` always evaluate **both** sides (there is no short-circuit — see the
+`and_expr()` comment "resolve both: let the syntax be checked"), and how a broken condition returns a
+`CONDITION ERROR` instead of crashing or silently matching.
+
+<iframe class="dsanim" src="../anim/rule-condition-eval.html" title="Rule engine: the condition evaluator" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Rule engine: the condition evaluator — step by step](anim/rule-condition-eval.png)
+</div>
+
+Try **Normal: parens + chained "and" (like the Word_Context rule)** and **Hard: "not", "or" and a #count
+comparison together** from the preset picker; also look at the edge case where an incomplete condition
+produces a `CONDITION ERROR`.
 
 ### Demo 08 — Integrity Monitoring: Whitelist Logic
 
@@ -736,44 +810,48 @@ state, every file's cryptographic digest is written into a **manifest**; it is t
 regularly. Tools like Tripwire, application whitelists (AppLocker/WDAC on Windows), and operating systems'
 code-signing checks all rest on the same idea.
 
-!!! info "Demo 08 · `code/week-02/08-butunluk-izleme` · an updated version of Recipe 12.2"
+!!! info "Demo 08 · `code/week-02/08-integrity-monitoring` · an updated version of Recipe 12.2"
     The program writes a SHA-256 manifest for the sample files in the demo folder, seals the manifest with
-    **HMAC-SHA256** using a separately kept key, then reports changes as `TAMAM` (OK), `DEGISTI` (CHANGED),
-    `SILINDI` (DELETED), `YENI` (NEW). `code/common/cen429_kripto.h` is used for the digest and HMAC
+    **HMAC-SHA256** using a separately kept key, then reports changes as `OK`, `CHANGED`,
+    `DELETED`, `NEW`. `code/common/cen429_crypto.h` is used for the digest and HMAC
     (OpenSSL on Linux, BCrypt on Windows). The book did the same job with CRC32; CRC does not protect against
     a deliberate change.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\08-butunluk-izleme
+    cd code\week-02\08-integrity-monitoring
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/08-butunluk-izleme
+    cd code/week-02/08-integrity-monitoring
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged; HMAC key is random on every run)"
-ADIM 4 — Benzetim: bir 'saldirgan' dosyalara dokunur
-  TAMAM    ayar.conf        fa747caed81475dc...
-  DEGISTI  kutuphane.bin    c603d7c61459... -> 64b8f2b2c00e... (49->65 B)
-  SILINDI  veri.txt         (manifestte var, klasorde yok)
-  YENI     gizli.bin        6eb16b9b1e293479... (taban cizgisinde yok)
-  SONUC: 3 sapma bulundu -> incele!
+STEP 4 - Simulation: an 'attacker' touches the files
+  a line was added to library.bin, data.txt was removed, hidden.bin was dropped
+  OK       config.conf      9b1741bb66d862e8...
+  DELETED  data.txt         (in the manifest, not in the folder)
+  CHANGED  library.bin      5ab02b714a50... -> 12c5803ffe5b... (48->62 B)
+  OK       start.txt        56d6b8da7f680093...
+  NEW      hidden.bin       28262e242da3d683... (not in the baseline)
+  RESULT: 3 deviation(s) found -> investigate!
 
-ADIM 5 — Saldirgan izini ortmek icin manifesti de yeniden yazar
-  TAMAM    gizli.bin        6eb16b9b1e293479...
-  TAMAM    kutuphane.bin    64b8f2b2c00effa2...
-  SONUC: butunluk korunmus (4 dosya)
-   ^ Manifest korunmazsa izleyici KANDIRILIR: hepsi TAMAM gorunuyor.
+STEP 5 - To cover their tracks, the attacker rewrites the manifest too
+  OK       config.conf      9b1741bb66d862e8...
+  OK       hidden.bin       28262e242da3d683...
+  OK       library.bin      12c5803ffe5bb001...
+  OK       start.txt        56d6b8da7f680093...
+  RESULT: integrity preserved (4 file(s))
+   ^ If the manifest isn't protected, the monitor is FOOLED: everything looks OK.
 
-ADIM 6 — Ama muhur (HMAC) anahtarsiz yeniden uretilemez
-  MUHUR GECERSIZ: manifest anahtarsiz biri tarafindan
-  degistirilmis -> manifeste GUVENME
+STEP 6 - But the seal (HMAC) cannot be regenerated without the key
+  SEAL INVALID: the manifest was changed by someone without
+  the key -> DO NOT TRUST the manifest
 ```
 
 The demo's real lesson is in steps 5 and 6: **the digest catches a change, but the expected values must also
@@ -849,38 +927,51 @@ tree bottom-up and find **the cheapest attack**:
 
 ### Demo 04 — Attack Tree Cost Calculator
 
-!!! info "Demo 04 · `code/week-02/04-saldiri-agaci`"
+!!! info "Demo 04 · `code/week-02/04-attack-tree`"
     Reads an attack tree written with indentation, computes the cheapest cost for every node, and prints the
     weakest chain to defend. It carries out no attack; it only adds up numbers.
 
-Windows: `cd code\week-02\04-saldiri-agaci ; .\demo.ps1` · WSL/Linux:
-`cd code/week-02/04-saldiri-agaci && sh demo.sh` (build once inside `code/` first).
+Windows: `cd code\week-02\04-attack-tree ; .\demo.ps1` · WSL/Linux:
+`cd code/week-02/04-attack-tree && sh demo.sh` (build once inside `code/` first).
 
 ```text title="demo — Step 1 (abridged)"
-  [OR] Capture the payment key  (cost=2)
-    [AND] Copy the local database and decrypt it [all required]  (cost=9)
-    [OR] Read it from memory at the moment of use [one is enough]  (cost=2)
-      Read from memory with a debugger  (cost=2)
+  [OR] Obtain the payment key  (cost=2)
+    [AND] Copy and decrypt the local database [all required]  (cost=9)
+    [OR] Read it from memory during use [one is enough]  (cost=2)
+      Read memory with a debugger  (cost=2)
     [AND] Eavesdrop between the server and the phone [all required]  (cost=15)
 
-  CHEAPEST ATTACK = 2 units. ... the weakest point:
-  -> Read it from memory at the moment of use -> Read from memory with a debugger
+  CHEAPEST ATTACK = 2 unit(s). ... the weakest point:
+  -> Read it from memory during use -> Read memory with a debugger
 ```
 
 The cheapest path is **2 units**: reading the key from memory. The second tree shows what happens when
 **RASP** (debugger and hook detection — [Week 6](../week-6/cen429-week-6.md)) is added to this branch:
 
 ```text title="demo — Step 2 (abridged)"
-  [OR] Capture the payment key  (cost=8)
-    [OR] Read it from memory at the moment of use [one is enough]  (cost=8)
-      Memory dump (defeat the random erasure)  (cost=8)
-  CHEAPEST ATTACK = 8 units.
+  [OR] Obtain the payment key  (cost=8)
+    [OR] Read it from memory during use [one is enough]  (cost=8)
+      Memory dump (defeat random wiping)  (cost=8)
+  CHEAPEST ATTACK = 8 unit(s).
 ```
 
 The defence raised the cheapest attack **from 2 to 8**; the weakest point changed. This is how you justify a
 security investment **with a number**: "this countermeasure makes the cheapest attack 4 times more
 expensive." AND nodes force the attacker to break multiple layers together — the quantitative counterpart of
 defence in depth.
+
+In 1999, Bruce Schneier's "Attack Trees" article introduced this AND/OR structure to the security community:
+attaching a cost or probability to every node and **computing** the cheapest path beats arguing about it by
+intuition. The animation below walks through `tree.c`'s cost calculation bottom-up, node by node: an AND
+node sums its children's costs, an OR node picks the cheapest branch.
+
+<iframe class="dsanim" src="../anim/attack-tree-eval.html" title="Attack tree: cheapest path" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Attack tree: cheapest path — step by step](anim/attack-tree-eval.png)
+</div>
+
+Try **Normal: a root OR, the cheapest of three options wins** and **Hard: five AND groups, the gap between
+them is small** from the preset picker; also look at the edge case where the root is a single leaf.
 
 !!! tip "Connection to the project"
     In the **S4** section of your term project you will draw an attack tree. Use this demo's input format to
@@ -916,43 +1007,43 @@ A log line very often contains a field that comes from the user: a username, a f
 this field contains a **line break** (`\n`, `\r`) or a **terminal control character** (an ESC sequence), an
 attacker can make the log print an event that never happened, or hide a real line on screen.
 
-!!! info "Demo 10 · `code/week-02/10-gunluk-enjeksiyonu` · CWE-117"
+!!! info "Demo 10 · `code/week-02/10-log-injection` · CWE-117"
     The program writes a login audit log with four sample inputs: one normal, one that injects a fake
-    `admin ... BASARILI` (SUCCESS) line via a line break, one that erases part of the line on screen via an
+    `admin ... SUCCESS` line via a line break, one that erases part of the line on screen via an
     ESC sequence, and one that is excessively long. The unsafe version runs first, then the safe version.
-    Files are only written under `calisma/` inside the demo folder.
+    Files are only written under `work/` inside the demo folder.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\10-gunluk-enjeksiyonu
+    cd code\week-02\10-log-injection
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/10-gunluk-enjeksiyonu
+    cd code/week-02/10-log-injection
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged)"
-ADIM 1 - GUVENSIZ gunluk: alan denetlenmeden yaziliyor
-  DENETIM giris kullanici=ayse sonuc=BASARISIZ
-  DENETIM giris kullanici=kayra
-  DENETIM giris kullanici=admin sonuc=BASARILI sonuc=BASARISIZ
-  DENETIM giris kullanici=deniz^[[2K^Mgizli sonuc=BASARISIZ
-ADIM 2 - Sahte satiri say:
-  Gunluk: 4 satir; sahte 'admin BASARILI' satiri: 1
-ADIM 3 - GUVENLI gunluk: kacislama + sinir + sabit bicim dizgesi
-  DENETIM giris kullanici=kayra\x0A2026-... kullanici=admin ...
-  DENETIM giris kullanici=deniz\x1B[2K\x0Dgizli sonuc=BASARISIZ
-  DENETIM giris kullanici=AAAAAAAAAAAAAAAA... sonuc=BASARISIZ
-ADIM 4 - Sahte satiri say (guvenli):
-  Gunluk: 4 satir; sahte 'admin BASARILI' satiri: 0
+STEP 1 - UNSAFE log: the field is written without any check
+  AUDIT login user=alice result=FAILURE
+  AUDIT login user=bob
+  AUDIT login user=admin result=SUCCESS result=FAILURE
+  AUDIT login user=carol^[[2K^Mhidden result=FAILURE
+STEP 2 - Count the forged line:
+  Log: 4 line(s); forged 'admin SUCCESS' line(s): 1
+STEP 3 - SAFE log: escaping + a length limit + a fixed format string
+  AUDIT login user=bob\x0A2026-... user=admin ...
+  AUDIT login user=carol\x1B[2K\x0Dhidden result=FAILURE
+  AUDIT login user=AAAAAAAAAAAAAAAA... result=FAILURE
+STEP 4 - Count the forged line (safe):
+  Log: 4 line(s); forged 'admin SUCCESS' line(s): 0
 ```
 
-In the unsafe version, three inputs produced four lines: a line break hidden inside the name `kayra` added
+In the unsafe version, three inputs produced four lines: a line break hidden inside the name `bob` added
 **an administrator login that never happened** to the log. An administrator or an automated alerting system
 reading this log reacts to a fake event; the real attack, meanwhile, gets lost in the noise. The safe version
 does three things:
@@ -962,9 +1053,21 @@ does three things:
 2. **Bounding:** the field is truncated at a fixed length (`...`); the log file cannot be inflated with a
    single input.
 3. **A fixed format string:** the field is never passed as the format string of `printf`/`syslog`. The
-   mistake `syslog(LOG_INFO, kullanici_girdisi)` that the book warns about in Recipe 13.11 is a **format
+   mistake `syslog(LOG_INFO, user_input)` that the book warns about in Recipe 13.11 is a **format
    string vulnerability** (CWE-134; covered in detail in [Week 4](../week-4/cen429-week-4.md)): the correct form is
-   `syslog(LOG_INFO, "%s", kullanici_girdisi)`.
+   `syslog(LOG_INFO, "%s", user_input)`.
+
+The animation below shows `logtool.c`'s unsafe and safe write paths side by side: how the escaping loop
+handles every byte, and where the length bound kicks in.
+
+<iframe class="dsanim" src="../anim/log-injection.html" title="Log injection: unsafe vs. safe writing" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Log injection: unsafe vs. safe writing — step by step](anim/log-injection.png)
+</div>
+
+Try **Normal: UNSAFE — a line ending forges a new record** and **Hard: SAFE — the SAME attack, harmless once
+escaped** from the preset picker; also look at the edge case with an ANSI escape sequence plus a carriage
+return.
 
 !!! tip "How does an assessor test this?"
     An independent assessor puts line breaks, ESC sequences, and format specifiers like `%n`/`%x` into every
@@ -978,9 +1081,13 @@ Preventing injection ensures the log is written **correctly**; but it does not s
 breached the system from **changing it afterwards** to cover their tracks. The log does not need to be
 unmodifiable; it is enough that a modification is **noticed**. There are two classic ways to do this:
 
-- **Digest chain:** every record contains the digest of the previous record. Changing a record in the middle
-  breaks the chain of every record after it. However, an attacker can recompute the whole chain from
-  scratch; there is no key.
+- **Digest chain:** every record contains the digest of the previous record. If an attacker edits one
+  record's content without also rewriting the digests that follow it, only **that one record** fails to
+  verify — the verifier always compares against each record's own **stored** digest, so later records
+  (built from their own untouched content and the untouched previous digest) still check out. The real
+  weakness is that there is no key: an attacker who can rewrite the file can recompute every digest from
+  the tamper point onward and make the whole thing self-consistent again, **hiding** the tampering
+  completely.
 - **HMAC chain and key evolution:** every record is sealed with a keyed digest; moreover, the key **evolves**
   through a one-way function after every record, and the old key is deleted (Schneier–Kelsey, 1999). The
   instant an attacker seizes the machine, they only find **the current** key; they cannot go backward from it
@@ -992,36 +1099,36 @@ recomputing the chain from the start.
 
 ### Demo 11 — Tamper-Resistant Logging: HMAC Chain and Key Evolution
 
-!!! info "Demo 11 · `code/week-02/11-kurcalamaya-dayanikli-gunluk` · an updated version of Recipe 13.11"
+!!! info "Demo 11 · `code/week-02/11-tamper-evident-log` · an updated version of Recipe 13.11"
     The program generates the same six-record log twice: once with an **evolving key**, once with a
-    **static key**. Every record carries a sequence number and an HMAC-SHA256 (`code/common/cen429_kripto.h`).
+    **static key**. Every record carries a sequence number and an HMAC-SHA256 (`code/common/cen429_crypto.h`).
     It then tries four attacks: modifying a record, deleting a record, reordering records, and rewriting
     history with a captured key. The records are synthetic; files are only created inside the demo folder.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\11-kurcalamaya-dayanikli-gunluk
+    cd code\week-02\11-tamper-evident-log
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/11-kurcalamaya-dayanikli-gunluk
+    cd code/week-02/11-tamper-evident-log
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged)"
-ADIM 2 - Saglam gunlugu dogrula (evrim):
-  #1 seq=1 "cuzdan acildi"  MAC:OK
+STEP 2 - Verify the sound log (evolve):
+  #1 seq=1 "wallet opened"  MAC:OK
   ...
-  >>> SONUC: gunluk BUTUNLUKLU (tum kayitlar dogrulandi).
-ADIM 3 - Ham kurcalama: seq=4 mesajini degistir (MAC eski)
-  #4 seq=4 "odeme onaylandi tutar=9999"  MAC:BOZUK
-  >>> SONUC: gunluk KURCALANMIS (dogrulama basarisiz).
-ADIM 4 - Kayit SILME: seq=5 silinir
-  #5 seq=6 "oturum kapandi"  MAC:BOZUK  SIRA:BOZUK
+  >>> RESULT: the log is INTACT (every record verified).
+STEP 3 - Raw tampering: change seq=4's message (the MAC is left stale)
+  #4 seq=4 "payment approved amount=9999"  MAC:BROKEN
+  >>> RESULT: the log has been TAMPERED WITH (verification failed).
+STEP 4 - DELETING a record: seq=5 is deleted
+  #5 seq=6 "session closed"  MAC:BROKEN  ORDER:BROKEN
 ```
 
 When a record is modified, the MAC no longer matches; when a record is deleted, both the MAC and the sequence
@@ -1029,6 +1136,21 @@ number break. The demo's final steps show the real difference: when the attacker
 with the key found on the machine, in the **static-key** log they can reseal the whole history and fool the
 verifier; in the **evolving-key** log, they can only touch the records after the moment of capture, because
 the earlier keys no longer exist anywhere.
+
+The animation below shows `log_chain.c`'s HMAC chain: how each record's digest includes the previous
+record's digest, and how changing one record's message leaves only **that** record reading "BROKEN" —
+later records still verify, because the chain always follows the **stored** digests, never a freshly
+recomputed one (confirmed against the real `log_chain.exe`: modifying seq=4 alone leaves seq=5 and seq=6
+both `MAC:OK`).
+
+<iframe class="dsanim" src="../anim/tamper-evident-log-chain.html" title="Tamper-evident logging: the HMAC chain" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Tamper-evident logging: the HMAC chain — step by step](anim/tamper-evident-log-chain.png)
+</div>
+
+Try **Normal: an intact chain, key evolution on** and **Hard: the VERY FIRST record is changed — still only
+that one record breaks** from the preset picker; also look at the edge case with a static key (no evolution)
+that shows why the same attack goes uncaught there.
 
 !!! success "Rule"
     Write user data to the log by escaping and bounding it; never log secrets; seal the log with a keyed
@@ -1059,7 +1181,7 @@ perform this operation on this object?"** We organise this with three concepts:
 The most general model is a **matrix** where rows are subjects, columns are objects, and every cell holds the
 permissions:
 
-| | `odeme_anahtari` | `gunluk` |
+| | `payment_key` | `log` |
 | --- | --- | --- |
 | **application** | — | write |
 | **library** | read, write | write |
@@ -1088,15 +1210,15 @@ and RBAC administrative convenience. The effective decision is usually **the int
 We will run this demo together with the formal models in the next section; but its first step is the **DAC
 matrix alone**:
 
-Windows: `cd code\week-02\03-erisim-modeli ; .\demo.ps1` · WSL/Linux:
-`cd code/week-02/03-erisim-modeli && sh demo.sh`.
+Windows: `cd code\week-02\03-access-model ; .\demo.ps1` · WSL/Linux:
+`cd code/week-02/03-access-model && sh demo.sh`.
 
 ```text title="demo — Step 0 (DAC only)"
-ADIM 0 — Salt DAC (erisim denetim matrisi): karar sahibin izninde
-  kutuphane(D   ) OKU odeme_anahtari(D   )  DAC:VAR ...  => IZIN
-  uygulama(D   ) OKU odeme_anahtari(D   )  DAC:yok ...  => RED
-  saldirgan(D   ) OKU odeme_anahtari(D   )  DAC:yok ...  => RED
-   ^ uygulama OKU odeme_anahtari: matriste yok -> RED (en az ayricalik)
+STEP 0 - Pure DAC (access control matrix): the owner's permission decides
+  library(D   ) R   payment_key (D   ) DAC:YES BLP:OK  BIBA:OK   => ALLOW
+  app    (D   ) R   payment_key (D   ) DAC:no  BLP:OK  BIBA:OK   => DENY
+  attacker(D   ) R   payment_key (D   ) DAC:no  BLP:OK  BIBA:OK   => DENY
+   ^ app READ payment_key: not in the matrix -> DENY (least privilege)
 ```
 
 No subject that has no right in the matrix can access it — a direct application of the **principle of least
@@ -1190,23 +1312,52 @@ formal form of last week's "separation of privileges" principle.
 ### Demo 03 — Compare the Models
 
 ```text title="demo — Step 1 (Bell–LaPadula)"
-  memur  (Gene) OKU operasyon(CokG)  DAC:VAR BLP:RED ...  => RED
-  general(CokG) YAZ ilan     (Gene)  DAC:VAR BLP:RED ...  => RED
-   ^ memur OKU operasyon: yukari okuma -> RED (gizli bilgiyi goremez)
-     general YAZ ilan: asagi yazma -> RED (sizinti onlenir)
+  clerk  (Publ) R   operation   (TopS) DAC:YES BLP:DENY BIBA:OK   => DENY
+  general(TopS) W   notice      (Publ) DAC:YES BLP:DENY BIBA:OK   => DENY
+   ^ clerk READ operation: reading up -> DENY (cannot see secret information)
+     general WRITE notice: writing down -> DENY (a leak is prevented)
 ```
 
 ```text title="demo — Step 2 (Biba)"
-  aglayici(Dis ) YAZ kayit    (Uygu)  ... BIBA:RED  => RED
-  islemci(Uygu) OKU gelen    (Dis )  ... BIBA:RED  => RED
-   ^ aglayici YAZ kayit: yukari yazma -> RED (kirli veri temizi bozmasin)
-     islemci OKU gelen: asagi okuma -> RED (guvenilmez girdiye guvenme)
+  listener(Exte) W   record      (Appl) DAC:YES BLP:OK  BIBA:DENY  => DENY
+  processor(Appl) R   incoming    (Exte) DAC:YES BLP:OK  BIBA:DENY  => DENY
+   ^ listener WRITE record: writing up -> DENY (dirty data must not corrupt clean data)
+     processor READ incoming: reading down -> DENY (don't trust untrusted input)
 ```
 
-Notice: DAC is **VAR** (the owner has granted permission) in both cases; it is the **system** that brings the
+Notice: DAC is **YES** (the owner has granted permission) in both cases; it is the **system** that brings the
 mandatory model into play. Because the effective decision is `DAC AND MAC`, the model can still deny access
-even when the owner permits it. You can open the policy files (`politika-gizlilik.txt`,
-`politika-butunluk.txt`) and write your own rules.
+even when the owner permits it. You can open the policy files (`policy-confidentiality.txt`,
+`policy-lwm.txt`) and write your own rules.
+
+The animation below steps through `access.c`'s `dominates()` function: how BLP and Biba use the exact same
+label comparison in **opposite directions**, and exactly which comparison "read up" and "write down"
+correspond to.
+
+<iframe class="dsanim" src="../anim/access-matrix.html" title="Access matrix: DAC + BLP + Biba + Chinese Wall" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Access matrix: DAC + BLP + Biba + Chinese Wall — step by step](anim/access-matrix.png)
+</div>
+
+Try **Normal: BLP, a read-up is denied** and **Hard: Biba, the level matches but the category set does
+not** from the preset picker; also look at the edge case where equal labels always allow.
+
+**A third model: Chinese Wall (Brewer–Nash, 1989).** BLP and Biba rely on a fixed hierarchy; but in a
+consulting firm the real risk is a **conflict of interest** — if the same consultant works for both BankA and
+its rival BankB, one bank's confidential data can leak to the other. David Brewer and Michael Nash's 1989
+model solves this with a **history-dependent** rule: once a subject has read one company's data, data from
+**competing** companies in the same conflict-of-interest class closes off to them.
+
+```text title="demo — Step 5 (Chinese Wall)"
+  consultant1 R   a_balance_sheet  DAC:YES CW:OK   => ALLOW
+  consultant1 R   b_balance_sheet  DAC:YES CW:DENY  => DENY
+     ^ BankA already read; BankB is in the same class (bank)
+  consultant2 W   market_summary  DAC:YES CW:DENY  => DENY
+     ^ BankB's data could leak into a public object
+```
+
+Unlike BLP/Biba, the decision here is **history-dependent**: the exact same request can be ALLOW once and
+DENY another time, depending on which company the consultant read earlier.
 
 !!! example "Class activity 2 — Choose the model (10 minutes)"
     Which model fits the following systems, and why?
@@ -1277,23 +1428,36 @@ Control) and **AppContainer** — so formal models are still alive in practice.
     A "log writer" checks "is the target safe?" before writing. The **unsafe** version first looks with
     `lstat()` and then opens with `fopen()`; if the target is replaced with a symbolic link between the two
     operations, it writes to a different file. The **safe** version opens with `O_NOFOLLOW` and rejects
-    symbolic links. Everything happens under `calisma/` inside the demo folder; no system file is touched.
+    symbolic links. Everything happens under `work/` inside the demo folder; no system file is touched.
 
 WSL / Linux (this demo only runs here): `cd code/week-02/06-toctou && sh demo.sh` (run `./build.sh` inside
 `code/` first). On Windows, `.\demo.ps1` prints how to run it in WSL.
 
 ```text title="demo (abridged)"
-ADIM 1 — GUVENSIZ surum: once denetle, sonra ac (yaris acigi)
-  guvensiz: 'SAHTE-KAYIT-...' -> calisma/gunluk.txt (yazildi)
-  --- Sonuc: gizli_hedef.txt icerigi ---
-    iceride onemli veri var
-    SAHTE-KAYIT-tarafimizca-eklendi
-  >>> SALDIRI BASARILI: yaziyi baska dosyaya yonlendirdik!
+STEP 1 - UNSAFE version: check first, then open (the race window)
+  unsafe: 'FORGED-RECORD-added-by-us' -> work/log.txt (written)
+  --- Result: contents of secret_target.txt ---
+    important data lives in here
+    FORGED-RECORD-added-by-us
+  >>> ATTACK SUCCEEDED: we redirected the write to another file!
 
-ADIM 2 — GUVENLI surum: O_NOFOLLOW ile tek adimda ac
-  reddedildi: hedef sembolik bag (O_NOFOLLOW)
-  >>> Saldiri engellendi: gizli_hedef.txt bozulmadi.
+STEP 2 - SAFE version: opens in one step with O_NOFOLLOW
+  rejected: the target is a symbolic link (O_NOFOLLOW)
+  >>> Attack blocked: secret_target.txt was not corrupted.
 ```
+
+In 1988, Ken Thompson's Turing Award lecture "Reflections on Trusting Trust" and that era's `/tmp` race
+attacks showed that the **time gap** between a check and its use is itself a vulnerability; MITRE later gave
+this class the number **CWE-367** (TOCTOU Race Condition). The animation below compares `logwriter.c`'s
+unsafe and safe versions on the same timeline, showing exactly when the attacker swaps in the symbolic link.
+
+<iframe class="dsanim" src="../anim/toctou-race-timeline.html" title="The TOCTOU race: the window between check and use" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The TOCTOU race: the window between check and use — step by step](anim/toctou-race-timeline.png)
+</div>
+
+Try **Normal: UNSAFE + the attacker races in — the attack succeeds** and **Hard: SAFE + the SAME attacker —
+O_NOFOLLOW blocks it** from the preset picker.
 
 !!! success "Rule"
     Do the check and the use in **a single atomic step**: open the file with `O_NOFOLLOW`/`O_EXCL` and work
@@ -1317,7 +1481,7 @@ simple, but the outcomes are surprising:
    right to anyone. The object's owner, however, can read and change permissions no matter what the DACL
    says.
 
-!!! info "Demo 12 · `code/week-02/12-ace-degerlendirme` · Recipe 2.2"
+!!! info "Demo 12 · `code/week-02/12-ace-evaluation` · Recipe 2.2"
     The program implements this algorithm from scratch: it reads the token (user, groups, integrity level)
     and the object (owner, label, DACL) from scenario files, evaluates the request step by step, and prints
     which ACE decided it. It touches no system setting; it is pure calculation. In the last step, it shows
@@ -1326,43 +1490,54 @@ simple, but the outcomes are surprising:
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\12-ace-degerlendirme
+    cd code\week-02\12-ace-evaluation
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/12-ace-degerlendirme
+    cd code/week-02/12-ace-evaluation
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged; same on Windows)"
-== SENARYO: 1a - kitaptaki DACL, ayse Pazarlama uyesi ==
-    1. RET  Herkes         TAM
-    2. IZIN Pazarlama      YAZ
-    3. IZIN Herkes         OKU
-  Istek YAZ:
-    ACE 1 RET  Herkes        -> eslesti; YAZ reddedildi
-  => RED  (ACE 1: sonraki ACE'lere bakilmaz)
-== SENARYO: 1b - ayni ACE'ler, IZIN once (kanonik degil) ==
-    ACE 1 IZIN Pazarlama     -> verildi YAZ (eksik: -)
-  => IZIN  (tum istenen haklar verildi)
-== SENARYO: 2a - NULL DACL, istegi yapan yabanci bir hesap ==
-  => IZIN  (TEHLIKE: SAHIP_AL ve IZIN_YAZ dahil!)
-== SENARYO: 2b - BOS DACL, ayni yabanci hesap ==
-  => RED  (eksik: OKU)
-== SENARYO: 3b - kalitim kesildi (sil) ==
-  => RED  (liste bitti; eksik: OKU)
+== SCENARIO: 1a - the book's DACL, alice is a Marketing member ==
+    1. DENY  Everyone       FULL
+    2. ALLOW Marketing      WRITE
+    3. ALLOW Everyone       READ
+  Request WRITE:
+    ACE 1 DENY  Everyone      -> matched; WRITE denied
+  => DENY  (ACE 1: later ACEs are never consulted)
+== SCENARIO: 1b - the same ACEs, ALLOW first (not canonical) ==
+    ACE 1 ALLOW Marketing     -> granted WRITE (missing: -)
+  => ALLOW  (every requested right was granted)
+== SCENARIO: 2a - a NULL DACL, the requester is an unrelated account ==
+  => ALLOW  (DANGER: including TAKE_OWNER and WRITE_DAC!)
+== SCENARIO: 2b - an EMPTY DACL, the same unrelated account ==
+  => DENY  (missing: READ)
+== SCENARIO: 3b - inheritance broken (removed) ==
+  => DENY  (the list ended; missing: READ)
 ```
 
-In the first two scenarios the ACEs are **identical**, only their order differs: in canonical order `ayse` is
+In the first two scenarios the ACEs are **identical**, only their order differs: in canonical order `alice` is
 denied, in the broken order the same request is accepted. The second step shows one of the most common
 mistakes programmers make: creating an object's security descriptor with a `NULL` DACL so that "everyone can
 access it" grants everyone not just read, but also the right to **take ownership and change permissions**.
 The correct approach is to write a DACL that explicitly grants the rights that are needed. The third step
 shows inheritance: explicit ACEs are evaluated before inherited ACEs; cutting inheritance and deleting the
 inherited ACEs can lead to an unexpected default deny.
+
+The animation below steps through `ace.c`'s ACE evaluation loop: how each ACE is compared against the SIDs
+in the token, and why the first matching DENY stops the list right there.
+
+<iframe class="dsanim" src="../anim/windows-ace-evaluation-order.html" title="Windows ACE evaluation order" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Windows ACE evaluation order — step by step](anim/windows-ace-evaluation-order.png)
+</div>
+
+Try **Normal: two ALLOW ACEs together build up the full grant** and **Hard: if ALLOW comes first, DENY may
+never be seen (non-canonical order)** from the preset picker.
 
 !!! tip "How does an assessor test this?"
     They list the DACLs of the files, registry keys, named pipes, and shared-memory objects the application
@@ -1383,10 +1558,10 @@ Three subtleties of the Unix model (Recipe 2.1) explain most real-world bugs:
   that does not know the distinction between real, effective, and saved user IDs can think it has "dropped"
   its privilege while leaving it recoverable through the saved identity (Recipe 1.3).
 
-!!! info "Demo 13 · `code/week-02/13-unix-izin-umask` · Recipe 2.1, 2.7, 1.3"
+!!! info "Demo 13 · `code/week-02/13-unix-permissions-umask` · Recipe 2.1, 2.7, 1.3"
     The program first shows the kernel's permission algorithm, umask, setuid identity transitions, and the
     sticky bit **by simulation**; it creates no real setuid file and requests no administrator privilege. It
-    then tests the same rules with real files under the demo folder's `cikti/` subfolder, shows the POSIX
+    then tests the same rules with real files under the demo folder's `output/` subfolder, shows the POSIX
     ACL, and **only lists** the setuid programs on the system. On Windows the simulation steps run exactly
     the same way; then the Windows equivalent of umask, **permission inheritance from the parent folder**, is
     shown with `icacls`. For the real Unix steps (umask, chmod, ACL), the script recommends WSL.
@@ -1394,39 +1569,51 @@ Three subtleties of the Unix model (Recipe 2.1) explain most real-world bugs:
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-02\13-unix-izin-umask
+    cd code\week-02\13-unix-permissions-umask
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-02/13-unix-izin-umask
+    cd code/week-02/13-unix-permissions-umask
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (abridged)"
-A) Cekirdek izin denetimi: ilk eslesen sinif karar verir
-  surec   istek dosya         sahip:grup     izinler     sinif -> karar
-  mehmet  yaz   rapor.txt     ayse:muhasebe  rw-r-----   grup -> RED
-  ayse    oku   paradoks.txt  ayse:muhasebe  ---rwxrwx   sahip -> RED
-  zeynep  oku   paradoks.txt  ayse:muhasebe  ---rwxrwx   diger -> IZIN
-   ^ ayse paradoks.txt'yi OKUYAMAZ: sahip sinifi secildi ve
-     sahip bitleri '---'; grup/diger bitlerine hic bakilmaz.
-B) umask: gercek izin = istenen & ~umask (Tarif 2.7)
-  istenen   umask 000    umask 022    umask 077
+A) Kernel permission check: the first matching class decides
+  process request  file          owner:group    perms       class -> decision
+  mark    write    report.txt    alice:accounting rw-r-----   group -> DENY
+  alice   read     paradox.txt   alice:accounting ---rwxrwx   owner -> DENY
+  zoe     read     paradox.txt   alice:accounting ---rwxrwx   other -> ALLOW
+   ^ alice CANNOT READ paradox.txt: the owner class was picked and
+     the owner bits are '---'; the group/other bits are never consulted.
+B) umask: the real permission = requested & ~umask (Recipe 2.7)
+  requested umask 000    umask 022    umask 077
   0666      rw-rw-rw-    rw-r--r--    rw-------
-C) setuid benzetimi: sahibi root olan setuid bir programi
-   ayse (uid 1001) calistiriyor. exec: etkin=sakli=0 olur.
-    seteuid(1001)                  r/e/s=1001/1001/0 g=1001 tamam
+C) setuid simulation: alice (uid 1001) runs a setuid program
+   owned by root. After exec: effective=saved=0.
+    seteuid(1001)                  r/e/s=1001/1001/0 g=1001 ok
 ```
 
-The `paradoks.txt` example runs against intuition: `ayse`, the file's owner, cannot read it, yet `zeynep`, who
+The `paradox.txt` example runs against intuition: `alice`, the file's owner, cannot read it, yet `zoe`, who
 has no relation to it at all, can. The authentication logic of "first look at who you are, then apply only
 that class's rule" requires thinking through each class separately when writing permissions. The setuid step
 shows that a temporary drop done with `seteuid()` leaves the saved identity at `0`, meaning the privilege can
 be reclaimed; a permanent drop requires changing all three identities with `setresuid()` and verifying the
 result.
+
+The animation below steps through `permissions.c`'s permission check and its `umask` calculation: how the
+root/owner/group/other class gets picked, and the `requested & ~umask` bit operation.
+
+<iframe class="dsanim" src="../anim/unix-permission-check.html" title="Unix permission check and umask" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Unix permission check and umask — step by step](anim/unix-permission-check.png)
+</div>
+
+Try **Normal: the owner reads, it is allowed** and **Hard: the "owner can't read" paradox (owner bits are
+off)** from the preset picker; also look at the dangerous edge case where umask 000 opens a 0666 request to
+everyone.
 
 ### Demo 14 — RBAC, Separation of Duty, and Clark–Wilson
 
@@ -1457,18 +1644,22 @@ the **same session**.
     ```
 
 ```text title="sh demo.sh — output (abridged; same on Windows)"
-== 1 - RBAC: rol atama ve gorev ayriligi (SSD/DSD) ==
-[01] ATA cem GISE
-     SSD(GISE,ONAYCI): cem ikisini birden tasiyamaz -> RED
-[04] OTURUM deniz GISE,DENETCI
-     DSD(GISE,DENETCI): ayni oturumda ikisi birden etkin olamaz -> RED
-[05] OTURUM deniz DENETCI
-     oturum acildi; etkin: DENETCI
-== 2 - Clark-Wilson: CDI'ya yalniz sertifikali TP dokunur ==
-== 3 - Gorev ayriligi: buyuk havaleye ikinci kisi onayi ==
-[20] deniz IVP
-     IVP defterden beklenen toplam 20250, bulunan 20250
-== 4 - Hatali bir TP sertifikalanirsa IVP yakalar ==
+== 1 - RBAC: role assignment and separation of duty (SSD/DSD) ==
+[01] ASSIGN carl TELLER
+     SSD(TELLER,APPROVER): carl cannot hold both -> DENY
+[04] SESSION dana TELLER,AUDITOR
+     DSD(TELLER,AUDITOR): both cannot be active in the same session -> DENY
+[05] SESSION dana AUDITOR
+     session opened; active: AUDITOR
+== 2 - Clark-Wilson: only a certified TP touches a CDI ==
+== 3 - Separation of duty: a large transfer needs a second person's approval ==
+[20] dana IVP
+     IVP expected total from the ledger 20250, found 20250
+  => CONSISTENT (C1: the CDIs are in a valid state)
+== 4 - If a broken TP gets certified, the IVP catches it ==
+[31] dana IVP
+     IVP expected total from the ledger 20250, found 20220
+  => INCONSISTENT! difference -30: a TP is broken, or a CDI changed outside a TP
 ```
 
 The fourth step is the model's most instructive part: if the certifier certifies a faulty transaction, the
@@ -1476,6 +1667,17 @@ enforcement rules (E1–E4) cannot notice it, because the transaction looks "aut
 error is the independently running **IVP**: the totals do not match the ledger. Lesson for the programmer:
 authority checking alone is not enough; you also need a mechanism that separately verifies the consistency of
 the data.
+
+The animation below steps through `bank.c`'s E1–E4 gates in order (is the role held, is the TP certified, is
+there an open session, does only a TP touch the CDI): which gate stops a request, and which gates pass.
+
+<iframe class="dsanim" src="../anim/rbac-clark-wilson-transaction-check.html" title="RBAC + Clark–Wilson: transaction check gates" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![RBAC + Clark–Wilson: transaction check gates — step by step](anim/rbac-clark-wilson-transaction-check.png)
+</div>
+
+Try **Normal: all five gates pass, the TP runs** and **Hard: the role is right but the TP is not certified
+(stops at E1)** from the preset picker.
 
 !!! note "How is this applied in the field?"
     In payment systems, the "four eyes" principle (the person who prepares a transaction and the person who
@@ -1608,25 +1810,26 @@ CVSS v3.1's eight Base score metrics:
     compilation (Python 3.8+).
 
 Windows: `cd code\week-02\05-cvss ; .\demo.ps1` · WSL/Linux: `cd code/week-02/05-cvss && sh demo.sh`.
-By hand: `python3 cvss.py --ornekler` (on Windows `py -3 cvss.py --ornekler`).
+By hand: `python3 cvss.py --examples` (on Windows `py -3.12 cvss.py --examples`).
 
 ```text title="demo — examples (abridged)"
-  1) Uzaktan, kimlik gerektirmeyen tam ele gecirme
+  1) Remote, no authentication needed, full takeover (Heartbleed-like severity)
   CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
-    TEMEL PUAN = 9.8  |####################|  Kritik (Critical)
+    BASE SCORE = 9.8  |####################|  Critical
 
-  2) Ayni ama KAPSAM degisti (kutu disina cikan etki) -> daha yuksek
+  2) The same, but the SCOPE changed (impact spills outside the box) -> higher
   CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
-    TEMEL PUAN = 10.0  |####################|  Kritik (Critical)
+    BASE SCORE = 10.0  |####################|  Critical
 
-  4) Yerel yetki yukseltme (cihaz saldirganin elinde) -> yuksek
+  4) Local privilege escalation (the device is in the attacker's hands) -> high
   CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
-    TEMEL PUAN = 7.8  |################....|  Yuksek (High)
+    BASE SCORE = 7.8  |################....|  High
 ```
 
 Even with the same impact (C:H/I:H/A:H), a **remote + unauthenticated** flaw (9.8) scores higher than a
-**local + privileged** one (7.8); when the scope changes it goes up to 10.0. We convert scores into severity
-bands:
+**local + privileged** one (7.8); when the scope changes it goes up to 10.0. FIRST (the Forum of Incident
+Response and Security Teams) published the CVSS v3.1 specification in June 2019 — this demo's `test_cvss.py`
+is validated directly against that document's example scores. We convert scores into severity bands:
 
 | Score | Band |
 | --- | --- |
@@ -1635,6 +1838,17 @@ bands:
 | 4.0–6.9 | Medium |
 | 7.0–8.9 | High |
 | 9.0–10.0 | Critical |
+
+The animation below steps through `cvss.py`'s base score calculation: how the Impact and Exploitability
+sub-scores are computed from the eight metrics, and why the formula changes when the scope changes.
+
+<iframe class="dsanim" src="../anim/cvss-score.html" title="CVSS v3.1 base score calculation" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![CVSS v3.1 base score calculation — step by step](anim/cvss-score.png)
+</div>
+
+Try **Normal: Heartbleed-like (remote, no auth, full takeover)** and **Hard: the same flaw, Scope Changed —
+a higher score** from the preset picker; also look at the edge case with no impact at all, a hard 0.0.
 
 !!! note "CVSS v4.0 in brief"
     v4.0, released in 2023, fixes some of v3.1's weaknesses: the **Base score is now called `CVSS-B`**; the
@@ -1969,48 +2183,50 @@ numbers in parentheses are the leaf's row in the threat table.
 
 ![Attack tree and costs for paying from someone else's account](assets/h02-07-saldiri-agaci.svg)
 
-The same tree in Demo 04's input format (`agac-s4.txt`):
+The same tree in Demo 04's REAL input format (`tree.c`'s keywords are always English: `GOAL`, `AND`, `OR`,
+`LEAF`, `cost=`; the leaf descriptions are kept in English too, matching the real demo files):
 
 ```text
-TARGET: Make a payment from someone else's account
+GOAL: Pay from someone else's account
   AND Pay with a stolen device
-    LEAF Bypass the screen lock               cost=6
-    LEAF Bypass the app PIN                   cost=5
+    LEAF Bypass the screen lock                cost=6
+    LEAF Bypass the app PIN                     cost=5
   AND Copy and exfiltrate the session key
     OR Obtain the key
-      LEAF Root + debugger (T1)               cost=4
-      LEAF Copy the local DB and decrypt it   cost=8
-      LEAF Code via a malicious link (T9)     cost=9
-    LEAF Bypass device binding                cost=6
-  AND Intercept on the network
-    LEAF Set up a rogue access point          cost=1
-    LEAF Bypass certificate validation (T3)   cost=2
-    LEAF Replay the session token             cost=3
+      LEAF Root + debugger (T1)                 cost=4
+      LEAF Copy and decrypt the local DB         cost=8
+      LEAF Malicious-link code execution (T9)    cost=9
+    LEAF Bypass device binding                  cost=6
+  AND Man-in-the-middle on the network
+    LEAF Set up a rogue access point            cost=1
+    LEAF Bypass certificate validation (T3)     cost=2
+    LEAF Replay the session token               cost=3
   AND Abuse the server API
-    LEAF Log in with your own account         cost=1
-    LEAF Change the transaction number (T7)   cost=2
+    LEAF Log in with your own account           cost=1
+    LEAF Tamper with the transaction number (T7) cost=2
 ```
 
-The end of the output we get when we run this through Demo 04's calculator:
+The end of the output we get when we actually feed this file to `tree.exe` (saved as `tree-fraud-example.txt`
+and run as `tree.exe tree-fraud-example.txt`):
 
-```text title="agac agac-s4.txt (final part)"
-  CHEAPEST ATTACK = 3 units. The chain the defender must break
-  first (the weakest point):
+```text title="tree.exe tree-fraud-example.txt (final part)"
+  CHEAPEST ATTACK = 3 unit(s). The chain the defender should
+  break first (the weakest point):
 
-  -> Make a payment from someone else's account (cost=3)
+  -> Pay from someone else's account (cost=3)
     -> Abuse the server API [all required] (cost=3)
       -> Log in with your own account (cost=1)
-      -> Change the transaction number (T7) (cost=2)
+      -> Tamper with the transaction number (T7) (cost=2)
 ```
 
-When we applied the countermeasures in order, the cheapest path changed as follows (the same program, with
-leaf costs updated):
+When we applied the countermeasures in order, the cheapest path changed as follows (the same file, only the
+relevant `cost=` value updated and rerun — every row was actually verified):
 
 | Countermeasure applied | Leaf changed | New cheapest path | Cheapest attack |
 | --- | --- | --- | --- |
-| — (start) | — | Server API (T7) | 3 |
-| Object-level ownership check | T7: 2 → 20 | MITM on the network (T3) | 6 |
-| Certificate validation + pinning | T3: 2 → 12 | Extract the session key (T1) | 10 |
+| — (start) | — | Abuse the server API (T7) | 3 |
+| Object-level ownership check | T7: `cost=2` → `cost=20` | Man-in-the-middle on the network (T3) | 6 |
+| Certificate validation + pinning | T3: `cost=2` → `cost=12` | Copy and exfiltrate the session key (T1) | 10 |
 
 This table is S4's strongest piece of evidence: two countermeasures raised the cheapest attack **from 3 to
 10** and showed, with a number, where the next investment should go (the key in memory: RASP, secure
@@ -2094,23 +2310,23 @@ that does not fit is left for the student's own study.
 !!! example "Activity 3 — From Matrix to Model (15 min · pairs)"
     **Goal:** to express the same policy as an access matrix, an ACL, a capability list, and BLP/Biba labels.
 
-    **Policy:** the subjects are `uygulama` (application), `kutuphane` (library), `raporlayici` (reporter);
-    the objects are `oturum_anahtari` (session key), `islem_kaydi` (transaction log), `hata_raporu` (error
-    report). The library reads/writes the key and writes to the transaction log; the application reads the
-    transaction log and writes to the error report; the reporter only reads the error report.
+    **Policy:** the subjects are `application`, `library`, `reporter`; the objects are `session_key`,
+    `transaction_log`, `error_report`. The library reads/writes the key and writes to the transaction log;
+    the application reads the transaction log and writes to the error report; the reporter only reads the
+    error report.
 
     **Steps:**
 
     1. Draw the access matrix (3 min).
     2. Convert the matrix into ACLs (column by column) and capability lists (row by row) (4 min).
-    3. Give the objects a confidentiality level (`oturum_anahtari`: Confidential, the others: Unclassified)
+    3. Give the objects a confidentiality level (`session_key`: Confidential, the others: Unclassified)
        and label the subjects. Which cell is **denied** according to BLP? (4 min)
-    4. Give Biba trustworthiness levels (`hata_raporu` has an external source: Low). Which cell is denied?
+    4. Give Biba trustworthiness levels (`error_report` has an external source: Low). Which cell is denied?
        (4 min)
 
     **Expected output:** Four small tables and one sentence: "If the library is at the Confidential level,
-    its writing to the Unclassified `islem_kaydi` violates BLP's *-property; so either the log only receives
-    non-confidential fields, or the library is split into two parts."
+    its writing to the Unclassified `transaction_log` violates BLP's *-property; so either the log only
+    receives non-confidential fields, or the library is split into two parts."
 
     **Instructor's note:** the resulting contradiction is deliberate: practical systems need a "trusted
     subject" exception or a split component. You can have the same rules written into Demo 03's policy file
@@ -2211,9 +2427,9 @@ hidden box.
 ??? question "Snippet 1 — Access Control"
     ```c
     /* Does the user have access to the file? */
-    if (access(dosya, W_OK) == 0) {
-        FILE *f = fopen(dosya, "w");     /* ... */
-        fprintf(f, "%s\n", kayit);
+    if (access(file, W_OK) == 0) {
+        FILE *f = fopen(file, "w");     /* ... */
+        fprintf(f, "%s\n", record);
         fclose(f);
     }
     ```
@@ -2223,15 +2439,15 @@ hidden box.
         **CWE-367 (TOCTOU).** The file can be replaced with a symbolic link between `access()` and
         `fopen()` (see Demo 06). Also, `access()` uses the **real** identity while `fopen()` uses the
         **effective** identity — in a setuid program these differ. Fix: skip the check and open with
-        `open(dosya, O_WRONLY|O_CREAT|O_NOFOLLOW, 0600)`, then work through the fd.
+        `open(file, O_WRONLY|O_CREAT|O_NOFOLLOW, 0600)`, then work through the fd.
 
 ??? question "Snippet 2 — Integrity Check"
     ```c
-    uint32_t beklenen = 0x1a2b3c4d;
-    uint32_t bulunan  = crc32(kod_bolgesi, boyut);
-    if (bulunan != beklenen)
-        return HATA;   /* tampered */
-    calistir();
+    uint32_t expected = 0x1a2b3c4d;
+    uint32_t found     = crc32(code_region, size);
+    if (found != expected)
+        return ERROR;   /* tampered */
+    run();
     ```
     An integrity (anti-tampering) check. It has two serious weaknesses; find them.
 
@@ -2244,18 +2460,18 @@ hidden box.
 
 ??? question "Snippet 3 — Access Default"
     ```c
-    struct kullanici k;
-    strncpy(k.ad, girdi, sizeof k.ad);
-    /* k.yonetici field is never assigned */
-    if (k.yonetici) ver_yonetici_paneli();
+    struct user u;
+    strncpy(u.name, input, sizeof u.name);
+    /* u.admin field is never assigned */
+    if (u.admin) grant_admin_panel();
     ```
     Which principle is violated here?
 
     ??? success "Answer"
         A violation of **fail-safe defaults** (CWE-1188 / CWE-665: improper initialisation). Because
-        `k.yonetici` is never initialised, the garbage value on the stack can be nonzero → an accidental
-        administrator. Fix: start **explicitly on the safe side** with `struct kullanici k = {0};` or
-        `.yonetici = 0`.
+        `u.admin` is never initialised, the garbage value on the stack can be nonzero → an accidental
+        administrator. Fix: start **explicitly on the safe side** with `struct user u = {0};` or
+        `.admin = 0`.
 
 ---
 
@@ -2265,12 +2481,12 @@ Not graded; it exists to reinforce the lesson. All of it is done on `code/week-0
 computer.
 
 ??? question "Exercise 1 — Easy: A Fourth Polymorphic Copy"
-    Look at `ornek_uret.c` in Demo 01. `poli_3` used a different algorithm. Write a capsule file by hand
+    Look at `generate_samples.c` in Demo 01. `poly_3` used a different algorithm. Write a capsule file by hand
     (with a text editor) and show it to the `pattern` method. Does emulation catch it?
 
     ??? tip "Hint"
-        Capsule format: line 1 is `KAPSUL/1`, line 2 is the decryptor commands, then the body. Emulation
-        catches it if it decrypts the body and looks for the `MAVI-KEDI-42` marker.
+        Capsule format: line 1 is `CAPSULE/1`, line 2 is the decryptor commands, then the body. Emulation
+        catches it if it decrypts the body and looks for the `BLUE-CAT-42` marker.
 
 ??? question "Exercise 2 — Easy: The Entropy Threshold"
     In Demo 02, measure a `.png`, a `.zip`, and a `.txt` file from your own computer. Which harmless files
@@ -2285,12 +2501,15 @@ computer.
     **both read and write** an object? Interpret the result.
 
     ??? success "Answer"
-        Both must be at the same level. BLP requires `os ≥ ns` for reading and `os ≤ ns` for writing; Biba
-        requires the reverse. Both are satisfied only when `os = ns`. Conclusion: data requiring both high
-        confidentiality and high integrity can only be processed **at its own level**.
+        Both must be at the same level. BLP requires the object's level to be **at or below** the subject's
+        for reading, and **at or above** it for writing ("no read up, no write down"); Biba requires the
+        reverse — the object's level **at or above** for reading, **at or below** for writing ("no read
+        down, no write up"). Both sets of rules are satisfied at once only when the object's level **equals**
+        the subject's. Conclusion: data requiring both high confidentiality and high integrity can only be
+        processed **at its own level**.
 
 ??? question "Exercise 4 — Medium: Defence in the Attack Tree"
-    In Demo 04, copy `agac-odeme.txt` and make the "decrypt the database" branch cheaper (lower its costs).
+    In Demo 04, copy `tree-payment.txt` and make the "decrypt the database" branch cheaper (lower its costs).
     Does the cheapest path change? **Where** should you place a defence to raise the cheapest attack's cost
     the most?
 
@@ -2308,7 +2527,7 @@ computer.
         attacker's hands (local access), even though the score drops, the risk to you does not decrease."
 
 ??? question "Exercise 6 — Medium: TOCTOU Without a Delay"
-    In Demo 06, remove the `export TOCTOU_GECIKME_US=...` line from `saldiri.sh` (set the delay to 0). Does
+    In Demo 06, remove the `export TOCTOU_DELAY_US=...` line from `attack.sh` (set the delay to 0). Does
     the unsafe attack still work? Why do real attackers automate the attempt?
 
     ??? success "Expected result"

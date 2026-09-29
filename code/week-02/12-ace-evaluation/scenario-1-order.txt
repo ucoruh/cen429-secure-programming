@@ -1,0 +1,35 @@
+# CEN429 - Week 2 - Demo 12, scenario 1: ACE ORDER and the "best match" fallacy
+# The book's example DACL (Recipe 2.2): DENY Everyone, ALLOW Marketing, ALLOW Everyone.
+# The book says "Windows picks the best match, Marketing can write". In reality
+# ACEs are walked IN ORDER; the first matching DENY ACE rejects the request immediately.
+
+SCENARIO 1a - the book's DACL, alice is a Marketing member
+TOKEN alice   Marketing
+OWNER    mark
+ACE DENY  Everyone   FULL
+ACE ALLOW Marketing  WRITE
+ACE ALLOW Everyone   READ
+REQUEST WRITE
+
+# The same ACEs in reverse order (a NON-canonical DACL; e.g. a program that
+# adds ACEs by hand in its own code could produce this).
+SCENARIO 1b - the same ACEs, ALLOW first (not canonical)
+TOKEN alice   Marketing
+OWNER    mark
+ACE ALLOW Marketing  WRITE
+ACE ALLOW Everyone   READ
+ACE DENY  Everyone   FULL
+REQUEST WRITE
+CANONICAL
+REQUEST WRITE
+
+# The owner special case: even with DENY Everyone FULL, the owner is implicitly
+# granted READ_CONTROL and WRITE_DAC; the owner can change the DACL to grant
+# themself rights.
+SCENARIO 1c - the same DACL, the requester is the owner themself
+TOKEN mark Marketing
+OWNER    mark
+ACE DENY  Everyone   FULL
+ACE ALLOW Marketing  WRITE
+REQUEST READ
+REQUEST WRITE_DAC

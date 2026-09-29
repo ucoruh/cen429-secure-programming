@@ -1,53 +1,53 @@
-﻿# CEN429 - Hafta 4 - Demo 4: Fuzzing (libFuzzer) (Windows)
-# Once derleyin: ..\..\build.ps1   Sonra: .\demo.ps1
-# Fuzzing sure sinirlidir (-max_total_time) ve cikti fuzz-cikti\ altina yazilir.
+# CEN429 - Week 4 - Demo 4: fuzzing (libFuzzer) (Windows)
+# Build first: ..\..\build.ps1   Then: .\demo.ps1
+# Fuzzing is time-limited (-max_total_time); output is written under fuzz-out\.
 Set-Location $PSScriptRoot
 $B = "bin\windows"
-if (-not (Test-Path "$B\ayristirici.exe")) { "Once derleyin: ..\..\build.ps1"; exit 1 }
-function Cizgi { "--------------------------------------------------------------" }
+if (-not (Test-Path "$B\parser.exe")) { "Build first: ..\..\build.ps1"; exit 1 }
+function Line { "--------------------------------------------------------------" }
 
-$D = "fuzz-cikti"
+$D = "fuzz-out"
 if (Test-Path $D) { Remove-Item -Recurse -Force $D }
 New-Item -ItemType Directory -Path "$D\corpus" | Out-Null
-Copy-Item tohum\normal.bin "$D\corpus\" -ErrorAction SilentlyContinue
+Copy-Item seeds\normal.bin "$D\corpus\" -ErrorAction SilentlyContinue
 
-Cizgi; "ADIM 1 - Normal girdi sorunsuz ayristirilir"
-"> .\$B\ayristirici.exe tohum\normal.bin"
-& ".\$B\ayristirici.exe" tohum\normal.bin 2>&1 | ForEach-Object { "$_" } | Select-Object -First 3
+Line; "STEP 1 - Normal input parses without trouble"
+"> .\$B\parser.exe seeds\normal.bin"
+& ".\$B\parser.exe" seeds\normal.bin 2>&1 | ForEach-Object { "$_" } | Select-Object -First 3
 
-if (Test-Path "$B\ayristirici_fuzz.exe") {
-    Cizgi; "ADIM 2 - HATALI ayristiriciyi libFuzzer ile fuzzla (<=10 sn)"
-    "> .\$B\ayristirici_fuzz.exe -max_total_time=10 $D\corpus"
-    & ".\$B\ayristirici_fuzz.exe" "-max_total_time=10" "-artifact_prefix=$D\" "$D\corpus" 2>&1 |
+if (Test-Path "$B\parser_fuzz.exe") {
+    Line; "STEP 2 - Fuzz the BUGGY parser with libFuzzer (<=10 s)"
+    "> .\$B\parser_fuzz.exe -max_total_time=10 $D\corpus"
+    & ".\$B\parser_fuzz.exe" "-max_total_time=10" "-artifact_prefix=$D\" "$D\corpus" 2>&1 |
         ForEach-Object { "$_" } |
         Select-String -Pattern 'ERROR|overflow|Test unit|SUMMARY|crash-' | Select-Object -First 8
     $crash = Get-ChildItem "$D\crash-*" -ErrorAction SilentlyContinue | Select-Object -First 1
-    Cizgi; "ADIM 3 - Bulunan cokerten girdiyi reproducer ile oynat"
+    Line; "STEP 3 - Replay the crashing input found, with the reproducer"
     if ($crash) {
-        "> .\$B\ayristirici.exe $($crash.FullName)"
-        & ".\$B\ayristirici.exe" $crash.FullName 2>&1 | ForEach-Object { "$_" } |
+        "> .\$B\parser.exe $($crash.FullName)"
+        & ".\$B\parser.exe" $crash.FullName 2>&1 | ForEach-Object { "$_" } |
             Select-String -Pattern 'ERROR|overflow|READ of size|SUMMARY' | Select-Object -First 5
     } else {
-        "   (ayri crash dosyasi kalmadi; hazir tohumu kullanalim)"
-        & ".\$B\ayristirici.exe" tohum\cokerten.bin 2>&1 | ForEach-Object { "$_" } |
+        "   (no separate crash file survived this run; use the ready-made seed instead)"
+        & ".\$B\parser.exe" seeds\crash.bin 2>&1 | ForEach-Object { "$_" } |
             Select-String -Pattern 'ERROR|overflow|READ of size|SUMMARY' | Select-Object -First 5
     }
-    Cizgi; "ADIM 4 - DUZELTILMIS ayristiriciyi ayni sure fuzzla: cokme YOK"
-    "> .\$B\ayristirici_fuzz_guvenli.exe -max_total_time=10 $D\corpus"
-    & ".\$B\ayristirici_fuzz_guvenli.exe" "-max_total_time=10" "-artifact_prefix=$D\" "$D\corpus" 2>&1 |
+    Line; "STEP 4 - Fuzz the FIXED parser for the same time: NO crash"
+    "> .\$B\parser_fuzz_secure.exe -max_total_time=10 $D\corpus"
+    & ".\$B\parser_fuzz_secure.exe" "-max_total_time=10" "-artifact_prefix=$D\" "$D\corpus" 2>&1 |
         ForEach-Object { "$_" } | Select-String -Pattern 'Done|DONE|crash|ERROR' | Select-Object -Last 2
-    "   ^ 'Done ... 0 crashes' benzeri: duzeltilmis surumde cokme uretilemedi."
+    "   ^ something like 'Done ... 0 crashes': the fixed version never crashes."
 } else {
-    Cizgi; "ADIM 2 - Bu VS surumunde libFuzzer hedefi uretilmedi"
-    "   Visual Studio 2022 'C++ AddressSanitizer' bileseni /fsanitize=fuzzer saglar."
-    "   Fuzzer olmadan da hatayi ASan reproducer ile GOREBILIRIZ:"
-    Cizgi; "ADIM 3 - Hazir cokerten tohumu reproducer ile oynat"
-    "> .\$B\ayristirici.exe tohum\cokerten.bin"
-    & ".\$B\ayristirici.exe" tohum\cokerten.bin 2>&1 | ForEach-Object { "$_" } |
+    Line; "STEP 2 - No libFuzzer target with this VS install"
+    "   Visual Studio 2022's 'C++ AddressSanitizer' component provides /fsanitize=fuzzer."
+    "   We can still SEE the bug without a fuzzer, using the ASan reproducer:"
+    Line; "STEP 3 - Replay the ready-made crashing seed with the reproducer"
+    "> .\$B\parser.exe seeds\crash.bin"
+    & ".\$B\parser.exe" seeds\crash.bin 2>&1 | ForEach-Object { "$_" } |
         Select-String -Pattern 'ERROR|overflow|READ of size|SUMMARY' | Select-Object -First 6
 }
 
-Cizgi; "ADIM 5 - Duzeltilmis surum ayni tohumu guvenle reddeder"
-"> .\$B\ayristirici_guvenli.exe tohum\cokerten.bin"
-& ".\$B\ayristirici_guvenli.exe" tohum\cokerten.bin 2>&1 | ForEach-Object { "$_" } | Select-Object -First 3
+Line; "STEP 5 - The fixed version safely rejects the same seed"
+"> .\$B\parser_secure.exe seeds\crash.bin"
+& ".\$B\parser_secure.exe" seeds\crash.bin 2>&1 | ForEach-Object { "$_" } | Select-Object -First 3
 if (Test-Path $D) { Remove-Item -Recurse -Force $D }

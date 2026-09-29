@@ -4,6 +4,28 @@ template: main.html
 
 # Prerequisites
 
+<!-- materyal:basla -->
+
+<div class="materyal" markdown>
+
+[:material-file-pdf-box: Lecture notes (PDF)](cen429-on-gereksinimler-ders-notu.pdf){ .md-button download="cen429-on-gereksinimler-ders-notu.pdf" }
+[:material-file-word-box: Lecture notes (DOCX)](cen429-on-gereksinimler-ders-notu.docx){ .md-button download="cen429-on-gereksinimler-ders-notu.docx" }
+[:material-presentation: Slides (PDF)](cen429-on-gereksinimler-sunum.pdf){ .md-button download="cen429-on-gereksinimler-sunum.pdf" }
+[:material-microsoft-powerpoint: Slides (PPTX)](cen429-on-gereksinimler-sunum.pptx){ .md-button download="cen429-on-gereksinimler-sunum.pptx" }
+[:material-language-html5: Slides (HTML, offline)](cen429-on-gereksinimler-sunum.html){ .md-button download="cen429-on-gereksinimler-sunum.html" }
+[:material-folder-zip: Download all (ZIP)](cen429-on-gereksinimler-materyal.zip){ .md-button download="cen429-on-gereksinimler-materyal.zip" }
+[:material-fullscreen: Open slides full screen](cen429-on-gereksinimler-sunum.html){ .md-button .md-button--primary target=_blank }
+
+</div>
+
+<div class="sunum-cercevesi">
+<iframe src="cen429-on-gereksinimler-sunum.html" title="Prerequisites" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Click inside the slides and use the arrow keys; use the button at the bottom right of the slides or the link above for full screen.</p>
+
+<!-- materyal:bitis -->
+
 From the first week of this course you **build and run C/C++ programs on your own computer**, run your project on
 **Git and GitHub**, and prove your security controls with **unit tests**. You therefore need to arrive with the
 knowledge and tools below. The formal prerequisite of the course is **CEN107 Algorithms and Programming I**; in
@@ -19,12 +41,12 @@ are **assumed** in this course.
 
 | Topic | Where is it taught? | Where is it used in this course? |
 | --- | --- | --- |
-| **Development environment:** compiler (GCC/Clang/MSVC), IDE, WSL on Windows, building with CMake | [CE103 Week 2 — Development environments](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Every week's demos; lab setup in [Week 1](../week-1/cen429-week-1.md) |
-| **Git and GitHub:** creating a repository, `clone`, `commit`, branches, `pull request`, `.gitignore` | [CE103 Week 3 — Version management with Git](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Project guide](../project-guide/index.md) (plan, setup, submission); change management in Week 1; version identity in [Week 12](../week-12/cen429-week-12.md) |
-| **Unit testing and coverage tools:** writing tests, running them with `ctest`, coverage reports | [CE103 Week 4 — Unit testing and libraries](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | S16 test results in the project; sanitizers and fuzzing in [Week 4](../week-4/cen429-week-4.md); test plan in Week 12 |
-| **Using project templates:** forking a template, building it, producing its tests and documentation | CE103 Weeks 2–4 | [Project guide · 2. Project setup](../project-guide/index.md#2-project-setup) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
+| **Development environment:** compiler (GCC/Clang/MSVC), IDE, WSL on Windows, building with CMake | [CEN107 (CE103) Week 2 — Development environments](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Every week's demos; lab setup in [Week 1](../week-1/cen429-week-1.md) |
+| **Git and GitHub:** creating a repository, `clone`, `commit`, branches, `pull request`, `.gitignore` | [CEN107 (CE103) Week 3 — Version management with Git](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Project guide](../project-guide/index.md) (plan, setup, submission); change management in Week 1; version identity in [Week 12](../week-12/cen429-week-12.md) |
+| **Unit testing and coverage tools:** writing tests, running them with `ctest`, coverage reports | [CEN107 (CE103) Week 4 — Unit testing and libraries](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | S16 test results in the project; sanitizers and fuzzing in [Week 4](../week-4/cen429-week-4.md); test plan in Week 12 |
+| **Using project templates:** forking a template, building it, producing its tests and documentation | CEN107 (CE103) Weeks 2–4 | [Project guide · 2. Project setup](../project-guide/index.md#2-project-setup) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
 
-Optional starting point: [CE103 Week 1 — Introduction and developer roadmap](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
+Optional starting point: [CEN107 (CE103) Week 1 — Introduction and developer roadmap](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
 
 ## 2. C programming basics (required)
 

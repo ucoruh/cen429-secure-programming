@@ -16,7 +16,7 @@ The build system is CMake; Visual Studio opens the `code/` folder directly, and 
 In this course we learn about attacks by **seeing** them; that is why every demo was written according to the
 following rules:
 
-- Demos only produce files **inside their own folder** (`bin/`, and `dokum/` when needed); the cleanup command deletes all of them.
+- Demos only produce files **inside their own folder** (`bin/`, and `dokum/` or `dump/` when needed); the cleanup command deletes all of them.
 - **No administrator privileges (sudo / "Run as administrator") are required**, and no operating-system setting is changed.
 - The "attack" steps cause no real harm: they print a warning to the screen, or read a file inside the demo's own folder.
 - Programs that are expected to crash are run in a restricted way: on Windows no error dialog pops up, on Linux no
@@ -31,7 +31,7 @@ following rules:
 | --- | --- | --- |
 | Build all demos (inside `code/`) | `.\build.ps1` | `./build.sh` |
 | Run a demo (inside the demo's folder) | `.\demo.ps1` — or double-click `demo.cmd` | `sh demo.sh` |
-| Delete build output | `.\build.ps1 temizle` | `./build.sh temizle` |
+| Delete build output | `.\build.ps1 clean` | `./build.sh clean` |
 
 Every demo folder contains the same files:
 
@@ -74,13 +74,13 @@ Debug Configuration**, and add the following to the `launch.vs.json` file that o
 
 ```json
 "args": [ "AAAAAAAAAAAAAAAAB" ],
-"currentDir": "${workspaceRoot}\\week-01\\03-tasma-giris"
+"currentDir": "${workspaceRoot}\\week-01\\03-overflow-input"
 ```
 
 **Way 2 — Classic solution file.**
 In PowerShell, run `.\build.ps1` once inside the `code` folder, then open the
 `code\build\windows-msvc\cen429_demolar.sln` file. Projects are grouped into folders such as
-**Hafta 01 / 03 Tasma giris**. Right-click a project, choose **Set as Startup Project**, type the arguments into
+**Week 01 / 03 Privilege escalation through overflow**. Right-click a project, choose **Set as Startup Project**, type the arguments into
 the **Properties > Debugging > Command Arguments** field, and press F5. The working folder is automatically the
 demo's own folder.
 
@@ -89,7 +89,7 @@ demo's own folder.
 ```powershell
 cd C:\Dersler\cen429-secure-programming\code
 .\build.ps1
-cd week-01\03-tasma-giris
+cd week-01\03-overflow-input
 .\demo.ps1
 ```
 
@@ -121,7 +121,7 @@ double-click the `demo.cmd` file, or type `powershell -ExecutionPolicy Bypass -F
    git clone https://github.com/ucoruh/cen429-secure-programming.git
    cd cen429-secure-programming/code
    ./build.sh
-   cd week-01/03-tasma-giris
+   cd week-01/03-overflow-input
    sh demo.sh
    ```
 
@@ -140,13 +140,13 @@ by side, how the same bug behaves under each protection. The suffix on the progr
 
 | Mode | Program name | GCC (Linux / WSL) | MSVC (Windows) | What it shows |
 | --- | --- | --- | --- | --- |
-| `korumasiz` | `giris` | `-O0` | `/Od` | The bug in its rawest form |
-| `optimize` | `parola_memset` | `-O2` | `/O2` | Release build; the compiler reorders the code |
-| `asan` | `giris_asan` | `-fsanitize=address` | `/fsanitize=address` | A tool that catches the memory error at run time |
-| `denetimli` | `giris_denetimli` | `-D_FORTIFY_SOURCE=2` | `_s` functions such as `strcpy_s` | The library's bounds checking |
-| `guvenli` | `giris_guvenli` | `-O2` | `/O2` | The fixed version of the source code |
+| `unprotected` | `login` | `-O0` | `/Od` | The bug in its rawest form |
+| `optimize` | `password_memset` | `-O2` | `/O2` | Release build; the compiler reorders the code |
+| `asan` | `login_asan` | `-fsanitize=address` | `/fsanitize=address` | A tool that catches the memory error at run time |
+| `checked` | `login_checked` | `-D_FORTIFY_SOURCE=2` | `_s` functions such as `strcpy_s` | The library's bounds checking |
+| `secure` | `login_secure` | `-O2` | `/O2` | The fixed version of the source code |
 
-All the settings live in a single place: the `cen429_ornek()` function in the `cmake/cen429.cmake` file.
+All the settings live in a single place: the `cen429_add_demo()` function in the `cmake/cen429.cmake` file.
 
 ## Folder structure
 
@@ -158,13 +158,54 @@ code/
 ├── cmake/cen429.cmake    # derleme modları
 ├── common/               # bütün demoların ortak başlıkları ve betik yardımcıları
 └── week-01/
-    ├── 01-path-kandirma/
-    ├── 02-bellekte-parola/
-    ├── 03-tasma-giris/
-    └── 04-isaretli-uzunluk/
+    ├── 01-path-spoofing/
+    ├── 02-password-in-memory/
+    ├── 03-overflow-input/
+    └── 04-signed-length/
 ```
 
-To build only certain weeks: `cmake -S . -B build/tek -DCEN429_HAFTALAR="week-01;week-03"`.
+To build only certain weeks: `cmake -S . -B build/tek -DCEN429_WEEKS="week-01;week-03"`.
+
+## Testing
+
+Every demo is built and run automatically with `code/run_tests.py` (`py -3.12 code/run_tests.py --week N
+[--sanitize] [--platform win|linux|both]`, default `both`). It configures and builds the given week with
+CMake/CTest and prints one summary line per platform, `week N: X passed, Y failed`, exiting non-zero if
+anything failed. A week with no tests yet still gets a build-only check ("0 tests").
+
+Conventions:
+
+- **Unit tests** live in `code/week-NN/<demo>/tests/test_<program>.c`. They include the demo's own
+  source with `main` renamed out of the way, then include `test_check.h` for the `CHECK*` macros:
+
+  ```c
+  #define main program_main
+  #include "../report.c"
+  #undef main
+  #include "../../../common/test_check.h"
+
+  int main(void) {
+      CHECK_EQ_INT(some_function(...), 42);
+      CHECK(condition);
+      TEST_SUMMARY();   /* prints "N checks, F failures" and returns 0 only if F == 0 */
+  }
+  ```
+
+  The test executable is declared in the demo's `CMakeLists.txt` with `cen429_add_demo()` (same as any
+  other program) and registered with `cen429_test(NAME ... COMMAND ...)` (see `cmake/cen429.cmake`).
+
+- **End-to-end tests** run the demo's real compiled binary (the same one `demo.ps1`/`demo.sh` runs) with
+  `cen429_test(... COMMAND <target> <args> PASS_REGEX "..." )` and match its real, observed output
+  against a regular expression — never a value copied from the program's own prior run.
+
+- **Intentionally vulnerable targets** (e.g. an `unprotected`-mode target that is deliberately exploitable)
+  get the CTest label `intentional-bug`. Their tests assert only deterministic, documented behaviour —
+  for example, that the `asan`-mode build's output contains `AddressSanitizer`, or that the `secure`-mode
+  build rejects the malicious input — never "and the exploit corrupts memory the same way every time" as
+  the pass condition. A test that runs the raw, unprotected binary and checks that the exploit succeeds is
+  additionally labeled `plain-vulnerable`; `run_tests.py --sanitize` excludes `plain-vulnerable` tests
+  (`ctest -LE plain-vulnerable`), since the sanitizer pass is about checking the sanitizer/secure builds,
+  not about re-running the raw exploit under a different compiler flag.
 
 ## Troubleshooting
 
@@ -173,6 +214,6 @@ To build only certain weeks: `cmake -S . -B build/tek -DCEN429_HAFTALAR="week-01
 | `CMake not found` (Windows) | In the Visual Studio installer, select the **Desktop development with C++** workload |
 | `clang_rt.asan_dynamic-x86_64.dll not found` | Run the `*_asan.exe` programs with `demo.ps1` or from inside `bin\windows\`; the build copies this file there. If it's still missing, add the **C++ AddressSanitizer** component to the installation |
 | `cmake: command not found` (WSL) | `sudo apt install cmake build-essential` |
-| ASan keeps printing `DEADLYSIGNAL` (newer Linux kernels) | `demo.sh` prevents this by itself; when running manually use `setarch $(uname -m) -R ./bin/linux/giris_asan ...` |
+| ASan keeps printing `DEADLYSIGNAL` (newer Linux kernels) | `demo.sh` prevents this by itself; when running manually use `setarch $(uname -m) -R ./bin/linux/login_asan ...` |
 | `Permission denied` (WSL) | Run the script with `sh demo.sh`; clone the repository under `~` instead of `/mnt/c` |
 | `Cannot restore timestamp` (Windows) | You're in a synced (OneDrive / Drive) folder: rerun `.\build.ps1`, or move the repository to a local folder |

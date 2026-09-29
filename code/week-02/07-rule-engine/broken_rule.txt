@@ -1,0 +1,6 @@
+# CEN429 — Week 2 — Demo 07: a DELIBERATELY broken rule file
+# Meant to show that the engine rejects bad input: an unclosed quote.
+rule Broken {
+  string $a = "unclosed quote
+  condition $a
+}

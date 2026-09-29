@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "This week's working demo"
-    `code/week-09/01-manuel-gizleme` — Manual obfuscation + cost measurement: same behaviour, the secret stays hidden, cost measured with `objdump`.
-    · `code/week-09/02-cesitlendirme` — Diversification: the same source compiled with two seeds → binaries that are behaviourally equivalent but structurally different.
+    `code/week-09/01-manual-obfuscation` — Manual obfuscation + cost measurement: same behaviour, the secret stays hidden, cost measured with `objdump`.
+    · `code/week-09/02-diversification` — Diversification: the same source compiled with two seeds → binaries that are behaviourally equivalent but structurally different.
 
-    Run with: `sh demo.sh` (Linux/WSL), or build with CMake and run from under `bin/`. Fully synthetic and safe; it does not harm the student's computer.
+    Run with: `sh demo.sh` (Linux/WSL), or build with CMake and run from under `bin/`.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
@@ -43,19 +43,19 @@
     ```powershell
     # Windows (PowerShell) — 'code' klasöründe
     .\build.ps1                                    # tüm demoları bir kez derle
-    cd week-09\01-manuel-gizleme
-    .\bin\windows\erisim_temiz.exe CEN429-OK     # korumasız sürüm
-    .\bin\windows\erisim_gizli.exe CEN429-OK     # gizli sürüm — çıktı AYNI
+    cd week-09\01-manual-obfuscation
+    .\bin\windows\access_clean.exe CEN429-OK     # korumasız sürüm
+    .\bin\windows\access_obfuscated.exe CEN429-OK     # gizli sürüm — çıktı AYNI
     ```
 
     ```sh
     # WSL / Linux — 'code' klasöründe
     ./build.sh
-    cd week-09/01-manuel-gizleme
+    cd week-09/01-manual-obfuscation
     sh demo.sh                                     # açıklamalı tam akış
     ```
 
-    **Expected output:** both versions print the **same** "access granted" line for `CEN429-OK` (behaviour preserved). In the `strings` output, `CEN429-OK` **is visible in the clean build and not visible in the obfuscated build** (K-07 string encoding). `objdump` measurement: `erisim_ver` goes from **~28 instructions / 3 branches → ~51 instructions / 6 branches** (cost increased). The second demo (`02-cesitlendirme`) compiles the same source with two seeds → **same behaviour, different binary**.
+    **Expected output:** both versions print the **same** "access granted" line for `CEN429-OK` (behaviour preserved). In the `strings` output, `CEN429-OK` **is visible in the clean build and not visible in the obfuscated build** (K-07 string encoding). `objdump` measurement: `grant_access` goes from **27 instructions / 4 branches-calls → 49 instructions / 9 branches-calls** (cost increased). The second demo (`02-diversification`) compiles the same source with two seeds → **same behaviour, different binary**.
 
 !!! abstract "By the end of this week you will be able to"
     1. Define **code obfuscation** as a security **rule/countermeasure**, and write each technique in the form
@@ -287,7 +287,7 @@ say there might be a key here."
 
 #### Function, branch, basic block, and the control flow graph (CFG)
 
-A **function** is a block of code that does one job (`erisim_ver`); a **branch** is a fork in the road, like an
+A **function** is a block of code that does one job (`grant_access`); a **branch** is a fork in the road, like an
 `if`; a **condition** is the expression that decides which way the branch goes. A **basic block** is a sequence of
 instructions that runs straight through, with no branch — when an `if` is reached the block ends and two new
 blocks begin; a program is basic blocks wired together. The **CFG** (Control Flow Graph) is a diagram that makes
@@ -298,26 +298,26 @@ basic blocks its **nodes** and the transitions between them its **edges** — it
 **Let's tie the "basic block" and "CFG" ideas together with a concrete example.** Take the small function below,
 which we will meet again in section 5:
 
-```c title="denetim: a small function with three basic blocks"
-int denetim(int girdi) {
-    int a = girdi + 1;      /* Block 1 */
+```c title="check: a small function with three basic blocks"
+int check(int input) {
+    int a = input + 1;      /* Block 1 */
     if (a > 10) {            /* Block 2 */
-        return HATA;
+        return FAIL;
     }
     return a * 2;             /* Block 3 */
 }
 ```
 
-Let's split this function into basic blocks: **Block 1** (`a = girdi + 1` and evaluating the `if` condition) runs
+Let's split this function into basic blocks: **Block 1** (`a = input + 1` and evaluating the `if` condition) runs
 straight through and ends the moment it reaches the `if`. **Block 2**, when the condition is `true`, goes to
-`return HATA` — a separate one-line block (**Block 2a**). When the condition is `false`, control moves to
+`return FAIL` — a separate one-line block (**Block 2a**). When the condition is `false`, control moves to
 **Block 2b** (`return a*2`). The CFG's nodes are these three blocks (1, 2a, 2b), and its edges are the
 transitions between them:
 
 | Node (basic block) | Contents | Outgoing edges |
 | --- | --- | --- |
-| Block 1 | `a = girdi+1`; evaluate `if (a>10)` | → Block 2a (condition true) or Block 2b (condition false) |
-| Block 2a | `return HATA` | (exit — no edge) |
+| Block 1 | `a = input+1`; evaluate `if (a>10)` | → Block 2a (condition true) or Block 2b (condition false) |
+| Block 2a | `return FAIL` | (exit — no edge) |
 | Block 2b | `return a*2` | (exit — no edge) |
 
 Total: **3 nodes, 2 edges**. When a decompiler draws this graph, it reads the logic — "error if the input is
@@ -392,9 +392,10 @@ server-side security check applies here, because the code runs on the attacker's
 !!! note "A short history: where does code obfuscation come from?"
     - **1976** — Diffie & Hellman first discuss the idea of making a program "incomprehensible but working" (protection through **effort**, not through secrecy).
     - **1997** — Collberg, Thomborson, and Low publish the first **obfuscation taxonomy** (layout · data · control flow · anti-analysis) and the *potency–resilience–stealth–cost* framework. The **five families** in this lecture come from here.
+    - **2000** — Wang, Hill, Knight, and Davidson, in "Software Tamper Resistance: Obstructing Static Analysis of Programs," introduce **control-flow flattening**: they prove that precisely analyzing a program transformed with flattening combined with aliased-pointer indirect addressing is **NP-hard** in the general case. This week's **K-04** comes from here (section 5).
     - **2001** — Barak et al. prove that "perfect (black-box) obfuscation is **impossible** in general" → obfuscation is therefore taught not as "unbreakability" but as **cost**.
     - **2002** — Chow et al. launch the idea of embedding a key in software with **whitebox AES** ([week 11](../week-11/cen429-week-11.md)).
-    - **2010s** — DRM, mobile banking, and the games industry make obfuscation mainstream; **Tigress** (Collberg) and **Obfuscator-LLVM** turn it into tooling ([week 14](../week-14/cen429-week-14.md)).
+    - **2010s** — DRM, mobile banking, and the games industry make obfuscation mainstream; **Tigress** (Collberg) and **Obfuscator-LLVM** (Junod, Rinaldini, Wehrli, and Michielin, **2015**, SPRO workshop — see section 7, K-11) turn it into tooling ([week 14](../week-14/cen429-week-14.md)).
 
     So obfuscation is a **practical delaying discipline** built on top of an academic **impossibility** result.
 
@@ -510,14 +511,14 @@ Let's not leave the taxonomy abstract. In the small (synthetic) function below, 
 **which family** with comments:
 
 ```c title="Five families in one function (concept demonstration)"
-/* LAYOUT: the function name isn't 'esik_hesapla' but the meaningless 'f7' */
+/* LAYOUT: the function name isn't 'threshold_compute' but the meaningless 'f7' */
 int f7(int x) {
     /* DATA: the 0x2A constant isn't written directly, it's produced from two parts (K-02, section 6) */
-    uint8_t esik = (uint8_t)(0x37 ^ 0x1D);
+    uint8_t threshold = (uint8_t)(0x37 ^ 0x1D);
 
     /* CONTROL FLOW: branching via an opaque predicate (K-01, section 5) */
     if (((x * (x + 1)) & 1u) == 0u) {
-        return esik;          /* real path: since x*(x+1) is always even, this is ALWAYS entered */
+        return threshold;     /* real path: since x*(x+1) is always even, this is ALWAYS entered */
     }
     return 0;                 /* ANTI-ANALYSIS dead branch: never runs, just distracts the analyst */
 }
@@ -527,6 +528,16 @@ The fifth family — **virtualisation** — is absent from this small example, b
 to a single line but to **an entire function's machine code** (section 7, K-10). This example exists to show one
 thing: in real code the five families live **intertwined**; being able to ask, while reading a line, "whose job is
 this?" is what makes the source's "they should all be used together" warning concrete.
+
+Let's now see these four families not in the conceptual `f7` example but in this week's **real** `grant_access`
+function, on real line numbers — then run that same function against 10 tokens to confirm behaviour is preserved:
+
+<iframe class="dsanim" src="../anim/five-obfuscation-families.html" title="The five obfuscation families: all together in one function" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The five obfuscation families — step by step](anim/five-obfuscation-families.png)
+</div>
+
+Try the **normal**, **hard** and two **edge-case** presets, generate a random token set with 🎲, or type your own.
 
 !!! danger "Common mistake: applying one family and thinking you've 'obfuscated' the code"
     A beginner developer typically applies only the **layout** family (obfuscating names) and considers the job
@@ -591,7 +602,7 @@ Let's turn the "gives/does not give" table into a timeline. Consider both versio
 
 1. They run `strings program.exe` → strings such as `"CEN429-OK"`, `"Erisim reddedildi"` are directly visible
    (minute 0).
-2. They open a decompiler and see names like `erisim_ver`, `lisans_dogrula` in the symbol table (minute 2).
+2. They open a decompiler and see names like `grant_access`, `lisans_dogrula` in the symbol table (minute 2).
 3. They read the function's CFG: a single `if/else`, and it is obvious at a glance which branch means "allow" and
    which means "deny" (minute 5).
 4. They find the comparison value (`"CEN429-OK"`), test it with their own input, and confirm it (minute 10). **Job
@@ -644,18 +655,19 @@ So this doesn't stay abstract, let's fill the template exactly, using the **real
 the "This week's working demo" box at the start of this section (K-04 as applied in the demo):
 
 ```text
-RULE K-04-applied: control-flow flattening applied to the erisim_ver function
+RULE K-04-applied: control-flow flattening applied to the grant_access function
   What does it protect? : access-check flow order (where/how the CEN429-OK comparison is done)
   Against which threat? : static analysis (reading the CFG in a decompiler), single-byte/single-branch patch attack
   How?                  : switch-based dispatcher (K-04) + opaque predicate (K-01) + random exit (K-05)
-  Cost                  : instruction count 28 → 51 (+82%), branch count 3 → 6 (+100%) — measured with objdump
+  Cost                  : instruction count 27 → 49 (+81.5%), branch/call count 4 → 9 (+125%) — measured with objdump
   Limit                 : flattening only; can be undone via symbolic execution (section 10); data still needs K-07
   Measurement           : instruction/branch count comparison in objdump output (this week's demo, in the step-by-step guide)
 ```
 
-Let's verify the percentages in the cost line: the increase in instruction count is `(51 − 28) / 28 × 100 ≈
-82.1%`; the increase in branch count is `(6 − 3) / 3 × 100 = 100%` (exactly doubled). This is concrete proof that
-the "Measurement" line must be **a number, not a claim** — we will reuse these figures again in section 9.
+Let's verify the percentages in the cost line: the increase in instruction count is `(49 − 27) / 27 × 100 ≈
+81.5%`; the increase in branch/call count is `(9 − 4) / 4 × 100 = 125%` (more than doubled). This is concrete
+proof that the "Measurement" line must be **a number, not a claim** — we will reuse these figures again in
+section 9.
 
 !!! danger "Common mistake: filling in only the template's 'How' line and leaving 'Measurement' blank"
     Students typically write which technique they applied (How) but skip the **cost** and **measurement** lines.
@@ -685,6 +697,17 @@ string/constant count" — but in both cases the template's six lines are filled
 your S9 you are expected to fill out this template separately for at least one control-flow rule and one data
 rule.
 
+Let's now see the template filled for all 5 real rules (R-01, R-04, R-05, R-07, R-08), on two different assets —
+this week's MEASURED `grant_access`, and section 9's conceptual `lisans_dogrula` example — kept carefully apart:
+
+<iframe class="dsanim" src="../anim/protection-rule-template.html" title="The protection rule template: 5 rules, 2 assets, 10 filled rows" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Protection rule template — step by step](anim/protection-rule-template.png)
+</div>
+
+Try the **normal** (all 10 rows), **hard** (only the measured `grant_access`, repeated) and two **edge-case**
+presets.
+
 ---
 
 ## 5. Control-flow rules (advanced)
@@ -692,7 +715,7 @@ rule.
 A compiled function's **control flow graph** (CFG) shows the skeleton of the algorithm: which check happens in
 what order, which branch leads to success. The white-box attacker's first job is to extract this skeleton.
 Control-flow obfuscation rules make this skeleton unreadable. Week 4 introduced flattening; here we add the rules
-that **strengthen** it. All examples are synthetic and are told through a single small check (`erisim_ver`).
+that **strengthen** it. All examples are synthetic and are told through a single small check (`grant_access`).
 
 ![Control-flow flattening, before and after](assets/h09-04-duzlestirme.svg)
 
@@ -704,12 +727,12 @@ predicate**). A classic example is an arithmetic identity that is always true bu
 
 ```c title="Opaque predicate: always true, but static analysis can't easily prove it"
 /* x*(x+1) is always even → (x*(x+1)) % 2 == 0 is always true. */
-static int opak_dogru(unsigned x) { return ((x * (x + 1)) & 1u) == 0; }
+static int opaque_true(unsigned x) { return ((x * (x + 1)) & 1u) == 0; }
 
-if (opak_dogru(sayac)) {          /* real path: this is ALWAYS entered */
-    durum = gercek_adim(durum);
+if (opaque_true(counter)) {          /* real path: this is ALWAYS entered */
+    state = real_step(state);
 } else {
-    durum = sahte_adim(durum);    /* dead path: never runs, but looks real under analysis */
+    state = fake_step(state);    /* dead path: never runs, but looks real under analysis */
 }
 ```
 
@@ -726,7 +749,7 @@ if (opak_dogru(sayac)) {          /* real path: this is ALWAYS entered */
     | 4 | 5 | 20 | yes |
     | 7 | 8 | 56 | yes |
 
-    So `(x * (x+1)) & 1` is **always 0**, which means `opak_dogru(x)` returns **`true` for every x**. While the
+    So `(x * (x+1)) & 1` is **always 0**, which means `opaque_true(x)` returns **`true` for every x**. While the
     program runs it always takes the "real path."
 
     **So why do we call it 'opaque'?** Because *we* know it; **the static analysis tool doesn't**. When the tool
@@ -748,32 +771,43 @@ variable. That way, the information "this loop runs N times" cannot be read off 
 (libraries) can be recognised automatically; hence they need to be diversified. **Measurement:** basic block count
 before/after flattening.
 
+This week's demo uses the same idea in `grant_access`'s `opaque_zero(x) = (x*(x+1)) & 1` — not an `if`, but an
+**opaque constant** folded straight into the `state` computation. Let's sweep it over many `x` values to confirm
+it is really always `0`, then look at the real line that uses it:
+
+<iframe class="dsanim" src="../anim/opaque-predicate-insertion.html" title="Opaque predicate insertion: (x*(x+1)) & 1 is never 1" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Opaque predicate insertion — step by step](anim/opaque-predicate-insertion.png)
+</div>
+
+Try the **normal**, **hard** and two **edge-case** presets, or generate your own set of `x` values with 🎲.
+
 **Worked example: let's trace an opaque loop bound by hand.** Let's verify the guide's claim that "the loop bound
 cannot be read off the CFG" with numbers. Let our real iteration bound be `3`, but instead of writing it directly,
 let's wrap it in a second **always-true** opaque predicate:
 
 ```c title="Opaque loop: the real bound (3) isn't explicitly visible in the code"
-static int hep_dogru(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) is always even — see above */
+static int always_true(unsigned y) { return ((y * y + y) & 1u) == 0u; }  /* y*(y+1) is always even — see above */
 
 unsigned i = 0;
-while (hep_dogru(i) && i < GERCEK_SINIR) {   /* GERCEK_SINIR = 3, defined in a separate constant (can be encoded with K-02) */
-    isle(i);
+while (always_true(i) && i < REAL_LIMIT) {   /* REAL_LIMIT = 3, defined in a separate constant (can be encoded with K-02) */
+    process(i);
     i++;
 }
 ```
 
-Let's trace it by hand (`GERCEK_SINIR = 3`):
+Let's trace it by hand (`REAL_LIMIT = 3`):
 
-| Step | `i` | `hep_dogru(i)` calculation | Result | `i < 3`? | Does the loop body run? |
+| Step | `i` | `always_true(i)` calculation | Result | `i < 3`? | Does the loop body run? |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | `0*0+0=0`, `0 & 1 = 0` | true | yes | yes → `isle(0)`, `i=1` |
-| 2 | 1 | `1*1+1=2`, `2 & 1 = 0` | true | yes | yes → `isle(1)`, `i=2` |
-| 3 | 2 | `2*2+2=6`, `6 & 1 = 0` | true | yes | yes → `isle(2)`, `i=3` |
+| 1 | 0 | `0*0+0=0`, `0 & 1 = 0` | true | yes | yes → `process(0)`, `i=1` |
+| 2 | 1 | `1*1+1=2`, `2 & 1 = 0` | true | yes | yes → `process(1)`, `i=2` |
+| 3 | 2 | `2*2+2=6`, `6 & 1 = 0` | true | yes | yes → `process(2)`, `i=3` |
 | 4 | 3 | `3*3+3=12`, `12 & 1 = 0` | true | **no** (`3 < 3` is false) | **no**, the loop ends |
 
-Result: the loop runs exactly **3 times** (`i = 0, 1, 2`), exactly as expected. But notice: `hep_dogru(i)` **always**
-returns `true` — so an analysis tool, to understand when the loop terminates, has to track not `hep_dogru` but the
-comparison `i < GERCEK_SINIR`; and to **prove** that `hep_dogru` is always true, it also has to solve the integer
+Result: the loop runs exactly **3 times** (`i = 0, 1, 2`), exactly as expected. But notice: `always_true(i)` **always**
+returns `true` — so an analysis tool, to understand when the loop terminates, has to track not `always_true` but the
+comparison `i < REAL_LIMIT`; and to **prove** that `always_true` is always true, it also has to solve the integer
 identity above. Two separate analysis burdens land on the same line.
 
 ### RULE K-02 — Encoding arithmetic instructions
@@ -787,7 +821,7 @@ by a small computation:
 ```c title="Constant transform: 0x2A isn't directly visible"
 
 /* Produce it from two parts instead of 0x2A; a '0x2A' search in the binary returns nothing. */
-static uint8_t esik(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
+static uint8_t threshold(void) { uint8_t a = 0x37, b = 0x1D; return (uint8_t)(a ^ b); } /* = 0x2A */
 ```
 
 **Cost:** low. **Limit:** modern decompilers and tools like `arybo`/`msynth` can simplify many MBA expressions; it
@@ -808,7 +842,7 @@ Both give `8` — the identity is confirmed. This is a valid algebraic identity 
 `2·(a&b)` term compensates for the carry bit); if the compiler produces this instead of `a+b`, the binary shows no
 plain "addition" — it shows three separate instructions (XOR, AND, shift+add).
 
-Using the same logic, let's also verify the `0x2A` constant produced by the rule's `esik()` function
+Using the same logic, let's also verify the `0x2A` constant produced by the rule's `threshold()` function
 (`a = 0x37`, `b = 0x1D`):
 
 | Bit | `0x37` | `0x1D` | XOR |
@@ -821,7 +855,7 @@ never sits **anywhere** as a single byte; only `0x37` and `0x1D` sit there, so a
 **returns nothing**.
 
 !!! danger "Common mistake: applying the transform only to compile-time constants"
-    If you write the `esik()` example as a preprocessor macro like `#define ESIK ((0x37) ^ (0x1D))`, the compiler
+    If you write the `threshold()` example as a preprocessor macro like `#define THRESHOLD ((0x37) ^ (0x1D))`, the compiler
     will **constant-fold** this expression at compile time and embed `0x2A` directly into the binary — the MBA
     transform exists in the source, but **not in the binary**. **Rule:** verify in the compiled binary
     (`objdump`/`strings`) that the transform is really computed **at runtime**, not simplified away at compile
@@ -837,11 +871,11 @@ The guide writes these two as **separate** rules, and the difference matters:
 | --- | --- | --- |
 | Does it run? | **Yes**, it runs but doesn't change the result | **No**, it never runs (protected by an opaque predicate) |
 | Purpose | Hide real operations in a crowd | Show the analyst a fake execution path |
-| Example | Adding `x ^ x` to a CRC computation (result unchanged) | The code inside `if (opak_yanlis()) { ... }` |
+| Example | Adding `x ^ x` to a CRC computation (result unchanged) | The code inside `if (opaque_false()) { ... }` |
 
 ```c title="Bogus operation: doesn't change the result, just crowds the code"
-crc = crc32_guncelle(crc, veri, n);
-crc ^= (sabit ^ sabit);   /* = crc; bogus operation, result unchanged */
+crc = crc32_update(crc, data, n);
+crc ^= (constant ^ constant);   /* = crc; bogus operation, result unchanged */
 ```
 
 **What does it protect?** The real logic, by surrounding it with meaningless-but-plausible-looking code. **Cost:**
@@ -850,15 +884,15 @@ elimination can drop a dead branch once the opaque predicate protecting it is so
 predicate's quality. **Measurement:** how long it takes to tell dead branches apart from real ones.
 
 **Worked example: does the bogus operation really leave the result unchanged?** Let's verify the
-`crc ^= (sabit ^ sabit)` line above with a number (let `sabit = 0x11`): `sabit ^ sabit = 0x11 ^ 0x11 = 0x00` (any
+`crc ^= (constant ^ constant)` line above with a number (let `constant = 0x11`): `constant ^ constant = 0x11 ^ 0x11 = 0x00` (any
 value XORed with itself always gives `0` — the same XOR identity from section 0). The operation `crc ^= 0x00`
-leaves `crc` **unchanged** (`x ^ 0 = x`). So no matter what `sabit` is, this line is mathematically a no-op every
+leaves `crc` **unchanged** (`x ^ 0 = x`). So no matter what `constant` is, this line is mathematically a no-op every
 time; its crowding effect lives only in the **compiled instruction count**, not in `crc`'s value.
 
 !!! danger "Common mistake: letting the compiler silently delete the bogus operation"
     An optimising compiler (`-O2`, `-O3`) may spot an operation whose result is used nowhere and can be
     **proven** mathematically to have no effect, classify it as dead code, and **remove it entirely**. A line such
-    as `crc ^= (sabit ^ sabit)` — if the compiler constant-folds it — becomes `crc ^= 0`, which it then sees does
+    as `crc ^= (constant ^ constant)` — if the compiler constant-folds it — becomes `crc ^= 0`, which it then sees does
     nothing and deletes — the obfuscation vanishes without you noticing. **Rule:** values used in bogus operations
     must be determined **at runtime** (e.g., tied to an input or an opaque predicate), never fixed at compile time;
     also always verify obfuscation on a binary compiled **with optimisation on** (using the compiler flag defined
@@ -871,16 +905,21 @@ block leads to which." **How?** In the guide's words, **vertical** control flow 
 basic blocks are moved into a `switch` dispatcher inside a single loop; the sequence is read only from a **state
 variable**.
 
+**Origin:** this technique traces back academically to Wang, Hill, Knight, and Davidson's **2000** report
+"Software Tamper Resistance: Obstructing Static Analysis of Programs" — they proved that flattening combined
+with aliased-pointer indirect addressing makes precise static analysis **NP-hard** in the general case (see the
+history box in section 1).
+
 ```c title="Flattening template (from week 4; here we strengthen it)"
-int durum = BASLA;
+int state = START;
 for (;;) {
-    switch (durum) {
-    case BASLA:  durum = ADIM1; break;
-    case ADIM1:  durum = kosul ? ADIM2 : HATA; break;
-    case ADIM2:  durum = BITIR; break;
-    case HATA:   return RED;
-    case BITIR:  return IZIN;
-    default:     return RED;          /* random exit lands here (K-05) */
+    switch (state) {
+    case START:  state = STEP1; break;
+    case STEP1:  state = condition ? STEP2 : FAIL; break;
+    case STEP2:  state = DONE; break;
+    case FAIL:   return DENIED;
+    case DONE:   return GRANTED;
+    default:     return DENIED;          /* random exit lands here (K-05) */
     }
 }
 ```
@@ -905,10 +944,10 @@ node/edge count in a decompiler, time required to trace a single check.
 (unflattened) function:
 
 ```c title="Before flattening: natural (vertical) flow"
-int denetim(int girdi) {
-    int a = girdi + 1;      /* Block 1 */
+int check(int input) {
+    int a = input + 1;      /* Block 1 */
     if (a > 10) {            /* Block 2 */
-        return HATA;
+        return FAIL;
     }
     return a * 2;             /* Block 3 */
 }
@@ -917,44 +956,55 @@ int denetim(int girdi) {
 Let's move these three blocks by hand into the flattened form using K-04's template:
 
 ```c title="After flattening: the same three blocks, inside a single switch"
-int denetim(int girdi) {
-    int durum = B1, a = 0;
+int check(int input) {
+    int state = S1, a = 0;
     for (;;) {
-        switch (durum) {
-        case B1: a = girdi + 1; durum = B2; break;
-        case B2: durum = (a > 10) ? B_HATA : B3; break;
-        case B3: return a * 2;
-        case B_HATA: return HATA;
-        default: return HATA;      /* random exit lands here (K-05) */
+        switch (state) {
+        case S1: a = input + 1; state = S2; break;
+        case S2: state = (a > 10) ? S_FAIL : S3; break;
+        case S3: return a * 2;
+        case S_FAIL: return FAIL;
+        default: return FAIL;      /* random exit lands here (K-05) */
         }
     }
 }
 ```
 
-Let's trace `girdi = 4` by hand: `durum=B1` → `a = 4+1 = 5`, `durum=B2`. `durum=B2` → `a(5) > 10` is false,
-`durum=B3`. `durum=B3` → `return 5*2 = 10`. **Both versions return the same `10` for the same `girdi`** — the
+Let's trace `input = 4` by hand: `state=S1` → `a = 4+1 = 5`, `state=S2`. `state=S2` → `a(5) > 10` is false,
+`state=S3`. `state=S3` → `return 5*2 = 10`. **Both versions return the same `10` for the same `input`** — the
 behaviour is preserved, only the **shape** of the flow has changed: in the natural version the three blocks read
 one after another, while in the flattened version they all look like equal-distance branches of a single
-`switch`, and the **natural adjacency** information between them (B1 is always followed by B2) has been erased
-from the CFG; it can now only be read from `durum`'s value at runtime.
+`switch`, and the **natural adjacency** information between them (S1 is always followed by S2) has been erased
+from the CFG; it can now only be read from `state`'s value at runtime.
 
 !!! danger "Common mistake: leaving state values sequential"
-    Using sequential constants like `B1=1, B2=2, B3=3, B_HATA=4` makes the flattening **look** present but actually
+    Using sequential constants like `S1=1, S2=2, S3=3, S_FAIL=4` makes the flattening **look** present but actually
     weak: an analyst can read the `case` order and easily guess the original flow. **Rule:** state values should
     be produced with K-02 (arithmetic encoding) or with random, scattered constants; they must not be consecutive
     integers — otherwise the flattening has only added **visual noise**, not real protection.
+
+Let's now see this in this week's **real** demo instead of the conceptual `check` example: `clean.c`'s natural
+if-chain versus `obfuscated.c`'s `switch` dispatcher, side by side, for the same 10 tokens.
+
+<iframe class="dsanim" src="../anim/flow-flattening-dispatcher.html" title="Control-flow flattening: the dispatcher state machine" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Control-flow flattening — step by step](anim/flow-flattening-dispatcher.png)
+</div>
+
+Compare the **normal** (plain version) and **hard** (flattened version, same tokens) presets; the two **edge
+cases** (all valid, all wrong length) show the dispatcher's shortest and longest paths.
 
 ### RULE K-05 — Random exit from control flow
 
 **What does it protect?** **Where** a check fails. Attackers often look for the "failure branch" and try to turn
 it into the "success branch." **How?** As the guide describes it: when a check fails, the program does not go
-straight to a `return RED` line; instead the state variable is set to an **unpredictable, large value** and the
+straight to a `return DENIED` line; instead the state variable is set to an **unpredictable, large value** and the
 function exits through the `default` branch. Successful exit can use the same trick, so success and failure look
 alike in the flow.
 
 ```c title="Random exit: the failure point can't be read off the flow"
-if (!imza_gecerli(p)) {
-    durum = kararsiz_deger();   /* a value not defined in the switch → default */
+if (!signature_valid(p)) {
+    state = unpredictable_value();   /* a value not defined in the switch → default */
     break;
 }
 ```
@@ -964,7 +1014,7 @@ for a "find and flip the failure branch" attack; ideally a single byte patch sho
 check.
 
 !!! danger "Common mistake: using the same sentinel value for every failure state"
-    If `kararsiz_deger()` always returns the same constant (e.g., always `0xDEADBEEF`), an attacker can `grep` for
+    If `unpredictable_value()` always returns the same constant (e.g., always `0xDEADBEEF`), an attacker can `grep` for
     that constant once in the binary and find **all** the failure points at once — the random exit's purpose is
     defeated. **Rule:** the sentinel value must be **different** at every call site (either generated from a seed
     as in K-11, or a separate constant per call site); otherwise a "random exit" is really just **one fixed
@@ -978,7 +1028,7 @@ parameters.
 
 **What does it protect?** Hints like "this function calls `memcmp`, so it must be doing a comparison." Standard
 library calls tell the attacker directly what a function does. **How?** On critical paths, standard library
-functions are replaced with **your own internal versions** (e.g., your own constant-time `esit_mi` function), so
+functions are replaced with **your own internal versions** (e.g., your own constant-time `is_equal` function), so
 the linker never shows a recognisable name. The guide also lists **hiding function parameters** and **adding
 bogus parameters** as separate rules: unused fake parameters are placed alongside the real ones, making the
 signature misleading to an attacker.
@@ -990,19 +1040,19 @@ it does; this is a **delaying** rule. **Measurement:** count of recognisable lib
 standard `memcmp` because it is recognisable; but the real payoff is closing a familiar side channel from [week 3](../week-3/cen429-week-3.md):
 
 ```c title="Constant-time comparison (concept)"
-static int sabit_zamanli_esit_mi(const uint8_t *a, const uint8_t *b, size_t n) {
-    uint8_t fark = 0;
+static int constant_time_equals(const uint8_t *a, const uint8_t *b, size_t n) {
+    uint8_t diff = 0;
     for (size_t i = 0; i < n; i++) {
-        fark |= (uint8_t)(a[i] ^ b[i]);   /* every byte is processed, does NOT stop at the first mismatch */
+        diff |= (uint8_t)(a[i] ^ b[i]);   /* every byte is processed, does NOT stop at the first mismatch */
     }
-    return fark == 0;                      /* a single comparison, at the end of the array */
+    return diff == 0;                      /* a single comparison, at the end of the array */
 }
 ```
 
-Let's trace it for `a = {0x41,0x42,0x43}`, `b = {0x41,0x00,0x43}`: `i=0`: `0x41^0x41=0x00`, `fark = 0x00`. `i=1`:
-`0x42^0x00=0x42`, `fark = 0x00 | 0x42 = 0x42`. `i=2`: `0x43^0x43=0x00`, `fark = 0x42 | 0x00 = 0x42`. The loop
+Let's trace it for `a = {0x41,0x42,0x43}`, `b = {0x41,0x00,0x43}`: `i=0`: `0x41^0x41=0x00`, `diff = 0x00`. `i=1`:
+`0x42^0x00=0x42`, `diff = 0x00 | 0x42 = 0x42`. `i=2`: `0x43^0x43=0x00`, `diff = 0x42 | 0x00 = 0x42`. The loop
 **always runs all three steps**, never returning early even though the mismatch is found at `i=1`; at the end
-`fark = 0x42 ≠ 0`, and `esit_mi` returns `0` (false). A standard `memcmp` or a hand-written
+`diff = 0x42 ≠ 0`, and `constant_time_equals` returns `0` (false). A standard `memcmp` or a hand-written
 `for (...) if (a[i]!=b[i]) return 0;` would **return early** at `i=1` — a classic timing channel that can leak
 **where** the mismatch occurred through runtime (the same `CRYPTO_memcmp` rule from week 3). K-06's payoff is
 twofold: the `memcmp` name no longer appears in the binary, and the comparison is constant-time.
@@ -1010,11 +1060,11 @@ twofold: the `memcmp` name no longer appears in the binary, and the comparison i
 **A bogus parameter example.** The rule's second part — bogus parameters — makes the signature misleading:
 
 ```c title="Bogus parameter: the signature becomes misleading"
-/* Real signature: int erisim_kontrol(const char *kod); */
-int erisim_kontrol(const char *kod, int gunluk_seviyesi, void *ayarlar) {
-    (void)gunluk_seviyesi;   /* unused — bogus parameter */
-    (void)ayarlar;           /* unused — bogus parameter */
-    return sabit_zamanli_esit_mi((const uint8_t *)kod, GERCEK_KOD, GERCEK_KOD_UZUNLUK);
+/* Real signature: int access_check(const char *code); */
+int access_check(const char *code, int log_level, void *settings) {
+    (void)log_level;   /* unused — bogus parameter */
+    (void)settings;           /* unused — bogus parameter */
+    return constant_time_equals((const uint8_t *)code, REAL_CODE, REAL_CODE_LENGTH);
 }
 ```
 
@@ -1050,12 +1100,12 @@ strings are **encoded before compilation** (e.g., encrypted with an XOR key or a
 the binary, are **decoded only at the moment of use**, and are **wiped from memory** the instant the job is done.
 
 ```c title="String encoding: use then wipe immediately (synthetic)"
-static const uint8_t GIZLI[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* not "merhaba"; synthetic */
-void kullan(void) {
-    char tmp[sizeof GIZLI];
-    for (size_t i = 0; i < sizeof GIZLI; i++) tmp[i] = GIZLI[i] ^ 0x5A;  /* decode */
-    isle(tmp, sizeof GIZLI);
-    memset_s_benzeri(tmp, sizeof tmp);   /* wipe immediately after use (week 3) */
+static const uint8_t HIDDEN[] = { 0x3B,0x2A,0x2E,0x2E,0x2D };   /* not "merhaba"; synthetic */
+void use(void) {
+    char tmp[sizeof HIDDEN];
+    for (size_t i = 0; i < sizeof HIDDEN; i++) tmp[i] = HIDDEN[i] ^ 0x5A;  /* decode */
+    process(tmp, sizeof HIDDEN);
+    secure_wipe(tmp, sizeof tmp);   /* wipe immediately after use (week 3) */
 }
 ```
 
@@ -1064,11 +1114,11 @@ void kullan(void) {
 **split and distributed**, and the decoding function is protected with additional checks. **Measurement:** the
 sensitive string **must not be found** in `strings` output.
 
-**Worked example: let's decode the `GIZLI` array above by hand.** Let's decode the array
-`GIZLI = {0x3B, 0x2A, 0x2E, 0x2E, 0x2D}` from the code block one byte at a time, XORing each byte with `0x5A` (the
+**Worked example: let's decode the `HIDDEN` array above by hand.** Let's decode the array
+`HIDDEN = {0x3B, 0x2A, 0x2E, 0x2E, 0x2D}` from the code block one byte at a time, XORing each byte with `0x5A` (the
 same method as the bit table in section 0):
 
-| Index | `GIZLI[i]` | `^ 0x5A` (bit computation) | Result (hex) | ASCII |
+| Index | `HIDDEN[i]` | `^ 0x5A` (bit computation) | Result (hex) | ASCII |
 | --- | --- | --- | --- | --- |
 | 0 | `0x3B` = `0011 1011` | `0011 1011 ^ 0101 1010` | `0110 0001` = `0x61` | `'a'` |
 | 1 | `0x2A` = `0010 1010` | `0010 1010 ^ 0101 1010` | `0111 0000` = `0x70` | `'p'` |
@@ -1083,7 +1133,7 @@ finds no readable text (these five bytes may fall outside the printable ASCII ra
 the attacker's first and cheapest step (the "first 10 minutes" from section 3) comes up **empty** here.
 
 !!! danger "Common mistake: assuming `memset` 'wiped' the secret"
-    The code example's `memset_s_benzeri(tmp, sizeof tmp)` line specifically calls a **non-ordinary** function, not
+    The code example's `secure_wipe(tmp, sizeof tmp)` line specifically calls a **non-ordinary** function, not
     a plain `memset`; the reason is compiler optimisations. If a variable goes out of scope right after it's used
     (the function ends), an optimising compiler may perform **dead store elimination**, deciding "this `memset`
     call has no observable effect" and deleting it — the decoded secret stays **unwiped** in memory. **Rule:** use
@@ -1096,6 +1146,17 @@ the attacker's first and cheapest step (the "first 10 minutes" from section 3) c
     concrete form of the "obfuscation does not store keys" rule from section 1. For real keys, use whitebox
     ([week 11](../week-11/cen429-week-11.md)) or hardware.
 
+Let's now look at this week's **real** `obfuscated.c` code instead of the conceptual `HIDDEN`/`apttw` example —
+`ENCODED[]`'s whole lifetime: stays encoded, decoded only at use, wiped immediately:
+
+<iframe class="dsanim" src="../anim/string-encryption.html" title="String encryption: stays encoded, decoded at use, wiped immediately" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![String encryption — step by step](anim/string-encryption.png)
+</div>
+
+Try the **normal**, **hard** (the valid token repeated — does the wipe run every time?) and two **edge-case**
+presets.
+
 ### RULE K-08 — Constant transforms, opaque booleans, and function boolean returns
 
 The guide makes a separate rule out of how security results are represented. Returning a check's result as a plain
@@ -1105,9 +1166,9 @@ byte. Functions likewise return this kind of **opaque return code** instead of a
 
 ```c title="Opaque boolean: a single-byte patch can't flip the result (concept)"
 /* The "allow" value isn't a single constant; it's derived from two states, and the caller verifies both. */
-typedef struct { uint32_t a, b; } Karar;
-static Karar izin_ver(void)  { return (Karar){ 0xA3C1u, 0x5C3Eu }; } /* a ^ b == 0xFFFF */
-static int  karar_izin_mi(Karar k) { return (k.a ^ k.b) == 0xFFFFu; }
+typedef struct { uint32_t a, b; } Decision;
+static Decision allow(void)  { return (Decision){ 0xA3C1u, 0x5C3Eu }; } /* a ^ b == 0xFFFF */
+static int  decision_grants(Decision k) { return (k.a ^ k.b) == 0xFFFFu; }
 ```
 
 **Cost:** low. **Limit:** it can be solved given enough scrutiny; its purpose is to block a single-byte patch and
@@ -1137,7 +1198,7 @@ only the **low byte** of `a` from `0xC1` to `0x00` (`a` becomes `0xA300`). New r
 | 7–4 | `0`=`0000` | `3`=`0011` | `3` |
 | 3–0 | `0`=`0000` | `E`=`1110` | `E` |
 
-Result: `0xFF3E` — **not equal** to `0xFFFF`. The `karar_izin_mi` function's `(k.a ^ k.b) == 0xFFFFu` check now
+Result: `0xFF3E` — **not equal** to `0xFFFF`. The `decision_grants` function's `(k.a ^ k.b) == 0xFFFFu` check now
 returns `false`: a crude single-byte patch **fails** to trigger "allow." For the attack to work, both `a` and `b`
 must be changed **consistently with each other** — meaning the attacker has to find and change at least two
 independent points at once, not one; this is exactly the numeric meaning of the "Measurement" line's "number of
@@ -1149,6 +1210,16 @@ independent points > 1."
     pattern behind **all** the allow points — the same mistake as "using the same sentinel everywhere" in K-05.
     **Rule:** use a **different** target constant for each function/check (e.g., `0xA5C3`, `0x3D71`, ...); the
     constant itself can also be encoded with K-02.
+
+This week's demo applies the same idea in `obfuscated.c`'s `Decision{a,b}` — compared side by side with a plain
+`int result` (0/1): which one gives its meaning away instantly in a memory dump?
+
+<iframe class="dsanim" src="../anim/data-encoding.html" title="Data encoding: an opaque boolean, one bit split into two fields" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Data encoding: opaque boolean — step by step](anim/data-encoding.png)
+</div>
+
+Try the **normal**, **hard** (alternating GRANTED/DENIED) and two **edge-case** presets.
 
 ### RULE K-09 — Variable splitting, merging, and array restructuring
 
@@ -1165,28 +1236,28 @@ recognise the sensitive buffer from its memory pattern.
 (32-bit). Instead of keeping it as a single 4-byte block, let's split it into two separate 16-bit **shares**:
 
 ```c title="Variable splitting and re-merging"
-uint16_t yuksek = 0x1234;   /* upper 16 bits — in a separate variable, perhaps a separate struct */
-uint16_t dusuk  = 0xABCD;   /* lower 16 bits — kept somewhere else in the code */
+uint16_t high = 0x1234;   /* upper 16 bits — in a separate variable, perhaps a separate struct */
+uint16_t low  = 0xABCD;   /* lower 16 bits — kept somewhere else in the code */
 
-uint32_t deger = ((uint32_t)yuksek << 16) | dusuk;   /* re-merged at the moment of use */
+uint32_t value = ((uint32_t)high << 16) | low;   /* re-merged at the moment of use */
 ```
 
-Let's verify: `yuksek << 16` shifts `0x1234` left by 16 bits → `0x12340000`. OR-ing this with
-`dusuk = 0x0000ABCD` gives: `0x12340000 | 0x0000ABCD = 0x1234ABCD` — exactly the original value, recovered.
+Let's verify: `high << 16` shifts `0x1234` left by 16 bits → `0x12340000`. OR-ing this with
+`low = 0x0000ABCD` gives: `0x12340000 | 0x0000ABCD = 0x1234ABCD` — exactly the original value, recovered.
 
 Let's think about why this works from the point of view of a memory-scanning tool: such a tool usually looks for
 "a contiguous, high-entropy block of 4 (or 16/32) bytes" — this is where the entropy definition from section 0 gets
-used in practice (e.g., an AES key looking like "sequence B" in memory). `yuksek` and `dusuk` sit in separate
+used in practice (e.g., an AES key looking like "sequence B" in memory). `high` and `low` sit in separate
 variables, and depending on the compiler's choices may even end up at **non-adjacent** addresses in memory; the
 scanned block is no longer 4 bytes but two separate 2-byte pieces, and the information "these two combine to form
 a key" is **never written explicitly** in the code, it hides only in the merge expression.
 
 !!! danger "Common mistake: producing the merged value early and keeping it in memory for a long time"
-    Splitting/merging only pays off as long as merging happens **at the moment of use**. If the `deger` variable
+    Splitting/merging only pays off as long as merging happens **at the moment of use**. If the `value` variable
     is computed once at the start of the function and kept around for the rest of the function (or stored
     permanently in a struct), you again end up with a single, whole, recognisable 32-bit block — K-09's benefit is
     lost. **Rule:** merge only at the **exact moment it's needed**, then wipe it immediately after use (as in K-07,
-    with `memset_s`); keeping the parts (`yuksek`, `dusuk`) separate is always safer than keeping the merged form
+    with `memset_s`); keeping the parts (`high`, `low`) separate is always safer than keeping the merged form
     around.
 
 ## 7. Whole-program-level rules
@@ -1212,15 +1283,15 @@ complex; but to see the mechanism, let's build a tiny three-instruction "virtual
 
 ```c title="Virtualisation idea (small, conceptual example — not real Tigress output)"
 enum { OP_PUSH, OP_ADD, OP_RET };
-uint8_t kod[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* bytecode for 'compute 5 + 7' */
+uint8_t bytecode[] = { OP_PUSH, 5, OP_PUSH, 7, OP_ADD, OP_RET };   /* bytecode for 'compute 5 + 7' */
 
-int yorumla(const uint8_t *kod, size_t n) {
-    int yigin[8], sp = 0, pc = 0;
+int interpret(const uint8_t *bytecode, size_t n) {
+    int stack[8], sp = 0, pc = 0;
     for (;;) {
-        switch (kod[pc++]) {
-        case OP_PUSH: yigin[sp++] = kod[pc++]; break;
-        case OP_ADD:  { int b = yigin[--sp], a = yigin[--sp]; yigin[sp++] = a + b; } break;
-        case OP_RET:  return yigin[--sp];
+        switch (bytecode[pc++]) {
+        case OP_PUSH: stack[sp++] = bytecode[pc++]; break;
+        case OP_ADD:  { int b = stack[--sp], a = stack[--sp]; stack[sp++] = a + b; } break;
+        case OP_RET:  return stack[--sp];
         }
     }
 }
@@ -1236,16 +1307,16 @@ Let's trace it by hand (stack `sp`, program counter `pc`):
 | 4 | 5 | `OP_RET` | return `12` | — | — |
 
 Result `12 = 5 + 7` — correct. Now let's look at what a reverse engineer actually sees: in the binary they find a
-generic, `switch`-driven loop called `yorumla`, and somewhere separate a byte array like `{0, 5, 0, 7, 1, 2}`.
-There is **nowhere** an instruction that says "5 plus 7"; the addition is a **side effect** produced by `yorumla`
+generic, `switch`-driven loop called `interpret`, and somewhere separate a byte array like `{0, 5, 0, 7, 1, 2}`.
+There is **nowhere** an instruction that says "5 plus 7"; the addition is a **side effect** produced by `interpret`
 processing these six bytes in a particular order. To understand the real logic, the analyst first has to solve
-`yorumla` itself (the VM), then interpret each bytecode sequence separately — this is exactly where K-10's limit,
-"cost is high but once the VM is solved everything opens up," comes from: `yorumla` itself is a single place, and
+`interpret` itself (the VM), then interpret each bytecode sequence separately — this is exactly where K-10's limit,
+"cost is high but once the VM is solved everything opens up," comes from: `interpret` itself is a single place, and
 once it is solved every bytecode sequence becomes readable.
 
-**Let's see the cost, roughly, as an order of magnitude.** Look again at the `yorumla` function above: a single
+**Let's see the cost, roughly, as an order of magnitude.** Look again at the `interpret` function above: a single
 addition like `5 + 7` needs just **one** instruction (`add`) in real machine code, but in the interpreted version
-every step requires: reading the bytecode (`kod[pc++]`), deciding which operation it is with `switch`, popping
+every step requires: reading the bytecode (`bytecode[pc++]`), deciding which operation it is with `switch`, popping
 value(s) off the stack, doing the operation, pushing the result, advancing the program counter. A single
 "addition" ends up costing at least 5–6 real machine instructions; if the addition is called **repeatedly inside a
 loop**, this multiplier repeats too. In the literature, bytecode interpretation causing **up to a 10x** slowdown
@@ -1278,7 +1349,13 @@ medium; the performance impact depends on which passes are selected. **Limit:** 
 produce are recognisable; you need to stay current with the tool's version. **Measurement:** the difference between
 binaries produced by the same passes with different seeds (the diversification metric, section 5).
 
-**Conceptual example: same source, two seeds, two different binaries.** Suppose we compile the same `erisim_ver`
+**Origin:** Obfuscator-LLVM was presented by Junod, Rinaldini, Wehrli, and Michielin in **2015** as "Obfuscator-LLVM
+— Software Protection for the Masses," at the IEEE/ACM SPRO (Software Protection) workshop: it is implemented as
+passes (flattening, bogus control flow, instruction substitution) that run on LLVM's language-independent
+intermediate representation (IR) — this is the **automated, compiler-level** form of this week's K-01/K-02/K-04
+rules.
+
+**Conceptual example: same source, two seeds, two different binaries.** Suppose we compile the same `grant_access`
 source twice with an O-LLVM-based compiler, changing only the `--Seed` value. The source code is **byte-for-byte
 identical**; what changes is the compiler's **random choices**:
 
@@ -1288,7 +1365,7 @@ identical**; what changes is the compiler's **random choices**:
 | Which opaque predicate pattern is chosen (K-01) | one from the `x*(x+1)` family | a **different** identity from the same family |
 | Order of basic blocks inside the `switch` | one permutation | another permutation |
 
-**What doesn't change?** When `erisim_ver("CEN429-OK")` is called, both binaries return the **same** result — the
+**What doesn't change?** When `grant_access("CEN429-OK")` is called, both binaries return the **same** result — the
 source code and the behaviour are identical, only the compiled **shape** differs. This is exactly the phenomenon
 we'll see under "diversification" in section 8; O-LLVM just produces it automatically at compile time instead of
 by hand.
@@ -1377,6 +1454,25 @@ script they produce can be distributed to **all** users, then a single crack ope
 means producing **different-but-behaviourally-equivalent** binaries from the same source; that way an automated
 attack developed against one copy does not work against the others.
 
+### Origin and history: an idea borrowed from biology
+
+The security idea behind diversification comes from operating-systems research, drawing directly on biology:
+
+- **1993** — Fred Cohen, in "Operating System Protection Through Program Evolution" (*Computers & Security*,
+  Vol. 12, Issue 6), proposes equipping the system being protected with software that modifies it on an ongoing
+  basis, so diversity happens **over time**: today's program differs from tomorrow's, so a weakness an attacker
+  finds does not stay valid forever. This is the root of the **diversification in time** idea below.
+- **1997** — Stephanie Forrest, Anil Somayaji, and David Ackley, in "Building Diverse Computer Systems" (6th
+  Workshop on Hot Topics in Operating Systems — HotOS), carry over the observation that **diversity** is what
+  gives biological populations robustness: they show that randomized transforms that do not change a program's
+  specified behaviour (e.g., randomizing how much memory a stack frame allocates) can disrupt even a simple
+  buffer-overflow attack. This is the root of the **diversification in space** idea below.
+
+Both papers share the same observation: diversity in nature keeps a single weakness from wiping out an **entire
+population** (a disease kills the individuals without resistance, not the whole species); the same idea in
+software keeps a single crack from opening **every copy**. In [week 14](../week-14/cen429-week-14.md), Tigress's
+`--Seed` option compresses this thirty-year-old idea into a single command-line flag.
+
 ![Different binaries from the same source with different seeds](assets/h09-07-cesitlendirme.svg)
 
 - **Diversification in space:** each build or each distribution is obfuscated with a different **seed**; opaque
@@ -1394,7 +1490,7 @@ transform-combination features.
     against the other. Write this metric into your S9.
 
 **Worked example: let's compute the difference ratio numerically.** Let's turn the metric above into a concrete
-number. Say the flattened version of the protected `erisim_ver` function takes up **512 bytes** in the binary.
+number. Say the flattened version of the protected `grant_access` function takes up **512 bytes** in the binary.
 Comparing this function byte-by-byte between binaries produced with two different seeds, we measured **340 bytes**
 coming out different (a hypothetical but realistic demo result):
 
@@ -1409,6 +1505,13 @@ compiler couldn't change, such as the function's prologue/epilogue). If an attac
 Copy A (e.g., "write this value at this offset, so the check always allows") directly to Copy B, that offset now
 holds a **different instruction**, so the patch either does nothing or crashes the program. This is the numeric
 proof of "Rule 2 — break automation" from section 1.
+
+**This week's real measurement (separate from the hypothetical example above).** Running `demo.sh`/`demo.ps1`
+(`02-diversification`), comparing the `access_seed1001` and `access_seed2002` binaries at the **whole-file** level
+(Linux `cmp -l`) showed **~29 bytes** differ; `grant_access` itself compiles to **50 instructions** under both
+seeds — the same instruction count, but encoded with different `MASK`-dependent constants. The 512/340-byte
+example above is a **conceptual** illustration only (we did not isolate a single function's byte-level diff); the
+real number here is for the whole binary.
 
 !!! danger "Common mistake: mistaking a change in compiler optimisation level for diversification"
     Saying "I compiled with `-O3` instead of `-O2`, so now I have two different binaries" is **not**
@@ -1433,6 +1536,17 @@ and the old script also stops working in the next release (diversification in ti
     takeaway for the course: in your S9 writeup in section 12, describe diversification not as "I applied it once"
     but as "a process reapplied in every release."
 
+This week's real `02-diversification` demo compiles the same source (`diversified.c`) with two different `SEED`
+values: `MASK` and the dispatcher's `C0..C3` states change with the seed, but `grant_access` gives the SAME
+GRANTED/DENIED answer under both. Let's confirm it across 10 tokens:
+
+<iframe class="dsanim" src="../anim/diversification.html" title="Diversification: two seeds, same behavior, different binaries" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Diversification — step by step](anim/diversification.png)
+</div>
+
+Try the **normal**, **hard** (same length, different content) and two **edge-case** presets.
+
 ## 9. Measuring obfuscation
 
 Defending a protection decision requires **measuring** it. Collberg's framework evaluates obfuscation along four
@@ -1452,31 +1566,42 @@ These four metrics form a **trade-off**: raising potency and resilience raises c
 (more complex code draws more attention). A good engineering decision balances these four against the **value of
 the protected asset**.
 
-### Worked example: filling in the four metrics with numbers for `erisim_ver`
+### Worked example: filling in the four metrics with numbers for `grant_access`
 
-Let's spread the real demo measurements we met in section 4 (**28 → 51 instructions**, **3 → 6 branches**) across
-the four metrics here:
+Let's spread the real demo measurements we met in section 4 (**27 → 49 instructions**, **4 → 9 branches/calls**)
+across the four metrics here:
 
 **Potency.** Let's use McCabe's **cyclomatic complexity** idea as a rough approximate metric: for a function with
 one entry/one exit, `complexity ≈ number_of_branches + 1`.
 
 ```text
-Before  : 3 branches + 1 = 4
-After   : 6 branches + 1 = 7
-Increase: (7 − 4) / 4 × 100 = %75
+Before  : 4 branches/calls + 1 = 5
+After   : 9 branches/calls + 1 = 10
+Increase: (10 − 5) / 5 × 100 = %100
 ```
 
-Complexity rises from `4` to `7`, i.e. by **75%**: a human analyst tracing the function by hand now has to follow
-75% more "paths."
+Complexity rises from `5` to `10`, i.e. by **100%** (exactly doubles): a human analyst tracing the function by hand
+now has to follow twice as many "paths."
 
 **Cost.** Let's compute the rise in instruction count the same way:
 
 ```text
-(51 − 28) / 28 × 100 ≈ %82,1
+(49 − 27) / 27 × 100 ≈ %81.5
 ```
 
-So applying this one rule (K-04 + K-01 + K-05) has made the function **82%** bigger and probably a little slower —
-this is the concrete number to write into the "Cost" line of the protection rule template from section 4.
+So applying this one rule (K-04 + K-01 + K-05) has made the function **81.5%** bigger and probably a little
+slower — this is the concrete number to write into the "Cost" line of the protection rule template from section 4.
+
+Let's see these two real (static) numbers, and also the **dynamic** cost — how many steps actually run per call,
+across 10 tokens:
+
+<iframe class="dsanim" src="../anim/obfuscation-metrics.html" title="Measuring obfuscation: potency, resilience, cost, stealth" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Measuring obfuscation — step by step](anim/obfuscation-metrics.png)
+</div>
+
+Try the **normal**, **hard** (dispatcher mostly takes the full path) and two **edge-case** (cheapest/most expensive
+path) presets.
 
 **Resilience and stealth.** These two cannot be measured just by counting instructions/branches; resilience
 requires actually running a real deobfuscation tool (section 10) and measuring how long/successfully it "undoes"
@@ -1485,7 +1610,7 @@ the protection, and stealth requires checking whether the obfuscated code is sta
 only potency and cost; measuring resilience is the subject of the next section.
 
 !!! danger "Common mistake: measuring only cost and calling it 'strong'"
-    The conclusion "the binary grew 82%, so it must be well protected" is wrong — growth only shows **cost**, not
+    The conclusion "the binary grew 81.5%, so it must be well protected" is wrong — growth only shows **cost**, not
     **resilience** against being broken (as we'll see in section 10, a weak opaque predicate can add a lot of
     instructions and still be solved by a solver in seconds). **Rule:** report the four metrics separately; don't
     single out just one (usually "cost," the easiest to measure) and skip the others.
@@ -1504,7 +1629,7 @@ different code sections:
   **unnecessary** — here section 9's "cost" metric also works in the direction of "don't add unnecessary cost."
 - **Asset B — the `lisans_dogrula` function where the license key is verified.** Its value is high (tied to
   100,000 TL/year of revenue in the numeric example in section 1). Decision: K-04 + K-01 + K-05 + K-08 +
-  diversification applied together; the total cost (the **82%** instruction increase we measured in section 9) is
+  diversification applied together; the total cost (the **81.5%** instruction increase we measured in section 9) is
   accepted because the value of the protected asset justifies it.
 
 This comparison shows that "applying the same level of obfuscation to every function" can be **both needlessly
@@ -1533,11 +1658,11 @@ Instead of saying a protection is "strong," you need to say "it withstood this m
 
 ### How does symbolic execution break the opaque predicate in K-01? Step by step
 
-Let's return to the `opak_dogru(x) = ((x*(x+1)) & 1) == 0` predicate from section 5; the warning box there said it
+Let's return to the `opaque_true(x) = ((x*(x+1)) & 1) == 0` predicate from section 5; the warning box there said it
 is "a classic pattern, recognised in modern tools' libraries." Now let's see **why**.
 
 A symbolic execution tool (like KLEE) runs the program not with **concrete** values (like `x = 5`) but by keeping
-`x` as an unknown **symbol**. When it reaches the line `if (opak_dogru(x))`, the question it needs to ask is:
+`x` as an unknown **symbol**. When it reaches the line `if (opaque_true(x))`, the question it needs to ask is:
 
 > "Is `((x*(x+1)) & 1) == 0` true for **every** value of `x`, or is there an `x` that makes it false?"
 
@@ -1552,6 +1677,17 @@ true, the second (bogus) branch never runs," and automatically eliminates the de
 box for K-01 doesn't consider this **particular** identity strong enough on its own, and recommends
 seed-diversified predicates in [week 14](../week-14/cen429-week-14.md) that tire the solver out more (e.g., based on factorization or on inverting
 a hash function) — now we've also seen **why** that recommendation makes sense.
+
+Let's apply the same idea to this week's **real** `opaque_zero` in `obfuscated.c` — from the evaluator's point of
+view, from a periodicity proof all the way to constant folding:
+
+<iframe class="dsanim" src="../anim/deobfuscation.html" title="Deobfuscation: how symbolic simplification breaks an opaque predicate" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Deobfuscation — step by step](anim/deobfuscation.png)
+</div>
+
+Try the **normal**, **hard** and two **edge-case** presets (including alternating even/odd, which shows the
+period directly).
 
 ### How do MBA simplifiers undo K-02?
 
@@ -1705,7 +1841,8 @@ S9 — Advanced hardening (example draft)
      What does it protect? : the order in which the licence key is verified
      Against which threat? : static CFG reading, single-byte patch
      How?                  : switch dispatcher + x*(x+1)-based opaque predicate + unpredictable failure exit
-     Cost                  : instructions 28→51 (+%82), branches 3→6 (+%100) [measured with objdump]
+     Cost                  : instructions 27→49 (+%81.5), branches/calls 4→9 (+%125) [same order of magnitude
+                              as this week's real grant_access measurement; lisans_dogrula not separately measured]
      Limit                 : weak against symbolic execution (section 10); data still needs K-07 protection
      Measurement           : objdump output (appendix A), CFG node/edge count
 
@@ -1797,14 +1934,14 @@ numbers above come from this week's demo and should not be copy-pasted directly 
 ??? question "15. Verify that `(a ^ b) + 2·(a & b)` equals `a + b` for `a=5, b=3`. What are expressions of this kind called, and why aren't they strong enough on their own?"
     `a+b = 5+3 = 8`. `a^b = 0101^0011 = 0110 = 6`; `a&b = 0101&0011 = 0001 = 1`; `(a^b)+2·(a&b) = 6+2 = 8`. The two are equal — the identity is confirmed. Expressions of this kind are called **mixed boolean-arithmetic (MBA)** (K-02). They aren't strong enough alone because expression simplifiers like `arybo`/`msynth` can reduce expressions like this back to their original form (`a+b`) quickly by building a truth table at small bit widths; they only gain strength combined with control-flow obfuscation (K-04).
 
-??? question "16. In K-08's opaque boolean example, with `a=0xA3C1, b=0x5C3E`, why is `a^b` equal to `0xFFFF`? If the attacker only changes the low byte of `a` (`0xC1→0x00`), what does `karar_izin_mi` return?"
-    Because all four nibbles are each other's bitwise complement (`A=1010`↔`5=0101`, `3=0011`↔`C=1100`, `C=1100`↔`3=0011`, `1=0001`↔`E=1110`), their XORs always give `1111=F`, totalling `0xFFFF`. If `a`'s low byte is set to `0x00`, the new `a=0xA300`; `0xA300^0x5C3E = 0xFF3E ≠ 0xFFFF`, so `karar_izin_mi` returns **false (deny)** — the single-byte patch fails to trigger the attack, because `a` and `b` must change **together, consistently**.
+??? question "16. In K-08's opaque boolean example, with `a=0xA3C1, b=0x5C3E`, why is `a^b` equal to `0xFFFF`? If the attacker only changes the low byte of `a` (`0xC1→0x00`), what does `decision_grants` return?"
+    Because all four nibbles are each other's bitwise complement (`A=1010`↔`5=0101`, `3=0011`↔`C=1100`, `C=1100`↔`3=0011`, `1=0001`↔`E=1110`), their XORs always give `1111=F`, totalling `0xFFFF`. If `a`'s low byte is set to `0x00`, the new `a=0xA300`; `0xA300^0x5C3E = 0xFF3E ≠ 0xFFFF`, so `decision_grants` returns **false (deny)** — the single-byte patch fails to trigger the attack, because `a` and `b` must change **together, consistently**.
 
 ??? question "17. How is the value `0x1234ABCD` split into two 16-bit shares and merged back as in K-09? Why does this technique work against memory scanning?"
-    Splitting: `yuksek=0x1234`, `dusuk=0xABCD`. Merging: `(yuksek<<16)|dusuk`; `0x1234<<16 = 0x12340000`, OR-ing this with `0x0000ABCD` gives `0x1234ABCD` — the original value comes back. Why it works: memory-scanning tools usually look for "a contiguous, fixed-size, high-entropy block" (e.g., a 16/32-byte key pattern); once the value is split into two separate, non-adjacent variables, this "single block" pattern disappears.
+    Splitting: `high=0x1234`, `low=0xABCD`. Merging: `(high<<16)|low`; `0x1234<<16 = 0x12340000`, OR-ing this with `0x0000ABCD` gives `0x1234ABCD` — the original value comes back. Why it works: memory-scanning tools usually look for "a contiguous, fixed-size, high-entropy block" (e.g., a 16/32-byte key pattern); once the value is split into two separate, non-adjacent variables, this "single block" pattern disappears.
 
 ??? question "18. In section 7's small bytecode example, how does the stack change when `{OP_PUSH,5,OP_PUSH,7,OP_ADD,OP_RET}` runs, and what is the result? Why can't an analyst see this result directly 'in the source code'?"
-    In order: `OP_PUSH 5` → stack `[5]`; `OP_PUSH 7` → stack `[5,7]`; `OP_ADD` → pops `7` and `5`, pushes `5+7=12` → `[12]`; `OP_RET` → returns `12`. Result: `12`. The analyst can't see this in the source because there is no "addition" instruction anywhere — the addition is a **side effect** of the `yorumla` function processing these six bytes in a particular order; the interpreter (the VM) itself has to be solved first.
+    In order: `OP_PUSH 5` → stack `[5]`; `OP_PUSH 7` → stack `[5,7]`; `OP_ADD` → pops `7` and `5`, pushes `5+7=12` → `[12]`; `OP_RET` → returns `12`. Result: `12`. The analyst can't see this in the source because there is no "addition" instruction anywhere — the addition is a **side effect** of the `interpret` function processing these six bytes in a particular order; the interpreter (the VM) itself has to be solved first.
 
 ??? question "19. Why can a bogus operation in K-03 (`crc ^= sabit^sabit`) be completely deleted by an optimising compiler (`-O2`)? What do you do to prevent this?"
     `sabit^sabit` is always `0` (the XOR identity from section 0: a value XORed with itself gives `0`), and `crc^=0` leaves `crc` unchanged. The compiler can spot this by constant folding and remove it via **dead code elimination**, saying "this has no observable effect"; the obfuscation vanishes without you noticing. Prevention: decide the values used in the bogus operation **at runtime** (tied to an input/opaque predicate), never fix them at compile time; always verify obfuscation on a binary compiled with optimisation on.
@@ -1812,8 +1949,8 @@ numbers above come from this week's demo and should not be copy-pasted directly 
 ??? question "20. In section 8's example, if a 512-byte function's binaries produced with two seeds differ by 340 bytes, what is the difference ratio as a percentage? What does this ratio show, and what does it not show?"
     `fark_orani = 340/512×100 ≈ %66.4`. This shows how **different** the two copies look at the code level — it implies a high likelihood that a byte-level patch written for one copy will not work at the same offset in the other. What it does not show: it does not raise a single copy's **potency/resilience**; it only makes a crack harder to **scale** (section 8's main claim).
 
-??? question "21. In this week's demo, `erisim_ver` goes from 28→51 instructions, 3→6 branches after flattening. What is the simple cyclomatic complexity (branches+1) before/after, and by what percentage does it increase? Which metric (section 9) does this represent?"
-    Before: `3+1=4`. After: `6+1=7`. Increase: `(7-4)/4×100=%75`. This represents **potency** among section 9's four metrics — a rough indicator of how many paths a human analyst has to trace to understand the function; the `%82` increase in instruction count in the same example represents the **cost** metric.
+??? question "21. In this week's demo, `grant_access` goes from 27→49 instructions, 4→9 branches/calls after flattening. What is the simple cyclomatic complexity (branches+1) before/after, and by what percentage does it increase? Which metric (section 9) does this represent?"
+    Before: `4+1=5`. After: `9+1=10`. Increase: `(10-5)/5×100=%100`. This represents **potency** among section 9's four metrics — a rough indicator of how many paths a human analyst has to trace to understand the function; the `%81.5` increase in instruction count in the same example represents the **cost** metric.
 
 ??? question "22. Why does symbolic execution make K-01's `((x*(x+1))&1)==0` opaque predicate 'classic and weak'? How does a solver prove it?"
     Symbolic execution keeps `x` symbolic rather than concrete and asks a constraint solver "is this expression true for every `x`?" The solver splits `x` into even/odd (if even, `x=2k`; if odd, `x=2k+1`) and proves in both cases that `x*(x+1)` is a multiple of `2`, so `&1=0`. Because the proof takes seconds, the dead branch is eliminated automatically; that's why [week 14](../week-14/cen429-week-14.md) recommends predicates more resistant to solvers (based on factorization/hash values).

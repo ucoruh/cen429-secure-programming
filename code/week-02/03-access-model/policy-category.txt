@@ -1,0 +1,38 @@
+# CEN429 - Week 2 - Bell-LaPadula: level + CATEGORY (compartment) example
+# Label = (level, category set). The "need-to-know" principle: a high level
+# alone is not enough, you must also carry the object's categories.
+# A dominates B <=> level(A) >= level(B) AND categories(A) covers categories(B)
+
+MODEL   BLP
+
+LEVEL   Public     0
+LEVEL   Secret     1
+LEVEL   TopSecret  2
+
+SUBJECT analyst  Secret     EUROPE
+SUBJECT general  TopSecret  NUCLEAR,EUROPE
+SUBJECT attache  TopSecret  ASIA
+
+OBJECT  bulletin       Public
+OBJECT  europe_report  Secret     EUROPE
+OBJECT  asia_note      Secret     ASIA
+OBJECT  nuclear_plan   TopSecret  NUCLEAR
+OBJECT  joint_archive  TopSecret  NUCLEAR,EUROPE
+
+# DAC leaves everything open to everyone: let only BLP make the decisions
+RIGHT   *  *  rw
+
+# general (TopSecret,{NUCLEAR,EUROPE}) reads the Europe report: dominates -> allow
+REQUEST general  read   europe_report
+# general cannot read the Asia note: level is high enough, but no ASIA category
+REQUEST general  read   asia_note
+# attache is at the same level but has no NUCLEAR category -> deny
+REQUEST attache  read   nuclear_plan
+# analyst (Secret,{EUROPE}) can WRITE to the joint archive: the object dominates it (writing up)
+REQUEST analyst  write  joint_archive
+# analyst cannot write to the nuclear plan: the {NUCLEAR} set does not cover {EUROPE}
+REQUEST analyst  write  nuclear_plan
+# general cannot write to the public bulletin: writing down (the *-property)
+REQUEST general  write  bulletin
+# everyone can read the bulletin (every label dominates (Public,{}))
+REQUEST attache  read   bulletin

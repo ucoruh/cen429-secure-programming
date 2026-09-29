@@ -1,0 +1,17 @@
+# CEN429 — Week 2 — The same tree, after adding a DEFENSE
+# RASP (a debugger + hook detector) was added to the "read from memory"
+# branch: the cost of these cheap attacks has gone way up. The cheapest path
+# now changes.
+# Comparison: in tree-payment.txt the cheapest = 2; here the cheapest = ?
+
+GOAL: Obtain the payment key
+  AND Copy and decrypt the local database
+    LEAF Gain root privilege             cost=3
+    LEAF Recover the database key        cost=6
+  OR Read it from memory during use
+    LEAF Debugger (defeat anti-debug)         cost=9
+    LEAF Memory dump (defeat random wiping)   cost=8
+    LEAF Hook (defeat hook detection)         cost=10
+  AND Eavesdrop between the server and the phone
+    LEAF Break TLS / get a fake certificate accepted  cost=7
+    LEAF Break message-level encryption               cost=8

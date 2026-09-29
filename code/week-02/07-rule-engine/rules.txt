@@ -1,0 +1,44 @@
+# CEN429 — Week 2 — Demo 07: sample rule file (inspired by YARA)
+# Contains only HARMLESS patterns made up for this course.
+#
+#   rule <Name> {
+#     string $id = "text"               case-sensitive
+#     hex    $id = { 4d 41 ?? 49 }      ?? = any byte (wildcard)
+#     condition <expression>
+#   }
+#   Condition: $id   #id >= n   and   or   not   ( )
+#              n of them   all of them   any of them
+
+# 1) Two strings together: the toy capsule format
+rule Capsule_Format {
+  string $magic  = "CAPSULE/1"
+  string $decode = "DECODER:"
+  condition $magic and $decode
+}
+
+# 2) A hex pattern with a wildcard: "BLUE?CATS" (whatever the separator is)
+rule Marker_Hex {
+  hex $h = { 42 4c 55 45 ?? 43 41 54 53 }
+  condition $h
+}
+
+# 3) A plain word rule: flag it if two words appear (TOO BROAD)
+rule Word_Pair {
+  string $a = "download"
+  string $b = "run"
+  condition $a and $b
+}
+
+# 4) The same words + context: only in a file with the capsule format
+rule Word_Context {
+  string $a     = "download"
+  string $b     = "run"
+  string $magic = "CAPSULE/1"
+  condition ($a and $b) and $magic
+}
+
+# 5) A count condition: the same string at least three times
+rule Many_Repeats {
+  string $t = "TODO"
+  condition #t >= 3
+}

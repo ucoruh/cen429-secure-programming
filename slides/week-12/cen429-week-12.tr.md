@@ -356,7 +356,7 @@ Süreç üç aşamaya ayrılır:
 # Adım 1 · Değerlendirme hedefi (TOE)
 
 - Değerlendirilecek şey **benzersiz** tanımlanır.
-- Sürüm numarası **yetmez**: ikili + kaynak + özet değeri/etiket.
+- Sürüm numarası **yetmez**: binary + kaynak + özet değeri/etiket.
 - Kapsam dışı bileşenler yazılır.
 - **Projede:** S0, S1 (sürüm kimliği, 1. hafta).
 
@@ -370,7 +370,7 @@ Süreç üç aşamaya ayrılır:
 
 # Adım 1 · Neden benzersiz?
 
-- Rapor yalnız **incelenen** ikili için geçerlidir.
+- Rapor yalnız **incelenen** binary için geçerlidir.
 - "v1.2" iki farklı derlemeyi işaret edebilir.
 - Özet değeri (hash), tam olarak hangi dosya olduğunu sabitler.
 
@@ -524,6 +524,22 @@ Temel çizgi → talep → sınıflandırma → onay → geliştirme ve test →
 **Hazırlık:** 1 TOE · 2 belge · 3 gereksinim şablonu · 4 atölye
 **Değerlendirme:** 5 kod inceleme · 6 zafiyet · 7 sızma · 8 işlevsel
 **Sonuç:** 9 bulgu · 10 etki · 11 delta · 12 kalan risk · 13 değişiklik
+
+---
+
+# 13 adım (animasyon)
+
+<iframe class="dsanim" src="anim/evaluation-process-pipeline.html?mode=slide&lang=tr" title="Değerlendirme süreci: 13 adım, üç aşama"></iframe>
+
+<!-- Konuşma notu: bulgu sayısı arttıkça Süreklilik aşamasının (10-13) devreye girdiğini, hiç bulgu yoksa atlandığını gösterin. -->
+
+---
+
+# 13 adım — uç durum: en çok bulgu
+
+<iframe class="dsanim" src="anim/evaluation-process-pipeline.html?mode=slide&lang=tr&example=edge-many-findings" title="Uç durum: en yüksek gömülü bulgu sayısı"></iframe>
+
+<!-- Konuşma notu: bulgu sayısı ne olursa olsun 13 adımın sırası değişmez, yalnız Süreklilik'in çalışıp çalışmadığı değişir. -->
 
 ---
 
@@ -763,6 +779,22 @@ Bu, 4. haftadaki **güvenli derleme hattının** (CI'da SAST + sanitizer + fuzz)
 
 ---
 
+# Yöntemler yan yana (animasyon)
+
+<iframe class="dsanim" src="anim/vulnerability-assessment-methods.html?mode=slide&lang=tr" title="Zafiyet değerlendirme yöntemleri: yan yana"></iframe>
+
+<!-- Konuşma notu: karışık örneklemde hiçbir yöntemin tek başına her şeyi bulmadığını, en iyi ve en zayıf yöntemin farkını vurgulayın. -->
+
+---
+
+# Yöntemler — uç durum: hepsi mantık hatası
+
+<iframe class="dsanim" src="anim/vulnerability-assessment-methods.html?mode=slide&lang=tr&example=edge-all-logic" title="Uç durum: hepsi mantık hatası"></iframe>
+
+<!-- Konuşma notu: mantık hatalarında yalnız kod incelemesi ve sızma testinin işe yaradığını, SAST/DAST/fuzzing'in burada zayıf kaldığını gösterin. -->
+
+---
+
 # Bölüm 3 — kısa sınama
 
 1. Yöntemleri neden ucuzdan pahalıya sıralarız?
@@ -932,6 +964,22 @@ Mantık 9. haftadaki dört ölçütle aynı.
 
 ---
 
+# Saldırı potansiyeli hesaplayıcı (animasyon)
+
+<iframe class="dsanim" src="anim/attack-potential-calculator.html?mode=slide&lang=tr" title="Saldırı potansiyeli hesaplayıcı: 5 faktör → toplam → derece"></iframe>
+
+<!-- Konuşma notu: `rating()`'in gerçek kod satırlarını, hangi eşiğin tetiklendiğini program sayacıyla gösterin. -->
+
+---
+
+# Hesaplayıcı — uç durum: güvenli öğe çıkarma
+
+<iframe class="dsanim" src="anim/attack-potential-calculator.html?mode=slide&lang=tr&example=edge-secure-element" title="Uç durum: bütün faktörler en üst seviye → BEYOND"></iframe>
+
+<!-- Konuşma notu: en zor senaryoda bile hesabın aynı beş satırlık koddan geçtiğini, yalnız girdinin değiştiğini vurgulayın. -->
+
+---
+
 # CVSS nedir?
 
 - **CVSS (Common Vulnerability Scoring System):** bir zafiyetin **etkisini** standart bir puanla (0–10) ifade eder.
@@ -960,6 +1008,22 @@ Mantık 9. haftadaki dört ölçütle aynı.
 - Biri **olabilirliği** (saldırının zorluğu), öteki **etkiyi** (gizlilik/bütünlük/erişilebilirlik kaybı) tartar.
 - Raporda çoğunlukla **ikisi birden** verilir.
 - Önceliklendirme buna göre.
+
+---
+
+# CVSS ve saldırı potansiyeli (animasyon)
+
+<iframe class="dsanim" src="anim/cvss-vs-attack-potential.html?mode=slide&lang=tr" title="Aynı bulgu, iki puan: CVSS-benzeri ve saldırı potansiyeli"></iframe>
+
+<!-- Konuşma notu: iki eksenin nasıl birleşip tek bir öncelik kararına dönüştüğünü gösterin. -->
+
+---
+
+# CVSS/pot. — uç durum: ikisi de en yüksek
+
+<iframe class="dsanim" src="anim/cvss-vs-attack-potential.html?mode=slide&lang=tr&example=edge-highest" title="Uç durum: her iki eksende de en yüksek puan"></iframe>
+
+<!-- Konuşma notu: etki de saldırı da en uç noktadayken bile önceliğin ikisinin BİRLİKTE okunmasından çıktığını vurgulayın. -->
 
 ---
 
@@ -1008,6 +1072,22 @@ Her bulgu için dört adım:
 4. **Kapanış:** kimi bulgu "açık değil, iyi uygulama önerisi" olarak kapanır.
 
 Bu döngü → vize sonrası **bulgu–aksiyon listesinin** kaynağı (7. hafta).
+
+---
+
+# Bulgu döngüsü (animasyon)
+
+<iframe class="dsanim" src="anim/finding-recommendation-action-impact.html?mode=slide&lang=tr" title="Bulgu → öneri → aksiyon → kapanış döngüsü"></iframe>
+
+<!-- Konuşma notu: her bulgunun dört aşamadan geçip nasıl kapandı/kabul/etkilenmez/açık olduğunu, sağdaki toplamla gösterin. -->
+
+---
+
+# Bulgu döngüsü — uç durum: hiçbiri kapanmadı
+
+<iframe class="dsanim" src="anim/finding-recommendation-action-impact.html?mode=slide&lang=tr&example=edge-all-open" title="Uç durum: hiçbir bulgu kapanmadı, kabul edilmedi"></iframe>
+
+<!-- Konuşma notu: bu durumda S16'nın "sonuç" değil yalnız "plan" olduğunu, finalde kabul edilmeyeceğini vurgulayın. -->
 
 ---
 
@@ -1081,7 +1161,7 @@ Bir plan en az dört başlık içerir.
 # Başlık 1 · Kapsam (scope)
 
 - Neyin test edileceği **ve edilmeyeceği** açık yazılır.
-- Hangi ikili/sürüm, hangi bileşenler, hangi ortam (test mi üretim mi), hangi veriler (yalnız sentetik).
+- Hangi binary/sürüm, hangi bileşenler, hangi ortam (test mi üretim mi), hangi veriler (yalnız sentetik).
 - Kapsam dışı da yazılır (üçüncü taraf sunucular, gerçek kullanıcı verisi).
 
 ---
@@ -1152,6 +1232,22 @@ Bu kart, projenizin **S16** iskeletidir. Şimdi alanları görelim.
 | Beklenen | Güvenli davranış |
 | Gözlenen | Ne oldu (kanıt) |
 | Karar | Saldırı pot. + geçti/kaldı + öneri |
+
+---
+
+# Sızma testi planı ağacı (animasyon)
+
+<iframe class="dsanim" src="anim/pentest-plan-tree.html?mode=slide&lang=tr" title="Sızma testi planı ağacı: kapsam → tehdit → test kartı → kapsama"></iframe>
+
+<!-- Konuşma notu: kapsam kökten tehditlere, tehditlerden test kartlarına inen ağacı ve kapsama yüzdesinin nasıl hesaplandığını gösterin. -->
+
+---
+
+# Plan ağacı — uç durum: kapsama %100
+
+<iframe class="dsanim" src="anim/pentest-plan-tree.html?mode=slide&lang=tr&example=edge-full-coverage" title="Uç durum: bütün test kartları çalıştırıldı, hepsi GEÇTİ"></iframe>
+
+<!-- Konuşma notu: bu, S16'nın hedeflediği son durumdur — her yaprak çalıştırılmış ve GEÇTİ. -->
 
 ---
 
@@ -1281,6 +1377,22 @@ Okuyan kişi **ne yapacağına** karar verebilmeli.
 
 ---
 
+# Rapor yapısı (animasyon)
+
+<iframe class="dsanim" src="anim/report-structure.html?mode=slide&lang=tr" title="Rapor yapısı: beş bölüm ve üretime hazır olma kararı"></iframe>
+
+<!-- Konuşma notu: beş bölümü ve açık/acil bulgu sayısına göre "üretime hazır" kararının nasıl çıktığını gösterin. -->
+
+---
+
+# Rapor yapısı — uç durum: hepsi açık ve acil
+
+<iframe class="dsanim" src="anim/report-structure.html?mode=slide&lang=tr&example=edge-all-urgent-open" title="Uç durum: bütün bulgular açık VE acil"></iframe>
+
+<!-- Konuşma notu: bu durumda kararın kesinlikle HAZIR DEĞİL çıktığını, tek bir açık acil bulgunun bile yettiğini vurgulayın. -->
+
+---
+
 # Eleştirel okuma alıştırması
 
 Kısa bir bulgu metnini birlikte okuyun:
@@ -1324,6 +1436,22 @@ Bu, 13. haftadaki uyum matrisi okumasının provası.
 **4. Bulgu–aksiyon:** vize geri bildirimlerini bir tabloya dökün.
 
 **5. Kalan risk:** kapatmadığınız riskleri ve gerekçesini yazın.
+
+---
+
+# Birim test koşucusu (animasyon)
+
+<iframe class="dsanim" src="anim/unit-test-runner.html?mode=slide&lang=tr" title="Birim test koşucusu: test kartları"></iframe>
+
+<!-- Konuşma notu: demonun gerçek `card()` kodunu, altı kartın hepsinin PASS olduğunu ve çıkış kodunun 0 olduğunu gösterin — S16'nın istediği tam olarak bu tablodur. -->
+
+---
+
+# Test koşucusu — uç durum: hepsi FAIL
+
+<iframe class="dsanim" src="anim/unit-test-runner.html?mode=slide&lang=tr&example=edge-all-fail" title="Uç durum: bütün kartlar FAIL"></iframe>
+
+<!-- Konuşma notu: çıkış kodunun kaç test başarısız olduğuna eşit olduğunu, bunun CI'da nasıl kullanıldığını hatırlatın. -->
 
 ---
 

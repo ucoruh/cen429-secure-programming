@@ -1,12 +1,12 @@
-# CEN429 Güvenli Programlama — ders deposu
+# CEN429 Secure Programming — course repository
 
-# Google Drive / Windows / macOS sistem dosyaları
+# Google Drive / Windows / macOS system files
 desktop.ini
 **/desktop.ini
 Thumbs.db
 .DS_Store
 
-# MkDocs çıktısı ve önbellekleri
+# MkDocs output and caches
 /site/
 .cache/
 __pycache__/
@@ -14,12 +14,17 @@ __pycache__/
 .venv/
 venv/
 
-# Demo derleme çıktıları (code/): her demo bin/, cikti/, dokum/, lib/ üretir
+# Demo build output (code/): each demo produces bin/, cikti/, dokum/, lib/
 code/**/bin/
 code/**/cikti/
+code/**/output/
 code/**/dokum/
+code/**/dump/
+code/**/work/
+code/**/calisma/
 code/**/build/
 code/**/lib/
+code/**/tests/tmp/
 *.o
 *.obj
 *.core
@@ -29,20 +34,20 @@ vgcore.*
 *.gcda
 *.gcno
 
-# Sunum/PDF/DOCX derleme ara dosyaları
+# Slide/PDF/DOCX build intermediate files
 slides/**/*.tmp
 *.aux
 *.log
 *.out
 *.toc
 
-# Editör dosyaları
+# Editor files
 .vscode/
 .idea/
 *.swp
 *~
 
-# Özel araçlar ve büyük ikili dosyalar depoya girmez
+# Local tools and large binary files never go into the repository
 *.jar
 *.exe
 *.dll

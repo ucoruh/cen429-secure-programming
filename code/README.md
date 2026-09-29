@@ -15,7 +15,7 @@ Derleme sistemi CMake'tir; Visual Studio `code/` klasörünü doğrudan açar, a
 
 Bu derste saldırıları **görerek** öğreniyoruz; bu yüzden bütün demolar şu kurallara göre yazıldı:
 
-- Demolar **yalnız kendi klasörlerinde** dosya üretir (`bin/`, gerekirse `dokum/`); temizleme komutu hepsini siler.
+- Demolar **yalnız kendi klasörlerinde** dosya üretir (`bin/`, gerekirse `dokum/` ya da `dump/`); temizleme komutu hepsini siler.
 - **Yönetici yetkisi (sudo / "Yönetici olarak çalıştır") gerekmez**, işletim sisteminin hiçbir ayarı değiştirilmez.
 - "Saldırı" adımları gerçek zarar vermez: ekrana bir uyarı basar ya da demo klasöründeki bir dosyayı okur.
 - Çökmesi beklenen programlar sınırlandırılarak çalıştırılır: Windows'ta hata penceresi açılmaz, Linux'ta çökme
@@ -30,7 +30,7 @@ Bu derste saldırıları **görerek** öğreniyoruz; bu yüzden bütün demolar 
 | --- | --- | --- |
 | Bütün demoları derle (`code/` içinde) | `.\build.ps1` | `./build.sh` |
 | Bir demoyu çalıştır (demo klasöründe) | `.\demo.ps1` — ya da `demo.cmd`'ye çift tıklayın | `sh demo.sh` |
-| Derleme çıktılarını sil | `.\build.ps1 temizle` | `./build.sh temizle` |
+| Derleme çıktılarını sil | `.\build.ps1 clean` | `./build.sh clean` |
 
 Her demo klasöründe aynı dosyalar bulunur:
 
@@ -74,12 +74,12 @@ Configuration*) seçin ve açılan `launch.vs.json` dosyasına şunu ekleyin:
 
 ```json
 "args": [ "AAAAAAAAAAAAAAAAB" ],
-"currentDir": "${workspaceRoot}\\week-01\\03-tasma-giris"
+"currentDir": "${workspaceRoot}\\week-01\\03-overflow-input"
 ```
 
 **Yol 2 — Klasik çözüm dosyası.**
 PowerShell'de `code` klasöründe bir kez `.\build.ps1` çalıştırın, sonra `code\build\windows-msvc\cen429_demolar.sln`
-dosyasını açın. Projeler **Hafta 01 / 03 Tasma giris** gibi klasörlerde gruplanmıştır. Bir projeye sağ tıklayıp
+dosyasını açın. Projeler **Week 01 / 03 Privilege escalation through overflow** gibi klasörlerde gruplanmıştır. Bir projeye sağ tıklayıp
 **Başlangıç Projesi Olarak Ayarla** (*Set as Startup Project*), argümanları **Özellikler > Hata Ayıklama > Komut
 Bağımsız Değişkenleri** (*Properties > Debugging > Command Arguments*) alanına yazın ve F5'e basın. Çalışma klasörü
 kendiliğinden demonun klasörüdür.
@@ -89,7 +89,7 @@ kendiliğinden demonun klasörüdür.
 ```powershell
 cd C:\Dersler\cen429-secure-programming\code
 .\build.ps1
-cd week-01\03-tasma-giris
+cd week-01\03-overflow-input
 .\demo.ps1
 ```
 
@@ -120,7 +120,7 @@ tıklayın ya da `powershell -ExecutionPolicy Bypass -File .\demo.ps1` yazın.
    git clone https://github.com/ucoruh/cen429-secure-programming.git
    cd cen429-secure-programming/code
    ./build.sh
-   cd week-01/03-tasma-giris
+   cd week-01/03-overflow-input
    sh demo.sh
    ```
 
@@ -139,13 +139,13 @@ davrandığını yan yana görürsünüz. Program adının sonundaki ek modu sö
 
 | Mod | Program adı | GCC (Linux / WSL) | MSVC (Windows) | Ne gösterir |
 | --- | --- | --- | --- | --- |
-| `korumasiz` | `giris` | `-O0` | `/Od` | Hatanın en çıplak hali |
-| `optimize` | `parola_memset` | `-O2` | `/O2` | Sürüm derlemesi; derleyici kodu yeniden düzenler |
-| `asan` | `giris_asan` | `-fsanitize=address` | `/fsanitize=address` | Bellek hatasını çalışma anında yakalayan araç |
-| `denetimli` | `giris_denetimli` | `-D_FORTIFY_SOURCE=2` | `strcpy_s` gibi `_s` işlevleri | Kütüphanenin boyut denetimi |
-| `guvenli` | `giris_guvenli` | `-O2` | `/O2` | Kaynak kodda düzeltilmiş sürüm |
+| `unprotected` | `login` | `-O0` | `/Od` | Hatanın en çıplak hali |
+| `optimize` | `password_memset` | `-O2` | `/O2` | Sürüm derlemesi; derleyici kodu yeniden düzenler |
+| `asan` | `login_asan` | `-fsanitize=address` | `/fsanitize=address` | Bellek hatasını çalışma anında yakalayan araç |
+| `checked` | `login_checked` | `-D_FORTIFY_SOURCE=2` | `strcpy_s` gibi `_s` işlevleri | Kütüphanenin boyut denetimi |
+| `secure` | `login_secure` | `-O2` | `/O2` | Kaynak kodda düzeltilmiş sürüm |
 
-Bütün ayarlar tek bir yerde, `cmake/cen429.cmake` dosyasındaki `cen429_ornek()` işlevindedir.
+Bütün ayarlar tek bir yerde, `cmake/cen429.cmake` dosyasındaki `cen429_add_demo()` işlevindedir.
 
 ## Klasör yapısı
 
@@ -157,13 +157,39 @@ code/
 ├── cmake/cen429.cmake    # derleme modları
 ├── common/               # bütün demoların ortak başlıkları ve betik yardımcıları
 └── week-01/
-    ├── 01-path-kandirma/
-    ├── 02-bellekte-parola/
-    ├── 03-tasma-giris/
-    └── 04-isaretli-uzunluk/
+    ├── 01-path-spoofing/
+    ├── 02-password-in-memory/
+    ├── 03-overflow-input/
+    └── 04-signed-length/
 ```
 
-Yalnız bazı haftaları derlemek için: `cmake -S . -B build/tek -DCEN429_HAFTALAR="week-01;week-03"`.
+Yalnız bazı haftaları derlemek için: `cmake -S . -B build/tek -DCEN429_WEEKS="week-01;week-03"`.
+
+## Testler
+
+Her demo `code/run_tests.py` ile otomatik derlenir ve çalıştırılır (`py -3.12 code/run_tests.py --week N
+[--sanitize] [--platform win|linux|both]`, varsayılan `both`). Verilen haftayı CMake/CTest ile yapılandırıp
+derler, her platform için tek bir özet satırı basar: `week N: X passed, Y failed`; bir şey başarısız olursa
+sıfırdan farklı bir çıkış koduyla biter. Henüz testi olmayan bir hafta da yalnızca derleme kontrolünden geçer
+("0 tests").
+
+Kurallar (İngilizce olarak, kod ve testlerle tutarlı kalsın diye):
+
+- **Unit tests** live in `code/week-NN/<demo>/tests/test_<program>.c`. They include the demo's own source
+  with `main` renamed out of the way, then include `test_check.h` for the `CHECK*` macros (`CHECK`,
+  `CHECK_EQ_INT`, `CHECK_EQ_STR`, `CHECK_MEM`, `TEST_SUMMARY`). The test executable is declared in the
+  demo's `CMakeLists.txt` with `cen429_add_demo()` and registered with `cen429_test(NAME ... COMMAND ...)`
+  (see `cmake/cen429.cmake`).
+- **End-to-end tests** run the demo's real compiled binary (the same one `demo.ps1`/`demo.sh` runs) and
+  match its real, observed output against a regular expression — never a value copied from the program's
+  own prior run.
+- **Intentionally vulnerable targets** get the CTest label `intentional-bug`. Their tests assert only
+  deterministic, documented behaviour (e.g. the `asan` build's output contains `AddressSanitizer`, or the
+  `secure` build rejects the malicious input) — never "the exploit corrupts memory the same way every
+  time" as the pass condition. A test that runs the raw, unprotected binary and checks that the exploit
+  succeeds is additionally labeled `plain-vulnerable`; `run_tests.py --sanitize` excludes those
+  (`ctest -LE plain-vulnerable`), since the sanitizer pass checks the sanitizer/secure builds, not the raw
+  exploit.
 
 ## Sorun giderme
 
@@ -172,6 +198,6 @@ Yalnız bazı haftaları derlemek için: `cmake -S . -B build/tek -DCEN429_HAFTA
 | `CMake bulunamadı` (Windows) | Visual Studio kurulumunda **C++ ile masaüstü geliştirme** iş yükünü seçin |
 | `clang_rt.asan_dynamic-x86_64.dll bulunamadı` | `*_asan.exe` programlarını `demo.ps1` ile ya da `bin\windows\` içinden çalıştırın; derleme bu dosyayı oraya kopyalar. Yoksa kurulumda **C++ AddressSanitizer** bileşenini ekleyin |
 | `cmake: command not found` (WSL) | `sudo apt install cmake build-essential` |
-| ASan `DEADLYSIGNAL` yazıp duruyor (yeni Linux çekirdekleri) | `demo.sh` bunu kendisi önler; elle çalıştırırken `setarch $(uname -m) -R ./bin/linux/giris_asan ...` |
+| ASan `DEADLYSIGNAL` yazıp duruyor (yeni Linux çekirdekleri) | `demo.sh` bunu kendisi önler; elle çalıştırırken `setarch $(uname -m) -R ./bin/linux/login_asan ...` |
 | `Permission denied` (WSL) | Betiği `sh demo.sh` ile çalıştırın; depoyu `/mnt/c` yerine `~` altına indirin |
 | `Cannot restore timestamp` (Windows) | Eşitlenen (OneDrive / Drive) klasördesiniz: `.\build.ps1`'i yeniden çalıştırın ya da depoyu yerel bir klasöre alın |

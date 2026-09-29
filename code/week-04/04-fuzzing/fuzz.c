@@ -1,19 +1,18 @@
 /*
- * CEN429 - Hafta 4 - Demo 4: libFuzzer giris noktasi.
- * libFuzzer main()'i kendisi saglar; biz yalnizca "tek bir girdiyi test et"
- * islevini yaziyoruz. Fuzzer, kod kapsamini olcup girdiyi otomatik mutasyona
- * ugratarak cokerten girdiyi saniyeler icinde bulur.
+ * CEN429 - Week 4 - Demo 4: libFuzzer entry point.
+ * libFuzzer provides main() itself; we only write the "test one input" function. The fuzzer
+ * measures code coverage and automatically mutates the input, finding a crashing input within
+ * seconds.
  *
- * Derleme: clang -fsanitize=fuzzer,address (Linux) / cl /fsanitize=fuzzer
- * (MSVC). Calistirma her zaman SURE SINIRLIDIR (-max_total_time), boylece
- * demo takilmaz.
+ * Build: clang -fsanitize=fuzzer,address (Linux) / cl /fsanitize=fuzzer (MSVC).
+ * A run is ALWAYS time-limited (-max_total_time), so the demo never hangs.
  */
 #include <stddef.h>
 #include <stdint.h>
-#include "ayristir.h"
+#include "parser.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t *veri, size_t boy)
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    belge_ayristir((const unsigned char *)veri, boy);
+    parse_document((const unsigned char *)data, size);
     return 0;
 }

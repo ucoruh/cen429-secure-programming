@@ -1,22 +1,41 @@
-set(CEN429_KLASOR "Hafta 04/04 Fuzzing (libFuzzer)")
+set(CEN429_FOLDER "Week 04/04 Fuzzing (libFuzzer)")
 
-# Reproducer (yeniden uretici): ASan ile derli. Cokerten girdiyi oynatir;
-# fuzzer olmayan platformlarda bile hatayi tam yerinde gosterir.
-# (ASan yoksa cen429_ornek sade -O1'e duser; demo yine cokmeyi gosterir.)
-cen429_ornek(ayristirici         KAYNAK calis.c ayristir.c         MOD asan)
-cen429_ornek(ayristirici_guvenli KAYNAK calis.c ayristir_guvenli.c MOD asan)
+# Reproducer: built with ASan. Replays a crashing input; shows the bug at the exact spot even on
+# platforms without a fuzzer. (Without ASan, cen429_add_demo falls back to plain -O1; the demo
+# still shows the crash.)
+cen429_add_demo(parser        SOURCES replay.c parser.c        MODE asan)
+cen429_add_demo(parser_secure SOURCES replay.c parser_secure.c MODE asan)
 
-# libFuzzer hedefleri yalniz Clang (Linux) ya da MSVC (Windows) ile kurulur.
-# WSL Ubuntu 20.04 (yalniz GCC) ve Windows MinGW/clang bunlari ATLAR; demo.sh clang kurulumunu anlatir.
+# libFuzzer targets only build with Clang (Linux) or MSVC (Windows).
+# WSL Ubuntu 20.04 (GCC only) and Windows MinGW/clang SKIP these; demo.sh explains installing clang.
 if((CMAKE_C_COMPILER_ID STREQUAL "Clang" AND NOT WIN32) OR MSVC)
-  cen429_ornek(ayristirici_fuzz KAYNAK fuzz.c ayristir.c MOD asan
-               SECENEK $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer>
+  cen429_add_demo(parser_fuzz SOURCES fuzz.c parser.c MODE asan
+               OPTIONS $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer>
                        $<$<C_COMPILER_ID:MSVC>:/fsanitize=fuzzer>)
-  cen429_ornek(ayristirici_fuzz_guvenli KAYNAK fuzz.c ayristir_guvenli.c MOD asan
-               SECENEK $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer>
+  cen429_add_demo(parser_fuzz_secure SOURCES fuzz.c parser_secure.c MODE asan
+               OPTIONS $<$<C_COMPILER_ID:Clang>:-fsanitize=fuzzer>
                        $<$<C_COMPILER_ID:MSVC>:/fsanitize=fuzzer>)
   if(NOT MSVC)
-    target_link_options(ayristirici_fuzz         PRIVATE -fsanitize=fuzzer)
-    target_link_options(ayristirici_fuzz_guvenli PRIVATE -fsanitize=fuzzer)
+    target_link_options(parser_fuzz        PRIVATE -fsanitize=fuzzer)
+    target_link_options(parser_fuzz_secure PRIVATE -fsanitize=fuzzer)
   endif()
 endif()
+
+# --- Tests ------------------------------------------------------------------------------------
+cen429_add_demo(test_parser_secure SOURCES tests/test_parser_secure.c MODE optimize)
+cen429_test(NAME week-04/04-fuzzing/parser_secure-unit COMMAND test_parser_secure
+            PASS_REGEX "0 failures")
+
+cen429_test(NAME week-04/04-fuzzing/parser-normal-seed
+            COMMAND parser seeds/normal.bin
+            PASS_REGEX "Parse result: 65")
+cen429_test(NAME week-04/04-fuzzing/parser_secure-normal-seed
+            COMMAND parser_secure seeds/normal.bin
+            PASS_REGEX "Parse result: 65")
+cen429_test(NAME week-04/04-fuzzing/parser_secure-rejects-crash-seed
+            COMMAND parser_secure seeds/crash.bin
+            PASS_REGEX "Parse result: -1")
+cen429_test(NAME week-04/04-fuzzing/parser-crash-seed-triggers-asan
+            COMMAND parser seeds/crash.bin
+            PASS_REGEX "AddressSanitizer: heap-buffer-overflow"
+            LABELS "intentional-bug;plain-vulnerable")

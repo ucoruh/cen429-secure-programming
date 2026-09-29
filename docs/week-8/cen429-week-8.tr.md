@@ -205,7 +205,7 @@ Aşağıdaki sorular Quiz-1'in biçimini değil, **düşünme türünü** göste
 
 ??? question "15. Bir mobil uygulama, bütün kullanıcılarında aynı gömülü AES anahtarını kullanıyor. Hangi riskler var, ne önerirsiniz?"
     Tek bir kopyadan çıkarılan anahtar bütün kullanıcıları etkiler ("bir örneğin kırılması diğerlerini etkilememeli"
-    ihlali); bayt kodundan/ikiliden okunabilir. Öneri: kullanıcı/cihaz başına sunucuda üretilen ya da türetilen anahtar,
+    ihlali); bayt kodundan/binary'den okunabilir. Öneri: kullanıcı/cihaz başına sunucuda üretilen ya da türetilen anahtar,
     cihaz ve sürüm bağlama, zarflama, gerekirse whitebox; anahtar koda gömülmez.
 
 ??? question "16. Değerlendirici, uygulamanızın hata ayıklama derlemesinin dağıtıldığını fark etti. Hangi bulgular yazılır?"

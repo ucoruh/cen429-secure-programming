@@ -1,30 +1,33 @@
-# Demo 14 — RBAC, görev ayrılığı ve Clark–Wilson simülatörü
+# Demo 14 — RBAC, separation of duty, and a Clark–Wilson simulator
 
-**Konu:** RBAC0–RBAC2 (atama, oturum, hiyerarşi, SSD/DSD), Clark–Wilson (CDI, UDI, TP, IVP; C1–C5, E1–E4) ·
-**Hafta:** 2
+**Topic:** RBAC0–RBAC2 (assignment, session, hierarchy, SSD/DSD), Clark–Wilson (CDI, UDI, TP, IVP; C1–C5, E1–E4) ·
+**Week:** 2
 
-## Ne gösteriyor?
+## What it shows
 
-Küçük bir hesap defteri (iki hesap, sentetik tutarlar). Her komutun hangi kurala takıldığı çıktıda yazar.
+A small account ledger (two accounts, synthetic amounts). The output states which rule stops or allows every
+command.
 
-| Bölüm | Ne olur? | Kural |
+| Section | What happens | Rule |
 | --- | --- | --- |
-| 1 | Onaycıya gişe rolü atanamaz; denetçi ile gişe aynı oturumda açılamaz; tanınmayan kullanıcı | SSD, DSD, E3 |
-| 2 | Geçerli yatırma; `-500`, `12abc` reddi; CDI'ya doğrudan yazma; yetkisiz havale; eksiye düşme | C5, E1, E2, C2 |
-| 3 | Eşik üstü havale ikinci kişi onayı ister; SSD kaldırılsa bile TP kendi talebini onaylatmaz | C3 |
-| 4 | Sertifikacı TP çalıştıramaz; hatalı bir TP sertifikalanır ve %1'i kaybeder; IVP tutarsızlığı yakalar | E4, C2, C4, C1 |
+| 1 | An approver cannot also be assigned a teller role; an auditor and a teller cannot be active in the same session; an unrecognized user | SSD, DSD, E3 |
+| 2 | A valid deposit; `-500`, `12abc` are rejected; a direct write to a CDI; an unauthorized transfer; going negative | C5, E1, E2, C2 |
+| 3 | A transfer above the threshold needs a second person's approval; even with the SSD removed, a TP never lets someone approve their own request | C3 |
+| 4 | A certifier cannot run a TP; a broken TP gets certified and loses 1%; the IVP catches the inconsistency | E4, C2, C4, C1 |
 
-## Çalıştırma
+## Running it
 
-Önce derleyin (`code/` içinde `.\build.ps1` ya da `./build.sh`), sonra bu klasörde Windows'ta `.\demo.ps1`
-(ya da `demo.cmd`), WSL/Linux'ta `sh demo.sh`. Doğrudan: `.\bin\windows\banka.exe senaryo.txt`.
+Build first (inside `code/`, `.\build.ps1` or `./build.sh`), then inside this folder, on Windows `.\demo.ps1`
+(or `demo.cmd`), on WSL/Linux `sh demo.sh`. Directly: `.\bin\windows\bank.exe scenario.txt`.
 
-## Neden güvenli?
+## Why it's safe
 
-Saf benzetimdir: dosya, ağ ya da sistem ayarı kullanmaz; yalnız `senaryo.txt`'yi okur. Gerçek para/hesap yoktur.
+A pure simulation: it uses no file, network, or system setting; it only reads `scenario.txt`. There is no real
+money and no real account.
 
-## Kendin dene
+## Try it yourself
 
-- `SSD GISE ONAYCI` satırını silin: bölüm 1'de ne değişir, bölüm 3'te TP içindeki C3 denetimi hâlâ korur mu?
-- `ONAY_ESIGI`'ni 500 yapın: kaç işlem ikinci onaya düşer?
-- `HATALI_HAVALE`'yi sertifikalamadan çalıştırın (SERTIFIKALA satırını silin): hangi kural durdurur?
+- Remove the `SSD TELLER APPROVER` line: what changes in section 1, and does the C3 check inside the TP still
+  protect section 3?
+- Set `APPROVAL_THRESHOLD` to 500: how many transactions now fall to a second approval?
+- Run `BAD_TRANSFER` without certifying it first (remove the `CERTIFY` line): which rule stops it?

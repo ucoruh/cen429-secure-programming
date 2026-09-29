@@ -82,7 +82,7 @@ Each term is defined once, where it first appears in the body; here we only mark
 
 - One source, two platforms: **Windows (Visual Studio 2022 Community, MSVC)** and **WSL/Linux (GCC)**
 - Demos that need hashing/encryption use the OS's **BCrypt** library on Windows and **OpenSSL** on Linux
-  (`code/common/cen429_kripto.h`) — you don't need to install OpenSSL on Windows either
+  (`code/common/cen429_crypto.h`) — you don't need to install OpenSSL on Windows either
 - Build: Windows `.\build.ps1` · WSL/Linux `./build.sh`
 - Run: in each demo's folder, Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
 - **Demo 6** (TOCTOU) only runs on WSL/Linux
@@ -154,11 +154,15 @@ Speaker note: Ask the students: "What do you call something that infects your ph
 | 1984 | Cohen's definition | Theory: "complete detection is impossible" |
 | 1986 | Brain | First widespread PC virus (boot sector) |
 | 1988 | Morris | First major worm to spread across the internet |
+| 1989 | Brewer–Nash | Chinese Wall: the conflict-of-interest model |
+| 1999 | Schneier | Attack Trees |
 | 2000 | ILOVEYOU | Millions via an email attachment |
 | 2001 | Code Red | Worm spreading in memory via a network flaw |
+| 2003 | SQL Slammer | Half in 10 minutes — the fastest-spreading worm |
 | 2010 | Stuxnet | Worm targeting industrial controllers |
 | 2017 | WannaCry | Self-spreading ransomware |
 | 2017 | NotPetya | A **wiper** (destructive) disguised as ransomware |
+| 2019/2023 | CVSS v3.1 / v4.0 | Severity scoring standard, two generations |
 
 <!--
 Speaker note: Give the dates accurately. WannaCry spread to machines that had not updated AFTER the patch was released; we'll return to this "patch gap" at the end of the lecture.
@@ -273,7 +277,7 @@ i(t+dt) = i(t) + beta * i(t) * (1 - i(t)/N) * dt
 
 # Demo 09 — Epidemic Simulation
 
-`code/week-02/09-salgin-simulasyonu` · calculation only, no network
+`code/week-02/09-outbreak-simulation` · calculation only, no network
 
 ```text
 Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
@@ -341,6 +345,22 @@ Two things made Slammer fast: **a single packet** was enough (no connection setu
 
 ---
 
+# The SI Epidemic Model: Step by Step (animation)
+
+<iframe class="dsanim" src="anim/epidemic-spread.html?mode=slide&lang=en" title="The SI epidemic model: spread, step by step"></iframe>
+
+<!-- Speaker note: Compute the SI difference equation at each step; show that growth is fastest around 50% and then slows as fewer targets remain. -->
+
+---
+
+# Epidemic — Edge Case: Already Half-Infected
+
+<iframe class="dsanim" src="anim/epidemic-spread.html?mode=slide&lang=en&example=edge-already-half-infected" title="Edge case: a hitlist, already half-infected at the start"></iframe>
+
+<!-- Speaker note: When the attacker skips the opening phase with a hitlist, saturation is reached much faster; the defender's window is nearly gone. -->
+
+---
+
 # A Lesson for the Programmer (Epidemics)
 
 - The programmer does not determine the propagation speed.
@@ -352,7 +372,7 @@ Two things made Slammer fast: **a single packet** was enough (no connection setu
 
 # Try It Yourself: What If Beta Is Halved?
 
-Halve the `beta` value inside `salgin.c` and rerun it.
+Halve the `beta` value inside `outbreak.c` and rerun it.
 
 **Question:** How does the saturation time change? In the hitlist scenario, if you raise `i0` to 100, how much of a difference remains?
 
@@ -393,7 +413,7 @@ Halve the `beta` value inside `salgin.c` and rerun it.
 
 # Demo 01 — Toy Antivirus
 
-`code/week-02/01-imza-tarayici` · Book: Recipe 12.1
+`code/week-02/01-signature-scanner` · Book: Recipe 12.1
 
 - A harmless, non-executable **"CAPSULE"** format: header + decryptor + body.
 - Four methods, four limits:
@@ -410,20 +430,20 @@ Halve the `beta` value inside `salgin.c` and rerun it.
 # Demo 01 — Hash Is Fragile, Pattern Is Resilient
 
 ```text
-ADIM 2 (hash):
-  ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
-  ornek_a_1bayt.bin  TEMIZ      <- tek bayt degisti, ozet bambaska
+STEP 2 (hash):
+  sample_a.bin        CAUGHT  Sample.BlueCat.A
+  sample_a_1byte.bin  CLEAN   <- one byte changed, digest is different
 
-ADIM 3 (desen):
-  poli_1.bin  YAKALANDI  Ornek.Cozucu.xs32
-  poli_2.bin  YAKALANDI  Ornek.Cozucu.xs32
-  poli_3.bin  TEMIZ      <- cozucu de degisti (polimorfizm)
+STEP 3 (pattern):
+  poly_1.bin  CAUGHT  Sample.Decoder.xs32
+  poly_2.bin  CAUGHT  Sample.Decoder.xs32
+  poly_3.bin  CLEAN   <- the decoder changed too (polymorphism)
 ```
 
 **Hash** breaks on a single byte due to the avalanche effect; **pattern** catches the decryptor, but polymorphism evades it too.
 
 <!--
-Speaker note: poli_1 and poli_2 use the same algorithm (xs32) with a different seed; poli_3 uses a different algorithm (lcg8) plus junk instructions. The pattern signature was looking for ALGO=xs32, which isn't in poli_3.
+Speaker note: poly_1 and poly_2 use the same algorithm (xs32) with a different seed; poly_3 uses a different algorithm (lcg8) plus junk instructions. The pattern signature was looking for ALGO=xs32, which isn't in poly_3.
 -->
 
 ---
@@ -431,10 +451,10 @@ Speaker note: poli_1 and poli_2 use the same algorithm (xs32) with a different s
 # Demo 01 — Heuristic: Two Kinds of Error
 
 ```text
-ADIM 5 (sezgisel):
-  ornek_a.bin  TEMIZ     puan=  0   <- YANLIS NEGATIF (kacirdi)
-  poli_1.bin   SUPHELI   puan= 80
-  arsiv.bin    SUPHELI   puan= 50   <- YANLIS POZITIF (zararsiz)
+STEP 5 (heuristic):
+  sample_a.bin  CLEAN       score=  0   <- FALSE NEGATIVE (missed it)
+  poly_1.bin    SUSPICIOUS  score= 80
+  archive.bin   SUSPICIOUS  score= 50   <- FALSE POSITIVE (harmless)
 ```
 
 - Caught the polymorphic sample without a signature ✅
@@ -448,10 +468,10 @@ ADIM 5 (sezgisel):
 # Demo 01 — Emulation Solves All of Them
 
 ```text
-ADIM 6 (emulasyon):
-  poli_1.bin  YAKALANDI  ... | 5 komut, 0 BOS, xs32
-  poli_2.bin  YAKALANDI  ... | 5 komut, 0 BOS, xs32
-  poli_3.bin  YAKALANDI  ... | 8 komut, 4 BOS, lcg8
+STEP 6 (emulation):
+  poly_1.bin  CAUGHT  ... | 5 commands, 0 NOP, xs32
+  poly_2.bin  CAUGHT  ... | 5 commands, 0 NOP, xs32
+  poly_3.bin  CAUGHT  ... | 8 commands, 4 NOP, lcg8
 ```
 
 - Runs the decryptor in a **safe virtual machine** and scans the unpacked body.
@@ -459,6 +479,22 @@ ADIM 6 (emulasyon):
 - Powerful but **expensive**; can be evaded if the malware detects "I'm in a virtual machine."
 
 **Conclusion: one method isn't enough → layered defence.**
+
+---
+
+# Signature Scanning: Hash + Pattern + Emulation (animation)
+
+<iframe class="dsanim" src="anim/signature-scan.html?mode=slide&lang=en" title="Signature scanning: hash vs. pattern vs. emulation"></iframe>
+
+<!-- Speaker note: Show how the hash is evaded by one byte, how the pattern catches the decoder, and why emulation catches everything. -->
+
+---
+
+# Signature Scan — Edge Case: Signature at the Last Position
+
+<iframe class="dsanim" src="anim/signature-scan.html?mode=slide&lang=en&example=edge-found-end" title="Edge case: the signature at the last possible position"></iframe>
+
+<!-- Speaker note: Pattern matching must work correctly at the very last possible position too; off-by-one bugs show up right here. -->
 
 ---
 
@@ -475,14 +511,14 @@ Antivirus: "is this code packed/encrypted?" · EDR: "a process rapidly encryptin
 
 # Demo 02 — Entropy Meter
 
-`code/week-02/02-entropi`
+`code/week-02/02-entropy`
 
 ```text
-  tekduze.txt   0.00  |........................| tekduze
-  belge.txt     4.17  |#############...........| dusuk
-  kod.bin       6.23  |###################.....| orta
-  sifreli.bin   7.95  |########################| YUKSEK
-  rastgele.bin  7.95  |########################| YUKSEK
+  uniform.txt    0.00  |........................| uniform
+  document.txt   4.06  |############............| low
+  code.bin       6.23  |###################.....| medium
+  encrypted.bin  7.94  |########################| HIGH
+  random.bin     7.95  |########################| HIGH
 ```
 
 ⚠️ Entropy alone doesn't say "malicious": `.zip`/`.png` are high too. It's a clue only when it's high in an **unexpected place**.
@@ -492,16 +528,32 @@ Antivirus: "is this code packed/encrypted?" · EDR: "a process rapidly encryptin
 # Demo 02 — Hot Zone and Ransomware Signature
 
 ```text
-Karma dosya (pencere 512):
-   1024-1535  4.14  dusuk
-   1536-2047  7.56  YUKSEK  <- gizli sifreli bolum
-   2048-2559  7.66  YUKSEK
+Mixed file (window 512):
+   1024-1535  4.04  low
+   1536-2047  7.54  HIGH  <- hidden encrypted section
+   2048-2559  7.57  HIGH
 
-Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
+Ransomware trace: document.txt 4.06 --> encrypted.bin 7.94
 ```
 
 - A packed program's pattern: **a small unpacker + a high-entropy body.**
 - If a process makes this jump across many files in a short time, **behaviour-based** protection raises an alarm.
+
+---
+
+# Entropy: Windowed Scanning (animation)
+
+<iframe class="dsanim" src="anim/entropy.html?mode=slide&lang=en" title="Entropy: windowed scanning, how H is computed"></iframe>
+
+<!-- Speaker note: Show how the histogram accumulates per window, and how H = -Σ p(b) log2 p(b) is computed step by step. -->
+
+---
+
+# Entropy — Edge Case: Window Doesn't Divide Evenly
+
+<iframe class="dsanim" src="anim/entropy.html?mode=slide&lang=en&example=edge-window-does-not-divide-evenly" title="Edge case: the last window is shorter"></iframe>
+
+<!-- Speaker note: Show that the calculation still works correctly when the last window's size differs from the others. -->
 
 ---
 
@@ -570,24 +622,40 @@ Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
 
 # Demo 07 — Rule-Based Detection
 
-`code/week-02/07-kural-motoru` · a YARA-like mini engine, **our own harmless patterns**
+`code/week-02/07-rule-engine` · a YARA-like mini engine, **our own harmless patterns**
 
 ```text
-kural Kelime_Baglam {
-  dizge $a = "indir"
-  dizge $b = "calistir"
-  dizge $sihir = "KAPSUL/1"
-  kosul ($a and $b) and $sihir
+rule Word_Context {
+  string $a     = "download"
+  string $b     = "run"
+  string $magic = "CAPSULE/1"
+  condition ($a and $b) and $magic
 }
 ```
 
 | Step | Result | Lesson |
 | --- | --- | --- |
-| Harmless manual | `Kelime_Cifti` matched | ❌ A context-free rule → **false positive** |
+| Harmless manual | `Word_Pair` matched | ❌ A context-free rule → **false positive** |
 | Modified variant | only the wildcard (`??`) pattern caught it | ✅ Target the skeleton that doesn't change |
 | Corrupt rule file | **REJECTED** | ✅ A detection tool is a parser too |
 
 <!-- Speaker note: A narrow rule misses; a broad rule raises false alarms. A rule only catches the known; that's why it's used together with heuristic and behaviour-based methods. -->
+
+---
+
+# Rule Engine: The Condition Evaluator (animation)
+
+<iframe class="dsanim" src="anim/rule-condition-eval.html?mode=slide&lang=en" title="Rule engine: the condition evaluator"></iframe>
+
+<!-- Speaker note: expr() -> and_expr() -> not_expr() -> primary(), one grammar level per precedence. Point out that and/or always evaluate BOTH sides -- no short-circuit. -->
+
+---
+
+# Condition Evaluator — Edge Case: A Broken Condition
+
+<iframe class="dsanim" src="anim/rule-condition-eval.html?mode=slide&lang=en&example=edge-syntax-error-incomplete-and" title="Edge case: an incomplete condition returns CONDITION ERROR"></iframe>
+
+<!-- Speaker note: "$a and" has no right-hand side -- the parser detects this and returns -1 (CONDITION ERROR), it never crashes or silently matches. -->
 
 ---
 
@@ -624,15 +692,15 @@ A backdoor is added, during the build, to a software's **official update** (SUNB
 
 # Demo 08 — Integrity Monitoring (Whitelist)
 
-`code/week-02/08-butunluk-izleme` · SHA-256 manifest + **HMAC seal**
+`code/week-02/08-integrity-monitoring` · SHA-256 manifest + **HMAC seal**
 
 ```text
-DEGISTI  kutuphane.bin  c603d7c6... -> 64b8f2b2... (49->65 B)
-SILINDI  veri.txt       (manifestte var, klasorde yok)
-YENI     gizli.bin      (taban cizgisinde yok)
--- saldirgan manifesti yeniden yazar --
-SONUC: butunluk korunmus    <- izleyici KANDIRILDI
-MUHUR GECERSIZ -> manifeste GUVENME
+CHANGED  library.bin  5ab02b71... -> 12c5803f... (48->62 B)
+DELETED  data.txt     (in the manifest, not in the folder)
+NEW      hidden.bin   (not in the baseline)
+-- attacker rewrites the manifest --
+RESULT: integrity preserved    <- monitor FOOLED
+SEAL INVALID -> DO NOT TRUST the manifest
 ```
 
 ✅ Catches a digest change · ⚠️ **the expected values must be protected too** (HMAC/signature, key kept separately)
@@ -891,11 +959,11 @@ The risk lasts **until the patch is applied**; a released patch also **gives the
 
 # Demo 04 — Defence Raises the Cost
 
-`code/week-02/04-saldiri-agaci`
+`code/week-02/04-attack-tree`
 
 ```text
-ONCE:   EN UCUZ SALDIRI = 2  (bellekten oku)
-SONRA:  EN UCUZ SALDIRI = 8  (RASP eklendi)
+BEFORE:  CHEAPEST ATTACK = 2  (read from memory)
+AFTER:   CHEAPEST ATTACK = 8  (RASP added)
 ```
 
 - **RASP** (anti-debug, anti-hook) was added to the "read from memory" branch.
@@ -905,6 +973,22 @@ SONRA:  EN UCUZ SALDIRI = 8  (RASP eklendi)
 <!--
 Speaker note: AND nodes force the attacker to break multiple layers together; the quantitative form of defence in depth.
 -->
+
+---
+
+# Attack Tree: The Cheapest Path (animation)
+
+<iframe class="dsanim" src="anim/attack-tree-eval.html?mode=slide&lang=en" title="Attack tree: cheapest path"></iframe>
+
+<!-- Speaker note: Show how every AND/OR node's cost is computed bottom-up; find the cheapest branch. -->
+
+---
+
+# Attack Tree — Edge Case: Root Is a Single Leaf
+
+<iframe class="dsanim" src="anim/attack-tree-eval.html?mode=slide&lang=en&example=edge-single-leaf-root" title="Edge case: the root is a single LEAF, no branching"></iframe>
+
+<!-- Speaker note: Show that the calculation still works correctly on the simplest possible tree, with no branching at all. -->
 
 ---
 
@@ -966,44 +1050,60 @@ Recipe 13.11 · design the log **assuming the attacker will read it too**
 
 # Demo 10 — Log Injection (CWE-117)
 
-`code/week-02/10-gunluk-enjeksiyonu`
+`code/week-02/10-log-injection`
 
 ```text
-GUVENSIZ:
-  DENETIM giris kullanici=kayra
-  DENETIM giris kullanici=admin sonuc=BASARILI ...  <- SAHTE satir
-  DENETIM giris kullanici=deniz^[[2K^Mgizli ...     <- ekran silme
-GUVENLI:
-  DENETIM giris kullanici=kayra\x0A2026-... (tek satir)
-  sahte 'admin BASARILI' satiri: 0
+UNSAFE:
+  AUDIT login user=bob
+  AUDIT login user=admin result=SUCCESS ...  <- FORGED line
+  AUDIT login user=carol^[[2K^Mhidden ...    <- erases screen
+SAFE:
+  AUDIT login user=bob\x0A2026-... (single line)
+  forged 'admin SUCCESS' line(s): 0
 ```
 
-✅ Escape it (`\xNN`) · ✅ cap the length · ✅ `syslog(LOG_INFO, "%s", girdi)` — the input is never a format string
+✅ Escape it (`\xNN`) · ✅ cap the length · ✅ `syslog(LOG_INFO, "%s", input)` — the input is never a format string
 
 <!-- Speaker note: A single line break embedded in a username wrote a fake administrator login into the log that never happened. Mention the format-string trap as a bridge to Week 4. -->
+
+---
+
+# Log Injection: Unsafe vs. Safe (animation)
+
+<iframe class="dsanim" src="anim/log-injection.html?mode=slide&lang=en" title="Log injection: unsafe vs. safe writing"></iframe>
+
+<!-- Speaker note: Show how the escaping loop handles every byte, and why the line ending stays on a single line. -->
+
+---
+
+# Log Injection — Edge Case: ANSI Escape Sequence
+
+<iframe class="dsanim" src="anim/log-injection.html?mode=slide&lang=en&example=edge-control-characters" title="Edge case: an ANSI escape sequence + a carriage return"></iframe>
+
+<!-- Speaker note: Show that the screen-clearing ESC sequence becomes just as harmless once escaped the same way. -->
 
 ---
 
 # Vulnerable Code: Log Injection and Format String
 
 ```c
-fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
+fprintf(log, "login: %s\n", username);  /* CWE-117 */
 ```
 
 ```c
-syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
+syslog(LOG_INFO, user_input);  /* CWE-134 */
 ```
 
 User-supplied data must never be used in a log as an **unescaped line break** or **directly as a format
-string**: `syslog(LOG_INFO, "%s", girdi)`.
+string**: `syslog(LOG_INFO, "%s", input)`.
 
 ---
 
 # Digest Chain: Simple but Breakable
 
 - Idea: every record contains **the digest of the previous record**.
-- Modifying a record in the middle breaks **the entire chain that follows**.
-- Problem: the digest is **unkeyed** — an attacker can recompute the whole chain from scratch.
+- Modifying a record breaks **only that record's own digest** (the verifier always checks the stored chain, never a recomputed one).
+- Problem: the digest is **unkeyed** — a capable attacker can recompute **every digest downstream**, hiding the tampering completely.
 - Solution: make the digest **keyed** → an HMAC chain (next slide).
 
 ---
@@ -1021,17 +1121,33 @@ string**: `syslog(LOG_INFO, "%s", girdi)`.
 
 # Demo 11 — Tamper-Resistant Logging
 
-`code/week-02/11-kurcalamaya-dayanikli-gunluk` · HMAC chain + **key evolution**
+`code/week-02/11-tamper-evident-log` · HMAC chain + **key evolution**
 
 | Attack | Evolving key | Static key |
 | --- | --- | --- |
-| Modifying a record | ✅ MAC:BOZUK | ✅ caught |
-| Deleting a record / reordering | ✅ SIRA:BOZUK | ✅ caught |
+| Modifying a record | ✅ MAC:BROKEN | ✅ caught |
+| Deleting a record / reordering | ✅ ORDER:BROKEN | ✅ caught |
 | Rewriting history with a compromised key | ✅ **TAMPERED** | ❌ appears **INTACT** |
 
 The key evolves one-way at every record, and the old key is deleted → records **before** the compromise stay protected
 
 <!-- Speaker note: Schneier–Kelsey 1999. The verifier keeps the starting key offline. The strongest evidence is a remote copy the attacker cannot reach. -->
+
+---
+
+# Tamper-Evident Logging: The HMAC Chain (animation)
+
+<iframe class="dsanim" src="anim/tamper-evident-log-chain.html?mode=slide&lang=en" title="Tamper-evident logging: the HMAC chain"></iframe>
+
+<!-- Speaker note: Show how each record's digest includes the previous record's digest, and how changing one record's message breaks only that record's own check — later records still verify against their own untouched stored digest. -->
+
+---
+
+# HMAC Chain — Edge Case: Static Key (No Evolution)
+
+<iframe class="dsanim" src="anim/tamper-evident-log-chain.html?mode=slide&lang=en&example=edge-static-key-same-tamper" title="Edge case: the same attack is not caught with a static key"></iframe>
+
+<!-- Speaker note: Show why the same attack slips through undetected with a static key — connect this to why forward security matters. -->
 
 ---
 
@@ -1125,7 +1241,7 @@ An HMAC chain catches insertion/modification; to catch **truncation from the end
 
 - **Subject** (user/process) · **Object** (file/record) · **Right** (read/write/execute).
 
-| | `odeme_anahtari` | `gunluk` |
+| | `payment_key` | `log` |
 | --- | --- | --- |
 | **application** | — | write |
 | **library** | read, write | write |
@@ -1159,13 +1275,12 @@ DAC is **flexible** but leak-prone; MAC is **strict** (military/labelled); RBAC 
 
 # Demo 03 — DAC Alone (Matrix)
 
-`code/week-02/03-erisim-modeli`
+`code/week-02/03-access-model`
 
 ```text
-  kutuphane OKU odeme_anahtari   => IZIN
-  uygulama  OKU odeme_anahtari   => RED  (matriste yok)
-  saldirgan OKU odeme_anahtari   => RED
-  saldirgan YAZ gunluk           => RED
+  library(D   ) R   payment_key (D   ) DAC:YES => ALLOW
+  app    (D   ) R   payment_key (D   ) DAC:no  => DENY  (not in the matrix)
+  attacker(D   ) R   payment_key (D   ) DAC:no  => DENY
 ```
 
 Not even the application has **direct access** to the payment key → **least privilege.**
@@ -1228,14 +1343,30 @@ Instead of military levels, **well-formed transactions + separation of duty** (1
 # Demo 03 — BLP and Biba Output
 
 ```text
-BLP:  memur   OKU operasyon  BLP:RED  => RED  (yukari okuma)
-      general YAZ ilan       BLP:RED  => RED  (asagi yazma)
+BLP:  clerk    READ  operation  BLP:DENY => DENY  (read up)
+      general  WRITE notice     BLP:DENY => DENY  (write down)
 
-Biba: aglayici YAZ kayit     BIBA:RED => RED  (yukari yazma)
-      islemci  OKU gelen     BIBA:RED => RED  (asagi okuma)
+Biba: listener WRITE record     BIBA:DENY => DENY  (write up)
+      processor READ  incoming  BIBA:DENY => DENY  (read down)
 ```
 
-DAC says **VAR** (allowed) in both cases; it is the **system (MAC)** rule that brings the denial.
+DAC says **YES** (allowed) in both cases; it is the **system (MAC)** rule that brings the denial.
+
+---
+
+# Access Matrix: DAC + BLP + Biba + Chinese Wall (animation)
+
+<iframe class="dsanim" src="anim/access-matrix.html?mode=slide&lang=en" title="Access matrix: DAC + BLP + Biba + Chinese Wall"></iframe>
+
+<!-- Speaker note: Show that dominates() uses the exact same label comparison for BLP and Biba, just in opposite directions. -->
+
+---
+
+# Access Matrix — Edge Case: Equal Labels
+
+<iframe class="dsanim" src="anim/access-matrix.html?mode=slide&lang=en&example=edge-equal-labels-always-ok" title="Edge case: equal labels always allow"></iframe>
+
+<!-- Speaker note: When both sides are at exactly the same level, show why both BLP and Biba always allow the request. -->
 
 ---
 
@@ -1278,13 +1409,29 @@ Book: Recipe 2.1
 `code/week-02/06-toctou` (WSL/Linux only) · Book: Recipe 2.3
 
 ```text
-GUVENSIZ (once lstat, sonra fopen):
-  >>> SALDIRI BASARILI: yazi gizli_hedef.txt'e yonlendirildi!
-GUVENLI (O_NOFOLLOW ile tek adim):
-  reddedildi: hedef sembolik bag
+UNSAFE (lstat first, then fopen):
+  >>> ATTACK SUCCEEDED: write redirected to secret_target.txt!
+SAFE (O_NOFOLLOW, one step):
+  rejected: the target is a symbolic link
 ```
 
 **The gap between checking and using** is a race. Solution: a single atomic step (`O_NOFOLLOW`, `O_EXCL`), work through the fd.
+
+---
+
+# The TOCTOU Race: The Window Between Check and Use (animation)
+
+<iframe class="dsanim" src="anim/toctou-race-timeline.html?mode=slide&lang=en" title="The TOCTOU race: the window between check and use"></iframe>
+
+<!-- Speaker note: Show exactly when the attacker swaps in the symbolic link, right between lstat() and fopen(), on the timeline. -->
+
+---
+
+# TOCTOU — Edge Case: SAFE, No Attacker
+
+<iframe class="dsanim" src="anim/toctou-race-timeline.html?mode=slide&lang=en&example=edge-safe-no-attacker" title="Edge case: SAFE, no attacker — writes normally"></iframe>
+
+<!-- Speaker note: Show that the SAFE version behaves normally with no extra cost when there is no attacker. -->
 
 ---
 
@@ -1292,14 +1439,14 @@ GUVENLI (O_NOFOLLOW ile tek adim):
 
 # Demo 12 — The ACE Evaluation Algorithm
 
-`code/week-02/12-ace-degerlendirme` · Recipe 2.2
+`code/week-02/12-ace-evaluation` · Recipe 2.2
 
 ```text
-1a kanonik:  RET Herkes TAM | IZIN Pazarlama YAZ  => RED
-1b bozuk:    IZIN Pazarlama YAZ | ... RET Herkes  => IZIN
-2a NULL DACL (yabanci hesap) => IZIN (SAHIP_AL, IZIN_YAZ dahil!)
-2b BOS DACL  (ayni hesap)    => RED
-3b kalitim kesildi           => RED (liste bitti)
+1a canonical: DENY Everyone FULL | ALLOW Marketing WRITE  => DENY
+1b broken:    ALLOW Marketing WRITE | ... DENY Everyone   => ALLOW
+2a NULL DACL (unrelated account) => ALLOW (TAKE_OWNER, WRITE_DAC dahil!)
+2b EMPTY DACL (same account)     => DENY
+3b inheritance broken            => DENY (list ended)
 ```
 
 - Order matters: **explicit DENY → explicit ALLOW → inherited DENY → inherited ALLOW**
@@ -1310,17 +1457,33 @@ GUVENLI (O_NOFOLLOW ile tek adim):
 
 ---
 
+# Windows ACE Evaluation Order (animation)
+
+<iframe class="dsanim" src="anim/windows-ace-evaluation-order.html?mode=slide&lang=en" title="Windows ACE evaluation order"></iframe>
+
+<!-- Speaker note: Show how each ACE is compared against the SIDs in the token, and why the first matching DENY stops the list right there. -->
+
+---
+
+# ACE Order — Edge Case: Canonical Order, DENY First
+
+<iframe class="dsanim" src="anim/windows-ace-evaluation-order.html?mode=slide&lang=en&example=edge-canonical-deny-first-stops-early" title="Edge case: canonical order — DENY is the first ACE, stops right away"></iframe>
+
+<!-- Speaker note: Show why having DENY at the front of the list, in canonical order, is the safest arrangement. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 13 — Unix Permissions, umask, setuid
 
-`code/week-02/13-unix-izin-umask` · Recipe 2.1, 2.7, 1.3
+`code/week-02/13-unix-permissions-umask` · Recipe 2.1, 2.7, 1.3
 
 ```text
-ayse   oku paradoks.txt ---rwxrwx  sahip -> RED
-zeynep oku paradoks.txt ---rwxrwx  diger -> IZIN
+alice  read paradox.txt ---rwxrwx  owner -> DENY
+zoe    read paradox.txt ---rwxrwx  other -> ALLOW
 0666 & ~umask:  000 -> rw-rw-rw-   022 -> rw-r--r--   077 -> rw-------
-seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
+seteuid(1001)  r/e/s = 1001/1001/0   <- saved UID still 0!
 ```
 
 - **The first matching class** decides (owner → group → others)
@@ -1331,6 +1494,22 @@ seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
 
 ---
 
+# Unix Permission Check and umask (animation)
+
+<iframe class="dsanim" src="anim/unix-permission-check.html?mode=slide&lang=en" title="Unix permission check and umask"></iframe>
+
+<!-- Speaker note: Step through how the root/owner/group/other class is picked, and the requested & ~umask bit operation. -->
+
+---
+
+# Unix Permissions — Edge Case: umask 000 Danger
+
+<iframe class="dsanim" src="anim/unix-permission-check.html?mode=slide&lang=en&example=edge-umask-000-dangerous" title="Edge case: umask 000, requesting 0666 opens it to everyone"></iframe>
+
+<!-- Speaker note: Show why a file opened with umask 000 ends up writable by everyone. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 14 — RBAC, Separation of Duty, Clark–Wilson
@@ -1338,15 +1517,31 @@ seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
 `code/week-02/14-rbac-clark-wilson` · a bank simulation
 
 ```text
-ATA cem GISE                 SSD(GISE,ONAYCI)  -> RED
-OTURUM deniz GISE,DENETCI    DSD(GISE,DENETCI) -> RED
-OTURUM deniz DENETCI         -> TAMAM
-deniz IVP: beklenen 20250, bulunan 20250
+ASSIGN carl TELLER            SSD(TELLER,APPROVER) -> DENY
+SESSION dana TELLER,AUDITOR   DSD(TELLER,AUDITOR)  -> DENY
+SESSION dana AUDITOR          -> OK
+dana IVP: expected 20250, found 20250
 ```
 
 - **SSD:** cannot be assigned to two conflicting roles · **DSD:** cannot have both active in the same session
 - Only a **certified TP** touches a CDI; a large transfer → **second-person approval**
 - ⚠️ If a faulty TP gets certified, the rules don't see it — the **IVP catches it**
+
+---
+
+# RBAC + Clark–Wilson: Transaction Check Gates (animation)
+
+<iframe class="dsanim" src="anim/rbac-clark-wilson-transaction-check.html?mode=slide&lang=en" title="RBAC + Clark–Wilson: transaction check gates"></iframe>
+
+<!-- Speaker note: Walk through the E1-E4 gates in order: is the role held, is the TP certified, is there an open session, does only a TP touch the CDI. -->
+
+---
+
+# RBAC — Edge Case: User Not Recognized
+
+<iframe class="dsanim" src="anim/rbac-clark-wilson-transaction-check.html?mode=slide&lang=en&example=edge-unrecognized-user" title="Edge case: the user is not recognized at all (stops at E3)"></iframe>
+
+<!-- Speaker note: Show that the E3 identity gate comes before the role/TP gates and stops the request right at the start. -->
 
 <!-- Speaker note: Field equivalent: the four-eyes principle, split knowledge and dual control, daily reconciliation. -->
 
@@ -1543,13 +1738,29 @@ A CVE belongs to one or more **CWE types**.
 `code/week-02/05-cvss` (Python)
 
 ```text
-AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H  = 9.8  Kritik
-              ... S:U -> S:C          = 10.0 Kritik
-AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  Yuksek
+AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H  = 9.8  Critical
+              ... S:U -> S:C          = 10.0 Critical
+AV:L (local) /PR:L/... C:H/I:H/A:H    = 7.8  High
 ```
 
 - **Remote + unauthenticated** is highest; a scope change pushes it to 10.0.
 - ⚠️ The base score **doesn't know the context**: a 4.0 flaw that hits your asset exactly can matter more to you than a 9.8.
+
+---
+
+# CVSS v3.1 Base Score Calculation (animation)
+
+<iframe class="dsanim" src="anim/cvss-score.html?mode=slide&lang=en" title="CVSS v3.1 base score calculation"></iframe>
+
+<!-- Speaker note: Show how the Impact and Exploitability sub-scores are computed from the eight metrics, and how the formula changes with scope. -->
+
+---
+
+# CVSS — Edge Case: No Impact at All
+
+<iframe class="dsanim" src="anim/cvss-score.html?mode=slide&lang=en&example=edge-no-impact" title="Edge case: no impact at all, a hard 0.0"></iframe>
+
+<!-- Speaker note: Show that when C/I/A are all None, the Impact sub-score is 0 and the base score is a hard 0.0. -->
 
 ---
 

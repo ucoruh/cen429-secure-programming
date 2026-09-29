@@ -46,8 +46,8 @@ Konuşma notu: Bu hafta ileri kod gizleme kurallarını işliyoruz. Çerçeve: g
 - **Beyaz kutu / MATE saldırgan modeli** — cihazı elinde tutan kullanıcının aynı zamanda saldırgan olduğu tehdit modeli **(Hafta 1)**
 - **Hata ayıklayıcı (debugger)** — programı adım adım çalıştıran, değişkenleri gösteren araç (gdb, lldb); RASP bağlamında çalışma anında algılamasını görmüştük **(Hafta 6)**
 - **Entropi** — bir verinin baytlarının ne kadar düzensiz göründüğünün ölçüsü; şifreli/paketli içerik tespitinde ve rastgele sayı üretiminde gördük **(Hafta 2, 3)**
-- **Derleme bayrağı, `strings` ve sembol tablosu** — derleyici seçenekleri ve bir ikili dosyanın okunabilir metinlerini/isim listesini gösteren araçlar; gizlemenin giriş seviyesi adımları **(Hafta 4)**
-- **Tersine derleme** — bir ikili/bayt kodunu geri, okunabilir koda yaklaştırma; JVM bayt kodu üzerinde gördük **(Hafta 5)**
+- **Derleme bayrağı, `strings` ve sembol tablosu** — derleyici seçenekleri ve bir binary dosyanın okunabilir metinlerini/isim listesini gösteren araçlar; gizlemenin giriş seviyesi adımları **(Hafta 4)**
+- **Tersine derleme** — bir binary/bayt kodunu geri, okunabilir koda yaklaştırma; JVM bayt kodu üzerinde gördük **(Hafta 5)**
 - **XOR** — iki bit farklıysa 1, aynıysa 0; `a^b^b=a` ile kendini geri alır; Java dize gizlemede elle çözmüştük **(Hafta 5)**
 - **Günlük (log)** — çalışırken yazılan bilgi mesajları; hassas bilgi düşerse saldırgan okur **(Hafta 2)**
 
@@ -85,10 +85,10 @@ Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 
 ---
 
-# Derleyici ve ikili dosya
+# Derleyici ve binary dosya
 
 - **Derleyici** (compiler): kaynak kodu **makine koduna** çeviren program (gcc, clang).
-- **İkili dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
+- **Binary dosya** (binary): derleme sonucu; bilgisayarın doğrudan çalıştırdığı dosya (`.exe`, `.so`).
 
 ![w:900](assets/h09-13-derleme-zinciri.svg)
 
@@ -99,13 +99,13 @@ Kaynak kod **derlenir** ve makinenin çalıştırdığı biçime döner.
 - **Makine kodu:** işlemcinin anladığı sayısal komutlar.
 - **Assembly:** makine kodunun insana biraz daha okunur hali (`mov`, `cmp`, `jmp`).
 
-İkili dosyayı açtığınızda gördüğünüz şey budur.
+Binary dosyayı açtığınızda gördüğünüz şey budur.
 
 ---
 
 # Tersine mühendislik nedir?
 
-**Tersine mühendislik** (reverse engineering): ikili dosyaya bakıp programın **ne yaptığını** anlamaya çalışmak.
+**Tersine mühendislik** (reverse engineering): binary dosyaya bakıp programın **ne yaptığını** anlamaya çalışmak.
 
 Saldırganın temel işi budur.
 
@@ -113,10 +113,10 @@ Saldırganın temel işi budur.
 
 # Tersine derleyici (decompiler)
 
-- **Tersine derleyici** (decompiler): ikili dosyayı geri, okunabilir koda yakın bir biçime çeviren araç.
+- **Tersine derleyici** (decompiler): binary dosyayı geri, okunabilir koda yakın bir biçime çeviren araç.
 - Örnekler: Ghidra, IDA.
 
-Amaç: kaynağa erişimi olmayan biri, ikiliye bakarak mantığı çıkarsın.
+Amaç: kaynağa erişimi olmayan biri, binary'ye bakarak mantığı çıkarsın.
 
 ---
 
@@ -136,8 +136,8 @@ Kodda `0x5A` gibi değerler göreceğiz; bunlar sadece sayılardır.
 - Özelliği: `a ^ b ^ b == a` → **kendini geri alır**.
 
 ```c
-c = a ^ 0x5A;   /* şifrele */
-a = c ^ 0x5A;   /* geri çöz */
+c = a ^ 0x5A;   /* encode */
+a = c ^ 0x5A;   /* decode */
 ```
 
 Gizlemede çok kullanılır çünkü tersine çevrilebilir.
@@ -149,13 +149,13 @@ Gizlemede çok kullanılır çünkü tersine çevrilebilir.
 - **Entropi:** bir verinin ne kadar "rastgele" göründüğü.
 - Kriptografik anahtarlar **yüksek entropili** görünür (düzensiz baytlar).
 
-Saldırgan, ikilide yüksek entropili bir blok görürse "burada anahtar olabilir" der.
+Saldırgan, binary'de yüksek entropili bir blok görürse "burada anahtar olabilir" der.
 
 ---
 
 # Fonksiyon, dal, koşul
 
-- **Fonksiyon:** bir işi yapan kod bloğu (`erisim_ver`).
+- **Fonksiyon:** bir işi yapan kod bloğu (`grant_access`).
 - **Dal (branch):** `if` gibi bir yol ayrımı.
 - **Koşul:** dalın hangi yöne gideceğini belirleyen ifade.
 
@@ -210,7 +210,7 @@ Bir mobil uygulamayı kullanıcıya **teslim** ettiniz.
 
 **M**an-**A**t-**T**he-**E**nd = programın kendisine sahip saldırgan.
 
-- İkili dosya onda
+- Binary dosya onda
 - Belleği okuyup değiştirebilir
 - Tersine derleyici, hata ayıklayıcı elinde
 - İstediği kadar dener
@@ -246,8 +246,9 @@ Kripto **kara kutu** varsayar; teslimde bu varsayım çöker.
 
 - **1976** — Diffie & Hellman: "anlaşılmaz ama çalışır" fikri (**çaba-yoluyla** koruma)
 - **1997** — Collberg vd. **taksonomi** + *güç–dayanıklılık–gizlilik–maliyet* (bu dersin beş ailesi)
+- **2000** — Wang vd.: **kontrol akışı düzleştirme** — kesin analiz genel durumda **NP-zor** (K-04)
 - **2001** — Barak vd.: kusursuz gizleme **imkânsızdır** → "kırılamazlık" değil **maliyet**
-- **2002** — Chow vd. **whitebox AES** (11. hafta) · **2010'lar** **Tigress**, O-LLVM (14. hafta)
+- **2002** — Chow vd. **whitebox AES** (11. hafta) · **2015** Obfuscator-LLVM (Junod vd., K-11) · Tigress (14. hafta)
 
 > Gizleme, bir **imkânsızlık teoreminin** üzerine kurulmuş **pratik bir geciktirme** disiplinidir.
 
@@ -444,6 +445,22 @@ sembol gizleme · ad anlamsızlaştırma · aritmetik dönüşüm · dize kodlam
 
 ---
 
+# Animasyon · Beş aile, tek fonksiyon
+
+<iframe class="dsanim" src="anim/five-obfuscation-families.html?mode=slide&lang=tr" title="Gizlemenin beş ailesi"></iframe>
+
+<!-- Konuşma notu: Dört aileyi gerçek grant_access/obfuscated.c satırlarıyla gösterin, sonra dağıtıcıyı 10 jetonla çalıştırıp davranışın korunduğunu canlı izleyin. -->
+
+---
+
+# Animasyon · Beş aile — uç durum (hepsi geçerli)
+
+<iframe class="dsanim" src="anim/five-obfuscation-families.html?mode=slide&lang=tr&example=edge-all-valid" title="Beş aile — uç durum"></iframe>
+
+<!-- Konuşma notu: 10 jetonun onu da geçerli — dağıtıcı her seferinde tam dolaşım yapar, hepsi GRANTED. -->
+
+---
+
 # Gizleme ne VERİR?
 
 - Statik analize **gecikme** (`strings`, sembol, tersine derleme)
@@ -511,6 +528,22 @@ Gizleme "var/yok" değildir.
 
 ---
 
+# Animasyon · Koruma kuralı şablonu
+
+<iframe class="dsanim" src="anim/protection-rule-template.html?mode=slide&lang=tr" title="Koruma kuralı şablonu"></iframe>
+
+<!-- Konuşma notu: 5 gerçek kural x 2 varlık (ölçülmüş grant_access, kavramsal lisans_dogrula) — hangisinin ölçüldüğünü, hangisinin örnek olduğunu vurgulayın. -->
+
+---
+
+# Animasyon · Koruma kuralı şablonu — uç durum (yalnız kavramsal varlık)
+
+<iframe class="dsanim" src="anim/protection-rule-template.html?mode=slide&lang=tr&example=edge-asset-b-only" title="Koruma kuralı şablonu — uç durum"></iframe>
+
+<!-- Konuşma notu: 10 satırın onu da lisans_dogrula — hiç ölçüm yok, "ölçtük" ile "örnekledik" farkını burada net gösterin. -->
+
+---
+
 # Bölüm 2 — kısa sınama
 
 1. MATE saldırgan kara kutudan nasıl ayrılır?
@@ -547,7 +580,7 @@ Bu bölümde onu **güçlendiren** kuralları ekliyoruz:
 
 K-01 opak yüklem · K-02 aritmetik kodlama · K-03 sahte/ölü · K-04 düzleştirme (derin) · K-05 rastgele çıkış · K-06 çağrı gizleme
 
-Tüm örnekler **sentetik**, tek denetim: `erisim_ver`.
+Tüm örnekler **sentetik**, tek denetim: `grant_access`.
 
 ---
 
@@ -575,8 +608,8 @@ Tüm örnekler **sentetik**, tek denetim: `erisim_ver`.
 # K-01 · Opak yüklem örneği
 
 ```c
-/* x*(x+1) daima çifttir → sonuç daima true */
-static int opak_dogru(unsigned x) {
+/* x*(x+1) is always even → result is always true */
+static int opaque_true(unsigned x) {
     return ((x * (x + 1)) & 1u) == 0;
 }
 ```
@@ -588,10 +621,10 @@ Programcı bilir: **hep true**. Statik analiz bunu kolay kanıtlayamaz.
 # K-01 · Nasıl kullanılır?
 
 ```c
-if (opak_dogru(sayac)) {
-    durum = gercek_adim(durum);   /* daima buraya girer */
+if (opaque_true(counter)) {
+    state = real_step(state);   /* always entered */
 } else {
-    durum = sahte_adim(durum);    /* ölü yol: hiç çalışmaz */
+    state = fake_step(state);    /* dead path: never runs */
 }
 ```
 
@@ -620,6 +653,22 @@ Kılavuz döngüleri ayrı kural yapar:
 - **Sınır:** bilinen opak yüklem kalıpları otomatik tanınır
 - **Karşı önlem:** çeşitlendir (bölüm 5)
 - **Ölçüm:** önce/sonra temel blok sayısı
+
+---
+
+# Animasyon · Opak yüklem ekleme
+
+<iframe class="dsanim" src="anim/opaque-predicate-insertion.html?mode=slide&lang=tr" title="Opak yüklem ekleme"></iframe>
+
+<!-- Konuşma notu: grant_access'in gerçek opaque_zero(x)=(x*(x+1))&1'ini birçok x için tarayın; hepsi 0 çıkıyor. Sonra gerçek kullanım satırını (40) gösterin. -->
+
+---
+
+# Animasyon · Opak yüklem — uç durum (büyük değerler)
+
+<iframe class="dsanim" src="anim/opaque-predicate-insertion.html?mode=slide&lang=tr&example=edge-extremes" title="Opak yüklem — uç durum"></iframe>
+
+<!-- Konuşma notu: JS güvenli tamsayı sınırının hemen altındaki büyük x değerlerinde de özdeşlik hâlâ 0 çıkıyor. -->
 
 ---
 
@@ -653,14 +702,14 @@ Sonuç aynı, görünüm karmaşık. (MBA = mixed boolean-arithmetic)
 # K-02 · Sabiti gizle
 
 ```c
-/* 0x2A doğrudan yazılmaz; iki parçadan üretilir */
-static uint8_t esik(void) {
+/* 0x2A is not written directly; produced from two parts */
+static uint8_t threshold(void) {
     uint8_t a = 0x37, b = 0x1D;
     return (uint8_t)(a ^ b);   /* = 0x2A */
 }
 ```
 
-İkili dosyada `0x2A` araması sonuç vermez.
+Binary dosyada `0x2A` araması sonuç vermez.
 
 ---
 
@@ -711,19 +760,19 @@ Kılavuz bunları **ayrı** kurallar yapar. Fark kritik:
 # K-03 · Sahte işlem örneği
 
 ```c
-crc = crc32_guncelle(crc, veri, n);
-crc ^= (sabit ^ sabit);   /* = crc; sonuç aynı */
+crc = crc32_update(crc, data, n);
+crc ^= (constant ^ constant);   /* = crc; result unchanged */
 ```
 
-`sabit ^ sabit == 0` → CRC değişmez, ama kod kalabalıklaşır.
+`constant ^ constant == 0` → CRC değişmez, ama kod kalabalıklaşır.
 
 ---
 
 # K-03 · Ölü dal örneği
 
 ```c
-if (opak_yanlis()) {        /* daima false */
-    sahte_kontrol();        /* hiç çalışmaz */
+if (opaque_false()) {        /* always false */
+    fake_check();        /* never runs */
 }
 ```
 
@@ -768,14 +817,14 @@ Algoritmanın **yapısını**:
 # K-04 · Şablon
 
 ```c
-int durum = BASLA;
-for (;;) switch (durum) {
-  case BASLA: durum = ADIM1; break;
-  case ADIM1: durum = kosul ? ADIM2 : HATA; break;
-  case ADIM2: durum = BITIR; break;
-  case HATA:  return RED;
-  case BITIR: return IZIN;
-  default:    return RED;   /* rastgele çıkış (K-05) */
+int state = START;
+for (;;) switch (state) {
+  case START: state = STEP1; break;
+  case STEP1: state = condition ? STEP2 : FAIL; break;
+  case STEP2: state = DONE; break;
+  case FAIL:  return DENIED;
+  case DONE:  return GRANTED;
+  default:    return DENIED;   /* random exit (K-05) */
 }
 ```
 
@@ -829,6 +878,22 @@ for (;;) switch (durum) {
 
 ---
 
+# Animasyon · Kontrol akışı düzleştirme
+
+<iframe class="dsanim" src="anim/flow-flattening-dispatcher.html?mode=slide&lang=tr" title="Kontrol akışı düzleştirme"></iframe>
+
+<!-- Konuşma notu: clean.c'nin doğal if-zinciri ile obfuscated.c'nin switch dağıtıcısını aynı jetonlarla yan yana çalıştırın. -->
+
+---
+
+# Animasyon · Düzleştirme — uç durum (en kısa yol)
+
+<iframe class="dsanim" src="anim/flow-flattening-dispatcher.html?mode=slide&lang=tr&example=flat-all-wrong-length" title="Düzleştirme — uç durum"></iframe>
+
+<!-- Konuşma notu: hepsi yanlış uzunlukta — dağıtıcı DECODE/COMPARE'a hiç girmeden en kısa yoldan default'a düşüyor. -->
+
+---
+
 <!-- _class: bolum -->
 
 # K-05 · Rastgele çıkış
@@ -849,13 +914,13 @@ Saldırgan tipik olarak:
 # K-05 · Nasıl?
 
 ```c
-if (!imza_gecerli(p)) {
-    durum = kararsiz_deger();  /* switch'te tanımsız → default */
+if (!signature_valid(p)) {
+    state = unpredictable_value();  /* not defined in the switch → default */
     break;
 }
 ```
 
-Doğrudan `return RED` yok; durum öngörülemeyen bir değere gider.
+Doğrudan `return DENIED` yok; durum öngörülemeyen bir değere gider.
 
 ---
 
@@ -915,7 +980,7 @@ Kendi karşılaştırmanı yazarken **sabit zamanlı** olsun (3. hafta).
 
 - **Maliyet:** düşük–orta (kendi sürümleri bakım ister)
 - **Sınır:** davranış analizi ne yaptığını yine gösterebilir → bu bir **gecikme**
-- **Ölçüm:** ikili dosyada tanınan kütüphane çağrısı sayısı
+- **Ölçüm:** binary dosyada tanınan kütüphane çağrısı sayısı
 
 ---
 
@@ -979,7 +1044,7 @@ Dizeler, sabitler, tablolar, değişkenler.
 
 # K-07 · Neyi korur?
 
-İkili dosyadaki **okunabilir metinleri**.
+Binary dosyadaki **okunabilir metinleri**.
 
 En ucuz saldırı adımı: `strings`.
 
@@ -990,7 +1055,7 @@ En ucuz saldırı adımı: `strings`.
 # K-07 · Fikir
 
 - Hassas dize **derleme öncesi** kodlanır (ör. XOR)
-- İkili dosyada **kodlanmış** durur
+- Binary dosyada **kodlanmış** durur
 - **Kullanım anında** çözülür
 - İş biter bitmez **silinir**
 
@@ -999,13 +1064,13 @@ En ucuz saldırı adımı: `strings`.
 # K-07 · Örnek (sentetik)
 
 ```c
-static const uint8_t GIZLI[] = {0x3B,0x2A,0x2E,0x2E,0x2D};
-void kullan(void) {
-    char tmp[sizeof GIZLI];
-    for (size_t i=0;i<sizeof GIZLI;i++)
-        tmp[i] = GIZLI[i] ^ 0x5A;      /* çöz */
-    isle(tmp, sizeof GIZLI);
-    memset_s_benzeri(tmp, sizeof tmp); /* hemen sil */
+static const uint8_t HIDDEN[] = {0x3B,0x2A,0x2E,0x2E,0x2D};
+void use(void) {
+    char tmp[sizeof HIDDEN];
+    for (size_t i=0;i<sizeof HIDDEN;i++)
+        tmp[i] = HIDDEN[i] ^ 0x5A;      /* decode */
+    process(tmp, sizeof HIDDEN);
+    secure_wipe(tmp, sizeof tmp); /* wipe immediately */
 }
 ```
 
@@ -1014,7 +1079,7 @@ void kullan(void) {
 # K-07 · ⚠️ Kritik sınır
 
 - Çalışırken çözülmüş dize **bellekte açık**
-- Çözme anahtarı da ikili dosyada
+- Çözme anahtarı da binary dosyada
 - Bu bir **statik tarama** önlemidir
 
 Sahada: çözme anahtarı **parçalanır ve dağıtılır**, çözme fonksiyonu ek denetimlerle korunur.
@@ -1027,6 +1092,22 @@ Tekrar: dize gizleme `strings`'i durdurur, **anahtar** korumaz.
 
 - Anahtar için → whitebox (11. hafta) ya da donanım
 - **Ölçüm:** `strings` çıktısında hassas dize **bulunmamalı**
+
+---
+
+# Animasyon · Dize şifreleme
+
+<iframe class="dsanim" src="anim/string-encryption.html?mode=slide&lang=tr" title="Dize şifreleme"></iframe>
+
+<!-- Konuşma notu: ENCODED[]'in gerçek yaşam döngüsü — kodlu bekler, çözülür, HEMEN silinir; sonra bu döngünün her çağrıda tekrarlandığını gösterin. -->
+
+---
+
+# Animasyon · Dize şifreleme — uç durum (hiçbiri geçerli değil)
+
+<iframe class="dsanim" src="anim/string-encryption.html?mode=slide&lang=tr&example=edge-never-valid" title="Dize şifreleme — uç durum"></iframe>
+
+<!-- Konuşma notu: 10 jetonun hiçbiri geçerli değil — yine de çöz+sil döngüsü her seferinde aynen çalışıyor, canlı doğrulayın. -->
 
 ---
 
@@ -1083,6 +1164,22 @@ static int karar_izin_mi(Karar k) {
 
 ---
 
+# Animasyon · Veri kodlama (opak boolean)
+
+<iframe class="dsanim" src="anim/data-encoding.html?mode=slide&lang=tr" title="Veri kodlama: opak boolean"></iframe>
+
+<!-- Konuşma notu: saf int result (0/1) ile Decision{a,b} yan yana; bellek dökümünde hangisi anlamı hemen ele veriyor? -->
+
+---
+
+# Animasyon · Veri kodlama — uç durum (hepsi geçerli)
+
+<iframe class="dsanim" src="anim/data-encoding.html?mode=slide&lang=tr&example=edge-all-granted" title="Veri kodlama — uç durum"></iframe>
+
+<!-- Konuşma notu: 10 jetonun onu da geçerli — a^b her seferinde 0xFFFF, hiçbir zaman değişmiyor. -->
+
+---
+
 <!-- _class: bolum -->
 
 # K-09 · Değişken bölme ve yeniden yapılandırma
@@ -1127,7 +1224,7 @@ Hassas bir değişkenin bellekteki **tanınabilir izini**.
 
 **Neyi korur?** Bir fonksiyonun **makine kodunu**.
 
-**Nasıl?** Fonksiyon → özel bir **VM'in bayt koduna**; ikiliye bayt kodu + küçük yorumlayıcı gömülür.
+**Nasıl?** Fonksiyon → özel bir **VM'in bayt koduna**; binary'ye bayt kodu + küçük yorumlayıcı gömülür.
 
 Saldırgan tanıdık kodu değil, önce çözmesi gereken **özel komut kümesini** görür.
 
@@ -1160,13 +1257,13 @@ Saldırgan tanıdık kodu değil, önce çözmesi gereken **özel komut kümesin
 
 - **Maliyet:** orta (geçişlere bağlı)
 - **Sınır:** bilinen geçiş kalıpları tanınır; araç sürümüyle güncel kal
-- **Ölçüm:** farklı tohumların ürettiği ikililer arası fark
+- **Ölçüm:** farklı tohumların ürettiği binary'ler arası fark
 
 ---
 
 # K-12 · Dinamik şifreleme (kavram)
 
-**Neyi korur?** En hassas kod bölümlerini, ikilide **şifreli** tutarak.
+**Neyi korur?** En hassas kod bölümlerini, binary'de **şifreli** tutarak.
 
 **Nasıl?** Bölüm şifreli durur → yalnız çalışacağı an çözülür → sonra yeniden şifrelenir/silinir.
 
@@ -1253,9 +1350,25 @@ Saldırgan bir kopyayı kırıp yamayı/betiği **herkese** dağıtabiliyorsa, b
 
 ---
 
+<!-- _class: yogun -->
+
+# Kökeni: biyolojiden ödünç bir fikir
+
+- **1993** — Fred Cohen, "Operating System Protection Through Program Evolution": sistemi **zaman içinde**
+  değiştiren yazılım → **zamanda çeşitlendirme**nin köküdür
+- **1997** — Forrest, Somayaji, Ackley, "Building Diverse Computer Systems" (HotOS): davranışı değiştirmeyen
+  rastgeleleştirme (ör. yığın çerçevesi boyutu) bir arabellek taşmasını bile bozar → **uzayda çeşitlendirme**nin köküdür
+
+> Doğada çeşitlilik bir hastalığın türün **tamamını** değil yalnız dirençsizleri öldürmesini sağlar; yazılımda da
+> aynı fikir bir kırığın **tüm kopyaları** açmasını önler.
+
+<!-- Konuşma notu: iki makale de 30+ yıllık; Tigress'in --Seed'i bu fikri tek bir bayrağa indirger (14. hafta). -->
+
+---
+
 # Çeşitlendirme nedir?
 
-Aynı kaynaktan **davranışça eş, yapıca farklı** ikili dosyalar üretmek.
+Aynı kaynaktan **davranışça eş, yapıca farklı** binary dosyalar üretmek.
 
 Opak yüklemler, sahte bloklar, durum değerleri kopyadan kopyaya **değişir**.
 
@@ -1288,6 +1401,22 @@ Opak yüklemler, sahte bloklar, durum değerleri kopyadan kopyaya **değişir**.
 - Fark ne kadar yüksekse, bir saldırının diğerinde çalışma olasılığı o kadar düşük
 
 Ölçütü S9'a yaz.
+
+---
+
+# Animasyon · Çeşitlendirme
+
+<iframe class="dsanim" src="anim/diversification.html?mode=slide&lang=tr" title="Çeşitlendirme: iki tohum, aynı davranış"></iframe>
+
+<!-- Konuşma notu: SEED=1001 ve SEED=2002 için MASK/ENCODED farklı ama 10 jetonda da GRANTED/DENIED aynı çıkıyor — canlı gösterin. -->
+
+---
+
+# Animasyon · Çeşitlendirme — uç durum (uzunluk hiç uymuyor)
+
+<iframe class="dsanim" src="anim/diversification.html?mode=slide&lang=tr&example=edge-length-extremes" title="Çeşitlendirme — uç durum"></iframe>
+
+<!-- Konuşma notu: iki tohum da en kısa yoldan anında reddediyor — anlaşma yalnız "tam yolda" değil, her yolda geçerli. -->
 
 ---
 
@@ -1373,7 +1502,7 @@ Rakamları tersine derleyiciden alıp S9'a yazarsınız.
 # Maliyet ölçümü örneği
 
 ```bash
-size ./program_temiz ./program_gizli   # boyut
+size ./program_clean ./program_obfuscated   # boyut
 # süre: aynı girdiyle N kez çalıştır, ortalama
 ```
 
@@ -1391,6 +1520,22 @@ size ./program_temiz ./program_gizli   # boyut
 - Karar: kazanç, varlık değerine göre kabul edilebilir mi?
 
 > "Güçlü" deme; **bu sayıları** göster.
+
+---
+
+# Animasyon · Gizlemenin ölçülmesi
+
+<iframe class="dsanim" src="anim/obfuscation-metrics.html?mode=slide&lang=tr" title="Gizlemenin ölçülmesi"></iframe>
+
+<!-- Konuşma notu: gerçek 27->49 komut / 4->9 dal-çağrı sayılarını gösterin, sonra dinamik maliyeti (jeton başına adım) 10 jetonla canlı izleyin. -->
+
+---
+
+# Animasyon · Ölçüm — uç durum (en pahalı yol)
+
+<iframe class="dsanim" src="anim/obfuscation-metrics.html?mode=slide&lang=tr&example=edge-all-valid" title="Ölçüm — uç durum"></iframe>
+
+<!-- Konuşma notu: hepsi geçerli jeton — dağıtıcı her seferinde en uzun (6 adım) yolu izliyor, dinamik maliyet tavanda. -->
 
 ---
 
@@ -1439,6 +1584,22 @@ Bunları **savunmayı sınamak** için öğreniriz — saldırı için değil.
 - Opak yüklem ve düzleştirme bu yolla açılabilir
 
 **Dayanıklılık kuralı:** opak yüklemleri çözmesi pahalı (çarpanlara ayırma, karma) yapılara bağla, durum uzayını büyüt — ama **maliyeti ölç**.
+
+---
+
+# Animasyon · Deobfuscation
+
+<iframe class="dsanim" src="anim/deobfuscation.html?mode=slide&lang=tr" title="Deobfuscation: sembolik sadeleştirme"></iframe>
+
+<!-- Konuşma notu: gerçek opaque_zero'yu periyodik kanıtla (x mod 2) sabit katlayın; sonra R-04/R-05/R-07'nin HÂLÂ ayakta olduğunu vurgulayın — dayanıklılık != maliyet. -->
+
+---
+
+# Animasyon · Deobfuscation — uç durum (sıralı çift/tek)
+
+<iframe class="dsanim" src="anim/deobfuscation.html?mode=slide&lang=tr&example=edge-alternating-parity" title="Deobfuscation — uç durum"></iframe>
+
+<!-- Konuşma notu: x=0..9 sırayla — periyodu (2) doğrudan gözle gösterir, "yalnız 2 kalan sınıfı yeterli" iddiasını somutlaştırır. -->
 
 ---
 
@@ -1516,7 +1677,7 @@ Ama belge her önlemin yanına: **"tek başına güçlü değildir."**
 
 # Bu örneğin amacı
 
-Tek bir sentetik denetimi (`erisim_ver`) alıp **katman katman** koruyacağız.
+Tek bir sentetik denetimi (`grant_access`) alıp **katman katman** koruyacağız.
 
 Her adımda: ne eklendi · ne kazandık · ne ödedik.
 
@@ -1527,10 +1688,10 @@ Her adımda: ne eklendi · ne kazandık · ne ödedik.
 # Adım 0 · Korumasız başlangıç
 
 ```c
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton))
-        return IZIN;      /* tek dal, tek dönüş */
-    return RED;
+int grant_access(const char *token) {
+    if (token_valid(token))
+        return GRANTED;      /* single branch, single return */
+    return DENIED;
 }
 ```
 
@@ -1540,7 +1701,7 @@ int erisim_ver(const char *jeton) {
 
 # Adım 0 · Saldırgan ne yapar?
 
-- `strings` → `IZIN`/`RED` ve ilgili dizeler
+- `strings` → `GRANTED`/`DENIED` ve ilgili dizeler
 - Tersine derle → tek `if`, iki dönüş
 - Başarısızlık dalını başarıya çevir (tek bayt)
 
@@ -1551,8 +1712,8 @@ int erisim_ver(const char *jeton) {
 # Adım 1 · K-07 dize/sabit kodla
 
 ```c
-/* IZIN/RED ve dizgeler artık düz görünmez */
-static int izin_kodu(void){ return 0x9E ^ 0x9F; } /* =1 */
+/* GRANTED/DENIED and strings no longer appear in plain text */
+static int grant_code(void){ return 0x9E ^ 0x9F; } /* =1 */
 ```
 
 - **Kazanç:** `strings` hassas metni bulmaz
@@ -1565,7 +1726,7 @@ static int izin_kodu(void){ return 0x9E ^ 0x9F; } /* =1 */
 | Ölçüt | Adım 0 | Adım 1 |
 | --- | --- | --- |
 | `strings` hassas dize | 3 | 0 |
-| İkili boyut | temel | +%0.5 |
+| Binary boyut | temel | +%0.5 |
 
 İlk katman en ucuz, en yüksek getiri.
 
@@ -1574,8 +1735,8 @@ static int izin_kodu(void){ return 0x9E ^ 0x9F; } /* =1 */
 # Adım 2 · K-02 aritmetik kodla
 
 ```c
-/* karşılaştırma karmaşık ama denk bir ifadeye döner */
-int esik = ((a ^ b) + 2*(a & b));   /* = a + b */
+/* comparison turns into a complex but equivalent expression */
+int threshold = ((a ^ b) + 2*(a & b));   /* = a + b */
 ```
 
 - **Kazanç:** sabit/hesap doğrudan okunmaz
@@ -1586,12 +1747,12 @@ int esik = ((a ^ b) + 2*(a & b));   /* = a + b */
 # Adım 3 · K-04 düzleştir
 
 ```c
-int durum = BASLA;
-for(;;) switch(durum){
-  case BASLA: durum = kontrol()?ADIM:HATA; break;
-  case ADIM:  durum = BITIR; break;
-  case HATA:  return RED;
-  case BITIR: return IZIN;
+int state = START;
+for(;;) switch(state){
+  case START: state = check()?STEP:FAIL; break;
+  case STEP:  state = DONE; break;
+  case FAIL:  return DENIED;
+  case DONE: return GRANTED;
 }
 ```
 
@@ -1610,7 +1771,7 @@ Tek `if` yok; sıra durum değişkeninde.
 # Adım 4 · K-05 rastgele çıkış
 
 ```c
-if (!kontrol()) { durum = kararsiz_deger(); break; } /* →default */
+if (!check()) { state = unpredictable_value(); break; } /* →default */
 ```
 
 - Hata **nerede** yakalandı, akıştan okunmaz
@@ -1621,8 +1782,8 @@ if (!kontrol()) { durum = kararsiz_deger(); break; } /* →default */
 # Adım 5 · K-03 sahte + ölü
 
 ```c
-crc ^= (s ^ s);            /* sahte işlem: sonuç aynı */
-if (opak_yanlis()) sahte(); /* ölü dal: çalışmaz */
+crc ^= (s ^ s);            /* bogus operation: result unchanged */
+if (opaque_false()) fake(); /* dead branch: never runs */
 ```
 
 - Gerçek mantık kalabalık içinde
@@ -1633,8 +1794,8 @@ if (opak_yanlis()) sahte(); /* ölü dal: çalışmaz */
 # Adım 6 · K-08 opak boolean
 
 ```c
-Karar k = izin_ver();               /* a^b==0xFFFF */
-if (karar_izin_mi(k)) uygula();
+Decision k = allow();               /* a^b==0xFFFF */
+if (decision_grants(k)) apply();
 ```
 
 - Sonuç düz 0/1 değil → tek bayt çeviremez
@@ -1696,7 +1857,7 @@ En az bir teknik için önce/sonra:
 
 - `strings` çıktısındaki hassas dize sayısı
 - CFG düğüm sayısı
-- ikili boyut, bir işlemin süresi
+- binary boyut, bir işlemin süresi
 
 ---
 

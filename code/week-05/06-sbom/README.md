@@ -1,50 +1,53 @@
-# Demo 6 — SBOM: yazılım malzeme listesi (CycloneDX) ve zafiyet eşleştirme
+# Demo 6 — SBOM: software bill of materials (CycloneDX) and vulnerability matching
 
-**Konu:** Bağımlılık güvenliği, SBOM, bilinen zafiyetli bileşenler (CWE-1104) ·
-**Hafta:** 5 · **Kitap:** doğrudan tarif yok (dış kaynak); Viega & Messier'in "hiçbir
-girdiye güvenme" ilkesi bağımlılıklara da uzanır
+**Topic:** Dependency security, SBOM, known-vulnerable components (CWE-1104) ·
+**Week:** 5 · **Book:** no direct recipe (external topic); Viega & Messier's "trust no
+input" principle extends to dependencies too
 
-## Ne gösteriyor?
+## What it shows
 
-Demo, kendi ürettiği **sentetik** jar'lardan (`cikti/lib/`) bir **CycloneDX 1.5** JSON
-SBOM'u üretir. Her bileşen için: **ad, sürüm, purl** (paket URL'si) ve **SHA-256**.
-Ardından küçük, **sentetik** bir "bilinen zafiyetli sürümler" listesiyle eşleştirir ve
-etkilenen bileşenler için uyarı basar.
+The demo produces a **CycloneDX 1.5** JSON SBOM from its own **synthetic** jars
+(`output/lib/`). For each component: **name, version, purl** (package URL) and
+**SHA-256**. It then matches them against a small, **synthetic** "known vulnerable
+versions" list and prints a warning for the affected components.
 
-| Adım | Ne olur |
+| Step | What happens |
 | --- | --- |
-| 1 | `lib/`'deki jar'lar taranır; ad/sürüm/SHA-256 çıkarılır, CycloneDX JSON yazılır |
-| 2 | Her bileşen için `pkg:maven/...@sürüm` biçiminde **purl** üretilir |
-| 3 | Sentetik zafiyet listesiyle eşleştirilir; iki bileşen için uyarı verilir |
+| 1 | The jars in `lib/` are scanned; name/version/SHA-256 are extracted, the CycloneDX JSON is written |
+| 2 | A **purl** in the form `pkg:maven/...@version` is generated for each component |
+| 3 | Matched against the synthetic vulnerability list; two components get a warning |
 
-**Neden önemli?** SBOM, "hangi bileşenin hangi sürümü bende var?" sorusuna **makine
-tarafından okunabilir** bir cevaptır. 2021'de **Log4Shell** (Log4j 2.x'teki
-CVE-2021-44228) çıktığında, SBOM'u olan ekipler "etkilendim mi?" sorusunu **saniyeler**
-içinde yanıtladı; olmayanlar günlerce kod taradı. Bu demodaki `gunluk-cekirdek` bileşeni
-o senaryonun sentetik bir benzetimidir (gerçek Log4j değildir).
+**Why it matters:** an SBOM is a **machine-readable** answer to "which component, which
+version, do I have?" When **Log4Shell** hit in 2021 (CVE-2021-44228, in Log4j 2.x),
+teams with an SBOM answered "am I affected?" in **seconds**; teams without one spent
+days scanning code by hand. This demo's `log-core` component is a synthetic stand-in
+for that scenario (it is not the real Log4j).
 
-## Çalıştırma
+## Running it
 
-| Ortam | Komut |
+| Environment | Command |
 | --- | --- |
-| Windows (PowerShell) | `.\demo.ps1` — ya da `demo.cmd`'ye çift tıklayın |
+| Windows (PowerShell) | `.\demo.ps1` — or double-click `demo.cmd` |
 | WSL / Linux | `sh demo.sh` |
 
-Yalnızca **Python 3** gerekir. **İndirme gerektirmez** (yerleşik `zipfile`, `hashlib`,
-`json`). CycloneDX üretimi için harici araç (`cyclonedx-*`) gerekmez; gerçek projelerde
-`cyclonedx-maven-plugin`, `syft` veya `cdxgen` kullanılır.
+Only **Python 3** is needed. **No download required** (uses the built-in `zipfile`,
+`hashlib`, `json`). No external tool (`cyclonedx-*`) is needed to generate CycloneDX
+here; real projects use `cyclonedx-maven-plugin`, `syft` or `cdxgen`.
 
-## Neden güvenli?
+## Why it's safe
 
-- Bileşen adları/sürümleri ve zafiyet kimlikleri **tamamen sentetiktir** (gerçek
-  kütüphane/CVE değil). Üretilen jar'lar ve SBOM `cikti/` altındadır (`.gitignore`'da).
-- Ağ kullanılmaz; sisteme dokunulmaz. Yerel bir NVD/OSV veritabanı indirilmez.
+- Component names/versions and the vulnerability IDs are **entirely synthetic** (not a
+  real library/CVE). The generated jars and SBOM live under `output/` (in `.gitignore`).
+- No network is used; nothing on the system is touched. No local NVD/OSV database is
+  downloaded.
 
-## Kendiniz deneyin
+## Try it yourself
 
-1. `BILESENLER`'e yeni bir bileşen ekleyip `ZAFIYETLI`'ye ekleyin. SBOM ve uyarı nasıl
-   değişiyor? Sürümü "düzeltilen" değere yükseltince uyarı kalkıyor mu?
-2. Üretilen `cikti/sbom.cyclonedx.json`'u açın. `purl`, `hashes` ve `metadata.component`
-   alanlarını inceleyin. SPDX ile CycloneDX arasındaki temel fark nedir?
-3. Gerçek bir projede SBOM'u nasıl otomatik üretirdiniz? (İpucu: derleme hattında bir
-   adım + zafiyet taraması; S13 proje bölümüne yazın.)
+1. Add a new component to `COMPONENTS` and to `VULNERABLE`. How do the SBOM and the
+   warning change? Does the warning disappear once you bump the version to the
+   "fixed_in" value?
+2. Open the generated `output/sbom.cyclonedx.json`. Look at the `purl`, `hashes` and
+   `metadata.component` fields. What is the core difference between SPDX and
+   CycloneDX?
+3. How would you generate an SBOM automatically in a real project? (Hint: a build
+   pipeline step + a vulnerability scan; write this up in the term-project section.)

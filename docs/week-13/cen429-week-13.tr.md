@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "Bu haftanın çalışan demosu"
-    `code/week-13/01-uyum-matrisi` — Uyum matrisi dogrulayici: kanitsiz 'karsilandi' satirlarini bulgu olarak isaretler (S17).
-    · `code/week-13/02-gereksinim-kalite` — Gereksinim kalitesi denetleyicisi: belirsiz/doğrulanamaz gereksinimi işaretler.
+    `code/week-13/01-compliance-matrix` — Uyum matrisi doğrulayıcı: kanıtsız 'met' (karşılandı) satırlarını bulgu olarak işaretler (S17).
+    · `code/week-13/02-requirement-quality` — Gereksinim kalitesi denetleyicisi: belirsiz/doğrulanamaz gereksinimi işaretler.
 
-    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
+    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda.
 
 
 !!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
@@ -43,20 +43,20 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-13\01-uyum-matrisi
-    .\bin\windows\uyum.exe
-    cd ..\02-gereksinim-kalite
-    .\bin\windows\gereksinim_kalite.exe
+    cd week-13\01-compliance-matrix
+    .\bin\windows\compliance_matrix.exe
+    cd ..\02-requirement-quality
+    .\bin\windows\requirement_quality.exe
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-13/01-uyum-matrisi && ./bin/linux/uyum
-    cd ../02-gereksinim-kalite && ./bin/linux/gereksinim_kalite
+    cd week-13/01-compliance-matrix && ./bin/linux/compliance_matrix
+    cd ../02-requirement-quality && ./bin/linux/requirement_quality
     ```
 
-    **Beklenen çıktı:** Birinci demo bir **uyum matrisini** satır satır okur ve **kanıtı olmayan "karşılandı"** satırlarını kırmızı bayrakla işaretler. İkinci demo örnek gereksinimleri tarar; "güvenli olmalı", "uygun şekilde" gibi **belirsiz/ölçülemez** ifadeleri **ZAYIF** diye işaretler ve **çıkış kodu = zayıf gereksinim sayısı** olur.
+    **Beklenen çıktı:** Birinci demo bir **uyum matrisini** satır satır okur ve **kanıtı olmayan "met" (karşılandı)** satırlarını kırmızı bayrakla işaretler. İkinci demo örnek gereksinimleri tarar; "should be secure" (güvenli olmalı), "properly" (uygun şekilde) gibi **belirsiz/ölçülemez** İngilizce ifadeleri **WEAK** (zayıf) diye işaretler ve **çıkış kodu = zayıf gereksinim sayısı** olur.
 
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. İyi bir **güvenlik gereksinimini** kötüsünden ayırmak; gereksinimi tasarıma, önleme, teste ve kanıta bağlayan bir
@@ -208,12 +208,25 @@ nerede?" diye sorar.
 ![İyi gereksinimin ölçütleri](assets/h13-03-iyi-gereksinim.svg)
 
 !!! note "Kısa tarihçe: güvenlik gereksinimleri nasıl standartlaştı?"
-    - **1985** — **TCSEC** ("Orange Book") güvenlik **gereksinim düzeylerini** ilk kez resmîleştirir.
-    - **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**, 2019).
-    - **1999** — **Ortak Kriterler (ISO/IEC 15408)**: **PP/ST**, **SFR/SAR** ve **EAL** kavramları buradan gelir ([12. hafta](../week-12/cen429-week-12.md) süreci).
-    - **2010'lar** — sektöre özgü setler: mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**, ödeme için **EMVCo/PCI**.
+    - **1983/1985** — **TCSEC** ("Orange Book"), ABD Savunma Bakanlığı'nın ilk girişimi, güvenlik **gereksinim
+      düzeylerini** resmîleştirir; ilk sürüm 1983, gözden geçirme 1985.
+    - **1984/1998** — **IEEE 830**, (güvenliğe özgü olmayan) klasik yazılım gereksinim belirtimi yazma standardı,
+      ilk kez 1984'te yayımlandı, 1998'de gözden geçirildi; yerini **2011**'de **ISO/IEC/IEEE 29148**'e bıraktı,
+      bu da gereksinim mühendisliğini sistem/yazılım yaşam döngüsü standartlarının içine katar.
+    - **1991** — **ITSEC**, Avrupa'nın kendi değerlendirme ölçütü (TCSEC'e paralel bir çaba).
+    - **1994** — **FIPS 140-1**, ilk ABD kriptografik modül standardı → **FIPS 140-2**, **2001** (kitabın Tarif
+      11.18'i) → **FIPS 140-3**, **2019** (güncel metin).
+    - **1994 → 1998 → 1999** — **Ortak Kriterler**: **v1.0** (1994) → **v2.0** (1998) → **ISO/IEC 15408** olarak
+      kabul (1999); **PP/ST**, **SFR/SAR** ve **EAL** kavramları buradan gelir ([12. hafta](../week-12/cen429-week-12.md)
+      süreci); standart bugün de gözden geçirilmeye devam ediyor (**CC:2022**).
+    - **2004** — **PCI DSS**, kart şemalarının ödeme ortamları için veri güvenliği standardı.
+    - **2009** — **OWASP ASVS**, web uygulamaları için açık bir doğrulama kontrol listesi.
+    - **2016** — **OWASP MASVS/MASTG**, aynı fikir mobil uygulamalar için.
+    - **2010'lar** — diğer sektöre özgü setler: tüketici IoT için **ETSI EN 303 645**, özellikle ödeme için
+      **EMVCo/PCI** belgeleri.
 
-    Değişmeyen ilke: iyi gereksinim **ölçülebilir** ve **izlenebilir** olmalıdır; kanıtsız "karşılandı" geçersizdir.
+    Dört on yıl boyunca değişmeyen ilke: iyi gereksinim **ölçülebilir** ve **izlenebilir** olmalıdır; kanıtsız
+    "karşılandı" geçersizdir.
 
 Bir gereksinim yazmaya başlamadan önce hangi türden söz ettiğimizi netleştirmek gerekir; gereksinimler üç ana türe
 ayrılır:
@@ -338,6 +351,17 @@ karşılanıp hangisinin karşılanmadığını belirsizleştirir; ikisi ayrı h
     içeriyor?", "Bunu doğrulamak için hangi testi çalıştırırım?", "Bu cümlenin karşılandığını kim, nasıl kanıtlar?"
     Üç sorudan birine bile net cevap veremiyorsa, gereksinim yeniden yazılmalıdır.
 
+Altı adımı tek bir cümle üzerinde canlı izleyin: hangi kelime belirsiz, varlık tablosuna nasıl bağlanıyor, hangi
+kelime ekleniyor.
+
+<iframe class="dsanim" src="../anim/requirement-lifecycle.html" title="Bir gereksinimin yaşamı: belirsiz cümleden test edilebilir gereksinime" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bir gereksinimin yaşamı — adım adım](anim/requirement-lifecycle.png)
+</div>
+
+**Normal** (veri koruma → CEN429-DR-01) ve **Zor** (hızlı ve güvenli girişin ikiye ayrılması → CEN429-ID-04)
+örneklerini deneyin; 🎲 ile kendi belirsiz cümlenizi üretin ya da kendi cümlenizi yazın.
+
 ### Zorunluluk sözcüklerini örnekle pekiştirelim
 
 | Sözcük | Anlamı | Örnek cümle | Karşılanmazsa ne olur? |
@@ -364,6 +388,17 @@ Fonksiyonel gereksinimlerin yanında **süreç gereksinimleri** de aynı disipli
 az bir kişi tarafından incelenmeli ve inceleme onayı sürüm kontrol sisteminde kayıt altına alınmalıdır." Bu cümle
 artık doğrulanabilir: sürüm kontrol geçmişinde her birleştirme isteğinin (pull request) en az bir onay kaydı var
 mı diye bakılır — otomatik olarak bile denetlenebilir.
+
+Bu bölümde öğrendiğimiz iki kuralı (belirsiz ifade, ölçülebilir dayanak) otomatik olarak deneyen küçük bir araç
+var — demo `02-requirement-quality`. Örnek cümleler üzerinde hangi kuralın ateşlendiğini izleyin.
+
+<iframe class="dsanim" src="../anim/requirement-quality-checker.html" title="Gereksinim kalitesi denetleyicisi (requirement_quality.c)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Gereksinim kalitesi denetleyicisi — adım adım](anim/requirement-quality-checker.png)
+</div>
+
+**Normal** (karışık cümleler), **Zor** (hepsi belirsiz) ve **Uç durum** (hepsi ölçülebilir) örneklerini deneyin;
+kendi cümlenizi yazıp hangi kuralın ateşlendiğini görün.
 
 ### Gereksinimi yazmak yetmez: sıradaki soru "nasıl doğrularım?"
 
@@ -465,7 +500,7 @@ değerlendirme süresini uzatır.
     "test edildi" gibi genel bir ifadeyle geçiştirir. Değerlendirici için "test edildi" bir kanıt değildir; **hangi**
     test, **ne zaman**, **hangi sonuçla** çalıştı sorusuna somut bir dosya/kayıt/ekran görüntüsüyle cevap vermek
     gerekir. Kanıtsız "karşılandı" satırı, ders akışı kutusunda da belirtildiği gibi demo aracının
-    (`01-uyum-matrisi`) ilk işaretlediği bulgu türüdür.
+    (`01-compliance-matrix`) ilk işaretlediği bulgu türüdür.
 
 !!! success "Kural"
     Her "karşılandı" satırının kanıt sütununda **bulunabilir, adlandırılmış** bir referans olmalıdır: bir dosya
@@ -520,7 +555,7 @@ etmeden önce bu beşini kontrol edin:
 4. **Gerekçesiz "uygulanmaz".** Bu haftanın 0. ve 7. bölümlerinde işlenen hata.
 5. **Genel/kopyala-yapıştır kanıt.** 8. bölümdeki işlenmiş örnekte görülen hata.
 
-Demo aracı `01-uyum-matrisi` yalnız birinci türü (kanıtsız "karşılandı") otomatik tarar; diğer dördü şu an için
+Demo aracı `01-compliance-matrix` yalnız birinci türü (kanıtsız "karşılandı") otomatik tarar; diğer dördü şu an için
 elle, bir değerlendirici gibi okuyarak bulunur.
 
 ### İzlenebilirliği kod düzeyinde de sürdürmek
@@ -532,8 +567,8 @@ kendinizin) "bu satır neden burada?" sorusuna anında cevap bulmasını sağlar
 bloğunun kod tarafındaki küçük bir yansımasıdır:
 
 ```c title="Kod içinde izlenebilirlik yorumu (örnek)"
-/* CEN429-DR-01: beklemedeki kasa dosyası AEAD ile şifrelenir. */
-int kasa_dosyasi_sifrele(const unsigned char *anahtar, ...) {
+/* CEN429-DR-01: the vault file at rest is encrypted with AEAD. */
+int encrypt_vault_file(const unsigned char *key, ...) {
     ...
 }
 ```
@@ -541,6 +576,17 @@ int kasa_dosyasi_sifrele(const unsigned char *anahtar, ...) {
 Böyle bir yorum, kanıt sütununun yerine geçmez (kanıt hâlâ bir test/kayıt olmalıdır) ama gereksinim ile kodu
 birbirine **görsel olarak** bağlar; kod incelemesi yapan biri, gereksinimi karşılayan kodu ararken bu yorumları
 tarayabilir.
+
+Beş halkalı zincirin (gereksinim → tasarım → kod → test → kanıt) satır satır taranışını izleyin; gerçek
+`compliance_matrix.c` kuralı, kanıt halkası boş kaldığı anda boşluğu yakalar.
+
+<iframe class="dsanim" src="../anim/traceability-matrix.html" title="İzlenebilirlik zinciri: gereksinim → tasarım → kod → test → kanıt (compliance_matrix.c)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![İzlenebilirlik zinciri — adım adım](anim/traceability-matrix.png)
+</div>
+
+**Normal** (çoğu tamam, bir boşluk), **Zor** (birden çok boşluk ve bilinmeyen bir durum) ve **Uç durum** (her
+satır boşluklu) örneklerini deneyin; kendi `ID|STATUS|SECTION|TASARIM|KOD|TEST|KANIT` satırlarınızı yazın.
 
 ---
 
@@ -648,7 +694,7 @@ Projeler genelde şu üç varsayımı unutur; S14'e eklerken kontrol edin:
     "Ürünümüz endüstri standardı şifreleme kullanır ve verilerinizi güvenle korur" gibi bir cümle, karşılama
     alanına yazılan ama hiçbir şeyi **doğrulanabilir** kılmayan tipik bir hatadır. Hangi dosya, hangi bölüm, hangi
     test — bunlardan hiçbiri yoksa cümle güzel görünür ama değerlendirici için işe yaramaz; matris demo aracı
-    (`02-gereksinim-kalite`) bu tür "belirsiz/doğrulanamaz" ifadeleri tam olarak bu yüzden ZAYIF diye işaretler.
+    (`02-requirement-quality`) bu tür "belirsiz/doğrulanamaz" ifadeleri tam olarak bu yüzden ZAYIF diye işaretler.
 
 !!! success "Kural"
     Karşılama metni her zaman **somut bir referansla bitmelidir**: bir dosya adı, bir kod bölümü, bir kılavuz alt
@@ -713,6 +759,17 @@ Yaygın hata, ikinci durumda da "donanıma devredildi" yazmaktır — devredilec
     değerlendiricide kuşku uyandırır — gerçek projelerde neredeyse her zaman en az birkaç eksik ya da devredilmiş
     gereksinim vardır.
 
+Aynı `[Aile] Kimlik — Durum` bloğunu bir **karşılandı**, bir **devredildi** ve bir **karşılanmadı** gereksinim
+için doldurun; devir bloğunda üç sorudan (kime/neden/nasıl) biri cevapsız kalınca ne olduğunu izleyin.
+
+<iframe class="dsanim" src="../anim/requirement-block-deferral.html" title="Gereksinim bloğu kalıbı ve devredilen (ertelenen) bir gereksinim" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Gereksinim bloğu kalıbı — adım adım](anim/requirement-block-deferral.png)
+</div>
+
+**Normal** (CEN429-DR-01, karşılandı), **Zor** (CEN429-AP-07, devredildi ve tam) ve **Uç durum** (sessiz devir,
+"neden" boş) örneklerini deneyin.
+
 ---
 
 ## 4. Ortak Kriterler (ISO/IEC 15408)
@@ -750,6 +807,17 @@ EAL yüksekliği ürünün "daha güvenli" olduğu anlamına gelmez; **değerlen
 EAL4 bir ürün, EAL2 bir üründen daha güvensiz olabilir; önemli olan ST'deki güvenlik amaçlarının ve tehditlerin
 kapsamıdır. "+" işareti (EAL4+), pakete ek güvence bileşenleri eklendiğini gösterir; en sık eklenen, zafiyet
 değerlendirmesinin derinliğini artıran bileşendir.
+
+Bir hedef düzey seçin ve SAR merdiveninin EAL1'den o düzeye kadar, bir seferde bir basamak, nasıl dolduğunu
+izleyin — her düzey bir öncekinin tüm gereksinimlerini içerir ve üstüne ekler.
+
+<iframe class="dsanim" src="../anim/common-criteria-ladder.html" title="Ortak Kriterler yapısı: PP/ST, SFR/SAR ve EAL1-7 merdiveni" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Ortak Kriterler: EAL1-7 merdiveni — adım adım](anim/common-criteria-ladder.png)
+</div>
+
+**Normal** (EAL2), **Zor** (EAL4, yaygın ticari hedef) ve **Uç durum** (EAL1 ve EAL7) örneklerini deneyin; 🎲 ile
+rastgele bir SFR kümesi ve hedef düzey üretin.
 
 ### Zafiyet değerlendirmesi ve saldırı potansiyeli
 
@@ -812,12 +880,14 @@ değerlendirmesi yaptırmadan, yalnız kendi iç disiplinini o seviyeye göre ku
 ### CC'nin kökeni: neden birden fazla ülke aynı standardı kullanıyor?
 
 Ortak Kriterler'den önce ABD, Avrupa ve Kanada'nın kendi ayrı değerlendirme ölçütleri vardı (ABD'de Orange
-Book/TCSEC, Avrupa'da ITSEC, Kanada'da CTCPEC). Her ülke kendi ölçütüne göre sertifika verdiği için, bir ülkede
-sertifikalı bir ürün başka bir ülkede yeniden değerlendirilmek zorunda kalıyordu. Ortak Kriterler bu üç yaklaşımı
-**birleştirerek** tek bir uluslararası standart (ISO/IEC 15408) hâline getirdi; CCRA (Ortak Kriterleri Tanıma
-Anlaşması) sayesinde bir ülkedeki sertifika, anlaşmaya taraf diğer ülkelerde tekrar değerlendirmeye gerek
-kalmadan tanınır. Bu, tıpkı farklı ülkelerin farklı priz standartları yerine tek bir ortak standarda geçmesi
-gibidir: uyumluluk maliyeti düşer, karşılaştırma kolaylaşır.
+Book/**TCSEC**, ABD Savunma Bakanlığı tarafından ilk kez **1983**'te yayımlandı, **1985**'te gözden geçirildi;
+Avrupa'da **ITSEC**, **1991**; Kanada'da **CTCPEC**). Her ülke kendi ölçütüne göre sertifika verdiği için, bir
+ülkede sertifikalı bir ürün başka bir ülkede yeniden değerlendirilmek zorunda kalıyordu. Ortak Kriterler bu üç
+yaklaşımı **birleştirdi**: **v1.0** **1994**'te, **v2.0** **1998**'de çıktı; v2.1, **1999**'da uluslararası
+standart **ISO/IEC 15408** olarak kabul edildi; standart o günden beri gelişmeye devam etti (güncel metin
+**CC:2022**). CCRA (Ortak Kriterleri Tanıma Anlaşması) sayesinde bir ülkedeki sertifika, anlaşmaya taraf diğer
+ülkelerde tekrar değerlendirmeye gerek kalmadan tanınır. Bu, tıpkı farklı ülkelerin farklı priz standartları
+yerine tek bir ortak standarda geçmesi gibidir: uyumluluk maliyeti düşer, karşılaştırma kolaylaşır.
 
 ### SFR'ler neden uydurulmaz, katalogdan seçilir
 
@@ -870,7 +940,8 @@ disiplin, farklı ölçek.
 
 **FIPS 140-3**, ABD NIST'in kriptografik modüller için güvenlik standardıdır; içeriği uluslararası ISO/IEC 19790 standardına
 dayanır. Doğrulama, NIST ile Kanada'nın ortak yürüttüğü **Kriptografik Modül Doğrulama Programı** (CMVP) kapsamında,
-akredite laboratuvarlarca yapılır. Kitabın Tarif 11.18'de andığı FIPS 140-1/140-2'nin yerini almıştır; FIPS 140-2
+akredite laboratuvarlarca yapılır. Serinin üç kuşağı var: **FIPS 140-1** (**1994**) → **FIPS 140-2** (**2001**,
+kitabın Tarif 11.18'de andığı sürüm) → **FIPS 140-3** (**2019**'da onaylandı, güncel metin); FIPS 140-2
 sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 
 ![FIPS 140-3 güvence düzeyleri](assets/h13-08-fips.svg)
@@ -883,6 +954,17 @@ sertifikaları 2026 itibarıyla tarihsel listeye alınmaktadır.
 | **2** | Kurcalama **izi** (mühür, kaplama), rol tabanlı kimlik doğrulama | Güvenli belirteçler, bazı donanım modülleri |
 | **3** | Kurcalamaya **direnç** ve yanıt (anahtarı silme), kimlik tabanlı kimlik doğrulama | Ağa bağlı HSM'ler |
 | **4** | Ortam koşullarındaki (gerilim, sıcaklık) saldırılara karşı tam koruma | Fiziksel saldırının beklendiği ortamlar |
+
+Bir hedef modül ve düzey seçin; her düzeyin bir alttakinin üstüne ne eklediğini izleyin — dört düzey kümülatiftir,
+ayrık kutular değildir.
+
+<iframe class="dsanim" src="../anim/fips-140-3-levels.html" title="FIPS 140-3 güvenlik düzeyleri 1-4: her düzey ne ekler?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![FIPS 140-3 düzeyleri 1-4 — adım adım](anim/fips-140-3-levels.png)
+</div>
+
+**Normal** (yazılım kütüphanesi, Düzey 1), **Zor** (ağa bağlı HSM, Düzey 3) ve **Uç durum** (Düzey 4)
+örneklerini deneyin.
 
 ### Bir modülün FIPS 140-3'te yapması gerekenler (özet)
 
@@ -976,7 +1058,7 @@ boyutları ölçer. Biri diğerinin yerine geçmez.
 !!! danger "Sık hata: platform/sürüm uyuşmazlığını fark etmemek"
     Bir ekip "OpenSSL FIPS sağlayıcısı doğrulanmış, biz de OpenSSL kullanıyoruz" der ama kendi derledikleri sürüm,
     derleme bayrakları ya da hedef platform sertifikadakiyle **aynı değildir**. FIPS doğrulaması, tam olarak test
-    edilen ikili dosyaya (binary) bağlıdır; kaynak kodu aynı olsa bile farklı derlenmiş bir ikili dosya
+    edilen binary dosyaya (binary) bağlıdır; kaynak kodu aynı olsa bile farklı derlenmiş bir binary dosya
     doğrulanmamış sayılır.
 
 !!! success "Kural"
@@ -999,7 +1081,7 @@ cümleye indirin (bu bölümün başındaki uyarı kutusunda görüldüğü gibi
 
 ### Bu haftanın demosuyla bağlantı
 
-Bu haftanın `01-uyum-matrisi` demosu, kanıtsız "karşılandı" satırlarını otomatik bulur; bir FIPS iddiasının
+Bu haftanın `01-compliance-matrix` demosu, kanıtsız "karşılandı" satırlarını otomatik bulur; bir FIPS iddiasının
 kanıtsız yazılması da aynı sınıfta bir hatadır. Kendi projenizde "FIPS 140-3'e uyumluyuz" gibi bir cümle
 yazıyorsanız, bunu uyum matrisinizde ayrı bir satır olarak ele alın ve kanıt sütununa sertifika numarasını (ya da
 "sertifika yok, yalnız onaylı algoritma kullanıyoruz" dürüstlüğünü) yazın.
@@ -1053,8 +1135,10 @@ Dersin gereksinim aileleri (8. bölüm) bu yapıdan uyarlanmıştır.
 
 ### OWASP MASVS: uygulanabilir bir kontrol listesi
 
-Resmî bir sertifika vermese de OWASP'ın **Mobil Uygulama Güvenliği Doğrulama Standardı** (MASVS), mobil uygulamalar için
-en yaygın kullanılan açık kontrol listesidir. Kontrol grupları: depolama (MASVS-STORAGE), kripto (MASVS-CRYPTO), kimlik
+Resmî bir sertifika vermese de OWASP'ın **Mobil Uygulama Güvenliği Doğrulama Standardı** (MASVS), ilk kez **2016**'da
+yayımlandı ve mobil uygulamalar için en yaygın kullanılan açık kontrol listesidir. OWASP'ın web uygulamaları için
+daha önce aynı açık-kontrol-listesi fikrini uyguladığı **Uygulama Güvenliği Doğrulama Standardı**'nı (**ASVS**,
+**2009**) izler. MASVS'nin kontrol grupları: depolama (MASVS-STORAGE), kripto (MASVS-CRYPTO), kimlik
 doğrulama (MASVS-AUTH), ağ (MASVS-NETWORK), platform (MASVS-PLATFORM), kod (MASVS-CODE), dayanıklılık (MASVS-RESILIENCE)
 ve gizlilik (MASVS-PRIVACY). Test yöntemleri ayrı bir rehberde (MASTG) verilir. Dayanıklılık grubu, 4., 5., 6. ve 9.
 haftaların konularını kapsar.
@@ -1139,10 +1223,10 @@ dönüştüğünü gösterir — tıpkı 2. bölümdeki izlenebilirlik zincirind
 - **GSMA NESAS** (Network Equipment Security Assurance Scheme), mobil şebeke ekipmanı üreticilerinin güvenli
   geliştirme süreçlerini ve ürünlerinin güvenlik testlerini değerlendirir; SAS'ın (tesis odaklı) aksine hem
   **süreç** hem **ürün** odaklıdır.
-- **PCI DSS**, kart verisi işleyen kuruluşları işlem hacimlerine göre düzeylere ayırır (en yüksek hacimli
-  kuruluşlar en sıkı denetime tabidir); bu ders kapsamında düzey ayrıntılarına girmiyoruz, ama "büyüklüğe göre
-  denetim sıklığı/derinliği değişir" fikri CC'deki EAL mantığıyla benzerdir: risk ne kadar büyükse, güvence o
-  kadar derin olmalıdır.
+- **PCI DSS**, kart şemaları tarafından ilk kez **2004**'te yayımlandı; kart verisi işleyen kuruluşları işlem
+  hacimlerine göre düzeylere ayırır (en yüksek hacimli kuruluşlar en sıkı denetime tabidir); bu ders kapsamında
+  düzey ayrıntılarına girmiyoruz, ama "büyüklüğe göre denetim sıklığı/derinliği değişir" fikri CC'deki EAL
+  mantığıyla benzerdir: risk ne kadar büyükse, güvence o kadar derin olmalıdır.
 
 ### Sektör setlerini karşılaştırmalı özetleyen bir tablo
 
@@ -1169,6 +1253,16 @@ tarafından istenir, tüketici ödeme uygulamalarında nadiren aranır. Kendi pr
 "biz hangi pazara satıyoruz, o pazar hangi standardı arıyor?" sorusunun cevabı, hangi standartları S1'e
 yazacağınızı belirler — hepsini yazmak zorunda değilsiniz, yalnız **ilgili** olanları.
 
+Dersin dokuz ailesinden bir küme seçin ve satır satır, EMVCo/PCI/GSMA/OWASP MASVS'den hangisinin her biri için
+bir karşılık adlandırdığını görün — ve GSMA sütununun neden çoğunlukla boş kaldığını.
+
+<iframe class="dsanim" src="../anim/sector-standard-mapping.html" title="Sektör gereksinim setlerini ders ailelerine eşlemek (EMVCo/PCI/GSMA/OWASP MASVS)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Sektör standartlarının ders ailelerine eşlenmesi — adım adım](anim/sector-standard-mapping.png)
+</div>
+
+**Normal** (beş aile), **Zor** (dokuzu da) ve **Uç durum** (GSMA karşılığı olmayan tek aile) örneklerini deneyin.
+
 ---
 
 ## 7. Gereksinimleri yazılım planına ve varlık yönetimine aktarmak
@@ -1189,6 +1283,17 @@ Bir gereksinim setini okumak işin kolay kısmıdır. Asıl iş, onu ürünün p
    yazılır.
 
 ![Gereksinimi projeye aktarma karar akışı](assets/h13-02-gereksinim-karari.svg)
+
+Bir gereksinimi "uygulanır mı?" sorusundan sürüm planına düşen bir göreve kadar, altı adımın tamamında canlı
+izleyin.
+
+<iframe class="dsanim" src="../anim/requirements-to-plan.html" title="Gereksinimi yazılım planına ve varlık yönetimine aktarmak: altı adım" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Gereksinimi plana aktarmak — adım adım](anim/requirements-to-plan.png)
+</div>
+
+**Normal** (CEN429-CR-03, anahtar temizleme) ve **Zor** (CEN429-DV-02, bir süreç gereksinimi) örneklerini,
+ve 1. adımda uygulanmaz çıkan **Uç durumu** deneyin.
 
 !!! note "Sahada nasıl uygulanır?"
     Bir kütüphanenin kılavuzunda varlık tablosu, gereksinimlerin doğrudan yansımasıdır: her varlık için boyutu, kaynağı,
@@ -1335,7 +1440,7 @@ mekanizma (checksum mı, imza doğrulama mı, hata ayıklayıcı algılama mı) 
 1. Ekip önlemi somutlaştırır: uygulama açılışta kendi kod bölümünün bir özetini (hash) hesaplar ve derleme
    zamanında gömülen beklenen özetle karşılaştırır; uyuşmazsa çalışmayı durdurur. Bu, kılavuzun S12.3 bölümünde
    anlatılır.
-2. Doğrulama yöntemi netleştirilir: bir test aracı, ikili dosyanın (binary) bir baytını değiştirip uygulamanın
+2. Doğrulama yöntemi netleştirilir: bir test aracı, binary dosyanın (binary) bir baytını değiştirip uygulamanın
    **başlamayı reddettiğini** doğrular.
 3. Kanıt eklenir: bu testin CI'da otomatik çalıştığı iş (`ci-integrity-check`), son çalıştırma kaydı ve çıktı
    günlüğü.
@@ -1344,7 +1449,7 @@ mekanizma (checksum mı, imza doğrulama mı, hata ayıklayıcı algılama mı) 
 
 | Kimlik | Gereksinim | Durum | Önlem | Doğrulama | Kanıt |
 | --- | --- | --- | --- | --- | --- |
-| CEN429-AP-04 | Uygulama çalışma anında kendi bütünlüğünü denetlemelidir | Karşılandı | S12.3: açılışta kod bölümü özeti hesaplanır, gömülü beklenen özetle karşılaştırılır, uyuşmazlıkta çalışma durur | Otomatik test: ikili dosyanın bir baytı değiştirilip başlamanın reddedildiği doğrulanır | CI işi `ci-integrity-check`, çalıştırma #391, `integrity_test.log` |
+| CEN429-AP-04 | Uygulama çalışma anında kendi bütünlüğünü denetlemelidir | Karşılandı | S12.3: açılışta kod bölümü özeti hesaplanır, gömülü beklenen özetle karşılaştırılır, uyuşmazlıkta çalışma durur | Otomatik test: binary dosyanın bir baytı değiştirilip başlamanın reddedildiği doğrulanır | CI işi `ci-integrity-check`, çalıştırma #391, `integrity_test.log` |
 
 Fark, satırın **uzunluğunda** değil, her hücrenin **somutluğundadır**. İlk taslak da "dolu" görünüyordu; ama
 hiçbir hücresi bağımsız olarak doğrulanamazdı.
@@ -1649,7 +1754,7 @@ olmadığının bir işaretidir — tehdit modelinize geri dönün ([1. hafta](.
     (algoritmalar + öz testler + roller + sıfırlama + güvenlik politikası) değerlendirip modül sertifikası verir.
 
 ??? question "26. Bir FIPS sertifikasındaki platform/sürüm bilgisi neden önemlidir?"
-    Doğrulama, test edilen tam ikili dosyaya (binary) bağlıdır; aynı kaynak kod farklı bir platformda ya da
+    Doğrulama, test edilen tam binary dosyaya (binary) bağlıdır; aynı kaynak kod farklı bir platformda ya da
     derleme yapılandırmasında derlenirse, o derleme aynı sertifikayı otomatik miras almaz.
 
 ??? question "27. GSMA NESAS, GSMA SAS'tan hangi yönüyle ayrılır?"

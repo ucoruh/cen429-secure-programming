@@ -31,12 +31,11 @@
 <!-- materyal:bitis -->
 
 !!! example "This week's working demo"
-    `code/week-13/01-uyum-matrisi` — Compliance matrix validator: flags "met" rows with no evidence as findings (S17).
-    · `code/week-13/02-gereksinim-kalite` — Requirement quality checker: flags vague/unverifiable requirements.
+    `code/week-13/01-compliance-matrix` — Compliance matrix validator: flags "met" rows with no evidence as findings (S17).
+    · `code/week-13/02-requirement-quality` — Requirement quality checker: flags vague/unverifiable requirements.
 
     Run it: build once in the `code` folder with `./build.sh` (`.\build.ps1` on Windows), then from `bin/linux`
-    (`bin\windows` on Windows) inside the demo folder. Step-by-step commands are in the box below. Fully synthetic
-    and safe; it does not harm the student's computer.
+    (`bin\windows` on Windows) inside the demo folder. Step-by-step commands are in the box below.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
@@ -45,22 +44,22 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-13\01-uyum-matrisi
-    .\bin\windows\uyum.exe
-    cd ..\02-gereksinim-kalite
-    .\bin\windows\gereksinim_kalite.exe
+    cd week-13\01-compliance-matrix
+    .\bin\windows\compliance_matrix.exe
+    cd ..\02-requirement-quality
+    .\bin\windows\requirement_quality.exe
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-13/01-uyum-matrisi && ./bin/linux/uyum
-    cd ../02-gereksinim-kalite && ./bin/linux/gereksinim_kalite
+    cd week-13/01-compliance-matrix && ./bin/linux/compliance_matrix
+    cd ../02-requirement-quality && ./bin/linux/requirement_quality
     ```
 
     **Expected output:** The first demo reads a **compliance matrix** row by row and flags **"met"** rows that
     have **no evidence** with a red flag. The second demo scans example requirements; it flags **vague/unmeasurable**
-    wording such as "should be secure" or "appropriately" as **WEAK**, and the **exit code equals the number of weak
+    wording such as "should be secure" or "properly" as **WEAK**, and the **exit code equals the number of weak
     requirements**.
 
 !!! abstract "By the end of this week you will be able to"
@@ -218,15 +217,25 @@ evaluator instead asks "has the requirement been met, and where is the evidence?
 ![The criteria of a good requirement](assets/h13-03-iyi-gereksinim.svg)
 
 !!! note "A short history: how did security requirements become standardized?"
-    - **1985** — **TCSEC** (the "Orange Book") formalizes security **requirement levels** for the first time.
-    - **1994** — **FIPS 140** cryptographic module requirements (today **140-3**, 2019).
-    - **1999** — **Common Criteria (ISO/IEC 15408)**: the **PP/ST**, **SFR/SAR**, and **EAL** concepts come from
-      here ([Week 12](../week-12/cen429-week-12.md)'s process).
-    - **2010s** — sector-specific sets: **OWASP MASVS/MASTG** for mobile, **ETSI EN 303 645** for consumer IoT,
-      **EMVCo/PCI** for payments.
+    - **1983/1985** — **TCSEC** (the "Orange Book"), the US DoD's first attempt, formalizes security
+      **requirement levels**; a first edition in 1983, revised in 1985.
+    - **1984/1998** — **IEEE 830**, the classic (non-security-specific) standard for **how to write a software
+      requirements specification** at all, first published 1984, revised 1998; superseded by **ISO/IEC/IEEE
+      29148** in **2011**, which folds requirements engineering into the systems/software life-cycle standards.
+    - **1991** — **ITSEC**, Europe's own evaluation criteria (a parallel effort to TCSEC).
+    - **1994** — **FIPS 140-1**, the first US cryptographic-module standard → **FIPS 140-2** in **2001**
+      (the textbook's Recipe 11.18) → **FIPS 140-3** in **2019** (today's text).
+    - **1994 → 1998 → 1999** — **Common Criteria**: **v1.0** (1994) → **v2.0** (1998) → adopted as **ISO/IEC
+      15408** (1999); the **PP/ST**, **SFR/SAR**, and **EAL** concepts come from here ([Week 12](../week-12/cen429-week-12.md)'s
+      process); the standard is still revised today (**CC:2022**).
+    - **2004** — **PCI DSS**, the card schemes' data-security standard for payment environments.
+    - **2009** — **OWASP ASVS**, an open verification checklist for web applications.
+    - **2016** — **OWASP MASVS/MASTG**, the same idea for mobile applications.
+    - **2010s** — further sector-specific sets: **ETSI EN 303 645** for consumer IoT, **EMVCo/PCI** documents
+      specifically for payments.
 
-    The unchanging principle: a good requirement must be **measurable** and **traceable**; a "met" with no
-    evidence is invalid.
+    The unchanging principle across four decades: a good requirement must be **measurable** and **traceable**; a
+    "met" with no evidence is invalid.
 
 Before writing a requirement, you first need to be clear about which type you mean; requirements split into three
 main types:
@@ -369,6 +378,17 @@ fail to meet it, you unnecessarily put yourself in a "not met / residual risk" s
 have sufficed. The reverse also happens: if you soften a MUST into a SHOULD and don't meet it, the evaluator
 treats it as a serious gap.
 
+Watch the six steps run live on one sentence: which word is vague, how it binds to the asset table, which word
+gets added at each step.
+
+<iframe class="dsanim" src="../anim/requirement-lifecycle.html" title="A requirement's life: from a vague sentence to a testable requirement" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![A requirement's life — step by step](anim/requirement-lifecycle.png)
+</div>
+
+Try the **Normal** (data protection → CEN429-DR-01) and **Hard** (splitting "fast and secure login" in two →
+CEN429-ID-04) examples; use 🎲 to generate your own vague sentence, or type one yourself.
+
 ### Third example: improving a process requirement
 
 Alongside functional requirements, process requirements demand the same discipline. The bad version:
@@ -383,6 +403,17 @@ The good version: "Every change must be reviewed by at least one person other th
 before being merged into the main branch (main/master), and the review approval must be recorded in the version
 control system." This sentence is now verifiable: you check the version control history to see whether every pull
 request has at least one approval record — it can even be audited automatically.
+
+A small tool automatically tries the two rules from this section (vague phrasing, measurable basis) — the
+`02-requirement-quality` demo. Watch which rule fires on each sample sentence.
+
+<iframe class="dsanim" src="../anim/requirement-quality-checker.html" title="Requirement quality checker (requirement_quality.c)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Requirement quality checker — step by step](anim/requirement-quality-checker.png)
+</div>
+
+Try the **Normal** (a mix), **Hard** (all vague) and **Edge case** (all measurable) examples; type your own
+sentence and see which rule fires.
 
 ### Writing a requirement isn't enough: the next question is "how do I verify it?"
 
@@ -488,7 +519,7 @@ unnecessary control lengthens the evaluation time.
     column blank or wave it away with a generic phrase like "tested." "Tested" is not evidence to an evaluator;
     you need to answer **which** test, **when**, and **with what result**, with a concrete file/record/screenshot.
     A "met" row with no evidence is, as noted in the class-schedule box too, the first kind of finding the demo
-    tool (`01-uyum-matrisi`) flags.
+    tool (`01-compliance-matrix`) flags.
 
 !!! success "Rule"
     Every "met" row must have a **findable, named** reference in the evidence column: a file name, a CI run
@@ -545,7 +576,7 @@ submitting your own matrix:
 4. **A "not applicable" with no rationale.** The mistake covered in this week's Sections 0 and 7.
 5. **Generic/copy-pasted evidence.** The mistake seen in the worked example in Section 8.
 
-The demo tool `01-uyum-matrisi` automatically scans only for the first type (a "met" with no evidence); the other
+The demo tool `01-compliance-matrix` automatically scans only for the first type (a "met" with no evidence); the other
 four are, for now, found manually, by reading like an evaluator.
 
 ### Carrying traceability into the code level too
@@ -558,7 +589,7 @@ from Section 3:
 
 ```c title="Traceability comment in code (example)"
 /* CEN429-DR-01: the vault file at rest is encrypted with AEAD. */
-int kasa_dosyasi_sifrele(const unsigned char *anahtar, ...) {
+int encrypt_vault_file(const unsigned char *key, ...) {
     ...
 }
 ```
@@ -566,6 +597,17 @@ int kasa_dosyasi_sifrele(const unsigned char *anahtar, ...) {
 A comment like this does not replace the evidence column (the evidence must still be a test/record); but it
 visually links the requirement to the code. Someone doing a code review can scan for these comments when looking
 for the code that meets a requirement.
+
+Watch the whole five-link chain (requirement → design → code → test → evidence) scanned row by row, with the
+real `compliance_matrix.c` rule catching the gap the moment the evidence link is empty.
+
+<iframe class="dsanim" src="../anim/traceability-matrix.html" title="Traceability chain: requirement → design → code → test → evidence (compliance_matrix.c)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Traceability chain — step by step](anim/traceability-matrix.png)
+</div>
+
+Try the **Normal** (mostly OK, one gap), **Hard** (several gaps and an unknown status) and **Edge case** (every
+row a gap) examples; type your own `ID|STATUS|SECTION|DESIGN|CODE|TEST|EVIDENCE` rows.
 
 ---
 
@@ -676,7 +718,7 @@ Projects usually forget these three assumptions; check for them when adding to S
     A sentence like "Our product uses industry-standard encryption and protects your data securely" is a typical
     mistake written in the compliance field that makes nothing **verifiable**. Which file, which section, which
     test — without any of these the sentence looks nice but is useless to the evaluator; the matrix demo tool
-    (`02-gereksinim-kalite`) flags exactly this kind of "vague/unverifiable" wording as WEAK for precisely this
+    (`02-requirement-quality`) flags exactly this kind of "vague/unverifiable" wording as WEAK for precisely this
     reason.
 
 !!! success "Rule"
@@ -743,6 +785,17 @@ defer to, this is an **invalid deferral** and is rejected by the evaluator.
     matrix with no "not met" or "not applicable" rows at all, where everything looks "met," raises suspicion in
     an experienced evaluator — real projects almost always have at least a few gaps or deferred requirements.
 
+Fill in the same `[Family] Id — Status` block for a **met**, a **delegated** and a **not met** requirement, then
+watch what happens when a delegated block leaves one of the three questions (to whom/why/how) unanswered.
+
+<iframe class="dsanim" src="../anim/requirement-block-deferral.html" title="The requirement-block pattern and a delegated (deferred) requirement" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![The requirement-block pattern — step by step](anim/requirement-block-deferral.png)
+</div>
+
+Try the **Normal** (CEN429-DR-01, met), **Hard** (CEN429-AP-07, delegated and complete) and **Edge case**
+(a silent hand-off, "why" left blank) examples.
+
 ---
 
 ## 4. Common Criteria (ISO/IEC 15408)
@@ -781,6 +834,17 @@ A higher EAL does not mean the product is "more secure"; it means the evaluation
 An EAL4 product can be less secure than an EAL2 product; what matters is the scope of the security objectives and
 threats in the ST. The "+" mark (EAL4+) shows that additional assurance components were added to the package; the
 most commonly added one increases the depth of the vulnerability assessment.
+
+Pick a target level and watch the SAR ladder fill in from EAL1 up to it, one level at a time — each level keeps
+everything the previous one required and adds to it.
+
+<iframe class="dsanim" src="../anim/common-criteria-ladder.html" title="Common Criteria structure: PP/ST, SFR/SAR, and the EAL1-7 ladder" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Common Criteria: the EAL1-7 ladder — step by step](anim/common-criteria-ladder.png)
+</div>
+
+Try the **Normal** (EAL2), **Hard** (EAL4, the common commercial target) and **Edge case** (EAL1 and EAL7)
+examples; 🎲 for a random SFR set and target level.
 
 ### Vulnerability assessment and attack potential
 
@@ -846,12 +910,14 @@ internal discipline to that level).
 ### The origin of CC: why do several countries use the same standard?
 
 Before Common Criteria, the US, Europe, and Canada each had their own separate evaluation criteria (the Orange
-Book/TCSEC in the US, ITSEC in Europe, CTCPEC in Canada). Because each country certified against its own
-criteria, a product certified in one country had to be **re-evaluated** in another. Common Criteria merged these
-three approaches into a single international standard (ISO/IEC 15408); thanks to the CCRA (Common Criteria
-Recognition Arrangement), a certificate from one country is recognised in the other party countries **without**
-needing re-evaluation. This is much like different countries switching from different electrical-outlet
-standards to a single common one: the cost of compliance drops, and comparison becomes easier.
+Book/**TCSEC**, first published by the US DoD in **1983** and revised in **1985**; **ITSEC** in Europe, **1991**;
+**CTCPEC** in Canada). Because each country certified against its own criteria, a product certified in one
+country had to be **re-evaluated** in another. Common Criteria merged these three approaches: **v1.0** appeared
+in **1994**, **v2.0** in **1998**, and v2.1 was adopted as the international standard **ISO/IEC 15408** in
+**1999**; the standard has kept evolving since (the current text is **CC:2022**). Thanks to the CCRA (Common
+Criteria Recognition Arrangement), a certificate from one country is recognised in the other party countries
+**without** needing re-evaluation. This is much like different countries switching from different
+electrical-outlet standards to a single common one: the cost of compliance drops, and comparison becomes easier.
 
 ### Why SFRs are not invented, but chosen from a catalogue
 
@@ -905,8 +971,10 @@ scale.
 
 **FIPS 140-3** is the US NIST's security standard for cryptographic modules; its content is based on the
 international ISO/IEC 19790 standard. Validation is performed by accredited laboratories under the **Cryptographic
-Module Validation Program** (CMVP), jointly run by NIST and Canada. It replaces FIPS 140-1/140-2, mentioned in the
-textbook's Recipe 11.18; as of 2026, FIPS 140-2 certificates are being moved to the historical list.
+Module Validation Program** (CMVP), jointly run by NIST and Canada. The series has three generations: **FIPS
+140-1** (**1994**) → **FIPS 140-2** (**2001**), mentioned in the textbook's Recipe 11.18 → **FIPS 140-3**
+(approved **2019**, the current text); as of 2026, FIPS 140-2 certificates are being moved to the historical
+list.
 
 ![FIPS 140-3 assurance levels](assets/h13-08-fips.svg)
 
@@ -918,6 +986,17 @@ textbook's Recipe 11.18; as of 2026, FIPS 140-2 certificates are being moved to 
 | **2** | Tamper **evidence** (seals, coatings), role-based authentication | Secure tokens, some hardware modules |
 | **3** | Tamper **resistance and response** (erasing the key), identity-based authentication | Network-attached HSMs |
 | **4** | Full protection against environmental (voltage, temperature) attacks | Environments where physical attack is expected |
+
+Pick a target module and level, and watch what each level adds on top of the one below it — the four levels are
+cumulative, never separate boxes.
+
+<iframe class="dsanim" src="../anim/fips-140-3-levels.html" title="FIPS 140-3 security levels 1-4: what each level adds" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![FIPS 140-3 levels 1-4 — step by step](anim/fips-140-3-levels.png)
+</div>
+
+Try the **Normal** (a software library, Level 1), **Hard** (a network HSM, Level 3) and **Edge case** (Level 4)
+examples.
 
 ### What a module must do under FIPS 140-3 (summary)
 
@@ -1038,7 +1117,7 @@ as "we use FIPS-approved algorithms" (as seen in the tip box at the start of thi
 
 ### The connection to this week's demo
 
-This week's `01-uyum-matrisi` demo automatically finds "met" rows with no evidence; writing a FIPS claim without
+This week's `01-compliance-matrix` demo automatically finds "met" rows with no evidence; writing a FIPS claim without
 evidence is a mistake of the same class. If you write a sentence like "we comply with FIPS 140-3" in your own
 project, treat it as a **separate row** in your compliance matrix, and write the certificate number in the
 evidence column (or the honest "no certificate, we only use approved algorithms").
@@ -1093,10 +1172,12 @@ families. The course's requirement families (Section 8) are adapted from this st
 ### OWASP MASVS: a practical checklist
 
 Although it doesn't issue a formal certificate, OWASP's **Mobile Application Security Verification Standard**
-(MASVS) is the most widely used open checklist for mobile applications. Its control groups: storage
-(MASVS-STORAGE), crypto (MASVS-CRYPTO), authentication (MASVS-AUTH), network (MASVS-NETWORK), platform
-(MASVS-PLATFORM), code (MASVS-CODE), resilience (MASVS-RESILIENCE), and privacy (MASVS-PRIVACY). Testing methods
-are given in a separate guide (MASTG). The resilience group covers the topics of Weeks 4, 5, 6, and 9.
+(MASVS), first released in **2016**, is the most widely used open checklist for mobile applications. It follows
+the same open-checklist idea OWASP had already applied to web applications with the **Application Security
+Verification Standard** (**ASVS**, **2009**). MASVS's control groups: storage (MASVS-STORAGE), crypto
+(MASVS-CRYPTO), authentication (MASVS-AUTH), network (MASVS-NETWORK), platform (MASVS-PLATFORM), code
+(MASVS-CODE), resilience (MASVS-RESILIENCE), and privacy (MASVS-PRIVACY). Testing methods are given in a
+separate guide (MASTG). The resilience group covers the topics of Weeks 4, 5, 6, and 9.
 
 ### Worked example: the same requirement's counterpart across four standards
 
@@ -1181,10 +1262,10 @@ test for the course — just like the traceability chain in Section 2.
 - **GSMA NESAS** (Network Equipment Security Assurance Scheme) evaluates mobile network equipment manufacturers'
   secure development processes and their products' security tests; unlike SAS (which is facility-focused), it is
   both **process**- and **product**-focused.
-- **PCI DSS** divides organisations that process card data into levels based on transaction volume (the
-  highest-volume organisations are subject to the strictest audits); we don't go into level details within this
-  course, but the idea that "audit frequency/depth changes with size" is similar to CC's EAL logic: the bigger
-  the risk, the deeper the assurance must be.
+- **PCI DSS**, first released by the card schemes in **2004**, divides organisations that process card data into
+  levels based on transaction volume (the highest-volume organisations are subject to the strictest audits); we
+  don't go into level details within this course, but the idea that "audit frequency/depth changes with size" is
+  similar to CC's EAL logic: the bigger the risk, the deeper the assurance must be.
 
 ### A comparative summary table of the sector sets
 
@@ -1212,6 +1293,17 @@ analysis applies to your own project: the answer to "which market are we selling
 that market ask for?" determines which standards you write into S1 — you don't have to write all of them, only
 the **relevant** ones.
 
+Pick a set of the course's nine families and see, row by row, which of EMVCo/PCI/GSMA/OWASP MASVS names a
+counterpart for each one — and why most of the GSMA column stays empty.
+
+<iframe class="dsanim" src="../anim/sector-standard-mapping.html" title="Mapping sector requirement sets onto the course's families (EMVCo/PCI/GSMA/OWASP MASVS)" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Sector standards mapped onto the course's families — step by step](anim/sector-standard-mapping.png)
+</div>
+
+Try the **Normal** (five families), **Hard** (all nine) and **Edge case** (the one family with no GSMA
+counterpart) examples.
+
 ---
 
 ## 7. Carrying requirements into the software plan and asset management
@@ -1235,6 +1327,16 @@ Reading a requirement set is the easy part. The real work is **turning it into t
    cannot be met are written into residual risk.
 
 ![The decision flow for carrying a requirement into the project](assets/h13-02-gereksinim-karari.svg)
+
+Walk one requirement through all six steps live, from "does this apply?" to a task landing in the release plan.
+
+<iframe class="dsanim" src="../anim/requirements-to-plan.html" title="Carrying a requirement into the software plan and asset management: six steps" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Carrying a requirement into the plan — step by step](anim/requirements-to-plan.png)
+</div>
+
+Try the **Normal** (CEN429-CR-03, key erasure) and **Hard** (CEN429-DV-02, a process requirement) examples, and
+the **Edge case** where a requirement turns out not applicable at step 1.
 
 !!! note "How it's done in the field"
     In a library's guide, the asset table is a direct reflection of the requirements: for every asset, its size,

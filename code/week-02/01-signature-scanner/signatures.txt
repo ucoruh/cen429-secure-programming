@@ -1,0 +1,7 @@
+# CEN429 — Week 2 — Demo 1: toy signature database
+# Format:  TYPE  NAME  VALUE
+#   HASH    : the file's SHA-256 digest (hex)
+#   PATTERN : a byte sequence to search for in the file (rest of the line)
+HASH    Sample.BlueCat.A     7010072dd5fc43eb47197d378f3218425b298603374a5087e52db2ef0a78b740
+PATTERN Sample.BlueCat.A     BLUE-CAT-42
+PATTERN Sample.Decoder.xs32  DECODER: ALGO=xs32

@@ -87,12 +87,23 @@ Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** 
 
 <!-- _class: yogun -->
 
-# Kısa tarihçe — güvenlik gereksinimleri nasıl standartlaştı?
+# Kısa tarihçe (1) — temel standartlar
 
-- **1985** — **TCSEC** gereksinim düzeylerini resmîleştirir
-- **1994** — **FIPS 140** kriptografik modül gereksinimleri (bugün **140-3**)
-- **1999** — **Ortak Kriterler**: **PP/ST**, **SFR/SAR**, **EAL**
-- **2010'lar** — **OWASP MASVS** (mobil), **ETSI EN 303 645** (IoT), **EMVCo/PCI** (ödeme)
+- **1983/1985** — **TCSEC** (Orange Book), ABD Savunma Bakanlığı'nın gereksinim düzeylerine ilk girişimi
+- **1984/1998** — **IEEE 830**, herhangi bir yazılım gereksinim belirtimini nasıl yazacağını anlatır → yerini **ISO/IEC/IEEE 29148**'e bırakır (**2011**)
+- **1991** — **ITSEC**, Avrupa'nın kendi değerlendirme ölçütü (TCSEC'e paralel)
+
+> Gereksinim mühendisliği güvenlik sertifikasyonundan daha eskidir — güvenlik yalnız "ve bunu bağımsız kanıtla" ekler.
+
+---
+
+<!-- _class: yogun -->
+
+# Kısa tarihçe (2) — sertifikasyon ve sektör standartları
+
+- **1994 → 1998 → 1999** — **Ortak Kriterler** v1.0 → v2.0 → **ISO/IEC 15408** (bugün de gözden geçiriliyor: **CC:2022**)
+- **1994 → 2001 → 2019** — **FIPS 140-1** → **140-2** → **140-3**, kriptografik modül gereksinimleri
+- **2004** — **PCI DSS** (ödeme) · **2009** — **OWASP ASVS** (web) · **2016** — **OWASP MASVS** (mobil)
 
 > Değişmeyen ilke: gereksinim **ölçülebilir** ve **izlenebilir** olmalı; kanıtsız "karşılandı" geçersizdir.
 
@@ -235,6 +246,22 @@ Biri eksik kalırsa gereksinim yine tartışmaya açık kalır; değerlendirici 
 
 ---
 
+# Bir gereksinimin yaşamı (animasyon)
+
+<iframe class="dsanim" src="anim/requirement-lifecycle.html?mode=slide&lang=tr" title="Bir gereksinimin yaşamı: belirsiz cümleden test edilebilir gereksinime"></iframe>
+
+<!-- Konuşma notu: "Uygulama kullanıcı verisini korumalıdır." cümlesi üzerinde altı adımı canlı çalıştırın — her adımda hangi kelimenin eklendiğini izleyin. -->
+
+---
+
+# Bir gereksinimin yaşamı — uç durum: tek kelimelik belirsizlik
+
+<iframe class="dsanim" src="anim/requirement-lifecycle.html?mode=slide&lang=tr&example=edge-minimal" title="Uç durum: 'Modül güvenli olmalı.'"></iframe>
+
+<!-- Konuşma notu: çok kısa bir cümle bile altı adımın tamamını gerektirir — tek bir belirsiz kelime onu test edilemez kılmaya yeter. -->
+
+---
+
 <!-- _class: yogun -->
 
 # İkinci ve üçüncü örnekler
@@ -252,6 +279,22 @@ Biri eksik kalırsa gereksinim yine tartışmaya açık kalır; değerlendirici 
 - **Sık hata:** "Gereksinim: AES-256-GCM kullanılmalıdır." → bu bir **önlem**, gereksinim değil; doğrusu "...AEAD ile korunmalıdır" (gereksinim) + "AES-256-GCM, S7.2" (önlem).
 - Gereksinim metninde **araç sınıfını** (AEAD, CSPRNG, TLS 1.2+) yazın; belirli kütüphane/sürüm adını önleme koyun.
 - **-malıdır (MUST):** zorunlu, karşılanmazsa doğrudan bulgu. **-malı (SHOULD):** güçlü öneri, gerekçe gerekir. **-abilir (MAY):** isteğe bağlı, bulgu değil.
+
+---
+
+# Gereksinim kalitesi denetleyicisi (animasyon)
+
+<iframe class="dsanim" src="anim/requirement-quality-checker.html?mode=slide&lang=tr" title="Gereksinim kalitesi denetleyicisi (requirement_quality.c)"></iframe>
+
+<!-- Konuşma notu: bu, `02-requirement-quality` demo aracı — örnek cümlelerde hangi kuralın (belirsiz ifade, ölçülebilir dayanak yok) ateşlendiğini izleyin. -->
+
+---
+
+# Gereksinim kalitesi denetleyicisi — uç durum: tek cümle, tek kural
+
+<iframe class="dsanim" src="anim/requirement-quality-checker.html?mode=slide&lang=tr&example=edge-single-weak" title="Uç durum: 'Arayüz temiz ve modern görünmeli.'"></iframe>
+
+<!-- Konuşma notu: belirsiz değil ama sayı ya da somut teknik terim yok — yalnız "ölçülebilir dayanak yok" kuralı bile yetiyor. -->
 
 ---
 
@@ -403,6 +446,22 @@ Bir halka eksik olsaydı: varlık yoksa "hangi veri" belirsiz kalır, tehdit yok
 | Kanıt | Test günlüğü | **Kalan risk:** S16.4'e yazılır |
 
 "Karşılanmadı"da önlem/doğrulama boş kalabilir ama **kanıt** (kalan riskin nerede belgelendiği) boş kalamaz.
+
+---
+
+# İzlenebilirlik zinciri (animasyon)
+
+<iframe class="dsanim" src="anim/traceability-matrix.html?mode=slide&lang=tr" title="İzlenebilirlik zinciri: gereksinim → tasarım → kod → test → kanıt (compliance_matrix.c)"></iframe>
+
+<!-- Konuşma notu: gerçek compliance_matrix.c kuralı — kanıt sütunu boş bir "karşılandı" ya da "devredildi" satırı boşluktur, satır satır taranır. -->
+
+---
+
+# İzlenebilirlik zinciri — uç durum: her satır boşluklu
+
+<iframe class="dsanim" src="anim/traceability-matrix.html?mode=slide&lang=tr&example=edge-all-gaps" title="Uç durum: her satırda boşluk, hiçbiri OK değil"></iframe>
+
+<!-- Konuşma notu: bilerek gerçekçi olmayan bir matris — bulgu mesajının her satırda tekrarlanma desenini gösterir. -->
 
 ---
 
@@ -574,6 +633,22 @@ Devredilen blok da **Karşılama** alanına sahiptir — ama "karşı taraf nas�
 
 ---
 
+# Gereksinim bloğu (animasyon)
+
+<iframe class="dsanim" src="anim/requirement-block-deferral.html?mode=slide&lang=tr" title="Gereksinim bloğu kalıbı ve devredilen (ertelenen) bir gereksinim"></iframe>
+
+<!-- Konuşma notu: aynı [Aile] Kimlik — Durum bloğunu bir karşılandı ve bir devredildi gereksinim için doldurun; üç devir sorusunun bir bir cevaplandığını izleyin. -->
+
+---
+
+# Gereksinim bloğu — uç durum: sessiz devir
+
+<iframe class="dsanim" src="anim/requirement-block-deferral.html?mode=slide&lang=tr&example=edge-silent-handoff" title="Uç durum: 'neden' hiç yazılmamış"></iframe>
+
+<!-- Konuşma notu: "kime" ve "nasıl" cevaplanmış ama "neden" boş — yine de eksik bir blok, yine de bir bulgu. -->
+
+---
+
 # Bölüm 3 — kısa sınama
 
 1. Gereksinim bloğunun alanları?
@@ -615,7 +690,7 @@ Devredilen blok da **Karşılama** alanına sahiptir — ama "karşı taraf nas�
 # TOE · değerlendirme hedefi
 
 - **TOE (Target of Evaluation):** değerlendirilen tam ürün.
-- Benzersiz tanımlanır (12. hafta): sürüm + ikili + özet.
+- Benzersiz tanımlanır (12. hafta): sürüm + binary + özet.
 - Kapsam dışı bileşenler yazılır.
 
 ---
@@ -705,6 +780,22 @@ Bu tablo ST'nin kalbidir: her satır "neden bu gereksinim var" ile "hangi kanıt
 
 ---
 
+# EAL merdiveni (animasyon)
+
+<iframe class="dsanim" src="anim/common-criteria-ladder.html?mode=slide&lang=tr" title="Ortak Kriterler yapısı: PP/ST, SFR/SAR ve EAL1-7 merdiveni"></iframe>
+
+<!-- Konuşma notu: bir hedef EAL seçin ve SAR merdiveninin EAL1'den yukarı nasıl dolduğunu izleyin — her düzey bir öncekinin gereksinimlerini korur. -->
+
+---
+
+# EAL merdiveni — uç durum: EAL7, merdivenin tamamı
+
+<iframe class="dsanim" src="anim/common-criteria-ladder.html?mode=slide&lang=tr&example=edge-eal7" title="Uç durum: en yüksek düzey, yedi SAR paketinin tamamı dahil"></iframe>
+
+<!-- Konuşma notu: biçimsel doğrulanmış tasarım — çok yüksek risk, küçük sistemler; dönem projesi için hemen hiçbir zaman doğru hedef değildir. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Bölüm 4'ün kuralı
@@ -743,6 +834,22 @@ Bu tablo ST'nin kalbidir: her satır "neden bu gereksinim var" ile "hangi kanıt
 | 2 | Kurcalama **izi** |
 | 3 | Kurcalamaya **direnç** ve yanıt |
 | 4 | En yüksek fiziksel koruma |
+
+---
+
+# FIPS 140-3 düzeyleri (animasyon)
+
+<iframe class="dsanim" src="anim/fips-140-3-levels.html?mode=slide&lang=tr" title="FIPS 140-3 güvenlik düzeyleri 1-4: her düzey ne ekler?"></iframe>
+
+<!-- Konuşma notu: dört düzey kümülatif — her düzeyin bir alttakinin üstüne ne eklediğini izleyin. -->
+
+---
+
+# FIPS 140-3 düzeyleri — uç durum: Düzey 4
+
+<iframe class="dsanim" src="anim/fips-140-3-levels.html?mode=slide&lang=tr&example=edge-level4" title="Uç durum: çevresel saldırılara tam koruma"></iframe>
+
+<!-- Konuşma notu: kurcalamaya düşman bir saha cihazı — çoğu öğrenci projesinde Düzey 4 için tek gerçekçi durum "buna ihtiyacımız yok"tur. -->
 
 ---
 
@@ -951,6 +1058,22 @@ Düzey 1 beklentilerini tek tek işaretleyelim.
 
 ---
 
+# Sektör standartlarının ders ailelerine eşlenmesi (animasyon)
+
+<iframe class="dsanim" src="anim/sector-standard-mapping.html?mode=slide&lang=tr" title="Sektör gereksinim setlerini ders ailelerine eşlemek (EMVCo/PCI/GSMA/OWASP MASVS)"></iframe>
+
+<!-- Konuşma notu: EMVCo'nun kendi aile listesi bizimkine neredeyse birebir denk — GSMA sütununun neden çoğunlukla boş kaldığını izleyin (ürünü değil tesisi denetler). -->
+
+---
+
+# Sektör eşlemesi — uç durum: GSMA karşılığı olmayan aile
+
+<iframe class="dsanim" src="anim/sector-standard-mapping.html?mode=slide&lang=tr&example=edge-gsma-gap" title="Uç durum: CEN429-AS, dört setin GSMA sütununda hiçbir yerde adlandırılmamış"></iframe>
+
+<!-- Konuşma notu: matristeki her "boşluk" bir hata değildir — bazen standart yalnızca farklı bir soru soruyordur. -->
+
+---
+
 # Bölüm 6 — kısa sınama
 
 1. ETSI EN 303 645 kimin için?
@@ -1024,8 +1147,24 @@ Her gereksinim bir **varlığa** ve bir **önleme** bağlanır.
 # Aynı örnek · tehditten sürüm planına
 
 - **4. Tehditlere bağlama:** "fiziksel erişimi olan saldırgan bellek dökümü alır" tehdidine bağlanır.
-- **5. Önlem/doğrulama:** `sifreleme_bellek_sil()` çağrısı; doğrulama: bellek dökümünde anahtar baytlarının **bulunmadığını** göstermek.
+- **5. Önlem/doğrulama:** `crypto_wipe()` çağrısı; doğrulama: bellek dökümünde anahtar baytlarının **bulunmadığını** göstermek.
 - **6. Sürüm planı:** oturum anahtarı v0.9'da karşılandı; kasa dosyası anahtarı v1.0'a planlandı, o güne kadar **karşılanmadı** + kalan risk yazılır.
+
+---
+
+# Gereksinimi plana aktarmak (animasyon)
+
+<iframe class="dsanim" src="anim/requirements-to-plan.html?mode=slide&lang=tr" title="Gereksinimi yazılım planına ve varlık yönetimine aktarmak: altı adım"></iframe>
+
+<!-- Konuşma notu: CEN429-CR-03'ü "uygulanır mı?" sorusundan sürüm planındaki bir göreve kadar, altı adımın tamamında canlı çalıştırın. -->
+
+---
+
+# Gereksinimi plana aktarmak — uç durum: uygulanmaz
+
+<iframe class="dsanim" src="anim/requirements-to-plan.html?mode=slide&lang=tr&example=edge-not-applicable" title="Uç durum: gereksinim gerekçeli biçimde uygulanmaz"></iframe>
+
+<!-- Konuşma notu: 1. adım tek başına süreci bitirebilir — ama yalnız gerekçe yazılıysa, hiçbir zaman sessizce değil. -->
 
 ---
 
@@ -1145,7 +1284,7 @@ Bir takımın `CEN429-AP-04` için matris satırı, **ilk taslakta**:
 # Taslağı düzeltme · adım adım
 
 1. Önlemi somutlaştır: açılışta kod bölümünün özeti (hash) hesaplanır, derleme zamanında gömülü beklenen özetle karşılaştırılır; uyuşmazsa çalışma durur (S12.3).
-2. Doğrulama yöntemini netleştir: ikili dosyanın bir baytı değiştirilir, uygulamanın **başlamayı reddettiği** doğrulanır.
+2. Doğrulama yöntemini netleştir: binary dosyanın bir baytı değiştirilir, uygulamanın **başlamayı reddettiği** doğrulanır.
 3. Kanıt ekle: CI işi `ci-integrity-check`, çalıştırma **#391**, `integrity_test.log`.
 
 ---

@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "Bu haftanın çalışan demosu"
-    `code/week-11/01-oyuncak-tablo` — Oyuncak whitebox: kodlanmamis tablo anahtari sizdirir, kodlanmis tablo naif okumayi durdurur.
-    · `code/week-11/02-gomulu-anahtar` — Gömülü (naif) anahtar ikilide fiziksel olarak bulunur → yazılımdaki anahtar korunmaz.
+    `code/week-11/01-toy-table` — Oyuncak whitebox: kodlanmamış tablo anahtarı sızdırır, kodlanmış tablo saf okumayı durdurur.
+    · `code/week-11/02-embedded-key` — Gömülü (naif) anahtar binary'de fiziksel olarak bulunur → yazılımdaki anahtar korunmaz.
 
-    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
+    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda.
 
 
 !!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
@@ -43,17 +43,17 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-11\01-oyuncak-tablo
-    .\bin\windows\oyuncak_wb.exe
-    cd ..\02-gomulu-anahtar
-    .\bin\windows\gomulu.exe --tara
+    cd week-11\01-toy-table
+    .\bin\windows\toy_table.exe
+    cd ..\02-embedded-key
+    .\bin\windows\embedded_key.exe --scan
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-11/01-oyuncak-tablo && ./bin/linux/oyuncak_wb
-    cd ../02-gomulu-anahtar && ./bin/linux/gomulu --tara
+    cd week-11/01-toy-table && ./bin/linux/toy_table
+    cd ../02-embedded-key && ./bin/linux/embedded_key --scan
     ```
 
     **Beklenen çıktı:** Naif tablo `T[x]=S[x⊕k]` gizli anahtarı (`0x3C`) **sızdırır**; kodlanmış tablo **sızdırmaz** (aynı şifreleme, farklı iç yapı). İkinci demo kendi ikilisine gömülü anahtarı **entropi taramasıyla** bulur → "diziye anahtar gömmek koruma değildir".
@@ -123,7 +123,7 @@ bölümler bu terimleri artık bildiğinizi varsayarak ilerler.
 - **Entropi** — bir veri bloğunun ne kadar rastgele/öngörülemez göründüğünün ölçüsü; yüksek entropili bloklar
   genelde şifreli/rastgele veri, düşük entropili bloklar sıradan metin/veridir
   ([Hafta 2, §6](../week-2/cen429-week-2.md#demo-02-entropi-olcer-sifrelipaketli-icerik-nasil-anlasilir); 9.
-  haftada ikili dosya analizinde de görmüştük). Bu hafta **entropi taraması**, sabit bir diziye gömülmüş bir
+  haftada binary dosya analizinde de görmüştük). Bu hafta **entropi taraması**, sabit bir diziye gömülmüş bir
   anahtarı saniyeler içinde bulan statik analiz tekniği olarak karşımıza çıkıyor (§1, §2).
 - **Hata ayıklayıcı (debugger)** — bir programı adım adım çalıştırmanıza, o an bellekte olan her değeri ve işlemci
   kayıtlarını okumanıza izin veren araç (ör. `gdb`, `x64dbg`)
@@ -255,6 +255,17 @@ inceler. Kaynağın diliyle: WBC saldırgan modeli Chow ve arkadaşları tarafı
     varlıkları koruyan şey **yalnız WBC değil, kod sağlamlaştırma (9. hafta) ve RASP ([6. hafta](../week-6/cen429-week-6.md)) yöntemleridir.** Yani
     WBC daha ilk cümlede **tek başına bir çözüm olarak sunulmaz.**
 
+Yukarıdaki tabloyu kendiniz deneyin: aşağıda 10-16 senaryo, tek tek hangi saldırgan modeline girdiğini ve o
+modelin hangi beş yeteneğe (IO, SC, MEM, COD, MOD) sahip olduğunu gösteriyor.
+
+<iframe class="dsanim" src="../anim/attacker-models.html" title="Kara / gri / beyaz kutu: saldırgan hangi yeteneklere sahip?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Kara / gri / beyaz kutu — adım adım](anim/attacker-models.png)
+</div>
+
+**Normal** (12 karışık senaryo), **Zor** (16 senaryo) ve **uç durum** (hepsi beyaz kutu / hepsi kara kutu)
+örneklerini deneyin, ya da 🎲 ile kendi rastgele senaryo listenizi üretin.
+
 ### Somut örnek: bir beyaz kutu saldırganın bir oturumu (adım adım anlatı)
 
 Yukarıdaki yetenek listesi soyut kalmasın; bir saldırganın **gerçekte ne yaptığını**, baştan sona, tek tek
@@ -289,7 +300,7 @@ kopyasında** oldu. Kara kutu modelinin varsaydığı "saldırgan yalnız girdi/
     varsayımıyla tasarım yapmak — ör. "AES anahtarını C kodunda tutarım, kaynak kodu kimse görmez" demek.
 
     **Sonuç:** Yukarıdaki altı adım saldırganı **dakikalar içinde** anahtara götürür; kaynak kodun "görünmemesi"
-    hiçbir şeyi durdurmaz, çünkü saldırgan **derlenmiş ikiliyi** okur/çalıştırır, kaynağı değil.
+    hiçbir şeyi durdurmaz, çünkü saldırgan **derlenmiş binary'yi** okur/çalıştırır, kaynağı değil.
 
     **Kural:** İstemci tarafında çalışan her bileşen için saldırgan modelini **beyaz kutu** kabul edin. Bir
     varlığın (anahtar, algoritma, iş mantığı) istemcide "gizli" kalacağını varsaymayın; ya donanıma (TEE/SE, Bölüm 5)
@@ -383,10 +394,10 @@ gerekir. Her biri bir güvenli programlama kuralına dönüşür:
 
 - **Kural — Anahtarı sabit diziye gömme.** En naif çözüm anahtarı bir `static const uint8_t key[16]` dizisine
   koymaktır. Bu, `strings` ve **entropi taraması** (Shamir–van Someren'in gözlemi: kriptografik anahtarlar yüksek
-  entropili bloklardır ve ikili dosyada öyle görünürler) ile saniyeler içinde bulunur; bir hata ayıklayıcıyla
+  entropili bloklardır ve binary dosyada öyle görünürler) ile saniyeler içinde bulunur; bir hata ayıklayıcıyla
   doğrulanır. **Sonuç:** düz gömülü anahtar bir anahtar koruması değildir.
 - **Kural — Anahtarı yalnız XOR/whitening ile "karıştırma".** Anahtarı bir maskeyle XOR'layıp saklamak da işe
-  yaramaz: maske de ikili dosyadadır, program onu çözebiliyorsa saldırgan da çözer.
+  yaramaz: maske de binary dosyadadır, program onu çözebiliyorsa saldırgan da çözer.
 - **Kod sökme (code lifting) tehdidi.** WBC anahtarı tablolara gömse bile, saldırgan **anahtarı çıkarmadan**
   şifreleme/çözme yapan kod parçasını (tablolar + yorumlayıcı) olduğu gibi kopyalayıp kendi programında
   kullanabilir. Anahtarı hiç bilmeden onun işlevini çalar. **Sonuç:** WBC'nin tek başına "anahtarı gizledim"
@@ -398,6 +409,18 @@ gerekir. Her biri bir güvenli programlama kuralına dönüşür:
   **birebir aynı** zafiyettir — yalnız "test amaçlı" etiketi, gerçek riskini **azaltmaz**. Bir değerlendirici
   ([12. hafta](../week-12/cen429-week-12.md)) test/hata ayıklama yollarını da üretim koduyla **aynı ciddiyette** tarar.
 
+İlk kuralı (sabit diziye gömülü anahtar) soyut bırakmayalım. `code/week-11/02-embedded-key` demosunun
+`search_bytes()` fonksiyonu, tam olarak entropi taramasının yaptığı gibi, 16 baytlık bir pencereyi ikili dosyanın
+üzerinde kaydırıp anahtar örüntüsüyle karşılaştırır. Aşağıdaki animasyon bu taramayı adım adım gösteriyor.
+
+<iframe class="dsanim" src="../anim/embedded-key-scan.html" title="İkili dosyada gömülü anahtarı bulma" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![İkili dosyada gömülü anahtarı bulma — adım adım](anim/embedded-key-scan.png)
+</div>
+
+**Normal** (anahtar erken bulunur), **Zor** (anahtar sona yakın) ve **uç durum** (anahtar hiç yok, tarama `-1`
+döner) örneklerini deneyin, ya da 🎲 ile kendi ikili dosya boyutunuzu ve anahtar konumunuzu üretin.
+
 !!! danger "Bu haftanın ana kuralı, baştan"
     Yayımlanmış hiçbir saf yazılım whitebox tasarımı bugüne kadar kırılmadan kalmamıştır. O yüzden WBC'yi **"anahtarı
     güvene alan sihir"** olarak değil, **"anahtar çıkarmayı geciktiren ve diğer katmanlarla birlikte anlam kazanan
@@ -408,7 +431,7 @@ gerekir. Her biri bir güvenli programlama kuralına dönüşür:
 Yukarıdaki ikinci kuralı ("anahtarı yalnız XOR/whitening ile karıştırmak işe yaramaz") havada bırakmayalım; küçük
 ama gerçek baytlarla, **tek tek** görelim.
 
-**Kurulum.** Bir geliştirici, gizli anahtar baytı `k = 0x3C`'yi ikilide **düz** tutmak yerine, rastgele bir
+**Kurulum.** Bir geliştirici, gizli anahtar baytı `k = 0x3C`'yi binary'de **düz** tutmak yerine, rastgele bir
 maskeyle XOR'layıp saklamaya karar verir. Maske `m = 0x5A` olsun. Kodda saklanan değer:
 
 ```text
@@ -424,7 +447,7 @@ kodlanmis_k = k XOR m = 0x3C XOR 0x5A
       = 0110 0110 = 0x66
 ```
 
-Yani ikilide `kodlanmis_k = 0x66` olarak duruyor. Geliştirici "anahtar artık düz görünmüyor, gizlendi" diye
+Yani binary'de `kodlanmis_k = 0x66` olarak duruyor. Geliştirici "anahtar artık düz görünmüyor, gizlendi" diye
 düşünür.
 
 **Adım 2 — Programın kendisi maskeyi de içermek zorunda.** Program, şifreleme anında gerçek anahtara ihtiyaç
@@ -434,10 +457,10 @@ duyar; yani bir yerde şu hesabı yapmak **zorundadır**:
 uint8_t k_gercek = kodlanmis_k ^ m;   /* m de ikilide bir yerde olmalı! */
 ```
 
-`m = 0x5A` sabiti de ikilinin içinde, `kodlanmis_k = 0x66` sabitinin **yanı başında** durur (ikisi de statik
+`m = 0x5A` sabiti de binary'nin içinde, `kodlanmis_k = 0x66` sabitinin **yanı başında** durur (ikisi de statik
 verilerdir).
 
-**Adım 3 — Saldırganın yaptığı işlem.** Saldırgan ikiliden iki baytı da okur (`0x66` ve `0x5A`) ve aynı XOR'u
+**Adım 3 — Saldırganın yaptığı işlem.** Saldırgan binary'den iki baytı da okur (`0x66` ve `0x5A`) ve aynı XOR'u
 **kendisi** yapar:
 
 ```text
@@ -448,14 +471,14 @@ k = kodlanmis_k XOR m = 0x66 XOR 0x5A
   = 0011 1100 = 0x3C        ← ANAHTAR YİNE BULUNDU
 ```
 
-**Sonuç.** Maskeleme, anahtarın ikilideki **bit örüntüsünü** değiştirir ama korumayı değiştirmez: program maskeyi
+**Sonuç.** Maskeleme, anahtarın binary'deki **bit örüntüsünü** değiştirir ama korumayı değiştirmez: program maskeyi
 çözebiliyorsa, aynı hesabı okuyabilen saldırgan da çözer. Bu, tam olarak
 [9. haftanın **K-07 (statik dize (string)/sabit kodlama)**](../week-9/cen429-week-9.md#kural-k-07-statik-dizelerin-kodlanmasi)
 kuralının sınırıyla aynı derstir — kodlama tek başına, **çözme anahtarı da yanında duruyorsa**, hiçbir şey
 kazandırmaz.
 
 !!! danger "Çıkarılan kural"
-    Bir gizli değeri, **çözülmesi için gereken bütün bilgiyle birlikte** aynı ikilide taşımak, gizleme değildir —
+    Bir gizli değeri, **çözülmesi için gereken bütün bilgiyle birlikte** aynı binary'de taşımak, gizleme değildir —
     yalnız **görünümü** değiştirir. Whitebox'ın Bölüm 3'te göreceğimiz iç/dış kodlamaları bu tuzağa düşmez, çünkü
     kodlama bijeksiyonları (`G`, `F`) hiçbir yerde **açık bir sabit olarak saklanmaz**; kodun kendi **yapısına**
     (tabloların birbirine nasıl bağlandığına) dağıtılır. Bu farkı Bölüm 3'te elle kuracağımız örnekte göreceğiz.
@@ -523,6 +546,23 @@ WBC'nin klasik fikri, Chow ve arkadaşlarının 2002'deki AES gerçekleştirimid
 işlemleri, matris kurulumları) bu dersin sınavında sorulmayacak; ama **fikri** ve özellikle **maliyetini** ve
 **sınırını** anlamanız gerekir. Adım adım ve kavramsal gidiyoruz.
 
+### Önce AES'in bir turu: sıfırdan, adım adım
+
+Tabloya "pişirmekten" söz etmeden önce, neyi pişirdiğimizi görelim. AES 16 baytlık bloğu **sütun sütun** bir 4×4
+"durum" matrisine yerleştirir (FIPS-197); bir tur sırasıyla **SubBytes** (her bayt sabit bir tablodan geçer),
+**ShiftRows** (satır `r` sola `r` bayt kayar), **MixColumns** (sütunlar karışır — gerçek AES burada GF(2⁸)
+matrisi kullanır, sınav kapsamı dışı, bkz. Bölüm 0) ve **AddRoundKey** (tur anahtarıyla XOR) adımlarından oluşur.
+Aşağıdaki animasyon bunu, gerçek AES S-box'ı yerine bu haftanın (aşağıda kuracağımız) toy S-box'ıyla, adım adım
+kurar.
+
+<iframe class="dsanim" src="../anim/aes-round-structure.html" title="AES tur yapısı sıfırdan" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![AES tur yapısı — adım adım](anim/aes-round-structure.png)
+</div>
+
+**Normal** (ardışık bayt değerleri), **Zor** (karışık bayt değerleri) ve **uç durum** (durum ve anahtar tamamen
+sıfır) örneklerini deneyin, ya da 🎲 ile kendi 16 baytlık blok ve anahtarınızı üretin.
+
 ### Adım 1 — Kısmi değerlendirme: anahtarı tabloya "pişir"
 
 AES bir turda önce durum baytını tur anahtarıyla XOR'lar, sonra S-box'tan geçirir. Bu iki işlem, sabit bir anahtar
@@ -540,7 +580,7 @@ halidir). O yüzden tablolar **kodlanır**.
 #### Sayısal mikro-örnek: anahtar tablodan nasıl sızıyor? (uçtan uca)
 
 Yukarıdaki cümle ("saldırgan `k`'yı geri çıkarabilir") havada kalmasın; **gerçek sayılarla, tek tek** yapalım.
-Elimizde yalnız şunlar var: herkesin bildiği **AES S-box**'ı ve saldırganın ikili dosyadan okuduğu **tablo**.
+Elimizde yalnız şunlar var: herkesin bildiği **AES S-box**'ı ve saldırganın binary dosyadan okuduğu **tablo**.
 
 ![Naif tablodan anahtarın üç adımda çıkarılması](assets/h11-02-anahtar-sizmasi.svg)
 
@@ -553,7 +593,7 @@ Elimizde yalnız şunlar var: herkesin bildiği **AES S-box**'ı ve saldırganı
 T[0x00] = S-box[0x00 XOR 0x3C] = S-box[0x3C] = 0xEB
 ```
 
-Yani ikili dosyada okuduğu değer: `T[0x00] = 0xEB`.
+Yani binary dosyada okuduğu değer: `T[0x00] = 0xEB`.
 
 **Adım 2 — S-box'ı tersine çevir.** S-box herkese açık ve **birebirdir**; tersi de bilinir:
 
@@ -581,9 +621,32 @@ Saldırgan artık `S-box⁻¹[T'[x]]` hesaplayamaz, çünkü önce `G`'yi kaldı
 kırılır, dolayısıyla Adım 3 de çalışmaz.
 
 !!! tip "Bunu demoda kendi gözünüzle görün"
-    `code/week-11/01-oyuncak-tablo` demosu tam bu iki tabloyu üretir: **naif** tabloda yukarıdaki üç adım anahtarı
+    `code/week-11/01-toy-table` demosu tam bu iki tabloyu üretir: **naif** tabloda yukarıdaki üç adım anahtarı
     (`0x3C`) bulur, **kodlanmış** tabloda aynı adımlar başarısız olur. Çalıştırma komutları bu sayfanın başındaki
     "Demoyu kendiniz çalıştırın" kutusunda.
+
+Aşağıdaki animasyon `toy_table.c`'nin kendi kodunu (`build_tables`, `naive_table`, `encoded_table`) adım adım
+çalıştırır: anahtar önce naif tabloya, sonra kodlanmış tabloya nasıl "pişiyor" görün.
+
+<iframe class="dsanim" src="../anim/toy-table-wbc.html" title="Tablo tabanlı beyaz kutu: anahtarı tabloya gömme" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Tablo tabanlı beyaz kutu — adım adım](anim/toy-table-wbc.png)
+</div>
+
+**Normal** (gerçek demo anahtarı `0x3C`), **Zor** (başka bir anahtar, 16 girdi) ve **uç durum** (sıfır anahtar)
+örneklerini deneyin, ya da 🎲 ile kendi anahtarınızı ve girdi sayınızı üretin.
+
+Peki bu iki tablo arasındaki fark **neden** bu kadar önemli? Aşağıdaki animasyon, `toy_table.c`'nin
+`naive_recover()` fonksiyonunu adım adım çalıştırarak, naif tablodan anahtarın nasıl **doğrudan** okunduğunu ve
+kodlanmış tabloda bu okumanın neden **ilk adımda** çöktüğünü gösteriyor.
+
+<iframe class="dsanim" src="../anim/table-key-leak.html" title="Neden tablo anahtarı ele verir" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Neden tablo anahtarı ele verir — adım adım](anim/table-key-leak.png)
+</div>
+
+**Normal**, **Zor** ve **uç durum** (sıfır anahtar) örneklerini deneyin; her ikisinde de aynı `naive_recover`
+mantığının naif tabloda nasıl **başarılı**, kodlanmış tabloda nasıl **başarısız** olduğunu izleyin.
 
 ### Elle bütünüyle kurulan örnek: 4 elemanlı bir "oyuncak S-box"
 
@@ -612,7 +675,7 @@ x=2:  2 XOR 2 = 00 (0)   →  S[0] = 3     →  T[2] = 3
 x=3:  3 XOR 2 = 01 (1)   →  S[1] = 1     →  T[3] = 1
 ```
 
-Sonuç: **saldırganın ikilide okuduğu tam tablo** `T = [0, 2, 3, 1]` (yani `T[0]=0, T[1]=2, T[2]=3, T[3]=1`).
+Sonuç: **saldırganın binary'de okuduğu tam tablo** `T = [0, 2, 3, 1]` (yani `T[0]=0, T[1]=2, T[2]=3, T[3]=1`).
 
 **Adım B — S-box'ın tersini çıkaralım.** S herkese açık olduğu için tersi de hesaplanabilir: "hangi girdi hangi
 çıktıyı üretti?" sorusunu S tablosundan tersine okuruz (`S[0]=3` demek `S⁻¹[3]=0` demektir, vb.):
@@ -662,7 +725,7 @@ T'[2] = G(T[2]) = G(3) = 2
 T'[3] = G(T[3]) = G(1) = 3
 ```
 
-Sonuç: `T' = [1, 0, 2, 3]`. Saldırganın ikilide gördüğü tablo **artık bu**; `T` değil.
+Sonuç: `T' = [1, 0, 2, 3]`. Saldırganın binary'de gördüğü tablo **artık bu**; `T` değil.
 
 **Saldırgan aynı üç adımı (A–C) tekrar dener** — hâlâ `G`'nin var olduğunu **bilmiyor**, bu yüzden gene
 `S⁻¹[T'[x]] = x XOR k` varsayımıyla ilerliyor:
@@ -688,7 +751,7 @@ ama `G`'yi bilmediği için `k`'yi bu yoldan **çıkaramaz**.
     üstüne bir de karıştırıcı matrislere (Adım 4) genişler.
 
 !!! tip "Bunu demoda kendi gözünüzle görün (tekrar)"
-    `code/week-11/01-oyuncak-tablo` demosundaki **kodlanmış tablo**, yukarıdaki `T'` mantığının gerçek AES
+    `code/week-11/01-toy-table` demosundaki **kodlanmış tablo**, yukarıdaki `T'` mantığının gerçek AES
     ölçeğindeki hâlidir: aynı üç adımlı saldırı denenir ve tutarsız/yanlış sonuçlar üretir — tıpkı burada elle
     gördüğümüz `1, 3, 1, 3` gibi.
 
@@ -1082,6 +1145,18 @@ kaldırmaz** — çünkü kodlamalar sabit kalsa da AES'in kendi matematiği (S-
     (saldırı belirtisi var mı?) ve "bir gün bu tasarım da düşecek, o zaman ne yaparız?" planıyla birlikte. Bu,
     [10. haftanın](../week-10/cen429-week-10.md) kripto-periyodu fikrinin whitebox'a uygulanmış hâlidir.
 
+Fark/hata karşılaştırması fikrini oyuncak ölçekte görelim: aynı girdi için **doğru** ve **hataya uğratılmış** iki
+çalıştırmayı karşılaştırıp, farkın ne zaman bilgi taşıdığını izleyin. **Bu, çalışan bir saldırı aracı değildir** —
+gerçek DFA/DCA, bunun gibi yüzlerce-binlerce karşılaştırmayı istatistiksel olarak birleştirir.
+
+<iframe class="dsanim" src="../anim/dca-differential.html" title="Fark/hata karşılaştırması, oyuncak ölçekte" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Fark/hata karşılaştırması — adım adım](anim/dca-differential.png)
+</div>
+
+**Normal** (bit 0 hatası), **Zor** (bit 7 hatası, 16 girdi) ve **uç durum** (hata maskesi sıfır — fark her zaman
+sıfır) örneklerini deneyin, ya da 🎲 ile kendi anahtarınızı ve hata konumunuzu üretin.
+
 ### WhibOx: bağımsız bir sınav neden önemli?
 
 WhibOx, akademisyenlerin ve şirketlerin kendi WB-AES tasarımlarını **herkese açık** olarak gönderip, dünyanın
@@ -1098,7 +1173,7 @@ anılır. Aşağıdaki tablo onları **birbirinden ayıran tek soruyu** verir:
 
 | Saldırı | Ne yapar? (bir cümle) | Statik mi, dinamik mi? (Bölüm 0) | Ayırt edici soru |
 | --- | --- | --- | --- |
-| **BGE** (2004) | İç kodlamaların **afin** (doğrusal+sabit) yapısını cebirsel bir algoritmayla çözer | **Statik** — yalnız ikiliyi okur, çalıştırmaz | "Anahtar, **denklem çözerek** mi bulundu?" |
+| **BGE** (2004) | İç kodlamaların **afin** (doğrusal+sabit) yapısını cebirsel bir algoritmayla çözer | **Statik** — yalnız binary'yi okur, çalıştırmaz | "Anahtar, **denklem çözerek** mi bulundu?" |
 | **DCA** (2016) | Çalıştırma **izlerine** (Bölüm 0) DPA benzeri istatistiksel korelasyon uygular | **Dinamik** — programı çok kez çalıştırıp izler | "Anahtar, **çok sayıda izin istatistiğinden** mi çıkarıldı?" |
 | **DFA** (2015) | Çalışma anında **hata enjekte edip** doğru/hatalı çıktı farkından anahtar çıkarır | **Dinamik** — programı çalıştırır **ve bozar** | "Anahtar, **kasıtlı bir hatanın etkisinden** mi çıkarıldı?" |
 
@@ -1155,12 +1230,12 @@ de hesaba katmak gerekir — çünkü bir savunmanın amacı saldırıyı imkân
 
 | Teknik | Gereken erişim | Gereken beceri | Otomatikleştirilebilir mi? |
 | --- | --- | --- | --- |
-| Entropi taraması (Bölüm 2) | İkiliye salt okunur erişim (statik) | Düşük — hazır araçlarla | Evet, kolayca |
-| Cebirsel tablo saldırısı (Bölüm 3, Adım A–C) | İkiliye salt okunur erişim (statik) | Orta — S-box cebirini anlamak | Evet |
-| BGE (afin eşdeğerlik) | İkiliye salt okunur erişim (statik) | Yüksek — özel algoritma gerekir | Kısmen (belirli tasarımlara özel) |
+| Entropi taraması (Bölüm 2) | Binary'ye salt okunur erişim (statik) | Düşük — hazır araçlarla | Evet, kolayca |
+| Cebirsel tablo saldırısı (Bölüm 3, Adım A–C) | Binary'ye salt okunur erişim (statik) | Orta — S-box cebirini anlamak | Evet |
+| BGE (afin eşdeğerlik) | Binary'ye salt okunur erişim (statik) | Yüksek — özel algoritma gerekir | Kısmen (belirli tasarımlara özel) |
 | DCA | Programı **çalıştırma** + enstrümantasyon (dinamik) | Orta-yüksek — istatistik bilgisi | Evet, büyük ölçüde |
 | DFA | Programı çalıştırma + **değiştirme** (dinamik, kurcalama) | Yüksek — hata enjeksiyon noktalarını bulmak | Kısmen |
-| Kod sökme (code lifting) | İkiliyi kopyalama (statik, en düşük çaba) | Düşük — anahtar bilgisi bile gerekmez | Evet |
+| Kod sökme (code lifting) | Binary'yi kopyalama (statik, en düşük çaba) | Düşük — anahtar bilgisi bile gerekmez | Evet |
 
 !!! note "Bu tablo neyi öğretiyor?"
     Dikkat edin: **en ucuz** saldırı (kod sökme) en gelişmiş kriptanalitik bilgiyi gerektirmiyor — yalnız
@@ -1207,7 +1282,7 @@ sorulabilir:
 - **Sabit dizide düz anahtar.** Bölüm 2'de gördük: entropi taraması ve doğrudan okuma ile saniyeler içinde bulunur.
   Hiçbir üretim sisteminde kabul edilebilir değildir.
 - **Gizlenmiş/parçalanmış anahtar.** Bölüm 2'deki "yalnız XOR ile karıştırma" örneği gibi teknikler; çözme
-  bilgisi anahtarla **aynı ikilide** olduğu için güç eklemez. Yalnız **çok düşük değerli, çok kısa ömürlü** sırlar
+  bilgisi anahtarla **aynı binary'de** olduğu için güç eklemez. Yalnız **çok düşük değerli, çok kısa ömürlü** sırlar
   için (ör. saniyeler süren bir geçici belirteç) kabul edilebilir, çünkü saldırganın kazancı zaten sınırlıdır.
 - **WBC + katmanlı savunma.** Bölüm 3–4'te gördüğümüz gibi anahtarı **matematiksel olarak** tablolara dağıtır;
   tek başına değil, anahtar yenileme + cihaz bağlama + sunucu denetimiyle birlikte kullanılınca **orta düzeyde**
@@ -1239,6 +1314,18 @@ verelim. Her varlık için üç soru soracağız: (1) Varlığın değeri ne kad
 **Gözlenen örüntü:** WBC, tablo sadece **2. satırda** ortaya çıkıyor — yani "donanım kökü güvenilir biçimde yok"
 ve "değer düşük değil" kesişiminde. 1. satırda WBC **gereksiz maliyet**; 3. satırda WBC **gereksiz risk** (madem
 anahtarı hiç istemciye koymaya gerek yok, koymamak her zaman daha güvenlidir).
+
+Aynı kararı üç değil, 12-16 varlığa uygulayalım. Aşağıdaki animasyon her varlık için altı katmanı (`OBF`, `WBC`,
+`ROTATE`, `BIND`, `AUDIT`, `HWROOT`) tek tek sorar; `wbc` kararının **her zaman dört katmanı birlikte**
+etkinleştirdiğini, `plain` kararının ise **hiçbirini** etkinleştirmediğini (bu yüzden "asla") izleyin.
+
+<iframe class="dsanim" src="../anim/layered-defence.html" title="WBC katmanlı savunmada nereye oturur?" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![WBC katmanlı savunmada nereye oturur — adım adım](anim/layered-defence.png)
+</div>
+
+**Normal** (12 varlık, dört karar da temsil ediliyor), **Zor** (16 varlık) ve **uç durum** (hepsi WBC / hepsi
+donanım kökü) örneklerini deneyin, ya da 🎲 ile kendi varlık listenizi üretin.
 
 ### "Donanım kökü var ama güvenilir değil" ne demek?
 
@@ -1532,11 +1619,11 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
 ??? question "Whitebox tablomuzu gerçekten Chow'un beş adımıyla mı kurmalıyız?"
     Hayır, bu dersin kapsamında **beklenmez**. Bölüm 3'teki beş adım (kısmi değerlendirme → T-box → iç kodlama →
     karıştırıcı matris → dış kodlama) **kavram düzeyinde** anlaşılmalıdır; projede tam bir Chow AES
-    gerçekleştirimi yazmanız istenmiyor. Demodaki (`01-oyuncak-tablo`) basit kodlanmış tablo fikri, projenizde
+    gerçekleştirimi yazmanız istenmiyor. Demodaki (`01-toy-table`) basit kodlanmış tablo fikri, projenizde
     göstermeniz beklenen **düzeydeki** bir örnektir.
 
 ??? question "Anahtarımızı bir ortam değişkeninde (environment variable) tutuyoruz; bu S8 için yeterli mi?"
-    Ortam değişkeni, **sabit koda gömülü anahtardan biraz daha iyidir** (ikili dosyada entropi taramasıyla
+    Ortam değişkeni, **sabit koda gömülü anahtardan biraz daha iyidir** (binary dosyada entropi taramasıyla
     doğrudan bulunmaz) ama süreç ortamını okuyabilen biri (ör. aynı makinede çalışan başka bir süreç, bir
     hata ayıklayıcı) için yine de **düz metin** olarak görünür. S8'de bunu "anahtar yönetimi" olarak değil,
     Bölüm 5'teki tablo eşliğinde **hangi kategoriye girdiğini** (muhtemelen "gizlenmiş/düz" ile "WBC" arası bir
@@ -1556,7 +1643,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
     Ara değerleri izleyip istatistiksel çözmek **DCA**'ya (Differential Computation Analysis), kasıtlı hata verip çıktıyı karşılaştırmak **DFA**'ya (Differential Fault Analysis) zemin hazırlar.
 
 ??? question "3. Anahtarı sabit diziye gömmek neden koruma değildir? Entropi taraması burada ne işe yarar?"
-    Anahtar, ikili içinde **yüksek entropili** bir bayt bloğu olarak durur; kodun içine koymak yalnızca konumunu değiştirir, gizlemez. Entropi taraması ikilideki yüksek-entropili (anahtar benzeri) bölgeleri bulur; demo `--tara` bunu gösterir.
+    Anahtar, binary içinde **yüksek entropili** bir bayt bloğu olarak durur; kodun içine koymak yalnızca konumunu değiştirir, gizlemez. Entropi taraması binary'deki yüksek-entropili (anahtar benzeri) bölgeleri bulur; demo `--tara` bunu gösterir.
 
 ??? question "4. Kod sökme (code lifting) nedir? WBC, anahtarı hiç bilmeyen bir saldırgana karşı neden savunmasız olabilir? Hangi önlem bunu kapatır?"
     **Code lifting:** saldırgan whitebox tabloyu/rutini olduğu gibi kopyalayıp başka bir yerde kullanır — anahtarı hiç çıkarmadan şifreleme/çözme yapar. Bunu **dış kodlama (external encoding)** kapatır: fonksiyonun giriş/çıkışı uygulamaya bağlanır, taşınan rutin başka bağlamda işe yaramaz (ek olarak cihaz bağlama).
@@ -1619,10 +1706,10 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
     Naif korumalar (düz anahtar, tek XOR) saniyeler-dakikalar içinde kırılır; WBC bu asimetriyi tersine çevirmeye, saldırganın maliyetini savunmacının kabul edebileceği bir ek maliyet karşılığında **yükseltmeye** çalışır — asimetriyi sıfırlamaz, yalnız dengeyi değiştirir.
 
 ??? question "24. Entropi taraması statik mi dinamik bir analiz tekniğidir? DCA hangisidir?"
-    Entropi taraması **statiktir** — program hiç çalıştırılmadan ikili dosya üzerinde yapılır. DCA **dinamiktir** — programı gerçekten (çoklu kez) çalıştırıp yürütme izlerini toplamayı gerektirir.
+    Entropi taraması **statiktir** — program hiç çalıştırılmadan binary dosya üzerinde yapılır. DCA **dinamiktir** — programı gerçekten (çoklu kez) çalıştırıp yürütme izlerini toplamayı gerektirir.
 
 ??? question "25. Bölüm 2'deki 'yalnız XOR ile karıştırma' örneğinde `k=0x3C`, `m=0x5A`. Kodlanmış değer nedir ve saldırgan anahtarı nasıl geri çıkarır?"
-    `kodlanmis_k = 0x3C XOR 0x5A = 0x66`. Saldırgan ikilide hem `0x66`'yı hem maske `0x5A`'yı bulur; `0x66 XOR 0x5A = 0x3C` hesaplayarak anahtarı geri çıkarır — çünkü çözme bilgisi (maske) anahtarla **aynı yerde** duruyordu.
+    `kodlanmis_k = 0x3C XOR 0x5A = 0x66`. Saldırgan binary'de hem `0x66`'yı hem maske `0x5A`'yı bulur; `0x66 XOR 0x5A = 0x3C` hesaplayarak anahtarı geri çıkarır — çünkü çözme bilgisi (maske) anahtarla **aynı yerde** duruyordu.
 
 ??? question "26. Bu haftanın iki senaryosunu (Bölüm 6) ve 3./9. haftaların kurallarını birleştiren ortak cümle nedir?"
     **"Tek katman = kırılgan katman."** Ne yalnız Kerckhoffs ilkesine uymak ([3. hafta](../week-3/cen429-week-3.md)), ne yalnız gizleme kuralları ([9. hafta](../week-9/cen429-week-9.md), K-01…K-08), ne de yalnız WBC (bu hafta) tek başına yeterlidir; güvenlik her zaman **katmanların toplamından** gelir.
@@ -1637,7 +1724,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
     **İstemci tarafı:** TEE (işlemci içi yalıtılmış bölge), SE (ayrı güvenli çip). **Sunucu tarafı:** HSM (donanım), SoftHSM (HSM'in yazılım benzetimi, yalnız geliştirme/test için).
 
 ??? question "30. 'Test/hata ayıklama anahtarını' üretime taşımayı unutmak neden Bölüm 2'nin ilk kuralıyla aynı zafiyettir?"
-    Her ikisi de anahtarın **düz, sabit** biçimde ikilide durmasıdır; "test amaçlı" etiketi saldırganın onu entropi taramasıyla bulmasını **engellemez**. Bir değerlendirici test/hata ayıklama yollarını da üretim koduyla aynı ciddiyette tarar.
+    Her ikisi de anahtarın **düz, sabit** biçimde binary'de durmasıdır; "test amaçlı" etiketi saldırganın onu entropi taramasıyla bulmasını **engellemez**. Bir değerlendirici test/hata ayıklama yollarını da üretim koduyla aynı ciddiyette tarar.
 
 ??? question "31. 'Yan kanal saldırılarına karşı önlem aldık, demek ki whitebox saldırılarına karşı da korumalıyız' cümlesi neden hatalıdır?"
     Üç saldırgan modelini (kara/gri/beyaz kutu) birbirinin yerine geçebilir sanmaktır. Gri kutu savunması (ör. sabit zamanlı karşılaştırma) **statik/dinamik whitebox analizine karşı hiçbir şey yapmaz**; her savunma, hangi modeldeki hangi yeteneğe karşı olduğu **açıkça belirtilerek** değerlendirilmelidir.
@@ -1654,7 +1741,7 @@ bir yanıtı yan yana koyalım, aradaki farkı görün:
 ??? question "35. Bölüm 0'daki 'kurma zinciri', 'saldırı zinciri' ve 'savunma zinciri' ayrımını kısaca özetleyin; her biri hangi bölümlerde işlendi?"
     **Kurma zinciri** (anahtar → S-box → tablo → iç/dış kodlama → GF(2) matrisi) Bölüm 3'te elle kuruldu. **Saldırı zinciri** (statik/dinamik analiz → entropi taraması/hata ayıklayıcı → yürütme izi → korelasyon) Bölüm 1, 3 ve 4'te somutlaştı. **Savunma zinciri** (TEE/SE/HSM → WBC → yenileme + cihaz bağlama + sunucu denetimi) Bölüm 5 ve 6'da bir araya geldi.
 
-??? question "36. Demo `01-oyuncak-tablo`'nun naif ve kodlanmış tablolarını, bu haftanın hangi elle çözülmüş örneğiyle eşleştirebilirsiniz?"
+??? question "36. Demo `01-toy-table`'nun naif ve kodlanmış tablolarını, bu haftanın hangi elle çözülmüş örneğiyle eşleştirebilirsiniz?"
     **Naif tablo**, Bölüm 3'teki `T[x] = S[x XOR k]` (gerçek anahtarı 4 girdiden de tutarlı biçimde veren, Adım A–C) örneğiyle aynı fikirdir. **Kodlanmış tablo**, `T'[x] = G(T[x])` örneğiyle (aynı saldırının artık `1, 3, 1, 3` gibi çelişkili ve yanlış sonuçlar vermesi) aynı fikirdir.
 
 ### Sınavdan önce hızlı tekrar: terimler sözlüğü
@@ -1669,7 +1756,7 @@ terim olursa o bölüme dönüp **bağlamıyla birlikte** okuyun.
 | WBC (whitebox kriptografi) | Beyaz kutu ortamda çalışan şifreleme algoritmalarının güvenliğini inceleyen alan | Bölüm 1 |
 | Hata ayıklayıcı / statik-dinamik analiz | Bir programı adım adım izleme aracı; çalıştırmadan/çalıştırarak inceleme | Bölüm 0 |
 | Enstrümantasyon / yürütme izi | Programı otomatik izleyip ara değerleri kaydetme; kaydedilen ara değerler dizisi | Bölüm 0 |
-| Entropi / entropi taraması | Rastgelelik ölçüsü; ikilide yüksek entropili (anahtar benzeri) blokları arama | Bölüm 0, 2 |
+| Entropi / entropi taraması | Rastgelelik ölçüsü; binary'de yüksek entropili (anahtar benzeri) blokları arama | Bölüm 0, 2 |
 | Kısmi değerlendirme | Anahtar + S-box'ı tek bir arama tablosuna önceden hesaplama | Bölüm 3, Adım 1 |
 | Permütasyon / bijeksiyon | Birebir-örten, tersi olan eşleme; oyuncak S-box'ımızın temeli | Bölüm 0, 3 |
 | İç kodlama | Tablolar arası ara değerleri gizli bijeksiyonlarla maskeleme | Bölüm 3, Adım 3 |

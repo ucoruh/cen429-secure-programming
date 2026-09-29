@@ -31,10 +31,10 @@
 <!-- materyal:bitis -->
 
 !!! example "Bu haftanın çalışan demosu"
-    `code/week-12/01-birim-test` — Birim test kosucusu: guvenlik fonksiyonlarini test kartlariyla dogrular (S16 sonuclari).
-    · `code/week-12/02-saldiri-potansiyeli` — Saldırı potansiyeli hesaplayıcı: beş faktör → dirençlik düzeyi (düşük = ciddi bulgu).
+    `code/week-12/01-unit-test` — Birim test koşucusu: güvenlik fonksiyonlarını test kartlarıyla doğrular (S16 sonuçları).
+    · `code/week-12/02-attack-potential` — Saldırı potansiyeli hesaplayıcı: beş faktör → dirençlik düzeyi (düşük = ciddi bulgu).
 
-    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
+    Çalıştırma: `code` klasöründe bir kez `./build.sh` (Windows'ta `.\build.ps1`), sonra demo klasöründeki `bin/linux` (Windows'ta `bin\windows`) altından. Adım adım komutlar aşağıdaki kutuda.
 
 
 !!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
@@ -43,17 +43,17 @@
     ```powershell
     # Windows (PowerShell)
     .\build.ps1
-    cd week-12\01-birim-test
-    .\bin\windows\birim_test.exe
-    cd ..\02-saldiri-potansiyeli
-    .\bin\windows\saldiri_potansiyeli.exe
+    cd week-12\01-unit-test
+    .\bin\windows\unit_test.exe
+    cd ..\02-attack-potential
+    .\bin\windows\attack_potential.exe
     ```
 
     ```sh
     # WSL / Linux
     ./build.sh
-    cd week-12/01-birim-test && ./bin/linux/birim_test
-    cd ../02-saldiri-potansiyeli && ./bin/linux/saldiri_potansiyeli
+    cd week-12/01-unit-test && ./bin/linux/unit_test
+    cd ../02-attack-potential && ./bin/linux/attack_potential
     ```
 
     **Beklenen çıktı:** Birim test koşucusu iki güvenlik fonksiyonunu **test kartlarıyla** sınar; her test için amaç/gözlenen/karar basar ve **çıkış kodu = başarısız test sayısıdır** (hepsi geçerse 0 — S16'nın "plan değil **sonuç**" mantığı). İkinci demo beş faktörden (zaman · uzmanlık · bilgi · fırsat · ekipman) **toplam puanı ve dereceyi** hesaplar.
@@ -125,7 +125,7 @@ kavramlarını birer cümleyle tanımlayıp her birini ayrıntılı anlatıldı�
 | Sertifikasyon | Bir ürünün ya da kurumun belirli bir standarda uyduğunun, yetkili bir sertifikasyon otoritesince belgelenmesidir; değerlendirme başarılıysa verilir. | [§1](#1-neden-bagimsiz-degerlendirme) |
 | Standart | Neyin nasıl yapılacağını (ör. ISO/IEC 27001, Ortak Kriterler, FIPS 140-3, PCI, OWASP MASVS) belirleyen, her biri farklı bir şeyi ölçen ortak kurallar bütünüdür. | [§1](#standartlar-ve-sertifikasyon-manzarasi) |
 | Değerlendirme laboratuvarı | Ürünü sınayan, geliştiriciden bağımsız ve akredite kuruluştur; bütün kaynak koda ve belgeye erişir ama sertifikayı kendisi vermez. | [§2](#surecteki-roller-kim-kimdir) |
-| TOE (Target of Evaluation) | Değerlendirilen ürünün, tek bir sürüm numarasıyla değil sürüm etiketi + ikili dosya + kaynak kod + özet değeriyle benzersiz tanımlanmasıdır. | [§2](#toe-kimligi-neden-surum-320-yetmez) |
+| TOE (Target of Evaluation) | Değerlendirilen ürünün, tek bir sürüm numarasıyla değil sürüm etiketi + binary dosya + kaynak kod + özet değeriyle benzersiz tanımlanmasıdır. | [§2](#toe-kimligi-neden-surum-320-yetmez) |
 | Beyaz kutu vs kara kutu test | Beyaz kutu testte inceleyen kaynak koda ve belgeye sahiptir, kara kutu testte yalnız dışarıdan (kullanıcı gibi) erişir; değerlendirici genelde beyaz kutu çalışır. | [§0 sonu](#beyaz-kutu-neden-tercih-edilir-kisa-bir-karsilastirma) |
 | Saldırı potansiyeli | Bir saldırıyı gerçekleştirmenin geçen süre, uzmanlık, hedef bilgisi, fırsat ve ekipman gibi beş faktörle ölçülen zorluğudur; düşük puan ciddi bir bulgu demektir. | [§5](#5-saldiri-potansiyeli-ve-bulgu-derecelendirme) |
 | Bulgu (finding) | Değerlendirmede kanıtla tespit edilen bir sorun ya da iyileştirme noktasıdır; her bulgu bir öneri ve bir aksiyonla ilerler. | [§6](#6-bulgu-oneri-aksiyon-ve-etki-analizi) |
@@ -248,11 +248,19 @@ demez, "bu ürün şu standardın şu gereksinimlerini, şu saldırgan modeline 
 ![Geliştiricinin sözü ile bağımsız değerlendirme](assets/h12-04-bagimsiz-degerlendirme.svg)
 
 !!! note "Kısa tarihçe: güvenlik değerlendirmesi ve sertifikasyon"
-    - **1985** — ABD **TCSEC** ("Orange Book"): ilk resmi güvenlik değerlendirme ölçütleri.
+    - **1983 → 1985** — ABD **TCSEC** ("Orange Book"): ilk resmi güvenlik değerlendirme ölçütleri (1983'te
+      yayımlanır, 1985'te gözden geçirilir).
     - **1991–1993** — Avrupa **ITSEC** ve Kanada **CTCPEC**.
-    - **1999** — bunlar **Ortak Kriterler (ISO/IEC 15408)** altında birleşir; **EAL** güvence ölçeği buradan gelir ([13. hafta](../week-13/cen429-week-13.md)).
-    - **2001** — **OWASP** kurulur (uygulama güvenliği testi kültürü); sonra **PTES** ve **NIST SP 800-115** sızma testi metodolojilerini standartlaştırır.
-    - **2005 → 2023** — **CVSS** zafiyet ciddiyet puanı (v2 → v3.1 → v4.0).
+    - **1994** — ABD **FIPS 140-1**: kriptografik modüller için ilk resmi değerlendirme standardı (bölüm 1'deki
+      tablodaki FIPS 140-3, bu çizginin devamıdır).
+    - **1999** — TCSEC/ITSEC/CTCPEC **Ortak Kriterler (ISO/IEC 15408)** altında birleşir; **EAL** güvence ölçeği
+      buradan gelir ([13. hafta](../week-13/cen429-week-13.md)).
+    - **2001** — **OWASP** kurulur (uygulama güvenliği testi kültürü).
+    - **2004** — **PCI DSS** sürüm 1.0 yayımlanır (kart verisi işleyen kurum ve yazılımlar için).
+    - **2005** — Ortak Kriterler'in ortak değerlendirme metodolojisi **CEM (ISO/IEC 18045)** yayımlanır.
+    - **2005 → 2023** — **CVSS** zafiyet ciddiyet puanı (v1 → v2 → v3.1 → v4.0).
+    - **2008** — **NIST SP 800-115** ("Technical Guide to Information Security Testing and Assessment") yayımlanır.
+    - **2009** — **PTES** (Penetration Testing Execution Standard) başlar.
     - **2010'lar** — mobil için **OWASP MASVS/MASTG**, tüketici IoT için **ETSI EN 303 645**.
 
     Ortak fikir tek cümlede: **üretici kendi ürününü onaylayamaz** — bağımsız, kanıta dayalı değerlendirme gerekir.
@@ -283,7 +291,7 @@ değerlendiricinin gözünden, adım adım işliyoruz.
 Bir sertifika okuyucusunun en sık yaptığı hata, "sertifikalı" sözcüğünü "kırılamaz" ile eş tutmaktır. Sertifika
 aslında dört şeyi **birlikte** söyler; dördünden biri eksikse cümle anlamsızlaşır:
 
-1. **Hangi ürün** — TOE'nin tam kimliği: sürüm + ikili dosya + kaynak kod + özet değeri (bölüm 2'de göreceğiz).
+1. **Hangi ürün** — TOE'nin tam kimliği: sürüm + binary dosya + kaynak kod + özet değeri (bölüm 2'de göreceğiz).
 2. **Hangi standarda göre** — ör. Ortak Kriterler, EMVCo, PCI.
 3. **Hangi saldırgan modeline karşı** — ör. "fiziksel erişimi olmayan, ağ üzerinden saldıran orta düzey saldırgan".
 4. **Hangi tarihte** — yazılım güncellenince sertifika o **eski** sürüm için geçerliliğini korur; yeni sürüm ya
@@ -355,7 +363,7 @@ soruyu sorar: "bu sertifikanın **maliyeti**, sağladığı **güven**e değer m
 Bölümün başındaki kısa tarihçeyi bir de "neden" sorusuyla okuyalım — her adım aslında gerçek bir **güven krizine**
 cevaptır:
 
-- TCSEC (1985) öncesinde, ABD hükümeti güvenlik iddialarını değerlendirecek **ortak bir ölçüt** bulamıyordu; her
+- TCSEC (1983/1985) öncesinde, ABD hükümeti güvenlik iddialarını değerlendirecek **ortak bir ölçüt** bulamıyordu; her
   tedarikçi kendi "güvenlidir" tanımını kullanıyordu — karşılaştırma imkânsızdı.
 - Ortak Kriterler (1999), ABD/Avrupa/Kanada'nın **ayrı ayrı** ölçütlerinin (TCSEC/ITSEC/CTCPEC) birbiriyle
   **karşılaştırılamaz** olmasının doğurduğu bir sorunu çözmek için birleştirildi — uluslararası ticarette aynı
@@ -399,20 +407,20 @@ benzerdir.
 ### TOE kimliği: neden "sürüm 3.2.0" yetmez?
 
 Az sonra göreceğimiz 13 adımın ilki, bir sürüm numarasından **çok daha kesin** bir tanım ister. Nedenini bir örnekle
-görelim: bir ekip "sürüm 3.2.0" der, ama aynı sürüm numarasıyla üç farklı ikili dosya var olabilir — biri hata
+görelim: bir ekip "sürüm 3.2.0" der, ama aynı sürüm numarasıyla üç farklı binary dosya var olabilir — biri hata
 ayıklama sembolleriyle derlenmiş (debug build), biri optimize edilmiş sürüm derlemesi (release build), biri de bir
 geliştiricinin yerel makinesinde farklı derleyici bayraklarıyla ürettiği bir kopya. Bunların **davranışı** (hata
 ayıklama çıktısı, zamanlama, hatta bazı güvenlik kontrollerinin varlığı) farklı olabilir. Bu yüzden TOE kimliği dört
 parçadan oluşur (yukarıdaki görsel):
 
 1. **Sürüm etiketi** — insan okur için (ör. "3.2.0").
-2. **İkili dosya** — hangi derleme (release/debug, hangi mimari: ARM64/x86_64).
+2. **Binary dosya** — hangi derleme (release/debug, hangi mimari: ARM64/x86_64).
 3. **Kaynak kod** — hangi commit/etiket (git tag/commit özeti).
-4. **Özet değeri (hash)** — ikili dosyanın SHA-256'sı; **tek bir baytın** bile değişip değişmediğini kanıtlar.
+4. **Özet değeri (hash)** — binary dosyanın SHA-256'sı; **tek bir baytın** bile değişip değişmediğini kanıtlar.
 
 !!! danger "Sık yapılan hata: 'aynı sürüm numarası, aynı ürün' varsaymak"
     Bir geliştirici "değişen bir şey yok, hâlâ 3.2.0" diyebilir ama derleme ortamı (derleyici sürümü, optimizasyon
-    bayrağı) değişmişse **ikili dosya farklıdır** ve önceki sertifika artık o ikiliyi kapsamaz. **Kural:** TOE
+    bayrağı) değişmişse **binary dosya farklıdır** ve önceki sertifika artık o binary'yi kapsamaz. **Kural:** TOE
     kimliği her zaman özet değeriyle (hash) doğrulanır, sürüm numarasına güvenilmez — 1. haftadaki "sürüm kimliği"
     pratiği tam olarak bunun içindir.
 
@@ -427,7 +435,7 @@ aşamasının sonunda verilir; ama Süreklilik aşaması ürünün ömrü boyunc
 
 | Adım | Ne yapılır? | Çıktı | Projenizde |
 | --- | --- | --- | --- |
-| **1. Değerlendirme hedefi** | Değerlendirilecek şey **benzersiz** tanımlanır: sürüm numarası yetmez; ikili dosya + kaynak kod + özet değeri ya da sürüm etiketi. Kapsam dışı bileşenler yazılır. Varsayım: **platform güvenilmez** | TOE tanımı | S0, S1 (1. hafta sürüm kimliği) |
+| **1. Değerlendirme hedefi** | Değerlendirilecek şey **benzersiz** tanımlanır: sürüm numarası yetmez; binary dosya + kaynak kod + özet değeri ya da sürüm etiketi. Kapsam dışı bileşenler yazılır. Varsayım: **platform güvenilmez** | TOE tanımı | S0, S1 (1. hafta sürüm kimliği) |
 | **2. Belgelerin teslimi** | Kaynak kod, API belgesi, **güvenlik kılavuzu**, hata ayıklama ve sürüm derlemeleri güvenli bir kanalla teslim edilir | Teslim listesi | Deponuz + kılavuz |
 | **3. Gereksinim şablonu** | Standardın numaralı gereksinimleri; her biri için gereksinim metni, **test kapsamı**, geliştiricinin **uyum gerekçesi ve belge referansı**; durum: karşılandı / devredildi / karşılanmadı | Doldurulmuş şablon | S17 uyum matrisi ([13. hafta](../week-13/cen429-week-13.md)) |
 | **4. Atölye** | Hangi önlemin hangi gereksinimi karşıladığı, eksiklerin nasıl kapatılacağı planlanır | Belge güncelleme planı | — |
@@ -440,6 +448,15 @@ aşamasının sonunda verilir; ama Süreklilik aşaması ürünün ömrü boyunc
 | **11. Delta değerlendirme** | Yalnız değişen kısım yeniden değerlendirilir; laboratuvar işaretlenmiş belgeler, etki analizi, dosya listesi ve yeni TOE kimliğini ister | Delta raporu | — |
 | **12. Ödünleşim ve kalan risk** | Her korumanın maliyeti ölçülür, kararlar gerekçelendirilir, kalan risk açıkça yazılır | Ödünleşim kaydı | 1. hafta |
 | **13. Değişiklik yönetimi** | Temel çizgi → talep → sınıflandırma → onay → geliştirme ve test → yayın → doğrulama | Süreç kayıtları | S13 |
+
+13 adımı, bulgu sayısına göre Süreklilik aşamasının çalışıp çalışmadığını değiştirerek adım adım izleyin.
+
+<iframe class="dsanim" src="../anim/evaluation-process-pipeline.html" title="Değerlendirme süreci: 13 adım, üç aşama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Değerlendirme süreci — adım adım](anim/evaluation-process-pipeline.png)
+</div>
+
+**Normal** (hiç bulgu yok), **Zor** (birkaç bulgu) ve iki uç örneği (**tam bir bulgu**, **en çok bulgu**) deneyin; 🎲 ile kendi bulgu sayınızı da üretebilirsiniz.
 
 !!! note "Sahada nasıl uygulanır?"
     Bu dersin her haftasında gördüğümüz "Sahada nasıl uygulanır?" notlarının kaynağı olan kılavuz, tam olarak 2. adımda
@@ -672,6 +689,15 @@ void isle(const char *disaridan_gelen)
 hataları ise fuzzing ve sanitizer'larda çok güçlüdür. **Bu yüzden bölüm 3'ün sırası (kod inceleme → SAST →
 DAST/sanitizer → fuzzing → sızma testi) her hata sınıfını en az bir yöntemin güçlü olduğu bir noktadan geçirir.**
 
+Beş yöntemi, bellek/mantık sınıfı karışık bir bulgu örneklemi üzerinde yan yana çalıştırıp hangisinin kaçını yakaladığını görün.
+
+<iframe class="dsanim" src="../anim/vulnerability-assessment-methods.html" title="Zafiyet değerlendirme yöntemleri: yan yana" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Zafiyet değerlendirme yöntemleri — adım adım](anim/vulnerability-assessment-methods.png)
+</div>
+
+**Normal** (karışık örneklem) ile iki uç örneği (**hepsi bellek hatası**, **hepsi mantık hatası**) karşılaştırın; fark hemen görülür.
+
 !!! danger "Sık yapılan hata: fuzzing'i birkaç saniye çalıştırıp 'bulgu yok' demek"
     Fuzzing **kapsam (coverage) biriktirerek** çalışır; ilk birkaç saniyede yalnızca yüzeysel yollar denenir. Kısa
     bir çalıştırmadan sonra "temiz" demek, aslında "henüz derine inemedi" demektir. **Kural:** fuzzing süresi ve
@@ -797,7 +823,7 @@ bu, "aynı ürün dört farklı sınavdan geçebilir" fikrinin (bölüm 1) somut
 | Soru | GüvenPay'in cevabı (kurgusal) |
 | --- | --- |
 | Erişim kaydı güncel mi? (ISO 27001) | GüvenPay'in kendisi değil, GüvenPay'i barındıran şirketin BT departmanı bu soruya cevap verir |
-| Anahtar türetme kaç saatte kırılır? (Ortak Kriterler) | F-03 düzeltmesi öncesi: saatler (TEMEL). Sonrası: aylar (YÜKSEK) |
+| Anahtar türetme kaç saatte kırılır? (Ortak Kriterler) | F-03 düzeltmesi öncesi: saatler (BASIC). Sonrası: aylar (HIGH) |
 | Modül kendi kendini test ediyor mu? (FIPS 140-3) | GüvenPay bir kriptografik modül **değil**, bir uygulama SDK'sıdır — bu soru kapsam dışıdır |
 | Varsayılan parola var mı? (ETSI) | GüvenPay bir IoT cihazı değil; bu soru da kapsam dışıdır |
 | Kart verisi bellekte ne kadar açık kalıyor? (EMVCo/PCI) | Kullanım sonrası bellek sıfırlanıyor (kanıt: PT-05) |
@@ -957,11 +983,20 @@ Toplam puanın karşılığı:
 
 | Toplam | Düzey |
 | --- | --- |
-| **0–9** | **TEMEL** — düşük direnç → **ciddi bulgu** |
-| 10–13 | ORTA |
-| 14–19 | YÜKSEK |
-| 20–24 | ÇOK YÜKSEK |
-| 25+ | ÖTESİ (yalnız çok yetenekli saldırgan) |
+| **0–9** | **BASIC** — düşük direnç → **ciddi bulgu** |
+| 10–13 | MODERATE |
+| 14–19 | HIGH |
+| 20–24 | VERY HIGH |
+| 25+ | BEYOND (yalnız çok yetenekli saldırgan) |
+
+Beş faktörün seviyelerini seçip programın gerçek kodunu (`rating()`) adım adım izleyin; toplam puan hangi dala düşüyor, görün.
+
+<iframe class="dsanim" src="../anim/attack-potential-calculator.html" title="Saldırı potansiyeli hesaplayıcı: 5 faktör → toplam → derece" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Saldırı potansiyeli hesaplayıcı — adım adım](anim/attack-potential-calculator.png)
+</div>
+
+**Normal** (lisans denetimi, korumasız), **Zor** (aynı denetim, korumalı) ve iki uç örneği (**bütün faktörler seviye 0**, **güvenli öğe çıkarma**) deneyin; 🎲 ile kendi beş seviyenizi de girebilirsiniz.
 
 #### Uçtan uca örnek: bir bulguyu baştan sona puanlayalım
 
@@ -974,37 +1009,37 @@ Beş faktörü tek tek okuyup puanlıyoruz:
 | --- | --- | --- | --- | --- |
 | 1 | Geçen süre | bir saat | < 1 gün | **0** |
 | 2 | Uzmanlık | yetkin kullanıcı | yetkin | **3** |
-| 3 | Hedef bilgisi | mağazadan inen ikili, belge gerekmedi | kamuya açık | **0** |
+| 3 | Hedef bilgisi | mağazadan inen binary, belge gerekmedi | kamuya açık | **0** |
 | 4 | Fırsat | kendi cihazında sınırsız deneme | sınırsız/uzak | **0** |
 | 5 | Ekipman | ücretsiz tersine derleyici | standart/ücretsiz | **0** |
 
 ```text
-Toplam = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  TEMEL
+Toplam = 0 + 3 + 0 + 0 + 0 = 3        →  3 ≤ 9  →  BASIC
 ```
 
-**Sonuç:** **TEMEL düzey = düşük direnç = ciddi bulgu.** Rapora "önce bu kapatılmalı" diye yazılır.
+**Sonuç:** **BASIC düzey = düşük direnç = ciddi bulgu.** Rapora "önce bu kapatılmalı" diye yazılır.
 
 **Şimdi koruma ekleyelim ve yeniden puanlayalım.** 9. haftadan opak boolean + rastgele çıkış, üstüne sunucu tarafı
 denetim koyduk. Aynı saldırı artık: bir haftada (4), **uzman** gerektiriyor (6), iç davranışı öğrenmek **kısıtlı
 bilgi** istiyor (3), sunucu denetimi yüzünden deneme **kısıtlı** (4), ekipman hâlâ ücretsiz (0):
 
 ```text
-Toplam = 4 + 6 + 3 + 4 + 0 = 17       →  14 ≤ 17 ≤ 19  →  YÜKSEK
+Toplam = 4 + 6 + 3 + 4 + 0 = 17       →  14 ≤ 17 ≤ 19  →  HIGH
 ```
 
-Yani koruma, bulguyu **TEMEL (3)** düzeyinden **YÜKSEK (17)** düzeyine taşıdı. "Koruma ekledim" demek yerine
+Yani koruma, bulguyu **BASIC (3)** düzeyinden **HIGH (17)** düzeyine taşıdı. "Koruma ekledim" demek yerine
 **ölçüyle** konuşmuş olduk; S16'ya yazılacak cümle budur.
 
 !!! tip "Aynı sayıları demoda üretin"
-    `code/week-12/02-saldiri-potansiyeli` demosu bu ölçeği uygular. Faktör seviyelerini argüman olarak verin
+    `code/week-12/02-attack-potential` demosu bu ölçeği uygular. Faktör seviyelerini argüman olarak verin
     (sıra: süre uzmanlık bilgi fırsat ekipman):
 
     ```sh
-    ./bin/linux/saldiri_potansiyeli 0 1 0 0 0     # korumasız hâl  -> puan 3  (TEMEL)
-    ./bin/linux/saldiri_potansiyeli 1 2 1 1 0     # korumalı hâl   -> puan 17 (YÜKSEK)
+    ./bin/linux/attack_potential 0 1 0 0 0     # korumasız hâl  -> puan 3  (BASIC)
+    ./bin/linux/attack_potential 1 2 1 1 0     # korumalı hâl   -> puan 17 (HIGH)
     ```
 
-    Windows'ta: `.\bin\windows\saldiri_potansiyeli.exe 0 1 0 0 0`. Argümansız çalıştırırsanız gömülü üç örnek
+    Windows'ta: `.\bin\windows\attack_potential.exe 0 1 0 0 0`. Argümansız çalıştırırsanız gömülü üç örnek
     bulguyu (lisans yaması · WBC anahtar çıkarma · güvenli öğe kırma) puanlar.
 
 #### İkinci uçtan uca örnek: tam tersi uçta bir senaryo ("güvenli öğe kırma")
@@ -1029,28 +1064,28 @@ Beş faktörü aynı sadeleştirilmiş ölçekle (yukarıdaki puan tablosu) tek 
 | 5 | Ekipman | odaklı iyon ışını, özel ölçüm probu | özel-uyarlanmış (Seviye 2) | **7** |
 
 ```text
-Toplam = 19 + 8 + 11 + 10 + 7 = 55        →  55 >= 25  →  OTESI (yalniz cok yetenekli saldirgan)
+Toplam = 19 + 8 + 11 + 10 + 7 = 55        →  55 >= 25  →  BEYOND (yalniz cok yetenekli saldirgan)
 ```
 
-**Sonuç:** **ÖTESİ düzey = çok yüksek direnç = düşük öncelikli bulgu** (yine de sıfır risk demek değildir — çok
+**Sonuç:** **BEYOND düzey = çok yüksek direnç = düşük öncelikli bulgu** (yine de sıfır risk demek değildir — çok
 kaynaklı bir saldırganın erişimi olabilir; rapor bunu "kalan risk" olarak yazar, bölüm 6 ve 12'de göreceğiz).
 
 !!! tip "Demoda doğrulayın"
-    `code/week-12/02-saldiri-potansiyeli` demosunu **argümansız** çalıştırın; üçüncü gömülü örnek ("Guvenli oge (SE)
-    kirma") tam olarak `SURE[3] + UZMAN[3] + BILGI[3] + FIRSAT[2] + EKIPMAN[2] = 19+8+11+10+7 = 55` hesabını yapar
-    ve ekrana `puan=55 -> OTESI` yazar — yukarıda elle yapılan hesapla **birebir** aynı sonucu üretir.
+    `code/week-12/02-attack-potential` demosunu **argümansız** çalıştırın; üçüncü gömülü örnek ("Secure element
+    key extraction") tam olarak `ELAPSED_TIME[3] + EXPERTISE[3] + KNOWLEDGE[3] + OPPORTUNITY[2] + EQUIPMENT[2] = 19+8+11+10+7 = 55` hesabını yapar
+    ve ekrana `score=55 -> BEYOND` yazar — yukarıda elle yapılan hesapla **birebir** aynı sonucu üretir.
 
 **Üç sonucun karşılaştırması:**
 
 | | Senaryo A (lisans, korumasız) | Senaryo A (lisans, korumalı) | Senaryo B (SE kırma) |
 | --- | --- | --- | --- |
 | Toplam puan | 3 | 17 | 55 |
-| Düzey | TEMEL | YÜKSEK | ÖTESİ |
+| Düzey | BASIC | HIGH | BEYOND |
 | Anlamı | Ciddi bulgu, hemen kapatılmalı | Kabul edilebilir, sürekli izlenmeli | Gerçekçi tehdit modelinde göz ardı edilebilir |
 
 #### Ek alıştırma: demodaki üçüncü gömülü örneği elle doğrulayalım
 
-İki uç örneği (3 ve 55) gördük; demonun ikinci gömülü bulgusunu ("WBC anahtar çıkarma") da elle hesaplayıp aracın
+İki uç örneği (3 ve 55) gördük; demonun ikinci gömülü bulgusunu ("White-box key extraction") da elle hesaplayıp aracın
 çıktısıyla karşılaştıralım:
 
 "Beyaz kutu kriptografi (white-box crypto) uygulamasından anahtar çıkarma; saldırgan **çoklu uzman** düzeyinde
@@ -1067,13 +1102,13 @@ erişimi **kısıtlı** ve **özel** (hazır satılan bir analiz aracı) kullan�
 | 5 | Ekipman | özel (Seviye 1) | **4** |
 
 ```text
-Toplam = 10 + 8 + 7 + 4 + 4 = 33        ->  33 >= 25  ->  OTESI
+Toplam = 10 + 8 + 7 + 4 + 4 = 33        ->  33 >= 25  ->  BEYOND
 ```
 
-Demoda `./bin/linux/saldiri_potansiyeli 2 3 2 1 1` komutuyla (sıra: süre uzmanlık bilgi fırsat ekipman) aynı sonucu
-(`puan=33 -> OTESI`) doğrulayabilirsiniz — kod içindeki gömülü "WBC anahtar cikarma (DCA)" örneğiyle birebir aynı
+Demoda `./bin/linux/attack_potential 2 3 2 1 1` komutuyla (sıra: süre uzmanlık bilgi fırsat ekipman) aynı sonucu
+(`score=33 -> BEYOND`) doğrulayabilirsiniz — kod içindeki gömülü "White-box key extraction (DCA)" örneğiyle birebir aynı
 girdilerdir. Bu, ilk bakışta "lisans yamasından çok daha zor ama SE kırma kadar da uç olmayan" bir senaryonun bile,
-beş faktör birlikte toplandığında hızla **ÖTESİ** bandına çıkabileceğini gösterir; sayılar sezgisel "orta zorlukta"
+beş faktör birlikte toplandığında hızla **BEYOND** bandına çıkabileceğini gösterir; sayılar sezgisel "orta zorlukta"
 hissinden **daha yüksek** çıkabilir — bu yüzden tahmin değil, hesap gerekir.
 
 ### CVSS ile derecelendirme
@@ -1086,7 +1121,7 @@ etkisi ne kadar büyük?" sorusuna standart bir puan verir. İki ölçü birbiri
 #### Aynı bulgu, iki farklı puan: CVSS neden saldırı potansiyelinden farklı çıkar?
 
 Şimdi **aynı** bulguyu (Senaryo B — güvenli öğeden anahtar çıkarma) hem saldırı potansiyeliyle (yukarıda: **55,
-ÖTESİ**) hem de CVSS ile puanlayalım; ikisinin **neden aynı sayıyı vermediğini** adım adım görelim.
+BEYOND**) hem de CVSS ile puanlayalım; ikisinin **neden aynı sayıyı vermediğini** adım adım görelim.
 
 CVSS v3.1 taban puanı, sekiz metrikten hesaplanır ([Hafta 2, §15](../week-2/cen429-week-2.md#15-cve-ve-cvss-hangi-acik-ne-kadar-ciddi)'te tanıtıldı); burada ilgili dördünü kullanıyoruz:
 
@@ -1132,7 +1167,7 @@ Taban puan     = yukari_yuvarla( min(5.873 + 3.887, 10) ) = yukari_yuvarla(9.760
 | | Senaryo B (gerçek, fiziksel) | Varsayımsal (yalnız karşılaştırma) |
 | --- | --- | --- |
 | CVSS taban puanı | **6.4** (Orta) | **9.8** (Kritik) |
-| Saldırı potansiyeli | **55** (ÖTESİ) | — |
+| Saldırı potansiyeli | **55** (BEYOND) | — |
 
 **Neden farklı çıkıyor?** Çünkü iki ölçü **farklı soruları** farklı **çözünürlüklerle** yanıtlıyor:
 
@@ -1147,27 +1182,36 @@ Taban puan     = yukari_yuvarla( min(5.873 + 3.887, 10) ) = yukari_yuvarla(9.760
   yüksek), ya da ikisi de "düşük" çıkabilir (lisans yaması örneğinde olduğu gibi).
 
 !!! success "Kural: ikisini birlikte okuyun, birini diğerinin yerine koymayın"
-    Bir raporda yalnız CVSS 9.8 görüp "acil, hemen kapatılmalı" demek, saldırı potansiyelinin **55/ÖTESİ**
+    Bir raporda yalnız CVSS 9.8 görüp "acil, hemen kapatılmalı" demek, saldırı potansiyelinin **55/BEYOND**
     olduğunu (gerçekte çok yüksek maliyetli bir saldırı gerektirdiğini) gözden kaçırabilir — kaynaklar yanlış
-    önceliklendirilir. Tersi de olur: düşük CVSS'li ama saldırı potansiyeli TEMEL olan (kolay, düşük etkili ama
+    önceliklendirilir. Tersi de olur: düşük CVSS'li ama saldırı potansiyeli BASIC olan (kolay, düşük etkili ama
     **çok sık** sömürülebilir) bir bulgu, toplamda daha çok zarar verebilir. **Kural:** önceliklendirme ikisine
     **birlikte** bakar; hiçbir sertifikasyon şeması tek bir sayıya indirgemez.
 
 !!! danger "Sık yapılan hata: CVSS ile saldırı potansiyelini karıştırmak"
-    "CVSS 9.8, çok tehlikeli" ile "saldırı potansiyeli TEMEL, çok kolay" cümleleri **aynı şey değildir**. Bir
+    "CVSS 9.8, çok tehlikeli" ile "saldırı potansiyeli BASIC, çok kolay" cümleleri **aynı şey değildir**. Bir
     öğrenci S16'da yalnız CVSS yazıp saldırı potansiyelini atlarsa (ya da tam tersi), raporun okuyucusu **maliyet**
     ya da **etki** boyutlarından birini hiç göremez. **Kural:** her ciddi bulgu için ikisi de yazılır; farklı
     çıkmaları hata değil, **beklenen** bir durumdur (farklı soruları yanıtlıyorlar).
 
+Aynı bulguyu iki eksende (basitleştirilmiş CVSS-benzeri puan ve gerçek `attack_potential.c` kodu) puanlayıp önceliğin nasıl çıktığını görün.
+
+<iframe class="dsanim" src="../anim/cvss-vs-attack-potential.html" title="Aynı bulgu, iki puan: CVSS-benzeri ve saldırı potansiyeli" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![CVSS-benzeri ve saldırı potansiyeli — adım adım](anim/cvss-vs-attack-potential.png)
+</div>
+
+**Normal** (ikisi de uyuşuyor: ACİL), **Zor** (etki büyük ama saldırı çok zor: izlenir) ve iki uç örneği (**her iki eksende en düşük**, **her iki eksende en yüksek**) karşılaştırın.
+
 ### Zincirleme saldırılar: birden fazla zafiyetin birleşimi
 
 Bölüm 2'nin sonunda "iyi tasarlanmış bir üründe saldırgan birkaç korumayı **zincirlemek** zorunda kalır" demiştik;
-bunu saldırı potansiyeli diliyle açalım. Tek başına **çok yüksek** dirençli (ör. ÖTESİ) bir koruma bile, **başka**
-bir zafiyetle birleşince toplam direnç düşebilir. Örnek: Senaryo B'deki güvenli öğe (ÖTESİ, puan 55) tek başına
+bunu saldırı potansiyeli diliyle açalım. Tek başına **çok yüksek** dirençli (ör. BEYOND) bir koruma bile, **başka**
+bir zafiyetle birleşince toplam direnç düşebilir. Örnek: Senaryo B'deki güvenli öğe (BEYOND, puan 55) tek başına
 neredeyse sömürülemez; ama eğer ayrıca cihazın işletim sistemi eski bir sürümdeyse ve bilinen bir kök (root)
 açığı varsa, saldırgan önce o **daha kolay** açıkla cihaza tam erişim kazanıp, sonra donanım saldırısı için gereken
 "çok kısıtlı" fırsatı "sınırsız"a çevirebilir — bu da fırsat faktörünü 10'dan 0'a düşürür ve toplam puanı **55'ten
-45'e** indirir (hâlâ ÖTESİ, ama daha kolay bir ÖTESİ).
+45'e** indirir (hâlâ BEYOND, ama daha kolay bir BEYOND).
 
 !!! warning "Sık yapılan hata: her bulguyu tek başına, izole değerlendirmek"
     Bir zafiyeti yalnız kendi başına puanlamak, başka bir zafiyetle **birleştiğinde** ne olacağını gözden kaçırır.
@@ -1189,6 +1233,15 @@ Değerlendirme bir "geçti/kaldı" damgası değil, bir **iyileştirme döngüs�
 4. **Kapanış:** bazı bulgular "güvenlik açığı değil, iyi uygulama önerisi" olarak da kapanabilir.
 
 Bu döngü, vize sonrası projenizde beklediğimiz **bulgu–aksiyon listesinin** ([7. hafta](../week-7/cen429-week-7.md)) kaynağıdır.
+
+Birden çok bulgunun aynı dört aşamadan geçip kapandı/kabul edildi/etkilenmez/açık olarak nasıl sonuçlandığını izleyin.
+
+<iframe class="dsanim" src="../anim/finding-recommendation-action-impact.html" title="Bulgu → öneri → aksiyon → kapanış döngüsü" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bulgu-öneri-aksiyon-kapanış döngüsü — adım adım](anim/finding-recommendation-action-impact.png)
+</div>
+
+**Normal** (çoğu kapandı), **Zor** (birçoğu hâlâ açık) ve iki uç örneği (**hepsi kapandı**, **hiçbiri kapanmadı**) karşılaştırın.
 
 ### Güvenlik etki analizi ve delta değerlendirme
 
@@ -1213,7 +1266,7 @@ somut olarak izleyelim — bu, projenizin bulgu–aksiyon tablosunun nasıl dold
 1. **Bulgu (laboratuvar, 12 Kasım):** "`anahtar_yonetimi.c` satır 22'de anahtar türetme fonksiyonu sabit bir dize
    (`\"guvenpay_tuz_2024\"`) kullanıyor. Kanıt: iki farklı test cihazında aynı girdiyle çalıştırıldığında **aynı**
    64 baytlık anahtar üretildi (ekran çıktısı ekte). Saldırı potansiyeli: süre < 1 gün (kaynak kodda görülüyor),
-   uzmanlık sıradan, bilgi kamuya açık, fırsat sınırsız, ekipman ücretsiz → **toplam 0, TEMEL** (bölüm 5'teki puan
+   uzmanlık sıradan, bilgi kamuya açık, fırsat sınırsız, ekipman ücretsiz → **toplam 0, BASIC** (bölüm 5'teki puan
    tablosuyla)."
 2. **Öneri (laboratuvar, aynı raporda):** "Her cihaz için benzersiz, CSPRNG'den (hafta 3) üretilmiş bir tuz
    kullanın; tuzu cihaza özgü güvenli depoda saklayın; HKDF ile anahtar türetin."
@@ -1259,7 +1312,7 @@ sonrası bir düzeltme yaptığınızda dolduracağınız belgenin küçültülm
 Bölüm 0'da tanımladığımız **kalan risk** kavramını burada somutlaştıralım. GüvenPay'in F-08 bulgusunu (anahtar
 rotasyonu yılda bir kez) düşünelim: laboratuvar bunun daha sık yapılmasını önerir, ama GüvenPay performans ve
 kullanıcı deneyimi maliyetini gerekçe göstererek riski **kabul eder**. Rapor bunu şöyle yazar: "F-08: anahtar
-rotasyon sıklığı yılda bir. Saldırı potansiyeli: YÜKSEK (17) — kolay değil ama imkânsız da değil. GüvenPay bu riski,
+rotasyon sıklığı yılda bir. Saldırı potansiyeli: HIGH (17) — kolay değil ama imkânsız da değil. GüvenPay bu riski,
 performans maliyeti gerekçesiyle **kabul etmiştir**; kalan risk laboratuvar tarafından **kayıt altına alınmıştır**,
 kapatılmamıştır."
 
@@ -1331,7 +1384,7 @@ güvenlik çalışması değildir. Bir plan en az şu dört başlığı içerir.
 
 ### 1. Kapsam (scope)
 
-Neyin test edileceği ve neyin **edilmeyeceği** açıkça yazılır: hangi ikili dosya/sürüm, hangi bileşenler, hangi
+Neyin test edileceği ve neyin **edilmeyeceği** açıkça yazılır: hangi binary dosya/sürüm, hangi bileşenler, hangi
 ortam (test ortamı mı, üretim mi), hangi veriler (yalnız sentetik). Kapsam dışı bırakılanlar da yazılır (ör. üçüncü
 taraf sunucular, gerçek kullanıcı verisi).
 
@@ -1398,6 +1451,15 @@ bir soruyu yanıtlar:
     kartı doldurur: amaç, ön koşul, adımlar, beklenen/gözlenen sonuç, saldırı potansiyeli. Amaç bir açık bulmak değil,
     **doğru test kartını yazmayı** öğrenmektir.
 
+Bütün planı bir ağaç olarak görün: kapsam kökten başlar, her tehdit kendi dalını, her test kartı bir yaprağı oluşturur; kapsama yüzdesi otomatik hesaplanır.
+
+<iframe class="dsanim" src="../anim/pentest-plan-tree.html" title="Sızma testi planı ağacı: kapsam → tehdit → test kartı → kapsama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Sızma testi planı ağacı — adım adım](anim/pentest-plan-tree.png)
+</div>
+
+**Normal** (çoğu test kartı çalıştırıldı, biri KALDI), **Zor** (birçoğu henüz çalıştırılmadı) ve iki uç örneği (**hiçbiri çalıştırılmadı**, **kapsama %100**) deneyin.
+
 ### Doldurulmuş bir test kartı örneği
 
 Aşağıda, sekiz başlıklı şablonun **gerçekten doldurulmuş** hâlini görüyoruz — [Hafta 3, §2](../week-3/cen429-week-3.md#2-sifreleme-temelleri-hangi-arac-neyi-korur)'deki AES-GCM/AEAD demosuyla
@@ -1412,7 +1474,7 @@ doğrudan bağlantılı bir test:
 | Yöntem/adımlar | (1) Uygulamanın veri dizinindeki `.db` dosyası cihazdan çekilir. (2) Dosya bir hex düzenleyicide incelenir, 16 haneli PAN deseni aranır. (3) Bulunamazsa, şifreli bir kayıttaki etiketin (tag) son baytı değiştirilir. (4) Uygulama yeniden başlatılır, davranış gözlenir. |
 | Beklenen sonuç | Dosyada hiçbir alan açık metin görünmemeli (AEAD şifreli); kurcalanan kayıt açılışta **reddedilmeli** (fail-closed, hafta 3 kuralı) |
 | Gözlenen sonuç | Dosya incelendi: tüm hassas alanlar rastgele görünen bayt dizileri (şifreli), desen eşleşmesi **yok**. Kurcalanan kaydın etiketi değiştirildiğinde uygulama "bütünlük doğrulama başarısız" günlüğü yazdı ve kaydı **sildi**; çökmedi, sessizce yanlış veri de döndürmedi. |
-| Saldırı potansiyeli / karar | Doğrudan dosya okuması başarısız olduğundan saldırgan anahtar çıkarmaya yönelmek zorunda kalır — bu, bölüm 5'teki **Senaryo B** ile aynı sınıfa girer (fiziksel + özel ekipman, puan 55, ÖTESİ). **Karar: GEÇTİ.** |
+| Saldırı potansiyeli / karar | Doğrudan dosya okuması başarısız olduğundan saldırgan anahtar çıkarmaya yönelmek zorunda kalır — bu, bölüm 5'teki **Senaryo B** ile aynı sınıfa girer (fiziksel + özel ekipman, puan 55, BEYOND). **Karar: GEÇTİ.** |
 
 !!! note "Bu tablo neden S16'nın iskeleti?"
     Dikkat edin: "gözlenen sonuç" satırı **kanıtla** (günlük çıktısı, dosya inceleme sonucu) yazılmış, "muhtemelen
@@ -1434,7 +1496,7 @@ sık yaptığı hata, yalnız geçen testleri göstermektir. Aynı GüvenPay'in 
 | Yöntem/adımlar | (1) Her iki cihazda da uygulama sıfırdan kurulur. (2) Aynı kullanıcı verisiyle anahtar türetme tetiklenir. (3) Üretilen anahtarlar dışa aktarılıp karşılaştırılır. |
 | Beklenen sonuç | İki cihazdan **farklı** anahtar üretilmeli (cihaza özgü rastgele tuz sayesinde) |
 | Gözlenen sonuç | İki cihazdan da **aynı** 64 baytlık anahtar üretildi (ekran çıktısı ekte, bayt bayt eşleşme). Kaynak kod incelendiğinde tuzun sabit bir dize olduğu görüldü. |
-| Saldırı potansiyeli / karar | Süre < 1 gün, uzmanlık sıradan, bilgi kamuya açık, fırsat sınırsız, ekipman ücretsiz → **toplam 0, TEMEL**. **Karar: KALDI.** Bu, F-03 bulgusunun doğduğu testtir (bölüm 6). |
+| Saldırı potansiyeli / karar | Süre < 1 gün, uzmanlık sıradan, bilgi kamuya açık, fırsat sınırsız, ekipman ücretsiz → **toplam 0, BASIC**. **Karar: KALDI.** Bu, F-03 bulgusunun doğduğu testtir (bölüm 6). |
 
 !!! success "Kural: KALDI bir başarısızlık değil, sürecin çalıştığının kanıtıdır"
     Bir test planında **hiç** KALDI görmemek, genelde "hiçbir zafiyet yok" değil, "yeterince derin bakılmadı"
@@ -1464,6 +1526,15 @@ sık yaptığı hata, yalnız geçen testleri göstermektir. Aynı GüvenPay'in 
   (bulgu → öneri → aksiyon → kapanış) rapordaki karşılığıdır.
 - **Kalan risk:** kapatılmayan ya da devredilen riskler, gerekçesiyle. Bu bölüm **atlanamaz**: bir raporun en çok
   güven kazandıran kısmı, aslında "her şeyi çözdük" değil, "şunu çözemedik, işte nedeni" cümlesidir.
+
+Beş bölümü doldurup açık ve ACİL bulgu kalıp kalmadığına göre "üretime hazır" kararının nasıl çıktığını izleyin.
+
+<iframe class="dsanim" src="../anim/report-structure.html" title="Rapor yapısı: beş bölüm ve üretime hazır olma kararı" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Rapor yapısı — adım adım](anim/report-structure.png)
+</div>
+
+**Normal** (açık acil bulgu yok → HAZIR) ile **Zor** (bir açık acil bulgu → HAZIR DEĞİL) ve iki uç örneği (**hepsi kapandı**, **hepsi açık ve acil**) karşılaştırın.
 
 !!! tip "Eleştirel okuma alıştırması"
     Size verilen kısa bir bulgu metnini birlikte okuyun: bu bulgunun saldırı potansiyeli doğru mu derecelendirilmiş?
@@ -1503,8 +1574,8 @@ Bulgular tablosunda her satır aynı disiplinle yazılır — kanıt, saldırı 
 
 | Bulgu no | Açıklama | Kanıt | Saldırı pot. | CVSS* | Öneri | Durum |
 | --- | --- | --- | --- | --- | --- | --- |
-| F-03 | Sabit tuzla anahtar türetme | 2 cihazdan aynı anahtar (ek A) | 0 (TEMEL) | 5.9 (Orta) | CSPRNG tuzu + HKDF | Kapandı (PT-03 ile doğrulandı) |
-| F-08 | Anahtar rotasyonu yıllık | Kılavuz bölüm 6.1 | 17 (YÜKSEK) | 4.2 (Orta) | Rotasyonu sıklaştırın | Kalan risk (kabul) |
+| F-03 | Sabit tuzla anahtar türetme | 2 cihazdan aynı anahtar (ek A) | 0 (BASIC) | 5.9 (Orta) | CSPRNG tuzu + HKDF | Kapandı (PT-03 ile doğrulandı) |
+| F-08 | Anahtar rotasyonu yıllık | Kılavuz bölüm 6.1 | 17 (HIGH) | 4.2 (Orta) | Rotasyonu sıklaştırın | Kalan risk (kabul) |
 
 *(\*Bu örnekteki CVSS değerleri gösterim amaçlıdır; gerçek puanlama bölüm 5'teki AV/AC/PR/UI/C/I/A seçimleriyle ve
 standart CVSS hesaplayıcısıyla yapılır.)*
@@ -1521,14 +1592,14 @@ bulgu varsa, hangisine önce bakılacağı bu ikisinin **birleşiminden** çıka
 değil, **bu ders için kullandığımız basit bir öğretim aracıdır** — gerçek şemalarda öncelik kuralları daha
 ayrıntılıdır, ama fikir aynıdır:
 
-| | Saldırı pot. TEMEL/ORTA (kolay) | Saldırı pot. YÜKSEK/ÇOK YÜKSEK | Saldırı pot. ÖTESİ (çok zor) |
+| | Saldırı pot. BASIC/MODERATE (kolay) | Saldırı pot. HIGH/VERY HIGH | Saldırı pot. BEYOND (çok zor) |
 | --- | --- | --- | --- |
 | **CVSS Kritik/Yüksek (etki büyük)** | 🔴 Acil — hemen kapatılmalı | 🟠 Yüksek öncelik | 🟡 İzlenmeli, acil değil |
 | **CVSS Orta (etki sınırlı)** | 🟠 Yüksek öncelik | 🟡 Orta öncelik | 🟢 Düşük öncelik |
 | **CVSS Düşük (etki küçük)** | 🟡 Orta öncelik | 🟢 Düşük öncelik | 🟢 Düşük öncelik |
 
-GüvenPay örneğine uygulayalım: **F-03** (CVSS Orta, saldırı potansiyeli TEMEL) tabloda "yüksek öncelik" hücresine
-düşer — tam olarak bu yüzden ilk kapatılan bulgu odur. **F-08** (CVSS Orta, saldırı potansiyeli YÜKSEK) "orta
+GüvenPay örneğine uygulayalım: **F-03** (CVSS Orta, saldırı potansiyeli BASIC) tabloda "yüksek öncelik" hücresine
+düşer — tam olarak bu yüzden ilk kapatılan bulgu odur. **F-08** (CVSS Orta, saldırı potansiyeli HIGH) "orta
 öncelik" hücresine düşer — kalan risk olarak kabul edilebilir olması bu yüzden makuldür.
 
 !!! success "Kural: tek eksenli önceliklendirme yanıltır"
@@ -1558,6 +1629,15 @@ da her ayrıntıyı (her SAST uyarısını, doğrulanmamış her aday bulguyu) a
 3. **Sonuçlar:** Testleri çalıştırıp **gözlenen sonuçları** yazın — finalde plan değil, **sonuç** beklenir.
 4. **Bulgu–aksiyon:** Vize geri bildirimlerini bir bulgu–aksiyon tablosuna dökün.
 5. **Kalan risk:** Kapatmadığınız riskleri ve gerekçesini yazın.
+
+`code/week-12/01-unit-test` demosunun gerçek `card()` kodunu izleyin: her test kartı PASS/FAIL olarak işaretlenir, çıkış kodu başarısız sayısına eşittir — S16'nın tam olarak istediği tablo budur.
+
+<iframe class="dsanim" src="../anim/unit-test-runner.html" title="Birim test koşucusu: test kartları" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Birim test koşucusu — adım adım](anim/unit-test-runner.png)
+</div>
+
+**Normal** (gerçek program — altı kartın hepsi PASS) ile **Zor** (genişletilmiş kart kümesi, karışık sonuç) ve iki uç örneği (**yalnız bir kart FAIL**, **bütün kartlar FAIL**) deneyin.
 
 ### Bu madde 4 neden özellikle önemli: vize geri bildirimleriniz zaten birer "bulgu"
 
@@ -1635,15 +1715,15 @@ kendi projenize uygulayın:
     **Yanlış pozitif**, aracın "sorun var" dediği ama aslında sorun olmayan durumdur (zaman kaybettirir, alarm yorgunluğuna yol açar). **Yanlış negatif**, aracın **kaçırdığı gerçek** sorundur ve daha tehlikelidir; çünkü "araç temiz dedi" güveni sahte bir güvenlik hissi yaratır ve gerçek açık fark edilmeden kalır.
 
 ??? question "15. TOE kimliği neden yalnızca bir sürüm numarasından ibaret olamaz?"
-    Aynı sürüm numarasıyla farklı derlemeler (debug/release, farklı derleyici bayrakları) var olabilir ve bunların davranışı farklı olabilir. Bu yüzden TOE kimliği sürüm etiketi + ikili dosya (derleme türü/mimari) + kaynak kod (commit/etiket) + **özet değeri (hash)** olmak üzere dört parçadan oluşur; hash tek bir baytlık farkı bile ortaya çıkarır.
+    Aynı sürüm numarasıyla farklı derlemeler (debug/release, farklı derleyici bayrakları) var olabilir ve bunların davranışı farklı olabilir. Bu yüzden TOE kimliği sürüm etiketi + binary dosya (derleme türü/mimari) + kaynak kod (commit/etiket) + **özet değeri (hash)** olmak üzere dört parçadan oluşur; hash tek bir baytlık farkı bile ortaya çıkarır.
 
 ??? question "16. CVSS'in AV (saldırı vektörü) ve AC (saldırı karmaşıklığı) metrikleri hangi değerleri alabilir?"
     **AV (Attack Vector):** Ağ (Network) · Bitişik (Adjacent) · Yerel (Local) · Fiziksel (Physical). **AC (Attack Complexity):** Düşük (Low) · Yüksek (High). Bunlar kaba, kategorik seçeneklerdir; saldırı potansiyelinin sayısal, ince taneli puanlamasından farklı bir çözünürlükte çalışırlar.
 
 ??? question "17. Bölüm 5'teki 'güvenli öğe kırma' (Senaryo B) örneğinde beş faktörün puanlarını ve toplamını yazın. Hangi düzeye denk gelir?"
-    Geçen süre (aylar) = 19, uzmanlık (çoklu uzman) = 8, hedef bilgisi (kritik) = 11, fırsat (çok kısıtlı) = 10, ekipman (özel-uyarlanmış) = 7. **Toplam = 19+8+11+10+7 = 55** → 55 ≥ 25 olduğundan **ÖTESİ** düzeyi (yalnız çok yetenekli/kaynaklı bir saldırgan).
+    Geçen süre (aylar) = 19, uzmanlık (çoklu uzman) = 8, hedef bilgisi (kritik) = 11, fırsat (çok kısıtlı) = 10, ekipman (özel-uyarlanmış) = 7. **Toplam = 19+8+11+10+7 = 55** → 55 ≥ 25 olduğundan **BEYOND** düzeyi (yalnız çok yetenekli/kaynaklı bir saldırgan).
 
-??? question "18. Aynı bulgu için CVSS taban puanı 6,4 (fiziksel/yüksek karmaşıklık), saldırı potansiyeli 55/ÖTESİ çıkıyor. Bu farkı nasıl açıklarsınız?"
+??? question "18. Aynı bulgu için CVSS taban puanı 6,4 (fiziksel/yüksek karmaşıklık), saldırı potansiyeli 55/BEYOND çıkıyor. Bu farkı nasıl açıklarsınız?"
     CVSS **etkiyi** (bu açık gerçekleşirse ne olur) kaba kategorik metriklerle (AV/AC gibi 2–4 seçenekli) ölçer; saldırı potansiyeli ise **maliyeti** (süre, uzmanlık, bilgi, fırsat, ekipman) ince taneli, toplamsal bir puanlamayla ölçer. İkisi farklı soruları farklı çözünürlükte yanıtladığı için sayılar örtüşmek zorunda değildir; bu bir hata değil, beklenen bir durumdur.
 
 ??? question "19. Bir sızma testi planında 'kapsam' ile 'angajman kuralları' arasındaki fark nedir?"

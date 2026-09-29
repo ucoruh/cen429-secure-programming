@@ -1,0 +1,44 @@
+# CEN429 — Week 2 — Biba (integrity) and DAC sample policy
+# Software analogy: a higher level = MORE TRUSTED (validated) data.
+# Biba rule: "no read down, no write up".
+# Goal: untrusted data must not corrupt trusted data.
+
+MODEL   BIBA
+
+LEVEL   External     0     # untrusted input coming from the internet
+LEVEL   Application  1     # validated application data
+LEVEL   Kernel       2     # most trusted: configuration / signed code
+
+SUBJECT listener    External      # component that receives data from the network (low integrity)
+SUBJECT processor   Application   # business logic
+SUBJECT loader       Kernel        # component that writes the signed configuration
+
+OBJECT  incoming  External
+OBJECT  record    Application
+OBJECT  config    Kernel
+
+# DAC: let's give each subject generous permission on itself and its neighbours
+RIGHT   listener   incoming  rw
+RIGHT   listener   record    rw
+RIGHT   listener   config    rw
+RIGHT   processor  incoming  rw
+RIGHT   processor  record    rw
+RIGHT   processor  config    rw
+RIGHT   loader     incoming  rw
+RIGHT   loader     record    rw
+RIGHT   loader     config    rw
+
+# --- Requests ---
+# listener reads/writes incoming (external) data: its own level, no problem
+REQUEST listener  read   incoming
+REQUEST listener  write  incoming
+# listener writes untrusted data into the application record: Biba's "no
+# write up" blocks this (dirty data must not corrupt clean data)
+REQUEST listener  write  record
+# Can processor READ the signed config (more trusted)? Biba says
+# "no read down" -> reading upward is allowed, so: permit
+REQUEST processor read   config
+# processor reads external (untrusted) data: Biba's "no read down" -> DENY
+REQUEST processor read   incoming
+# loader writes the most trusted config: its own level, no problem
+REQUEST loader    write  config

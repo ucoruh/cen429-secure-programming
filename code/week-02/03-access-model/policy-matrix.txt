@@ -1,0 +1,29 @@
+# CEN429 — Week 2 — Pure DAC (access control matrix) example
+# All subjects and objects are at the same level -> MAC is neutral, only the
+# matrix decides.
+# Scenario: a mobile payment app + a security library (generic).
+#   subjects: app (legitimate), library (legitimate), attacker (unauthorized)
+#   objects : payment_key (secret), log
+
+MODEL   BLP
+LEVEL   D  0
+
+SUBJECT app        D
+SUBJECT library    D
+SUBJECT attacker    D
+
+OBJECT  payment_key D
+OBJECT  log         D
+
+# Matrix: only the library may read and write the payment key.
+# The app writes to the log; the attacker has no rights at all.
+RIGHT   library  payment_key  rw
+RIGHT   app      log          w
+RIGHT   library  log          w
+
+# --- Requests ---
+REQUEST library   read   payment_key    # legitimate: present in the matrix
+REQUEST app       read   payment_key    # not in the matrix -> DENY (least privilege)
+REQUEST attacker  read   payment_key    # unauthorized -> DENY
+REQUEST app       write  log            # legitimate
+REQUEST attacker  write  log            # unauthorized -> DENY (no forged log entries)

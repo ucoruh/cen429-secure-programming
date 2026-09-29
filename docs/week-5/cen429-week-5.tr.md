@@ -61,13 +61,13 @@
 !!! tip "Laboratuvarı önceden hazırlayın"
     Bu haftanın demoları **Python 3** ve **JDK 17+** ister. SQL demosunun ana bölümü Python'un yerleşik `sqlite3`
     modülüyle, hiçbir şey indirmeden çalışır; isteğe bağlı Java bölümleri (JDBC sürücüsü, ProGuard) için her demo
-    klasöründe bir `hazirla` betiği vardır. Betikler yalnız demo klasörüne indirir, sisteme bir şey kurmaz.
+    klasöründe bir `prepare` betiği vardır. Betikler yalnız demo klasörüne indirir, sisteme bir şey kurmaz.
 
     === "Windows"
 
         ```powershell
         java -version; python --version
-        cd cen429-secure-programming\code\week-05\01-sql-enjeksiyonu
+        cd cen429-secure-programming\code\week-05\01-sql-injection
         .\demo.ps1
         ```
 
@@ -75,7 +75,7 @@
 
         ```bash
         sudo apt install -y openjdk-17-jdk python3
-        cd cen429-secure-programming/code/week-05/01-sql-enjeksiyonu
+        cd cen429-secure-programming/code/week-05/01-sql-injection
         sh demo.sh
         ```
 
@@ -186,9 +186,20 @@ ortadan kalkar:
 
 !!! note "Kısa tarihçe: yönetilen diller ve kalan açıklar"
     - **1995** — **Java** ve JVM: çöp toplayıcı ve sınır denetimi **bellek hatalarının** çoğunu dil düzeyinde kaldırır.
-    - **1998** — SQL enjeksiyonu ilk kez belgelenir (Rain Forest Puppy); **2003** **OWASP Top 10** yayımlanır — bellek değil **mantık/enjeksiyon** hataları öne çıkar.
-    - **2002** — **ProGuard** (Java küçültme/gizleme), sonra **R8**: bayt kodun kolay geri çevrilmesine yanıt.
-    - **2015** — Java **deserialization** saldırıları; **2020–21** **SolarWinds** ve **Log4Shell** tedarik zinciri/**SBOM** çağını başlatır.
+    - **1998** — SQL enjeksiyonu ilk kez ayrıntılı olarak belgelenir: rain.forest.puppy'nin *Phrack* dergisinin
+      54. sayısındaki "NT Web Technology Vulnerabilities" yazısı; **2003** ilk **OWASP Top 10** yayımlanır — bellek
+      değil **mantık/enjeksiyon** hataları öne çıkar.
+    - **2002** — **ProGuard** (Java küçültme/gizleme) yayımlanır; **2019** Google'ın Android için geliştirdiği
+      halefi **R8**, Android Gradle Eklentisi'nde varsayılan hale gelir.
+    - **2014** — **Shellshock** (CVE-2014-6271): Bash'in ortam değişkenlerini ayrıştırma biçimindeki tek bir hata,
+      yıllarca dağıtılmış milyonlarca sistemi komut enjeksiyonuna açık bırakır — kabuk ayrıştırmasının ne kadar
+      eski ve derin bir saldırı yüzeyi olduğunu gösterir.
+    - **2015** — Chris Frohoff ve Gabriel Lawrence, "Marshalling Pickles" sunumunda **Apache Commons Collections**
+      kütüphanesindeki sınıfları zincirleyerek (gadget chain) Java `readObject()` çağrısından uzaktan kod
+      çalıştırmayı gösterir; **2017** aynı sınıf saldırı, güncellenmemiş bir **Apache Struts** kütüphanesi
+      (CVE-2017-5638) üzerinden **Equifax** ihlaline yol açar — bağımlılık takibinin neden hayati olduğunun en
+      büyük örneklerinden biri.
+    - **2020–21** **SolarWinds** ve **Log4Shell** (CVE-2021-44228) tedarik zinciri/**SBOM** çağını başlatır.
 
     Ana fikir: dil bellek hatasını çözer, **enjeksiyonu ve bağımlılık riskini çözmez**.
 
@@ -217,27 +228,27 @@ bağımsızdır ve web uygulamalarından mobil uygulamalara kadar en çok buluna
 [Dördüncü haftada](../week-4/cen429-week-4.md) `buf[10]` gibi 10 elemanlı bir diziye 10. indeksle (11. eleman) yazmanın C'de **tanımsız davranış**
 olduğunu, çoğu zaman hiçbir hata vermeden bitişik belleği bozduğunu görmüştük. Aynı hatayı Java'da adım adım izleyelim.
 
-```java title="DiziTasmasi.java"
-public class DiziTasmasi {
+```java title="ArrayOverflow.java"
+public class ArrayOverflow {
     public static void main(String[] args) {
-        int[] dizi = new int[10];      // 10 elemanlik dizi: indeks 0..9 gecerli
-        dizi[9] = 42;                   // gecerli: son eleman
-        System.out.println("dizi[9] = " + dizi[9]);
-        dizi[10] = 99;                  // GECERSIZ: 11. eleman yok
+        int[] array = new int[10];      // a 10-element array: indices 0..9 are valid
+        array[9] = 42;                   // valid: the last element
+        System.out.println("array[9] = " + array[9]);
+        array[10] = 99;                  // INVALID: there is no 11th element
     }
 }
 ```
 
-```text title="javac DiziTasmasi.java && java DiziTasmasi"
-dizi[9] = 42
+```text title="javac ArrayOverflow.java && java ArrayOverflow"
+array[9] = 42
 Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException:
     Index 10 out of bounds for length 10
-        at DiziTasmasi.main(DiziTasmasi.java:6)
+        at ArrayOverflow.main(ArrayOverflow.java:6)
 ```
 
 Adım adım ne oldu:
 
-1. JVM her dizi erişiminde (`dizi[10]`) **önce** indeksin `0 ≤ i < uzunluk` sınırında olup olmadığını denetler; bu
+1. JVM her dizi erişiminde (`array[10]`) **önce** indeksin `0 ≤ i < length` sınırında olup olmadığını denetler; bu
    denetim derleyicinin ürettiği bayt kodunun **her `aload`/`iastore` öncesinde** çalışan bir parçasıdır.
 2. `10`, dizinin uzunluğu olan `10`'a eşit ya da büyük olduğu için denetim başarısız olur.
 3. JVM bitişik belleğe **yazmaz**; bunun yerine `ArrayIndexOutOfBoundsException` fırlatır ve programı (ya da
@@ -309,27 +320,27 @@ tanesini unutmak yeter.
 
 | Yorumlayıcı | Tek kanal (hatalı) | İki kanal (doğru) |
 | --- | --- | --- |
-| SQL motoru | `"SELECT … WHERE ad='" + ad + "'"` | `PreparedStatement` + `?` parametreleri |
+| SQL motoru | `"SELECT … WHERE name='" + name + "'"` | `PreparedStatement` + `?` parametreleri |
 | Kabuk | `Runtime.exec("sh -c 'ping " + host + "'")` | `ProcessBuilder("ping", host)` — kabuk yok |
-| Dosya sistemi | `new File(kok, istek)` | Kanonikleştir + kök içinde mi denetle |
+| Dosya sistemi | `new File(root, request)` | Kanonikleştir + kök içinde mi denetle |
 | XML | Dize birleştirerek XML kurmak | DOM / StAX API'si ile öğe ve öznitelik oluşturmak |
-| HTML | `"<p>" + yorum + "</p>"` | Şablon motorunun otomatik kaçışı, bağlama göre kodlama |
-| `printf` | `printf(girdi)` | `printf("%s", girdi)` |
+| HTML | `"<p>" + comment + "</p>"` | Şablon motorunun otomatik kaçışı, bağlama göre kodlama |
+| `printf` | `printf(input)` | `printf("%s", input)` |
 
 ### Yorumlayıcı girdiyi neden "kod" sanır? Adım adım
 
 Öğrencilerin en çok kaçırdığı halka budur: **yorumlayıcı, kendisine gelen dizenin hangi karakterlerinin
 "programcının yazdığı sabit kod", hangilerinin "kullanıcının girdiği veri" olduğunu bilmez.** Elindeki tek şey,
-art arda gelen karakterlerdir. Bunu somutlaştıralım; `"SELECT ... WHERE ad = '" + ad + "'"` ifadesinin çalışma
-zamanında oluşturduğu dizeyi bir SQL motorunun nasıl okuduğunu karakter karakter izleyelim (`ad` değişkeninin
+art arda gelen karakterlerdir. Bunu somutlaştıralım; `"SELECT ... WHERE name = '" + name + "'"` ifadesinin çalışma
+zamanında oluşturduğu dizeyi bir SQL motorunun nasıl okuduğunu karakter karakter izleyelim (`name` değişkeninin
 içinde `x' OR '1'='1` girdisi olduğunu varsayalım):
 
 1. Java önce dize birleştirmeyi yapar; sonuçta ortaya **tek bir düz metin** çıkar:
-   `SELECT ... WHERE ad = 'x' OR '1'='1'`. Bu noktadan itibaren "bu parça geliştiricinin yazdığı", "bu parça
+   `SELECT ... WHERE name = 'x' OR '1'='1'`. Bu noktadan itibaren "bu parça geliştiricinin yazdığı", "bu parça
    kullanıcının girdiği" bilgisi **kaybolmuştur** — elde yalnız karakterler vardır.
 2. Bu düz metin SQL motoruna **tek bir komut** olarak gönderilir. Motorun ayrıştırıcısı (lexer/parser) dizeyi
    soldan sağa, karakter karakter tarar ve her karaktere göre bir **duruma** girer.
-3. `WHERE ad =` okunduktan sonra bir boşluk, sonra bir `'` karakteriyle karşılaşır → ayrıştırıcı "dize sabiti başladı" durumuna
+3. `WHERE name =` okunduktan sonra bir boşluk, sonra bir `'` karakteriyle karşılaşır → ayrıştırıcı "dize sabiti başladı" durumuna
    geçer. Bundan sonraki her karakteri (harf, boşluk, `O`, `R`…) bu dize sabitinin **içeriği** sayar, bir sonraki
    `'` karakterine kadar.
 4. Girdideki ilk `'` (kullanıcının yazdığı) tam olarak bu bekleneni sağlar: ayrıştırıcı "dize sabiti bitti" der ve
@@ -337,7 +348,7 @@ içinde `x' OR '1'='1` girdisi olduğunu varsayalım):
 5. Geri dönülen noktada ayrıştırıcının önünde artık ``OR '1'='1'`` metni durur; bu metin **SQL anahtar sözcükleri
    ve operatörleri** olarak okunur (`OR`, `=`), çünkü ayrıştırıcı "dize sabiti" durumundan çıkmıştır.
 6. Sonuç: motor tek bir sorgu ayrıştırmıştır, ama bu sorgunun **mantıksal yapısı** (`... AND ...` yerine
-   `... OR her_zaman_dogru`) kullanıcının girdiği karakterler tarafından belirlenmiştir.
+   `... OR always_true`) kullanıcının girdiği karakterler tarafından belirlenmiştir.
 
 Kritik nokta şudur: ayrıştırıcı **hata yapmıyor**; tam olarak SQL söz dizimi kurallarına göre davranıyor. Hata,
 yorumlayıcıya "kodun bir parçası mısın, veri misin?" bilgisini taşıyan **ayrı bir kanal olmamasıdır**. Aynı adım
@@ -359,16 +370,16 @@ Bir giriş formunun arkasında şöyle bir kod olduğunu düşünün:
 ![SQL enjeksiyonunun adım adım oluşumu](assets/h05-03-sql-enjeksiyon.svg)
 
 ```java title="Hatalı: sorgu dize birleştirmeyle kuruluyor"
-String sql = "SELECT id, rol FROM kullanicilar WHERE ad = '" + ad +
-             "' AND parola_ozeti = '" + ozet + "'";
-ResultSet rs = baglanti.createStatement().executeQuery(sql);
+String sql = "SELECT id, role FROM users WHERE name = '" + name +
+             "' AND password_hash = '" + hash + "'";
+ResultSet rs = connection.createStatement().executeQuery(sql);
 ```
 
-Kullanıcı adı alanına `ayse` yazıldığında sorgu beklendiği gibidir. Ama kullanıcı `ayse' --` yazarsa sorgu şuna
+Kullanıcı adı alanına `alice` yazıldığında sorgu beklendiği gibidir. Ama kullanıcı `alice' --` yazarsa sorgu şuna
 dönüşür:
 
 ```sql
-SELECT id, rol FROM kullanicilar WHERE ad = 'ayse' --' AND parola_ozeti = '...'
+SELECT id, role FROM users WHERE name = 'alice' --' AND password_hash = '...'
 ```
 
 `--` SQL'de satır sonuna kadar yorum demektir: parola denetimi sorgudan **silinmiştir**. Girdideki tek bir tırnak
@@ -379,10 +390,10 @@ SQL enjeksiyonu yirmi yılı aşkın süredir OWASP Top 10 listelerinin üst sı
 ### Doğrusu: parametreli sorgu
 
 ```java title="Doğru: PreparedStatement"
-String sql = "SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?";
-try (PreparedStatement ps = baglanti.prepareStatement(sql)) {
-    ps.setString(1, ad);
-    ps.setString(2, ozet);
+String sql = "SELECT id, role FROM users WHERE name = ? AND password_hash = ?";
+try (PreparedStatement ps = connection.prepareStatement(sql)) {
+    ps.setString(1, name);
+    ps.setString(2, hash);
     try (ResultSet rs = ps.executeQuery()) {
         /* ... */
     }
@@ -393,31 +404,42 @@ Sorgunun **metni** sabittir ve veritabanına önce gönderilip derlenir; değerl
 içerirse içersin (`'`, `--`, `;`), yalnız bir **değer** olarak karşılaştırılır; sorgunun yapısına dokunamaz. Bu,
 önceki bölümdeki "iki kanal" ilkesinin tam karşılığıdır (IDS00-J).
 
+Aşağıdaki canlandırma, bir parola değerinin harf harf sorgu metnine eklendiğinde saldırganın tek bir tırnak
+işaretiyle "veri"yi nasıl "koda" çevirdiğini — ve parametreli sorguda bunun neden mümkün olmadığını — gösterir.
+
+<iframe class="dsanim" src="../anim/sql-injection.html" title="SQL enjeksiyonu: dize birleştirme ve parametreli sorgu" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SQL enjeksiyonu: dize birleştirme ve parametreli sorgu — adım adım](anim/sql-injection.png)
+</div>
+
+**Normal**, **Zor** (`' OR '1'='1`) ve **Uç durum** örneklerini deneyin; 🎲 ile rastgele bir parola üretin ya da
+kendi değerinizi yazın.
+
 ### Parametreli sorgu mekanik olarak neden çalışır?
 
 Bölüm 3'te ayrıştırıcının karakter karakter çalıştığını gördük. `PreparedStatement` bu mekanizmayı **iki aşamaya**
 böler; sihir burada gizlidir:
 
-1. **Hazırlama (prepare) aşaması:** `baglanti.prepareStatement(sql)` çağrıldığında, veritabanı sunucusuna yalnız
-   `SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?` metni gönderilir — kullanıcının girdisi
+1. **Hazırlama (prepare) aşaması:** `connection.prepareStatement(sql)` çağrıldığında, veritabanı sunucusuna yalnız
+   `SELECT id, role FROM users WHERE name = ? AND password_hash = ?` metni gönderilir — kullanıcının girdisi
    **henüz ortada yoktur**. Sunucu bu metni ayrıştırır (Bölüm 3'teki durum makinesiyle), bir **sorgu planı**
    (query plan) üretir ve bu planı bellekte tutar. `?` işaretleri plan içinde "buraya bir değer gelecek" diye
    işaretlenmiş **yer tutuculardır**.
-2. **Bağlama (bind) aşaması:** `ps.setString(1, ad)` çağrıldığında, `ad` değişkeninin içeriği **hiçbir zaman SQL
-   metniyle birleştirilmez**. Sürücü, değeri ayrı bir ikili protokol mesajıyla (JDBC/veritabanı arasındaki tel
+2. **Bağlama (bind) aşaması:** `ps.setString(1, name)` çağrıldığında, `name` değişkeninin içeriği **hiçbir zaman SQL
+   metniyle birleştirilmez**. Sürücü, değeri ayrı bir binary protokol mesajıyla (JDBC/veritabanı arasındaki tel
    protokolü) "1 numaralı yer tutucunun değeri şu bayt dizisidir" diye gönderir.
 3. `ps.executeQuery()` çalıştığında veritabanı, **zaten ayrıştırılmış olan** plana, gelen değerleri doğrudan
    yerleştirir. Değerin içinde `'` ya da `--` olsa bile, bu karakterler **hiçbir zaman ayrıştırıcıdan geçmez** —
    ayrıştırma çoktan bitmiştir. Karakterler yalnız "bu sütunla karşılaştırılacak bayt dizisi" olarak kopyalanır.
 
-Bunu Bölüm 3'teki `printf("%s", girdi)` örneğiyle karşılaştırmak öğretici: `%s`'in yerine konan dize, biçim
+Bunu Bölüm 3'teki `printf("%s", input)` örneğiyle karşılaştırmak öğretici: `%s`'in yerine konan dize, biçim
 dizesindeki bir `%n` gibi **yeniden yorumlanmaz**; olduğu gibi yazdırılır. Parametreli sorguda da `?`'nin yerine
 konan değer, sorgu metni gibi **yeniden ayrıştırılmaz**; olduğu gibi karşılaştırılır. İki mekanizma da aynı
 ilkeye dayanır: **yapıyı belirleyen ayrıştırma bir kez, veri bağlama ayrı ve sonra.**
 
 !!! danger "Sık yapılan hata: yalnız tek tırnağı kaçışlamak"
-    Bazı geliştiriciler `ad.replace("'", "''")` gibi bir satırla "SQL enjeksiyonunu çözdüm" sanır. Sonuç: sayısal
-    bir alanda (`WHERE yas = " + yas`) tek tırnak hiç yoktur, kaçışlama hiçbir şey yapmaz; `LIKE` deseninde `%`
+    Bazı geliştiriciler `name.replace("'", "''")` gibi bir satırla "SQL enjeksiyonunu çözdüm" sanır. Sonuç: sayısal
+    bir alanda (`WHERE age = " + age`) tek tırnak hiç yoktur, kaçışlama hiçbir şey yapmaz; `LIKE` deseninde `%`
     farklı bir özel karakterdir; MySQL, PostgreSQL, Oracle'ın kaçış kuralları birbirinden farklıdır; bazı
     sürücüler Unicode ya da çok baytlı kodlamalarda kaçışlamayı atlatan diziler kabul eder. Tek bir unutulan
     karakter sınıfı, bütün savunmayı geçersiz kılar.
@@ -432,7 +454,7 @@ ilkeye dayanır: **yapıyı belirleyen ayrıştırma bir kez, veri bağlama ayr�
 
 | Durum | Neden? | Çözüm |
 | --- | --- | --- |
-| Tablo ya da sütun adı (`ORDER BY` sütunu) | `?` yalnız **değer** yerine konabilir, ad yerine konamaz | Beyaz liste: `Map<String,String> izinli = {"ad"→"ad", "tarih"→"kayit_tarihi"}` |
+| Tablo ya da sütun adı (`ORDER BY` sütunu) | `?` yalnız **değer** yerine konabilir, ad yerine konamaz | Beyaz liste: `Map<String,String> allowed = {"name"→"name", "date"→"created_at"}` |
 | `LIKE` desenleri | `%` ve `_` joker karakterlerdir | Değeri parametre yapın, jokerleri ayrıca kaçışlayın |
 | ORM içinde elle yazılmış sorgu | JPQL / HQL de bir sorgu dilidir; birleştirme aynı hatayı yapar | ORM'in parametre bağlama arayüzü (`setParameter`) |
 | Saklı yordam içinde dinamik SQL | Yordamın içinde birleştirme yapılıyorsa sorun taşınmıştır | Yordamın içinde de parametre kullanın |
@@ -448,56 +470,56 @@ ilkeye dayanır: **yapıyı belirleyen ayrıştırma bir kez, veri bağlama ayr�
 
 ### İşlenmiş örnek: Demo 1'in çıktısını satır satır okumak
 
-Demo 1'in Python bölümü (`sqli.py`) üç sentetik kullanıcı (`ayse`, `mehmet`, yönetici `admin`) içeren bir SQLite
-veritabanı kurar ve aynı giriş sorgusunu iki yolla çalıştırır. Kodu okuyup çalıştırdığınızda göreceğiniz çıktıyı
-adım adım izleyelim; her adımda **neden** o sonucun çıktığını Bölüm 3–4'teki mekanizmaya bağlıyoruz.
+Demo 1'in Python bölümü (`sql_injection.py`) üç sentetik kullanıcı (`alice`, `bob`, yönetici `admin`) içeren bir
+SQLite veritabanı kurar ve aynı giriş sorgusunu iki yolla çalıştırır. Kodu okuyup çalıştırdığınızda göreceğiniz
+çıktıyı adım adım izleyelim; her adımda **neden** o sonucun çıktığını Bölüm 3–4'teki mekanizmaya bağlıyoruz.
 
-```text title="ADIM 1 — Dürüst giriş: ad='ayse' parola='parola123'"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = 'parola123'
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
-[IYI YOL]
-   Uretilen SQL (sablon):
-   SELECT id, ad, rol FROM kullanici WHERE ad = ? AND parola = ?   [degerler ayrica gonderilir]
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
+```text title="STEP 1 — Dürüst giriş: name='alice' password='password123'"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = 'alice' AND password = 'password123'
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
+[GOOD WAY]
+   Generated SQL (template):
+   SELECT id, name, role FROM user WHERE name = ? AND password = ?   [values sent separately]
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
 ```
 
 Beklendiği gibi: girdi zararsız olduğunda hatalı kod da doğru kod da aynı sonucu üretir. Bu yüzden hatalı kod
 geliştirme sırasında **fark edilmez** — testler dürüst girdiyle yapılır.
 
-```text title="ADIM 2 — SALDIRI: parola alanina  ' OR '1'='1  yaziliyor"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = '' OR '1'='1'
-   -> 3 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
-      id=2 ad=mehmet rol=kullanici
-      id=3 ad=admin rol=yonetici
-   ^ Parola bilinmeden giris yapildi: sorgu yapisi degisti.
-[IYI YOL]
-   -> Sonuc yok. GIRIS REDDEDILDI.
-   ^ Girdi bir DEGER olarak arandi; oyle bir parola yok: RED.
+```text title="STEP 2 — SALDIRI: password alanına  ' OR '1'='1  yazılıyor"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = 'alice' AND password = '' OR '1'='1'
+   -> 3 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
+      id=2 name=bob role=user
+      id=3 name=admin role=admin
+   ^ Logged in without knowing the password: query structure changed.
+[GOOD WAY]
+   -> No rows. LOGIN REJECTED.
+   ^ Input was searched for as a VALUE; no such password exists: rejected.
 ```
 
-Bölüm 3'teki adımları burada takip edin: `parola = '` yazıldıktan sonra saldırganın ilk `'` karakteri dize
+Bölüm 3'teki adımları burada takip edin: `password = '` yazıldıktan sonra saldırganın ilk `'` karakteri dize
 sabitini kapatır; ardından gelen ``OR '1'='1'`` metni SQL operatörü olarak okunur. `'1'='1'` her zaman **doğru**
-olduğu için `AND` bağlacının sağ tarafı her satır için doğrudur; sorgu fiilen `WHERE ad='ayse' OR doğru` olur ve
+olduğu için `AND` bağlacının sağ tarafı her satır için doğrudur; sorgu fiilen `WHERE name='alice' OR doğru` olur ve
 **bütün tablo** döner. İyi yolda ise saldırganın yazdığı bütün dize (tırnak, `OR`, eşitlikler dahil) veritabanına
 tek bir metin **değeri** olarak gider; böyle bir parolaya sahip kimse olmadığı için sonuç boştur.
 
-```text title="ADIM 3 — SALDIRI: ad alanindan yonetici satirini cekme,  ad = ' OR rol='yonetici' --"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = '' OR rol='yonetici' --' AND parola = 'farketmez'
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=3 ad=admin rol=yonetici
-   ^ Baska kullanicinin (yonetici) satiri sizdirildi.
-[IYI YOL]
-   -> Sonuc yok. GIRIS REDDEDILDI.
-   ^ Boyle bir ad yok: sizinti yok.
+```text title="STEP 3 — SALDIRI: name alanından admin satırını çekme,  name = ' OR role='admin' --"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = '' OR role='admin' --' AND password = 'doesn't matter'
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=3 name=admin role=admin
+   ^ Another user's (admin's) row was leaked.
+[GOOD WAY]
+   -> No rows. LOGIN REJECTED.
+   ^ No such name exists: no leak.
 ```
 
 Burada saldırgan hem sorgu yapısını `OR` ile değiştirdi **hem de** `--` ile sorgunun geri kalanını (parola
@@ -507,23 +529,23 @@ böyle bir kullanıcı adı olmadığı için sonuç boştur.
 
 ### Demo 1 — SQL enjeksiyonu: dize birleştirme ve parametreli sorgu
 
-!!! info "Demo 1 · `code/week-05/01-sql-enjeksiyonu` · CWE-89 · IDS00-J · Tarif 3.11"
+!!! info "Demo 1 · `code/week-05/01-sql-injection` · CWE-89 · IDS00-J · Tarif 3.11"
     Demo, demo klasöründe sentetik kullanıcılarla küçük bir SQLite veritabanı oluşturur ve aynı giriş/arama sorgusunu
     iki yolla kurar: dize birleştirmeyle ve parametreli sorguyla. Ana bölüm Python'un yerleşik `sqlite3` modülüyle
     çalışır ve hiçbir şey indirmez; isteğe bağlı Java bölümü aynı fikri gerçek JDBC `PreparedStatement` ile gösterir
-    (sürücü `hazirla` betiğiyle demo klasörüne indirilir).
+    (sürücü `prepare` betiğiyle demo klasörüne indirilir).
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\01-sql-enjeksiyonu
+    cd code\week-05\01-sql-injection
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/01-sql-enjeksiyonu
+    cd code/week-05/01-sql-injection
     sh demo.sh
     ```
 
@@ -551,9 +573,9 @@ sınamak. Komut tek bir **dize** olarak bir **kabuğa** verilirse, dizedeki kabu
 ![Kabuklu çalıştırma ile ProcessBuilder karşılaştırması](assets/h05-04-komut-enjeksiyon.svg)
 
 ```java title="Hatalı: kabuk üzerinden dize"
-String kullanici = istek.getParameter("ad");
-Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Merhaba " + kullanici});
-/* ad = "ayse; <başka bir komut>"  →  kabuk iki komut çalıştırır */
+String user = request.getParameter("name");
+Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Hello " + user});
+/* name = "alice; <another command>"  →  the shell runs two commands */
 ```
 
 Windows'ta aynı durum `cmd /c` ile ve `&` karakteriyle oluşur. Java'nın tek dize alan `Runtime.exec(String)`
@@ -562,14 +584,14 @@ biçimi ayrıca dizeyi boşluklardan kendi kurallarıyla böler; tırnaklarla oy
 
 ### Kabuk girdiyi adım adım nasıl ayrıştırır?
 
-Bölüm 3'teki genel ilkeyi kabuğa (`sh`, `bash`, `cmd`) uygulayalım. `kullanici` değişkeninin içeriği
-`"ayse; echo SIZDI"` olsun; Java bu dizeyi birleştirip kabuğa şu **tek metni** verir:
-`echo Merhaba ayse; echo SIZDI`. Kabuk bunu şöyle işler:
+Bölüm 3'teki genel ilkeyi kabuğa (`sh`, `bash`, `cmd`) uygulayalım. `user` değişkeninin içeriği
+`"alice; echo LEAKED"` olsun; Java bu dizeyi birleştirip kabuğa şu **tek metni** verir:
+`echo Hello alice; echo LEAKED`. Kabuk bunu şöyle işler:
 
 1. Kabuk, aldığı metni **komut ayırıcı** karakterlere göre (`;`, `&&`, `||`, satır sonu) önce **komutlara böler**.
    Bu, tıpkı SQL ayrıştırıcısının `'` karakterinde durum değiştirmesi gibi, kabuğun kendi söz dizimi kuralıdır.
-2. `;` karakterine kadar olan kısım (`echo Merhaba ayse`) **birinci komut** olarak ayrılır.
-3. `;`'den sonraki kısım (`echo SIZDI`) **ikinci, bağımsız bir komut** olarak ayrılır.
+2. `;` karakterine kadar olan kısım (`echo Hello alice`) **birinci komut** olarak ayrılır.
+3. `;`'den sonraki kısım (`echo LEAKED`) **ikinci, bağımsız bir komut** olarak ayrılır.
 4. Kabuk, iki komutu da **sırayla çalıştırır** — sanki kullanıcı terminale iki ayrı satır yazmış gibi.
 5. Uygulamanın kendisi tek bir `exec` çağrısı yaptığını sanır; ama kabuk açısından ortada **iki** komut vardır,
    çünkü kabuk metni kendi kurallarıyla yeniden ayrıştırmıştır.
@@ -580,12 +602,12 @@ Java'nın "bu bir kullanıcı adıydı" bilgisi, dize kabuğa ulaştığı anda 
 ### Doğrusu: kabuksuz, argüman listesiyle
 
 ```java title="Doğru: ProcessBuilder + izin listesi"
-private static final Pattern AD = Pattern.compile("^[A-Za-z0-9_]{1,32}$");
+private static final Pattern NAME = Pattern.compile("^[A-Za-z0-9_]{1,32}$");
 
-if (!AD.matcher(kullanici).matches()) {
-    throw new IllegalArgumentException("gecersiz ad");       // varsayılan: reddet
+if (!NAME.matcher(user).matches()) {
+    throw new IllegalArgumentException("invalid name");       // default: reject
 }
-Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
+Process p = new ProcessBuilder("/usr/bin/printf", "Hello %s\n", user)
         .redirectErrorStream(true)
         .start();
 ```
@@ -611,44 +633,54 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
     Komut enjeksiyonunun birincil savunması **kabuğu hiç çağırmamaktır** (`ProcessBuilder`, `subprocess` argüman
     listesi). Kara liste değil, izin listesi (beklenen karakter kümesiyle eşleşme) ikincil bir katmandır.
 
+Aşağıdaki canlandırma, kabuğun tek bir komut dizesini nasıl **belirteçlere** ayırdığını ve `;`/`&` gibi bir
+belirtecin neden "ek bir argüman" değil "yeni bir komut başlat" anlamına geldiğini gösterir.
+
+<iframe class="dsanim" src="../anim/command-injection.html" title="Komut enjeksiyonu: kabuk dizesi ve argv listesi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Komut enjeksiyonu: kabuk dizesi ve argv listesi — adım adım](anim/command-injection.png)
+</div>
+
+**Normal**, **Zor** (`;` ile Linux tarzı) ve **Uç durum** (`&` ile Windows tarzı) örneklerini deneyin.
+
 ### İşlenmiş örnek: Demo 2'nin çıktısını satır satır okumak
 
-Demo 2'nin Python bölümü (`komut.py`) bir "selamlama aracı"nı önce kabuk üzerinden (`shell=True`), sonra argüman
-listesiyle (`shell=False`) çalıştırır. WSL/Linux'ta gerçek çıktı şöyledir:
+Demo 2'nin Python bölümü (`command_injection.py`) bir "selamlama aracı"nı önce kabuk üzerinden (`shell=True`), sonra
+argüman listesiyle (`shell=False`) çalıştırır. WSL/Linux'ta gerçek çıktı şöyledir:
 
-```text title="ADIM 1 — Durust girdi: ad = 'Ayse'"
-[KOTU YOL]
-   Kabuga giden komut:
-   echo "ARAC CIKTISI: Merhaba" Ayse
-   | ARAC CIKTISI: Merhaba Ayse
-[IYI YOL]
-   Arguman listesi:
-   [python, -c, ...] ... 'Ayse'
-   | ARAC CIKTISI: Merhaba Ayse
+```text title="STEP 1 — Dürüst girdi: name = 'Alice'"
+[BAD WAY]
+   Command sent to the shell:
+   echo "TOOL OUTPUT: Hello" Alice
+   | TOOL OUTPUT: Hello Alice
+[GOOD WAY]
+   Argument list:
+   [python, -c, ...] ... 'Alice'
+   | TOOL OUTPUT: Hello Alice
 ```
 
-```text title="ADIM 2 — SALDIRI: ad = 'Ayse; echo SIZDI-KOMUT-ENJEKSIYONU'"
-[KOTU YOL]
-   Kabuga giden komut:
-   echo "ARAC CIKTISI: Merhaba" Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
-   | ARAC CIKTISI: Merhaba Ayse
-   | SIZDI-KOMUT-ENJEKSIYONU
-   ^ 'SIZDI...' satiri = enjekte edilen komut kostu.
-[IYI YOL]
-   Izin listesi REDDETTI (^[A-Za-z0-9_]+$):
-   girdi = Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
-   -> Program hic calistirilmadi.
-   ^ Izin listesi bosluk/;/& gordu ve reddetti.
+```text title="STEP 2 — SALDIRI: name = 'Alice ; echo LEAKED-COMMAND-INJECTION'"
+[BAD WAY]
+   Command sent to the shell:
+   echo "TOOL OUTPUT: Hello" Alice ; echo LEAKED-COMMAND-INJECTION
+   | TOOL OUTPUT: Hello Alice
+   | LEAKED-COMMAND-INJECTION
+   ^ The 'LEAKED...' line = the injected command ran.
+[GOOD WAY]
+   Allow-list REJECTED it (^[A-Za-z0-9_]+$):
+   input = Alice ; echo LEAKED-COMMAND-INJECTION
+   -> The program was never run.
+   ^ The allow-list saw a space/;/& and rejected it.
 ```
 
 Kötü yolda kabuk, yukarıdaki beş adımı izleyerek dizeyi `;` üzerinden ikiye böldü ve **iki ayrı komut**
-çalıştırdı; ikinci satır (`SIZDI-...`) enjekte edilen komutun **gerçekten çalıştığının** kanıtıdır (demo zararsız
+çalıştırdı; ikinci satır (`LEAKED-...`) enjekte edilen komutun **gerçekten çalıştığının** kanıtıdır (demo zararsız
 bir `echo` kullanır). İyi yolda `ProcessBuilder`/`subprocess` hiçbir kabuk çağırmaz; girdi tek bir argümandır ve
 izin listesi (`^[A-Za-z0-9_]+$`) boşluk ile `;` içeren bu girdiyi çalıştırmadan **önce** reddeder.
 
 ### Demo 2 — Komut enjeksiyonu
 
-!!! info "Demo 2 · `code/week-05/02-komut-enjeksiyonu` · CWE-78 · IDS07-J · Tarif 1.7–1.8"
+!!! info "Demo 2 · `code/week-05/02-command-injection` · CWE-78 · IDS07-J · Tarif 1.7–1.8"
     Bir "selamlama aracı" kullanıcı adını dış bir programa iletir. Hatalı sürüm komutu tek bir dize olarak kabuğa verir
     (`sh -c`, `cmd /c`, Java'da `Runtime.exec(String)`); girdideki `;` ya da `&` ikinci bir komut başlatır. Enjekte
     edilen komut yalnız **zararsız bir `echo`**'dur. Doğru sürüm `ProcessBuilder` (Java) ve `subprocess` argüman listesi
@@ -657,14 +689,14 @@ izin listesi (`^[A-Za-z0-9_]+$`) boşluk ile `;` içeren bu girdiyi çalıştır
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\02-komut-enjeksiyonu
+    cd code\week-05\02-command-injection
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/02-komut-enjeksiyonu
+    cd code/week-05/02-command-injection
     sh demo.sh
     ```
 
@@ -678,27 +710,27 @@ yoluna eklenirse, `../` dizileri kökün **dışına** çıkar:
 ![Yol geçişini kapatan kanonikleştirme ve izin listesi adımları](assets/h05-05-yol-gecisi.svg)
 
 ```java title="Hatalı"
-Path kok = Paths.get("/srv/veri");
-Path dosya = kok.resolve(istek);                  // istek = "../../etc/passwd"
-return Files.readAllBytes(dosya);                 // kökün dışındaki dosya okunur
+Path root = Paths.get("/srv/data");
+Path file = root.resolve(request);                  // request = "../../etc/passwd"
+return Files.readAllBytes(file);                 // a file outside the root is read
 ```
 
 ### Yol normalleştirme adım adım: `../` neden köke geri çıkarır?
 
-`resolve()`/`normalize()` bir yolu tek bir **yığın** (stack) algoritmasıyla işler. `kok = "/srv/veri"` ve
-`istek = "../../etc/passwd"` olsun. Dosya sistemi bu isteği aşağıdaki gibi, segment segment işler:
+`resolve()`/`normalize()` bir yolu tek bir **yığın** (stack) algoritmasıyla işler. `root = "/srv/data"` ve
+`request = "../../etc/passwd"` olsun. Dosya sistemi bu isteği aşağıdaki gibi, segment segment işler:
 
 | Adım | Okunan segment | Yığının durumu | Açıklama |
 | --- | --- | --- | --- |
-| 0 | (başlangıç) | `[srv, veri]` | Kök yoldan başlanır |
-| 1 | `..` | `[srv]` | Bir üst segment (`veri`) yığından **çıkarılır** (pop) |
+| 0 | (başlangıç) | `[srv, data]` | Kök yoldan başlanır |
+| 1 | `..` | `[srv]` | Bir üst segment (`data`) yığından **çıkarılır** (pop) |
 | 2 | `..` | `[]` | Bir üst segment daha (`srv`) yığından **çıkarılır** |
 | 3 | `etc` | `[etc]` | Normal segment yığına **eklenir** (push) |
 | 4 | `passwd` | `[etc, passwd]` | Normal segment eklenir |
 
-Sonuç: `/etc/passwd` — kökün (`/srv/veri`) tamamen dışında bir yol. `..` karakterleri, ayrıştırıcı için "bir üst
+Sonuç: `/etc/passwd` — kökün (`/srv/data`) tamamen dışında bir yol. `..` karakterleri, ayrıştırıcı için "bir üst
 klasöre çık" komutudur; SQL'deki `'` nasıl "dize sabitini kapat" komutuysa, dosya sisteminde de `..` aynı rolü
-oynar. Bu yüzden ham dizede yalnız `".."` arayan bir denetim (`istek.contains("..")`) yeterli değildir: `..%2f`
+oynar. Bu yüzden ham dizede yalnız `".."` arayan bir denetim (`request.contains("..")`) yeterli değildir: `..%2f`
 (URL kodlanmış), `....//` (iç içe yazım) gibi biçimler bu aramayı atlatırken, **aynı yığın algoritmasıyla**
 işlendiğinde yine kökün dışına çıkabilir. Doğru sıra bu yüzden önce **normalleştir** (yığın algoritmasını
 tamamen çalıştır), sonra **sonucu** denetlemektir — ara adımları değil, nihai yığın içeriğini kontrol ederiz.
@@ -706,16 +738,16 @@ tamamen çalıştır), sonra **sonucu** denetlemektir — ara adımları değil,
 ### Doğrusu: önce kanonikleştir, sonra kökün içinde mi diye bak
 
 ```java title="Doğru: kanonik yol + kök denetimi (FIO16-J)"
-Path kok = Paths.get("/srv/veri").toRealPath();
-Path aday = kok.resolve(istek).normalize();      // istek mutlak yolsa resolve onu olduğu gibi döndürür
-if (!aday.startsWith(kok)) throw new SecurityException("kok disi");
-Path gercek = aday.toRealPath();                  // sembolik bağlantıları da çözer
-if (!gercek.startsWith(kok)) throw new SecurityException("kok disi");
-return Files.readAllBytes(gercek);
+Path root = Paths.get("/srv/data").toRealPath();
+Path candidate = root.resolve(request).normalize();      // if request is an absolute path, resolve returns it unchanged
+if (!candidate.startsWith(root)) throw new SecurityException("outside root");
+Path real = candidate.toRealPath();                  // also resolves symbolic links
+if (!real.startsWith(root)) throw new SecurityException("outside root");
+return Files.readAllBytes(real);
 ```
 
 Sıra önemlidir: önce **kanonik** (tek, kesin) yol elde edilir, sonra denetlenir. Denetimi ham dizeye yapmak
-(`istek.contains("..")`) yetmez; `..%2f`, `....//`, Windows'ta `..\` ve sürücü harfli mutlak yollar, Unicode biçimleri
+(`request.contains("..")`) yetmez; `..%2f`, `....//`, Windows'ta `..\` ve sürücü harfli mutlak yollar, Unicode biçimleri
 ve **sembolik bağlantılar** denetimi atlatabilir. `toRealPath()` sembolik bağlantıları da gerçek hedeflerine çözer;
 İkinci haftadaki TOCTOU (denetim ile kullanım arasındaki zaman) sorunu hâlâ geçerli olduğu için dosya açıldıktan sonra da
 kök içinde olduğunun doğrulanması en sağlamıdır.
@@ -726,10 +758,10 @@ kök içinde olduğunun doğrulanması en sağlamıdır.
     gibi kanonikleştirip kök içinde olduğunu denetlemelidir.
 
 !!! danger "Sık yapılan hata: yalnız `..` dizesini aramak"
-    `if (istek.contains(".."))` satırı öğrencilerin en sık yazdığı "düzeltmedir". Ama `..%2f` (URL kodlanmış nokta
+    `if (request.contains(".."))` satırı öğrencilerin en sık yazdığı "düzeltmedir". Ama `..%2f` (URL kodlanmış nokta
     ve eğik çizgi, sunucuya ulaşmadan önce kod çözülürse `../`'ye döner), Windows'ta `..\`, sürücü harfli mutlak
     yollar (`C:\...`) ve kök klasörün **içindeki** bir sembolik bağlantının kök dışını göstermesi, bu tek satırlık
-    denetimin hiçbirini yakalamaz. `contains("..")` ayrıca meşru bir dosya adında (`rapor..v2.txt`) yanlış pozitif
+    denetimin hiçbirini yakalamaz. `contains("..")` ayrıca meşru bir dosya adında (`report..v2.txt`) yanlış pozitif
     üretebilir.
 
 !!! success "Kural"
@@ -737,53 +769,63 @@ kök içinde olduğunun doğrulanması en sağlamıdır.
     denetle, gerekiyorsa dosya açıldıktan sonra tekrar denetle.** Ham dizede desen aramak hiçbir zaman yeterli
     değildir.
 
+Aşağıdaki canlandırma, istek yolunun bir segment adım adım nasıl çözüldüğünü ve kökteyken bir `..`'nin neden
+kökün dışına çıkma girişimi sayıldığını gösterir.
+
+<iframe class="dsanim" src="../anim/path-traversal.html" title="Yol geçişi: kanonikleştirme ve kök denetimi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Yol geçişi: kanonikleştirme ve kök denetimi — adım adım](anim/path-traversal.png)
+</div>
+
+**Normal**, **Zor** (`../secret.txt`) ve **Uç durum** örneklerini deneyin.
+
 ### İşlenmiş örnek: Demo 3'ün çıktısını satır satır okumak
 
-Demo 3'ün Python bölümü (`yol.py`) `cikti/veri/` klasörünü **kök** kabul eder; kök dışında (`cikti/gizli.txt`)
-sentetik bir "yönetici notu" bulunur. Gerçek çıktı:
+Demo 3'ün Python bölümü (`path_traversal.py`) `output/data/` klasörünü **kök** kabul eder; kök dışında
+(`output/secret.txt`) sentetik bir "yönetici notu" bulunur. Gerçek çıktı:
 
-```text title="ADIM 1 — Mesru istek: 'rapor.txt'"
-[KOTU YOL]
-   Cozulen yol: .../cikti/veri/rapor.txt
-   OKUNDU -> Herkese acik rapor (sentetik).
-[IYI YOL]
-   Cozulen yol: .../cikti/veri/rapor.txt
-   OKUNDU -> Herkese acik rapor (sentetik).
+```text title="STEP 1 — Meşru istek: 'report.txt'"
+[BAD WAY]
+   Resolved path: .../output/data/report.txt
+   READ -> Public report (synthetic).
+[GOOD WAY]
+   Resolved path: .../output/data/report.txt
+   READ -> Public report (synthetic).
 ```
 
-```text title="ADIM 2 — SALDIRI: '../gizli.txt' (kok disi)"
-[KOTU YOL]
-   Cozulen yol: .../cikti/gizli.txt
-   OKUNDU -> GIZLI: sentetik yonetici notu (kok disinda).
-   ^ Kok disindaki gizli dosya sizdirildi.
-[IYI YOL]
-   REDDEDILDI: kok disina cikiyor -> .../cikti/gizli.txt
-   ^ resolve() + kok denetimi engelledi.
+```text title="STEP 2 — SALDIRI: '../secret.txt' (kök dışı)"
+[BAD WAY]
+   Resolved path: .../output/secret.txt
+   READ -> SECRET: synthetic admin note (outside the root).
+   ^ The secret file outside the root was leaked.
+[GOOD WAY]
+   REJECTED: escapes outside the root -> .../output/secret.txt
+   ^ Canonicalization + root check blocked it.
 ```
 
-Kötü yolda `KOK / "../gizli.txt"` ifadesi, yukarıdaki yığın algoritmasıyla `veri` segmentini pop'lar ve doğrudan
-`cikti/gizli.txt`'ye ulaşır — kökün **bir üst klasörüne** çıkmıştır. İyi yolda aynı normalleştirme yapılır, ama
-sonuç kök (`cikti/veri`) ile başlamadığı için istek çalıştırılmadan **reddedilir**.
+Kötü yolda `ROOT / "../secret.txt"` ifadesi, yukarıdaki yığın algoritmasıyla `data` segmentini pop'lar ve doğrudan
+`output/secret.txt`'ye ulaşır — kökün **bir üst klasörüne** çıkmıştır. İyi yolda aynı normalleştirme yapılır, ama
+sonuç kök (`output/data`) ile başlamadığı için istek çalıştırılmadan **reddedilir**.
 
 ### Demo 3 — Yol geçişi
 
-!!! info "Demo 3 · `code/week-05/03-yol-gecisi` · CWE-22 · FIO16-J · Tarif 3.7"
-    Bir "dosya sunucusu" yalnız `cikti/veri/` altındaki dosyaları vermelidir. Hatalı sürüm isteği doğrudan köke ekler
-    ve `../gizli.txt` isteği kök dışındaki **sentetik** gizli dosyayı sızdırır. Doğru sürüm yolu kanonikleştirir
+!!! info "Demo 3 · `code/week-05/03-path-traversal` · CWE-22 · FIO16-J · Tarif 3.7"
+    Bir "dosya sunucusu" yalnız `output/data/` altındaki dosyaları vermelidir. Hatalı sürüm isteği doğrudan köke ekler
+    ve `../secret.txt` isteği kök dışındaki **sentetik** gizli dosyayı sızdırır. Doğru sürüm yolu kanonikleştirir
     (`normalize()` + `toRealPath()`, Python'da `resolve()`) ve sonucun kök içinde kaldığını doğrular; mutlak yol ve
     sürücü harfi de reddedilir. Windows'ta `..\` ve `../` ayırıcılarının ikisi de işlenir.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\03-yol-gecisi
+    cd code\week-05\03-path-traversal
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/03-yol-gecisi
+    cd code/week-05/03-path-traversal
     sh demo.sh
     ```
 
@@ -818,8 +860,8 @@ savunmayı da anlamlı kılar. `ObjectOutputStream`'in ürettiği bayt akışın
 1. İlk iki bayt her zaman `AC ED` — "stream magic" (bu akışın bir Java nesne akışı olduğunu belirten imza).
 2. Sonraki iki bayt `00 05` — akış biçiminin sürümü.
 3. Ardından bir **nesne bloğu** gelir; bu blok önce bir **sınıf tanımlayıcısı** (class descriptor) içerir: sınıfın
-   **tam adı** (`com.ornek.Ayar` gibi), uzunluk öneki ile birlikte **düz metin** olarak akışta durur.
-4. `ObjectInputStream.readObject()` çalıştığında, önce bu ismi okur, sonra `Class.forName(isim)` benzeri bir
+   **tam adı** (`com.example.Setting` gibi), uzunluk öneki ile birlikte **düz metin** olarak akışta durur.
+4. `ObjectInputStream.readObject()` çalıştığında, önce bu ismi okur, sonra `Class.forName(name)` benzeri bir
    çağrıyla sınıfı sınıf yolunda (classpath) **arayıp yükler** — henüz hiçbir tür denetimi yapılmamıştır, çünkü
    beklenen türün ne olduğunu akışın kendisi söylemektedir.
 5. Sınıf yüklendikten sonra JVM bu sınıftan bir nesne **ayırır** (adi bir kurucu çağrısı olmadan, seri durumdan
@@ -855,58 +897,68 @@ olaylardaki "gadget zinciri"), sonunda keyfi kod çalıştırmaya kadar gidebili
 | 5 | **Bağımlılık hijyeni** | Sınıf yolunda kullanılmayan kütüphane bırakmamak (14. bölüm) |
 
 ```java title="İzin listesi filtresi (SER12-J)"
-ObjectInputFilter filtre = ObjectInputFilter.Config.createFilter(
-        "com.ornek.Ayar;java.base/*;maxdepth=5;maxarray=1000;maxbytes=65536;!*");
-try (ObjectInputStream in = new ObjectInputStream(akis)) {
-    in.setObjectInputFilter(filtre);
-    Ayar a = (Ayar) in.readObject();          // beklenmeyen sınıf → InvalidClassException
+ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(
+        "com.example.Setting;java.base/*;maxdepth=5;maxarray=1000;maxbytes=65536;!*");
+try (ObjectInputStream in = new ObjectInputStream(stream)) {
+    in.setObjectInputFilter(filter);
+    Setting s = (Setting) in.readObject();          // beklenmeyen sınıf → InvalidClassException
 }
 ```
 
-Desen soldan sağa okunur: `com.ornek.Ayar` ve `java.base` modülündeki sınıflara izin ver, sınırları uygula, **geri
+Desen soldan sağa okunur: `com.example.Setting` ve `java.base` modülündeki sınıflara izin ver, sınırları uygula, **geri
 kalan her şeyi reddet** (`!*`). Son öğe varsayılan-reddet ilkesidir; unutulursa filtre bir kara listeye dönüşür.
+
+Aşağıdaki canlandırma, akıştaki bir sınıf adının filtresiz her zaman kabul edildiğini, filtreli sürümde ise
+önce izin listesi kalıbıyla karşılaştırıldığını gösterir.
+
+<iframe class="dsanim" src="../anim/deserialization.html" title="Güvensiz seri durumdan çıkarma: allow-list denetimi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Güvensiz seri durumdan çıkarma: allow-list denetimi — adım adım](anim/deserialization.png)
+</div>
+
+**Normal**, **Zor** (şüpheli bir sınıf adı) ve **Uç durum** örneklerini deneyin.
 
 ### İşlenmiş örnek: Demo 7'nin çıktısını satır satır okumak
 
-Demo 7'nin Java kodu (`SeriDemo.java`), iki zararsız sınıf tanımlar: **beklenen** `Ayar` (ad + değer taşır) ve
-**beklenmeyen** `BaskaSinif` (gerçek bir saldırıda bir "gadget" olurdu; burada yalnızca bir dize taşır). Her ikisi
-de serileştirilip, önce filtresiz, sonra filtreli çözülür. Gerçek çıktı:
+Demo 7'nin Java kodu (`SerializationDemo.java`), iki zararsız sınıf tanımlar: **beklenen** `Setting` (ad + değer
+taşır) ve **beklenmeyen** `OtherClass` (gerçek bir saldırıda bir "gadget" olurdu; burada yalnızca bir dize taşır).
+Her ikisi de serileştirilip, önce filtresiz, sonra filtreli çözülür. Gerçek çıktı:
 
-```text title="ADIM 1 — FILTRESIZ cozme: her sinif kabul edilir"
-   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)  (Ayar)
-   [beklenmeyen BaskaSinif] KABUL -> BaskaSinif(yuk=beklenmeyen-sinif)  (BaskaSinif)
-   ^ Filtre olmadan gelen HER sinif olusturulur;
-     gercekte bu bir gadget zinciri olabilirdi.
+```text title="STEP 1 — UNFILTERED deserialization (bad): every class accepted"
+   [expected Setting] ACCEPTED -> Setting(name=timeout, value=30)  (Setting)
+   [unexpected OtherClass] ACCEPTED -> OtherClass(payload=unexpected-class)  (OtherClass)
+   ^ Without a filter, EVERY class in the stream is built;
+     in a real attack this could have been a gadget chain.
 ```
 
-```text title="ADIM 2 — ObjectInputFilter ile: allow-list"
-   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)
-   [beklenmeyen BaskaSinif] REDDEDILDI (filtre): beklenmeyen sinif engellendi.
+```text title="STEP 2 — With ObjectInputFilter (good): allow-list"
+   [expected Setting] ACCEPTED -> Setting(name=timeout, value=30)
+   [unexpected OtherClass] REJECTED (filter): unexpected class blocked.
 ```
 
-Filtre `"SeriDemo$Ayar;java.base/*;!*"` yalnız `Ayar` sınıfına ve Java'nın kendi çekirdek sınıflarına izin verir.
-Adım 1'deki mekanizmayı hatırlayın: filtre, sınıf **yüklenmeden önce** akıştan okunan adı denetler; `BaskaSinif`
-listede olmadığı için `readObject` çağrısı `InvalidClassException` ile durur — sınıf hiç örneklenmez, hiçbir
-metodu çalışmaz.
+Filtre `"SerializationDemo$Setting;java.base/*;!*"` yalnız `Setting` sınıfına ve Java'nın kendi çekirdek
+sınıflarına izin verir. Adım 1'deki mekanizmayı hatırlayın: filtre, sınıf **yüklenmeden önce** akıştan okunan adı
+denetler; `OtherClass` listede olmadığı için `readObject` çağrısı `InvalidClassException` ile durur — sınıf hiç
+örneklenmez, hiçbir metodu çalışmaz.
 
 ### Demo 7 — Güvenli seri durumdan çıkarma
 
-!!! info "Demo 7 · `code/week-05/07-deserializasyon` · CWE-502 · SER12-J"
-    Demo **hiçbir saldırı zinciri içermez**. Filtresiz sürüm akıştaki her sınıfı oluşturur: beklenen `Ayar` da,
-    beklenmeyen `BaskaSinif` da kabul edilir. Filtreli sürüm `ObjectInputFilter` ile yalnız beklenen sınıflara izin
+!!! info "Demo 7 · `code/week-05/07-deserialization` · CWE-502 · SER12-J"
+    Demo **hiçbir saldırı zinciri içermez**. Filtresiz sürüm akıştaki her sınıfı oluşturur: beklenen `Setting` de,
+    beklenmeyen `OtherClass` da kabul edilir. Filtreli sürüm `ObjectInputFilter` ile yalnız beklenen sınıflara izin
     verir; beklenmeyen sınıf `InvalidClassException` ile reddedilir.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\07-deserializasyon
+    cd code\week-05\07-deserialization
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/07-deserializasyon
+    cd code/week-05/07-deserialization
     sh demo.sh
     ```
 
@@ -1006,8 +1058,8 @@ getirir. Aynı hata sınıfları burada farklı adlarla karşımıza çıkar:
 
 | Hata | Java | Python | JavaScript / Node.js |
 | --- | --- | --- | --- |
-| SQL enjeksiyonu | `Statement` + birleştirme | `cursor.execute(f"... {ad}")` | Şablon dizesiyle sorgu |
-| Doğrusu | `PreparedStatement` | `cursor.execute("... ?", (ad,))` | Sürücünün parametre bağlama arayüzü |
+| SQL enjeksiyonu | `Statement` + birleştirme | `cursor.execute(f"... {name}")` | Şablon dizesiyle sorgu |
+| Doğrusu | `PreparedStatement` | `cursor.execute("... ?", (name,))` | Sürücünün parametre bağlama arayüzü |
 | Komut enjeksiyonu | `Runtime.exec(String)` | `os.system`, `subprocess.run(..., shell=True)` | `child_process.exec` |
 | Doğrusu | `ProcessBuilder` | `subprocess.run([...])` (liste, `shell=False`) | `child_process.execFile` / `spawn` (dizi) |
 | Kod çalıştırma | Yansıma, betik motorları | `eval`, `exec` | `eval`, `new Function`, `vm` |
@@ -1020,11 +1072,11 @@ Yorumlanan dillerin en tehlikeli özelliği, bir dizeyi **kod olarak** çalışt
 dizenin `eval`'e ulaşması, enjeksiyonun en doğrudan biçimidir: yorumlayıcının kendisi komut kanalıdır.
 
 ```python title="Hatalı ve doğru: kullanıcının girdiği bir sayıyı okumak"
-deger = eval(girdi)                 # HATALI: girdi herhangi bir Python ifadesi olabilir
+value = eval(input_text)                 # WRONG: input_text could be any Python expression
 
 import ast
-deger = ast.literal_eval(girdi)     # Daha iyi: yalnız sayı, dizge, liste gibi SABİTLERİ kabul eder
-deger = int(girdi)                  # En iyisi: beklenen türü doğrudan ayrıştır, hatayı yakala
+value = ast.literal_eval(input_text)     # Better: accepts only LITERALS such as numbers, strings, lists
+value = int(input_text)                  # Best: parse the expected type directly, catch the error
 ```
 
 Kural basittir: **kullanıcı verisi `eval`, `exec`, `new Function` ya da bir betik motoruna asla ulaşmamalı.** Bir hesap
@@ -1050,9 +1102,9 @@ kütüphanelerinin tam yükleyicileri de benzer biçimde nesne oluşturabilir.
 ```python title="Güvenli seçimler"
 import json, yaml
 
-veri = json.loads(metin)            # yalnız veri: sözlük, liste, sayı, dizge
-ayar = yaml.safe_load(metin)        # yalnız temel YAML türleri
-# pickle.loads(metin)               # YALNIZ kendi ürettiğiniz ve HMAC ile doğruladığınız veride
+data = json.loads(text)             # data only: dict, list, number, string
+config = yaml.safe_load(text)       # only basic YAML types
+# pickle.loads(text)                # ONLY on data you produced yourself and verified with an HMAC
 ```
 
 ### Düzenli ifade ile hizmet engelleme (ReDoS)
@@ -1131,7 +1183,7 @@ düzenli ifade karşılığıdır.
 
 JavaScript'te nesneler bir **prototip** zincirinden özellik devralır. Kullanıcıdan gelen bir JSON nesnesini derinlemesine
 birleştiren (merge) bir fonksiyon, `__proto__` gibi özel bir anahtara yazmaya izin verirse, bütün nesnelerin ortak
-prototipine yeni bir özellik eklenmiş olur; uygulamanın başka bir yerindeki `if (kullanici.yonetici)` denetimi
+prototipine yeni bir özellik eklenmiş olur; uygulamanın başka bir yerindeki `if (user.admin)` denetimi
 beklenmedik biçimde doğru çıkabilir. Savunma: `__proto__`, `constructor` ve `prototype` anahtarlarını reddetmek,
 prototipsiz nesneler (`Object.create(null)`) ya da `Map` kullanmak, gelen JSON'u bir **şemayla** doğrulamak.
 
@@ -1155,7 +1207,7 @@ kodundan çok daha **yüksek düzeylidir**:
 | --- | --- | --- |
 | Sınıf, metot ve alan adları | Kaybolur | **Korunur** (yansıma ve bağlama için gerekir) |
 | Tipler | Kaybolur | **Korunur** (doğrulayıcı için gerekir) |
-| Dize sabitleri | İkili dosyada durur | **Sabit havuzunda** (constant pool) düz metin durur |
+| Dize sabitleri | Binary dosyada durur | **Sabit havuzunda** (constant pool) düz metin durur |
 | Kontrol akışı | Makine komutları, dolaylı atlamalar | Yapılandırılmış; kaynak koda çok yakın geri çevrilir |
 | Geri çevirme sonucu | Okunması emek isteyen sözde C | Çoğu zaman **derlenebilir** Java kodu |
 
@@ -1165,13 +1217,13 @@ Dokuzuncu haftada, gizlemeye karşı kullanılan bu tür araçları (sembolik y�
 **dayanıklılık** ilkesini C/C++ tarafında derinlemesine işleyeceğiz
 ([Hafta 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-karsi-tarafin-araclari-ve-dayaniklilik-kurali)).
 
-```text title="javap -c -p LisansDenetimi.class (kısaltılmış)"
-private static final java.lang.String GECERLI_PIN;
-public boolean pinDogru(java.lang.String);
+```text title="javap -c -p LicenseCheck.class (kısaltılmış, gerçek çıktı)"
+private static final java.lang.String VALID_PIN;
+static boolean pinCorrect(java.lang.String);
   Code:
-     0: aload_1
-     1: ldc           #7        // String 4729
-     3: invokevirtual #9        // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     0: ldc           #9                  // String 4729
+     2: aload_0
+     3: invokevirtual #11                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
      6: ireturn
 ```
 
@@ -1182,20 +1234,30 @@ her komut, küçük bir yığına (stack) değer **iter** (push) ya da yığınd
 
 | Satır | Komut | Ne yapar? | Yığının durumu (işlemden sonra) |
 | --- | --- | --- | --- |
-| `0` | `aload_1` | 1 numaralı yerel değişkeni (metodun ilk parametresi, girilen PIN) yığına **it** | `[girilenPin]` |
-| `1` | `ldc #7` | Sabit havuzundaki 7 numaralı girişi (dize `"4729"`) yığına **it** | `[girilenPin, "4729"]` |
-| `3` | `invokevirtual #9` | Yığından iki değeri **çek**, `String.equals(...)` metodunu çağır, sonucu (true/false) yığına **it** | `[sonuc]` |
+| `0` | `ldc #9` | Sabit havuzundaki 9 numaralı girişi (dize `"4729"`, yani `VALID_PIN`) yığına **it** | `[VALID_PIN]` |
+| `2` | `aload_0` | 0 numaralı yerel değişkeni (metodun tek parametresi, `entered`) yığına **it** | `[VALID_PIN, entered]` |
+| `3` | `invokevirtual #11` | Yığından iki değeri **çek**, `String.equals(...)` metodunu çağır, sonucu (true/false) yığına **it** | `[result]` |
 | `6` | `ireturn` | Yığındaki tamsayı/boole değeri metodun **dönüş değeri** olarak ver | `[]` |
 
-Bu dört satır, kaynaktaki `return girilenPin.equals("4729");` ifadesinin **birebir** karşılığıdır — hiçbir bilgi
-kaybolmamıştır. `// String 4729` yorumu, `javap`'ın sabit havuzundaki 7 numaralı girişi okuyup göstermesidir;
-tersine derleyiciler (jadx, CFR) bu dört satırı görüp doğrudan `return girilenPin.equals("4729");` **kaynak
+Bu dört satır, kaynaktaki `return VALID_PIN.equals(entered);` ifadesinin **birebir** karşılığıdır — hiçbir bilgi
+kaybolmamıştır. `// String 4729` yorumu, `javap`'ın sabit havuzundaki 9 numaralı girişi okuyup göstermesidir;
+tersine derleyiciler (jadx, CFR) bu dört satırı görüp doğrudan `return VALID_PIN.equals(entered);` **kaynak
 kodunu** üretir. C'de `strip` sonrası eşdeğer makine kodunda ne sabitin değeri ne de `equals` çağrısının hangi
 tür üzerinde olduğu bu kadar açık kalırdı ([dördüncü haftadaki](../week-4/cen429-week-4.md) makine kodu örnekleriyle karşılaştırın).
 
-Kaynak kod olmadan bile üç şey açıkça görünür: sabit (`4729`), anlamlı adlar (`GECERLI_PIN`, `pinDogru`) ve mantık
+Kaynak kod olmadan bile üç şey açıkça görünür: sabit (`4729`), anlamlı adlar (`VALID_PIN`, `pinCorrect`) ve mantık
 ("girdiyi şu sabitle karşılaştır"). Koda gömülü bir parola, API anahtarı ya da sunucu adresi, uygulamayı indiren herkese
 verilmiş demektir (MSC03-J, CWE-798).
+
+Aşağıdaki canlandırma, tam olarak bu dört bayt kodu komutunun kaynak koda nasıl **birebir** eşlendiğini, adım
+adım gösterir — ta ki tüm metot yeniden kurulana kadar.
+
+<iframe class="dsanim" src="../anim/bytecode-decompile.html" title="Bayt kodundan kaynağa: javap ile eşleme" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bayt kodundan kaynağa: javap ile eşleme — adım adım](anim/bytecode-decompile.png)
+</div>
+
+**Normal** (PIN denetimi, yanlış tahmin), **Zor** (doğru PIN) ve **Uç durum** (lisans denetimi) örneklerini deneyin.
 
 !!! danger "Sık yapılan hata: 'kaynak kodu vermiyorum, güvendeyim' sanmak"
     Bir `.jar` ya da `.apk` dosyası dağıtmak, kaynak kodu vermemek anlamına gelmez: yukarıdaki tabloya göre bayt
@@ -1252,9 +1314,9 @@ Android derleme sisteminde varsayılan olarak gelen, ProGuard kurallarıyla uyum
 Gizlemenin çıktısı, eski ve yeni adları eşleştiren bir **eşleme dosyasıdır** (`mapping.txt`):
 
 ```text title="mapping.txt (kısaltılmış, adlar sentetik)"
-com.ornek.odeme.KartYoneticisi -> com.ornek.a:
-    android.content.Context baglam -> a
-    boolean varsayilanKartiAyarla(java.lang.String) -> b
+com.example.payment.CardManager -> com.example.a:
+    android.content.Context context -> a
+    boolean setDefaultCard(java.lang.String) -> b
 ```
 
 !!! danger "Eşleme dosyası bir sırdır"
@@ -1281,27 +1343,27 @@ korunması gerekir; aksi halde uygulama çalışma anında `ClassNotFoundExcepti
 | `-keepclasseswithmembers` | Belirtilen üyelere sahip sınıfları korur (ör. `native` metodu olanlar) |
 | `-dontobfuscate` / `-dontshrink` / `-dontoptimize` | İlgili aşamayı kapatır |
 
-Kural yazmanın altın ilkesi **en dar kuralı** yazmaktır. `-keep class com.ornek.** { *; }` gibi geniş bir kural
+Kural yazmanın altın ilkesi **en dar kuralı** yazmaktır. `-keep class com.example.** { *; }` gibi geniş bir kural
 gizlemeyi fiilen kapatır; bu, sahada en sık görülen "gizleme var ama işe yaramıyor" durumudur.
 
 ### İşlenmiş örnek: eksik `-keep` neden uygulamayı çökertir
 
-Bir sınıfın adı yansımayla (`Class.forName("com.ornek.Odeme")`) çağrılıyorsa ama `proguard-rules.pro` içinde bu
+Bir sınıfın adı yansımayla (`Class.forName("com.example.Payment")`) çağrılıyorsa ama `proguard-rules.pro` içinde bu
 sınıf için `-keep` yoksa, adım adım şu olur:
 
-1. Derleme sırasında ProGuard/R8, `com.ornek.Odeme` sınıfına **hiçbir statik çağrı görmez** — çünkü çağrı
+1. Derleme sırasında ProGuard/R8, `com.example.Payment` sınıfına **hiçbir statik çağrı görmez** — çünkü çağrı
    `Class.forName` içindeki bir **dize** olarak yazılıdır; gizleyici dizeleri sınıf grafiğinin parçası saymaz.
 2. Gizleyici bu sınıfı "kullanılmıyor" sanıp **küçültme** aşamasında kaldırır ya da adını `a.b.c`'ye değiştirir.
-3. Uygulama çalışırken `Class.forName("com.ornek.Odeme")` çağrılır; ama sürümdeki sınıfın adı artık farklıdır
+3. Uygulama çalışırken `Class.forName("com.example.Payment")` çağrılır; ama sürümdeki sınıfın adı artık farklıdır
    (ya da sınıf hiç yoktur).
 4. Çalışma anında `ClassNotFoundException` (sınıf silinmişse) ya da `NoSuchMethodException` (metot adı
    değişmişse) fırlatılır — bu, **yalnızca sürüm (release) derlemesinde** görülür, çünkü hata ayıklama
    derlemesinde gizleme kapalıdır (Bölüm 13); geliştirici sorunu genelde ancak mağaza testinde fark eder.
 
 ```text title="Eksik -keep'in tipik çökme izi (illüstratif)"
-java.lang.ClassNotFoundException: com.ornek.Odeme
+java.lang.ClassNotFoundException: com.example.Payment
     at java.lang.Class.forName(Class.java:...)
-    at com.ornek.a.b.baslat(Unknown Source:1)
+    at com.example.a.b.start(Unknown Source:1)
 ```
 
 !!! danger "Sık yapılan hata: yansımayla çağrılan sınıfı unutmak"
@@ -1314,6 +1376,17 @@ java.lang.ClassNotFoundException: com.ornek.Odeme
     Yeni bir kütüphane eklediğinizde önce onun resmi ProGuard/R8 kurallarını (çoğu kütüphane kendi
     `consumer-rules.pro` dosyasını taşır) ekleyin; sonra sürüm derlemesini **gerçekten çalıştırıp test edin**.
     "Derlendi" ile "çalışıyor" ProGuard/R8 açıkken aynı şey değildir.
+
+Aşağıdaki canlandırma, ProGuard/R8'in bir sınıfın üyelerini tek tek dolaşıp her birini `-keep` kuralına göre
+**koruduğunu** ya da kısa, anlamsız bir adla **yeniden adlandırdığını** gösterir.
+
+<iframe class="dsanim" src="../anim/proguard-renaming.html" title="ProGuard/R8: üye yeniden adlandırma haritası" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ProGuard/R8: üye yeniden adlandırma haritası — adım adım](anim/proguard-renaming.png)
+</div>
+
+**Normal**, **Zor** (hiçbir şey korunmuyor) ve **Uç durum** (`-keep` çok geniş — gizleme boşa gidiyor) örneklerini
+deneyin.
 
 ### Gelişmiş kurallar: sahadan bir yapılandırma
 
@@ -1369,8 +1442,8 @@ kullanım anında çözülür. Sabit havuzunda dizenin kendisi yerine anlamsız 
 
 ### İşlenmiş örnek: XOR gizlemeyi elle çözmek
 
-Demo 5'in `GizliSabit.java` dosyası, `"sunucu-anahtari-9F3A"` sentetik dizesini XOR anahtarı `0x5A` (ondalık 90)
-ile karıştırıp bayt dizisi olarak saklar. Kaynaktaki dizinin ilk üç baytını (`41, 47, 52`) elle çözelim; XOR'un
+Demo 5'in `HiddenConstant.java` dosyası, `"server-key-9F3A"` sentetik dizesini XOR anahtarı `0x5A` (ondalık 90)
+ile karıştırıp bayt dizisi olarak saklar. Kaynaktaki dizinin ilk üç baytını (`41, 63, 40`) elle çözelim; XOR'un
 tanımı gereği aynı anahtarla **iki kez** XOR'lamak orijinal değeri geri verir (`x ⊕ k ⊕ k = x`) — bu yüzden
 şifreleme ve çözme **aynı** işlemdir:
 
@@ -1381,24 +1454,35 @@ tanımı gereği aynı anahtarla **iki kez** XOR'lamak orijinal değeri geri ver
  115 = 0111 0011  =  0x73  =  's'
 ```
 
-```text title="2. bayt: 47 ⊕ 90 = 'u' (0x75)"
-  47 = 0010 1111
+```text title="2. bayt: 63 ⊕ 90 = 'e' (0x65)"
+  63 = 0011 1111
   90 = 0101 1010
   ----------------
- 117 = 0111 0101  =  0x75  =  'u'
+ 101 = 0110 0101  =  0x65  =  'e'
 ```
 
-```text title="3. bayt: 52 ⊕ 90 = 'n' (0x6E)"
-  52 = 0011 0100
+```text title="3. bayt: 40 ⊕ 90 = 'r' (0x72)"
+  40 = 0010 1000
   90 = 0101 1010
   ----------------
- 110 = 0110 1110  =  0x6E  =  'n'
+ 114 = 0111 0010  =  0x72  =  'r'
 ```
 
-Kalan 17 bayt aynı işlemle çözülür ve sırasıyla `u, c, u, -, a, n, a, h, t, a, r, i, -, 9, F, 3, A` karakterlerini
-verir; birleştirince tam olarak kaynaktaki `"sunucu-anahtari-9F3A"` dizesi ortaya çıkar. `javap -c -p` bu dizeyi
-**değil**, yalnızca 20 anlamsız bayt değeri ve `ANAHTAR` sabitini gösterir; `strings` taraması da düz metni
+Kalan 12 bayt aynı işlemle çözülür ve sırasıyla `v, e, r, -, k, e, y, -, 9, F, 3, A` karakterlerini
+verir; birleştirince tam olarak kaynaktaki `"server-key-9F3A"` dizesi ortaya çıkar. `javap -c -p` bu dizeyi
+**değil**, yalnızca 15 anlamsız bayt değeri ve `KEY` sabitini gösterir; `strings` taraması da düz metni
 bulamaz. Ama anahtar (`0x5A`) ve çözme döngüsü **aynı sınıfın içindedir** — bu yüzden aşağıdaki uyarı geçerlidir.
+
+Aşağıdaki canlandırma, tam olarak bu XOR döngüsünü bayt bayt oynatır: şifreli bayt dizisinden başlayıp çözülen
+dizeyi canlı olarak kurar.
+
+<iframe class="dsanim" src="../anim/string-decryption.html" title="Çalışma anında dize çözme: XOR ile gizleme" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Çalışma anında dize çözme: XOR ile gizleme — adım adım](anim/string-decryption.png)
+</div>
+
+**Normal** (gerçek Demo 5 sabiti), **Zor** ve **Uç durum** (anahtar `0x00` — hiçbir şey gizlenmiyor!) örneklerini
+deneyin.
 
 !!! danger "Sık yapılan hata: XOR gizlemeyi 'şifreleme' sanmak"
     Tek baytlık bir XOR anahtarı, yalnız 256 olasılıktan biridir; anahtar ve çözme kodu aynı `.class` dosyasında
@@ -1412,16 +1496,16 @@ bulamaz. Ama anahtar (`0x5A`) ve çözme döngüsü **aynı sınıfın içindedi
 
 ### Dinamik yöntem çağrısı (yansıma)
 
-Bir metodu doğrudan çağırmak (`nesne.gizliIslem()`), bayt kodunda o metoda giden açık bir bağlantı (`invokevirtual`)
+Bir metodu doğrudan çağırmak (`object.hiddenOperation()`), bayt kodunda o metoda giden açık bir bağlantı (`invokevirtual`)
 bırakır; tersine derleyici "bu fonksiyon şuradan çağrılıyor" grafiğini kolayca çıkarır. **Yansıma** ile çağrıda metot adı
 çalışma anında üretilir (ve bu ad da gizlenebilir):
 
 ```java title="Doğrudan ve dinamik çağrı"
-sonuc = Hesap.gizliIslem(girdi);                                   // bayt kodunda açık bağlantı
+result = Account.hiddenOperation(input);                                   // bayt kodunda açık bağlantı
 
-Method m = Hesap.class.getDeclaredMethod(adiCoz(ADI_BAYTLARI), String.class);
+Method m = Account.class.getDeclaredMethod(resolveName(NAME_BYTES), String.class);
 m.setAccessible(true);
-sonuc = (String) m.invoke(null, girdi);                            // statik çağrı grafiği kırılır
+result = (String) m.invoke(null, input);                            // statik çağrı grafiği kırılır
 ```
 
 Sınırları dürüstçe söyleyelim: metot hâlâ sınıfta tanımlıdır ve `javap -p` onu listeler; yansıma yalnız **çağrı
@@ -1440,24 +1524,24 @@ yazılır). Yansıma ayrıca yavaştır ve derleme anındaki tip denetimini kayb
 
 ### Demo 5 — Dize gizleme, yansıma ve ProGuard
 
-!!! info "Demo 5 · `code/week-05/05-gizleme` · Tarif 12.11 (kavram), 12.9 (dolaylı çağrı, kavram)"
+!!! info "Demo 5 · `code/week-05/05-obfuscation` · Tarif 12.11 (kavram), 12.9 (dolaylı çağrı, kavram)"
     Üç savunma sırayla gösterilir: **(A)** aynı gizli dize düz metin yerine XOR ile karıştırılmış bir bayt dizisi
     olarak durur ve `javap` çıktısında görünmez; **(B)** metot adı çalışma anında üretilip yansımayla çağrılır ve bayt
     kodunda doğrudan çağrı kalmaz; **(C)** isteğe bağlı olarak aynı jar ProGuard ile küçültülür ve gizlenir: `-keep` ile
     korunan giriş noktası kalır, kullanılmayan özel üye kaldırılır, kalanlar kısa adlarla yeniden adlandırılır. ProGuard
-    `hazirla` betiğiyle demo klasörüne indirilir.
+    `prepare` betiğiyle demo klasörüne indirilir.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\05-gizleme
+    cd code\week-05\05-obfuscation
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/05-gizleme
+    cd code/week-05/05-obfuscation
     sh demo.sh
     ```
 
@@ -1470,7 +1554,6 @@ yazılır). Yansıma ayrıca yavaştır ve derleme anındaki tip denetimini kayb
 ---
 
 ## 13. Android'de R8, gizlemenin etkisini ölçmek ve Java için statik analiz
-
 
 ![R8 ile gizleme ve etkisini ölçme adımları](assets/h05-14-r8-olcme.svg)
 
@@ -1532,23 +1615,24 @@ dönüştürür.
 
 ### İşlenmiş örnek: ölçümü Demo 5 üzerinde adım adım yapmak
 
-Bu tablonun ilk iki satırını Demo 5'in ürettiği jar dosyaları üzerinde gerçekten çalıştıralım (demo `hazirla`
+Bu tablonun ilk iki satırını Demo 5'in ürettiği jar dosyaları üzerinde gerçekten çalıştıralım (demo `prepare`
 betiğiyle ProGuard'ı indirdiyseniz):
 
-```bash title="1) Gizleme oncesi: anlamli ad sayisini say"
-cd code/week-05/05-gizleme/cikti
-javap -p -classpath oncesi.jar 'GizliSabit' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Cikti: kaynaktaki adlarin hepsi (sinif, alan, metot) birebir gorunur
+```bash title="1) Gizleme öncesi: anlamlı ad sayısını say"
+cd code/week-05/05-obfuscation/output
+javap -p -classpath sample.jar DirectCall | grep -c "hiddenOperation"
+# Output: 1 (the source method name appears verbatim)
 ```
 
-```bash title="2) Gizleme sonrasi: ayni arama"
-javap -p -classpath sonrasi.jar 'a' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Beklenen: 0 (ya da yalnizca -keep ile korunan giris noktasinin adi)
+```bash title="2) Gizleme sonrası: aynı arama"
+mkdir -p extracted && (cd extracted && jar -xf ../sample-obfuscated.jar)
+javap -p -classpath extracted DirectCall | grep -c "hiddenOperation"
+# Expected: 0 (the unused private member was removed by shrinking)
 ```
 
 ```bash title="3) Paket boyutu"
-ls -la oncesi.jar sonrasi.jar
-# Kucultme sinif sayisina bagli olarak boyutu azaltir; tek basina gizleme boyutu pek degistirmez
+ls -la sample.jar sample-obfuscated.jar
+# Shrinking reduces the size depending on the class count; obfuscation alone barely changes the size
 ```
 
 Bu üç komut, "gizleme çalıştı" iddiasını **ölçülebilir bir sayıya** dönüştürür: birinci komutun çıktısı
@@ -1607,9 +1691,12 @@ yazılır:
 | Lisans | Apache-2.0 | Lisans uyumluluğu |
 | Tedarikçi, bağımlılık ilişkileri | kimin, neye bağlı | Geçişli bağımlılıkları izlemek |
 
-İki yaygın standart vardır: OWASP'ın **CycloneDX**'i (güvenlik odaklı) ve Linux Vakfı'nın **SPDX**'i (lisans odaklı
-başladı, ISO/IEC 5962 standardı). ABD'nin 2021 tarihli siber güvenlik kararnamesi ve Avrupa Birliği'nin Siber Dayanıklılık
-Yasası (Cyber Resilience Act), yazılım tedarikçilerinden SBOM istemeye başlamıştır.
+İki yaygın standart vardır: Linux Vakfı'nın **SPDX**'i (Software Package Data Exchange, **2011**'de yayımlandı,
+önce lisans uyumluluğu için; sonradan ISO/IEC 5962 standardı oldu) ve OWASP'ın **CycloneDX**'i (**2017**'de
+yayımlandı, doğrudan güvenlik/SBOM kullanım örneği düşünülerek tasarlandı). ABD Başkanlık Kararnamesi **EO 14028**
+("Improving the Nation's Cybersecurity", **Mayıs 2021**) federal tedarikçilerden SBOM istemeyi zorunlu kılan ilk
+büyük düzenlemelerden biridir; Avrupa Birliği'nin Siber Dayanıklılık Yasası (Cyber Resilience Act) benzer bir
+gerekliliği AB'ye getirir.
 
 ```json title="CycloneDX 1.5 — tek bileşenlik kesit (değerler sentetik)"
 {
@@ -1617,9 +1704,9 @@ Yasası (Cyber Resilience Act), yazılım tedarikçilerinden SBOM istemeye başl
   "specVersion": "1.5",
   "components": [{
     "type": "library",
-    "name": "ornek-json",
+    "name": "example-json",
     "version": "1.2.0",
-    "purl": "pkg:maven/com.ornek/ornek-json@1.2.0",
+    "purl": "pkg:maven/com.example/example-json@1.2.0",
     "hashes": [{ "alg": "SHA-256", "content": "9f86d081884c7d65..." }]
   }]
 }
@@ -1667,46 +1754,57 @@ tarafından okunabilir biçimde yayımlamak için **VEX** (Vulnerability Exploit
     bir kez hazırlanıp belgeye eklenen bir SBOM, üretildiği gün doğrudur, bir sonraki bağımlılık güncellemesinde
     değil.
 
+Aşağıdaki canlandırma, bir bağımlılık ağacındaki her bileşenin adı ve **tam sürümüyle** bilinen zafiyetler
+listesine karşı nasıl tek tek denetlendiğini gösterir — Demo 6'nın kullandığı **aynı** sentetik listeyle.
+
+<iframe class="dsanim" src="../anim/sbom-cve-match.html" title="SBOM bağımlılık ağacı → CVE eşleştirme" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SBOM bağımlılık ağacı → CVE eşleştirme — adım adım](anim/sbom-cve-match.png)
+</div>
+
+**Normal** (dördü de güvenli), **Zor** (Demo 6'nın gerçek SBOM'u, iki eşleşme) ve **Uç durum** (düzeltilmiş sürüm
+artık işaretlenmiyor) örneklerini deneyin.
+
 ### İşlenmiş örnek: Demo 6'nın çıktısını satır satır okumak
 
 Demo 6 (`sbom.py`), dört sentetik kütüphaneden küçük jar dosyaları üretir, her biri için CycloneDX bileşeni
 yazar ve küçük bir "bilinen zafiyetli sürümler" sözlüğüyle eşleştirir. Gerçek çıktı (bileşen adları ve sürümleri
 kaynak koddaki sabit listeden):
 
-```text title="ADIM 1 — SBOM uretildi (4 bilesen)"
-ad                     surum    SHA-256 (ilk 16)
-gunluk-cekirdek        2.14.0   <jar baytlarindan hesaplanir>...
-json-arac              2.5.1    <jar baytlarindan hesaplanir>...
-kayit-kutuphanesi      1.2.0    <jar baytlarindan hesaplanir>...
-sifreleme-yardimci     3.0.4    <jar baytlarindan hesaplanir>...
+```text title="STEP 1 — SBOM generated (4 components)"
+name                   version  SHA-256 (first 16)
+crypto-helper          3.0.4    <computed from the jar bytes>...
+json-tool              2.5.1    <computed from the jar bytes>...
+log-core               2.14.0   <computed from the jar bytes>...
+record-library         1.2.0    <computed from the jar bytes>...
 ```
 
-```text title="ADIM 2 — purl ornekleri"
-pkg:maven/ornek.grup/gunluk-cekirdek@2.14.0
-pkg:maven/ornek.grup/json-arac@2.5.1
-pkg:maven/ornek.grup/kayit-kutuphanesi@1.2.0
-pkg:maven/ornek.grup/sifreleme-yardimci@3.0.4
+```text title="STEP 2 — purl examples"
+pkg:maven/example.group/crypto-helper@3.0.4
+pkg:maven/example.group/json-tool@2.5.1
+pkg:maven/example.group/log-core@2.14.0
+pkg:maven/example.group/record-library@1.2.0
 ```
 
-```text title="ADIM 3 — Bilinen (sentetik) zafiyetli surumlerle eslestirme"
-[UYARI] gunluk-cekirdek 2.14.0  (CEN429-2026-0001)
-        Bicimli mesajda uzaktan kod calistirma (sentetik ornek).
-        Cozum: >= 2.17.1 surumune yukselt.
-[UYARI] json-arac 2.5.1  (CEN429-2026-0002)
-        Guvensiz seri durumdan cikarma (sentetik ornek).
-        Cozum: >= 2.6.0 surumune yukselt.
+```text title="STEP 3 — Matching against the (synthetic) known-vulnerable-version list"
+[WARNING] json-tool 2.5.1  (CEN429-2026-0002)
+          Unsafe deserialization (synthetic example).
+          Fix: upgrade to >= 2.6.0.
+[WARNING] log-core 2.14.0  (CEN429-2026-0001)
+          Remote code execution via a formatted message (synthetic example).
+          Fix: upgrade to >= 2.17.1.
 ```
 
 SHA-256 değerleri her çalıştırmada **farklı** çıkar (üretilen jar'ın ZIP meta verisi zaman damgası içerir); bu
 kasıtlıdır ve iyi bir tedarik zinciri dersidir — özet, dosyanın **tam olarak hangi bayt dizisi** olduğunu
-doğrular, yalnız "ad ve sürüm aynı" demek yeterli değildir. `kayit-kutuphanesi` ve `sifreleme-yardimci`, sentetik
+doğrular, yalnız "ad ve sürüm aynı" demek yeterli değildir. `record-library` ve `crypto-helper`, sentetik
 zafiyet listesinde bulunmadığı için **uyarı almaz** — bir SBOM'un boş kalan kısmı da bilgidir: "bu bileşenler
 bilinen listede yok" demektir, "güvenli" demek değildir.
 
 ### Demo 6 — SBOM üretmek ve zafiyetle eşleştirmek
 
 !!! info "Demo 6 · `code/week-05/06-sbom` · CWE-1104"
-    Demo, kendi ürettiği **sentetik** jar dosyalarından (`cikti/lib/`) bir CycloneDX 1.5 JSON SBOM'u üretir: her
+    Demo, kendi ürettiği **sentetik** jar dosyalarından (`output/lib/`) bir CycloneDX 1.5 JSON SBOM'u üretir: her
     bileşen için ad, sürüm, purl ve SHA-256. Ardından küçük, **sentetik** bir "bilinen zafiyetli sürümler" listesiyle
     eşleştirir ve etkilenen iki bileşen için uyarı verir. İnternete bağlanmaz.
 
@@ -1763,8 +1861,8 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
     çağrılan programın bu girdiyi seçenek olarak yorumlayıp yorumlamadığını gözlemleyin ve `--` ayırıcısını ekleyin.
 
 ??? question "Alıştırma 4 — Orta: Yol geçişi varyantları"
-    Demo 3'ün güvenli sürümüne şu istekleri gönderin: `..%2fgizli.txt`, `....//gizli.txt`, mutlak yol, Windows'ta
-    `..\gizli.txt` ve sürücü harfli yol, kök içinde **sembolik bağlantıyla** kök dışını gösteren bir dosya. Hangisi
+    Demo 3'ün güvenli sürümüne şu istekleri gönderin: `..%2fsecret.txt`, `....//secret.txt`, mutlak yol, Windows'ta
+    `..\secret.txt` ve sürücü harfli yol, kök içinde **sembolik bağlantıyla** kök dışını gösteren bir dosya. Hangisi
     hangi denetimde reddediliyor?
 
 ??? question "Alıştırma 5 — Orta: Filtresiz ve filtreli seri durumdan çıkarma"
@@ -1825,7 +1923,7 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
     Gizlemeyi tamamen geri alır; eski ve yeni adları eşler. Dağıtılmamalı, erişimi sınırlı saklanmalıdır.
 
 ??? question "11. `-assumenosideeffects class android.util.Log { *; }` ne işe yarar?"
-    Günlük çağrılarını yan etkisiz sayarak sürüm derlemesinden siler; günlük dizeleri ve çağrıları ikili dosyada kalmaz.
+    Günlük çağrılarını yan etkisiz sayarak sürüm derlemesinden siler; günlük dizeleri ve çağrıları binary dosyada kalmaz.
 
 ??? question "12. SBOM'da purl ve özet değeri neden bulunur? VEX ne işe yarar?"
     purl bileşeni ekosistemden bağımsız tek biçimde tanımlar; özet dosyanın gerçekten o bileşen olduğunu doğrular. VEX,
@@ -1840,13 +1938,13 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
     yoktur. Bağlama aşamasında değerler ayrı bir kanaldan, zaten ayrıştırılmış plana yerleştirilir ve bir daha
     hiç ayrıştırıcıdan geçmez; bu yüzden içeriği ne olursa olsun sorgunun yapısını değiştiremez.
 
-??? question "15. Kabuk, `echo Merhaba ayse; echo SIZDI` dizesini kaç komut olarak çalıştırır? Neden?"
+??? question "15. Kabuk, `echo Hello alice; echo LEAKED` dizesini kaç komut olarak çalıştırır? Neden?"
     İki komut. Kabuk, aldığı metni önce `;` gibi komut ayırıcılara göre ayrı komutlara böler; bu, kabuğun kendi
     söz dizimi kuralıdır ve Java'nın "bu tek bir kullanıcı adıydı" bilgisiyle ilgisi yoktur.
 
-??? question "16. `KOK.resolve("../../etc/passwd")` ifadesini yığın (stack) algoritmasıyla adım adım çözün: sonuç nedir?"
+??? question "16. `ROOT.resolve("../../etc/passwd")` ifadesini yığın (stack) algoritmasıyla adım adım çözün: sonuç nedir?"
     Her `..` segmenti yığından bir önceki segmenti pop'lar, her normal segment yığına push'lanır. İki `..`,
-    kökün son iki segmentini (`srv`, `veri`) çıkarır; kalan `etc` ve `passwd` push'lanır. Sonuç `/etc/passwd` —
+    kökün son iki segmentini (`srv`, `data`) çıkarır; kalan `etc` ve `passwd` push'lanır. Sonuç `/etc/passwd` —
     kökün tamamen dışında.
 
 ??? question "17. `ObjectInputStream`, akıştaki hangi bilgiyi okuyarak hangi sınıfın oluşturulacağına karar verir? Bu bilgi kim tarafından belirlenir?"
@@ -1886,8 +1984,8 @@ Projeniz C/C++ olsa bile bu haftanın iki konusu doğrudan projenize uygulanır:
     Exploitability eXchange) belgeleri, bir bileşendeki bilinen zafiyetin ürünü gerçekten etkileyip
     etkilemediğini makine tarafından okunabilir biçimde bildirir.
 
-??? question "25. Demo 1'in kötü yolunda `ad = ' OR rol='yonetici' --` girdisiyle parola alanına ne yazılırsa yazılsın giriş neden başarılı olur?"
-    `--`, SQL'de satır sonuna kadar yorum başlatır; ayrıştırıcı bu karakterden sonraki `AND parola_ozeti = '...'`
+??? question "25. Demo 1'in kötü yolunda `name = ' OR role='admin' --` girdisiyle parola alanına ne yazılırsa yazılsın giriş neden başarılı olur?"
+    `--`, SQL'de satır sonuna kadar yorum başlatır; ayrıştırıcı bu karakterden sonraki `AND password_hash = '...'`
     kısmını sorgunun bir parçası olarak hiç okumaz. Parola denetimi fiilen sorgudan silinmiş olur.
 
 ??? question "26. Bir SBOM neden yalnızca üretildiği anda doğrudur? CI hattına neden otomatik olarak eklenmelidir?"

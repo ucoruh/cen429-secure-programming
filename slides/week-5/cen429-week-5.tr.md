@@ -219,9 +219,9 @@ Her enjeksiyon türünde aynı ilke:
 
 | Yorumlayıcı | Tek kanal (hatalı) | İki kanal (doğru) |
 | --- | --- | --- |
-| SQL motoru | `"...WHERE ad='" + ad + "'"` | `PreparedStatement` + `?` |
+| SQL motoru | `"...WHERE name='" + name + "'"` | `PreparedStatement` + `?` |
 | Kabuk | `exec("sh -c '...' " + host)` | `ProcessBuilder(...)` — kabuk yok |
-| Dosya sistemi | `new File(kok, istek)` | Kanonikleştir + kök denetimi |
+| Dosya sistemi | `new File(root, request)` | Kanonikleştir + kök denetimi |
 | XML | Dize birleştirerek XML kurmak | DOM/StAX API'siyle öğe oluşturmak |
 
 Aynı ilke, dört farklı yorumlayıcı.
@@ -277,17 +277,17 @@ Hepsinin kökü ve çözümü **aynı mantık**.
 # Hatalı kod
 
 ```java
-String q = "SELECT * FROM kul WHERE ad = '" + ad + "'";
-stmt.executeQuery(q);   // HATALI: ad komuta karışır
+String q = "SELECT * FROM users WHERE name = '" + name + "'";
+stmt.executeQuery(q);   // WRONG: name leaks into the query
 ```
 
-`ad` içine tırnak ve SQL koyulursa?
+`name` içine tırnak ve SQL koyulursa?
 
 ---
 
 # Saldırı · örnek
 
-Kullanıcı `ad` olarak şunu girer:
+Kullanıcı `name` olarak şunu girer:
 
 ```text
 ' OR '1'='1
@@ -296,7 +296,7 @@ Kullanıcı `ad` olarak şunu girer:
 Sorgu şuna döner:
 
 ```sql
-SELECT * FROM kul WHERE ad = '' OR '1'='1'
+SELECT * FROM users WHERE name = '' OR '1'='1'
 ```
 
 `'1'='1'` her zaman doğru → **tüm satırlar** döner.
@@ -305,7 +305,7 @@ SELECT * FROM kul WHERE ad = '' OR '1'='1'
 
 # Neden oldu?
 
-- `ad`, sorgu **metnine** birleştirildi.
+- `name`, sorgu **metnine** birleştirildi.
 - Tırnak, veriyi bitirip **komut** kısmına geçmeyi sağladı.
 - Veri ile komut **karıştı**.
 
@@ -321,12 +321,28 @@ SELECT * FROM kul WHERE ad = '' OR '1'='1'
 
 ```java
 PreparedStatement ps =
-    con.prepareStatement("SELECT * FROM kul WHERE ad = ?");
-ps.setString(1, ad);    // ad yalnız VERİ
+    con.prepareStatement("SELECT * FROM users WHERE name = ?");
+ps.setString(1, name);    // name is only DATA
 ps.executeQuery();
 ```
 
-`?` bir **parametre**; `ad` asla komut olarak yorumlanmaz.
+`?` bir **parametre**; `name` asla komut olarak yorumlanmaz.
+
+---
+
+# SQL enjeksiyonu — animasyon
+
+<iframe class="dsanim" src="anim/sql-injection.html?mode=slide&lang=tr&example=hard-classic-bypass" title="SQL enjeksiyonu: dize birleştirme ve parametreli sorgu"></iframe>
+
+<!-- Konuşma notu: Parola alanına yazılan ilk tek tırnak dize sabitini kapatır; ondan sonraki her karakter artık VERİ değil, SQL SÖZ DİZİMİ olarak okunur. Parametreli sorguda aynı karakterler tek bir DEĞER olarak kalır. Örnek seçiciden "Uç durum" örneklerini de gösterin. -->
+
+---
+
+# SQL enjeksiyonu — uç durum: parametreli sorguda tek tırnak bile zararsız
+
+<iframe class="dsanim" src="anim/sql-injection.html?mode=slide&lang=tr&example=edge-secure-any-quote" title="Uç durum: parametreli sorgu, tek tırnak bile zararsız"></iframe>
+
+<!-- Konuşma notu: Aynı tehlikeli karakter (tek tırnak) bu kez parametreli sorguda: sorgunun YAPISI hiç değişmiyor, tırnak yalnızca DEĞERİN bir parçası kalıyor. -->
 
 ---
 
@@ -390,7 +406,7 @@ Runtime.getRuntime().exec("ping " + host);  // HATALI
 `host` olarak:
 
 ```text
-example.com; rm -rf veri
+example.com; rm -rf data
 ```
 
 Kabuk bunu **iki komut** olarak çalıştırır: `ping` **ve** `rm`.
@@ -415,6 +431,22 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 
 - Kabuk **yok**; `host` tek bir **argüman**.
 - Metakarakterler yorumlanmaz.
+
+---
+
+# Komut enjeksiyonu — animasyon
+
+<iframe class="dsanim" src="anim/command-injection.html?mode=slide&lang=tr&example=hard-semicolon" title="Komut enjeksiyonu: kabuk dizesi ve argv listesi"></iframe>
+
+<!-- Konuşma notu: Kabuk metni önce belirteçlere ayırır; bir `;`/`&` belirteci "yeni bir komut başlat" demektir, "ek bir argüman" değil. argv listesinde aynı karakterler TEK bir argümanın içinde kalır, kabuk hiç çalışmaz. -->
+
+---
+
+# Komut enjeksiyonu — uç durum: aynı saldırı izin listesine önce çarpıyor
+
+<iframe class="dsanim" src="anim/command-injection.html?mode=slide&lang=tr&example=edge-secure-semicolon" title="Uç durum: aynı zararlı girdi izin listesine çarpar, argv hiç sınanmaz"></iframe>
+
+<!-- Konuşma notu: `runSecure` önce `isAllowed(name)`i çalıştırır; bu girdi orada REDDEDİLİYOR, `buildSecureArgs`/`ProcessBuilder` çağrılmıyor bile. İki bağımsız savunma katmanı: izin listesi + argv listesi. -->
 
 ---
 
@@ -457,28 +489,28 @@ new ProcessBuilder("ping", "-c", "1", host).start();
 # Hatalı kod
 
 ```java
-File f = new File("yuklenen/" + adi);  // HATALI
+File f = new File("uploads/" + name);  // WRONG
 ```
 
-`adi` içine `../` koyulursa?
+`name` içine `../` koyulursa?
 
 ---
 
 # Saldırı · örnek
 
-`adi` olarak:
+`name` olarak:
 
 ```text
 ../../etc/passwd
 ```
 
-Sonuç: `yuklenen/../../etc/passwd` → izin verilen klasörün **dışı**.
+Sonuç: `uploads/../../etc/passwd` → izin verilen klasörün **dışı**.
 
 ---
 
 # Neden oldu?
 
-- `adi`, dosya yoluna **doğrudan** eklendi.
+- `name`, dosya yoluna **doğrudan** eklendi.
 - `../` dizisi, yorumlayıcı (dosya sistemi) tarafından "üst klasöre çık" olarak okundu.
 - Denetim yoktu: hangi klasörün **dışına** çıkıldığı hiç sorulmadı.
 
@@ -487,12 +519,28 @@ Sonuç: `yuklenen/../../etc/passwd` → izin verilen klasörün **dışı**.
 # Doğru · kanonikleştir + kök denetimi
 
 ```java
-Path kok = Paths.get("yuklenen").toRealPath();
-Path hedef = kok.resolve(adi).normalize().toRealPath();
-if (!hedef.startsWith(kok)) throw new SecurityException();
+Path root = Paths.get("uploads").toRealPath();
+Path target = root.resolve(name).normalize().toRealPath();
+if (!target.startsWith(root)) throw new SecurityException();
 ```
 
 Kanonik yol **kökün altında** mı? Değilse reddet.
+
+---
+
+# Yol geçişi — animasyon
+
+<iframe class="dsanim" src="anim/path-traversal.html?mode=slide&lang=tr&example=hard-parent-escape" title="Yol geçişi: kanonikleştirme ve kök denetimi"></iframe>
+
+<!-- Konuşma notu: İstek segment segment işlenir; köktenken bir `..` kökün DIŞINA çıkma girişimidir. Güvensiz yol hiç denetlemeden okur; güvenli yol kanoniklleştirip kök denetimi yapar. -->
+
+---
+
+# Yol geçişi — uç durum: güvenli sürüm aynı saldırıyı reddediyor
+
+<iframe class="dsanim" src="anim/path-traversal.html?mode=slide&lang=tr&example=edge-secure-rejects" title="Uç durum: güvenli sürüm ../secret.txt'i reddediyor"></iframe>
+
+<!-- Konuşma notu: Aynı `../secret.txt` isteği bu kez `resolveSafely` ile: kanonik yol kökün dışına çıktığı için `null` döner, dosya hiç okunmaz. -->
 
 ---
 
@@ -608,7 +656,7 @@ Object o = new ObjectInputStream(giris).readObject();  // TEHLİKELİ
 
 ```java
 ObjectInputFilter f = ObjectInputFilter.Config
-    .createFilter("com.uygulama.*;!*");  // yalnız izinli sınıflar
+    .createFilter("com.app.*;!*");  // allowed classes only
 ois.setObjectInputFilter(f);
 ```
 
@@ -616,11 +664,27 @@ Tek bir sınıf bekleniyorsa daha dar bir desen de yazılabilir:
 
 ```java
 ois.setObjectInputFilter(ObjectInputFilter.Config
-  .createFilter("com.uygulama.Oturum;!*"));  // yalnız bu sınıf
+  .createFilter("com.app.Session;!*"));  // this class only
 ```
 
 - **Beyaz liste**: yalnız beklenen sınıflar.
 - Derinlik/boyut sınırı da koyun (DoS'a karşı).
+
+---
+
+# Deserialization — animasyon
+
+<iframe class="dsanim" src="anim/deserialization.html?mode=slide&lang=tr&example=hard-unfiltered-gadget" title="Güvensiz seri durumdan çıkarma: allow-list denetimi"></iframe>
+
+<!-- Konuşma notu: Filtresiz akış, içindeki sınıf adı ne olursa olsun onu örnekler. Filtreli akış önce sınıf adını izin listesi kalıbıyla karşılaştırır; eşleşmezse InvalidClassException — sınıf hiç oluşturulmaz. -->
+
+---
+
+# Deserialization — uç durum: filtre beklenmeyen sınıfı reddediyor
+
+<iframe class="dsanim" src="anim/deserialization.html?mode=slide&lang=tr&example=edge-filtered-rejects-other" title="Uç durum: allow-list, beklenmeyen sınıfı reddediyor"></iframe>
+
+<!-- Konuşma notu: Bu kez ObjectInputFilter DEVREDE; akıştaki sınıf adı kalıbın hiçbir parçasıyla eşleşmiyor, InvalidClassException fırlatılır, nesne HİÇ oluşturulmuyor. -->
 
 ---
 
@@ -719,7 +783,7 @@ dbf.setFeature(
 # Python · örnekler
 
 - `os.system("cmd " + x)` → komut enjeksiyonu; `subprocess.run([...])` kullan.
-- `eval(girdi)` / `pickle.loads(güvenilmez)` → **asla** güvenilmez veriyle.
+- `eval(input_text)` / `pickle.loads(untrusted)` → **asla** güvenilmez veriyle.
 - SQL: parametreli (`cursor.execute("... ?", (x,))`).
 
 ---
@@ -727,11 +791,11 @@ dbf.setFeature(
 # Python · `eval` örneği (kod)
 
 ```python
-deger = eval(girdi)                 # HATALI: herhangi bir Python ifadesi
+value = eval(input_text)                 # WRONG: any Python expression
 
 import ast
-deger = ast.literal_eval(girdi)     # Daha iyi: yalnız sabitler
-deger = int(girdi)                  # En iyisi: beklenen türü ayrıştır
+value = ast.literal_eval(input_text)     # Better: literals only
+value = int(input_text)                  # Best: parse the expected type
 ```
 
 Kural: kullanıcı verisi `eval`'e **asla** ulaşmamalı.
@@ -822,7 +886,7 @@ Girdi:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"
 # `javap` örneği
 
 ```bash
-javap -c -p Uygulama.class    # bayt kodunu sök
+javap -c -p Application.class    # disassemble the bytecode
 ```
 
 - Metot adları, çağrılar, sabitler görünür.
@@ -835,16 +899,32 @@ javap -c -p Uygulama.class    # bayt kodunu sök
 # `javap` çıktısı — ne görünüyor?
 
 ```text
-private static final java.lang.String GECERLI_PIN;
-public boolean pinDogru(java.lang.String);
+private static final java.lang.String VALID_PIN;
+static boolean pinCorrect(java.lang.String);
   Code:
-     0: aload_1
-     1: ldc           #7    // String 4729
-     3: invokevirtual #9    // String.equals
+     0: ldc           #9    // String 4729
+     2: aload_0
+     3: invokevirtual #11   // String.equals
      6: ireturn
 ```
 
-Kaynak kod yok, ama **sabit** (`4729`), **ad** (`GECERLI_PIN`, `pinDogru`) ve **mantık** ("girdiyi bu sabitle karşılaştır") açıkça görünüyor.
+Kaynak kod yok, ama **sabit** (`4729`), **ad** (`VALID_PIN`, `pinCorrect`) ve **mantık** ("girdiyi bu sabitle karşılaştır") açıkça görünüyor.
+
+---
+
+# Bayt kodundan kaynağa — animasyon
+
+<iframe class="dsanim" src="anim/bytecode-decompile.html?mode=slide&lang=tr&example=hard-pin-correct" title="Bayt kodundan kaynağa: javap ile eşleme"></iframe>
+
+<!-- Konuşma notu: Dört bayt kodu komutu (ldc, aload_0, invokevirtual, ireturn) birer birer kaynak parçasına eşleniyor; sonunda `return VALID_PIN.equals(entered);` tamamen yeniden kuruluyor. -->
+
+---
+
+# Bayt kodundan kaynağa — uç durum: lisans kontrolü, yanlış yıl
+
+<iframe class="dsanim" src="anim/bytecode-decompile.html?mode=slide&lang=tr&example=edge-license-wrong-year" title="Uç durum: lisans kontrolü, yanlış yıl"></iframe>
+
+<!-- Konuşma notu: Aynı dört bayt kodu komutu bu kez `licenseValid` için; aday değer `LICENSE_KEY` ile birebir eşleşmiyor, bytecode'dan okunan mantık `false` sonucunu veriyor. -->
 
 ---
 
@@ -902,12 +982,12 @@ Kaynak kod yok, ama **sabit** (`4729`), **ad** (`GECERLI_PIN`, `pinDogru`) ve **
 # Ad gizleme örneği
 
 ```text
-LisansDenetleyici.dogrula()  →  a.b()
+LicenseChecker.verify()  →  a.b()
 ```
 
 - Anlamlı adlar kaybolur.
 - Tersine mühendis için harita zorlaşır.
-- Ölü kod atılınca ikili küçülür.
+- Ölü kod atılınca binary küçülür.
 
 ---
 
@@ -917,15 +997,15 @@ LisansDenetleyici.dogrula()  →  a.b()
 - Gizleme adı değiştirirse çağrı **kırılır**.
 
 ```proguard
--keep class com.uygulama.Api { public *; }
+-keep class com.app.Api { public *; }
 ```
 
 Birden çok giriş noktası ve ek açıklamalı (annotation) alanlar için:
 
 ```proguard
--keep class com.uygulama.PublicApi { public *; }
+-keep class com.app.PublicApi { public *; }
 -keepclassmembers class * {
-    @com.uygulama.Reflected *;
+    @com.app.Reflected *;
 }
 ```
 
@@ -946,6 +1026,14 @@ Birden çok giriş noktası ve ek açıklamalı (annotation) alanlar için:
 
 ---
 
+# ProGuard/R8 — animasyon
+
+<iframe class="dsanim" src="anim/proguard-renaming.html?mode=slide&lang=tr&example=edge-keep-everything" title="ProGuard/R8: üye yeniden adlandırma haritası"></iframe>
+
+<!-- Konuşma notu: Her üye -keep kuralıyla eşleşiyorsa adı korunur, eşleşmiyorsa a, b, c... gibi kısa bir adla değiştirilir. Bu uç durumda -keep TÜM üyeleri kapsıyor — hiçbir şey yeniden adlandırılmıyor, gizleme boşa gidiyor. -->
+
+---
+
 # Eşleme dosyası (mapping)
 
 - R8 bir `mapping.txt` üretir: gizli ad → gerçek ad.
@@ -959,9 +1047,9 @@ Birden çok giriş noktası ve ek açıklamalı (annotation) alanlar için:
 # Eşleme dosyası · örnek (`mapping.txt`)
 
 ```text
-com.ornek.odeme.KartYoneticisi -> com.ornek.a:
-    android.content.Context baglam -> a
-    boolean varsayilanKartiAyarla(java.lang.String) -> b
+com.example.payment.CardManager -> com.example.a:
+    android.content.Context context -> a
+    boolean setDefaultCard(java.lang.String) -> b
 ```
 
 Eski ad → yeni ad. Bu dosya, gizlemeyi **tamamen** geri alır.
@@ -1003,9 +1091,17 @@ Eski ad → yeni ad. Bu dosya, gizlemeyi **tamamen** geri alır.
 
 ---
 
+# Dize gizleme — animasyon
+
+<iframe class="dsanim" src="anim/string-decryption.html?mode=slide&lang=tr&example=edge-zero-key" title="Çalışma anında dize çözme: XOR ile gizleme"></iframe>
+
+<!-- Konuşma notu: Şifreli bayt dizisi bayt bayt işlenip çözülen dize canlı olarak kuruluyor. Bu uç durumda anahtar 0x00 — şifreli baytlar zaten düz metinle aynı; XOR ile "0" anahtar hiçbir şey gizlemez. -->
+
+---
+
 # ⚠️ Reflection ile gizleme çatışması
 
-- Ada göre çağrı (`getMethod("dogrula")`) gizlemeden **sonra** kırılır.
+- Ada göre çağrı (`getMethod("verify")`) gizlemeden **sonra** kırılır.
 - Çözüm: ya `-keep` ya reflection'ı bırakıp doğrudan çağrı.
 - Reflection'ı azaltmak hem güvenlik hem gizleme için iyidir.
 
@@ -1153,8 +1249,8 @@ buildTypes { release {
 {
   "bomFormat": "CycloneDX",
   "components": [{
-    "type": "library", "name": "ornek-json", "version": "1.2.0",
-    "purl": "pkg:maven/com.ornek/ornek-json@1.2.0"
+    "type": "library", "name": "example-json", "version": "1.2.0",
+    "purl": "pkg:maven/com.example/example-json@1.2.0"
   }]
 }
 ```
@@ -1168,6 +1264,22 @@ Her bileşen: ad, sürüm, **purl** (ekosistemden bağımsız tekil kimlik), öz
 - **VEX (Vulnerability Exploitability eXchange):** "bu açık bende var ama **sömürülebilir değil**" bilgisini paylaşır.
 - Gürültüyü azaltır: her CVE panik değil.
 - SBOM'a eşlik eder.
+
+---
+
+# SBOM → CVE eşleştirme — animasyon
+
+<iframe class="dsanim" src="anim/sbom-cve-match.html?mode=slide&lang=tr&example=hard-real-sbom-two-hits" title="SBOM bağımlılık ağacı → CVE eşleştirme"></iframe>
+
+<!-- Konuşma notu: Her bileşen adı VE tam sürümüyle bilinen zafiyetler listesine karşı tek tek denetleniyor. Bu örnek Demo 6'nın gerçek SBOM'u — iki bileşen (log-core, json-tool) işaretleniyor. -->
+
+---
+
+# SBOM → CVE eşleştirme — uç durum: düzeltilmiş sürüm artık işaretlenmiyor
+
+<iframe class="dsanim" src="anim/sbom-cve-match.html?mode=slide&lang=tr&example=edge-fixed-version-passes" title="Uç durum: log-core düzeltilmiş sürümde, artık işaretlenmiyor"></iframe>
+
+<!-- Konuşma notu: Aynı `log-core` adı, ama sürüm artık 2.17.1 (düzeltilen sürüm) — `if record and version in record["versions"]` bu kez `hayır` sonucunu veriyor, hiçbir uyarı çıkmıyor. Tam sürüm eşleşmesi bu yüzden kritik. -->
 
 ---
 
@@ -1235,8 +1347,8 @@ dependency-check --scan . --format HTML
 Kullanıcı adı ve parola ile giriş yapan bir uygulama.
 
 ```java
-String q = "SELECT * FROM kul WHERE ad='" + ad +
-           "' AND parola='" + p + "'";
+String q = "SELECT * FROM users WHERE name='" + name +
+           "' AND password='" + p + "'";
 ```
 
 Nerede yanlış?
@@ -1248,10 +1360,10 @@ Nerede yanlış?
 
 # Adım 1 · saldırgan girdisi
 
-`ad` alanına:
+`name` alanına:
 
 ```text
-yonetici' --
+admin' --
 ```
 
 `--` SQL'de **yorum** başlatır; sonrası yok sayılır.
@@ -1261,10 +1373,10 @@ yonetici' --
 # Adım 2 · sorgu ne oluyor?
 
 ```sql
-SELECT * FROM kul WHERE ad='yonetici' -- ' AND parola='...'
+SELECT * FROM users WHERE name='admin' -- ' AND password='...'
 ```
 
-Parola denetimi **yorumda** kaldı → parolasız `yonetici` girişi.
+Parola denetimi **yorumda** kaldı → parolasız `admin` girişi.
 
 ---
 
@@ -1280,12 +1392,12 @@ Parola denetimi **yorumda** kaldı → parolasız `yonetici` girişi.
 
 ```java
 PreparedStatement ps = con.prepareStatement(
-  "SELECT * FROM kul WHERE ad=? AND parola_ozet=?");
-ps.setString(1, ad);
-ps.setString(2, ozetle(p));
+  "SELECT * FROM users WHERE name=? AND password_hash=?");
+ps.setString(1, name);
+ps.setString(2, hash(p));
 ```
 
-`ad` ve parola artık **veri**; `--` etkisiz.
+`name` ve parola artık **veri**; `--` etkisiz.
 
 ---
 
@@ -1403,7 +1515,7 @@ Beşi de bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **Yol geçişini hangi iki adım kapatır?**
 
-**Cevap:** Kanonikleştirme (`normalize`/`toRealPath`) + kök denetimi (`startsWith(kok)`). Ayrıca dosya adı beyaz listesi.
+**Cevap:** Kanonikleştirme (`normalize`/`toRealPath`) + kök denetimi (`startsWith(root)`). Ayrıca dosya adı beyaz listesi.
 
 ---
 

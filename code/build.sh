@@ -1,15 +1,15 @@
 #!/bin/sh
-# CEN429 — bütün demoları Linux/WSL'de derler. Kullanım: ./build.sh   (temizlemek için: ./build.sh temizle)
-# CMake 3.16 ve üstü yeterlidir (Ubuntu 20.04'ün apt sürümü dahil); preset gerektirmez.
+# CEN429 — builds every demo on Linux/WSL. Usage: ./build.sh   (to clean up: ./build.sh clean)
+# CMake 3.16 or later is enough (including Ubuntu 20.04's apt version); no preset is required.
 set -eu
 cd "$(dirname "$0")"
-if [ "${1:-}" = "temizle" ]; then
+if [ "${1:-}" = "clean" ]; then
     rm -rf build
-    find . -type d \( -name bin -o -name dokum \) -prune -exec rm -rf {} +
-    echo "Temizlendi."
+    find . -type d \( -name bin -o -name dokum -o -name dump \) -prune -exec rm -rf {} +
+    echo "Cleaned."
     exit 0
 fi
-command -v cmake >/dev/null || { echo "cmake gerekli: sudo apt install cmake build-essential"; exit 1; }
+command -v cmake >/dev/null || { echo "cmake is required: sudo apt install cmake build-essential"; exit 1; }
 cmake -S . -B build/linux-gcc -DCMAKE_BUILD_TYPE=Debug > /dev/null
 cmake --build build/linux-gcc -- -j"$(nproc 2>/dev/null || echo 2)"
-echo "Derleme tamam: ikili dosyalar her demonun bin/linux/ klasöründe."
+echo "Build complete: binaries are in each demo's bin/linux/ folder."

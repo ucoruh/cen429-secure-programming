@@ -228,10 +228,12 @@ plugins:
   - macros
 
 extra_css:
+  - stylesheets/dsanim-gomu.css
   - stylesheets/cen429.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - javascripts/dsanim-gomu.js
 
 # Page tree (for navigation)
 nav:

@@ -1,0 +1,30 @@
+# CEN429 - Week 2 - Biba LOW-WATER-MARK example
+# Strict Biba forbids "reading down" entirely. The low-water-mark policy
+# allows the read but charges a price for it: once a subject reads a less
+# trusted object, its own integrity level DROPS to that object's level; it
+# can no longer write to more trusted objects. (Requests are processed IN ORDER.)
+
+MODEL   BIBA-LWM
+
+LEVEL   External     0
+LEVEL   Application  1
+LEVEL   Kernel       2
+
+SUBJECT processor  Application
+
+OBJECT  incoming  External
+OBJECT  record    Application
+OBJECT  config    Kernel
+
+RIGHT   *  *  rw
+
+# First it reads the trusted config (reading upward): level does not change
+REQUEST processor  read   config
+# It writes to the record at its own level: allowed
+REQUEST processor  write  record
+# It reads external (untrusted) data: allowed, BUT its level drops to External
+REQUEST processor  read   incoming
+# It can no longer write to the record: a contaminated subject must not corrupt clean data
+REQUEST processor  write  record
+# Writing to an object at the External level is still free
+REQUEST processor  write  incoming

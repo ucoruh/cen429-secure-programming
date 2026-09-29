@@ -527,6 +527,22 @@ Baseline → request → classification → approval → development and testing
 
 ---
 
+# 13 Steps (Animation)
+
+<iframe class="dsanim" src="anim/evaluation-process-pipeline.html?mode=slide&lang=en" title="The evaluation process: 13 steps, three phases"></iframe>
+
+<!-- Speaker note: show how the Continuity phase (10-13) kicks in as the finding count grows, and is skipped when there are none. -->
+
+---
+
+# 13 Steps — Edge Case: Most Findings
+
+<iframe class="dsanim" src="anim/evaluation-process-pipeline.html?mode=slide&lang=en&example=edge-many-findings" title="Edge case: the highest built-in finding count"></iframe>
+
+<!-- Speaker note: whatever the finding count, the order of the 13 steps never changes — only whether Continuity runs. -->
+
+---
+
 <!-- _class: bolum -->
 
 # End-to-End Example · NotKasa v1.0.0
@@ -763,6 +779,22 @@ This is the counterpart of week 4's **secure build pipeline** (SAST + sanitizer 
 
 ---
 
+# Methods Side by Side (Animation)
+
+<iframe class="dsanim" src="anim/vulnerability-assessment-methods.html?mode=slide&lang=en" title="Vulnerability-assessment methods side by side"></iframe>
+
+<!-- Speaker note: on a mixed sample, highlight that no single method finds everything -- point out the best vs. the weakest method. -->
+
+---
+
+# Methods — Edge Case: All Logic Bugs
+
+<iframe class="dsanim" src="anim/vulnerability-assessment-methods.html?mode=slide&lang=en&example=edge-all-logic" title="Edge case: all logic bugs"></iframe>
+
+<!-- Speaker note: for logic bugs only code review and penetration testing work -- SAST/DAST/fuzzing stay weak here. -->
+
+---
+
 # Section 3 — Quick Check
 
 1. Why do we order the methods cheap to expensive?
@@ -932,6 +964,22 @@ The logic is the same as week 9's four metrics.
 
 ---
 
+# Attack Potential Calculator (Animation)
+
+<iframe class="dsanim" src="anim/attack-potential-calculator.html?mode=slide&lang=en" title="Attack potential calculator: 5 factors → total → rating"></iframe>
+
+<!-- Speaker note: show rating()'s real source lines and which threshold fires, using the program counter. -->
+
+---
+
+# Calculator — Edge Case: Secure-Element Extraction
+
+<iframe class="dsanim" src="anim/attack-potential-calculator.html?mode=slide&lang=en&example=edge-secure-element" title="Edge case: every factor at its top level → BEYOND"></iframe>
+
+<!-- Speaker note: even in the hardest scenario, the calculation runs through the same five lines of code -- only the input changes. -->
+
+---
+
 # What Is CVSS?
 
 - **CVSS (Common Vulnerability Scoring System):** expresses a vulnerability's **impact** as a standard score (0–10).
@@ -960,6 +1008,22 @@ The two complement each other.
 - One weighs **likelihood** (the attack's difficulty), the other **impact** (loss of confidentiality/integrity/availability).
 - Both are usually given **together** in the report.
 - Prioritisation is based on both.
+
+---
+
+# CVSS and Attack Potential (Animation)
+
+<iframe class="dsanim" src="anim/cvss-vs-attack-potential.html?mode=slide&lang=en" title="The same finding, two scores: CVSS-style and attack potential"></iframe>
+
+<!-- Speaker note: show how the two axes combine into a single priority decision. -->
+
+---
+
+# CVSS/Potential — Edge Case: Both Highest
+
+<iframe class="dsanim" src="anim/cvss-vs-attack-potential.html?mode=slide&lang=en&example=edge-highest" title="Edge case: the highest score on both axes"></iframe>
+
+<!-- Speaker note: even at the extreme on both axes, priority still comes from reading BOTH together. -->
 
 ---
 
@@ -1008,6 +1072,22 @@ Four steps for every finding:
 4. **Closure:** some findings close as "not open, a good-practice suggestion".
 
 This cycle → the source of the post-midterm **finding–action list** (week 7).
+
+---
+
+# Finding Cycle (Animation)
+
+<iframe class="dsanim" src="anim/finding-recommendation-action-impact.html?mode=slide&lang=en" title="Finding → recommendation → action → closure cycle"></iframe>
+
+<!-- Speaker note: show each finding going through the four stages and closing as closed/accepted/n-a/open, with the running tally on the right. -->
+
+---
+
+# Finding Cycle — Edge Case: None Closed
+
+<iframe class="dsanim" src="anim/finding-recommendation-action-impact.html?mode=slide&lang=en&example=edge-all-open" title="Edge case: no finding is closed or accepted"></iframe>
+
+<!-- Speaker note: emphasize that this is a plan, not a result -- S16 needs the latter, by the final. -->
 
 ---
 
@@ -1155,6 +1235,22 @@ This card is your project's **S16** skeleton. Let's look at the fields now.
 
 ---
 
+# Penetration-Test Plan Tree (Animation)
+
+<iframe class="dsanim" src="anim/pentest-plan-tree.html?mode=slide&lang=en" title="Penetration-test plan tree: scope → threat → test case → coverage"></iframe>
+
+<!-- Speaker note: show the tree from scope root to threats to test-case leaves, and how the coverage percentage is computed. -->
+
+---
+
+# Plan Tree — Edge Case: 100% Coverage
+
+<iframe class="dsanim" src="anim/pentest-plan-tree.html?mode=slide&lang=en&example=edge-full-coverage" title="Edge case: every test case ran, all PASSED"></iframe>
+
+<!-- Speaker note: this is the target state S16 aims for -- every leaf run, and PASSED. -->
+
+---
+
 # Worked Example · Test Card (1)
 
 **ID:** T-05
@@ -1281,6 +1377,22 @@ The reader must be able to decide **what to do**.
 
 ---
 
+# Report Structure (Animation)
+
+<iframe class="dsanim" src="anim/report-structure.html?mode=slide&lang=en" title="Report structure: five sections and the production-readiness verdict"></iframe>
+
+<!-- Speaker note: show the five sections and how the "ready for production" verdict follows from the open/urgent finding count. -->
+
+---
+
+# Report Structure — Edge Case: All Open and Urgent
+
+<iframe class="dsanim" src="anim/report-structure.html?mode=slide&lang=en&example=edge-all-urgent-open" title="Edge case: every finding is open AND urgent"></iframe>
+
+<!-- Speaker note: emphasize that the verdict is definitely NOT READY here -- a single open urgent finding is already enough. -->
+
+---
+
 # Critical-Reading Exercise
 
 Read a short finding text together:
@@ -1324,6 +1436,22 @@ This is a rehearsal for reading the compliance matrix in week 13.
 **4. Finding–action:** pour your midterm feedback into a table.
 
 **5. Residual risk:** write the risks you didn't close and why.
+
+---
+
+# Unit Test Runner (Animation)
+
+<iframe class="dsanim" src="anim/unit-test-runner.html?mode=slide&lang=en" title="Unit test runner: test cards"></iframe>
+
+<!-- Speaker note: show the demo's real `card()` code, all six cards PASSING, and the exit code 0 -- exactly the table S16 wants. -->
+
+---
+
+# Test Runner — Edge Case: All FAIL
+
+<iframe class="dsanim" src="anim/unit-test-runner.html?mode=slide&lang=en&example=edge-all-fail" title="Edge case: every card FAILS"></iframe>
+
+<!-- Speaker note: remind them the exit code equals the number of failed tests, and how CI uses this. -->
 
 ---
 

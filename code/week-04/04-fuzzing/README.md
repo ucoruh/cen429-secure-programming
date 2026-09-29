@@ -1,38 +1,42 @@
-# Demo 4 — Fuzzing'e giriş (libFuzzer)
+# Demo 4 — Introduction to fuzzing (libFuzzer)
 
-**Konu:** Fuzz test, sanitizer'la birlikte otomatik hata bulma (CWE-125/CWE-787) · **Hafta:** 4 ·
-**Kitap:** Viega & Messier, Tarif 3.1 (girdi doğrulama) — fuzzing 2003'ten sonra yaygınlaşmıştır
+**Topic:** Fuzz testing, automatic bug-finding with a sanitizer (CWE-125/CWE-787) · **Week:** 4 ·
+**Book:** Viega & Messier, Recipe 3.1 (input validation) — fuzzing became mainstream after 2003
 
-## Ne gösteriyor?
+## What it shows
 
-Küçük bir uzunluk önekli ayrıştırıcı (`[tur][uzunluk][veri...]`) sınır denetimi yapmıyor. libFuzzer, kod
-kapsamını ölçüp girdiyi otomatik değiştirerek **çökerten girdiyi saniyeler içinde** bulur; ASan tam yerinde
-raporlar. Sonra düzeltip aynı süre fuzzlarız: artık çökme üretilemez.
+A small length-prefixed parser (`[type][length][data...]`) performs no bounds checking. libFuzzer
+measures code coverage and automatically mutates the input, finding a **crashing input within
+seconds**; ASan reports it at the exact spot. We then fix it and fuzz for the same time again: no
+crash can be produced any more.
 
-| Adım | Ne olur |
+| Step | What happens |
 | --- | --- |
-| 1 | Normal girdi (`tohum/normal.bin`) sorunsuz ayrıştırılır |
-| 2 | Hatalı ayrıştırıcı libFuzzer ile (≤10 sn) fuzzlanır → çökerten girdi bulunur |
-| 3 | Bulunan girdi ASan reproducer ile oynatılır → tam hata raporu |
-| 4 | Düzeltilmiş ayrıştırıcı aynı süre fuzzlanır → çökme yok |
-| 5 | Düzeltilmiş sürüm `tohum/cokerten.bin`'i güvenle reddeder |
+| 1 | Normal input (`seeds/normal.bin`) parses without trouble |
+| 2 | The buggy parser is fuzzed with libFuzzer (≤10 s) → a crashing input is found |
+| 3 | The input found is replayed with the ASan reproducer → the full error report |
+| 4 | The fixed parser is fuzzed for the same time → no crash |
+| 5 | The fixed version safely rejects `seeds/crash.bin` |
 
-## Platformlar
+## Platforms
 
-- **Linux / WSL:** `clang -fsanitize=fuzzer,address`. Ubuntu 24.04'te clang 18 hazır gelir; Ubuntu 20.04'te
-  `sudo apt-get install -y clang`. **Clang yoksa** libFuzzer hedefleri CMake tarafından **otomatik atlanır**;
-  `demo.sh` bunu söyler ve hatayı yine ASan reproducer ile (`tohum/cokerten.bin`) gösterir.
-- **Windows:** MSVC `/fsanitize=fuzzer` (Visual Studio 2022 "C++ AddressSanitizer" bileşeni). Kurulu değilse
-  `demo.ps1` yalnız ASan reproducer'ı çalıştırır.
+- **Linux / WSL:** `clang -fsanitize=fuzzer,address`. Ubuntu 24.04 ships clang 18; on Ubuntu 20.04,
+  `sudo apt-get install -y clang`. **Without clang**, the libFuzzer targets are **automatically
+  skipped** by CMake; `demo.sh` says so and shows the bug with the ASan reproducer instead
+  (`seeds/crash.bin`).
+- **Windows:** MSVC `/fsanitize=fuzzer` (the Visual Studio 2022 "C++ AddressSanitizer" component). If
+  it is not installed, `demo.ps1` runs only the ASan reproducer.
 
-## Neden güvenli?
+## Why it's safe
 
-- Fuzzing her zaman **süre sınırlıdır** (`-max_total_time`) ve bütün çıktı bu klasördeki `fuzz-cikti/` altına
-  yazılıp demo sonunda silinir. Çökebilecek çalıştırmalar Linux'ta `prlimit --core=1:1 timeout` + `setarch -R`,
-  Windows'ta `demo_hazirla()` ile sınırlanır. Depoya yalnız küçük **tohum** girdileri konur.
+- Fuzzing is always **time-limited** (`-max_total_time`), and all output is written under this
+  folder's `fuzz-out/` and deleted at the end of the demo. Runs that could crash are bounded on
+  Linux with `prlimit --core=1:1 timeout` + `setarch -R`, on Windows with `demo_prepare()`. Only
+  small **seed** inputs are kept in the repository.
 
-## Kendiniz deneyin
+## Try it yourself
 
-1. `-max_total_time`'ı 2 saniyeye indirin. Çökme yine bulunuyor mu? Kapsam (coverage) neden bunu hızlandırır?
-2. `ayristir.c`'de yalnız `if (n < 2) return 0;` ekleyin (ilk hata). Fuzzer şimdi hangi ikinci hatayı bulur?
-3. `fuzz-cikti/corpus`'a birkaç farklı tohum ekleyin. Fuzzer daha hızlı mı ilerliyor?
+1. Lower `-max_total_time` to 2 seconds. Is the crash still found? Why does coverage make this fast?
+2. In `parser.c`, add only `if (n < 2) return 0;` (the first bug). What second bug does the fuzzer
+   now find?
+3. Add a few different seeds to `fuzz-out/corpus`. Does the fuzzer make faster progress?

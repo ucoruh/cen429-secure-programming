@@ -87,12 +87,23 @@ Each term is defined once, where it first appears in the body; here we only mark
 
 <!-- _class: yogun -->
 
-# A Brief History — How Did Security Requirements Become Standardised?
+# A Brief History (1) — the Foundational Standards
 
-- **1985** — **TCSEC** formalises requirement levels
-- **1994** — **FIPS 140** cryptographic module requirements (today **140-3**)
-- **1999** — **Common Criteria**: **PP/ST**, **SFR/SAR**, **EAL**
-- **2010s** — **OWASP MASVS** (mobile), **ETSI EN 303 645** (IoT), **EMVCo/PCI** (payment)
+- **1983/1985** — **TCSEC** (Orange Book), the US DoD's first attempt at security requirement levels
+- **1984/1998** — **IEEE 830**, how to write ANY software requirements specification → superseded by **ISO/IEC/IEEE 29148** (**2011**)
+- **1991** — **ITSEC**, Europe's own evaluation criteria (parallel to TCSEC)
+
+> Requirements engineering is older than security certification — security just adds "and prove it, independently."
+
+---
+
+<!-- _class: yogun -->
+
+# A Brief History (2) — Certification and Sector Standards
+
+- **1994 → 1998 → 1999** — **Common Criteria** v1.0 → v2.0 → **ISO/IEC 15408** (still revised today: **CC:2022**)
+- **1994 → 2001 → 2019** — **FIPS 140-1** → **140-2** → **140-3**, cryptographic module requirements
+- **2004** — **PCI DSS** (payment) · **2009** — **OWASP ASVS** (web) · **2016** — **OWASP MASVS** (mobile)
 
 > The unchanging principle: a requirement must be **measurable** and **traceable**; a "met" with no evidence is invalid.
 
@@ -235,6 +246,22 @@ If any one is missing, the requirement stays open to debate; the evaluator sends
 
 ---
 
+# A Requirement's Life (animation)
+
+<iframe class="dsanim" src="anim/requirement-lifecycle.html?mode=slide&lang=en" title="A requirement's life: from a vague sentence to a testable requirement"></iframe>
+
+<!-- Speaker note: run the six steps live on "The application must protect user data." — watch which word gets added at each step. -->
+
+---
+
+# A Requirement's Life — edge case: a one-word vagueness
+
+<iframe class="dsanim" src="anim/requirement-lifecycle.html?mode=slide&lang=en&example=edge-minimal" title="Edge case: 'The module should be secure.'"></iframe>
+
+<!-- Speaker note: even a very short sentence needs all six steps — a single vague word is enough to make it untestable. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Second and Third Examples
@@ -252,6 +279,22 @@ If any one is missing, the requirement stays open to debate; the evaluator sends
 - **Common mistake:** "Requirement: AES-256-GCM must be used." → this is a **control**, not a requirement; correct: "...must be protected with AEAD" (requirement) + "AES-256-GCM, S7.2" (control).
 - Write the **tool class** (AEAD, CSPRNG, TLS 1.2+) in the requirement text; put a specific library/version name in the control.
 - **must (MUST):** mandatory, a direct finding if not met. **should (SHOULD):** strong recommendation, needs a rationale. **may (MAY):** optional, not a finding.
+
+---
+
+# Requirement Quality Checker (animation)
+
+<iframe class="dsanim" src="anim/requirement-quality-checker.html?mode=slide&lang=en" title="Requirement quality checker (requirement_quality.c)"></iframe>
+
+<!-- Speaker note: this is the demo tool `02-requirement-quality` — watch which rule (vague phrase, no measurable basis) fires on each sample sentence. -->
+
+---
+
+# Requirement Quality Checker — edge case: a single sentence, a single rule
+
+<iframe class="dsanim" src="anim/requirement-quality-checker.html?mode=slide&lang=en&example=edge-single-weak" title="Edge case: 'The interface must look clean and modern.'"></iframe>
+
+<!-- Speaker note: not vague, but no number and no concrete technical term — the "no measurable basis" rule alone is enough. -->
 
 ---
 
@@ -403,6 +446,22 @@ If one link were missing: without the asset, "which data" stays unclear; without
 | Evidence | Test log | **Residual risk:** written into S16.4 |
 
 In "not met," the control/verification can stay blank, but the **evidence** (where the residual risk is documented) cannot.
+
+---
+
+# Traceability Chain (animation)
+
+<iframe class="dsanim" src="anim/traceability-matrix.html?mode=slide&lang=en" title="Traceability chain: requirement → design → code → test → evidence (compliance_matrix.c)"></iframe>
+
+<!-- Speaker note: the real compliance_matrix.c rule — a "met" or "delegated" row with an empty evidence column is a gap, scanned row by row. -->
+
+---
+
+# Traceability Chain — edge case: every row a gap
+
+<iframe class="dsanim" src="anim/traceability-matrix.html?mode=slide&lang=en&example=edge-all-gaps" title="Edge case: every row has a gap, none are OK"></iframe>
+
+<!-- Speaker note: an unrealistic matrix on purpose — shows the pattern of the finding message repeating on every single row. -->
 
 ---
 
@@ -574,6 +633,22 @@ The "not met" block fills in the **Status** and **Residual risk** fields instead
 
 ---
 
+# The Requirement Block (animation)
+
+<iframe class="dsanim" src="anim/requirement-block-deferral.html?mode=slide&lang=en" title="The requirement-block pattern and a delegated (deferred) requirement"></iframe>
+
+<!-- Speaker note: fill in the same [Family] Id — Status block for a met and a delegated requirement; watch the three deferral questions get answered one at a time. -->
+
+---
+
+# The Requirement Block — edge case: a silent hand-off
+
+<iframe class="dsanim" src="anim/requirement-block-deferral.html?mode=slide&lang=en&example=edge-silent-handoff" title="Edge case: 'why' was never written"></iframe>
+
+<!-- Speaker note: "to whom" and "how" are answered but "why" is blank — still an incomplete block, still a finding. -->
+
+---
+
 # Section 3 — Quick Check
 
 1. What are the requirement block's fields?
@@ -705,6 +780,22 @@ This table is the heart of the ST: every row is a bridge between "why this requi
 
 ---
 
+# The EAL Ladder (animation)
+
+<iframe class="dsanim" src="anim/common-criteria-ladder.html?mode=slide&lang=en" title="Common Criteria structure: PP/ST, SFR/SAR, and the EAL1-7 ladder"></iframe>
+
+<!-- Speaker note: pick a target EAL and watch the SAR ladder fill in from EAL1 up — each level keeps everything the previous one required. -->
+
+---
+
+# The EAL Ladder — edge case: EAL7, the whole ladder
+
+<iframe class="dsanim" src="anim/common-criteria-ladder.html?mode=slide&lang=en&example=edge-eal7" title="Edge case: the highest level, all seven SAR packages included"></iframe>
+
+<!-- Speaker note: formally verified design — very high risk, small systems only; almost never the right target for a term project. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Section 4's Rule
@@ -743,6 +834,22 @@ This table is the heart of the ST: every row is a bridge between "why this requi
 | 2 | Tamper **evidence** |
 | 3 | Tamper **resistance** and response |
 | 4 | The highest physical protection |
+
+---
+
+# FIPS 140-3 Levels (animation)
+
+<iframe class="dsanim" src="anim/fips-140-3-levels.html?mode=slide&lang=en" title="FIPS 140-3 security levels 1-4: what each level adds"></iframe>
+
+<!-- Speaker note: the four levels are cumulative — watch what each one adds on top of the level below it. -->
+
+---
+
+# FIPS 140-3 Levels — edge case: Level 4
+
+<iframe class="dsanim" src="anim/fips-140-3-levels.html?mode=slide&lang=en&example=edge-level4" title="Edge case: full protection against environmental attacks"></iframe>
+
+<!-- Speaker note: a tamper-hostile field device — the only realistic case for Level 4 in most student projects is "we don't need this". -->
 
 ---
 
@@ -951,6 +1058,22 @@ Let's check off the Level 1 expectations one by one.
 
 ---
 
+# Sector Standards Mapped Onto Our Families (animation)
+
+<iframe class="dsanim" src="anim/sector-standard-mapping.html?mode=slide&lang=en" title="Mapping sector requirement sets onto the course's families (EMVCo/PCI/GSMA/OWASP MASVS)"></iframe>
+
+<!-- Speaker note: EMVCo's own family list is almost identical to ours — watch why the GSMA column stays mostly empty (a facility audit, not a product one). -->
+
+---
+
+# Sector Standards Mapping — edge case: the family with no GSMA counterpart
+
+<iframe class="dsanim" src="anim/sector-standard-mapping.html?mode=slide&lang=en&example=edge-gsma-gap" title="Edge case: CEN429-AS has no named counterpart in any of the four sets' GSMA column"></iframe>
+
+<!-- Speaker note: not every "gap" in the matrix is a mistake — sometimes it just means the standard is asking a different kind of question. -->
+
+---
+
 # Section 6 — Quick Check
 
 1. Who is ETSI EN 303 645 for?
@@ -1024,8 +1147,24 @@ Every requirement is linked to an **asset** and to a **control**.
 # The Same Example · From Threat to Release Plan
 
 - **4. Linking to threats:** links to the threat "an attacker with physical access takes a memory dump."
-- **5. Control/verification:** the `sifreleme_bellek_sil()` call; verification: showing the key's bytes are **not present** in a memory dump.
+- **5. Control/verification:** the `crypto_wipe()` call; verification: showing the key's bytes are **not present** in a memory dump.
 - **6. Release plan:** the session key was met in v0.9; the vault-file key is planned for v1.0, and until then written as **not met** + residual risk.
+
+---
+
+# Carrying a Requirement Into the Plan (animation)
+
+<iframe class="dsanim" src="anim/requirements-to-plan.html?mode=slide&lang=en" title="Carrying a requirement into the software plan and asset management: six steps"></iframe>
+
+<!-- Speaker note: walk CEN429-CR-03 through all six steps live, from "does this apply?" to a task in the release plan. -->
+
+---
+
+# Carrying a Requirement Into the Plan — edge case: not applicable
+
+<iframe class="dsanim" src="anim/requirements-to-plan.html?mode=slide&lang=en&example=edge-not-applicable" title="Edge case: the requirement does not apply, with a rationale"></iframe>
+
+<!-- Speaker note: step 1 alone can end the process — but only when the rationale is written down, never silently. -->
 
 ---
 

@@ -117,7 +117,7 @@
 ### Değerlendirme ve gereksinimler (12–13. haftalar)
 
 ??? question "7. Değerlendirme hedefinin (TOE) 'benzersiz' tanımlanması neden gerekir?"
-    Rapor yalnız incelenen ikili dosya için geçerlidir; sürüm numarası tek başına aynı dosyayı garanti etmez. İkili +
+    Rapor yalnız incelenen binary dosya için geçerlidir; sürüm numarası tek başına aynı dosyayı garanti etmez. Binary +
     kaynak + özet değeri birlikte verilir.
 
 ??? question "8. Güvenlik etki analizi ile delta değerlendirme arasındaki ilişki nedir?"

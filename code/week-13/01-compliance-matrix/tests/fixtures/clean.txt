@@ -1,0 +1,3 @@
+CEN429-DR-01|met|S8|T-05 test output
+CEN429-AP-02|delegated|S14|signed update channel documented in the platform security guide
+CEN429-AS-03|not-met|S12|residual risk: legacy hardware, no update path before v1.0

@@ -50,7 +50,7 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 | Kriptografi | 2 | S8 |
 | Güvenli iletişim | 4 | S6 · S11 |
 | Varlık yönetimi | 5 | S5 (tam) · S8 |
-| İkili korumalar | 3 | S9 (ileri) · S15 |
+| Binary korumalar | 3 | S9 (ileri) · S15 |
 | Güvenlik testi ve birim testleri | 6 | S16 **sonuçlar** |
 | Standartlar | 7 | S1 · S14 · S17 |
 | Final rapor ve sunum | 7 | Tümü |

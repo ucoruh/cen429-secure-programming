@@ -41,10 +41,11 @@ Konuşma notu: Bu hafta 9. haftadaki gizleme kurallarının otomatik karşılı�
 
 # Kısa tarihçe — kaynaktan kaynağa gizleme ve çeşitlendirme
 
-- **1993** — Cohen: **çeşitlendirme** fikri (aynı işlev, farklı ikili)
-- **1997** — Collberg vd. gizleme taksonomisi (9. haftanın temeli)
-- **2013** — **Obfuscator-LLVM**: derleyici tabanlı gizleme
-- **2010'lar** — **Tigress**: C için kaynaktan kaynağa + sanallaştırma + çeşitlendirme
+- **1993** — Cohen: **çeşitlendirme** fikri (aynı işlev, farklı binary)
+- **1997** — Collberg vd. gizleme taksonomisi; aynı yıl Forrest vd. ayrı kökten **çeşitlendirme**
+- **2002** — Necula vd., CIL: Tigress'in üzerine kurulduğu altyapı
+- **~2012–13** — **Tigress**: C için kaynaktan kaynağa + sanallaştırma + çeşitlendirme
+- **2015** — **Obfuscator-LLVM**: derleyici tabanlı gizleme
 - **2016–17** — Banescu vd. Tigress+KLEE ile **dayanıklılığı ölçer**
 
 > Ana kural: **dayanıklılık ↔ maliyet**; koruma varlığın değeriyle orantılı seçilir.
@@ -63,7 +64,7 @@ Konuşma notu: Bu hafta 9. haftadaki gizleme kurallarının otomatik karşılı�
 
 # Öğrenme çıktısı
 
-Bu hafta **ÖÇ.3** (ikili uygulama korumaları) üstünedir.
+Bu hafta **ÖÇ.3** (binary uygulama korumaları) üstünedir.
 
 Sonunda yapabileceğiniz:
 
@@ -88,14 +89,14 @@ Tigress bir **sihir değil**; el ile yaptığımızı otomatikleştirir ve **çe
 
 # Önceki haftalardan gelenler
 
-- **Kaynak kod, derleyici, ikili dosya** — insanın yazdığı program metninin derleyiciyle makine koduna çevrilip çalıştırılabilir hale gelmesi **(Hafta 9)**
+- **Kaynak kod, derleyici, binary dosya** — insanın yazdığı program metninin derleyiciyle makine koduna çevrilip çalıştırılabilir hale gelmesi **(Hafta 9)**
 - **Kod gizleme (obfuscation)** — davranışı değiştirmeden kodu anlaşılması zor kılan, saldırı maliyetini artıran karşı önlem **(Hafta 9)**
 - **9. haftanın gizleme kuralları (K-01–K-12)** — opak yüklem, aritmetik kodlama, kontrol akışı düzleştirme, dize kodlama, değişken bölme, sanallaştırma gibi el ile uygulanan kurallar; bu hafta bunları Tigress'in dönüşümleriyle tek tek eşliyoruz **(Hafta 9)**
 - **CFG (kontrol akışı grafiği)** — temel blokları düğüm, geçişleri kenar yapan şema **(Hafta 9)**
 - **Sembolik yürütme** — program yollarını matematiksel kısıt olarak çözen otomatik analiz (ör. KLEE) **(Hafta 9)**
-- **Çeşitlendirme (diversification)** — aynı kaynaktan davranışça eş, yapıca farklı ikili dosyalar üretme fikri; bu hafta Tigress'in `--Seed` bayrağıyla otomatikleştiriyoruz **(Hafta 9)**
+- **Çeşitlendirme (diversification)** — aynı kaynaktan davranışça eş, yapıca farklı binary dosyalar üretme fikri; bu hafta Tigress'in `--Seed` bayrağıyla otomatikleştiriyoruz **(Hafta 9)**
 - **CI ve derleme hattı** — her kod değişikliğinde otomatik derleme/test adımlarını çalıştıran sistem **(Hafta 4)**
-- **Sürüm kimliği ve özet (hash) değeri** — bir yazılımın hangi ikili/kaynak/özet üçlüsüyle dağıtıldığını gösteren kayıt; bu hafta buna bir de tohum alanı ekliyoruz **(Hafta 1)**
+- **Sürüm kimliği ve özet (hash) değeri** — bir yazılımın hangi binary/kaynak/özet üçlüsüyle dağıtıldığını gösteren kayıt; bu hafta buna bir de tohum alanı ekliyoruz **(Hafta 1)**
 
 ---
 
@@ -265,10 +266,10 @@ Bakım maliyeti **okunur kaynakta** kalır; dağıtılan kaynak gizli.
 # Temel akış · tek dönüşüm
 
 ```bash
-# girdi: temiz.c → çıktı: gizli.c
-tigress --Transform=Flatten --Functions=erisim_ver \
-        --out=gizli.c temiz.c
-cc -o program gizli.c
+# girdi: source.c → çıktı: variant.c
+tigress --Transform=Flatten --Functions=grant_access \
+        --out=variant.c source.c
+cc -o program variant.c
 ```
 
 ---
@@ -435,6 +436,23 @@ Bu yüzden Virtualize yalnız **küçük, kritik** fonksiyonlara; `--Functions` 
 
 ---
 
+# Animasyon · Bir dönüşüm, adım adım
+
+<iframe class="dsanim" src="anim/transform-step-by-step.html?mode=slide&lang=tr" title="Bir dönüşüm, adım adım: Flatten / EncodeArithmetic / AddOpaque"></iframe>
+
+<!-- Konuşma notu: flatten-granted ön ayarıyla başla, dağıtıcının case 7341'de kararı nasıl gizlediğini göster;
+sonra arith-typical ile MBA özdeşliğini doğrula. -->
+
+---
+
+# Animasyon · Uç durum: tohum 0
+
+<iframe class="dsanim" src="anim/transform-step-by-step.html?mode=slide&lang=tr&example=opaque-seed-zero"></iframe>
+
+<!-- Konuşma notu: q=0 olsa bile (q*q)%4 hiçbir zaman 2 olamaz — yüklem yine her zaman doğru; gerçek fallback_transform.py satırları. -->
+
+---
+
 <!-- _class: bolum -->
 
 # Dönüşümleri sırayla birleştirmek
@@ -453,18 +471,18 @@ Tigress'te bu, dönüşümleri **sırayla** uygulamak demektir.
 
 ```bash
 tigress \
-  --Transform=EncodeLiterals   --Functions=erisim_ver \
-  --Transform=EncodeArithmetic --Functions=erisim_ver \
-  --Transform=Flatten          --Functions=erisim_ver \
-  --Transform=AddOpaque        --Functions=erisim_ver \
-  --out=gizli.c temiz.c
+  --Transform=EncodeLiterals   --Functions=grant_access \
+  --Transform=EncodeArithmetic --Functions=grant_access \
+  --Transform=Flatten          --Functions=grant_access \
+  --Transform=AddOpaque        --Functions=grant_access \
+  --out=variant.c source.c
 ```
 
 ---
 
 # Hat ne yapıyor?
 
-Tek denetimi (`erisim_ver`):
+Tek denetimi (`grant_access`):
 
 1. Sabit/dize kodla
 2. Aritmetiğini kodla
@@ -472,6 +490,24 @@ Tek denetimi (`erisim_ver`):
 4. Opak yüklemlerle güçlendir
 
 = 9. haftada K-04'ün "güçlendirilmiş düzleştirme" dediği şeyin otomatik hâli.
+
+---
+
+# Animasyon · Kaynaktan kaynağa hat
+
+<iframe class="dsanim" src="anim/source-to-source-pipeline.html?mode=slide&lang=tr" title="Kaynaktan kaynağa hat: source.c → dönüşüm → source.c → derleyici → ikili"></iframe>
+
+<!-- Konuşma notu: normal ön ayar (Tigress, iki dönüşüm) ile başla; öğrencilere davranış denetimi satırının her
+jeton için tek tek çalıştığını göster. -->
+
+---
+
+# Animasyon · Uç durum: bozulmuş değişken
+
+<iframe class="dsanim" src="anim/source-to-source-pipeline.html?mode=slide&lang=tr&example=edge-corrupted-variant"></iframe>
+
+<!-- Konuşma notu: elle bozulmuş bir gizli.c davranışı değiştirirse pipeline_check.py'nin nasıl FAIL verdiğini
+göster; bu, "gizli.c'ye elle dokunma" kuralının somut kanıtıdır. -->
 
 ---
 
@@ -497,12 +533,12 @@ Bu, 12. haftadaki "S16 sonuçları"na bağlanır.
 
 ---
 
-# Başlangıç · temiz.c
+# Başlangıç · source.c
 
 ```c
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;  /* tek dal */
-    return RED;
+int grant_access(const char *token) {
+    if (token_is_valid(token)) return GRANTED;  /* tek dal */
+    return DENIED;
 }
 ```
 
@@ -512,7 +548,7 @@ Korumasız: tek dal, `strings`, tek bayt yamasıyla atlanır.
 
 # Adım 0 · saldırgan
 
-- `strings` → `IZIN`/`RED`
+- `strings` → `GRANTED`/`DENIED`
 - Tersine derle → tek `if`
 - Başarısızlık dalını başarıya çevir
 
@@ -527,7 +563,7 @@ Süre: dakikalar.
 | Adım | Dönüşüm | Ne değişir | Maliyet |
 | --- | --- | --- | --- |
 | 0 | — | Tek bayt yamasıyla atlanır | — |
-| 1 | EncodeLiterals | IZIN/RED düz görünmez | Çok düşük |
+| 1 | EncodeLiterals | GRANTED/DENIED düz görünmez | Çok düşük |
 | 2 | EncodeArithmetic | Karşılaştırma karmaşık | Düşük |
 | 3 | Flatten | Tek dal görünmez | Orta |
 | 4 | AddOpaque | Sahte dallar | Orta |
@@ -542,6 +578,24 @@ Süre: dakikalar.
 - Nerede duracağınız: **varlık değeri** + **ölçtüğünüz maliyet**.
 
 Adım 5 (Virtualize) çoğu denetim için gereksiz.
+
+---
+
+# Animasyon · Sıranın etkisi: kapsam ve imza
+
+<iframe class="dsanim" src="anim/transform-stacking-order.html?mode=slide&lang=tr" title="Dönüşüm hattında sıranın etkisi: kapsam ve imza"></iframe>
+
+<!-- Konuşma notu: code-then-structure ile başla; EncodeLiterals'in yalnız o ana kadar görünen sabitleri
+kodladığını, sign'ın en son aşama olduğunu vurgula. -->
+
+---
+
+# Animasyon · Uç durum: imza en başta
+
+<iframe class="dsanim" src="anim/transform-stacking-order.html?mode=slide&lang=tr&example=sign-too-early"></iframe>
+
+<!-- Konuşma notu: imza en başta olursa sonraki her aşama imzayı geçersiz kılar — "imzalama sırası bozulursa"
+senaryosunun canlı kanıtı. -->
 
 ---
 
@@ -613,7 +667,7 @@ Saldırgan bir kopyayı kırıp yamayı **herkese** dağıtabiliyorsa, bir kır�
 
 # Çeşitlendirme nedir?
 
-Aynı kaynaktan **davranışça eş, yapıca farklı** ikili dosyalar.
+Aynı kaynaktan **davranışça eş, yapıca farklı** binary dosyalar.
 
 Tigress bunu bir **tohum** ile yapar:
 
@@ -621,13 +675,13 @@ Tigress bunu bir **tohum** ile yapar:
 
 ---
 
-# İki tohum, iki farklı ikili
+# İki tohum, iki farklı binary
 
 ```bash
 tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_a.c temiz.c
+        --Functions=grant_access --out=gizli_a.c source.c
 tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_b.c temiz.c
+        --Functions=grant_access --out=gizli_b.c source.c
 ```
 
 `gizli_a` ve `gizli_b` aynı işi yapar; makine kodları **farklı**.
@@ -640,6 +694,24 @@ tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
 - **Zamanda:** her sürüm yeni tohum → eski saldırı yeni sürümde bozulur.
 
 10\. haftadaki anahtar/sürüm yenilemeyle birlikte çalışır.
+
+---
+
+# Animasyon · Tohumla çeşitlendirme
+
+<iframe class="dsanim" src="anim/diversification-seeds.html?mode=slide&lang=tr" title="Tohumla çeşitlendirme: aynı kaynak, farklı bayt, aynı davranış"></iframe>
+
+<!-- Konuşma notu: three-seeds ön ayarıyla üç tohumun maskesini ve kodlanmış baytlarını yan yana göster; hepsi
+farklı bayt, aynı GRANTED/DENIED davranışı. -->
+
+---
+
+# Animasyon · Uç durum: unutulan tohum
+
+<iframe class="dsanim" src="anim/diversification-seeds.html?mode=slide&lang=tr&example=edge-same-seed-twice"></iframe>
+
+<!-- Konuşma notu: aynı tohum iki kez kullanılırsa baytlar da AYNI kalır — çeşitlendirme sağlanmamış olur; bölüm
+9'daki "sürüm başına tohum" kuralının nedeni budur. -->
 
 ---
 
@@ -682,7 +754,7 @@ Her hat için ölç ve S9/S15'e yaz:
 
 | Ölçüt | Nasıl |
 | --- | --- |
-| İkili boyut | `size` / `ls -l` |
+| Binary boyut | `size` / `ls -l` |
 | Çalışma süresi | Aynı girdiyle N kez, ortalama |
 | CFG karmaşıklığı | Tersine derleyicide temel blok sayısı |
 
@@ -724,7 +796,7 @@ Rakamlar örnek; siz **kendi** ölçtüğünüzü yazarsınız.
 program_temiz:
   boyut: 100 KB
   işlem süresi: 1.00× (referans)
-  erisim_ver temel blok: 5
+  grant_access temel blok: 5
 ```
 
 ```text
@@ -739,6 +811,23 @@ boyut: 131 KB   (+%31)
 süre:  1.80×
 blok:  40
 ```
+
+---
+
+# Animasyon · Ölçme: boyut, süre, komut, benzerlik
+
+<iframe class="dsanim" src="anim/obfuscation-measurement.html?mode=slide&lang=tr" title="Gizlemeyi ve çeşitlendirmeyi ölçmek: boyut, süre, komut sayısı, benzerlik"></iframe>
+
+<!-- Konuşma notu: two-different-seeds ön ayarıyla tabloyu satır satır aç; komut/dal sayısının tohumdan bağımsız,
+boyut/benzerliğin tohuma bağlı olduğunu vurgula. -->
+
+---
+
+# Animasyon · Uç durum: iki "tohum" de orijinal
+
+<iframe class="dsanim" src="anim/obfuscation-measurement.html?mode=slide&lang=tr&example=edge-both-zero"></iframe>
+
+<!-- Konuşma notu: tohum 0, "orijinal"ın kendisi demektir; tablo bu durumda kendine karşı %100 benzerlik gösterir. -->
 
 ---
 
@@ -813,7 +902,7 @@ Bir gizleme kararını ölçüyle savun:
 
 # Bölüm 3 — cevaplar
 
-1. Aynı kaynağı farklı **tohum**la gizleyince araç farklı rastgele seçimler yapar → her build **farklı ikili** (aynı davranış).
+1. Aynı kaynağı farklı **tohum**la gizleyince araç farklı rastgele seçimler yapar → her build **farklı binary** (aynı davranış).
 2. **Uzayda:** farklı kopyalar/kullanıcılar farklı (bir kırık herkesi kırmaz). **Zamanda:** sürümler arası değişir (kırık kalıcı olmaz).
 3. Daha güçlü gizleme daha çok **dayanıklılık** ama daha çok **maliyet**; koruma varlığın **değeriyle orantılı** seçilir.
 
@@ -845,7 +934,7 @@ Adım adım gidelim.
 
 # Adım 1 · Hazırlık
 
-- Küçük, sentetik bir program yaz (ör. `erisim_ver`).
+- Küçük, sentetik bir program yaz (ör. `grant_access`).
 - Birim testleriyle **doğru çalıştığını** göster.
 - Bu senin "temiz" temel çizgin.
 
@@ -856,8 +945,8 @@ Adım adım gidelim.
 ```bash
 tigress --Transform=EncodeLiterals --Transform=EncodeArithmetic \
         --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli.c temiz.c
-cc -o program_gizli gizli.c
+        --Functions=grant_access --out=variant.c source.c
+cc -o program_gizli variant.c
 ```
 
 Bir dönüşüm hattı uygula.
@@ -896,11 +985,11 @@ Boyut ve süre farkını yaz.
 # Adım 6 · Çeşitlendir
 
 - Aynı hattı **iki farklı tohumla** çalıştır.
-- İki ikilinin farklı olduğunu göster (bayt farkı).
+- İki binary'nin farklı olduğunu göster (bayt farkı).
 
 ```bash
-tigress --Seed=1001 ... --out=gizli_a.c temiz.c
-tigress --Seed=2002 ... --out=gizli_b.c temiz.c
+tigress --Seed=1001 ... --out=gizli_a.c source.c
+tigress --Seed=2002 ... --out=gizli_b.c source.c
 ```
 
 ---
@@ -922,6 +1011,23 @@ Bu tablo doğrudan **S9/S15**'e girer.
 - Tigress yalnız **kendi** kodunuza.
 - Örnek program bilgisayara **zarar vermez**: sistem ayarı değiştirmez, ağa dokunmaz.
 - Bütün değerler **sentetik**.
+
+---
+
+# Animasyon · Sınıf içi akış
+
+<iframe class="dsanim" src="anim/in-class-flow.html?mode=slide&lang=tr" title="Sınıf içi akış: gizle → karşılaştır → ölç → çeşitlendir"></iframe>
+
+<!-- Konuşma notu: all-pass ön ayarıyla dört aşamayı (OBFUSCATE/COMPARE/MEASURE/DIVERSIFY) sırayla aç; gerçek
+pipeline_check.py satırlarının nasıl eşleştiğini göster. -->
+
+---
+
+# Animasyon · Uç durum: uyuşmazlık + tekrar tohum
+
+<iframe class="dsanim" src="anim/in-class-flow.html?mode=slide&lang=tr&example=edge-mismatch-and-same-seed"></iframe>
+
+<!-- Konuşma notu: bir jeton uyuşmazsa VE tohum tekrarlanırsa akışın nerede FAILED verdiğini göster. -->
 
 ---
 
@@ -973,7 +1079,7 @@ tigress \
   --Transform=Flatten \
   --Transform=AddOpaque \
   --Functions=dosya_saglam \
-  --out=gizli.c temiz.c
+  --out=variant.c source.c
 ```
 
 ---
@@ -1023,7 +1129,7 @@ Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
 
 # Çeşitlendirme
 
-- İki tohumla üret → iki farklı ikili.
+- İki tohumla üret → iki farklı binary.
 - "Bütünlük denetimini atla" yaması bir kopyada işe yarasa bile diğerinde yaramaz.
 
 ---
@@ -1049,7 +1155,7 @@ Denetimin nerede geçtiği/kaldığı akıştan okunmaz.
 # Bölüm 4 — cevaplar
 
 1. Davranışın **değişmediğini test et** (birim testi geçmeli); gizleme işlevi bozmamalı.
-2. İki farklı tohumla üret; ikilileri karşılaştır (**hash/boyut/komut farklı**) ama **aynı girdi→aynı çıktı** (diff/objdump).
+2. İki farklı tohumla üret; binary'leri karşılaştır (**hash/boyut/komut farklı**) ama **aynı girdi→aynı çıktı** (diff/objdump).
 3. **S9** (kod sağlamlaştırma (hardening)) ve **S15** (derleme/dağıtım hattı); önce/sonra ölçüm kanıt olarak.
 
 ---
@@ -1094,7 +1200,7 @@ Vize sonrası projenizin **S15** bölümü tam bunu belgeler.
 
 - Önce gizle, **sonra** imzala.
 - Sürüm kimliği ve özet değerleri (12. haftadaki TOE) **tutarlı** olsun.
-- Neden sonra? İmza, dağıtılan **son** ikiliyi kapsamalı.
+- Neden sonra? İmza, dağıtılan **son** binary'yi kapsamalı.
 
 ---
 
@@ -1103,6 +1209,24 @@ Vize sonrası projenizin **S15** bölümü tam bunu belgeler.
 - Hat, sürekli entegrasyonda (CI) çalışır.
 - Her sürümde: birim testleri + boyut/hız ölçümü **otomatik**.
 - Davranış bozulursa yapı **durur**.
+
+---
+
+# Animasyon · CI hattı, sürüm başına tohum
+
+<iframe class="dsanim" src="anim/build-deployment-pipeline.html?mode=slide&lang=tr" title="Gizlemeyi derleme/dağıtım hattına yerleştirmek: CI, sürüm başına tohum"></iframe>
+
+<!-- Konuşma notu: three-clean-releases ön ayarıyla üç sürümün (v1.0/v1.1/v1.2) altı aşamadan geçtiğini göster;
+S15 kaydının bu sürümlerin tam karşılığı olduğunu vurgula. -->
+
+---
+
+# Animasyon · Uç durum: tekrarlanan tohum
+
+<iframe class="dsanim" src="anim/build-deployment-pipeline.html?mode=slide&lang=tr&example=edge-seed-reused"></iframe>
+
+<!-- Konuşma notu: v1.3'ün v1.0 ile aynı tohumu kullandığını, bunun record-version aşamasında nasıl
+yakalandığını göster. -->
 
 ---
 
@@ -1203,7 +1327,7 @@ Sentetik bir uygulamada bir **lisans denetimi** ve bir **anahtar türetme** fonk
 
 # Bölüm 5 — cevaplar
 
-1. İmza **son ikiliyi** korur; önce imzalayıp sonra gizlersen ikili değişir → imza geçersiz. Sıra: derle → gizle → **imzala**.
+1. İmza **son binary'yi** korur; önce imzalayıp sonra gizlersen binary değişir → imza geçersiz. Sıra: derle → gizle → **imzala**.
 2. Bütünü gizlemek performans/boyutu patlatır ve çoğu kod hassas değil; korumayı **kritik** fonksiyonlara yoğunlaştır → maliyet düşük, etki yüksek.
 3. Kaynak → (statik analiz) → derle → **gizle** → çeşitlendir (tohum) → paketle/SBOM → **imzala** → dağıt (hepsi CI'da kayıtlı).
 
@@ -1293,7 +1417,7 @@ Sentetik bir uygulamada bir **lisans denetimi** ve bir **anahtar türetme** fonk
 
 **Gizlemeyi derleme hattına koyarken imzalama neden gizlemeden sonra?**
 
-**Cevap:** İmza, dağıtılan **son** ikiliyi kapsamalı. Önce gizlenir, sonra imzalanır; sürüm kimliği/özet tutarlı olur.
+**Cevap:** İmza, dağıtılan **son** binary'yi kapsamalı. Önce gizlenir, sonra imzalanır; sürüm kimliği/özet tutarlı olur.
 
 ---
 

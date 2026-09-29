@@ -82,7 +82,7 @@ Her terim, gövdede ilk geçtiği yerde tanımlanır; burada yalnız **nerede** 
 
 - Tek kaynak, iki platform: **Windows (Visual Studio 2022 Community, MSVC)** ve **WSL/Linux (GCC)**
 - Özet/şifreleme gerektiren demolarda Windows'ta işletim sisteminin **BCrypt** kütüphanesi, Linux'ta **OpenSSL**
-  kullanılır (`code/common/cen429_kripto.h`) — Windows'ta ayrıca OpenSSL kurmanız gerekmez
+  kullanılır (`code/common/cen429_crypto.h`) — Windows'ta ayrıca OpenSSL kurmanız gerekmez
 - Derle: Windows `.\build.ps1` · WSL/Linux `./build.sh`
 - Çalıştır: her demo klasöründe Windows `.\demo.ps1` · WSL/Linux `sh demo.sh`
 - **Demo 6** (TOCTOU) yalnız WSL/Linux'ta çalışır
@@ -154,11 +154,15 @@ Konuşma notu: Öğrencilere sorun: "Telefonunuza bulaşan bir şey duyduğunuzd
 | 1984 | Cohen'in tanımı | Kuram: "tam tespit imkânsız" |
 | 1986 | Brain | İlk yaygın PC virüsü (önyükleme sektörü) |
 | 1988 | Morris | İnternette yayılan ilk büyük solucan |
+| 1989 | Brewer–Nash | Chinese Wall: çıkar çatışması modeli |
+| 1999 | Schneier | Saldırı ağaçları (Attack Trees) |
 | 2000 | ILOVEYOU | E-posta ekiyle milyonlar |
 | 2001 | Code Red | Ağ açığıyla bellekte yayılan solucan |
+| 2003 | SQL Slammer | 10 dakikada yarısı — en hızlı yayılan solucan |
 | 2010 | Stuxnet | Endüstriyel denetleyiciyi hedef alan solucan |
 | 2017 | WannaCry | Kendi kendine yayılan fidye yazılımı |
 | 2017 | NotPetya | Fidye gibi görünen **silici** (yıkıcı) |
+| 2019/2023 | CVSS v3.1 / v4.0 | Ciddiyet puanlama standardı, iki nesil |
 
 <!--
 Konuşma notu: Tarihleri doğru verin. WannaCry, yama çıktıktan SONRA güncellememiş makinelere yayıldı; bu "yama boşluğu"na dersin sonunda döneceğiz.
@@ -273,10 +277,10 @@ i(t+dt) = i(t) + beta * i(t) * (1 - i(t)/N) * dt
 
 # Demo 09 — Salgın simülasyonu
 
-`code/week-02/09-salgin-simulasyonu` · yalnız hesaplama, ağ yok
+`code/week-02/09-outbreak-simulation` · yalnız hesaplama, ağ yok
 
 ```text
-Senaryo: Slammer benzeri (rastgele tarama, hizli UDP)
+Senaryo: Slammer benzeri (rastgele tarama, hızlı UDP)
     54 s        78    0.1% |..............................|
    1.5 dk     1430    1.9% |#.............................|
    2.4 dk    45601   60.8% |##################............|
@@ -341,6 +345,22 @@ Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yo
 
 ---
 
+# SI salgın modeli: yayılma adım adım (animasyon)
+
+<iframe class="dsanim" src="anim/epidemic-spread.html?mode=slide&lang=tr" title="SI salgın modeli: yayılma adım adım"></iframe>
+
+<!-- Konuşma notu: SI fark denklemini her adımda hesaplayın; büyümenin %50 dolayında en hızlı olduğunu, sonra kalan hedef azaldıkça yavaşladığını gösterin. -->
+
+---
+
+# Salgın — uç durum: başlangıçta zaten yarısı bulaşmış
+
+<iframe class="dsanim" src="anim/epidemic-spread.html?mode=slide&lang=tr&example=edge-already-half-infected" title="Uç durum: hitlist, başlangıçta yarısı bulaşmış"></iframe>
+
+<!-- Konuşma notu: Saldırgan açılış evresini bir hitlist ile atlarsa doygunluğa çok daha hızlı ulaşılır; savunmacının fırsat penceresi neredeyse hiç yok. -->
+
+---
+
 # Programcıya ders (salgın)
 
 - Yayılma hızını programcı belirlemez.
@@ -352,7 +372,7 @@ Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yo
 
 # Kendiniz deneyin: beta yarıya inerse?
 
-`salgin.c` içindeki `beta` değerini yarıya indirip yeniden çalıştırın.
+`outbreak.c` içindeki `beta` değerini yarıya indirip yeniden çalıştırın.
 
 **Soru:** Doygunluk süresi nasıl değişir? Hitlist senaryosunda `i0`'ı 100'e çıkarınca fark ne kadar kalır?
 
@@ -393,7 +413,7 @@ Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yo
 
 # Demo 01 — Oyuncak antivirüs
 
-`code/week-02/01-imza-tarayici` · Kitap: Tarif 12.1
+`code/week-02/01-signature-scanner` · Kitap: Tarif 12.1
 
 - Zararsız, çalıştırılamayan bir **"KAPSÜL"** biçimi: başlık + çözücü + gövde.
 - Dört yöntem, dört sınır:
@@ -410,20 +430,20 @@ Slammer'ı hızlandıran iki şey: **tek paket** yeterliydi (bağlantı kurma yo
 # Demo 01 — Hash kırılgan, desen dayanıklı
 
 ```text
-ADIM 2 (hash):
-  ornek_a.bin        YAKALANDI  Ornek.MaviKedi.A
-  ornek_a_1bayt.bin  TEMIZ      <- tek bayt degisti, ozet bambaska
+STEP 2 (hash):
+  sample_a.bin        CAUGHT  Sample.BlueCat.A
+  sample_a_1byte.bin  CLEAN   <- one byte changed, digest is different
 
-ADIM 3 (desen):
-  poli_1.bin  YAKALANDI  Ornek.Cozucu.xs32
-  poli_2.bin  YAKALANDI  Ornek.Cozucu.xs32
-  poli_3.bin  TEMIZ      <- cozucu de degisti (polimorfizm)
+STEP 3 (pattern):
+  poly_1.bin  CAUGHT  Sample.Decoder.xs32
+  poly_2.bin  CAUGHT  Sample.Decoder.xs32
+  poly_3.bin  CLEAN   <- the decoder changed too (polymorphism)
 ```
 
 **Hash** çığ etkisiyle tek baytta kırılır; **desen** çözücüyü yakalar ama polimorfizm onu da atlatır.
 
 <!--
-Konuşma notu: poli_1 ve poli_2 aynı algoritma (xs32) farklı tohum; poli_3 farklı algoritma (lcg8) + cop komut. Desen imzasi ALGO=xs32'yi ariyordu, poli_3'te yok.
+Konuşma notu: poly_1 ve poly_2 aynı algoritma (xs32) farklı tohum; poly_3 farklı algoritma (lcg8) + çöp komut. Desen imzası ALGO=xs32'yi arıyordu, poly_3'te yok.
 -->
 
 ---
@@ -431,10 +451,10 @@ Konuşma notu: poli_1 ve poli_2 aynı algoritma (xs32) farklı tohum; poli_3 far
 # Demo 01 — Sezgisel: iki tür hata
 
 ```text
-ADIM 5 (sezgisel):
-  ornek_a.bin  TEMIZ     puan=  0   <- YANLIS NEGATIF (kacirdi)
-  poli_1.bin   SUPHELI   puan= 80
-  arsiv.bin    SUPHELI   puan= 50   <- YANLIS POZITIF (zararsiz)
+STEP 5 (heuristic):
+  sample_a.bin  CLEAN       score=  0   <- FALSE NEGATIVE (missed it)
+  poly_1.bin    SUSPICIOUS  score= 80
+  archive.bin   SUSPICIOUS  score= 50   <- FALSE POSITIVE (harmless)
 ```
 
 - İmza olmadan polimorfiği yakaladı ✅
@@ -448,10 +468,10 @@ ADIM 5 (sezgisel):
 # Demo 01 — Emülasyon hepsini çözer
 
 ```text
-ADIM 6 (emulasyon):
-  poli_1.bin  YAKALANDI  ... | 5 komut, 0 BOS, xs32
-  poli_2.bin  YAKALANDI  ... | 5 komut, 0 BOS, xs32
-  poli_3.bin  YAKALANDI  ... | 8 komut, 4 BOS, lcg8
+STEP 6 (emulation):
+  poly_1.bin  CAUGHT  ... | 5 commands, 0 NOP, xs32
+  poly_2.bin  CAUGHT  ... | 5 commands, 0 NOP, xs32
+  poly_3.bin  CAUGHT  ... | 8 commands, 4 NOP, lcg8
 ```
 
 - Çözücüyü **güvenli sanal makinede** çalıştırır, açılan gövdeyi tarar.
@@ -459,6 +479,22 @@ ADIM 6 (emulasyon):
 - Güçlü ama **pahalı**; zararlı "sanal makinedeyim" derse gizlenebilir.
 
 **Sonuç: tek yöntem yetmez → katmanlı savunma.**
+
+---
+
+# İmza taraması: hash + desen + emülasyon (animasyon)
+
+<iframe class="dsanim" src="anim/signature-scan.html?mode=slide&lang=tr" title="İmza taraması: hash / desen / emülasyon"></iframe>
+
+<!-- Konuşma notu: Hash'in tek baytta nasıl atlatıldığını, desenin çözücüyü nasıl yakaladığını, emülasyonun neden hepsini yakaladığını sırayla gösterin. -->
+
+---
+
+# İmza taraması — uç durum: imza dosyanın son konumunda
+
+<iframe class="dsanim" src="anim/signature-scan.html?mode=slide&lang=tr&example=edge-found-end" title="Uç durum: imza dosyanın son olası konumunda"></iframe>
+
+<!-- Konuşma notu: Desen eşleştirme son olası konumda da doğru çalışmalı; sınır (off-by-one) hataları burada ortaya çıkar. -->
 
 ---
 
@@ -475,14 +511,14 @@ Antivirüs: "paketli/şifreli kod?" · EDR: "dosyaları hızla şifreleyen süre
 
 # Demo 02 — Entropi ölçer
 
-`code/week-02/02-entropi`
+`code/week-02/02-entropy`
 
 ```text
-  tekduze.txt   0.00  |........................| tekduze
-  belge.txt     4.17  |#############...........| dusuk
-  kod.bin       6.23  |###################.....| orta
-  sifreli.bin   7.95  |########################| YUKSEK
-  rastgele.bin  7.95  |########################| YUKSEK
+  uniform.txt    0.00  |........................| uniform
+  document.txt   4.06  |############............| low
+  code.bin       6.23  |###################.....| medium
+  encrypted.bin  7.94  |########################| HIGH
+  random.bin     7.95  |########################| HIGH
 ```
 
 ⚠️ Entropi tek başına "zararlı mı?" demez: `.zip`/`.png` de yüksektir. **Beklenmedik yerde** yüksekse ipucudur.
@@ -492,16 +528,32 @@ Antivirüs: "paketli/şifreli kod?" · EDR: "dosyaları hızla şifreleyen süre
 # Demo 02 — Sıcak bölge ve fidye izi
 
 ```text
-Karma dosya (pencere 512):
-   1024-1535  4.14  dusuk
-   1536-2047  7.56  YUKSEK  <- gizli sifreli bolum
-   2048-2559  7.66  YUKSEK
+Mixed file (window 512):
+   1024-1535  4.04  low
+   1536-2047  7.54  HIGH  <- hidden encrypted section
+   2048-2559  7.57  HIGH
 
-Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
+Ransomware trace: document.txt 4.06 --> encrypted.bin 7.94
 ```
 
 - Paketlenmiş programın deseni: **küçük açıcı + yüksek entropili gövde.**
 - Bir süreç kısa sürede çok dosyada bu sıçramayı yapıyorsa **davranış tabanlı** koruma alarm verir.
+
+---
+
+# Entropi: pencereli tarama (animasyon)
+
+<iframe class="dsanim" src="anim/entropy.html?mode=slide&lang=tr" title="Entropi: pencereli tarama, H nasıl hesaplanır"></iframe>
+
+<!-- Konuşma notu: Histogramın her pencerede nasıl biriktiğini, H = -Σ p(b) log2 p(b) formülünün adım adım nasıl hesaplandığını gösterin. -->
+
+---
+
+# Entropi — uç durum: pencere dosyayı bölmüyor
+
+<iframe class="dsanim" src="anim/entropy.html?mode=slide&lang=tr&example=edge-window-does-not-divide-evenly" title="Uç durum: son pencere daha kısa"></iframe>
+
+<!-- Konuşma notu: Son pencerenin boyutu diğerlerinden farklı olduğunda hesaplamanın hâlâ doğru çalıştığını gösterin. -->
 
 ---
 
@@ -549,7 +601,7 @@ Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
 # Örnek: mobil ödeme neden şifreli sabit tutar?
 
 - Tersine mühendisliği **yavaşlatmak** için hassas dizeler/sabitler şifreli tutulur, kullanım anında çözülür.
-- Bir değerlendirici ikili dosyada **yüksek entropili bölge** görünce sorar:
+- Bir değerlendirici binary dosyada **yüksek entropili bölge** görünce sorar:
   - Çözücü nerede?
   - Anahtarı nasıl buluyor?
   - Anahtar bellekte ne kadar açık kalıyor?
@@ -570,24 +622,40 @@ Fidye izi: belge.txt 4.17 --> sifreli.bin 7.95
 
 # Demo 07 — Kural tabanlı tespit
 
-`code/week-02/07-kural-motoru` · YARA benzeri mini motor, **kendi zararsız desenlerimiz**
+`code/week-02/07-rule-engine` · YARA benzeri mini motor, **kendi zararsız desenlerimiz**
 
 ```text
-kural Kelime_Baglam {
-  dizge $a = "indir"
-  dizge $b = "calistir"
-  dizge $sihir = "KAPSUL/1"
-  kosul ($a and $b) and $sihir
+rule Word_Context {
+  string $a     = "download"
+  string $b     = "run"
+  string $magic = "CAPSULE/1"
+  condition ($a and $b) and $magic
 }
 ```
 
 | Adım | Sonuç | Ders |
 | --- | --- | --- |
-| Zararsız kılavuz | `Kelime_Cifti` eşleşti | ❌ Bağlamsız kural → **yanlış pozitif** |
+| Zararsız kılavuz | `Word_Pair` eşleşti | ❌ Bağlamsız kural → **yanlış pozitif** |
 | Değişmiş varyant | yalnız joker (`??`) desen yakaladı | ✅ Değişmeyen iskeleti hedefle |
 | Bozuk kural dosyası | **REDDEDİLDİ** | ✅ Tespit aracı da bir ayrıştırıcıdır |
 
 <!-- Konuşma notu: Dar kural kaçırır, geniş kural yanlış alarm verir. Kural yalnız bilineni yakalar; bu yüzden sezgisel ve davranış tabanlı yöntemlerle birlikte kullanılır. -->
+
+---
+
+# Kural motoru: koşul ayrıştırıcı (animasyon)
+
+<iframe class="dsanim" src="anim/rule-condition-eval.html?mode=slide&lang=tr" title="Kural motoru: koşul ayrıştırıcı"></iframe>
+
+<!-- Konuşma notu: expr() -> and_expr() -> not_expr() -> primary(), her önceliğe bir gramer seviyesi. and/or'un HER ZAMAN iki tarafı da değerlendirdiğini vurgulayın -- kısa devre yok. -->
+
+---
+
+# Koşul ayrıştırıcı — uç durum: kırık bir koşul
+
+<iframe class="dsanim" src="anim/rule-condition-eval.html?mode=slide&lang=tr&example=edge-syntax-error-incomplete-and" title="Uç durum: eksik bir koşul CONDITION ERROR döndürür"></iframe>
+
+<!-- Konuşma notu: "$a and"ın sağ tarafı yok -- ayrıştırıcı bunu tespit edip -1 (CONDITION ERROR) döndürür, asla çökmez ya da sessizce eşleşmez. -->
 
 ---
 
@@ -624,15 +692,15 @@ Bir yazılımın **resmî güncellemesine**, derleme sırasında arka kapı ekle
 
 # Demo 08 — Bütünlük izleme (beyaz liste)
 
-`code/week-02/08-butunluk-izleme` · SHA-256 manifesti + **HMAC mühür**
+`code/week-02/08-integrity-monitoring` · SHA-256 manifesti + **HMAC mühür**
 
 ```text
-DEGISTI  kutuphane.bin  c603d7c6... -> 64b8f2b2... (49->65 B)
-SILINDI  veri.txt       (manifestte var, klasorde yok)
-YENI     gizli.bin      (taban cizgisinde yok)
--- saldirgan manifesti yeniden yazar --
-SONUC: butunluk korunmus    <- izleyici KANDIRILDI
-MUHUR GECERSIZ -> manifeste GUVENME
+CHANGED  library.bin  5ab02b71... -> 12c5803f... (48->62 B)
+DELETED  data.txt     (in the manifest, not in the folder)
+NEW      hidden.bin   (not in the baseline)
+-- attacker rewrites the manifest --
+RESULT: integrity preserved    <- monitor FOOLED
+SEAL INVALID -> DO NOT TRUST the manifest
 ```
 
 ✅ Özet değişikliği yakalar · ⚠️ **beklenen değerler de korunmalı** (HMAC/imza, anahtar ayrı yerde)
@@ -891,11 +959,11 @@ Yama **uygulanana kadar** risk sürer; yayımlanan yama saldırgana da **yol gö
 
 # Demo 04 — Savunma maliyeti artırır
 
-`code/week-02/04-saldiri-agaci`
+`code/week-02/04-attack-tree`
 
 ```text
-ONCE:   EN UCUZ SALDIRI = 2  (bellekten oku)
-SONRA:  EN UCUZ SALDIRI = 8  (RASP eklendi)
+BEFORE:  CHEAPEST ATTACK = 2  (read from memory)
+AFTER:   CHEAPEST ATTACK = 8  (RASP added)
 ```
 
 - "Bellekten oku" dalına **RASP** (anti-debug, anti-hook) eklendi.
@@ -903,8 +971,24 @@ SONRA:  EN UCUZ SALDIRI = 8  (RASP eklendi)
 - Güvenlik yatırımını **sayıyla** gerekçelendirmenin yolu budur.
 
 <!--
-Konuşma notu: VE dugumleri saldirgani birden cok katmani birlikte kirmaya zorlar; derinlemesine savunmanin niceliksel hali.
+Konuşma notu: VE düğümleri saldırganı birden çok katmanı birlikte kırmaya zorlar; derinlemesine savunmanın niceliksel hali.
 -->
+
+---
+
+# Saldırı ağacı: en ucuz yol (animasyon)
+
+<iframe class="dsanim" src="anim/attack-tree-eval.html?mode=slide&lang=tr" title="Saldırı ağacı: en ucuz yol"></iframe>
+
+<!-- Konuşma notu: Her VE/VEYA düğümünün maliyetinin aşağıdan yukarı nasıl hesaplandığını gösterin; en ucuz dalı bulun. -->
+
+---
+
+# Saldırı ağacı — uç durum: kök tek bir yaprak
+
+<iframe class="dsanim" src="anim/attack-tree-eval.html?mode=slide&lang=tr&example=edge-single-leaf-root" title="Uç durum: kök tek bir LEAF, dallanma yok"></iframe>
+
+<!-- Konuşma notu: Dallanma olmayan en basit ağaçta bile hesaplamanın doğru çalıştığını gösterin. -->
 
 ---
 
@@ -966,44 +1050,60 @@ Tarif 13.11 · günlüğü **saldırganın da okuyacağını** varsayarak tasarl
 
 # Demo 10 — Günlük enjeksiyonu (CWE-117)
 
-`code/week-02/10-gunluk-enjeksiyonu`
+`code/week-02/10-log-injection`
 
 ```text
-GUVENSIZ:
-  DENETIM giris kullanici=kayra
-  DENETIM giris kullanici=admin sonuc=BASARILI ...  <- SAHTE satir
-  DENETIM giris kullanici=deniz^[[2K^Mgizli ...     <- ekran silme
-GUVENLI:
-  DENETIM giris kullanici=kayra\x0A2026-... (tek satir)
-  sahte 'admin BASARILI' satiri: 0
+UNSAFE:
+  AUDIT login user=bob
+  AUDIT login user=admin result=SUCCESS ...  <- FORGED line
+  AUDIT login user=carol^[[2K^Mhidden ...    <- erases screen
+SAFE:
+  AUDIT login user=bob\x0A2026-... (single line)
+  forged 'admin SUCCESS' line(s): 0
 ```
 
-✅ Kaçışla (`\xNN`) · ✅ uzunluğu sınırla · ✅ `syslog(LOG_INFO, "%s", girdi)` — girdi asla biçim dizesi (format string) değil
+✅ Kaçışla (`\xNN`) · ✅ uzunluğu sınırla · ✅ `syslog(LOG_INFO, "%s", input)` — girdi asla biçim dizesi (format string) değil
 
 <!-- Konuşma notu: Kullanıcı adına gömülü tek bir satır sonu, hiç yaşanmamış bir yönetici girişini günlüğe yazdırdı. Biçim dizgesi tuzağını 4. haftaya köprü olarak anın. -->
+
+---
+
+# Günlük enjeksiyonu: güvensiz vs güvenli (animasyon)
+
+<iframe class="dsanim" src="anim/log-injection.html?mode=slide&lang=tr" title="Günlük enjeksiyonu: güvensiz vs güvenli yazım"></iframe>
+
+<!-- Konuşma notu: Kaçışlama döngüsünün her baytı nasıl işlediğini, satır sonunun neden tek satır olarak kaldığını gösterin. -->
+
+---
+
+# Günlük enjeksiyonu — uç durum: ANSI kaçış dizisi
+
+<iframe class="dsanim" src="anim/log-injection.html?mode=slide&lang=tr&example=edge-control-characters" title="Uç durum: ANSI kaçış dizisi + satırbaşı"></iframe>
+
+<!-- Konuşma notu: Ekranı silen ESC dizisinin de aynı kaçışlama ile zararsız hale geldiğini gösterin. -->
 
 ---
 
 # Zafiyetli kod: günlük enjeksiyonu ve biçim dizesi
 
 ```c
-fprintf(log, "giris: %s\n", kullanici_adi);  /* CWE-117 */
+fprintf(log, "login: %s\n", username);  /* CWE-117 */
 ```
 
 ```c
-syslog(LOG_INFO, kullanici_girdisi);  /* CWE-134 */
+syslog(LOG_INFO, user_input);  /* CWE-134 */
 ```
 
 Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğrudan biçim dizesi** olarak kullanılmamalı:
-`syslog(LOG_INFO, "%s", girdi)`.
+`syslog(LOG_INFO, "%s", input)`.
 
 ---
 
 # Özet zinciri: basit ama kırılabilir
 
 - Fikir: her kayıt, **bir önceki kaydın özetini** içerir.
-- Ortadan bir kaydı değiştirmek, sonraki **tüm zinciri** bozar.
-- Sorun: saldırgan **anahtarsız** — bütün zinciri baştan yeniden hesaplayabilir.
+- Bir kaydı değiştirmek yalnız **o kaydın kendi özetini** bozar (doğrulayıcı her zaman saklanan zinciri kontrol eder, yeniden hesaplanmışı değil).
+- Sorun: özet **anahtarsız** — yetenekli bir saldırgan **sonraki tüm özetleri** de yeniden hesaplayıp kurcalamayı tamamen gizleyebilir.
 - Çözüm: özeti **anahtarlı** yapmak → HMAC zinciri (bir sonraki slayt).
 
 ---
@@ -1012,7 +1112,7 @@ Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğru
 
 - Kayıt, bir **saldırganın da okuyabileceği** varsayılarak tasarlanır.
 - Günlüğe yazılan her sır, günlük dosyasına erişen **herkese** verilmiş demektir.
-- Kapalı bir bayrakla **susturulmuş** hata ayıklama kodu, ikili dosyada **kalır**.
+- Kapalı bir bayrakla **susturulmuş** hata ayıklama kodu, binary dosyada **kalır**.
 - Hem dizeleriyle (string) bilgi sızdırır hem de **yeniden açılabilir** — bu yüzden sürüm derlemesinde tamamen **çıkarılmalıdır**.
 
 ---
@@ -1021,17 +1121,33 @@ Kullanıcıdan gelen veri günlükte **kaçışsız satır sonu** ya da **doğru
 
 # Demo 11 — Kurcalamaya dayanıklı günlük
 
-`code/week-02/11-kurcalamaya-dayanikli-gunluk` · HMAC zinciri + **anahtar evrimi**
+`code/week-02/11-tamper-evident-log` · HMAC zinciri + **anahtar evrimi**
 
 | Saldırı | Anahtar evrimli | Statik anahtar |
 | --- | --- | --- |
-| Kayıt değiştirme | ✅ MAC:BOZUK | ✅ yakalanır |
-| Kayıt silme / sıra değiştirme | ✅ SIRA:BOZUK | ✅ yakalanır |
-| Ele geçirilen anahtarla geçmişi yeniden yazma | ✅ **KURCALANMIŞ** | ❌ **BÜTÜNLÜKLÜ** görünür |
+| Kayıt değiştirme | ✅ MAC:BROKEN | ✅ yakalanır |
+| Kayıt silme / sıra değiştirme | ✅ ORDER:BROKEN | ✅ yakalanır |
+| Ele geçirilen anahtarla geçmişi yeniden yazma | ✅ **TAMPERED** | ❌ **INTACT** görünür |
 
 Anahtar her kayıtta tek yönlü evrilir, eski anahtar silinir → ele geçirmeden **önceki** kayıtlar korunur
 
 <!-- Konuşma notu: Schneier–Kelsey 1999. Doğrulayıcı başlangıç anahtarını çevrimdışı tutar. En güçlü kanıt, saldırganın ulaşamadığı uzak kopyadır. -->
+
+---
+
+# Kurcalamaya dayanıklı günlük: HMAC zinciri (animasyon)
+
+<iframe class="dsanim" src="anim/tamper-evident-log-chain.html?mode=slide&lang=tr" title="Kurcalamaya dayanıklı günlük: HMAC zinciri"></iframe>
+
+<!-- Konuşma notu: Her kaydın özetinin bir öncekinin özetini nasıl içerdiğini gösterin; bir kaydın mesajını değiştirmenin yalnız o kaydın kendi kontrolünü nasıl bozduğunu vurgulayın — sonraki kayıtlar kendi değişmemiş saklanan özetlerine karşı yine doğrulanır. -->
+
+---
+
+# HMAC zinciri — uç durum: statik anahtar (evrim yok)
+
+<iframe class="dsanim" src="anim/tamper-evident-log-chain.html?mode=slide&lang=tr&example=edge-static-key-same-tamper" title="Uç durum: statik anahtarla aynı saldırı yakalanmıyor"></iframe>
+
+<!-- Konuşma notu: Aynı saldırı, statik anahtarla neden yakalanmadan geçtiğini gösterin — ileriye güvenliğin (forward security) neden önemli olduğunu buraya bağlayın. -->
 
 ---
 
@@ -1125,11 +1241,11 @@ HMAC zinciri araya ekleme/değiştirmeyi yakalar; **sondan kesmeyi** yakalamak i
 
 - **Özne** (kullanıcı/süreç) · **Nesne** (dosya/kayıt) · **Hak** (oku/yaz/çalıştır).
 
-| | `odeme_anahtari` | `gunluk` |
+| | `payment_key` | `log` |
 | --- | --- | --- |
-| **uygulama** | — | yaz |
-| **kutuphane** | oku, yaz | yaz |
-| **saldirgan** | — | — |
+| **application** | — | yaz |
+| **library** | oku, yaz | yaz |
+| **attacker** | — | — |
 
 Matris iki biçimde saklanır: **ACL** (sütun: nesne kimin erişeceğini tutar) · **Yetenek** (satır: özne biletleri).
 
@@ -1159,13 +1275,12 @@ DAC **esnek** ama sızıntıya açık; MAC **katı** (askeri/etiketli); RBAC **k
 
 # Demo 03 — Salt DAC (matris)
 
-`code/week-02/03-erisim-modeli`
+`code/week-02/03-access-model`
 
 ```text
-  kutuphane OKU odeme_anahtari   => IZIN
-  uygulama  OKU odeme_anahtari   => RED  (matriste yok)
-  saldirgan OKU odeme_anahtari   => RED
-  saldirgan YAZ gunluk           => RED
+  library(D   ) R   payment_key (D   ) DAC:YES => ALLOW
+  app    (D   ) R   payment_key (D   ) DAC:no  => DENY  (matriste yok)
+  attacker(D   ) R   payment_key (D   ) DAC:no  => DENY
 ```
 
 Uygulamanın bile ödeme anahtarına **doğrudan erişimi yok** → **en az ayrıcalık.**
@@ -1184,7 +1299,7 @@ Seviyeler: Genel < Gizli < Çok Gizli
 Örnek: "Gizli" etiketli bir kullanıcı "Çok Gizli" bir belgeyi **okuyamaz**; "Çok Gizli" bir süreç "Genel" bir dosyaya **yazamaz** (sızıntı böyle önlenir).
 
 <!--
-Konuşma notu: Askeri kokenli (1973). "Asagi yazma yok" ilk bakista tuhaf gelir; amac cok gizli bilgiyi memurun gorebilecegi bir yere yazmayi engellemek.
+Konuşma notu: Askeri kökenli (1973). "Aşağı yazma yok" ilk bakışta tuhaf gelir; amaç çok gizli bilgiyi memurun görebileceği bir yere yazmayı engellemek.
 -->
 
 ---
@@ -1228,14 +1343,30 @@ Askeri seviye yerine **iyi biçimli işlem + görev ayrılığı** (1987, banka)
 # Demo 03 — BLP ve Biba çıktısı
 
 ```text
-BLP:  memur   OKU operasyon  BLP:RED  => RED  (yukari okuma)
-      general YAZ ilan       BLP:RED  => RED  (asagi yazma)
+BLP:  clerk    READ  operation  BLP:DENY => DENY  (read up)
+      general  WRITE notice     BLP:DENY => DENY  (write down)
 
-Biba: aglayici YAZ kayit     BIBA:RED => RED  (yukari yazma)
-      islemci  OKU gelen     BIBA:RED => RED  (asagi okuma)
+Biba: listener WRITE record     BIBA:DENY => DENY  (write up)
+      processor READ  incoming  BIBA:DENY => DENY  (read down)
 ```
 
-DAC her ikisinde **VAR**; reddi getiren **sistem (MAC)** kuralıdır.
+DAC her ikisinde **YES**; reddi getiren **sistem (MAC)** kuralıdır.
+
+---
+
+# Erişim matrisi: DAC + BLP + Biba + Chinese Wall (animasyon)
+
+<iframe class="dsanim" src="anim/access-matrix.html?mode=slide&lang=tr" title="Erişim matrisi: DAC + BLP + Biba + Chinese Wall"></iframe>
+
+<!-- Konuşma notu: dominates() fonksiyonunun BLP ve Biba için aynı karşılaştırmayı ters yönde kullandığını gösterin. -->
+
+---
+
+# Erişim matrisi — uç durum: eşit etiketler
+
+<iframe class="dsanim" src="anim/access-matrix.html?mode=slide&lang=tr&example=edge-equal-labels-always-ok" title="Uç durum: eşit etiketler her zaman izin verir"></iframe>
+
+<!-- Konuşma notu: İki taraf da aynı seviyedeyse hem BLP hem Biba'nın neden her zaman izin verdiğini gösterin. -->
 
 ---
 
@@ -1278,13 +1409,29 @@ Kitap: Tarif 2.1
 `code/week-02/06-toctou` (yalnız WSL/Linux) · Kitap: Tarif 2.3
 
 ```text
-GUVENSIZ (once lstat, sonra fopen):
-  >>> SALDIRI BASARILI: yazi gizli_hedef.txt'e yonlendirildi!
-GUVENLI (O_NOFOLLOW ile tek adim):
-  reddedildi: hedef sembolik bag
+UNSAFE (lstat first, then fopen):
+  >>> ATTACK SUCCEEDED: write redirected to secret_target.txt!
+SAFE (O_NOFOLLOW, one step):
+  rejected: the target is a symbolic link
 ```
 
 **Denetim ile kullanım arasındaki boşluk** bir yarıştır. Çözüm: tek atomik adım (`O_NOFOLLOW`, `O_EXCL`), fd üzerinden çalış.
+
+---
+
+# TOCTOU yarışı: denetim ile kullanım arasındaki pencere (animasyon)
+
+<iframe class="dsanim" src="anim/toctou-race-timeline.html?mode=slide&lang=tr" title="TOCTOU yarışı: denetim ile kullanım arasındaki pencere"></iframe>
+
+<!-- Konuşma notu: Saldırganın sembolik bağı tam olarak lstat() ile fopen() arasında nasıl değiştirdiğini zaman çizelgesinde gösterin. -->
+
+---
+
+# TOCTOU — uç durum: SAFE, saldırgan yok
+
+<iframe class="dsanim" src="anim/toctou-race-timeline.html?mode=slide&lang=tr&example=edge-safe-no-attacker" title="Uç durum: SAFE, saldırgan yok — normal yazar"></iframe>
+
+<!-- Konuşma notu: Saldırgan olmadığında SAFE sürümün normal şekilde çalıştığını, ekstra maliyet getirmediğini gösterin. -->
 
 ---
 
@@ -1292,17 +1439,17 @@ GUVENLI (O_NOFOLLOW ile tek adim):
 
 # Demo 12 — ACE değerlendirme algoritması
 
-`code/week-02/12-ace-degerlendirme` · Tarif 2.2
+`code/week-02/12-ace-evaluation` · Tarif 2.2
 
 ```text
-1a kanonik:  RET Herkes TAM | IZIN Pazarlama YAZ  => RED
-1b bozuk:    IZIN Pazarlama YAZ | ... RET Herkes  => IZIN
-2a NULL DACL (yabanci hesap) => IZIN (SAHIP_AL, IZIN_YAZ dahil!)
-2b BOS DACL  (ayni hesap)    => RED
-3b kalitim kesildi           => RED (liste bitti)
+1a canonical: DENY Everyone FULL | ALLOW Marketing WRITE  => DENY
+1b broken:    ALLOW Marketing WRITE | ... DENY Everyone   => ALLOW
+2a NULL DACL (unrelated account) => ALLOW (TAKE_OWNER, WRITE_DAC dahil!)
+2b EMPTY DACL (same account)     => DENY
+3b inheritance broken            => DENY (list ended)
 ```
 
-- Sıra önemli: **açık RET → açık İZİN → miras RET → miras İZİN**
+- Sıra önemli: **açık DENY → açık ALLOW → miras DENY → miras ALLOW**
 - ❌ NULL DACL = herkese **her** hak · ✅ gerekli hakları açıkça ver
 - Sahip, DACL ne derse desin izinleri değiştirebilir
 
@@ -1310,17 +1457,33 @@ GUVENLI (O_NOFOLLOW ile tek adim):
 
 ---
 
+# Windows ACE değerlendirme sırası (animasyon)
+
+<iframe class="dsanim" src="anim/windows-ace-evaluation-order.html?mode=slide&lang=tr" title="Windows ACE değerlendirme sırası"></iframe>
+
+<!-- Konuşma notu: Her ACE'nin belirteçteki SID'lerle nasıl karşılaştırıldığını, ilk eşleşen DENY'nin listeyi neden hemen durdurduğunu gösterin. -->
+
+---
+
+# ACE sırası — uç durum: kurallı sıra, DENY ilk ACE
+
+<iframe class="dsanim" src="anim/windows-ace-evaluation-order.html?mode=slide&lang=tr&example=edge-canonical-deny-first-stops-early" title="Uç durum: kurallı sıra, DENY hemen durur"></iframe>
+
+<!-- Konuşma notu: Kurallı sırada DENY'nin listenin başında olmasının neden en güvenli düzen olduğunu gösterin. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 13 — Unix izinleri, umask, setuid
 
-`code/week-02/13-unix-izin-umask` · Tarif 2.1, 2.7, 1.3
+`code/week-02/13-unix-permissions-umask` · Tarif 2.1, 2.7, 1.3
 
 ```text
-ayse   oku paradoks.txt ---rwxrwx  sahip -> RED
-zeynep oku paradoks.txt ---rwxrwx  diger -> IZIN
+alice  read paradox.txt ---rwxrwx  owner -> DENY
+zoe    read paradox.txt ---rwxrwx  other -> ALLOW
 0666 & ~umask:  000 -> rw-rw-rw-   022 -> rw-r--r--   077 -> rw-------
-seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
+seteuid(1001)  r/e/s = 1001/1001/0   <- saved UID still 0!
 ```
 
 - **İlk eşleşen sınıf** karar verir (sahip → grup → diğerleri)
@@ -1331,6 +1494,22 @@ seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
 
 ---
 
+# Unix izin denetimi ve umask (animasyon)
+
+<iframe class="dsanim" src="anim/unix-permission-check.html?mode=slide&lang=tr" title="Unix izin denetimi ve umask"></iframe>
+
+<!-- Konuşma notu: root/owner/group/other sınıfının nasıl seçildiğini, istenen & ~umask bit işlemini adım adım gösterin. -->
+
+---
+
+# Unix izinleri — uç durum: umask 000 tehlikesi
+
+<iframe class="dsanim" src="anim/unix-permission-check.html?mode=slide&lang=tr&example=edge-umask-000-dangerous" title="Uç durum: umask 000, 0666 isteği herkese açılıyor"></iframe>
+
+<!-- Konuşma notu: umask 000 ile açılan bir dosyanın neden herkese yazılabilir hale geldiğini gösterin. -->
+
+---
+
 <!-- _class: yogun -->
 
 # Demo 14 — RBAC, görev ayrılığı, Clark–Wilson
@@ -1338,15 +1517,31 @@ seteuid(1001)  r/e/s = 1001/1001/0   <- sakli UID hala 0!
 `code/week-02/14-rbac-clark-wilson` · banka benzetimi
 
 ```text
-ATA cem GISE                 SSD(GISE,ONAYCI)  -> RED
-OTURUM deniz GISE,DENETCI    DSD(GISE,DENETCI) -> RED
-OTURUM deniz DENETCI         -> TAMAM
-deniz IVP: beklenen 20250, bulunan 20250
+ASSIGN carl TELLER            SSD(TELLER,APPROVER) -> DENY
+SESSION dana TELLER,AUDITOR   DSD(TELLER,AUDITOR)  -> DENY
+SESSION dana AUDITOR          -> OK
+dana IVP: expected 20250, found 20250
 ```
 
 - **SSD:** çelişen iki role atanamaz · **DSD:** aynı oturumda ikisi etkin olamaz
 - CDI'ya yalnız **sertifikalı TP** dokunur; büyük havale → **ikinci kişi onayı**
 - ⚠️ Hatalı TP sertifikalanırsa kurallar görmez, **IVP yakalar**
+
+---
+
+# RBAC + Clark–Wilson: işlem denetim kapıları (animasyon)
+
+<iframe class="dsanim" src="anim/rbac-clark-wilson-transaction-check.html?mode=slide&lang=tr" title="RBAC + Clark–Wilson: işlem denetim kapıları"></iframe>
+
+<!-- Konuşma notu: E1-E4 kapılarını sırayla gösterin: rol var mı, TP sertifikalı mı, oturum açık mı, CDI yalnız TP ile mi değişiyor. -->
+
+---
+
+# RBAC — uç durum: kullanıcı hiç tanınmıyor
+
+<iframe class="dsanim" src="anim/rbac-clark-wilson-transaction-check.html?mode=slide&lang=tr&example=edge-unrecognized-user" title="Uç durum: kullanıcı hiç tanınmıyor (E3'te durur)"></iframe>
+
+<!-- Konuşma notu: E3 kimlik doğrulama kapısının, rol/TP kapılarından önce geldiğini ve isteği en baştan durdurduğunu gösterin. -->
 
 <!-- Konuşma notu: Sahada karşılığı: dört göz ilkesi, bölünmüş bilgi ve çift denetim, günlük mutabakat. -->
 
@@ -1543,13 +1738,29 @@ Bir CVE bir ya da birden çok **CWE türüne** aittir.
 `code/week-02/05-cvss` (Python)
 
 ```text
-AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H  = 9.8  Kritik
-              ... S:U -> S:C          = 10.0 Kritik
-AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  Yuksek
+AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H  = 9.8  Critical
+              ... S:U -> S:C          = 10.0 Critical
+AV:L (yerel) /PR:L/... C:H/I:H/A:H    = 7.8  High
 ```
 
 - **Uzaktan + kimliksiz** en yüksek; kapsam değişince 10.0.
 - ⚠️ Temel puan **bağlamı bilmez**: 4.0'lık açık tam sizin varlığınızı vuruyorsa sizin için 9.8'den önemli olabilir.
+
+---
+
+# CVSS v3.1 taban puan hesabı (animasyon)
+
+<iframe class="dsanim" src="anim/cvss-score.html?mode=slide&lang=tr" title="CVSS v3.1 taban puan hesabı"></iframe>
+
+<!-- Konuşma notu: Impact ve Exploitability alt puanlarının sekiz metrikten nasıl hesaplandığını, kapsam değişince formülün nasıl değiştiğini gösterin. -->
+
+---
+
+# CVSS — uç durum: hiç etki yok
+
+<iframe class="dsanim" src="anim/cvss-score.html?mode=slide&lang=tr&example=edge-no-impact" title="Uç durum: hiç etki yok, puan sabit 0.0"></iframe>
+
+<!-- Konuşma notu: C/I/A hepsi None ise Impact alt puanının 0 çıktığını ve taban puanın da 0.0 olduğunu gösterin. -->
 
 ---
 
@@ -1770,7 +1981,7 @@ Bir değerlendirme yalnız kodu değil, bu **süreci** de sorar.
 - [ ] Uygun **erişim modelini** (DAC / MAC / RBAC) gerekçelendirin.
 
 ```text
-| ID | Tehdit | Varlik | Yol | CWE | Onlem | Bolum |
+| ID | Tehdit | Varlık | Yol | CWE | Önlem | Bölüm |
 ```
 
 ---

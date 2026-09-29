@@ -264,6 +264,22 @@ Kripto **kara kutu** için tasarlandı; biz **beyaz kutudayız**.
 
 ---
 
+# Saldırgan modelleri (animasyon)
+
+<iframe class="dsanim" src="anim/attacker-models.html?mode=slide&lang=tr" title="Kara / gri / beyaz kutu: saldırgan hangi yeteneklere sahip?"></iframe>
+
+<!-- Konuşma notu: 12 senaryoyu tek tek izleyin; her modelin yalnız IO'dan başlayıp nasıl daha fazla yetenek kazandığını vurgulayın. -->
+
+---
+
+# Saldırgan modelleri — uç durum: hepsi beyaz kutu
+
+<iframe class="dsanim" src="anim/attacker-models.html?mode=slide&lang=tr&example=edge-all-white" title="Uç durum: hepsi beyaz kutu"></iframe>
+
+<!-- Konuşma notu: beyaz kutuda MOD ve COD'un HER ZAMAN var olduğunu, bu yüzden WBC'nin bu ikisini hedeflediğini gösterin. -->
+
+---
+
 # Sorun burada
 
 AES matematiksel olarak güçlü. Ama:
@@ -409,6 +425,22 @@ Bu, 9. haftadaki "dize gizleme anahtar saklamaz" kuralının ta kendisi.
 
 ---
 
+# Gömülü anahtarı tarayarak bulma (animasyon)
+
+<iframe class="dsanim" src="anim/embedded-key-scan.html?mode=slide&lang=tr" title="İkili dosyada gömülü anahtarı bulma"></iframe>
+
+<!-- Konuşma notu: 16 baytlık pencerenin ikili dosyanın üzerinde adım adım kaydığını, eşleşme bulunca hemen durduğunu gösterin. -->
+
+---
+
+# Gömülü anahtar taraması — uç durum: anahtar yok
+
+<iframe class="dsanim" src="anim/embedded-key-scan.html?mode=slide&lang=tr&example=edge-not-found" title="Uç durum: anahtar hiç yok"></iframe>
+
+<!-- Konuşma notu: taramanın tüm pencereleri deneyip -1 döndüğünü gösterin — gerçek demoda bu asla olmaz çünkü anahtar kendi ikilisinin içindedir. -->
+
+---
+
 # Naif 2 · XOR ile "karıştır"
 
 ```c
@@ -422,7 +454,7 @@ static const uint8_t k_gizli[16] = ...;   /* k ^ maske */
 
 # Naif 2 · Neden çöker?
 
-- **Maske de** ikili dosyadadır
+- **Maske de** binary dosyadadır
 - Program `k`'yı çözebiliyorsa, saldırgan da çözer
 - Sadece bir adım fazladan; gerçek bir engel değil
 
@@ -508,6 +540,22 @@ Sınavda matematik yok; **fikir ve sınır** var.
 2. Sonucu **S-box**'tan geçir: `S-box[x ^ k]`
 
 Bu iki adım, sabit bir `k` için birleştirilebilir mi? Evet.
+
+---
+
+# AES turu sıfırdan (animasyon)
+
+<iframe class="dsanim" src="anim/aes-round-structure.html?mode=slide&lang=tr" title="AES tur yapısı sıfırdan"></iframe>
+
+<!-- Konuşma notu: 4x4 durumun sütun sütun dolduğunu, dört adımın (SubBytes, ShiftRows, MixColumns, AddRoundKey) sırasını vurgulayın. -->
+
+---
+
+# AES turu — uç durum: durum ve anahtar sıfır
+
+<iframe class="dsanim" src="anim/aes-round-structure.html?mode=slide&lang=tr&example=edge-all-zero" title="Uç durum: tamamen sıfır"></iframe>
+
+<!-- Konuşma notu: sıfır girdide bile SubBytes'ın sabit terimi (0x0D) yüzünden çıktı sıfır kalmadığını gösterin. -->
 
 ---
 
@@ -611,6 +659,30 @@ T:     2 3 1 0
 `T[x] = S-box[x ^ k]` olduğunu bilerek hangi `k` uyuyor diye dener: `k=1` uyar.
 
 > **Sonuç:** kodlanmamış tablo anahtarı ele verir. İşte bu yüzden iç/dış kodlama var.
+
+---
+
+# Tabloya anahtarı gömme (animasyon)
+
+<iframe class="dsanim" src="anim/toy-table-wbc.html?mode=slide&lang=tr" title="Tablo tabanlı beyaz kutu: anahtarı tabloya gömme"></iframe>
+
+<!-- Konuşma notu: toy_table.c'nin gerçek kodunu izleyin; naif ve kodlanmış tablonun aynı x için farklı bayt ürettiğini vurgulayın. -->
+
+---
+
+# Neden tablo anahtarı ele verir? (animasyon)
+
+<iframe class="dsanim" src="anim/table-key-leak.html?mode=slide&lang=tr" title="Neden tablo anahtarı ele verir"></iframe>
+
+<!-- Konuşma notu: naif tabloda k0'ın x=255'e kadar hep sabit kaldığını, kodlanmış tabloda x=1'de hemen bozulduğunu gösterin. -->
+
+---
+
+# Tablo sızıntısı — uç durum: sıfır anahtar
+
+<iframe class="dsanim" src="anim/table-key-leak.html?mode=slide&lang=tr&example=edge-zero-key" title="Uç durum: sıfır anahtar"></iframe>
+
+<!-- Konuşma notu: k=0 olsa bile naif tablonun yine sızdırdığını, kodlanmış tablonun yine engellediğini vurgulayın. -->
 
 ---
 
@@ -944,6 +1016,22 @@ Genel ve **taşınabilir** oldukları için her tasarımı tehdit ederler.
 
 ---
 
+# Fark/hata karşılaştırması, oyuncak ölçekte (animasyon)
+
+<iframe class="dsanim" src="anim/dca-differential.html?mode=slide&lang=tr" title="Fark/hata karşılaştırması, oyuncak ölçekte"></iframe>
+
+<!-- Konuşma notu: doğru ve hataya uğratılmış çıktının farkının çoğu girdide SIFIR OLMADIĞINI, ama tek başına anahtarı vermediğini vurgulayın. -->
+
+---
+
+# Fark karşılaştırması — uç durum: hata maskesi sıfır
+
+<iframe class="dsanim" src="anim/dca-differential.html?mode=slide&lang=tr&example=edge-zero-fault" title="Uç durum: hata maskesi sıfır"></iframe>
+
+<!-- Konuşma notu: hata yoksa (maske=0x00) farkın HER ZAMAN sıfır olduğunu, yani hiç bilgi taşımadığını gösterin. -->
+
+---
+
 # Peki ne yapacağız? (karşı önlemler)
 
 Araştırma durmadı; ama hiçbir önlem "artık güvenli" demez.
@@ -1116,6 +1204,22 @@ Sırayla, en zayıftan en güçlüye.
 - Donanım kökü (TEE/SE/HSM) varsa **onu** kullan
 - WBC, donanım kökünün **olmadığı** durumda bir **ödünleşim** çözümüdür
 - Her zaman: anahtar yenileme + cihaz bağlama + sunucu denetimiyle birlikte
+
+---
+
+# WBC katmanlı savunmada nereye oturur? (animasyon)
+
+<iframe class="dsanim" src="anim/layered-defence.html?mode=slide&lang=tr" title="WBC katmanlı savunmada nereye oturur?"></iframe>
+
+<!-- Konuşma notu: wbc kararının HER ZAMAN dört katmanı (WBC, ROTATE, BIND, AUDIT) birlikte etkinleştirdiğini vurgulayın. -->
+
+---
+
+# Katmanlı savunma — uç durum: hepsi WBC
+
+<iframe class="dsanim" src="anim/layered-defence.html?mode=slide&lang=tr&example=edge-all-wbc" title="Uç durum: hepsi WBC"></iframe>
+
+<!-- Konuşma notu: donanım kökü hiç yokken bile aynı dört katmanın hep birlikte geldiğini gösterin. -->
 
 ---
 
@@ -1388,7 +1492,7 @@ En az bir hassas anahtar için bir koruma kararı ve **gerekçesi** yazın:
 
 1. **Kara kutu** (yalnız G/Ç), **gri kutu** (+yan kanal: güç/zaman), **beyaz kutu** (tam erişim). Klasik AES kanıtı **kara kutuyu** varsayar.
 2. "Tek turu çalıştır/ara değeri gözle" → **DCA**; "hata enjekte et" → **DFA**.
-3. Anahtar **yüksek entropili** bir blok olarak durur → entropi taraması/`strings`/desenle bulunur (demo `--tara`). Konum değiştirmek gizleme değil.
+3. Anahtar **yüksek entropili** bir blok olarak durur → entropi taraması/`strings`/desenle bulunur (demo `--scan`). Konum değiştirmek gizleme değil.
 4. **Code lifting:** tabloyu/rutini olduğu gibi kopyalayıp başka yerde kullanmak. Kapatan: **dış kodlama** (+ cihaz bağlama/sunucu denetimi).
 5. `T[x]=S-box[x^k]` doğrudan k'ye bağlı; tablo S-box ile karşılaştırılıp **k geri hesaplanır**. **İç kodlamayla** maskele.
 6. **İç kodlama** ara değerleri gizli bijeksiyonlarla maskeler; **dış kodlama** giriş/çıkışı dönüştürür (code lifting'i zorlaştırır). Sınır: **çağıranın da eşleşmesi** gerekir → standart AES uyumu bozulur.

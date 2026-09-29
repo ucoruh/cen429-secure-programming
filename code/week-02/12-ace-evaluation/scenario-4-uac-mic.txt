@@ -1,0 +1,36 @@
+# CEN429 - Week 2 - Demo 12, scenario 4: the UAC filter and integrity levels
+# An administrator account normally runs with a FILTERED token: the
+# Administrators group becomes "deny-only" (it does not count in ALLOW ACEs,
+# only in DENY ACEs) and integrity is Medium. Choosing "Run as administrator"
+# produces the full token instead.
+
+SCENARIO 4a - a UAC-filtered token (administrator, not elevated)
+TOKEN admin  Administrators,Users
+DENYONLY Administrators
+INTEGRITY  Medium
+OWNER     SYSTEM
+LABEL    High
+ACE ALLOW Administrators  FULL
+ACE ALLOW Users           READ,EXECUTE
+REQUEST READ
+REQUEST WRITE
+
+SCENARIO 4b - the same account, elevated (full) token
+TOKEN admin  Administrators,Users
+INTEGRITY  High
+OWNER     SYSTEM
+LABEL    High
+ACE ALLOW Administrators  FULL
+ACE ALLOW Users           READ,EXECUTE
+REQUEST WRITE
+
+# A low-integrity process (e.g. a sandboxed document viewer): even if the
+# DACL grants the user FULL, it CANNOT WRITE to a Medium-labeled file.
+SCENARIO 4c - a low-integrity process, the user's own file
+TOKEN alice  Users
+INTEGRITY  Low
+OWNER     alice
+LABEL    Medium
+ACE ALLOW alice  FULL
+REQUEST READ
+REQUEST WRITE

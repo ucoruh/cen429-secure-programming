@@ -1,18 +1,18 @@
-﻿# CEN429 - Hafta 5 - Demo 6: SBOM uretimi (Windows). INDIRME GEREKTIRMEZ.
+# CEN429 - Week 5 - Demo 6: SBOM generation (Windows). NO DOWNLOAD REQUIRED.
 Set-Location $PSScriptRoot
 $py = $null
-foreach ($aday in @("py", "python", "python3")) {
-    if (Get-Command $aday -ErrorAction SilentlyContinue) { $py = $aday; break }
+foreach ($candidate in @("py", "python", "python3")) {
+    if (Get-Command $candidate -ErrorAction SilentlyContinue) { $py = $candidate; break }
 }
-if (-not $py) { "Python 3 bulunamadi. https://www.python.org adresinden kurun."; exit 1 }
+if (-not $py) { "Python 3 not found. Install it from https://www.python.org"; exit 1 }
 $arg = @(); if ($py -eq "py") { $arg = @("-3") }
-if (Test-Path cikti) { Remove-Item -Recurse -Force cikti }
-function Cizgi { "==============================================================" }
+if (Test-Path output) { Remove-Item -Recurse -Force output }
+function Line { "==============================================================" }
 
-Cizgi; "SBOM (CycloneDX 1.5) uretimi ve zafiyet eslestirme"; Cizgi
+Line; "SBOM (CycloneDX 1.5) generation and vulnerability matching"; Line
 & $py @arg sbom.py
 
 ""
-"Uretilen SBOM JSON'in ilk satirlari (cikti\sbom.cyclonedx.json):"
-Get-Content cikti\sbom.cyclonedx.json -TotalCount 20 |
+"First lines of the generated SBOM JSON (output\sbom.cyclonedx.json):"
+Get-Content output\sbom.cyclonedx.json -TotalCount 20 |
     ForEach-Object { "   $_" }

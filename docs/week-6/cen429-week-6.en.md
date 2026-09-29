@@ -67,7 +67,7 @@
 
 !!! tip "Prepare the lab in advance"
     The demos build from the **same source** on both **Windows** (Visual Studio 2022 compiler, no extra install)
-    and **WSL/Linux** (GCC). The integrity and signature demos use the shared `cen429_kripto.h` header for crypto
+    and **WSL/Linux** (GCC). The integrity and signature demos use the shared `cen429_crypto.h` header for crypto
     (**OpenSSL** on Linux, **BCrypt/CNG** on Windows); no extra install is needed. **Demo 4 only runs on
     Linux/WSL** (LD_PRELOAD).
 
@@ -75,7 +75,7 @@
         ```powershell
         cd code
         .\build.ps1
-        cd week-06\01-butunluk-hmac
+        cd week-06\01-integrity-hmac
         .\demo.ps1        # or double-click demo.cmd
         ```
 
@@ -83,7 +83,7 @@
         ```bash
         cd code
         ./build.sh
-        cd week-06/01-butunluk-hmac
+        cd week-06/01-integrity-hmac
         sh demo.sh
         ```
 
@@ -219,6 +219,19 @@ RASP does three jobs; this triad is the backbone of the week:
   the response, report the event to the server. The goal is not unbreakability; it is **slowing the attack down
   enough** (the RASP-flavoured version of [Week 4](../week-4/cen429-week-4.md)'s "obscurity delays, it does not block" principle).
 
+This triad can also be seen as a single pipeline: **detect → decide → respond**. The animation below shows how a
+set of independent checks (up to 12 of them) collapses into one "failure count", how that count (and a device
+mismatch) turns into a state (`NORMAL/WARN/DEGRADE/LOCK`), and what concrete response each state triggers, end to
+end (see Section 10, Demo 8's real engine):
+
+<iframe class="dsanim" src="../anim/rasp-pipeline.html" title="RASP pipeline: detect → decide → respond" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![RASP pipeline — step by step](anim/rasp-pipeline.png)
+</div>
+
+Try the **normal/two-failed/edge** presets; changing how many checks fail and whether the device matches lets you
+reach every one of the four states.
+
 ### 1.1 The attacker model: MATE ("Man-At-The-End")
 
 In [Week 1](../week-1/cen429-week-1.md#3-who-is-the-attacker-and-what-can-they-reach) we saw three attacker types. RASP's world is entirely **MATE**: the attacker **owns the endpoint** where
@@ -264,10 +277,10 @@ Let's make concrete why detection, defence, and deterrence are **separate** conc
 unwrapping the payment key, the crypto library notices a debugger is attached (the Section 4 TracerPid signal is
 > 0). Three developers handle this in three different ways:
 
-1. **Detection only, no response:** the code increments the `supheli` (suspicious) variable but never checks it;
+1. **Detection only, no response:** the code increments the `suspicious` variable but never checks it;
    the function continues its normal flow. Result: an attacker with a debugger attached **reads the key
    directly**. The detection was wasted — because it was never wired to a defence.
-2. **Detection + a crude defence:** the code writes `if (supheli) exit(1);`. Result: the attacker can't read the
+2. **Detection + a crude defence:** the code writes `if (suspicious) exit(1);`. Result: the attacker can't read the
    key, but they see **exactly which line** the program stopped on; within a few tries they patch that `if` (the
    same weakness as the "the checker itself gets patched too" lesson in Section 3).
 3. **Detection + defence + deterrence:** the code mixes the signal, not into `exit()` directly, but **as data**
@@ -403,40 +416,51 @@ caught.
 
 ### Demo 1 — Runtime integrity checking and patch detection
 
-!!! info "Demo 1 · `code/week-06/01-butunluk-hmac` · self-hashing, HMAC-SHA-256 (an update to Recipe 12.2)"
-    The program computes the HMAC-SHA-256 digest of its own binary (`oz`, "self") and stores it as the "golden"
+!!! info "Demo 1 · `code/week-06/01-integrity-hmac` · self-hashing, HMAC-SHA-256 (an update to Recipe 12.2)"
+    The program computes the HMAC-SHA-256 digest of its own binary (`self`) and stores it as the "golden"
     value, then verifies it. Then a **copy** of the binary is made and one byte in it is changed (a patch
-    simulation, in the demo's own `cikti/` (output) folder), and the patched copy's digest is compared against the
+    simulation, in the demo's own `output/` folder), and the patched copy's digest is compared against the
     golden value.
 
-The core of the code (reads the file and computes the HMAC; `kripto_hmac_sha256` from `cen429_kripto.h`):
+    The animation at the bottom of this section (**normal/patched-mid/edge**, 🎲 random bytes) shows exactly this
+    mechanism, step by step, over 12-16 bytes.
 
-```c title="butunluk.c (summary)"
+The core of the code (reads the file and computes the HMAC; `crypto_hmac_sha256` from `cen429_crypto.h`):
+
+```c title="integrity.c (summary)"
 /* Find your own path: Linux /proc/self/exe, Windows GetModuleFileNameA */
-oz_yol(yol, sizeof(yol));
-dosya_oku(yol, &veri, &boy);
-kripto_hmac_sha256(RASP_ANAHTAR, 32, veri, boy, ozet);   /* HMAC over the file */
+self_path(path, sizeof(path));
+read_file(path, &data, &size);
+crypto_hmac_sha256(RASP_KEY, 32, data, size, digest);   /* HMAC over the file */
 
 /* verify: constant-time comparison (prevents a timing leak) */
-unsigned char fark = 0;
-for (int i = 0; i < 32; i++) fark |= beklenen[i] ^ ozet[i];
-if (fark == 0) { /* BUTUNLUK TAMAM */ } else { /* YAMA ALGILANDI */ }
+unsigned char diff = 0;
+for (int i = 0; i < 32; i++) diff |= expected[i] ^ digest[i];
+if (diff == 0) { /* INTEGRITY OK */ } else { /* PATCH DETECTED */ }
 ```
 
-**Actual output** captured on WSL (shortened):
+<iframe class="dsanim" src="../anim/integrity-hmac.html" title="Self-integrity check: when one byte is patched" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Self-integrity check — step by step](anim/integrity-hmac.png)
+</div>
 
-```text title="sh demo.sh — output"
-ADIM 2 - Normal calisma: butunluk dogrulanir (yama yok)
-Beklenen   : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-Hesaplanan : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-SONUC: BUTUNLUK TAMAM - hedef degismemis.
+Try the **normal**, **patched-mid** and **edge-first-byte** presets; generate random bytes with 🎲, or type your
+own.
 
-ADIM 3 - Saldiri: ikili dosyanin bir KOPYASI alinip 1 bayti degistiriliyor
-> ofset 21268 baytini XOR 0xFF ile degistir
-ADIM 4 - Yamali kopyanin HMAC'i altin degerle karsilastiriliyor
-Beklenen   : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-Hesaplanan : 05fb42748cb5b57305f3ffacd61ad757...131c6705
-SONUC: YAMA ALGILANDI - hedef degistirilmis! (tamper)   (cikis kodu 3)
+**Actual output** captured on Windows (shortened):
+
+```text title=".\demo.ps1 — output"
+STEP 2 - Normal run: integrity verifies OK (no patch)
+Expected   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+Computed   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+RESULT: INTEGRITY OK - target unchanged.
+
+STEP 3 - Attack: a COPY of the binary is made and 1 byte is changed
+> flip byte at offset 22272 (0xCC -> 0x33)
+STEP 4 - The patched copy's HMAC is compared with the golden value
+Expected   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+Computed   : c47c35687dc205b93a2eec33df49c97defecfcb868fb8a23e6c01c2aca0ec8ac
+RESULT: PATCH DETECTED - target was modified! (tamper)   (exit code 3)
 ```
 
 While unpatched, the digest was **exactly** the same as the golden value. Changing a single byte completely
@@ -446,11 +470,11 @@ stops at the first differing byte and leaks timing.
 
 ### 3.1 Worked example: which bytes does the HMAC digest, and how does a patch break it?
 
-**Which bytes are digested?** Looking at the `hedef_hmac()` function, the answer is clear: `dosya_oku()` reads the
+**Which bytes are digested?** Looking at the `target_hmac()` function, the answer is clear: `read_file()` reads the
 **entire** target (its own binary) into memory (with `fread`, from offset 0 to the end of the file), and
-`kripto_hmac_sha256` digests this **whole byte sequence** in one pass — not a specific function or section, but
-**every byte** of the file. In `demo.sh`'s actual output, `ofset 21268` was changed; this lands roughly at the
-**middle** of the file (`BOY / 2`) — meaning the binary's total size in that run was roughly `21268 × 2 ≈ 42536`
+`crypto_hmac_sha256` digests this **whole byte sequence** in one pass — not a specific function or section, but
+**every byte** of the file. In `demo.ps1`'s actual output, offset `22272` was changed; this lands roughly at the
+**middle** of the file (`SIZE / 2`) — meaning the binary's total size in that run was roughly `22272 × 2 ≈ 44544`
 bytes. No matter which byte of the file the attacker changes (beginning, middle, or end), that byte is included in
 the computation and the digest changes.
 
@@ -471,7 +495,7 @@ SHA2-256(stdin)= 4fbdf8768822083c3fc3797c5f1d278dd1ea58ab0bfde31a8ebf85e260fbcbd
 Only **1 of the input's 7 bytes** changed (the last character, `A`=0x41 → `B`=0x42; these two values differ in
 only **two bits**); but **all 32 bytes** of the output are different. This is the **avalanche effect** of
 cryptographic digest functions: if a single bit of the input changes, on average **half** of the output changes.
-The `bae498a6...ee4d01e6` → `05fb4274...131c6705` transformation you saw in Demo 1's actual output is this same
+The `5aeaf452...55115de4` → `c47c3568...aca0ec8a` transformation you saw in Demo 1's actual output is this same
 property on a huge binary: `XOR 0xFF` flips **every bit** of a single byte, and this spreads to all 256 bits of
 output through HMAC-SHA-256's internals (each round of SHA-256's compression function).
 
@@ -556,25 +580,33 @@ debugger is **attached**.
 
 ### Demo 2 — Debugger detection (Linux ptrace/TracerPid, Windows PEB)
 
-!!! info "Demo 2 · `code/week-06/02-hata-ayiklayici` · anti-debug, read-only"
+!!! info "Demo 2 · `code/week-06/02-debugger-detection` · anti-debug, read-only"
     The program looks at several independent signals and **changes nothing** (it doesn't even watch itself with
     `ptrace`; it only reads `/proc` and PEB fields). `demo.sh` runs the program first normally, then under `gdb`.
 
 ```c title="antidebug.c (Linux summary)"
 /* Read TracerPid from /proc/self/status; if >0 we're being watched */
 long tp = tracer_pid();
-if (tp > 0) supheli++;      /* a process is watching us via ptrace */
+if (tp > 0) suspicious++;      /* a process is watching us via ptrace */
 ```
 
-```text title="sh demo.sh — real output (WSL)"
-ADIM 1 - Normal calisma (hata ayiklayici YOK): temiz beklenir
-1) /proc/self/status TracerPid           : 0 (izleyen yok)
-2) Ana surec (parent) adi                : sh
-SONUC: Temiz - izleyen bir arac gorunmuyor.
+<iframe class="dsanim" src="../anim/debugger-presence.html" title="Debugger detection: TracerPid + parent process name" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Debugger detection — step by step](anim/debugger-presence.png)
+</div>
 
-ADIM 2 - gdb altinda calistir (TracerPid > 0 beklenir)
-1) /proc/self/status TracerPid           : 2909 (IZLENIYOR)
-SONUC: Hata ayiklayici/izleme ARACI algilandi (2 sinyal).
+Watch the animation scan `/proc/self/status` line by line and weigh the two signals (**TracerPid**, parent process
+name); try the **clean/gdb-attached/edge** presets.
+
+```text title="sh demo.sh — real output (WSL)"
+STEP 1 - Normal run (NO debugger): clean is expected
+1) /proc/self/status TracerPid           : 0 (no tracer)
+2) Parent process name                   : sh
+RESULT: clean - no tracing tool visible.
+
+STEP 2 - Run under gdb (TracerPid > 0 is expected)
+1) /proc/self/status TracerPid           : 41885 (TRACED)
+RESULT: a debugger/tracing TOOL was detected (2 signal(s)).
 ```
 
 Without a debugger TracerPid was **0**, under gdb it was **>0**; the program told the two situations apart. On
@@ -583,7 +615,7 @@ the result is "detected."
 
 ### 4.1 Worked example: tracing TracerPid's move from 0 to non-zero step by step
 
-Demo 2's output showed TracerPid moving from `0` to `2909`; let's now unpack **why** step by step.
+Demo 2's output showed TracerPid moving from `0` to `41885`; let's now unpack **why** step by step.
 `/proc/self/status` is a text file the kernel keeps for every process, readable by the process itself too (in Week
 1 we described `/proc` as "a window the kernel opens onto the process"). The `TracerPid:` line inside it holds the
 **PID** (Process ID) of the process watching that process with the `ptrace()` system call; if nobody is watching,
@@ -600,7 +632,7 @@ TracerPid: 0             <- nobody is tracing with ptrace
 ```
 
 The program reads this line, finds the numeric value `0`; since `tp > 0` is **false**, it doesn't increment the
-`supheli` (suspicious) variable. The "SONUC: Temiz" (result: clean) line in the demo output comes from here.
+`suspicious` variable. The "RESULT: clean - no tracing tool visible." line in the demo output comes from here.
 
 **Step 2 — when run under `gdb`.** On its second pass, `demo.sh` starts the program from inside `gdb`. When `gdb`
 starts or attaches to the target process, it tells the kernel "I'm watching this process"; this happens via a
@@ -610,16 +642,16 @@ watched process's `/proc/self/status` `TracerPid` field with the watching `gdb` 
 ```text title="/proc/self/status (UNDER gdb, representative)"
 Name:      antidebug
 Pid:       4821
-PPid:      2909          <- the parent process is now gdb
-TracerPid: 2909          <- gdb is tracing us with ptrace
+PPid:      41885          <- the parent process is now gdb
+TracerPid: 41885          <- gdb is tracing us with ptrace
 ```
 
-This is exactly the `2909` value seen in the demo output. The program itself **did nothing** — it only **read** a
+This is exactly the `41885` value seen in the demo output. The program itself **did nothing** — it only **read** a
 field the kernel already keeps; that's why the technique is classified as "read-only" and has no side effects
 (exactly why the safety promise in the demo's `README` can be kept).
 
-**Step 3 — the decision.** Since `tp > 0`, the `supheli` counter goes up by 1; since the parent process's name is
-also `gdb`, a second independent signal (the `ana_surec_adi` (parent-process-name) check) gets added too; the
+**Step 3 — the decision.** Since `tp > 0`, the `suspicious` counter goes up by 1; since the parent process's name is
+also `gdb`, a second independent signal (the `parent_process_name` (parent-process-name) check) gets added too; the
 "algilandi (2 sinyal)" (detected, 2 signals) phrase in the demo output is the sum of these two. Reading a single
 field on its own may not be enough, but this kernel-level information is a signal that is **hard to fake**:
 zeroing out `TracerPid` directly is impossible, because it's read from a kernel data structure, not from the
@@ -684,18 +716,27 @@ environmental clues.
 
 ### Demo 3 — VM/emulator and timing detection (CPUID)
 
-!!! info "Demo 3 · `code/week-06/03-ortam-zamanlama` · only reads a CPU instruction and the clock"
+!!! info "Demo 3 · `code/week-06/03-environment-timing` · only reads a CPU instruction and the clock"
 
-```text title="sh demo.sh — real output (WSL2)"
-(A) CPUID.1:ECX[31] hipervizor biti : VAR
-    Hipervizor satici imzasi        : (satici imzasi gizli/bos)
-(B) 2.000.000 islem suresi          : 0.806 ms
-SONUC: Hipervizor GORULDU. Ama WSL2/Hyper-V/VBS de boyle gorunur;
-bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
+<iframe class="dsanim" src="../anim/environment-timing.html" title="VM/emulator detection: CPUID + timing" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![VM/emulator detection — step by step](anim/environment-timing.png)
+</div>
+
+Try the **bare-metal/kvm/edge-blank-vendor/edge-slow-timing** presets; use 🎲 to generate random hypervisor/timing
+values.
+
+```text title=".\demo.ps1 — real output (on an ordinary Windows laptop)"
+(A) CPUID.1:ECX[31] hypervisor bit    : PRESENT
+    Hypervisor vendor signature        : "Microsoft Hv"
+(B) time for 2,000,000 iterations      : 0.662 ms  (checksum=4544)
+RESULT: a hypervisor was SEEN. But WSL2/Hyper-V/VBS also look like this;
+this ALONE does not mean 'analysis environment' - it is a weak signal.
 ```
 
 !!! danger "The single most important lesson: false positives"
-    The output above was captured on WSL2, and the **hypervisor bit said "PRESENT."** But this is **not** an
+    The output above was captured on an ordinary Windows laptop with Hyper-V, and the **hypervisor bit said
+    "PRESENT."** But this is **not** an
     analysis environment — it's an ordinary developer machine! On modern Windows, most machines report a
     hypervisor because of **Hyper-V, WSL2, and virtualisation-based security (VBS)**. So this bit alone does
     **not** mean "an attacker is analysing this." If an application refused to run just because it saw a
@@ -727,13 +768,21 @@ score** comes out. The decision is not a single `if (hipervizor_var)`, but wheth
 | Known emulator file trace (on mobile) | e.g. `ro.kernel.qemu` | High — almost never happens on a real device | 40 |
 | Debugger attached | Demo 2 (TracerPid) | High — rarely happens while a legitimate user is using the app | 35 |
 
-**Example 1 — a developer working on WSL2 (a legitimate user).** As in Demo 3's actual output, the hypervisor bit
-is **PRESENT** but the vendor signature is **hidden/empty**, timing is normal, there's no emulator trace, no
-debugger attached. Total score: only **15** (the hypervisor bit alone). The score is low; the user isn't blocked.
+**Example 1 — a developer working on an ordinary Windows laptop with Hyper-V (a legitimate user).** As in
+Section 3's real `demo.ps1` output, the hypervisor bit is **PRESENT** AND the vendor signature is **visible**
+(`"Microsoft Hv"` — see Section 3), timing is normal, there's no emulator trace, no debugger attached. Total
+score: hypervisor bit (15) + visible vendor signature (25) = **40**. Timing and emulator/debugger signals
+contribute nothing.
 
 **Example 2 — an attacker working in an analysis environment.** Hypervisor bit PRESENT (15) + vendor signature
 visible (25) + timing anomaly (20) + debugger attached (35) = total **95**. The score is high; the operation is
 rejected or a decoy is returned (Section 10).
+
+Notice: Example 1 and Example 2's **first two signals are identical** (40 points) — a Hyper-V-equipped developer
+machine and an analysis VM can look **the same** to a system that only checks these two signals! The difference
+only shows up in the timing anomaly and debugger signal (this is what carries Example 2 from 40 to 95). If the
+threshold is set as low as 30 (the banking example below), even Example 1's **legitimate** developer gets
+rejected — this is exactly what the "the real cost of a false positive" warning right below is about.
 
 The difference is not **the presence of a single bit**, but **how many independent signals appear together**.
 Where should the threshold be set? That's a **risk appetite** decision that varies from product to product — a
@@ -774,7 +823,7 @@ Demo 2's checks lie and always return "clean."
       Address Table) and the PLT/GOT; they had to be rewritten for every target.
     - **2000s** — `LD_PRELOAD` (Linux) and DLL injection (Windows) became common as general-purpose but **static**
       (precompiled) hooking methods.
-    - **2009** — the foundations of the **Frida** project were laid; the real difference was that hook code could
+    - **2013–2014** — the **Frida** project emerged; the real difference was that hook code could
       be written and injected **in JavaScript, at runtime** — no compilation needed.
     - **2010s–today** — Frida became the standard tool for mobile security testing; this is the main reason RASP's
       "hook detection" section exists at all.
@@ -803,34 +852,43 @@ Detection ideas (Catalogue K7/K8/K18):
 
 ### Demo 4 — Hooking with LD_PRELOAD and detection with `dladdr`
 
-!!! info "Demo 4 · `code/week-06/04-preload-kanca` · Linux/WSL only · CWE-like: dynamic instrumentation"
-    The demo **compiles** a small fake hook library (`libsahtekanca.so`) that takes over the `time()` function.
+!!! info "Demo 4 · `code/week-06/04-preload-hook` · Linux/WSL only · CWE-like: dynamic instrumentation"
+    The demo **compiles** a small fake hook library (`libfake_hook.so`) that takes over the `time()` function.
     With `LD_PRELOAD`, this library is loaded **only for a single demo command**. The main program catches the
     hook by looking at which `.so` the function comes from. On Windows, `demo.ps1` explains how this is run under
     WSL (the Windows counterpart is IAT/inline-hook detection).
 
-```c title="kanca_ana.c (summary)"
+```c title="preload_hook.c (summary)"
 void *p = dlsym(RTLD_DEFAULT, "time");   /* returns a preloaded hook if one exists */
 Dl_info info;
 dladdr(p, &info);                        /* the .so that provides the function */
-int kanca = !mesru_mi(info.dli_fname);   /* anything other than libc/vdso/ld = HOOK */
+int hook = !is_legitimate(info.dli_fname);   /* anything other than libc/vdso/ld = HOOK */
 ```
 
+<iframe class="dsanim" src="../anim/preload-hook-resolution.html" title="LD_PRELOAD symbol resolution order" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![LD_PRELOAD symbol resolution order — step by step](anim/preload-hook-resolution.png)
+</div>
+
+The animation shows the ORDER `time` is searched for among loaded objects, and why an LD_PRELOAD hook **wins**
+when one is present; try the **clean/hooked-first/edge** presets.
+
 ```text title="sh demo.sh — real output (WSL)"
-ADIM 1 - Normal calisma (LD_PRELOAD yok): temiz beklenir
+STEP 1 - Normal run (no LD_PRELOAD): clean is expected
    time     -> linux-vdso.so.1
    getenv   -> /lib/x86_64-linux-gnu/libc.so.6
-   time(NULL) dondurdu : 1789852509
-SONUC: Temiz - preload/kanca gorunmuyor.
+   time(NULL) returned              : 1790690227
+RESULT: clean - no preload/hook visible.
 
-ADIM 2 - Saldiri: sahte kanca LD_PRELOAD ile YALNIZ bu surece yukleniyor
-   time     -> bin/linux/libsahtekanca.so (KANCA!)
-   time(NULL) dondurdu : 1234567890
-SONUC: Fonksiyon kancasi / preload ALGILANDI (2 sinyal).
+STEP 2 - Attack: the fake hook is preloaded ONLY into this process
+   time     -> bin/linux/libfake_hook.so (HOOK!)
+   getenv   -> /lib/x86_64-linux-gnu/libc.so.6
+   time(NULL) returned              : 1234567890
+RESULT: function hook / preload DETECTED (2 signal(s)).
 ```
 
 In the clean run, `time` resolved from the kernel's **vDSO** (this is legitimate, not a hook). Once the hook was
-loaded, the same `time` resolved from `libsahtekanca.so` and returned a **fixed fake value** (1234567890);
+loaded, the same `time` resolved from `libfake_hook.so` and returned a **fixed fake value** (1234567890);
 `dladdr` caught the hook by pointing at the function's location. Note: to avoid counting `linux-vdso` as a **false
 positive** in the clean run, detection treats libc, vDSO, and the dynamic loader as legitimate sources — this is
 the lesson that "writing a detector is easier than writing a **correct** detector."
@@ -854,16 +912,16 @@ address falls into. It writes the result into a `Dl_info` structure; the field w
 **Step 3 — in the clean run.** With `LD_PRELOAD` empty, the `time` symbol resolves through the normal search order
 and comes from the kernel-provided **vDSO** (virtual Dynamic Shared Object — a special virtual `.so` the kernel
 automatically adds to a process's memory to provide fast reads without a system call). Demo output: `time ->
-linux-vdso.so.1`. The `mesru_mi()` (is-it-legitimate) function recognises this name (it looks for the
+linux-vdso.so.1`. The `is_legitimate()` (is-it-legitimate) function recognises this name (it looks for the
 `linux-vdso` substring) and says **not a hook**.
 
 **Step 4 — once the hook is loaded via `LD_PRELOAD`.** `demo.sh` starts the program with the environment variable
-`LD_PRELOAD=./libsahtekanca.so`. The dynamic linker (`ld-linux.so`) puts this library at the **very front** of the
+`LD_PRELOAD=./libfake_hook.so`. The dynamic linker (`ld-linux.so`) puts this library at the **very front** of the
 normal search order; since the library defines its own `time()` function, `dlsym(RTLD_DEFAULT, "time")` now finds
-**not the real `time` in vDSO, but the fake `time` in `libsahtekanca.so`**. `dladdr` sees this address falls
-within `libsahtekanca.so`'s memory range; `dli_fname` returns `"bin/linux/libsahtekanca.so"`. Since `mesru_mi()`
+**not the real `time` in vDSO, but the fake `time` in `libfake_hook.so`**. `dladdr` sees this address falls
+within `libfake_hook.so`'s memory range; `dli_fname` returns `"bin/linux/libfake_hook.so"`. Since `is_legitimate()`
 doesn't recognise this name (not libc/vDSO/ld), it says **HOOK** — exactly the `time ->
-bin/linux/libsahtekanca.so (KANCA!)` line in the demo output.
+bin/linux/libfake_hook.so (HOOK!)` line in the demo output.
 
 **Step 5 — why is this stronger than a `getenv(LD_PRELOAD)` check?** The `getenv` check looks at the environment
 variable **itself** — but the environment variable is only used to load the library at the program's
@@ -894,6 +952,17 @@ memory and preventing them from being swapped out; in
 [Week 3](../week-3/cen429-week-3.md#13-data-in-use-secure-erasure-in-memory-and-device-binding), the "data in use"
 layers. This section asks the same question again, from the runtime attacker's angle: what can we do if the
 attacker is **watching** or **modifying** memory?
+
+!!! note "Brief history: why a secret in memory can't be treated like a secret on disk"
+    - **2008** — J. Alex Halderman and co-authors, in **"Lest We Remember: Cold Boot Attacks on Encryption
+      Keys,"** showed that DRAM retains part of its contents for **seconds to minutes** after power is cut
+      (remanence): they recovered full-disk-encryption keys from memory by cooling a laptop and rebooting it.
+      This is one of the field's most-cited results proving that "the secret is only in RAM, not on disk" is
+      **not enough** on its own — it is the direct motivation for this section's "short lifetime" and "never
+      leave it in the clear" countermeasures.
+    - Linux kernel memory protections like `prctl(PR_SET_DUMPABLE, ...)` and `mlock`/`MADV_DONTDUMP` belong to
+      the same general, OS-level defense family that predates RASP: protecting a process's own memory against
+      another process or against disk.
 
 ![The layers of dynamic memory protection](assets/h06-13-bellek-koruma-katmanlari.svg)
 
@@ -956,51 +1025,51 @@ silently modified is to never leave that data **alone**:
 
 ```c title="Keeping a critical value protected: value + shadow copy + digest"
 typedef struct {
-    uint32_t deger;        /* the actual value                      */
-    uint32_t golge;        /* deger XOR the runtime mask             */
-    uint32_t ozet;         /* a short MAC over deger and golge       */
-} KorunanSayac;
+    uint32_t value;         /* the actual value                       */
+    uint32_t shadow;        /* value XOR the runtime mask              */
+    uint32_t mac;           /* a short MAC over value and shadow       */
+} ProtectedCounter;
 
 /* On read, the consistency of all three is checked; if it doesn't hold, the value has been changed in memory. */
-int sayac_oku(const KorunanSayac *s, uint32_t *cikti)
+int counter_read(const ProtectedCounter *s, uint32_t *out)
 {
-    if ((s->golge ^ calisma_maskesi) != s->deger) return -1;
-    if (kisa_mac(s->deger, s->golge) != s->ozet)   return -1;
-    *cikti = s->deger;
+    if ((s->shadow ^ runtime_mask) != s->value) return -1;
+    if (short_mac(s->value, s->shadow) != s->mac) return -1;
+    *out = s->value;
     return 0;
 }
 ```
 
-If the attacker changes only the `deger` (value) field in memory, the shadow copy and the digest no longer match.
+If the attacker changes only the `value` field in memory, the shadow copy and the digest no longer match.
 To change all three consistently, they'd also need to find the mask and the digest key; this raises the cost of
 the attack. The same idea appears in [Week 5](../week-5/cen429-week-5.md#12-string-obfuscation-and-dynamic-method-invocation)'s device fingerprint being stored **with two different digests in two
 different places**, and in [Week 2's](../week-2/cen429-week-2.md#tamper-resistant-logging) tamper-resistant log.
 
-### 7.1 Worked example: how does `KorunanSayac` catch an attack?
+### 7.1 Worked example: how does `ProtectedCounter` catch an attack?
 
-Let's trace the structure above with numbers. Let `calisma_maskesi` (the runtime mask) be a fixed value randomly
-generated at startup: `0xA5A5A5A5`. When a payment-attempt counter `deger = 3` (third attempt), the structure is
+Let's trace the structure above with numbers. Let `runtime_mask` be a fixed value randomly
+generated at startup: `0xA5A5A5A5`. When a payment-attempt counter `value = 3` (third attempt), the structure is
 filled like this:
 
 | Field | Value | How it was computed |
 | --- | --- | --- |
-| `deger` | `0x00000003` | the actual counter |
-| `golge` | `0xA5A5A5A6` | `deger XOR calisma_maskesi` = `0x00000003 XOR 0xA5A5A5A5` |
-| `ozet` | (example) `0x7F2C1B90` | `kisa_mac(deger, golge)` |
+| `value` | `0x00000003` | the actual counter |
+| `shadow` | `0xA5A5A5A6` | `value XOR runtime_mask` = `0x00000003 XOR 0xA5A5A5A5` |
+| `mac` | (example) `0x7F2C1B90` | `short_mac(value, shadow)` |
 
-`sayac_oku()` checks on every read whether `golge XOR calisma_maskesi` equals `deger`:
-`0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — equal to `deger`, consistent; the function returns `0`.
+`counter_read()` checks on every read whether `shadow XOR runtime_mask` equals `value`:
+`0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — equal to `value`, consistent; the function returns `0`.
 
-Now suppose the attacker uses a memory editor to change only the `deger` field to `0x00000063` (99) (trying to
-reset/increase an attempt counter or a score). The `golge` and `ozet` fields are **unchanged**. The next
-`sayac_oku()` call: `golge XOR calisma_maskesi = 0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — but `deger` is now
+Now suppose the attacker uses a memory editor to change only the `value` field to `0x00000063` (99) (trying to
+reset/increase an attempt counter or a score). The `shadow` and `mac` fields are **unchanged**. The next
+`counter_read()` call: `shadow XOR runtime_mask = 0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — but `value` is now
 `0x00000063`. They **don't match**; the function returns `-1`, and the inconsistency is caught. For the attacker
-to get past this, they'd also have to recompute `golge` with the correct mask **and** produce a consistent
-`ozet` — which, as long as they don't know `kisa_mac`'s key, is exactly as hard as recreating the HMAC golden
+to get past this, they'd also have to recompute `shadow` with the correct mask **and** produce a consistent
+`mac` — which, as long as they don't know `short_mac`'s key, is exactly as hard as recreating the HMAC golden
 value from Section 3.1.
 
 !!! warning "A consistency check is a check too"
-    A caller that ignores `sayac_oku`'s `-1` return "as if nothing happened" throws away the whole protection; and
+    A caller that ignores `counter_read`'s `-1` return "as if nothing happened" throws away the whole protection; and
     the check code itself can be patched too. That's why the inconsistency is tied to a response (the response
     policy), and the check code is also brought under the scope of the integrity check.
 
@@ -1028,6 +1097,16 @@ response policy.
 
 ## 8. Root/privileged environment and component signature verification
 
+!!! note "Brief history: package signing and root indicators"
+    - **Android 1.0 (2008)** — the original APK signing scheme (JAR signing, later called "v1") was the first
+      defense against repackaging: a modified APK **cannot carry** a signature produced with the original
+      developer's private key.
+    - **Android 7.0 Nougat (2016)** — Google introduced **APK Signature Scheme v2**: instead of signing files
+      one by one, it signs the **whole APK** (including some areas JAR signing left out of scope); it verifies
+      faster and closes some "add content without breaking the signature" holes v1 left open.
+    - **Android 9 Pie (2018)** — **APK Signature Scheme v3** added **key rotation** support to the same
+      principle.
+
 ![From a root indicator to a graded response](assets/h06-14-kok-gosterge-karar.svg)
 
 ### 8.1 Root / privileged environment indicator
@@ -1050,17 +1129,25 @@ scan — still, it should be added to the risk score in Section 8.1.1 rather tha
 
 ### Demo 7 — Root/privileged environment indicator (read-only)
 
-!!! info "Demo 7 · `code/week-06/07-ortam-yetki` · root/privilege indicator, read-only"
+!!! info "Demo 7 · `code/week-06/07-environment-privilege` · root/privilege indicator, read-only"
     The program checks (1) the privilege level (root/admin?) and (2) the presence of known "dangerous marker"
-    paths purely by **reading**. To make the demo deterministic, a fake marker (`cikti/sahte_su`) is passed on the
+    paths purely by **reading**. To make the demo deterministic, a fake marker (`output/fake_su`) is passed on the
     command line.
 
-```text title="sh demo.sh — real output (abridged)"
-ADIM 2 - Isaretli durum: sahte bir 'su' isaret dosyasi olusturuluyor
-1) Ayricalik seviyesi : normal kullanici
-2) Tehlikeli gosterge taramasi:
-   [BULUNDU] cikti/sahte_su (ek isaret)
-SONUC: Ayricalikli/riskli ortam GOSTERGESI var (1 sinyal).
+<iframe class="dsanim" src="../anim/root-indicator-scan.html" title="Root/privilege indicator scan" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Root/privilege indicator scan — step by step](anim/root-indicator-scan.png)
+</div>
+
+Try the **clean/rooted-one-mark/edge** presets; the animation shows how the 14 known indicators are scanned and
+how the privilege level adds to the signal count.
+
+```text title=".\demo.ps1 — real output (abridged)"
+STEP 2 - Flagged case: a fake 'su' indicator file is created
+1) Privilege level : normal user
+2) Dangerous-indicator scan:
+   [FOUND] output\fake_su (extra indicator)
+RESULT: an elevated/risky environment INDICATOR is present (1 signal(s)).
 ```
 
 !!! warning "Signal, not proof"
@@ -1083,7 +1170,7 @@ it) and produce a **false positive** (a legitimate user has genuinely rooted the
 | System partition is writable | An area that should be read-only can be changed | 30 |
 | `geteuid() == 0` (desktop/server counterpart) | The process is actually running with elevated privilege | 40 |
 
-Demo 7's actual output — a single signal (`cikti/sahte_su` found → 1 signal) — corresponds to a low score; on its
+Demo 7's actual output — a single signal (`output/fake_su` found → 1 signal) — corresponds to a low score; on its
 own, it **shouldn't be enough** to stop a banking application. For the score to come out high, several indicators
 are expected to appear **together** — just as in the environment example in Section 5.1.
 
@@ -1103,23 +1190,31 @@ the expected, unmodified version?" (Catalogue K2/K3/K6).
 
 ### Demo 6 — Component signature verification and repackaging detection
 
-!!! info "Demo 6 · `code/week-06/06-bilesen-imza` · signature/digest verification"
+!!! info "Demo 6 · `code/week-06/06-component-signature` · signature/digest verification"
     A "plugin module" file is verified with a detached signature (HMAC-SHA-256) **before** it's loaded. If the
     module changes by even a single byte, the signature won't match and loading is refused.
 
-```text title="sh demo.sh — real output"
-ADIM 3 - Yukleme oncesi dogrulama (modul degismedi): TUTAR
-Modul imzasi TUTTU -> guvenle yuklenebilir.
-ADIM 4 - Saldiri: modul YENIDEN PAKETLENIR (tek bayt eklenir)
-Modul imzasi TUTMADI -> YENIDEN PAKETLENMIS/degistirilmis.
-Yukleme REDDEDILDI.   (cikis kodu 3)
+<iframe class="dsanim" src="../anim/component-signature.html" title="Component signature verification: catching repackaging" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Component signature verification — step by step](anim/component-signature.png)
+</div>
+
+Try the **holds/appended-byte/edge** presets; the animation shows build-time signing and pre-load verification
+side by side.
+
+```text title=".\demo.ps1 — real output"
+STEP 3 - Verify before loading (module unchanged): HOLDS
+Module signature HELD -> safe to load.
+STEP 4 - Attack: the module is REPACKAGED (one character changes)
+Module signature DID NOT HOLD -> REPACKAGED/modified.
+Loading REJECTED.   (exit code 3)
 ```
 
 !!! info "An important difference: HMAC vs. asymmetric signature"
     APK v2/v3 uses an **asymmetric (public-key)** signature (see the digital signature in
     [Week 3](../week-3/cen429-week-3.md#24-hash-mac-and-signature-which-one-when)): the verifier
     needs only the **public key**, not the signing key. In this demo we use **shared-key HMAC** for teaching
-    purposes (simple and ready-made in `cen429_kripto.h`); we'll cover asymmetric signatures (Ed25519 / RSA-PSS)
+    purposes (simple and ready-made in `cen429_crypto.h`); we'll cover asymmetric signatures (Ed25519 / RSA-PSS)
     and certificate chains in
     [Week 10](../week-10/cen429-week-10.md#5-digital-signature-creation-verification-and-where-its-used). The
     principle is the same: **integrity + source** verification before loading.
@@ -1164,9 +1259,23 @@ Every check so far (integrity, anti-debug, environment, root) makes **one decisi
 reddet;` (if danger, reject). The attacker's job is simple: patch **that one jump** (`je → jmp`) and skip the check
 (the patch from Section 3). So what's the way to make checks **unskippable**?
 
+!!! note "Brief history: from software tamper-resistance to verifiable control flow"
+    - **1996** — David Aucsmith works on the idea of distributed integrity checks that **cross-check** each other,
+      so no single patch point can be trusted alone (one of the early contributions to the software
+      tamper-resistance literature).
+    - **2001** — Christian Collberg and Clark Thomborson publish a taxonomy and terminology for obfuscation and
+      tamper-resistance; around the same time, Hoi Chang and Mikhail Atallah work on **"guards"** — small pieces
+      of code that check and repair each other's control flow — the root of the "multiple/overlapping checker"
+      idea this week's checkpoint 3 uses against a skipped check.
+    - **2005** — Martín Abadi, Mihai Budiu, Úlfar Erlingsson, and Jay Ligatti formally define **Control-Flow
+      Integrity (CFI)** in the academic literature: verifying that a program's runtime control flow **conforms**
+      to a control-flow graph extracted at compile time. This week's flow counter applies CFI's core idea
+      (catching a deviation from the expected path) in a simplified form — a **data-dependent key chain**
+      instead of a full graph.
+
 The answer: tie the security checks to a **control-flow counter / key chain** (Catalogue K17). A critical operation
 can only produce the correct result **if** all the checkpoints have been passed **in order**. We build this as a
-**data dependency**: each checkpoint advances a key chain (`acc = HMAC(acc, "asama-i")`); the critical operation
+**data dependency**: each checkpoint advances a key chain (`acc = HMAC(acc, "stage-i")`); the critical operation
 unwraps a secret with the key derived from this chain.
 
 ![Catching a skipped check with a control-flow counter](assets/h06-04-akis-sayaci.svg)
@@ -1176,43 +1285,53 @@ is **rejected** — the real result can't be produced. So a single `jmp` patch i
 
 ### Demo 5 — Control-flow counter and a skip attack
 
-!!! info "Demo 5 · `code/week-06/05-akis-sayaci` · control-flow integrity (Catalogue K17)"
+!!! info "Demo 5 · `code/week-06/05-flow-counter` · control-flow integrity (Catalogue K17)"
 
-```text title="sh demo.sh — real output (abridged)"
-SENARYO 1 - Normal: butun kontrol noktalari sirayla calisir
-   [gecildi] kontrol noktasi 0, 1, 2
-SONUC: ODEME ONAYLANDI -> "ODEME-ONAYI-TOKEN-4242"
+<iframe class="dsanim" src="../anim/flow-counter.html" title="Control-flow counter: the expected path vs. a skipped check" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Control-flow counter — step by step](anim/flow-counter.png)
+</div>
 
-SENARYO 2 - Saldiri: kontroller tamamen ATLANIR
-   [ATLANDI] hicbir kontrol noktasi calismadi
-   (uyari: sayac=0 iz=0x0 beklenen=3/0x7)
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). ... decoy doner
+The animation compares a 10-14 stage flow against the golden chain; try the **in-order/skip-half/edge** presets —
+the chain breaks even if no stage runs at all, or if every stage runs in the WRONG order.
 
-SENARYO 4 - Saldiri: kontroller YANLIS SIRADA calisir
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). ... decoy doner
+```text title=".\demo.ps1 — real output (abridged)"
+SCENARIO 1 - normal: every checkpoint runs in order
+   [passed] checkpoint 0 (integrity (Demo 1))
+   [passed] checkpoint 1 (anti-debug (Demo 2))
+   [passed] checkpoint 2 (environment (Demo 3))
+RESULT: PAYMENT APPROVED -> "PAYMENT-APPROVAL-TOKEN-4242"
+
+SCENARIO 2 - skip: the checks are SKIPPED entirely (straight to the critical operation)
+   [SKIPPED] no checkpoint ran
+   (warning: count=0 visited_mask=0x0 expected=3/0x7)
+RESULT: PAYMENT DENIED (wrong chain key).
+
+SCENARIO 4 - reorder: the checks run in the WRONG ORDER
+RESULT: PAYMENT DENIED (wrong chain key).
 ```
 
 In the normal flow, all three checkpoints were passed in order, the chain came out correct, and the payment was
 approved. When the checks were skipped, only partly passed, or passed in the wrong order, the chain came out
 different; the critical operation **couldn't produce** the real result and returned a fake (decoy) one. The
-program also keeps a **double counter** (a `sayac` counter plus an `iz` trace bit) (K17); together with the key
+program also keeps a **double counter** (a `count` counter plus a `visited_mask` trace bit) (K17); together with the key
 chain, this gives a triple consistency check.
 
 **Why is the "double counter" needed — isn't the `acc` chain enough?** The `acc` chain proves, indirectly, **which
-stages ran in which order** (wrong stage/order → wrong key), but as we see in the demo's warning line (`uyari:
-sayac=0 iz=0x0 beklenen=3/0x7`), the program also keeps two more **simple** counters: `sayac` (a plain integer
-counting how many checkpoints ran) and `iz` (a bit set where each checkpoint sets its own bit position, e.g., if
-checkpoints 0, 1, and 2 passed, `iz = 0b111 = 0x7`). Their purpose is **different** from `acc`'s: `acc` is
+stages ran in which order** (wrong stage/order → wrong key), but as we see in the demo's warning line (`warning:
+count=0 visited_mask=0x0 expected=3/0x7`), the program also keeps two more **simple** counters: `count` (a plain integer
+counting how many checkpoints ran) and `visited_mask` (a bit set where each checkpoint sets its own bit position, e.g., if
+checkpoints 0, 1, and 2 passed, `visited_mask = 0b111 = 0x7`). Their purpose is **different** from `acc`'s: `acc` is
 cryptographically strong but on its own gives no **readable diagnostic information** like "how many checks passed,
-which ones" (you cannot infer "all three checks passed" from an HMAC output). `sayac` and `iz` give the developer
+which ones" (you cannot infer "all three checks passed" from an HMAC output). `count` and `visited_mask` give the developer
 and the log a readable summary, while the actual **authorization decision** still rests only on the key derived
-from `acc` — even if the `sayac` and `iz` fields themselves are patched to `3` and `0x7`, the key still comes out
-wrong because the `acc` chain is wrong. The three values (acc, sayac, iz) thus **cross-check** each other: if one
+from `acc` — even if the `count` and `visited_mask` fields themselves are patched to `3` and `0x7`, the key still comes out
+wrong because the `acc` chain is wrong. The three values (acc, count, visited_mask) thus **cross-check** each other: if one
 is inconsistent, it's noticed in the log, but none of them alone can change the authorization decision.
 
 ### 9.1 Worked example: computing the key chain by hand
 
-Let's not leave `acc = HMAC(acc, "asama-i")` abstract; let's compute it by hand with real `openssl` commands. Let
+Let's not leave `acc = HMAC(acc, "stage-i")` abstract; let's compute it by hand with real `openssl` commands. Let
 the starting value `acc0` be produced by HMACing **empty** data with a fixed key of 32 zero bytes (in a real
 system this is randomly generated per session):
 
@@ -1231,35 +1350,35 @@ acc0 = b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 and the stage label is HMACed as the data; the result becomes the new `acc`:
 
 ```bash title="In-order pass: acc1 -> acc2 -> acc3"
-A1=$(printf 'asama-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
-A2=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
-A3=$(printf 'asama-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
-echo "acc3 (DOGRU zincir) = $A3"
+A1=$(printf 'stage-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+A2=$(printf 'stage-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
+A3=$(printf 'stage-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
+echo "acc3 (CORRECT chain) = $A3"
 ```
 
 ```text
-acc3 (DOGRU zincir) = fc5c2a86e948b190dbe61619375a77bee2aa79911feec3d37f5d7d20615cada8
+acc3 (CORRECT chain) = e2db3f2ffdeefc8e58749330d64e0bab04e79b8ce63ba185fcd83a8c3e0942ee
 ```
 
 The critical operation (e.g., payment approval) only derives the correct key and produces the real result if
-`acc3` is **exactly equal** to this value — Demo 5's SCENARIO 1.
+`acc3` is **exactly equal** to this value — Demo 5's `normal` scenario.
 
 **Attack — checkpoints are skipped, only the first stage runs.** The attacker patches around the calls to
-checkpoint functions 0 and 2 (the same idea as the `je → jmp` patch in Section 3); only the `asama-1` label is
+checkpoint functions 0 and 2 (the same idea as the `je → jmp` patch in Section 3); only the `stage-1` label is
 processed:
 
-```bash title="Skipped pass: only asama-1"
-B1=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
-echo "acc (ATLANMIS zincir) = $B1"
+```bash title="Skipped pass: only stage-1"
+B1=$(printf 'stage-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+echo "acc (SKIPPED chain) = $B1"
 ```
 
 ```text
-acc (ATLANMIS zincir) = bffc11620959254cef65b0e97fc8b54a1fe42cd6afe161b66aca5a758c1e17ff
+acc (SKIPPED chain) = 1af937ede233313e8a3765bb48ca09a81970c91652abb42060838fcecb37bf73
 ```
 
-`fc5c2a86...` and `bffc1162...` are **completely different** values. The critical operation can't **open** the
-real secret with the key derived from this wrong `acc`; this is exactly the "ODEME REDDEDILDI ... decoy doner"
-(payment rejected ... a decoy is returned) result we saw in Demo 5's SCENARIO 2 and 4. The attacker's `jmp` patch
+`e2db3f2f...` and `1af937ed...` are **completely different** values. The critical operation can't **open** the
+real secret with the key derived from this wrong `acc`; this is exactly the "RESULT: PAYMENT DENIED ... a decoy is
+returned" result we saw in Demo 5's `skip` and `reorder` scenarios. The attacker's `jmp` patch
 **doesn't even change which check gets skipped** — every skipped combination produces a different but always
 **wrong** `acc`, because the HMAC chain spreads every change in its input through the avalanche effect (the same
 property from Section 3.1, here in its chained form).
@@ -1290,7 +1409,7 @@ A good response policy **slows the attacker down and misleads them**:
 | Strategy | What it does | Catalogue |
 | --- | --- | --- |
 | **Fail-closed** | Reject the operation when in doubt; don't fall into a trusted state | — |
-| **Erase the secret** | Securely erase the valuable data the instant tampering is found (`kripto_temizle`) | K15 |
+| **Erase the secret** | Securely erase the valuable data the instant tampering is found (`crypto_wipe`) | K15 |
 | **Decoy (fake) output** | Return a random/fake result instead of crashing; the attacker can't tell real from fake | K16 |
 | **Delayed/implicit response** | Separate the response from the trigger, in time/code distance | K15 |
 | **Device/version binding** | Bind the secret to the device/version; even if the keys are copied, they won't open on another device | L1/L2 |
@@ -1303,7 +1422,7 @@ comes out different and the secret **can't be opened**.
 
 ### 10.1 Worked example: deriving a key from a device fingerprint (HKDF step by step)
 
-Let's trace Demo 8's "device/version binding" step by hand with **real values**. `kripto_hkdf_sha256` implements
+Let's trace Demo 8's "device/version binding" step by hand with **real values**. `crypto_hkdf_sha256` implements
 the two steps (Extract, Expand) of the **RFC 5869 HKDF** we saw in
 [Week 3](../week-3/cen429-week-3.md#7-deriving-keys-from-a-master-secret-session-keys-and-forward-secrecy); here
 `ikm` (input key material) is the
@@ -1311,9 +1430,9 @@ device fingerprint, `tuz` (salt) is the version string, and `info` is a fixed co
 
 | Parameter | Value (Demo 8's `normal` scenario) |
 | --- | --- |
-| `ikm` (device fingerprint) | `cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO` |
-| `tuz` (version) | `surum=1.0.0` |
-| `info` (context label) | `rasp-veri-anahtari` |
+| `ikm` (device fingerprint) | `device=SIM-MODEL-A;serial=SN-0001;maker=DEMO` |
+| `tuz` (version) | `version=1.0.0` |
+| `info` (context label) | `rasp-data-key` |
 
 **Step 1 — Extract.** This step compresses `ikm` (a device fingerprint is plain text; it may not be
 cryptographically "well distributed"), whose length and randomness are uncertain, into a fixed-length, secure
@@ -1321,20 +1440,20 @@ intermediate key; this intermediate key's standard name is **PRK** (Pseudo-Rando
 HMAC-SHA256(anahtar = tuz, veri = ikm)`. Let's do the same computation with `openssl`:
 
 ```bash title="HKDF Step 1 - Extract (real openssl output)"
-printf '%s' 'cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO' \
-  | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'surum=1.0.0' | xxd -p -c 256) -binary \
+printf '%s' 'device=SIM-MODEL-A;serial=SN-0001;maker=DEMO' \
+  | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'version=1.0.0' | xxd -p -c 256) -binary \
   | xxd -p -c 256
 ```
 
 ```text
-PRK (real device)    = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99562ce
+PRK (real device)    = cdbff87f64c1f39f778590faf7f1825b1c6caf759cfaa38af5c7b6d386eb00f4
 ```
 
 **Step 2 — Expand.** Since we need 32 bytes (a single block), one HMAC is enough: `T1 = HMAC-SHA256(key = PRK,
 data = info || 0x01)` (`0x01` is RFC 5869's block counter). This `T1` directly becomes the 32-byte **data key**:
 
 ```text
-key (real device)      = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc5be175d10
+key (real device)      = 3c8af67f5d09f3bf2ee6be6164a99e8027a73a208ca43599909a4f63d06d7499
 ```
 
 **Step 3 — repeating the same computation with "another device's" fingerprint.** Let's just change the serial
@@ -1342,49 +1461,80 @@ number from `SN-0001` to `SN-9999` (exactly like an attacker copying the data fi
 the same two steps:
 
 ```text
-PRK (another device)   = b6b88f3dce3ea3099c4ff0673d356c040689ebd72be4cc98fb158bfa4c0ac039
-key (another device)   = b87e4dee6c5579a1456b977ce8cbf8d14f3363aa4e1c7c1a7198342c7689e220
+PRK (another device)   = ac53ee1fffc9fc61b5a2d3f874187855f40e6d3514d92a7df955d26e35638cdb
+key (another device)   = b68e35acc1ce116e1879a5dd6243e5c4a194821dbd234d15c2f0a22f462073d6
 ```
 
-**Result.** The two keys (`a19f06fd...` and `b87e4dee...`) differ **so much they share no common bytes** — a
+**Result.** The two keys (`3c8af67f...` and `b68e35ac...`) differ **so much they share no common bytes** — a
 single-character serial-number difference produces a completely different key from start to finish, because of
-HKDF's HMAC core (the avalanche effect from Section 3.1). This is exactly the "cihaz/surum baglama tutmadi"
-(device/version binding failed) result we saw in Demo 8's SCENARIO 3 ("another device"): because the key the
-packet was encrypted with (`a19f06fd...`) and the key being used to try to decrypt it (`b87e4dee...`) are **not
-the same**, `AES-GCM`'s authentication tag doesn't hold and `kripto_gcm_coz` fails — the secret is **never
+HKDF's HMAC core (the avalanche effect from Section 3.1). This is exactly the "device/version binding failed"
+result we saw in Demo 8's `other-device` scenario: because the key the
+packet was encrypted with (`3c8af67f...`) and the key being used to try to decrypt it (`b68e35ac...`) are **not
+the same**, `AES-GCM`'s authentication tag doesn't hold and `crypto_gcm_decrypt` fails — the secret is **never
 exposed**, even if the files are copied to another device.
 
 ### Demo 8 — The RASP engine: detection + response + device/version binding (capstone)
 
-!!! info "Demo 8 · `code/week-06/08-tamper-yanit` · this week's capstone (K15/K16, L1/L2)"
+!!! info "Demo 8 · `code/week-06/08-tamper-response` · this week's capstone (K15/K16, L1/L2)"
     Combines the earlier pieces into a single "self-protection engine": a series of checks run; the secret is
-    wrapped with a device-bound key (HKDF + AES-GCM); when tampering is detected, the engine **erases** the
-    secret, raises a tamper flag, and returns a **decoy** instead of crashing.
+    wrapped with a device-bound key (HKDF + AES-GCM); the outcome is NOT a binary clean/tamper decision but a
+    **four-state graded response policy** (`decide_response()`): `NORMAL` (0 failed checks) → `WARN` (1) →
+    `DEGRADE` (2) → `LOCK` (3 or more, OR the device/version binding fails entirely — that always jumps straight
+    to `LOCK`).
 
-```text title="sh demo.sh — real output (abridged)"
-SENARYO 1 - Normal: kontroller gecer, cihaz dogru -> sir acilir
-SONUC: TEMIZ. Sir acildi ve islem yapiliyor -> "ODEME-ANAHTARI-7C4A"
-(sir kullanildiktan sonra bellekten guvenle silindi)
+```text title=".\demo.ps1 — real output (abridged)"
+SCENARIO 1 - normal: 0 failed checks, device matches -> NORMAL
+RESULT: NORMAL. The secret opened and is in use -> "PAYMENT-KEY-7C4A"
+(the secret was safely wiped from memory after use)
 
-SENARYO 2 - Tamper: bir kontrol basarisiz -> sil + decoy + bayrak
-SONUC: TAMPER ALGILANDI -> algilama kontrolu basarisiz (tamper)
-   Politika: sir silindi, tamper bayragi kaldirildi, olay kaydedildi.
-   Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...
+SCENARIO 2 - warn: 1 failed check -> WARN (still opens, just logged)
+RESULT: WARN. One weak signal is not worth degrading service over.
+The secret still opened -> "PAYMENT-KEY-7C4A"
+   Policy: event logged, monitoring tightened, no functionality lost.
 
-SENARYO 3 - Baska cihaz: kontroller gecer ama cihaz anahtari tutmaz
-SONUC: TAMPER ALGILANDI -> cihaz/surum baglama tutmadi (klonlama?)
-   ... decoy doner
+SCENARIO 3 - degrade: 2 failed checks -> DEGRADE (wiped, redacted result)
+RESULT: DEGRADE. Multiple signals -> full trust withdrawn.
+   Policy: secret wiped; a REDACTED result is returned, the full
+   operation is refused, but the application keeps running.
+RESULT-VALUE: PAYM**** (redacted)
+
+SCENARIO 4 - lock: 3 failed checks -> LOCK (wipe + decoy + flag)
+RESULT: LOCK -> detection checks failed (tamper)
+   A DECOY result was returned instead of crashing: 9be972a7...
+
+SCENARIO 5 - other-device: checks pass, device key does not hold -> LOCK
+RESULT: LOCK -> device/version binding failed (cloned?)
+   A DECOY result was returned instead of crashing: 39f368f4...
 ```
 
 In the normal flow, the checks passed, the device was correct, the secret was opened, used, and erased right
-away. When a check failed (tamper), the engine erased the secret and returned a decoy. When the package was moved
-to **another device**, even though the checks passed, the device-bound key didn't hold and the secret couldn't be
-opened. This is the innermost layer of Week 3's **security shell** (device binding), merged with RASP.
+away (`NORMAL`). When exactly one check failed, the engine **still** opened the secret — but logged the event
+(`WARN`); a single weak signal isn't worth degrading a legitimate user's experience over. When two checks failed,
+the secret was erased and only a **redacted** result came back (`DEGRADE`) — the application kept running, just
+without the full result. When three or more checks failed, OR the package was moved to **another device** (even
+though the checks passed), the engine **locked** completely (`LOCK`): the secret was erased, a decoy was
+returned, a flag was raised. This is the innermost layer of Week 3's **security shell** (device binding), merged
+with RASP's graded response policy.
+
+Let's visualize the four states as a **state machine**: the animation below classifies every independent call on
+a monitoring timeline into NORMAL/WARN/DEGRADE/LOCK (using `decide_response()`'s real decision table) and
+summarizes how often each state fires:
+
+<iframe class="dsanim" src="../anim/tamper-response-policy.html" title="Response policy state machine: warn → degrade → lock" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Response policy state machine — step by step](anim/tamper-response-policy.png)
+</div>
+
+Try the **escalating/noisy/edge** presets; `escalating` shows a session gradually worsening from NORMAL to LOCK
+over time, while `edge-all-device-mismatch` shows that a device mismatch always jumps straight to LOCK,
+**regardless** of how many checks failed.
 
 ### 10.2 Worked example: three different responses to the same event, three different outcomes
 
 In Section 1.3 we briefly compared three different responses to the same detection signal; now let's compare it
-**outcome by outcome** using Demo 8's tamper scenario. Event: an anti-debug check failed (Demo 8 SCENARIO 2).
+**outcome by outcome** using Demo 8's `LOCK` scenario. Event: three checks failed (Demo 8 SCENARIO 4 — `lock`).
+(If only one check had failed, the engine would have moved to `WARN` and still opened the secret — see Section
+10; a decoy only appears in the `LOCK` state.)
 
 | Response | What the attacker sees | What happens to the secret | Effect on a legitimate user | Assessment |
 | --- | --- | --- | --- | --- |
@@ -1393,7 +1543,8 @@ In Section 1.3 we briefly compared three different responses to the same detecti
 | **(c) Decoy (fake result)** — what Demo 8 does | "The operation looks successful" — but the produced `decoy` result has no relation at all to the real secret; the attacker may waste time thinking they succeeded | Erased, random data returned instead | No noticeable effect (the secret was already opening correctly for the legitimate user on the correct device) | Gives the attacker the least information, the most deterrent option |
 
 All three rest on the **same detection code** (Section 1.3); they differ only in **when and what** they return. In
-Demo 8's actual output, option (c) is applied: "Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...". This number
+Demo 8's actual output, option (c) is applied in the `LOCK` state: "A DECOY result was returned instead of
+crashing: 9be972a7...". This number
 is **different** every run (Exercise 7); if it were a fixed "ERROR-0x1234" value, the attacker would recognise
 this constant and could tell it apart from the real result — the decoy being random prevents that distinction
 too.
@@ -1497,12 +1648,12 @@ Application Protections (15p → LO.3)** in the final rubric.
 ## 13. Class activities
 
 !!! example "Activity 1 — Build the hook with your own hands (15 min, pairs, WSL)"
-    Run Demo 4 on WSL. Then add `getenv` to `sahtekanca.c` too (have it return empty, to hide `LD_PRELOAD`).
+    Run Demo 4 on WSL. Then add `getenv` to `fake_hook.c` too (have it return empty, to hide `LD_PRELOAD`).
     Rebuild and run it: does signal 1 (getenv) still catch it now? Does signal 2 (`dladdr`) still catch it? Why is
     this more robust?
 
 !!! example "Activity 2 — Patch the single `if` (10 min, discussion)"
-    In Demo 5, the `atlat` (skip) mode couldn't produce the real result. Now think: if the critical operation were
+    In Demo 5, the `skip` (skip) mode couldn't produce the real result. Now think: if the critical operation were
     just `if (kontroller_gecti) onayla;` (if checks passed, approve), what would the attacker do with a single
     `jmp`? Why does the key chain make this patch useless?
 
@@ -1535,8 +1686,8 @@ Application Protections (15p → LO.3)** in the final rubric.
 
 !!! question "Reading 2 — Why is this integrity check weak?"
     ```c
-    uint32_t crc = crc32(kod, kod_boy);
-    if (crc != BEKLENEN_CRC) tamper();
+    uint32_t crc = crc32(code, code_len);
+    if (crc != EXPECTED_CRC) tamper();
     ```
     ??? success "Answer"
         **CRC32 is not cryptographic**: an attacker can patch the code and easily tune it so the CRC still
@@ -1557,8 +1708,8 @@ Application Protections (15p → LO.3)** in the final rubric.
     unsigned int ecx;
     __cpuid_ecx(1, &ecx);
     if (ecx & (1u << 31)) {
-        /* hipervizor biti set */
-        exit(1);           /* "analiz ortami, calismayi reddet" */
+        /* hypervisor bit set */
+        exit(1);           /* "analysis environment, refuse to run" */
     }
     ```
     ??? success "Answer"
@@ -1580,7 +1731,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     effect)?
 
 ??? question "Exercise 2 — Easy: tamper with the golden value"
-    In Demo 1, edit the `cikti/altin.hmac` file like an attacker would. What can the check no longer catch? Why
+    In Demo 1, edit the `output/golden.hmac` file like an attacker would. What can the check no longer catch? Why
     does this make the question "where should the golden value be stored?" important?
 
 ??? question "Exercise 3 — Medium: Demo 2 under gdb"
@@ -1588,11 +1739,11 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     name? Which signals fire?
 
 ??? question "Exercise 4 — Medium: hook `getenv` too"
-    Add `getenv` to Demo 4's `sahtekanca.c`. Which signal goes blind, which one still catches it? (The code version
+    Add `getenv` to Demo 4's `fake_hook.c`. Which signal goes blind, which one still catches it? (The code version
     of Activity 1.)
 
 ??? question "Exercise 5 — Medium: a fifth check in the chain"
-    In Demo 5, make `ASAMA` (stage) 5 and add two more checkpoints. How does the chain change? Does the normal flow
+    In Demo 5, make `STAGE_COUNT` (stage) 5 and add two more checkpoints. How does the chain change? Does the normal flow
     still get approved?
 
 ??? question "Exercise 6 — Medium: mutual verification"
@@ -1605,7 +1756,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     for the decoy to be **random** (different every time) than a fixed "error value"?
 
 ??? question "Exercise 8 — Hard: test device binding"
-    In Demo 8's `baska-cihaz` (another-device) mode, is there any way to open the secret? Is it possible to derive
+    In Demo 8's `other-device` mode, is there any way to open the secret? Is it possible to derive
     the key without changing the device fingerprint? Why does this make a stolen data file useless on another
     phone?
 
@@ -1624,7 +1775,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
 
 ??? question "Exercise 12 — Hard: recompute HKDF by hand (Section 10.1)"
     Run Section 10.1's `openssl` commands on your own machine; do you get the same `PRK` and key values? Now change
-    the `SURUM` (version) string (`surum=1.0.0` to `surum=1.0.1`) and recompute the key. How does this explain why
+    the `VERSION_STRING` (version) string (`version=1.0.0` to `version=1.0.1`) and recompute the key. How does this explain why
     a version upgrade "locks" secrets in old data?
 
 ---
@@ -1719,8 +1870,8 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
     information (it shows which check fired), a delayed silent response blurs this in time/distance, and a decoy
     gives the least information by returning a result that looks "successful" but is useless (Section 10.2).
 
-??? question "22. Why are the shadow copy and digest fields in the `KorunanSayac` structure kept separate?"
-    If the attacker changes only the `deger` (value) field in memory, the `golge` (masked copy) and `ozet` (short
+??? question "22. Why are the shadow copy and digest fields in the `ProtectedCounter` structure kept separate?"
+    If the attacker changes only the `value` field in memory, the `shadow` (masked copy) and `mac` (short
     MAC) stay inconsistent with the old values; the read function catches this inconsistency (Section 7.1).
 
 ??? question "23. What is the relationship between the control-flow counter's `acc` chain and the avalanche effect?"
@@ -1763,7 +1914,7 @@ These exercises aren't graded; they're for reinforcement. All of them are done o
        as a contribution to a **risk score** (Section 5.1).
     7. (True/False) "HMAC-based integrity checking alone protects against the checker itself being patched." →
        **False**; that's why overlapping checkers and making the result a data dependency are needed (Section 3).
-    8. (Short answer) Why is the `SURUM` (version) string given to HKDF as the `tuz` (salt) in device binding? → So
+    8. (Short answer) Why is the `VERSION_STRING` (version) string given to HKDF as the `tuz` (salt) in device binding? → So
        that the derived key changes when the version changes; this automatically "locks" data produced under an
        old version's vulnerability once the new version ships (Section 10.1, Exercise 12).
 

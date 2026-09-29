@@ -78,7 +78,7 @@
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming\code
         .\build.ps1
-        cd week-01\01-path-kandirma
+        cd week-01\01-path-spoofing
         .\demo.ps1
         ```
 
@@ -91,7 +91,7 @@
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming/code
         ./build.sh
-        cd week-01/01-path-kandirma
+        cd week-01/01-path-spoofing
         sh demo.sh
         ```
 
@@ -142,15 +142,23 @@ lock being faulty is a **vulnerability**. The thief using that faulty lock is th
 answer to the question "how likely is this event, and how much damage does it cause if it happens?"
 
 !!! note "A short history: where did the idea of secure programming come from?"
+    - **1972** — James P. Anderson's *Computer Security Technology Planning Study*, written for the US Air Force,
+      is one of the first documents to systematically define a "trusted computing base" and an attacker model —
+      one of the starting points of modern computer security.
     - **1975** — Saltzer & Schroeder publish the **eight principles** of secure design (least privilege, defence in
       depth, open design...). Still foundational today.
     - **1970s–80s** — the **CIA triad** (confidentiality · integrity · availability) emerges from military/government
       information security and becomes a common language.
     - **1998–99** — the **STRIDE** threat classification (Kohnfelder & Garg) is developed at Microsoft; in the same
       years, Bruce Schneier introduces **attack trees**.
+    - **2001** — OWASP (the Open Web Application Security Project) is founded, providing a shared resource, guides
+      and terminology for web and application security.
     - **2001–2003** — Viega & McGraw's *Building Secure Software* and Viega & Messier's ***Secure Programming
       Cookbook for C and C++*** (the main source for this course) establish the culture of "build it in from the
       start, don't bolt it on afterward."
+    - **2002 → 2004** — Bill Gates's "Trustworthy Computing" memo to Microsoft staff (2002) shifts the company's
+      priorities; the effort becomes the formal **Security Development Lifecycle (SDL)** in 2004 (see
+      [§19](#19-secure-development-process-keeping-the-plan-alive)).
 
     All of this week's tools (CIA, attacker model, STRIDE, attack tree) are products of this lineage.
 
@@ -262,7 +270,7 @@ mind with a one-sentence example:
 | Principle | Meaning | Example |
 | --- | --- | --- |
 | **Least privilege** | Every component runs with just enough privilege to do its job | The reporting program runs as an ordinary user, not as administrator |
-| **Secure default** | The default state is "no permission" | A new user's `yonetici` (admin) field starts at 0 |
+| **Secure default** | The default state is "no permission" | A new user's `admin` field starts at 0 |
 | **Complete mediation** | Every access is checked, every time | Permission is not checked once and then cached |
 | **Open design** | Security rests on the secrecy of the key, not the secrecy of the design (Kerckhoffs) | You do not write your own encryption algorithm |
 | **Economy of mechanism** | A simple design contains fewer bugs | A clear 20-line check beats a "clever" 500-line one |
@@ -544,6 +552,17 @@ at once — that's defence in depth at work. (2) Path B has three alternatives; 
 the weakest point, and it needs dedicated countermeasures (this week's Demo 2, runtime protection in [week 6](../week-6/cen429-week-6.md),
 white-box in [week 11](../week-11/cen429-week-11.md)).
 
+The animation below computes the same idea numerically on a slightly larger tree (4 branches, 11 leaves): how is
+every AND/OR node's cost worked out bottom-up, and which is the cheapest path?
+
+<iframe class="dsanim" src="../anim/attack-tree-eval.html" title="Attack tree: cheapest path" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Attack tree: cheapest path — step by step](anim/attack-tree-eval.png)
+</div>
+
+Try the **payment-key**, **license-check** (root AND) examples and the two edge cases (a forced two-layer tree /
+every node AND) in the picker; use 🎲 to evaluate your own tree.
+
 !!! example "Class exercise (15 minutes, groups of 3–4)"
     Think of a "student grading system": the instructor enters grades, the student sees their grade, the data
     lives on a server.
@@ -600,6 +619,17 @@ which questions actually make sense:
 ¹ If the data store is an audit log, the repudiation threat is asked too: if the record is deleted or altered, who
 did what can no longer be proven.
 
+The animation below applies this table to a small system (like a student grade system, 12 elements) one element at
+a time: for every element it shows which of the six letters are meaningful, and why.
+
+<iframe class="dsanim" src="../anim/threat-model-stride.html" title="DFD element → STRIDE categories" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![DFD element -> STRIDE categories — step by step](anim/threat-model-stride.png)
+</div>
+
+Try the **grade-system** and **password-vault** examples and the two edge cases (all data flows / all external
+entities) in the picker; use 🎲 to generate your own mixed system.
+
 The logic of the table is intuitive: a data flow (e.g. a network packet) cannot be **spoofed**, because it has no
 "identity"; but it **can** be eavesdropped on (I), altered (T), or cut off (D). A process, on the other hand, is
 exposed to all six threats: it can be impersonated, its code can be altered, its memory can be read, it can be
@@ -633,6 +663,17 @@ and multiply them:
 | **Likelihood: High (3)** | 3 — medium | 6 — high | **9 — critical** |
 | **Likelihood: Medium (2)** | 2 — low | 4 — medium | 6 — high |
 | **Likelihood: Low (1)** | 1 — low | 2 — low | 3 — medium |
+
+The animation below places 12 threats from a password-vault application onto this matrix one by one, then ranks
+all of them by score:
+
+<iframe class="dsanim" src="../anim/risk-scoring.html" title="Risk scoring: likelihood × impact matrix" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Risk scoring: likelihood × impact matrix — step by step](anim/risk-scoring.png)
+</div>
+
+Try the **vault** and **terminal** examples and the two edge cases (all critical / all low) in the picker; use 🎲
+to score your own threat list.
 
 When determining **likelihood**, ask what the attacker needs: does it require physical access, or can it be done
 over the internet? Does it need special tooling or expertise? Can the attack be automated? When determining
@@ -686,7 +727,7 @@ Let **"Vault"** be a password vault, written in C++, running on the desktop:
 
 | Field | Value |
 | --- | --- |
-| Target of evaluation | `kasa.exe` / `kasa` version 1.0, core library `kasa_cekirdek`, configuration file |
+| Target of evaluation | `kasa.exe` / `kasa` version 1.0, core library `vault_core`, configuration file |
 | Platforms | Windows 10/11 (x64), Ubuntu 22.04 (x64) |
 | Out of scope | The backup server's own security (owned by a separate team), the operating system itself |
 | Security objective | The vault file and its backups must be **unreadable and undetectably unmodifiable** to anyone who does not know the master password |
@@ -803,7 +844,7 @@ behaviour. The first chapter of our source book (Viega & Messier, recipes 1.1–
 
 ### Demo 1 — Fooling the program via PATH
 
-!!! info "Demo 1 · `code/week-01/01-path-kandirma` · CWE-426 (untrusted search path)"
+!!! info "Demo 1 · `code/week-01/01-path-spoofing` · CWE-426 (untrusted search path)"
     The program calls a system command: `date` on Linux, which prints the date, and `hostname` on Windows, which
     prints the computer's name. The question is: **which** `date`, **which** `hostname`?
 
@@ -818,20 +859,20 @@ actually runs.
 
 Buggy code:
 
-```c title="rapor.c"
+```c title="report.c"
 #ifdef _WIN32
-#define KOMUT "hostname"
+#define COMMAND "hostname"
 #else
-#define KOMUT "date"
+#define COMMAND "date"
 #endif
 
 int main(void)
 {
-    printf("=== Aylik Satis Raporu ===\n");
+    printf("=== Monthly Sales Report ===\n");
     fflush(stdout);
 
-    /* HATA: çıplak komut adı + kabuk + devralınan ortam (PATH, ...) */
-    int durum = system(KOMUT);
+    /* BUG: bare command name + shell + inherited environment (PATH, ...) */
+    int status = system(COMMAND);
     ...
 }
 ```
@@ -841,32 +882,32 @@ Run the demo:
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\01-path-kandirma
+    cd code\week-01\01-path-spoofing
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/01-path-kandirma
+    cd code/week-01/01-path-spoofing
     sh demo.sh
     ```
 
 ```text title="Output — WSL (abridged; on Windows the same flow with hostname)"
-ADIM 1 — Normal calisma: program gercek date'i buluyor
-=== Aylik Satis Raporu ===
-Rapor tarihi: Sat Sep 19 19:11:32 +03 2026
+STEP 1 - Normal run: the program finds the real date
+=== Monthly Sales Report ===
+Report date: Sat Sep 26 12:05:45 +03 2026
 
-ADIM 2 — Saldiri: PATH'in basina sahte/ klasoru ekleniyor
-$ PATH="$PWD/sahte:$PATH" ./bin/linux/rapor
-=== Aylik Satis Raporu ===
-Rapor tarihi:
-  !!! SAHTE 'date' calisti !!!
-  Program PATH uzerinden kandirildi. ...
+STEP 2 - Attack: the fake/ folder is added to the front of PATH
+$ PATH="$PWD/fake:$PATH" ./bin/linux/report
+=== Monthly Sales Report ===
+Report date:
+  !!! FAKE 'date' ran !!!
+  The program was fooled through PATH. ...
 
-ADIM 3 — Duzeltilmis surum ayni saldiri altinda
-=== Aylik Satis Raporu ===
-Rapor tarihi: Sat Sep 19 19:11:32 +03 2026
+STEP 3 - The fixed version under the same attack
+=== Monthly Sales Report ===
+Report date: Sat Sep 26 12:05:45 +03 2026
 ```
 
 The fake `date` here only prints a message. A real attacker, at the very same point, could do **anything** they
@@ -878,28 +919,28 @@ environment.
 
 === "Linux (posix_spawn)"
 
-    ```c title="rapor_guvenli.c"
-    char *const arguman[]     = { "date", NULL };
-    char *const temiz_ortam[] = { "PATH=/usr/bin:/bin", "LANG=C", NULL };
+    ```c title="report_secure.c"
+    char *const args[]      = { "date", NULL };
+    char *const clean_env[] = { "PATH=/usr/bin:/bin", "LANG=C", NULL };
 
     pid_t pid;
-    int hata = posix_spawn(&pid, "/bin/date", NULL, NULL,
-                           arguman, temiz_ortam);
+    int err = posix_spawn(&pid, "/bin/date", NULL, NULL,
+                          args, clean_env);
     ```
 
 === "Windows (CreateProcessW)"
 
-    ```c title="rapor_guvenli.c"
-    /* 1) C:\Windows\System32\hostname.exe — tam yol */
-    GetSystemDirectoryW(sistem, MAX_PATH);
-    swprintf(program, MAX_PATH, L"%ls\\hostname.exe", sistem);
+    ```c title="report_secure.c"
+    /* 1) C:\Windows\System32\hostname.exe — full path */
+    GetSystemDirectoryW(system_dir, MAX_PATH);
+    swprintf(program_path, MAX_PATH, L"%ls\\hostname.exe", system_dir);
 
-    /* 3) ortam bloğunda yalnız SystemRoot */
-    swprintf(ortam, MAX_PATH + 16, L"SystemRoot=%ls", kok);
+    /* 3) only SystemRoot in the environment block */
+    swprintf(env_block, MAX_PATH + 16, L"SystemRoot=%ls", sys_root);
 
-    /* 2) cmd.exe yok: program doğrudan başlatılır */
-    CreateProcessW(program, komut_satiri, NULL, NULL, FALSE,
-                   CREATE_UNICODE_ENVIRONMENT, ortam, NULL, &si, &pi);
+    /* 2) no cmd.exe: the program is launched directly */
+    CreateProcessW(program_path, cmd_line, NULL, NULL, FALSE,
+                   CREATE_UNICODE_ENVIRONMENT, env_block, NULL, &si, &pi);
     ```
 
 !!! success "Rule"
@@ -908,6 +949,19 @@ environment.
     child process a **cleaned, known** environment. Best of all: avoid needing to run another program at all —
     get the date yourself with `time()` and `strftime()`, and the computer name with `gethostname()` or
     `GetComputerNameW()`.
+
+Watch the animation below to see, step by step, how the shell tries the PATH directories in order and where the
+fake program wins.
+
+<iframe class="dsanim" src="../anim/path-lookup.html" title="PATH lookup and the fake command" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![PATH lookup and the fake command — step by step](anim/path-lookup.png)
+</div>
+
+In the picker, try **no attack** (normal), **the fake directory prepended to PATH** (hard), and the edge cases
+**the fake directory in the middle, still wins** and **the secure version — absolute path, no search** — or press
+🎲 for a random PATH list, or type your own directory list (mark entries `dir:real` / `dir:fake`, or try the
+absolute-path fix with `ABSOLUTE date /bin/date`).
 
 ---
 
@@ -948,17 +1002,17 @@ cannot know today which variable will turn out to be dangerous tomorrow. The rig
 #include <stdlib.h>
 #include <string.h>
 
-static void ortami_temizle(void)
+static void sanitize_environment(void)
 {
-    const char *tz = getenv("TZ");          /* korunacak değişkeni önce kopyala */
-    char tz_kopya[64] = "";
-    if (tz && strlen(tz) < sizeof tz_kopya)
-        strcpy(tz_kopya, tz);
+    const char *tz = getenv("TZ");          /* copy the variable to keep, first */
+    char tz_copy[64] = "";
+    if (tz && strlen(tz) < sizeof tz_copy)
+        strcpy(tz_copy, tz);
 
-    clearenv();                              /* glibc; taşınabilir değil (aşağıya bakın) */
-    setenv("PATH", "/usr/bin:/bin", 1);      /* bilinen, yazılamaz dizinler */
-    if (tz_kopya[0])
-        setenv("TZ", tz_kopya, 1);
+    clearenv();                              /* glibc-specific; not portable (see below) */
+    setenv("PATH", "/usr/bin:/bin", 1);      /* known, non-writable directories */
+    if (tz_copy[0])
+        setenv("TZ", tz_copy, 1);
 }
 ```
 
@@ -986,16 +1040,16 @@ There are two separate problems:
 #include <unistd.h>
 #include <stdlib.h>
 
-static void tanitici_duzenle(void)
+static void sanitize_file_descriptors(void)
 {
     for (int fd = 0; fd <= 2; fd++) {
-        if (fcntl(fd, F_GETFD) == -1) {           /* kapalı mı? */
-            int yeni = open("/dev/null", O_RDWR);
-            if (yeni != fd)                        /* tam olarak o numarayı almalı */
+        if (fcntl(fd, F_GETFD) == -1) {           /* closed? */
+            int new_fd = open("/dev/null", O_RDWR);
+            if (new_fd != fd)                        /* must get exactly that number */
                 abort();
         }
     }
-    /* Linux 5.9+ / glibc 2.34+: tek çağrıda 3 ve üstünü kapat */
+    /* Linux 5.9+ / glibc 2.34+: close 3 and above in one call */
     close_range(3, ~0U, 0);
 }
 ```
@@ -1008,7 +1062,7 @@ million) this can be slow, which is why `close_range` was added. For files you o
 
 ```c
 #include <sys/stat.h>
-umask(077);     /* yeni dosyalar yalnız sahibine açık: rw------- */
+umask(077);     /* new files open only to the owner: rw------- */
 ```
 
 `umask` is a **mask**: the bits set in it are **subtracted** from the permissions you pass to `open()`. With
@@ -1028,11 +1082,11 @@ text. Demo 2's password can be found in exactly this way.
     #include <sys/resource.h>
     #include <sys/prctl.h>
 
-    static void dokumu_kapat(void)
+    static void disable_core_dump(void)
     {
         struct rlimit r = { 0, 0 };
-        setrlimit(RLIMIT_CORE, &r);            /* çekirdek dökümü boyutu 0 */
-        prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);    /* döküm yok, aynı kullanıcı bile ptrace ile bağlanamaz */
+        setrlimit(RLIMIT_CORE, &r);            /* core dump size 0 */
+        prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);    /* no dump; not even the same user can attach via ptrace */
     }
     ```
 
@@ -1045,9 +1099,9 @@ text. Demo 2's password can be found in exactly this way.
     ```c
     #include <windows.h>
 
-    static void dokumu_kapat(void)
+    static void disable_core_dump(void)
     {
-        /* Çökme iletişim kutusunu ve kritik hata kutularını kapat */
+        /* Close the crash dialog and critical-error dialogs */
         SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
     }
     ```
@@ -1067,17 +1121,17 @@ If your program needs elevated privilege temporarily to do one thing (e.g. openi
 #include <unistd.h>
 #include <stdlib.h>
 
-static void yetkiyi_birak(void)
+static void drop_privileges(void)
 {
     uid_t u = getuid();
     gid_t g = getgid();
 
-    if (setresgid(g, g, g) != 0) abort();   /* önce grup: sonra buna yetkimiz kalmaz */
-    if (setresuid(u, u, u) != 0) abort();   /* gerçek, etkin ve saklı kimliğin üçü de */
+    if (setresgid(g, g, g) != 0) abort();   /* group first: afterward we no longer have permission to change it */
+    if (setresuid(u, u, u) != 0) abort();   /* all three: real, effective and saved identity */
 
     uid_t r, e, s;
     getresuid(&r, &e, &s);
-    if (r != u || e != u || s != u) abort();  /* bıraktığını DOĞRULA */
+    if (r != u || e != u || s != u) abort();  /* VERIFY that it was actually dropped */
 }
 ```
 
@@ -1096,33 +1150,44 @@ running every tab in an unprivileged "sandbox" process is today's version of thi
 
 | Wrong | Why? | Correct |
 | --- | --- | --- |
-| `system("convert " + dosya)` | The shell runs; a `;`, `&&`, `$(...)` in the file name becomes a command ([week 5](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
+| `system("convert " + file)` | The shell runs; a `;`, `&&`, `$(...)` in the file name becomes a command ([week 5](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, clean_env)` |
 | `execvp("convert", ...)` | Searches `PATH` (Demo 1) | `execve` with an absolute path |
 | `CreateProcess(NULL, "C:\Program Files\Araç\a.exe", ...)` | An unquoted path with spaces: `C:\Program.exe` is tried first | Give `lpApplicationName` the full path, quote the command line |
-| `LoadLibrary("yardimci.dll")` | A fake DLL placed in the app's or the working directory can be loaded during the search | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` and an absolute path |
-| `dlopen("libyardimci.so")` | `LD_LIBRARY_PATH` and search paths | An absolute path; `LD_*` variables should already be cleaned in Step 1 |
+| `LoadLibrary("helper.dll")` | A fake DLL placed in the app's or the working directory can be loaded during the search | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` and an absolute path |
+| `dlopen("libhelper.so")` | `LD_LIBRARY_PATH` and search paths | An absolute path; `LD_*` variables should already be cleaned in Step 1 |
 
 The Windows DLL search order problem is the **twin** of the `PATH` problem: if the program finds the library it
 wants in a folder the attacker left behind, that library's code runs with the program's privilege (CWE-427).
 
-### All together: `guvenli_baslat()`
+### All together: `secure_startup()`
 
-```c title="guvenli_baslat.c — Linux skeleton (Windows equivalents in comments)"
+```c title="secure_startup.c — Linux skeleton (Windows equivalents in comments)"
 int main(int argc, char **argv)
 {
-    tanitici_duzenle();   /* Adım 2 — Windows: gerek yok, tanıtıcılar varsayılan olarak devralınmaz */
-    ortami_temizle();     /* Adım 1 — Windows: SetDefaultDllDirectories + PATH doğrulaması */
-    umask(077);           /* Adım 3 — Windows: dosyayı açıkça kısıtlı DACL ile oluştur */
-    dokumu_kapat();       /* Adım 4 — Windows: SetErrorMode */
-    yetkiyi_birak();      /* Adım 5 — Windows: kısıtlanmış belirteç / ayrı süreç */
+    sanitize_file_descriptors();   /* Step 2 — Windows: not needed, descriptors are not inherited by default */
+    sanitize_environment();        /* Step 1 — Windows: SetDefaultDllDirectories + PATH validation */
+    umask(077);                    /* Step 3 — Windows: create the file explicitly with a restricted DACL */
+    disable_core_dump();           /* Step 4 — Windows: SetErrorMode */
+    drop_privileges();             /* Step 5 — Windows: restricted token / separate process */
 
-    /* ... programın asıl işi ... */
+    /* ... the program's actual work ... */
     return 0;
 }
 ```
 
 The order is not arbitrary: descriptors and the environment must be tidied up **before the program does anything
 else**, because every later step (e.g. writing an error message) depends on them.
+
+The animation below takes a dangerous inherited state (12 variables, plus the descriptor/umask/dump/privilege
+state) and runs `secure_startup()`'s five steps in order, showing how many variables survive at the end.
+
+<iframe class="dsanim" src="../anim/env-sanitize-startup.html" title="Secure start-up: sanitise the environment, descriptors, privilege" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Secure start-up — step by step](anim/env-sanitize-startup.png)
+</div>
+
+Try the **workstation**, **server** examples and the two edge cases (nothing dangerous / everything dangerous) in
+the picker; use 🎲 to sanitise your own inherited environment.
 
 !!! tip "How does an evaluator test this?"
     They start the program with standard output closed, with a poisoned `PATH` and `LD_PRELOAD`, with `umask
@@ -1153,73 +1218,84 @@ the secret. There are more situations where memory can be seen than you might th
 
 ### Demo 2 — The password left in memory
 
-!!! info "Demo 2 · `code/week-01/02-bellekte-parola` · CWE-14 (compiler removal of code to clear buffers), CWE-316"
-    The program reads the password from `parola.txt`, computes a key with it, then tries to erase the password.
+!!! info "Demo 2 · `code/week-01/02-password-in-memory` · CWE-14 (compiler removal of code to clear buffers), CWE-316"
+    The program reads the password from `password.txt`, computes a key with it, then tries to erase the password.
     The demo dumps the program's memory to a file and searches it for the password: on Linux with `gdb`'s `gcore`
     command, on Windows by having the program write its own memory with `MiniDumpWriteDump`. There are three
     versions: one that **never erases**, one that erases with **`memset`**, and one that erases with
     **`explicit_bzero` / `SecureZeroMemory`**.
 
-```c title="parola.c (excerpt)"
-unsigned long giris_yap(const char *dosya)
+```c title="password.c (excerpt)"
+unsigned long log_in(const char *file)
 {
-    char parola[64];
-    /* düşük düzey okuma: parola yalnız bu dizide durur */
-    int fd = dosya_ac(dosya);
-    int n = (int)dosya_oku(fd, parola, sizeof(parola) - 1);
+    char password[64];
+    /* low-level read: the password lives only in this array */
+    int fd = file_open(file);
+    int n = (int)file_read(fd, password, sizeof(password) - 1);
     ...
-    unsigned long anahtar = anahtar_turet(parola, (size_t)n);
+    unsigned long key = derive_key(password, (size_t)n);
 
-#if SILME == 1
-    memset(parola, 0, sizeof(parola));         /* "ölü yazma" */
-#elif SILME == 2
+#if WIPE == 1
+    memset(password, 0, sizeof(password));         /* "dead store" */
+#elif WIPE == 2
   #ifdef _WIN32
-    SecureZeroMemory(parola, sizeof(parola));  /* kaldırılamaz */
+    SecureZeroMemory(password, sizeof(password));  /* cannot be removed */
   #else
-    explicit_bzero(parola, sizeof(parola));    /* kaldırılamaz */
+    explicit_bzero(password, sizeof(password));    /* cannot be removed */
   #endif
 #endif
-    return anahtar;
+    return key;
 }
 ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\02-bellekte-parola
+    cd code\week-01\02-password-in-memory
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/02-bellekte-parola
+    cd code/week-01/02-password-in-memory
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output (the result is the same on Windows)"
-ADIM 1 — Parolayi hic silmeyen surum
-  SONUC: parola dokumde 1 yerde BULUNDU  ->  Gizli-Parola-2026
+STEP 1 - Version that never wipes the password
+  RESULT: password FOUND in the dump in 1 place(s)  ->  Secret-Password-2026
 
-ADIM 2 — memset ile silen surum (-O2)
-  SONUC: parola dokumde 1 yerde BULUNDU  ->  Gizli-Parola-2026
+STEP 2 - Version that wipes with memset (-O2)
+  RESULT: password FOUND in the dump in 1 place(s)  ->  Secret-Password-2026
 
-ADIM 3 — explicit_bzero ile silen surum (-O2)
-  SONUC: parola dokumde bulunamadi
+STEP 3 - Version that wipes with explicit_bzero (-O2)
+  RESULT: password not found in the dump
 
-Neden? giris_yap() fonksiyonunun makine kodu:
-  memset surumunde silme komutu sayisi    ->  0
-  explicit surumunde explicit_bzero cagrisi ->  1
+Why? machine code of the log_in() function:
+  number of wipe instructions in the memset version    ->  0
+  explicit_bzero calls in the explicit version         ->  1
 ```
 
 The second step is surprising: the code plainly writes `memset`, yet the password is **still in memory**! The
-reason is the compiler's optimisation. The compiler reasons like this: *"the `parola` array is never read after
+reason is the compiler's optimisation. The compiler reasons like this: *"the `password` array is never read after
 this line; writing zeros into it has no effect on the program's result. So this write is redundant, I can remove
 it."* This is called **dead store elimination**. This optimisation, which speeds up ordinary programs, leaves a
 secret sitting in memory in security code. This isn't unique to GCC either: MSVC with `/O2` on Windows produces
-the same result. See for yourself: on Linux, search for `giris_yap` with `objdump -d bin/linux/parola_memset |
-less`; in Visual Studio, put a breakpoint on `giris_yap` and open **Debug > Windows > Disassembly**. There isn't a
+the same result. See for yourself: on Linux, search for `log_in` with `objdump -d bin/linux/password_memset |
+less`; in Visual Studio, put a breakpoint on `log_in` and open **Debug > Windows > Disassembly**. There isn't a
 single instruction belonging to `memset`.
+
+The animation below shows the same 64-byte `password[]` array under all three `WIPE` modes: written byte by byte,
+then wiped (or not) — what is left in a dump afterward?
+
+<iframe class="dsanim" src="../anim/password-wipe.html" title="Password left in memory: memset vs explicit_bzero" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Password left in memory — step by step](anim/password-wipe.png)
+</div>
+
+Try the **memset-surprise** (WIPE=1, the surprising result), **never-wipes** (WIPE=0) and **explicit-bzero-fix**
+(WIPE=2, the real fix) examples in the picker.
 
 !!! success "Rule"
     To erase secrets, use functions the compiler **cannot** remove: `explicit_bzero` on Linux/glibc,
@@ -1250,17 +1326,29 @@ side** in this frame. C does not check when the end of an array is reached: if y
 Let's look at the structure from Demo 3:
 
 ```c
-struct oturum {
-    char ad[16];
-    int  yonetici;   /* 0 = normal kullanıcı */
+struct session {
+    char name[16];
+    int  admin;          /* 0 = normal user, non-zero = admin */
 };
 ```
 
-![The layout of the ad(16) array and the yonetici field in memory, before and after an overflow](assets/h01-14-yapi-bellekte.svg)
+![The layout of the name(16) array and the admin field in memory, before and after an overflow](assets/h01-14-yapi-bellekte.svg)
 
 x86-64 processors are **little-endian**: an integer's **least significant byte** sits at the **lowest** address.
-That's why writing `'B'` (0x42) into the first byte of `yonetici` turns the integer into 66 — and any non-zero
+That's why writing `'B'` (0x42) into the first byte of `admin` turns the integer into 66 — and any non-zero
 value means "administrator."
+
+`struct session` is just one instance on the stack — the full picture is bigger. The animation below sorts 10-16
+realistic declarations (global, static, local, `malloc`, a string constant, a function) into the five regions
+(`text`/`data`/`bss`/`heap`/`stack`), showing that it is the **declaration, not the type**, that decides the region.
+
+<iframe class="dsanim" src="../anim/process-memory-map.html" title="Process memory: text/data/bss/heap/stack" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Process memory — step by step](anim/process-memory-map.png)
+</div>
+
+Try the **core-ten**, **extended-sixteen** (all 5 regions) examples and the two edge cases (everything on the
+stack / everything on the heap) in the picker.
 
 ---
 
@@ -1293,14 +1381,14 @@ there.
 The function below copies a username into a small local array:
 
 ```c title="Buggy: the source length is never checked"
-void selamla(const char *ad)
+void greet_user(const char *name)
 {
-    int  yetkili = 0;
-    char tampon[16];
+    int  authorized = 0;
+    char buffer[16];
 
-    strcpy(tampon, ad);          /* ad 16 bayttan uzunsa? */
-    printf("Merhaba %s\n", tampon);
-    if (yetkili) { /* ... */ }
+    strcpy(buffer, name);          /* what if name is longer than 16 bytes? */
+    printf("Hello %s\n", buffer);
+    if (authorized) { /* ... */ }
 }
 ```
 
@@ -1315,7 +1403,7 @@ There are three cases:
 | Input length | What happens? | Result |
 | --- | --- | --- |
 | ≤ 15 characters | Everything fits in the buffer | The program works correctly |
-| A little more | The overflowing bytes write over `yetkili`; `yetkili` is no longer 0 | **The logic breaks**: an unauthorized user is treated as authorized (Demo 3) |
+| A little more | The overflowing bytes write over `authorized`; `authorized` is no longer 0 | **The logic breaks**: an unauthorized user is treated as authorized (Demo 3) |
 | A lot more | The return address is corrupted; once the function ends, the processor jumps to a meaningless address | The program **crashes** (denial of service); on an unprotected system, control flow can be **hijacked** |
 
 The last part of the third row is what makes an overflow this dangerous: whoever controls the return address
@@ -1323,6 +1411,20 @@ controls **which code the program runs next**. This was the entry point for most
 in 1988 to Slammer in 2003 ([week 2](../week-2/cen429-week-2.md)). Today's operating systems and compilers add protections that make this path
 much harder (below), but the bug itself is **still in your code**, and the protections don't close every case. In
 this course we care about how the bug **happens, is found, and is prevented** — not about how to exploit it.
+
+!!! note "1996 — the article that wrote it down"
+    How a stack overflow hijacks the return address was first explained this clearly in **Aleph One**'s *"Smashing
+    the Stack for Fun and Profit"* (Phrack magazine, issue 49, 1996). It is still one of the most-cited sources on
+    the topic today; the animation below shows the same idea (stack frame, saved frame pointer, return address)
+    step by step.
+
+<iframe class="dsanim" src="../anim/stack-frame-overflow.html" title="A stack frame and the return address" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![A stack frame and the return address — step by step](anim/stack-frame-overflow.png)
+</div>
+
+Try the **Fits**, **authorized-flip**, **frame-corrupt** and **return-corrupt** examples in the picker; the 🎲
+button also generates a random name so you can watch your own overflow.
 
 ### Types of overflow
 
@@ -1345,15 +1447,15 @@ this course we care about how the bug **happens, is found, and is prevented** �
 ### Off-by-one: the most innocent-looking overflow
 
 ```c title="Buggy: no room for the terminator"
-char ad[8];
-for (int i = 0; i <= 8; i++)     /* 9 kez döner: ad[8] dizinin dışında */
-    ad[i] = kaynak[i];
+char name[8];
+for (int i = 0; i <= 8; i++)     /* runs 9 times: name[8] is out of bounds */
+    name[i] = source[i];
 ```
 
 ```c title="Buggy: strncpy does not guarantee a terminator"
-char ad[8];
-strncpy(ad, kaynak, sizeof ad);  /* kaynak ≥ 8 ise ad '\0' ile BİTMEZ */
-printf("%s\n", ad);              /* printf dizinin sonundan okumaya devam eder */
+char name[8];
+strncpy(name, source, sizeof name);  /* if source >= 8, name does NOT end with '\0' */
+printf("%s\n", name);                 /* printf keeps reading past the end of the array */
 ```
 
 `strncpy`'s name is misleading: it is **not** a safe `strcpy`. If the source is longer than the destination it
@@ -1387,17 +1489,17 @@ does not add a terminator; if it's shorter, it needlessly pads the rest of the d
 #include <stdio.h>
 #include <string.h>
 
-int selamla(const char *ad)
+int greet_user(const char *name)
 {
-    char tampon[16];
-    size_t n = strnlen(ad, sizeof tampon);
+    char buffer[16];
+    size_t n = strnlen(name, sizeof buffer);
 
-    if (n == sizeof tampon)            /* 15 karakterden uzun: reddet, sessizce kesme */
+    if (n == sizeof buffer)            /* longer than 15 characters: reject, do not silently truncate */
         return -1;
 
-    memcpy(tampon, ad, n);
-    tampon[n] = '\0';
-    printf("Merhaba %s\n", tampon);
+    memcpy(buffer, name, n);
+    buffer[n] = '\0';
+    printf("Hello %s\n", buffer);
     return 0;
 }
 ```
@@ -1418,11 +1520,11 @@ In C++, the language does the same job for you:
 #include <string>
 #include <iostream>
 
-void selamla(const std::string &ad)
+void greet_user(const std::string &name)
 {
-    if (ad.size() > 15) throw std::invalid_argument("ad cok uzun");
-    std::string tampon = ad;                   /* kendi belleğini kendi yönetir */
-    std::cout << "Merhaba " << tampon << '\n';
+    if (name.size() > 15) throw std::invalid_argument("name too long");
+    std::string buffer = name;                 /* manages its own memory */
+    std::cout << "Hello " << buffer << '\n';
 }
 ```
 
@@ -1456,25 +1558,25 @@ flow. That, too, is a denial of service.
 
 ### Catching an overflow with AddressSanitizer
 
-If you compile the buggy `selamla` function above with the sanitizer turned on and call it with a 20-character
+If you compile the buggy `greet_user` function above with the sanitizer turned on and call it with a 20-character
 name, the overflow is caught before the program's logic is even corrupted. The output looks like this (abridged;
-addresses change on every run). You will produce a report of the same kind yourself with Demo 3's `giris_asan`
+addresses change on every run). You will produce a report of the same kind yourself with Demo 3's `login_asan`
 target:
 
 ```text
 ==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffd...
 WRITE of size 21 at 0x7ffd... thread T0
     #0 in strcpy
-    #1 in selamla  ornek.c:7
-    #2 in main     ornek.c:15
+    #1 in greet_user  example.c:7
+    #2 in main         example.c:15
 Address 0x7ffd... is located in stack of thread T0 at offset 48 in frame
-    #0 in selamla  ornek.c:3
+    #0 in greet_user  example.c:3
   This frame has 1 object(s):
-    [32, 48) 'tampon' <== Memory access at offset 48 overflows this variable
+    [32, 48) 'buffer' <== Memory access at offset 48 overflows this variable
 ```
 
-Read it in this order: **what** happened (a stack overflow, a 21-byte write), **where** it happened (`ornek.c`
-line 7, `strcpy`), **which variable** (`tampon`, 16 bytes: the 32–48 range; the access is at 48, i.e. it starts
+Read it in this order: **what** happened (a stack overflow, a 21-byte write), **where** it happened (`example.c`
+line 7, `strcpy`), **which variable** (`buffer`, 16 bytes: the 32–48 range; the access is at 48, i.e. it starts
 exactly one byte past the bound). The sanitizer slows the program down roughly twofold and increases memory use;
 that's why it is used in **test** builds, not in release builds.
 
@@ -1499,82 +1601,82 @@ that's why it is used in **test** builds, not in release builds.
 
 ## 15. Demo 3 — Privilege escalation via buffer overflow
 
-!!! info "Demo 3 · `code/week-01/03-tasma-giris` · CWE-121 (stack-based overflow), CWE-787 (out-of-bounds write)"
+!!! info "Demo 3 · `code/week-01/03-overflow-input` · CWE-121 (stack-based overflow), CWE-787 (out-of-bounds write)"
 
-```c title="giris.c (buggy)"
-struct oturum o;
-o.yonetici = 0;
+```c title="login.c (buggy)"
+struct session s;
+s.admin = 0;
 
-strcpy(o.ad, argv[1]);  /* HATA: hedefin 16 bayt olduğu hiç denetlenmiyor */
+strcpy(s.name, argv[1]);  /* BUG: the 16-byte destination size is never checked */
 
-if (o.yonetici)
-    printf(">>> YONETICI paneline erisim verildi! <<<\n");
+if (s.admin)
+    printf(">>> Access granted to the ADMIN panel! <<<\n");
 ```
 
 The demo compiles the same buggy code in four different ways and tries the same attack:
 
 | Version | Linux / WSL (GCC) | Windows (MSVC) | What do we expect to see? |
 | --- | --- | --- | --- |
-| `giris` | `-O0`, no protection | `/Od` | The attack succeeds |
-| `giris_asan` | `-fsanitize=address` | `/fsanitize=address` | Does AddressSanitizer catch it? |
-| `giris_denetimli` | `-O2 -D_FORTIFY_SOURCE=2` | `/O2` + `strcpy_s` | Does the library's size check catch it? |
-| `giris_guvenli` | Fixed code | Fixed code | The input is rejected |
+| `login` | `-O0`, no protection | `/Od` | The attack succeeds |
+| `login_asan` | `-fsanitize=address` | `/fsanitize=address` | Does AddressSanitizer catch it? |
+| `login_checked` | `-O2 -D_FORTIFY_SOURCE=2` | `/O2` + `strcpy_s` | Does the library's size check catch it? |
+| `login_secure` | Fixed code | Fixed code | The input is rejected |
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\03-tasma-giris
+    cd code\week-01\03-overflow-input
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/03-tasma-giris
+    cd code/week-01/03-overflow-input
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output"
-ADIM 1 — Normal giris
-$ ./bin/linux/giris ayse
-Hos geldin, ayse
-yonetici alani = 0 (0x00000000)
-Normal kullanici oturumu.
+STEP 1 - Normal login
+$ ./bin/linux/login alice
+Welcome, alice
+admin field = 0 (0x00000000)
+Normal user session.
 
-ADIM 2 — Saldiri: 16 bayttan 1 bayt fazla ad (17 karakter)
-$ ./bin/linux/giris AAAAAAAAAAAAAAAAB
-Hos geldin, AAAAAAAAAAAAAAAAB
-yonetici alani = 66 (0x00000042)
->>> YONETICI paneline erisim verildi! <<<
+STEP 2 - Attack: a name 1 byte longer than the 16-byte field (17 characters)
+$ ./bin/linux/login AAAAAAAAAAAAAAAAB
+Welcome, AAAAAAAAAAAAAAAAB
+admin field = 66 (0x00000042)
+>>> Access granted to the ADMIN panel! <<<
 
-ADIM 3 — Ayni saldiri, AddressSanitizer ile derlenmis surumde
-$ ./bin/linux/giris_asan AAAAAAAAAAAAAAAAB
-Hos geldin, AAAAAAAAAAAAAAAAB
-yonetici alani = 66 (0x00000042)
->>> YONETICI paneline erisim verildi! <<<
-   ^ ASan sessiz kaldi: tasma yapinin ICINDE kaldi.
+STEP 3 - Same attack, in the AddressSanitizer build
+$ ./bin/linux/login_asan AAAAAAAAAAAAAAAAB
+Welcome, AAAAAAAAAAAAAAAAB
+admin field = 66 (0x00000042)
+>>> Access granted to the ADMIN panel! <<<
+   ^ ASan stayed silent: the overflow stayed INSIDE the struct.
 
-ADIM 4 — Yapinin disina tasan uzun ad, ASan surumu
-==1750==ERROR: AddressSanitizer: stack-buffer-overflow on address ...
-WRITE of size 41 at 0x7fffffffe8c4 thread T0
+STEP 4 - A long name that overflows past the struct, ASan version
+==1784==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fffffffe864 ...
+WRITE of size 41 at 0x7fffffffe864 thread T0
 
-ADIM 5 — Ayni kisa saldiri, _FORTIFY_SOURCE=2 ile derlenmis surumde
-$ ./bin/linux/giris_denetimli AAAAAAAAAAAAAAAAB
+STEP 5 - Same short attack, in the build compiled with _FORTIFY_SOURCE=2
+$ ./bin/linux/login_checked AAAAAAAAAAAAAAAAB
 *** buffer overflow detected ***: terminated
-   (program, derleyicinin ekledigi denetimle durduruldu)
+   (the program was stopped by the check the compiler added)
 
-ADIM 6 — Duzeltilmis surum
-$ ./bin/linux/giris_guvenli AAAAAAAAAAAAAAAAB
-Reddedildi: ad 1-15 karakter; yalniz harf, rakam, _ ve - olabilir.
+STEP 6 - The fixed version
+$ ./bin/linux/login_secure AAAAAAAAAAAAAAAAB
+Rejected: the name must be 1-15 characters; only letters, digits, _ and - are allowed.
 ```
 
 The flow is the same on Windows. Only in step 5, `strcpy_s` knows the target is 16 bytes, so it sees the overflow
 and stops the program:
 
 ```text title=".\demo.ps1 — step 5"
-> .\bin\windows\giris_denetimli.exe AAAAAAAAAAAAAAAAB
-*** Guvenli kutuphane islevi tasmayi algiladi: program durduruldu ***
-   (cikis kodu: 3)
+> .\bin\windows\login_checked.exe AAAAAAAAAAAAAAAAB
+*** Secure library function detected an overrun: program terminated ***
+   (exit code: 3)
 ```
 
 Three lessons come out of this demo:
@@ -1582,15 +1684,28 @@ Three lessons come out of this demo:
 1. **A single byte of overflow is enough.** The attacker doesn't need to crash the program; changing a single
    flag can be enough to escalate privilege.
 2. **Tools have limits.** AddressSanitizer places a "forbidden zone" around every object in memory; but because
-   the overflow stayed **inside** the same struct (`ad` → `yonetici`), it didn't catch it. It caught it
+   the overflow stayed **inside** the same struct (`name` → `admin`), it didn't catch it. It caught it
    immediately once the overflow went **outside** the struct. `_FORTIFY_SOURCE` (Linux) and `strcpy_s` (Windows),
-   on the other hand, knew the target (`o.ad`) was 16 bytes, so they caught the short overflow too. **Don't rely
+   on the other hand, knew the target (`s.name`) was 16 bytes, so they caught the short overflow too. **Don't rely
    on a single tool.**
 3. **The real fix lives in the code.** Tools find the bug; fixing it is the programmer's job.
 
-```c title="giris_guvenli.c (excerpt)"
-/* İzin listesi: 1–15 karakter; harf, rakam, '_' ve '-' */
-static int ad_gecerli_mi(const char *s)
+Watch the animation below to see, byte by byte and with a program counter, how `strcpy` copies `argv[1]` into
+`struct session`'s memory.
+
+<iframe class="dsanim" src="../anim/overflow-login.html" title="Becoming admin through overflow" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Becoming admin through overflow — step by step](anim/overflow-login.png)
+</div>
+
+In the picker, try **a name that fits** (normal), **a 17-byte overflow: sets `admin`** (hard), and the edge cases
+**exactly 16 bytes: the terminating NUL spills**, **40 bytes: runs past the struct (ASan)**, and **the secure
+version rejects it** — or press 🎲 for a random username, or type your own (start it with `SECURE ` to run the
+secure build).
+
+```c title="login_secure.c (excerpt)"
+/* Allow-list: 1-15 characters; letters, digits, '_' and '-' */
+static int name_is_valid(const char *s)
 {
     size_t n = strnlen(s, 16);
     if (n == 0 || n >= 16)
@@ -1603,9 +1718,9 @@ static int ad_gecerli_mi(const char *s)
     return 1;
 }
 ...
-if (!ad_gecerli_mi(argv[1])) { /* reddet */ }
-struct oturum o = { .yonetici = 0 };          /* güvenli varsayılan */
-snprintf(o.ad, sizeof(o.ad), "%s", argv[1]);  /* boyutu bilen kopya */
+if (!name_is_valid(argv[1])) { /* reject */ }
+struct session s = { .admin = 0 };            /* secure default */
+snprintf(s.name, sizeof(s.name), "%s", argv[1]);  /* a copy that knows the size */
 ```
 
 !!! note "What happens in real attacks?"
@@ -1629,17 +1744,17 @@ parameter; so the moment a negative `int` is passed to them, it turns into a **g
 
 ### Demo 4 — The signed-length bug
 
-!!! info "Demo 4 · `code/week-01/04-isaretli-uzunluk` · CWE-195 (signed-to-unsigned conversion error)"
+!!! info "Demo 4 · `code/week-01/04-signed-length` · CWE-195 (signed-to-unsigned conversion error)"
 
-```c title="kopya.c (buggy)"
-#define KAYIT_BOYUTU 16
+```c title="copy.c (buggy)"
+#define RECORD_SIZE 16
 
-static int kaydi_kopyala(char *hedef, const char *kaynak, int uzunluk)
+static int copy_record(char *dest, const char *source, int length)
 {
-    /* HATA: alt sınır (negatif değer) denetlenmiyor */
-    if (uzunluk > KAYIT_BOYUTU)
+    /* BUG: the lower bound (a negative value) is never checked */
+    if (length > RECORD_SIZE)
         return -1;
-    memcpy(hedef, kaynak, uzunluk);   /* int -> size_t: -1 -> 2^64 - 1 */
+    memcpy(dest, source, length);   /* int -> size_t: -1 -> 2^64 - 1 */
     return 0;
 }
 ```
@@ -1647,46 +1762,46 @@ static int kaydi_kopyala(char *hedef, const char *kaynak, int uzunluk)
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\04-isaretli-uzunluk
+    cd code\week-01\04-signed-length
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/04-isaretli-uzunluk
+    cd code/week-01/04-signed-length
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — output"
-ADIM 0 — Derleyici bu hatayi goruyor mu?
-$ gcc -Wall -Wextra -fsyntax-only -I../../common kopya.c
-   -> Uyari yok: -Wall -Wextra bu donusumu bildirmez.
-$ gcc -Wsign-conversion -fsyntax-only -I../../common kopya.c
-kopya.c:21:27: warning: conversion to 'size_t' from 'int'
-               may change the sign of the result [-Wsign-conversion]
+STEP 0 - Does the compiler see this bug?
+$ gcc -Wall -Wextra -fsyntax-only -I../../common copy.c
+   -> No warning: -Wall -Wextra never reports this conversion.
+$ gcc -Wsign-conversion -fsyntax-only -I../../common copy.c
+copy.c:21:26: warning: conversion to 'size_t' {aka 'long unsigned int'} from 'int'
+              may change the sign of the result [-Wsign-conversion]
 
-ADIM 1 — Normal kullanim
-$ ./bin/linux/kopya 8
-Kopyalandi: ORNEK-KA
+STEP 1 - Normal use
+$ ./bin/linux/copy 8
+Copied: SAMPLE-R
 
-ADIM 2 — Cok buyuk uzunluk: denetim yakalar
-$ ./bin/linux/kopya 100
-Reddedildi: uzunluk cok buyuk.
+STEP 2 - A length that's too large: the check catches it
+$ ./bin/linux/copy 100
+Rejected: length is too large.
 
-ADIM 3 — Saldiri: negatif uzunluk denetimi atlatir
-$ ./bin/linux/kopya -1
+STEP 3 - Attack: a negative length slips past the check
+$ ./bin/linux/copy -1
 Segmentation fault
-   (cikis kodu: 139 — 139 = bellek hatasi, SIGSEGV)
+   (exit code: 139 -- 139 = memory error, SIGSEGV)
 
-ADIM 4 — Ayni saldiri, AddressSanitizer ile
-==1823==ERROR: AddressSanitizer: negative-size-param: (size=-1)
+STEP 4 - Same attack, with AddressSanitizer
+==1821==ERROR: AddressSanitizer: negative-size-param: (size=-1)
 
-ADIM 5 — Duzeltilmis surum
-$ ./bin/linux/kopya_guvenli -1 ; ./bin/linux/kopya_guvenli 12abc ; ./bin/linux/kopya_guvenli 8
-Reddedildi: uzunluk 0-16 arasinda bir tamsayi olmali.
-Reddedildi: uzunluk 0-16 arasinda bir tamsayi olmali.
-Kopyalandi (8 bayt): ORNEK-KA
+STEP 5 - The fixed version
+$ ./bin/linux/copy_secure -1 ; ./bin/linux/copy_secure 12abc ; ./bin/linux/copy_secure 8
+Rejected: length must be an integer between 0 and 16.
+Rejected: length must be an integer between 0 and 16.
+Copied (8 bytes): SAMPLE-R
 ```
 
 On Windows you see two differences. In step 3 the program ends with code `0xC0000409`: Windows notices the stack
@@ -1694,29 +1809,40 @@ is corrupted and terminates the process immediately. In step 0, MSVC's C compile
 even with `/Wall`; the same code compiled as C++ does produce a warning:
 
 ```text title=".\demo.ps1 — step 0"
-> cl /Zs /W4 kopya.c                 (C olarak derle)
-   -> Uyari yok: MSVC'nin C derleyicisi bu donusumu /Wall ile bile bildirmez.
-> cl /Zs /W4 /w44365 /TP kopya.c     (ayni kod, C++ olarak)
-kopya.c(21): warning C4365: 'argument': conversion from 'int' to 'size_t', signed/unsigned mismatch
+> cl /Zs /W4 copy.c                  (compile as C)
+   -> No warning: MSVC's C compiler never reports this conversion, even with /Wall.
+> cl /Zs /W4 /w44365 /TP copy.c      (same code, as C++)
+copy.c(21): warning C4365: 'argument': conversion from 'int' to 'size_t', signed/unsigned mismatch
 ```
 
-The check asks "is `uzunluk > 16`?"; `-1` answers "no" to that question, so it gets through. A length field in a
+The check asks "is `length > 16`?"; `-1` answers "no" to that question, so it gets through. A length field in a
 packet coming over the network, a record size in a file header — **any number the attacker controls** can lead to
 this bug. The compiler **could** have warned us, but only if we asked: `-Wsign-conversion` is not in GCC's default
 warnings, and MSVC's C compiler doesn't have it at all. Knowing which warnings are on, and reading them, is a
 **free** security tool; a tool's silence does not mean the code is correct.
 
-```c title="kopya_guvenli.c (excerpt)"
-static int uzunluk_oku(const char *metin, size_t *sonuc)
+The animation below calls the real `copy_record` in sequence with 10-16 different `length` values, and shows
+exactly which huge number every negative one turns into as a `size_t`.
+
+<iframe class="dsanim" src="../anim/signed-length.html" title="Signed length → size_t" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Signed length -> size_t — step by step](anim/signed-length.png)
+</div>
+
+Try the **typical-sweep**, **wide-sweep**, **edge-all-negative** (all get through!) and **edge-boundary** examples
+in the picker; use 🎲 to run your own length sweep.
+
+```c title="copy_secure.c (excerpt)"
+static int read_length(const char *text, size_t *result)
 {
-    char *son;
+    char *end;
     errno = 0;
-    long deger = strtol(metin, &son, 10);
-    if (errno != 0 || son == metin || *son != '\0')
-        return -1;                       /* sayı değil ya da taştı */
-    if (deger < 0 || deger > KAYIT_BOYUTU)
-        return -1;                       /* hem alt hem üst sınır */
-    *sonuc = (size_t)deger;
+    long value = strtol(text, &end, 10);
+    if (errno != 0 || end == text || *end != '\0')
+        return -1;                       /* not a number, or it overflowed */
+    if (value < 0 || value > RECORD_SIZE)
+        return -1;                       /* out of range */
+    *result = (size_t)value;
     return 0;
 }
 ```
@@ -1767,22 +1893,22 @@ lives at each step.
 ### Use-after-free: why is it so dangerous?
 
 ```c title="Buggy: two pointers point at the same block"
-typedef struct { char ad[32]; int yetki; } Kullanici;
+typedef struct { char name[32]; int privilege; } User;
 
-Kullanici *aktif = malloc(sizeof *aktif);
-Kullanici *onbellek = aktif;          /* ikinci bir sahip daha */
+User *active = malloc(sizeof *active);
+User *cached = active;                /* a second owner */
 /* ... */
-free(aktif);                          /* oturum kapandı */
-aktif = NULL;                         /* aktif güvende, ama onbellek hâlâ eski adresi tutuyor */
+free(active);                         /* session closed */
+active = NULL;                        /* active is safe, but cached still holds the old address */
 
-char *not = malloc(sizeof(Kullanici));  /* bellek yöneticisi aynı bloğu yeniden verebilir */
-strcpy(not, "....");                    /* not yazılıyor */
+char *note = malloc(sizeof(User));    /* the allocator may hand back the very same block */
+strcpy(note, "....");                 /* writing the note */
 
-if (onbellek->yetki) { /* ... */ }      /* UAF: artık 'not'un baytlarını okuyor */
+if (cached->privilege) { /* ... */ }  /* UAF: this now reads 'note's bytes */
 ```
 
 `free` does not return memory to the operating system; it puts it on the memory manager's **"free" list**. The
-next `malloc` of the same size will most likely get the same block back. The stale pointer (`onbellek`) is now
+next `malloc` of the same size will most likely get the same block back. The stale pointer (`cached`) is now
 pointing at a **completely different object**. The program's logic reads bytes that were written for some other
 purpose as "the user's privilege." This is why UAF bugs are one of the largest classes of browser and operating
 system vulnerabilities.
@@ -1800,26 +1926,36 @@ rule**:
 We will exploit a UAF step by step in C/C++ and catch it with AddressSanitizer
 [in week 4](../week-4/cen429-week-4.md#6-use-after-free-and-double-free).
 
+The animation below applies the `active`/`cached`/`note` pattern to 10 small sessions; each one turns out clean, a
+leak, a double free, or a UAF — can you tell which is which?
+
+<iframe class="dsanim" src="../anim/memory-mistakes.html" title="Memory management mistakes" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Memory management mistakes — step by step](anim/memory-mistakes.png)
+</div>
+
+Try the **mixed-ten**, **mostly-broken** examples and the two edge cases (all UAF / all clean) in the picker.
+
 ### Fixed versions of the other errors
 
 ```c title="NULL check and overflow-free size calculation"
-/* Hatalı: n büyükse n * sizeof(Kayit) taşar, küçük bir blok ayrılır */
-Kayit *k = malloc(n * sizeof(Kayit));
+/* Wrong: if n is large, n * sizeof(Record) overflows and a too-small block is allocated */
+Record *k = malloc(n * sizeof(Record));
 
-/* Doğru 1: calloc boyut çarpımında taşmayı denetler ve belleği sıfırlar */
-Kayit *k = calloc(n, sizeof(Kayit));
-if (k == NULL) return HATA_BELLEK;
+/* Right 1: calloc checks the size multiplication for overflow and zeroes the memory */
+Record *k = calloc(n, sizeof(Record));
+if (k == NULL) return ERR_MEMORY;
 
-/* Doğru 2: yeniden boyutlandırmada reallocarray (glibc 2.26+, BSD) */
-Kayit *yeni = reallocarray(k, n2, sizeof(Kayit));
-if (yeni == NULL) { free(k); return HATA_BELLEK; }   /* k'yi kaybetme */
-k = yeni;
+/* Right 2: reallocarray for resizing (glibc 2.26+, BSD) */
+Record *resized = reallocarray(k, n2, sizeof(Record));
+if (resized == NULL) { free(k); return ERR_MEMORY; }   /* do not lose k */
+k = resized;
 ```
 
 ```c title="The realloc trap"
-/* Hatalı: realloc başarısız olursa NULL döner ve eski blok hâlâ ayrılmış durumdadır;
-   onu gösteren tek işaretçinin üzerine yazdık → sızıntı */
-tampon = realloc(tampon, yeni_boyut);
+/* Wrong: if realloc fails it returns NULL and the old block is still allocated;
+   we just overwrote the only pointer to it -> leak */
+buffer = realloc(buffer, new_size);
 ```
 
 `realloc` has a second hidden problem: if the block **moves**, the old block is freed but **not zeroed**. If it
@@ -1840,13 +1976,13 @@ this, functions the compiler will **not** remove are used:
 | C23 | `memset_explicit(p, 0, n)` | New standard |
 | If none is available | Writing byte by byte through a `volatile` pointer | The portable fallback |
 
-```c title="cen429_sil — portable secure erasure"
+```c title="secure_wipe — portable secure erasure"
 #include <string.h>
 #ifdef _WIN32
 #  include <windows.h>
 #endif
 
-static void cen429_sil(void *p, size_t n)
+static void secure_wipe(void *p, size_t n)
 {
 #if defined(_WIN32)
     SecureZeroMemory(p, n);
@@ -1887,13 +2023,13 @@ countermeasure is to **lock** the pages holding secrets:
     ```c
     #include <sys/mman.h>
 
-    unsigned char anahtar[32];
-    if (mlock(anahtar, sizeof anahtar) != 0) {
-        /* RLIMIT_MEMLOCK aşılmış olabilir; hatayı raporla ama sırrı yine de sil */
+    unsigned char key[32];
+    if (mlock(key, sizeof key) != 0) {
+        /* RLIMIT_MEMLOCK may have been exceeded; report the error but still wipe the secret */
     }
-    /* ... anahtarı kullan ... */
-    cen429_sil(anahtar, sizeof anahtar);
-    munlock(anahtar, sizeof anahtar);
+    /* ... use the key ... */
+    secure_wipe(key, sizeof key);
+    munlock(key, sizeof key);
     ```
 
     `madvise(p, n, MADV_DONTDUMP)` can also be used to keep these pages out of a core dump.
@@ -1903,13 +2039,13 @@ countermeasure is to **lock** the pages holding secrets:
     ```c
     #include <windows.h>
 
-    unsigned char anahtar[32];
-    if (!VirtualLock(anahtar, sizeof anahtar)) {
-        /* çalışma kümesi sınırı aşılmış olabilir */
+    unsigned char key[32];
+    if (!VirtualLock(key, sizeof key)) {
+        /* the working-set limit may have been exceeded */
     }
-    /* ... anahtarı kullan ... */
-    SecureZeroMemory(anahtar, sizeof anahtar);
-    VirtualUnlock(anahtar, sizeof anahtar);
+    /* ... use the key ... */
+    SecureZeroMemory(key, sizeof key);
+    VirtualUnlock(key, sizeof key);
     ```
 
 Locking works at the **page** level (typically 4 KB). When you lock a small array, the **entire page** containing
@@ -1920,41 +2056,41 @@ holds keys — not the whole program.
 
 Gathering the rules above into a single small module makes it easier to get this right everywhere:
 
-```c title="gizli_tampon.h — the single entry point for secrets"
+```c title="secret_buffer.h — the single entry point for secrets"
 typedef struct {
-    unsigned char *veri;
-    size_t         boyut;
-} GizliTampon;
+    unsigned char *data;
+    size_t         size;
+} SecretBuffer;
 
-/* Ayırır, sıfırlar, belleği kilitler. Başarısızsa -1. */
-int  gizli_ayir(GizliTampon *t, size_t boyut);
+/* Allocates, zeroes, locks the memory. -1 on failure. */
+int  secret_alloc(SecretBuffer *t, size_t size);
 
-/* Güvenli siler, kilidi açar, serbest bırakır; t->veri = NULL yapar. İki kez çağrılabilir. */
-void gizli_birak(GizliTampon *t);
+/* Securely wipes, unlocks, releases; sets t->data = NULL. Safe to call twice. */
+void secret_free(SecretBuffer *t);
 ```
 
-```c title="gizli_tampon.c — Linux implementation (Windows: VirtualLock/SecureZeroMemory)"
+```c title="secret_buffer.c — Linux implementation (Windows: VirtualLock/SecureZeroMemory)"
 #include <stdlib.h>
 #include <sys/mman.h>
-#include "gizli_tampon.h"
+#include "secret_buffer.h"
 
-int gizli_ayir(GizliTampon *t, size_t boyut)
+int secret_alloc(SecretBuffer *t, size_t size)
 {
-    t->veri = calloc(1, boyut);
-    if (!t->veri) return -1;
-    t->boyut = boyut;
-    (void)mlock(t->veri, boyut);                 /* başarısızlık ölümcül değil */
+    t->data = calloc(1, size);
+    if (!t->data) return -1;
+    t->size = size;
+    (void)mlock(t->data, size);                 /* not fatal if this fails */
     return 0;
 }
 
-void gizli_birak(GizliTampon *t)
+void secret_free(SecretBuffer *t)
 {
-    if (!t->veri) return;                        /* çift bırakmaya karşı */
-    cen429_sil(t->veri, t->boyut);
-    munlock(t->veri, t->boyut);
-    free(t->veri);
-    t->veri  = NULL;
-    t->boyut = 0;
+    if (!t->data) return;                        /* guards against a double free */
+    secure_wipe(t->data, t->size);
+    munlock(t->data, t->size);
+    free(t->data);
+    t->data = NULL;
+    t->size = 0;
 }
 ```
 
@@ -1963,13 +2099,13 @@ an exception is thrown — the erasure happens **automatically**. This is called
 Initialization):
 
 ```cpp title="C++ — automatic erasure with RAII"
-class GizliAnahtar {
+class SecretKey {
 public:
-    explicit GizliAnahtar(std::size_t n) : v_(n) { kilitle(v_.data(), n); }
-    ~GizliAnahtar() { cen429_sil(v_.data(), v_.size()); kilidi_ac(v_.data(), v_.size()); }
-    GizliAnahtar(const GizliAnahtar&) = delete;              /* kopya yok: sır çoğalmasın */
-    GizliAnahtar& operator=(const GizliAnahtar&) = delete;
-    unsigned char* veri() { return v_.data(); }
+    explicit SecretKey(std::size_t n) : v_(n) { lock(v_.data(), n); }
+    ~SecretKey() { secure_wipe(v_.data(), v_.size()); unlock(v_.data(), v_.size()); }
+    SecretKey(const SecretKey&) = delete;              /* no copy: the secret must not multiply */
+    SecretKey& operator=(const SecretKey&) = delete;
+    unsigned char* data() { return v_.data(); }
 private:
     std::vector<unsigned char> v_;
 };
@@ -2004,7 +2140,7 @@ Deleting the copy constructor is a **deliberate** decision: copying an object th
 ### Try it yourself: memory
 
 1. Does `char *p = malloc(10); free(p); free(p);` always crash? Why is it "dangerous even if it doesn't crash"?
-2. How do you erase a password held in `std::string parola;` once you're done with it? Is `parola.clear()`
+2. How do you erase a password held in `std::string password;` once you're done with it? Is `password.clear()`
    enough?
 3. A server leaks 100 bytes on every request. If it receives 1000 requests a second, how long does it take to
    exhaust 4 GB of memory? Which STRIDE letter is this?
@@ -2015,8 +2151,8 @@ Deleting the copy constructor is a **deliberate** decision: copying an object th
        different places, leading to a situation similar to UAF. Modern glibc usually catches a simple double free
        and stops the program (`free(): double free detected`).
     2. `clear()` only resets the length, it does not erase the bytes. Erase the content first with
-       `cen429_sil(parola.data(), parola.capacity())`; because of SSO and earlier copies, the safest option for
-       secrets is to use a dedicated type (e.g. `GizliAnahtar`) instead of `std::string`.
+       `secure_wipe(password.data(), password.capacity())`; because of SSO and earlier copies, the safest option for
+       secrets is to use a dedicated type (e.g. `SecretKey`) instead of `std::string`.
     3. 4·10⁹ / (100·1000) = 40,000 seconds ≈ 11 hours. **D** (denial of service). An attacker can shorten this
        time by increasing the request rate.
 
@@ -2084,21 +2220,21 @@ separate module and then hand it out through a function called `anahtar_al()` ("
    encrypted and integrity-protected. Otherwise, the attacker hooks the interface function and reads the data
    **in transit**.
 
-```c title="kasa_cekirdek.h — an interface that never hands out the secret"
-typedef struct KasaAnahtari KasaAnahtari;          /* opak tür: içi dışarıdan görünmez */
+```c title="vault_core.h — an interface that never hands out the secret"
+typedef struct VaultKey VaultKey;          /* opaque type: its insides are not visible from outside */
 
-/* Ana paroladan anahtarı türetip çekirdeğin içinde tutar; parolayı siler. */
-int  kasa_ac(const char *parola, size_t parola_uzunlugu,
-             const unsigned char tuz[16], KasaAnahtari **cikti);
+/* Derives the key from the master password and keeps it inside the core; wipes the password. */
+int  vault_open(const char *password, size_t password_length,
+             const unsigned char salt[16], VaultKey **out);
 
-/* Anahtarla şifreler / çözer; anahtarın kendisi hiçbir zaman dışarı çıkmaz. */
-int  kasa_sifrele(KasaAnahtari *a, const unsigned char *acik, size_t n,
-                  unsigned char *sifreli, size_t kapasite, size_t *yazilan);
-int  kasa_coz(KasaAnahtari *a, const unsigned char *sifreli, size_t n,
-              unsigned char *acik, size_t kapasite, size_t *yazilan);
+/* Encrypts / decrypts with the key; the key itself never leaves. */
+int  vault_encrypt(VaultKey *a, const unsigned char *plain, size_t n,
+                  unsigned char *cipher, size_t capacity, size_t *written);
+int  vault_decrypt(VaultKey *a, const unsigned char *cipher, size_t n,
+              unsigned char *plain, size_t capacity, size_t *written);
 
-/* Anahtarı güvenli siler ve serbest bırakır. */
-void kasa_kapat(KasaAnahtari *a);
+/* Securely wipes the key and releases it. */
+void vault_close(VaultKey *a);
 ```
 
 In C, an **opaque type** (a `struct` that is only declared, with its definition not in the header file) blocks
@@ -2110,7 +2246,7 @@ Additional layers are needed against an attacker.
 
 Hiding the key well is not enough. The attacker can use **your own function** without ever finding the key:
 
-- **Decryption oracle:** The attacker calls the `kasa_coz` function directly with data **of their own choosing**.
+- **Decryption oracle:** The attacker calls the `vault_decrypt` function directly with data **of their own choosing**.
   The key stays secret, but the attacker gets to decrypt anything they want.
 - **Code lifting:** The attacker **copies** the protected function (even with its embedded key) straight out of
   the binary and runs it as a black box **in their own program**. They never need to extract the key at all.
@@ -2160,23 +2296,23 @@ The techniques that achieve this:
 #include <stddef.h>
 
 typedef struct {
-    uint8_t maske[32];     /* açılışta rastgele üretilir */
-    uint8_t ortulu[32];    /* anahtar XOR maske */
-} OrtuluAnahtar;
+    uint8_t mask[32];      /* generated randomly at start-up */
+    uint8_t masked[32];    /* key XOR mask */
+} MaskedKey;
 
-/* Yalnız kullanım anında, çağıranın verdiği geçici tampona birleştirir. */
-static void anahtari_ac(const OrtuluAnahtar *o, uint8_t gecici[32])
+/* Only at the moment of use, combines into the caller's own temporary buffer. */
+static void unmask_key(const MaskedKey *o, uint8_t temp[32])
 {
     for (size_t i = 0; i < 32; i++)
-        gecici[i] = o->ortulu[i] ^ o->maske[i];
+        temp[i] = o->masked[i] ^ o->mask[i];
 }
 
-void imzala(const OrtuluAnahtar *o, const uint8_t *veri, size_t n, uint8_t etiket[32])
+void sign(const MaskedKey *o, const uint8_t *data, size_t n, uint8_t tag[32])
 {
     uint8_t k[32];
-    anahtari_ac(o, k);
-    kripto_hmac_sha256(k, sizeof k, veri, n, etiket);   /* işlem: code/common/cen429_kripto.h */
-    cen429_sil(k, sizeof k);                     /* açıklık penceresi burada kapanır */
+    unmask_key(o, k);
+    crypto_hmac_sha256(k, sizeof k, data, n, tag);   /* operation: code/common/cen429_crypto.h */
+    crypto_wipe(k, sizeof k);                    /* the exposure window closes here */
 }
 ```
 
@@ -2250,13 +2386,13 @@ every build must carry a **unique, verifiable identity**:
 ```cmake title="CMakeLists.txt — embed the git identity into the build"
 execute_process(COMMAND git rev-parse --short=12 HEAD
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_KIMLIK OUTPUT_STRIP_TRAILING_WHITESPACE)
-target_compile_definitions(kasa PRIVATE SURUM="1.4.2" GIT_KIMLIK="${GIT_KIMLIK}")
+                OUTPUT_VARIABLE GIT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
+target_compile_definitions(kasa PRIVATE VERSION="1.4.2" GIT_COMMIT="${GIT_COMMIT}")
 ```
 
 ```c title="main.c — print the version identity"
-if (argc > 1 && strcmp(argv[1], "--surum") == 0) {
-    printf("kasa %s (%s)\n", SURUM, GIT_KIMLIK);
+if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+    printf("kasa %s (%s)\n", VERSION, GIT_COMMIT);
     return 0;
 }
 ```
@@ -2397,18 +2533,18 @@ These exercises are not graded; they are for reinforcing the lesson. All of them
 the `code/week-01` folder, and **only on your own computer**.
 
 ??? question "Exercise 1 — Easy: another form of the PATH trap"
-    On Linux, change the `date` command in `rapor.c` to `ls -l rapor.c`; on Windows, change `hostname` to
-    `whoami`. Prepare a fake `ls` (or `whoami.bat`) and run it via `PATH`. Then modify `rapor_guvenli.c` so it
+    On Linux, change the `date` command in `report.c` to `ls -l report.c`; on Windows, change `hostname` to
+    `whoami`. Prepare a fake `ls` (or `whoami.bat`) and run it via `PATH`. Then modify `report_secure.c` so it
     runs the real program by its full path.
 
     ??? tip "Hint"
-        Put the fake file in the `sahte/` folder; on Linux make it executable with `chmod +x sahte/ls`. In the
-        fixed version, on Linux the argument array becomes `{ "ls", "-l", "rapor.c", NULL }` and the path is
+        Put the fake file in the `fake/` folder; on Linux make it executable with `chmod +x fake/ls`. In the
+        fixed version, on Linux the argument array becomes `{ "ls", "-l", "report.c", NULL }` and the path is
         `/bin/ls`; on Windows the path is `GetSystemDirectoryW` + `\whoami.exe`. Rebuild from the command line
         (`.\build.ps1` or `./build.sh`) and re-run the demo.
 
 ??? question "Exercise 2 — Easy: the effect of optimisation"
-    In Demo 2's `CMakeLists.txt`, on the `parola_memset` line, change `MOD optimize` to `MOD korumasiz` (GCC
+    In Demo 2's `CMakeLists.txt`, on the `password_memset` line, change `MOD optimize` to `MOD korumasiz` (GCC
     `-O0`, MSVC `/Od`), rebuild, and run the demo. Does the `memset` version manage to erase the password this
     time? Why?
 
@@ -2418,8 +2554,8 @@ the `code/week-01` folder, and **only on your own computer**.
         why `explicit_bzero` must be used.
 
 ??? question "Exercise 3 — Medium: the exact boundary of the overflow"
-    In Demo 3, give the `giris` program (`bin/linux/giris` or `bin\windows\giris.exe`) names that are 16, 17, 18,
-    19, and 20 characters long. Write down the value of the `yonetici` field for each one in a table, and explain
+    In Demo 3, give the `login` program (`bin/linux/login` or `bin\windows\login.exe`) names that are 16, 17, 18,
+    19, and 20 characters long. Write down the value of the `admin` field for each one in a table, and explain
     it using the memory diagram from section 13. Why is a **16-character** name dangerous too?
 
     ??? tip "Hint"
@@ -2427,8 +2563,8 @@ the `code/week-01` folder, and **only on your own computer**.
         written?
 
 ??? question "Exercise 4 — Medium: a new privilege field"
-    Add an `int bakiye;` (balance) field to `struct oturum`, right after `ad`. Can you push the balance above
-    1000 with an overflow? Then show how `giris_guvenli.c` prevents this.
+    Add an `int balance;` field to `struct session`, right after `name`. Can you push the balance above
+    1000 with an overflow? Then show how `login_secure.c` prevents this.
 
 ??? question "Exercise 5 — Medium: a threat model"
     Draw a data flow diagram for your own term project, and ask all six STRIDE letters for every flow that
@@ -2446,17 +2582,17 @@ the `code/week-01` folder, and **only on your own computer**.
 ??? question "Exercise 7 — Easy: measure secure start-up"
     Write a small C program on WSL/Linux; at the start of `main()`, have it print the open file descriptors (the
     `/proc/self/fd` folder) and the number of environment variables. Run the program normally first, then with
-    `env -i ./prog`, then with `./prog 1>&-` (standard output closed). Then add the `tanitici_duzenle()` and
-    `ortami_temizle()` functions from the "Secure start-up" section and observe the difference.
+    `env -i ./prog`, then with `./prog 1>&-` (standard output closed). Then add the `sanitize_file_descriptors()` and
+    `sanitize_environment()` functions from the "Secure start-up" section and observe the difference.
 
     ??? tip "Hint"
         Count the entries in the folder with `opendir("/proc/self/fd")`. With standard output closed you won't
-        see `printf` output; write the result to `stderr` or to a file instead. Once `tanitici_duzenle()` is
+        see `printf` output; write the result to `stderr` or to a file instead. Once `sanitize_file_descriptors()` is
         added, you can see descriptor 1 bound to `/dev/null` with `ls -l /proc/<pid>/fd`.
 
 ??? question "Exercise 8 — Easy: proof of secure erasure"
-    In Demo 2 you showed that the `parola_explicit` version really erases the memory. Write the same program once
-    more, in C++, keeping the password in a `std::string`. Erase it with `parola.clear()` and with `cen429_sil`,
+    In Demo 2 you showed that the `password_explicit` version really erases the memory. Write the same program once
+    more, in C++, keeping the password in a `std::string`. Erase it with `password.clear()` and with `secure_wipe`,
     and search for it in a memory dump. In which case is the password found? Explain why, using the "Memory
     management and security" section.
 
@@ -2500,13 +2636,13 @@ the `code/week-01` folder, and **only on your own computer**.
         ASan does not report leaks, so use the CRT debug heap for that.
 
 ??? question "Exercise 12 — Medium: design an interface with an opaque handle"
-    Looking at the `kasa_cekirdek.h` example from the "Protected code partitioning" section, write a header file
+    Looking at the `vault_core.h` example from the "Protected code partitioning" section, write a header file
     for the most sensitive operation in your own project. Rule: no function returns the key or a secret in the
     clear; every function returns success/failure; how each parameter is validated is written as a comment.
 
 ??? question "Exercise 13 — Hard: a masked key in memory"
     Get the "Masking in memory" example working: generate a random mask at start-up (Linux `getrandom`, Windows
-    `BCryptGenRandom`), mask the key, and implement `imzala()` with the HMAC in `code/common/cen429_kripto.h`.
+    `BCryptGenRandom`), mask the key, and implement `imzala()` with the HMAC in `code/common/cen429_crypto.h`.
     Then dump the process's memory and search for the key: it should **not** be found while no work is in
     progress. If you dump memory **during** the operation (e.g. by pausing inside `imzala()` with a `getchar()`),
     what do you see?
@@ -2539,7 +2675,7 @@ the `code/week-01` folder, and **only on your own computer**.
     modify the binary. Example: someone analysing a mobile payment app on their own (rooted) phone.
 
 ??? question "4. What threat does the 'E' letter in STRIDE describe? Which demo this week is an example of it?"
-    **Elevation of privilege.** Demo 3: changing the `yonetici` flag with a long username.
+    **Elevation of privilege.** Demo 3: changing the `admin` flag with a long username.
 
 ??? question "5. What is the difference between an AND node and an OR node in an attack tree? Which is better from a defence standpoint?"
     In an OR node, one branch is enough; in an AND node, every branch is required. Forcing the attacker into AND
@@ -2555,11 +2691,11 @@ the `code/week-01` folder, and **only on your own computer**.
     store elimination). `explicit_bzero` is defined in a way the compiler cannot remove.
 
 ??? question "8. In Demo 3, why couldn't AddressSanitizer catch the 17-character attack?"
-    ASan does bounds checking at the **object** level; because the overflow stayed inside the same struct (`ad`
-    → `yonetici`), it never touched the forbidden zone. It caught it once the overflow went outside the struct.
+    ASan does bounds checking at the **object** level; because the overflow stayed inside the same struct (`name`
+    → `admin`), it never touched the forbidden zone. It caught it once the overflow went outside the struct.
     `_FORTIFY_SOURCE`, on the other hand, knew the target field's size, so it caught the short overflow too.
 
-??? question "9. What happens when int uzunluk = -1; is passed to memcpy?"
+??? question "9. What happens when int length = -1; is passed to memcpy?"
     `memcpy`'s size parameter is `size_t`; once `-1` is converted to unsigned, it becomes 2⁶⁴ − 1, and the
     function tries to copy a gigantic region, crashing with a memory error (or worse, corrupting memory).
 

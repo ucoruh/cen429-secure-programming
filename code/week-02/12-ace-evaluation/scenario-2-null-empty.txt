@@ -1,0 +1,23 @@
+# CEN429 - Week 2 - Demo 12, scenario 2: a NULL DACL and an EMPTY DACL are NOT the same
+# NULL DACL : the object has no DACL at all -> EVERYONE GETS EVERY RIGHT (including taking ownership)
+# EMPTY DACL: there is a DACL but 0 ACEs     -> NO ONE GETS A RIGHT (except the owner's implicit rights)
+
+SCENARIO 2a - a NULL DACL, the requester is an unrelated account
+TOKEN attacker
+OWNER    mark
+DACL NULL
+REQUEST READ,WRITE
+REQUEST TAKE_OWNER,WRITE_DAC
+
+SCENARIO 2b - an EMPTY DACL, the same unrelated account
+TOKEN attacker
+OWNER    mark
+DACL EMPTY
+REQUEST READ
+
+SCENARIO 2c - an EMPTY DACL, the requester is the owner
+TOKEN mark
+OWNER    mark
+DACL EMPTY
+REQUEST READ
+REQUEST WRITE_DAC

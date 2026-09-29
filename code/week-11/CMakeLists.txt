@@ -1,2 +1,2 @@
-# CEN429 - Hafta 11 demolari (Whitebox kriptografi)
-cen429_hafta_demolari()
+# CEN429 - Week 11 demos (Whitebox cryptography)
+cen429_add_week_demos()

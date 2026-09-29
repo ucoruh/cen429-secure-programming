@@ -4,6 +4,28 @@ template: main.html
 
 # Ön gereksinimler
 
+<!-- materyal:basla -->
+
+<div class="materyal" markdown>
+
+[:material-file-pdf-box: Ders notu (PDF)](cen429-on-gereksinimler-ders-notu.pdf){ .md-button download="cen429-on-gereksinimler-ders-notu.pdf" }
+[:material-file-word-box: Ders notu (DOCX)](cen429-on-gereksinimler-ders-notu.docx){ .md-button download="cen429-on-gereksinimler-ders-notu.docx" }
+[:material-presentation: Sunum (PDF)](cen429-on-gereksinimler-sunum.pdf){ .md-button download="cen429-on-gereksinimler-sunum.pdf" }
+[:material-microsoft-powerpoint: Sunum (PPTX)](cen429-on-gereksinimler-sunum.pptx){ .md-button download="cen429-on-gereksinimler-sunum.pptx" }
+[:material-language-html5: Sunum (HTML, çevrimdışı)](cen429-on-gereksinimler-sunum.html){ .md-button download="cen429-on-gereksinimler-sunum.html" }
+[:material-folder-zip: Tümünü indir (ZIP)](cen429-on-gereksinimler-materyal.zip){ .md-button download="cen429-on-gereksinimler-materyal.zip" }
+[:material-fullscreen: Sunumu tam ekran aç](cen429-on-gereksinimler-sunum.html){ .md-button .md-button--primary target=_blank }
+
+</div>
+
+<div class="sunum-cercevesi">
+<iframe src="cen429-on-gereksinimler-sunum.html" title="Ön Gereksinimler" loading="lazy" allowfullscreen></iframe>
+</div>
+
+<p class="sunum-ipucu">Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.</p>
+
+<!-- materyal:bitis -->
+
 Bu derste ilk haftadan itibaren C/C++ programlarını **kendi bilgisayarınızda derleyip çalıştırıyor**, projeyi
 **Git ve GitHub** üzerinde yürütüyor, güvenlik önlemlerini **birim testleriyle** kanıtlıyorsunuz. Bu yüzden aşağıdaki
 bilgi ve araçlarla gelmeniz gerekir. Dersin resmî ön koşulu **CEN107 Algoritmalar ve Programlama I**'dir; özellikle o
@@ -18,12 +40,12 @@ kullanılır.
 
 | Konu | Nerede öğretiliyor? | Bu derste nerede kullanılıyor? |
 | --- | --- | --- |
-| **Geliştirme ortamı:** derleyici (GCC/Clang/MSVC), IDE, Windows'ta WSL, CMake ile derleme | [CE103 Hafta 2 — Geliştirme ortamları](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Her haftanın demoları; [1. hafta](../week-1/cen429-week-1.md) laboratuvar kurulumu |
-| **Git ve GitHub:** depo oluşturma, `clone`, `commit`, dal (branch), `pull request`, `.gitignore` | [CE103 Hafta 3 — Git ile sürüm yönetimi](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Proje rehberi](../project-guide/index.md) (plan, kurulum, teslim); 1. hafta değişiklik yönetimi; [12. hafta](../week-12/cen429-week-12.md) sürüm kimliği |
-| **Birim test ve kapsam (coverage) araçları:** test yazma, `ctest` ile çalıştırma, kapsam raporu | [CE103 Hafta 4 — Birim test ve kütüphaneler](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | Projede S16 test sonuçları; [4. hafta](../week-4/cen429-week-4.md) sanitizer ve fuzzing; 12. hafta test planı |
-| **Proje şablonlarının kullanımı:** şablonu çatallamak (fork), derlemek, testleri ve dokümantasyonu üretmek | CE103 Hafta 2–4 | [Proje rehberi · 2. Proje kurulumu](../project-guide/index.md#2-proje-kurulumu) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
+| **Geliştirme ortamı:** derleyici (GCC/Clang/MSVC), IDE, Windows'ta WSL, CMake ile derleme | [CEN107 (CE103) Hafta 2 — Geliştirme ortamları](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Her haftanın demoları; [1. hafta](../week-1/cen429-week-1.md) laboratuvar kurulumu |
+| **Git ve GitHub:** depo oluşturma, `clone`, `commit`, dal (branch), `pull request`, `.gitignore` | [CEN107 (CE103) Hafta 3 — Git ile sürüm yönetimi](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Proje rehberi](../project-guide/index.md) (plan, kurulum, teslim); 1. hafta değişiklik yönetimi; [12. hafta](../week-12/cen429-week-12.md) sürüm kimliği |
+| **Birim test ve kapsam (coverage) araçları:** test yazma, `ctest` ile çalıştırma, kapsam raporu | [CEN107 (CE103) Hafta 4 — Birim test ve kütüphaneler](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | Projede S16 test sonuçları; [4. hafta](../week-4/cen429-week-4.md) sanitizer ve fuzzing; 12. hafta test planı |
+| **Proje şablonlarının kullanımı:** şablonu çatallamak (fork), derlemek, testleri ve dokümantasyonu üretmek | CEN107 (CE103) Hafta 2–4 | [Proje rehberi · 2. Proje kurulumu](../project-guide/index.md#2-proje-kurulumu) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
 
-İsteğe bağlı başlangıç: [CE103 Hafta 1 — Giriş ve geliştirici yol haritası](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
+İsteğe bağlı başlangıç: [CEN107 (CE103) Hafta 1 — Giriş ve geliştirici yol haritası](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
 
 ## 2. C programlama temelleri (zorunlu)
 
@@ -46,7 +68,7 @@ Aşağıdakileri bilmiyorsanız sorun değil; ilgili haftanın **"Başlamadan ö
 | Ön bilgi | Hangi haftada gerekiyor? |
 | --- | --- |
 | Terminal: PowerShell ve Linux/WSL'de `cd`, `ls`, dosya yolları, ortam değişkenleri | [1. hafta](../week-1/cen429-week-1.md) ve bütün demolar |
-| İkili ve onaltılık sayılar, bayt, XOR | [3.](../week-3/cen429-week-3.md), [9.](../week-9/cen429-week-9.md), [11.](../week-11/cen429-week-11.md) haftalar |
+| Binary ve onaltılık sayılar, bayt, XOR | [3.](../week-3/cen429-week-3.md), [9.](../week-9/cen429-week-9.md), [11.](../week-11/cen429-week-11.md) haftalar |
 | Temel ağ kavramları: istemci–sunucu, TCP/IP, HTTP | [3.](../week-3/cen429-week-3.md) ve [10.](../week-10/cen429-week-10.md) haftalar |
 | Basit SQL (`SELECT … WHERE`), Java ya da Python'da temel sözdizimi | [5. hafta](../week-5/cen429-week-5.md) |
 

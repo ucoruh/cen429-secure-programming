@@ -1,0 +1,17 @@
+/* Independently computed PBKDF2-HMAC-SHA256 reference vectors (Python hashlib.pbkdf2_hmac,
+ * a completely separate implementation from crypto_pbkdf2_sha256 in cen429_crypto.h).
+ * Generated once; do not hand-edit. */
+#ifndef PBKDF2_VECTORS_H
+#define PBKDF2_VECTORS_H
+
+#define PV_EMPTY_EMPTY_1_32 "f7ce0b653d2d72a4108cf5abe912ffdd777616dbbb27a70e8204f3ae2d0f6fad"
+#define PV_PW_SALT_1_32 "120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b"
+#define PV_PW_SALT_2_32 "ae4d0c95af6b46d32d0adff928f06dd02a303f8ef3c251dfd6e2d85a95474c43"
+#define PV_PW_SALT_4096_32 "c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a"
+#define PV_DOG123_SALTA_100000_32 "8b3d1913b0a104fa643f2b7b36863c65d1deda204e9f6bf6c1b21443930ec892"
+#define PV_DOG123_SALTB_100000_32 "e9a8193a675ec5dd2366aad2a54d253c655f2c914043858b5a4c8d8b53691290"
+#define PV_LONGPW100_SALT_1_32 "445214ff04060a45c081c11836f93b2a2ca78b19201b25d143c547e85eb1a88f"
+#define PV_PW_SALT_1_48 "120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b4dbf3a2f3dad3377264bb7b8e8330d4e"
+#define PV_PW_SALT_1_16 "120fb6cffcf8b32c43e7225256c4f837"
+
+#endif

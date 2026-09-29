@@ -1,27 +1,27 @@
 #!/bin/sh
-# CEN429 - Hafta 5 - Demo 4: Bytecode ve decompile (Linux / WSL).
-# INDIRME GEREKTIRMEZ; yalnizca JDK'nin javac ve javap araclari kullanilir.
+# CEN429 - Week 5 - Demo 4: bytecode and decompiling (Linux / WSL).
+# NO DOWNLOAD REQUIRED; only the JDK's own javac and javap tools are used.
 cd "$(dirname "$0")"
 if ! command -v javac >/dev/null 2>&1; then
-    echo "JDK bulunamadi (javac yok)."
-    echo "Kurulum: sudo apt-get install -y openjdk-17-jdk-headless"
+    echo "JDK not found (javac missing)."
+    echo "Install: sudo apt-get install -y openjdk-17-jdk-headless"
     exit 1
 fi
-cizgi() { echo "=============================================================="; }
+line() { echo "=============================================================="; }
 mkdir -p bin
-javac --release 17 -d bin LisansDenetimi.java || { echo "Derleme hatasi"; exit 1; }
+javac --release 17 -d bin LicenseCheck.java || { echo "Compile error"; exit 1; }
 
-cizgi; echo "ADIM 1 - Program normal calisiyor (yanlis PIN ile)"; cizgi
-java -cp bin LisansDenetimi 1234
+line; echo "STEP 1 - The program runs normally (with a wrong PIN)"; line
+java -cp bin LicenseCheck 1234
 
-cizgi; echo "ADIM 2 - 'javap -p': private alan ve metot ADLARI gorunur"; cizgi
-javap -p -cp bin LisansDenetimi
+line; echo "STEP 2 - 'javap -p': private field and method NAMES are visible"; line
+javap -p -cp bin LicenseCheck
 
-cizgi; echo "ADIM 3 - 'javap -c -p': sabit DIZELER ve mantik gorunur"; cizgi
-echo "(Kaynak kod OLMADAN, sadece .class dosyasindan)"
-javap -c -p -cp bin LisansDenetimi | grep -E "String|pinDogru|lisansGecerli|boolean"
+line; echo "STEP 3 - 'javap -c -p': the constant STRINGS and logic are visible"; line
+echo "(WITHOUT the source code, from the .class file alone)"
+javap -c -p -cp bin LicenseCheck | grep -E "String|pinCorrect|licenseValid|boolean"
 
-cizgi
-echo "Sonuc: 'javac' geri cevrilebilir. PIN='4729' ve lisans anahtari"
-echo "bytecode'da ACIK duruyor; metot adlari mantigi ele veriyor."
-echo "Demo 5: dize gizleme + yansima ile bunu zorlastiracagiz."
+line
+echo "Result: 'javac' output is reversible. PIN='4729' and the license key"
+echo "stand in plain sight in the bytecode; the method names give the logic away."
+echo "Demo 5 will make this harder with string hiding + reflection."

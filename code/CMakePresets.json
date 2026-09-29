@@ -5,7 +5,7 @@
     {
       "name": "windows-msvc",
       "displayName": "Windows (MSVC)",
-      "description": "Visual Studio 2022 derleyicisiyle Windows'ta derleme",
+      "description": "Build on Windows with the Visual Studio 2022 compiler",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build/windows-msvc",
@@ -15,7 +15,7 @@
     {
       "name": "wsl-gcc",
       "displayName": "WSL (GCC)",
-      "description": "Visual Studio'dan WSL içindeki GCC ile derleme (Ubuntu)",
+      "description": "Build from Visual Studio using GCC inside WSL (Ubuntu)",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build/wsl-gcc",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "CMAKE_C_COMPILER": "gcc" },
@@ -28,7 +28,7 @@
     },
     {
       "name": "linux-gcc",
-      "displayName": "Linux / WSL terminali (GCC)",
+      "displayName": "Linux / WSL terminal (GCC)",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build/linux-gcc",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "CMAKE_C_COMPILER": "gcc" },

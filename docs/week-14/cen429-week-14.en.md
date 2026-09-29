@@ -6,7 +6,7 @@
 | **Learning outcomes** | LO.3 |
 | **Duration** | 3 hours |
 | **Prerequisites** | Obfuscation rules and the measurement framework from [Week 9](../week-9/cen429-week-9.md); compiling C; a Linux/WSL terminal (Tigress runs on Linux only) |
-| **Labs** | [`code/week-14`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-14) — 1 demos; on WSL/Linux `sh tigress-hatti.sh`; if Tigress is not installed the script shows the same flow with a clean derivative |
+| **Labs** | [`code/week-14`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-14) — 1 demos; on WSL/Linux `sh demo.sh`; if Tigress is not installed the script shows the same flow with a clean derivative |
 
 <!-- materyal:basla -->
 
@@ -31,9 +31,9 @@
 <!-- materyal:bitis -->
 
 !!! example "This week's working demo"
-    `code/week-14/01-kaynaktan-kaynaga` — Tigress transform pipeline (if installed) or a local example + download instructions; measures the function's cost.
+    `code/week-14/01-source-to-source` — Tigress transform pipeline (if installed) or a local example + download instructions; measures the function's cost.
 
-    Run it: in the `code/week-14/01-kaynaktan-kaynaga` folder, run `sh tigress-hatti.sh` (Linux/WSL; use WSL on Windows). If Tigress is not installed, the script shows the same flow with a clean derivative. Step by step in the box below. Entirely synthetic and safe; it does not harm the student's computer.
+    Run it: in the `code/week-14/01-source-to-source` folder, run `sh demo.sh` (Linux/WSL; use WSL on Windows). If Tigress is not installed, the script shows the same flow with a clean derivative. Step by step in the box below.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
@@ -41,11 +41,11 @@
 
     ```sh
     # WSL / Linux (Windows'ta WSL kullanın)
-    cd week-14/01-kaynaktan-kaynaga
-    sh tigress-hatti.sh
+    cd week-14/01-source-to-source
+    sh demo.sh
     ```
 
-    **Expected output:** if Tigress is installed, the `erisim_ver` function is obfuscated source-to-source: **transform pipeline → behaviour verification** (output unchanged) → **cost measurement** with `objdump` → a different binary with **two seeds** (diversification). If Tigress is not installed, the script shows the same flow with a **clean derivative**. Installation: <https://tigress.wtf> (free for academic use).
+    **Expected output:** if Tigress is installed, the `grant_access` function is obfuscated source-to-source: **transform pipeline → behaviour verification** (output unchanged) → **cost measurement** with `objdump` → a different binary with **two seeds** (diversification). If Tigress is not installed, the script shows the same flow with a **clean derivative**. Installation: <https://tigress.wtf> (free for academic use).
 
 !!! abstract "By the end of this week you will be able to"
     1. Explain what **source-to-source** obfuscation is and describe Tigress as the **automatic** counterpart of
@@ -148,7 +148,7 @@ Tigress, and its command line. The definitions are given in an order that builds
 This week's subject is **source-to-source** obfuscation: the input is a C source file, and the output is **C
 source again** — just obfuscated; this new source is then compiled with your normal compiler (gcc/clang).
 
-![Source-to-source obfuscation pipeline](assets/h14-01-kaynaktan-kaynaga-hat.svg)
+![Source-to-source obfuscation pipeline](assets/h14-01-source-to-source-hat.svg)
 
 A single obfuscation operation applied to the source is called a **transform** (for example, flattening control
 flow). A tool usually offers many transforms; you decide which one applies to which function. Applying several
@@ -182,7 +182,7 @@ section 4's "order matters" rule is sometimes not just about *improving the resu
 
 #### Measuring and comparing cost: `objdump`, `diff`, `cmp`
 
-This week's demo script (`tigress-hatti.sh`) uses a tool called `objdump` to measure how much **a single function**
+This week's demo script (`demo.sh`) uses a tool called `objdump` to measure how much **a single function**
 inside a binary has grown: a command-line tool that opens a binary file (`.exe`, ELF, ...) and dumps the
 **assembly instructions** inside it in human-readable form (part of the GNU Binutils package; comes preinstalled
 on Linux/WSL). `objdump -d file` ("disassemble") converts the binary's **code section** from machine code to
@@ -193,12 +193,12 @@ or a **call** — that is, how many points exist where the program decides to "g
 
 The measurement function in the demo script (`olc()`) does exactly this:
 
-```sh title="Measurement logic (from tigress-hatti.sh, abbreviated)"
-objdump -d "$f" | awk '/<erisim_ver>:/{a=1;next} /^$/{a=0} a{n++; if($0 ~ /\t(j|call)/)b++} END{printf "%d komut, %d dal/cagri", n, b}'
+```sh title="Measurement logic (from demo.sh, abbreviated)"
+objdump -d "$f" | awk '/<grant_access>:/{a=1;next} /^$/{a=0} a{n++; if($0 ~ /\t(j|call)/)b++} END{printf "%d komut, %d dal/cagri", n, b}'
 ```
 
 Line by line, this is what it does: `objdump -d` converts the whole binary to assembly; the `awk` script reads only
-the section that begins with the `<erisim_ver>:` label (the `a=1` flag), and stops when it reaches a blank line
+the section that begins with the `<grant_access>:` label (the `a=1` flag), and stops when it reaches a blank line
 (the end of the function, `a=0`); it adds every line it reads to the `n` counter, and if a line has `j...` or
 `call` after a tab, it also increments the `b` counter. Result: **how many instructions belong to that function,
 and how many of them are branches/calls.**
@@ -256,10 +256,13 @@ diversified** — you cannot differentiate every copy by hand. The solution is t
 !!! note "A short history: source-to-source obfuscation and diversification"
     - **1993** — Cohen introduces the idea of **diversification** with "program evolution": same function,
       different binary.
-    - **1997** — Collberg et al.'s obfuscation taxonomy (the foundation of week 9).
-    - **2013** — **Obfuscator-LLVM (O-LLVM)**: compiler-based obfuscation.
-    - **2010s** — **Tigress** (Christian Collberg): a **source-to-source** obfuscator for C, plus virtualisation
-      and diversification; the de facto standard for measuring resilience in research.
+    - **1997** — Collberg, Thomborson, Low's obfuscation taxonomy (the foundation of week 9); the same year,
+      Forrest, Somayaji, Ackley argue for **diversification** from a separate root ("Building Diverse Computer
+      Systems").
+    - **2002** — Necula et al., CIL: the parse/regenerate infrastructure Tigress is built on.
+    - **~2012–2013** — **Tigress** (Christian Collberg, University of Arizona): a **source-to-source** obfuscator
+      for C, plus virtualisation and diversification; the de facto standard for measuring resilience in research.
+    - **2015** — **Obfuscator-LLVM (O-LLVM)**: compiler-based obfuscation.
     - **2016–2017** — Banescu et al. **measure the resilience** of transforms with Tigress + KLEE → the
       "**resilience ↔ cost**" rule.
 
@@ -272,23 +275,39 @@ diversified** — you cannot differentiate every copy by hand. The solution is t
 - **1997 — Collberg, Thomborson, Low:** they published the five-family taxonomy we use in week 9 today (layout,
   data, control flow, preventive, virtualisation) and the potency/resilience/stealth/cost framework; this paper is
   still the field's reference point, and it is the basis of this week's mapping table (section 3).
-- **2013 — Obfuscator-LLVM (O-LLVM):** an open-source obfuscation pass added to the LLVM compiler infrastructure;
-  it applies techniques such as flattening and opaque predicates **at compile time**, without a separate
-  source-to-source step (week 9, K-11). Its difference from Tigress is that it operates on the compiler's
-  intermediate representation (IR) rather than on source code — so you cannot view O-LLVM's output as "C source
-  again"; it produces a binary directly.
-- **2010s — Tigress:** Christian Collberg and his team turned the 1997 taxonomy into a **working source-to-source
-  tool**; it became the de facto test platform for academic resilience research (including the Banescu study
-  below) — so learning Tigress this week means learning not just a tool, but the field's **shared measurement
-  language**.
+- **1997 — Forrest, Somayaji, Ackley, "Building Diverse Computer Systems":** from a separate root than Cohen's
+  (1993) single observation, they argued that diversity is a major source of robustness in biological systems while
+  computers are notably uniform, and showed that randomizing stack-frame memory layout disrupts a simple buffer
+  overflow attack — the direct academic ancestor of both today's ASLR and this week's **seed-based diversification**
+  (section 6).
+- **2002 — Necula, McPeak, Rahul, Weimer, CIL:** "CIL: Intermediate Language and Tools for Analysis and
+  Transformation of C Programs" (CC 2002) defined an intermediate representation and toolset for parsing and
+  regenerating C programs. Tigress **is built on CIL**: this is the infrastructural foundation of its
+  source-to-source ability — Tigress's "reads C source, produces C source again" capability is not written from
+  scratch, it rests on this parse/regenerate infrastructure that has existed since 2002.
+- **~2012–2013 — Tigress's first public releases:** no single "first release" date has been officially announced,
+  but two independent pieces of evidence confirm this range: a 2012 study (Kinder, WCRE 2012) references a
+  virtualization-obfuscated sample "supplied by Tigress's authors" (proof Tigress was already usable by then); a
+  2023 survey ("Evaluation Methodologies in Software Protection Research") describes Tigress as "approaching ten
+  years of age" (i.e. its origin is around ~2013). Christian Collberg and his team (University of Arizona) turned
+  the 1997 taxonomy into a **working source-to-source tool** in this period; it became the de facto test platform
+  for academic resilience research (including the Banescu study below) — so learning Tigress this week means
+  learning not just a tool, but the field's **shared measurement language**.
+- **2015 — Obfuscator-LLVM (O-LLVM):** Junod, Rinaldini, Wehrli, Michielin, "Obfuscator-LLVM — Software Protection
+  for the Masses" (SPRO 2015, the 1st International Workshop on Software Protection, co-located with ICSE). An
+  open-source obfuscation pass added to the LLVM compiler infrastructure; it applies techniques such as flattening
+  and opaque predicates **at compile time**, without a separate source-to-source step (week 9, K-11). Its
+  difference from Tigress is that it operates on the compiler's intermediate representation (IR) rather than on
+  source code — so you cannot view O-LLVM's output as "C source again"; it produces a binary directly.
 - **2016–2017 — Banescu et al.:** they systematically **broke** the transforms Tigress produces using KLEE, and
   measured how long each transform combination took to solve; this is the **experimental evidence** for the
   "resilience ↔ cost" relationship we will revisit in section 7 this week.
 
-These five points are, in fact, parts of a single line: **idea (1993) → classification (1997) → two different
-implementation routes: compiler-based (2013) and source-to-source (2010s) → the scientific testing of that
-implementation (2016–2017).** This week we apply the **last two steps** of that line (using Tigress, and
-understanding how to evaluate it with Banescu's method — section 7).
+These seven points are, in fact, parts of a single line: **two independent diversification ideas (1993, 1997) →
+classification (1997) → infrastructure (2002) → two different implementation routes: source-to-source
+(~2012–2013) and compiler-based (2015) → the scientific testing of that implementation (2016–2017).** This week we
+apply the **using Tigress, and understanding how to evaluate it with Banescu's method** steps of that line
+(section 7).
 
 **Source-to-source** obfuscation means a tool takes **C source as input and produces C source again**; the
 generated source is behaviourally identical but far harder to read, and it is compiled with your normal compiler.
@@ -353,36 +372,36 @@ In week 9, when we applied rule K-07 (string encoding) **by hand**, the source c
 constant string, we wrote XOR'd bytes and a decode loop. Let's now do the same idea with a **source-to-source**
 tool — the input and output are still both C, but you **don't write** the output, the tool produces it.
 
-```c title="BEFORE — temiz.c (before K-07 is applied, the same starting point as the hand-written version)"
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;   /* a single branch, a single return: an easy target */
-    return RED;
+```c title="BEFORE — source.c (before K-07 is applied, the same starting point as the hand-written version)"
+int grant_access(const char *token) {
+    if (token_is_valid(token)) return GRANTED;   /* a single branch, a single return: an easy target */
+    return DENIED;
 }
 ```
 
 ```c title="AFTER — conceptual representation: as if EncodeLiterals had been applied (real output varies by version)"
-int erisim_ver(const char *jeton) {
-    /* IZIN and RED are no longer plain constants; they pass through a decode step at runtime.
+int grant_access(const char *token) {
+    /* GRANTED and DENIED are no longer plain constants; they pass through a decode step at runtime.
        The idea is identical to K-07 from week 9 (see the 0x41 XOR 0x5A example); the difference
        is that the decode code was produced by the TOOL, not by YOU. */
-    if (jeton_gecerli(jeton)) return _cozul_sabit_0x9F2A();  /* == IZIN, but IZIN doesn't appear in the source */
-    return _cozul_sabit_0x117C();                            /* == RED */
+    if (token_is_valid(token)) return _decoded_constant_0x9F2A();  /* == GRANTED, but GRANTED doesn't appear in the source */
+    return _decoded_constant_0x117C();                            /* == DENIED */
 }
 ```
 
 The second block **is not real Tigress output** — the generated code changes with the version, compiler, and
 `--Seed` value; it is only meant to show the **idea** of EncodeLiterals (just like this document's other
 "conceptual flow" blocks show the syntax of the commands without claiming to be real output). The important
-**difference** is this: in week 9, you would write a function like `_cozul_sabit_0x9F2A()` by hand, test it by
+**difference** is this: in week 9, you would write a function like `_decoded_constant_0x9F2A()` by hand, test it by
 hand, and write it **again** each time you moved to the next function. Here, the tool applies this step
-automatically to every function you mark with `--Functions=erisim_ver`.
+automatically to every function you mark with `--Functions=grant_access`.
 
-!!! danger "Common mistake: hand-editing the `gizli.c` file that Tigress produces"
-    A developer who opens an obfuscated source file (`gizli.c`) wanting to "fix a line" or "make it a bit more
+!!! danger "Common mistake: hand-editing the `variant.c` file that Tigress produces"
+    A developer who opens an obfuscated source file (`variant.c`) wanting to "fix a line" or "make it a bit more
     readable" breaks two things: (1) the hand-made change **disappears** on the next obfuscation run (the tool
-    regenerates it from `temiz.c`), (2) it can break the internal structure the transform assumes (e.g., the
+    regenerates it from `source.c`), (2) it can break the internal structure the transform assumes (e.g., the
     interdependence of the flattened `switch` state values), which can **break the behaviour**. **Rule:** edit
-    only `temiz.c` (the original, readable source); `gizli.c` is always a **regenerated, hands-off** output — just
+    only `source.c` (the original, readable source); `variant.c` is always a **regenerated, hands-off** output — just
     as you would never hand-edit the `.o` file a compiler produces.
 
 ### How much time does it save? A rough comparison (hypothetical)
@@ -434,10 +453,10 @@ official documentation):
 ![The trade-off between resilience and cost](assets/h14-08-dayaniklilik-maliyet.svg)
 
 ```bash title="Conceptual flow (a single transform)"
-# input: temiz.c  → output: gizli.c  (then compiled normally)
-tigress --Transform=Flatten --Functions=erisim_ver \
-        --out=gizli.c temiz.c
-cc -o program gizli.c
+# input: source.c  → output: variant.c  (then compiled normally)
+tigress --Transform=Flatten --Functions=grant_access \
+        --out=variant.c source.c
+cc -o program variant.c
 ```
 
 The three ideas here are the foundation of all Tigress usage:
@@ -450,10 +469,10 @@ The three ideas here are the foundation of all Tigress usage:
 
 ### Why is `--Functions` so important? Let's compare selective and blanket obfuscation
 
-A flag like `--Functions=erisim_ver` means "apply only to this function." Let's consider the opposite —
+A flag like `--Functions=grant_access` means "apply only to this function." Let's consider the opposite —
 obfuscating **every** function in a file — and compare the two approaches:
 
-| | Selective (`--Functions=erisim_ver`) | Blanket (the whole file) |
+| | Selective (`--Functions=grant_access`) | Blanket (the whole file) |
 | --- | --- | --- |
 | Cost | Only the sensitive function | Every function (most aren't sensitive) |
 | Debugging | Easy: unobfuscated code stays readable | Hard: the whole program is obfuscated, even logs are unreadable |
@@ -467,10 +486,10 @@ obfuscating **every** function in a file — and compare the two approaches:
     bigger and slower** program. **Rule:** always fill in the `--Functions` list **deliberately and with a
     rationale**; don't expand it on the logic of "it might come in handy."
 
-### End to end: let's read the `tigress-hatti.sh` script line by line
+### End to end: let's read the `demo.sh` script line by line
 
 To make the conceptual flow concrete, let's read this week's real demo script
-(`code/week-14/01-kaynaktan-kaynaga/tigress-hatti.sh`) from start to finish, step by step. The script consists of
+(`code/week-14/01-source-to-source/demo.sh`) from start to finish, step by step. The script consists of
 four steps; let's go through all of them without skipping any.
 
 **Step 0 — Setup.** The script first moves into the folder it's running from (`cd "$(dirname "$0")"`) and picks a
@@ -481,16 +500,16 @@ we have seen since [week 1](../week-1/cen429-week-1.md).
 **STEP 1 — Build and run the clean version.**
 
 ```sh
-"$CC" -O2 -o ornek_temiz ornek.c && ./ornek_temiz "CEN429-OK" && ./ornek_temiz "yanlis"
+"$CC" -O2 -o access_original source.c && ./access_original "CEN429-OK" && ./access_original "yanlis"
 ```
 
-This line compiles `ornek.c` (the actual file containing the `erisim_ver` function we defined in section 0) **with
+This line compiles `source.c` (the actual file containing the `grant_access` function we defined in section 0) **with
 no obfuscation applied**, and runs it twice: once with the correct token (`CEN429-OK`), once with the wrong token
 (`yanlis`). Expected output:
 
 ```text title="Expected output — STEP 1"
-erisim_ver("CEN429-OK") = IZIN
-erisim_ver("yanlis") = RED
+grant_access("CEN429-OK") = GRANTED
+grant_access("yanlis") = DENIED
 ```
 
 This is the **reference behaviour before obfuscation** — the correctness of every obfuscation done in section 3
@@ -501,25 +520,25 @@ with `command -v tigress`. **There are two paths:**
 
 === "If Tigress is installed"
 
-    ```sh title="The real command the script runs (from tigress-hatti.sh)"
+    ```sh title="The real command the script runs (from demo.sh)"
     tigress --Environment=x86_64:Linux:Gcc:11 \
-            --Transform=EncodeLiterals --Functions=erisim_ver \
-            --Transform=EncodeArithmetic --Functions=erisim_ver \
-            --Transform=Flatten --Functions=erisim_ver \
+            --Transform=EncodeLiterals --Functions=grant_access \
+            --Transform=EncodeArithmetic --Functions=grant_access \
+            --Transform=Flatten --Functions=grant_access \
             --Transform=InitOpaque --Functions=main \
-            --Transform=AddOpaque --Functions=erisim_ver --AddOpaqueKinds=call \
-            --out=gizli.c ornek.c
+            --Transform=AddOpaque --Functions=grant_access --AddOpaqueKinds=call \
+            --out=variant.c source.c
     ```
 
     This single command applies **five** transforms in sequence (the subject of section 4): first strings/constants
     are encoded (`EncodeLiterals`), then arithmetic is encoded (`EncodeArithmetic`), then control flow is flattened
     (`Flatten`), then the infrastructure needed for opaque predicates is prepared on the `main` function
     (`InitOpaque` — a preparation transform in Tigress that must be called once before adding opaque predicates),
-    and finally call-based opaque predicates are added to `erisim_ver` (`AddOpaque --AddOpaqueKinds=call`). The
+    and finally call-based opaque predicates are added to `grant_access` (`AddOpaque --AddOpaqueKinds=call`). The
     `--Environment` flag specifies the target platform (here, 64-bit Linux, GCC 11); for some transforms Tigress
     needs to know compiler-specific details (the "Tigress environment" definition in section 0).
 
-    The obfuscated source is then compiled normally (`"$CC" -O2 -o ornek_gizli gizli.c`), and its behaviour is
+    The obfuscated source is then compiled normally (`"$CC" -O2 -o access_variant variant.c`), and its behaviour is
     compared in **STEP 3**.
 
 === "If Tigress is not installed"
@@ -527,7 +546,7 @@ with `command -v tigress`. **There are two paths:**
     The script does not raise a real error; instead it prints installation/license instructions and points the
     student to week 9's **manual** working demo:
 
-    ```text title="Expected output — if Tigress isn't installed (tigress-hatti.sh's real text)"
+    ```text title="Expected output — if Tigress isn't installed (demo.sh's real text)"
     ADIM 2 - Tigress KURULU DEGIL.
       Tigress'i resmi siteden indirin: https://tigress.wtf
       Lisans: kar amaci gutmeyen (akademik) kullanim UCRETSIZ; ticari icin Arizona Univ. lisansi.
@@ -543,7 +562,7 @@ with `command -v tigress`. **There are two paths:**
 **STEP 3 — Verify behaviour.** If Tigress was found, the script does this:
 
 ```sh
-[ "$(./ornek_temiz CEN429-OK)" = "$(./ornek_gizli CEN429-OK)" ] && echo "  ✓ ayni cikti" || echo "  ✗ FARK"
+[ "$(./access_original CEN429-OK)" = "$(./access_variant CEN429-OK)" ] && echo "  ✓ ayni cikti" || echo "  ✗ FARK"
 ```
 
 It compares whether the clean and obfuscated versions produce **the same output for the same input**. If
@@ -556,31 +575,41 @@ of section 4's "order and test rule."
 
 !!! success "Rule: verify the output after running each step; don't move on without seeing the result"
     The script's four steps are deliberately **dependent** on each other: if STEP 2 doesn't run, there is no
-    `ornek_gizli` for STEP 3 to compare; if STEP 3 prints "✗ FARK", the binaries STEP 4 diversifies are already
+    `access_variant` for STEP 3 to compare; if STEP 3 prints "✗ FARK", the binaries STEP 4 diversifies are already
     **faulty**. The same discipline applies in your own project: after running a transform pipeline, **first
     verify behaviour**, then measure cost, then diversify — skipping the order means you notice the error late.
 
+Let's follow these four steps as a whole, from source all the way to a binary.
+
+<iframe class="dsanim" src="../anim/source-to-source-pipeline.html" title="Source-to-source pipeline: source.c → transform → source.c → compiler → binary" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Source-to-source pipeline — step by step](anim/source-to-source-pipeline.png)
+</div>
+
+Try the **normal** (Tigress, two transforms), **fallback-three** (local fallback, three transforms) and
+**edge-corrupted-variant** (a hand-corrupted variant) presets; use 🎲 for your own seed/token list too.
+
 ### `--out`, and obfuscating several functions at once
 
-The `--out=gizli.c` flag specifies **which file** the generated obfuscated source is written to; if not specified,
+The `--out=variant.c` flag specifies **which file** the generated obfuscated source is written to; if not specified,
 Tigress uses a default name (verify against the official documentation). All the examples we've seen this week
-have focused on a **single** function (`erisim_ver`); but `--Functions` can take a **list**. Say your project has,
-alongside `erisim_ver`, a function called `anahtar_turet`, and both are sensitive:
+have focused on a **single** function (`grant_access`); but `--Functions` can take a **list**. Say your project has,
+alongside `grant_access`, a function called `anahtar_turet`, and both are sensitive:
 
 ```bash title="Conceptual: applying the same transform to two functions at once"
-tigress --Transform=Flatten --Functions=erisim_ver,anahtar_turet \
-        --Transform=AddOpaque --Functions=erisim_ver,anahtar_turet \
-        --out=gizli.c proje.c
+tigress --Transform=Flatten --Functions=grant_access,anahtar_turet \
+        --Transform=AddOpaque --Functions=grant_access,anahtar_turet \
+        --out=variant.c proje.c
 ```
 
-`--Functions=erisim_ver,anahtar_turet` (a comma-separated list) applies **the same** transform to both functions.
+`--Functions=grant_access,anahtar_turet` (a comma-separated list) applies **the same** transform to both functions.
 This is the concrete syntax for section 1's "applying the same rule to 10 functions" comparison: in the manual
 method you'd have to write separate encoding for each function; here it's enough to add one more name to a single
 flag.
 
 !!! note "Different functions may need different transforms"
-    `erisim_ver` and `anahtar_turet` might not be at the same **value** level — perhaps `anahtar_turet` is more
-    critical and also needs Virtualise, while `erisim_ver` is satisfied with Flatten+AddOpaque (the decision flow
+    `grant_access` and `anahtar_turet` might not be at the same **value** level — perhaps `anahtar_turet` is more
+    critical and also needs Virtualise, while `grant_access` is satisfied with Flatten+AddOpaque (the decision flow
     from section 1). In that case, instead of applying **the same thing to all of them** in a single command, you
     use **a separate `--Transform`/`--Functions` pair for each function** (or a separate Tigress call); the
     assumption of "one pipeline for everyone" is an extension of section 2's "why is `--Functions` so important"
@@ -625,10 +654,10 @@ Tigress.
    it is always true were worked through in
    [Week 9, §5](../week-9/cen429-week-9.md#rule-k-01-opaque-predicates-and-opaque-loops).
 2. **Its counterpart in Tigress is two steps, not one:** as seen in the demo script's real command, first
-   `--Transform=InitOpaque --Functions=main` runs, **then** `--Transform=AddOpaque --Functions=erisim_ver
+   `--Transform=InitOpaque --Functions=main` runs, **then** `--Transform=AddOpaque --Functions=grant_access
    --AddOpaqueKinds=call`. `InitOpaque` prepares the **hidden state variables** the opaque predicates will rely on
    (usually initialised inside `main`, as we saw in section 2); `AddOpaque` uses that state to add the real opaque
-   conditions to the target function (`erisim_ver`). `--AddOpaqueKinds=call` selects the **kind** of opaque
+   conditions to the target function (`grant_access`). `--AddOpaqueKinds=call` selects the **kind** of opaque
    predicate to add (here, a "call"-based kind).
 3. **Result:** K-01's definition of a "constant-true but uncertain-looking condition" matches exactly the
    conditions `AddOpaque` produces; `InitOpaque` shows the fact that K-01 isn't enough on its own — it requires a
@@ -636,7 +665,7 @@ Tigress.
 
 !!! danger "Common mistake: skipping the `InitOpaque` step and running `AddOpaque` directly"
     A student trying to shorten the transform pipeline might write only `--Transform=AddOpaque
-    --Functions=erisim_ver` and skip the `InitOpaque` step. This either raises an error, or produces an
+    --Functions=grant_access` and skip the `InitOpaque` step. This either raises an error, or produces an
     **unexpected** result because the state structure the opaque predicates depend on is missing. **Rule:**
     transforms can have **dependencies** between them (in this demo, `InitOpaque` → `AddOpaque`); don't assume a
     transform is "enough on its own" without reading the official documentation. This shows that section 4's
@@ -651,7 +680,7 @@ Let's repeat the same steps for K-07 (string encoding), since this rule is also 
    the binary; storing it with a reversible encoding such as XOR and decoding it only at the moment of use — the
    `0x41 ^ 0x5A` example, traced bit by bit, was worked through in
    [Week 9, §6](../week-9/cen429-week-9.md#rule-k-07-encoding-static-strings).
-2. **Its Tigress counterpart:** `--Transform=EncodeLiterals --Functions=erisim_ver`. This transform encodes the
+2. **Its Tigress counterpart:** `--Transform=EncodeLiterals --Functions=grant_access`. This transform encodes the
    constant strings and numeric constants in the target function, and generates code that decodes them at run
    time — the automated counterpart of K-07's "hand-written" form (the "BEFORE/AFTER" example in section 2).
 3. **Verification:** a `strings` check like the one in the demo script (as in week 9's demo) verifies that the
@@ -664,34 +693,34 @@ way to verify it.**
 ### Worked example: let's see how `Flatten` applies K-04, in code
 
 After K-01 and K-07, let's make the table's most powerful control-flow transform — `Flatten` — concrete at the code
-level. Let's take section 2's `erisim_ver` as our base:
+level. Let's take section 2's `grant_access` as our base:
 
-```c title="BEFORE — erisim_ver (not flattened)"
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;
-    return RED;
+```c title="BEFORE — grant_access (not flattened)"
+int grant_access(const char *token) {
+    if (token_is_valid(token)) return GRANTED;
+    return DENIED;
 }
 ```
 
 ```c title="AFTER — conceptual representation: as if Flatten had been applied (real output varies by version/compiler)"
-int erisim_ver(const char *jeton) {
-    int _durum = 7341;          /* scattered, unpredictable initial state */
-    int _sonuc;
+int grant_access(const char *token) {
+    int _state = 7341;          /* scattered, unpredictable initial state */
+    int _result;
     while (1) {
-        switch (_durum) {
+        switch (_state) {
             case 7341:
-                _durum = jeton_gecerli(jeton) ? 2098 : 5560;   /* the decision is hidden here */
+                _state = token_is_valid(token) ? 2098 : 5560;   /* the decision is hidden here */
                 break;
             case 2098:
-                _sonuc = IZIN;
-                _durum = 9999;
+                _result = GRANTED;
+                _state = 9999;
                 break;
             case 5560:
-                _sonuc = RED;
-                _durum = 9999;
+                _result = DENIED;
+                _state = 9999;
                 break;
             case 9999:
-                return _sonuc;
+                return _result;
         }
     }
 }
@@ -701,7 +730,7 @@ This second block, too, **is not real Tigress output**; it only shows the **idea
 points:
 
 1. **The original `if`/`return` structure is gone**; in its place is a `switch` **dispatcher** inside a single
-   `while(1)` loop. In a decompiler, this loop is **not instantly readable** the way `if (jeton_gecerli(...))` was.
+   `while(1)` loop. In a decompiler, this loop is **not instantly readable** the way `if (token_is_valid(...))` was.
 2. **The state constants** (`7341`, `2098`, `5560`, `9999`) are **scattered, not sequential** — this is the
    concrete counterpart of the earlier note that "values should be produced with K-02, or as random, scattered
    constants"; sequential constants (`1, 2, 3, 4`) are instantly recognised in a decompiler as the signature of "a
@@ -711,8 +740,8 @@ points:
    only jumps at Flatten" observation in sections 5 and 7.
 
 !!! danger "Common mistake: seeing the flattened code and thinking 'the logic is now completely gone'"
-    Someone who looks carefully at the example above can still see that there are **two** exit states (`2098`→IZIN,
-    `5560`→RED) and that the decision between them is made in `case 7341` — flattening **does not destroy** the
+    Someone who looks carefully at the example above can still see that there are **two** exit states (`2098`→`GRANTED`,
+    `5560`→`DENIED`) and that the decision between them is made in `case 7341` — flattening **does not destroy** the
     logic entirely, it only **removes its direct visibility**. That's why week 9's K-04 rule doesn't consider
     Flatten **sufficient on its own**; the state constants themselves must also be encoded (with K-02) and the
     decision points hidden with opaque predicates (K-01) — this is exactly why this week's transform pipeline
@@ -726,7 +755,7 @@ three questions: **what it does, which K rule it automates, and when it's prefer
 **1. `Flatten` — control-flow flattening.** Turns a function's `if`/`else`/loop structure into a `switch`
 **dispatcher** inside a single `while` loop; every original block becomes a `case`, and transitions between blocks
 are done by changing the `case` number. It is the exact automatic counterpart of week 9's K-04 (section 5, "RULE
-K-04 — Control-flow flattening"). As we saw in section 5's `erisim_ver` example, it's a **moderate**-cost,
+K-04 — Control-flow flattening"). As we saw in section 5's `grant_access` example, it's a **moderate**-cost,
 **moderate-to-high**-potency first step for easy targets like "single branch, single return."
 
 **2. `InitOpaque` / `AddOpaque` / `UpdateOpaque` — the opaque predicate family.** The automatic form of K-01
@@ -781,34 +810,45 @@ parameters to existing functions. Both, when **combined with a seed**, different
     high?** These three questions let you place a transform you've never seen into the right **category** and the
     right **cost budget**.
 
+Let's follow three transforms — `Flatten`, `EncodeArithmetic`, `AddOpaque` — step by step on small code; the last
+one uses the real lines of a file that actually runs (`fallback_transform.py`).
+
+<iframe class="dsanim" src="../anim/transform-step-by-step.html" title="One transform, step by step: Flatten / EncodeArithmetic / AddOpaque" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![One transform, step by step — Flatten / EncodeArithmetic / AddOpaque](anim/transform-step-by-step.png)
+</div>
+
+Try the **flatten-granted** (the dispatcher takes the GRANTED path), **arith-typical** (the MBA identity) and
+**opaque-seed-zero** (the predicate is still true even at seed 0) presets.
+
 ### Worked example: how `EncodeData` splits a variable (conceptual)
 
 Let's make `EncodeData`, the automatic counterpart of K-09 (week 9: variable splitting/merging), concrete. Say
-there is an "attempt counter" variable inside `erisim_ver`:
+there is an "attempt counter" variable inside `grant_access`:
 
 ```c title="BEFORE — a single, directly readable variable"
-int deneme_sayaci = 0;
+int attempt_count = 0;
 ...
-deneme_sayaci++;
-if (deneme_sayaci > 3) return KILITLI;
+attempt_count++;
+if (attempt_count > 3) return LOCKED;
 ```
 
 ```c title="AFTER — conceptual representation: as if EncodeData had been applied (real output varies by version)"
-struct { unsigned char alt; unsigned char ust; } _sayac_parcalari = {0, 0};
+struct { unsigned char alt; unsigned char ust; } _counter_parts = {0, 0};
 ...
-/* the counterpart of deneme_sayaci++: increment the low byte, update the high byte on overflow */
-_sayac_parcalari.alt++;
-if (_sayac_parcalari.alt == 0) _sayac_parcalari.ust++;
-/* the counterpart of deneme_sayaci > 3: merge the two pieces and compare */
-if (((_sayac_parcalari.ust << 8) | _sayac_parcalari.alt) > 3) return KILITLI;
+/* the counterpart of attempt_count++: increment the low byte, update the high byte on overflow */
+_counter_parts.alt++;
+if (_counter_parts.alt == 0) _counter_parts.ust++;
+/* the counterpart of attempt_count > 3: merge the two pieces and compare */
+if (((_counter_parts.ust << 8) | _counter_parts.alt) > 3) return LOCKED;
 ```
 
 In a memory dump (e.g., pausing the program with a debugger and reading memory), instead of appearing as a
-**single, whole 32-bit integer**, `deneme_sayaci` sits as two independent bytes, scattered inside a `struct` — this
+**single, whole 32-bit integer**, `attempt_count` sits as two independent bytes, scattered inside a `struct` — this
 matches exactly section 0's goal that "the value should not appear directly in a memory dump."
 
 !!! danger "Common mistake: merging the pieces back together right after use and storing them"
-    If a developer, out of performance concerns, caches `_sayac_parcalari` into **a single variable**
+    If a developer, out of performance concerns, caches `_counter_parts` into **a single variable**
     (`int birlesik = (...) << 8 | (...)`) before every comparison and keeps that variable **for the whole
     function**, there is once again a single, whole, recognisable 32-bit block — K-09's advantage is lost (this
     matches exactly week 9's warning on the same topic). **Rule:** merge only at **the exact moment it's needed**,
@@ -816,37 +856,37 @@ matches exactly section 0's goal that "the value should not appear directly in a
 
 ### Worked example: how `Split` divides a function (conceptual)
 
-Let's make the `Split` transform concrete too. Say `erisim_ver` performs two logical steps back to back: a length
-check and a content comparison (exactly what the real `erisim_ver` in `ornek.c` does — the code in section 0).
+Let's make the `Split` transform concrete too. Say `grant_access` performs two logical steps back to back: a length
+check and a content comparison (exactly what the real `grant_access` in `source.c` does — the code in section 0).
 
 ```c title="BEFORE — a single function, two steps back to back"
-int erisim_ver(const char *jeton) {
-    if (strlen(jeton) != strlen(GECERLI)) return 0;
-    unsigned fark = 0;
-    for (unsigned i = 0; i < sizeof GECERLI - 1; i++)
-        fark |= (unsigned)((unsigned char)jeton[i] ^ (unsigned char)GECERLI[i]);
-    return fark == 0;
+int grant_access(const char *token) {
+    if (strlen(token) != strlen(VALID_TOKEN)) return 0;
+    unsigned diff = 0;
+    for (unsigned i = 0; i < sizeof VALID_TOKEN - 1; i++)
+        diff |= (unsigned)((unsigned char)token[i] ^ (unsigned char)VALID_TOKEN[i]);
+    return diff == 0;
 }
 ```
 
 ```c title="AFTER — conceptual representation: as if Split had been applied (real output varies by version)"
-static int _adim_a(const char *jeton) {          /* length check only */
-    return strlen(jeton) == strlen(GECERLI);
+static int _step_a(const char *token) {          /* length check only */
+    return strlen(token) == strlen(VALID_TOKEN);
 }
-static unsigned _adim_b(const char *jeton) {      /* difference computation only */
-    unsigned fark = 0;
-    for (unsigned i = 0; i < sizeof GECERLI - 1; i++)
-        fark |= (unsigned)((unsigned char)jeton[i] ^ (unsigned char)GECERLI[i]);
-    return fark;
+static unsigned _step_b(const char *token) {      /* difference computation only */
+    unsigned diff = 0;
+    for (unsigned i = 0; i < sizeof VALID_TOKEN - 1; i++)
+        diff |= (unsigned)((unsigned char)token[i] ^ (unsigned char)VALID_TOKEN[i]);
+    return diff;
 }
-int erisim_ver(const char *jeton) {
-    if (!_adim_a(jeton)) return 0;
-    return _adim_b(jeton) == 0;
+int grant_access(const char *token) {
+    if (!_step_a(token)) return 0;
+    return _step_b(token) == 0;
 }
 ```
 
-The result is two new, generically named helper functions (`_adim_a`, `_adim_b`); a decompiler now sees **three**
-separate symbols (recall the "symbol table" definition in section 0), and `erisim_ver` **itself** is now just two
+The result is two new, generically named helper functions (`_step_a`, `_step_b`); a decompiler now sees **three**
+separate symbols (recall the "symbol table" definition in section 0), and `grant_access` **itself** is now just two
 calls — the actual logic has been **spread** across other functions. `Merge` does the exact opposite: it combines
 several small functions into a single, large function; the result makes the question "is this one operation, or
 the sum of several?" harder in the reverse direction.
@@ -854,7 +894,7 @@ the sum of several?" harder in the reverse direction.
 !!! note "Why do function boundaries matter with Split?"
     A reverse engineer usually starts by drawing a "map" from function boundaries (name, number of parameters,
     inputs/outputs — recall week 9's decompiler example in section 0). `Split` makes this **map itself**
-    misleading: small, generically named functions like `_adim_a` and `_adim_b` can be numerous and small enough
+    misleading: small, generically named functions like `_step_a` and `_step_b` can be numerous and small enough
     to distract an engineer's attention. This row's counterpart of K-06 (function hiding) is exactly this.
 
 ## 4. Transform pipeline: combining several transforms
@@ -869,14 +909,14 @@ the cost**.
 
 ```bash title="Conceptual pipeline (multiple transforms in sequence)"
 tigress \
-  --Transform=EncodeLiterals --Functions=erisim_ver \
-  --Transform=EncodeArithmetic --Functions=erisim_ver \
-  --Transform=Flatten        --Functions=erisim_ver \
-  --Transform=AddOpaque      --Functions=erisim_ver \
-  --out=gizli.c temiz.c
+  --Transform=EncodeLiterals --Functions=grant_access \
+  --Transform=EncodeArithmetic --Functions=grant_access \
+  --Transform=Flatten        --Functions=grant_access \
+  --Transform=AddOpaque      --Functions=grant_access \
+  --out=variant.c source.c
 ```
 
-This pipeline first encodes the constants/strings of a single check (`erisim_ver`), then encodes its arithmetic,
+This pipeline first encodes the constants/strings of a single check (`grant_access`), then encodes its arithmetic,
 then flattens it, then strengthens it with opaque predicates. The result is the automatic version of what week 9's
 K-04 called "reinforced flattening."
 
@@ -900,7 +940,7 @@ produces.**
 EncodeLiterals → EncodeArithmetic → Flatten → AddOpaque
 ```
 
-Because `EncodeLiterals` runs first, it only encodes the constants/strings **in the original source** (`ornek.c`).
+Because `EncodeLiterals` runs first, it only encodes the constants/strings **in the original source** (`source.c`).
 When `Flatten` runs third, `EncodeLiterals` can **no longer see** the new state constants (`case 1`, `case 2`, ...)
 that the flattened `switch` dispatcher **produces itself** — because that step has already passed. This is **not a
 problem**, because Flatten already produces its own state values as scattered/unpredictable (the note in section 5:
@@ -945,9 +985,9 @@ practice.
 
 Let's test the "signing comes last" rule with a concrete scenario. Say a developer accidentally reversed the order:
 
-1. `temiz.c` is compiled → `program` (unsigned).
+1. `source.c` is compiled → `program` (unsigned).
 2. `program` is **signed** → `program.imzali` (a digital signature, bound to the file's **current** byte content).
-3. Then the "forgotten" obfuscation step is noticed; `gizli.c` is produced from `temiz.c`, recompiled, and the
+3. Then the "forgotten" obfuscation step is noticed; `variant.c` is produced from `source.c`, recompiled, and the
    resulting new binary is copied **over** the old signed file.
 
 Result: the new binary produced in step 3 is **different** from the byte content signed in step 2 (obfuscation can
@@ -963,6 +1003,16 @@ means "the release could not ship."
     the `obfuscate` and `measure` stages; keeping this order should be left not to human memory, but to **CI's own
     definition.**
 
+Let's follow how order affects both **scope** (what `EncodeLiterals` can see) and the **signature**, in one pipeline.
+
+<iframe class="dsanim" src="../anim/transform-stacking-order.html" title="Effect of transform stacking order: scope and signature" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Effect of transform stacking order — scope and signature](anim/transform-stacking-order.png)
+</div>
+
+Compare the **code-then-structure** (Order 1, correct), **structure-then-code** (Order 2, wider scope) and
+**sign-too-early** (signing first — the edge case) presets.
+
 ## 5. Step-by-step example: reinforcing a check (synthetic)
 
 Let's take a single synthetic access check and reinforce it layer by layer. The goal is to see what each step
@@ -970,17 +1020,17 @@ Let's take a single synthetic access check and reinforce it layer by layer. The 
 
 ![Reinforcing a check step by step](assets/h14-11-adim-adim-guclendirme.svg)
 
-```c title="Starting point: temiz.c (readable, unprotected)"
-int erisim_ver(const char *jeton) {
-    if (jeton_gecerli(jeton)) return IZIN;   /* a single branch, a single return: an easy target */
-    return RED;
+```c title="Starting point: source.c (readable, unprotected)"
+int grant_access(const char *token) {
+    if (token_is_valid(token)) return GRANTED;   /* a single branch, a single return: an easy target */
+    return DENIED;
 }
 ```
 
 | Step | Transform applied | What changes? | Cost |
 | --- | --- | --- | --- |
 | 0 | (none) | `strings`, single branch, bypassable with a single-byte patch | — |
-| 1 | EncodeLiterals | `IZIN`/`RED` and strings no longer appear in plain form | Very low |
+| 1 | EncodeLiterals | `GRANTED`/`DENIED` and strings no longer appear in plain form | Very low |
 | 2 | EncodeArithmetic | The comparison/computation turns into a complex expression | Low |
 | 3 | Flatten | The single branch is no longer visible; a switch dispatcher | Moderate |
 | 4 | AddOpaque | Bogus branches and opaque conditions are added | Moderate |
@@ -994,7 +1044,7 @@ unnecessary for most checks; it's applied only to the most critical, small funct
 
 Let's fill the table above with numbers. The instruction/branch counts below are **hypothetical** (a real
 measurement can't be taken while Tigress isn't installed); they are meant only to show the **order of magnitude**
-of each step and **how the arithmetic is verified**. For real numbers, run `tigress-hatti.sh` while Tigress is
+of each step and **how the arithmetic is verified**. For real numbers, run `demo.sh` while Tigress is
 installed and read the `objdump` output the script prints (recall the "instruction/branch counting" definition in
 section 0).
 
@@ -1031,7 +1081,7 @@ Three observations:
 ### Worked example: a single transform, or four transforms together? A numeric comparison
 
 Let's test section 1's rationale for "using them together" against the numbers above. What would have happened if
-we'd applied **only a single transform** to the same `erisim_ver` function, versus what happened when we applied
+we'd applied **only a single transform** to the same `grant_access` function, versus what happened when we applied
 four transforms **together** — let's put the two side by side (the numbers are taken from the table
 above/hypothetical):
 
@@ -1065,11 +1115,21 @@ copy.
 
 ```bash title="Conceptual: two seeds, two different binaries"
 tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_a.c temiz.c
+        --Functions=grant_access --out=gizli_a.c source.c
 tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque \
-        --Functions=erisim_ver --out=gizli_b.c temiz.c
+        --Functions=grant_access --out=gizli_b.c source.c
 # gizli_a.c and gizli_b.c do the same job; their machine code differs
 ```
+
+Let's follow, step by step, how the real `fallback_transform.py` derives its mask from the seed, for three seeds.
+
+<iframe class="dsanim" src="../anim/diversification-seeds.html" title="Diversification with seeds: same source, different bytes, same behavior" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Diversification with seeds — same source, different bytes](anim/diversification-seeds.png)
+</div>
+
+Try the **three-seeds** (1001/2002/3003, all different), **small-seeds** (1/2/3, even small seeds differ) and
+**edge-same-seed-twice** (what happens if a seed is forgotten and reused) presets.
 
 Two kinds of diversification (from week 9):
 
@@ -1085,15 +1145,15 @@ Two kinds of diversification (from week 9):
 
 ### Worked example: let's compare the binaries produced with two seeds, step by step
 
-The demo script's STEP 4 does exactly this: it produces two separate `erisim_ver` builds from the same `ornek.c`
+The demo script's STEP 4 does exactly this: it produces two separate `grant_access` builds from the same `source.c`
 with `--Seed=1001` and `--Seed=2002`, compiles them, and compares them byte by byte with `cmp -s A B`. Let's trace
 the steps one by one:
 
 1. **Same source, two commands:**
 
    ```sh
-   tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque --Functions=erisim_ver --out=a.c ornek.c
-   tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque --Functions=erisim_ver --out=b.c ornek.c
+   tigress --Seed=1001 --Transform=Flatten --Transform=AddOpaque --Functions=grant_access --out=a.c source.c
+   tigress --Seed=2002 --Transform=Flatten --Transform=AddOpaque --Functions=grant_access --out=b.c source.c
    ```
 
    Note: the `--Transform` list is **exactly the same** in both (`Flatten`, `AddOpaque`); the only difference is
@@ -1101,14 +1161,14 @@ the steps one by one:
 2. **Compile:** `a.c` and `b.c` are compiled with the same compiler and flags (`-O2`) into two separate binaries
    (`A`, `B`).
 3. **Compare behaviour (this first!):** both binaries must be run with the `CEN429-OK` input and verified to give
-   the **same** output (`IZIN`) — diversification must **never** change behaviour (section 4's rule applies here
+   the **same** output (`GRANTED`) — diversification must **never** change behaviour (section 4's rule applies here
    too).
 4. **Compare structure:** `cmp -s A B` compares the two files byte by byte; if `$?` (the exit code) is `0`, the
    files are **identical** (bad — it means diversification didn't work), if it's `1`, they are **different** (the
    expected result).
 
 **Let's quantify the difference ratio (hypothetical, in a form similar to week 9's real 66.4% example).** Say the
-flattened + opaque-predicate version of `erisim_ver` takes up **160 bytes** in both binaries; comparing byte by
+flattened + opaque-predicate version of `grant_access` takes up **160 bytes** in both binaries; comparing byte by
 byte, we measured that **96 bytes** came out different:
 
 ```text
@@ -1126,9 +1186,9 @@ choices); the exact number will, of course, differ between hand-written and tool
 !!! danger "Common mistake: saying 'different, so diversification happened' without reading `cmp`'s output"
     `cmp -s A B` only tells you whether the files are **identical or not**; it does not show **what** is different.
     Two binaries can be different, but the difference might be in an **insignificant** spot only (e.g., a compile
-    timestamp, uncompressed debug information); the protected function (`erisim_ver`) itself might have stayed the
+    timestamp, uncompressed debug information); the protected function (`grant_access`) itself might have stayed the
     same. **Rule:** prove a diversification claim not just with `cmp`, but by comparing **the target function**
-    itself separately (with section 0's `objdump` method, taking only what's under the `<erisim_ver>:` label).
+    itself separately (with section 0's `objdump` method, taking only what's under the `<grant_access>:` label).
 
 !!! success "Rule: always record the seed"
     If you don't **record** the `--Seed` value you used to produce a binary, you can **never** produce that exact
@@ -1139,18 +1199,18 @@ choices); the exact number will, of course, differ between hand-written and tool
 ### Worked example: let's compare the target function directly instead of `cmp`
 
 Let's apply the correct method the "common mistake" box above recommends. `cmp -s A B` only says "different/same";
-to see whether the target (`erisim_ver`) itself is different, we apply section 0's `objdump` method **to both
+to see whether the target (`grant_access`) itself is different, we apply section 0's `objdump` method **to both
 binaries** and compare only that function's section:
 
 ```sh title="Conceptual: extracting and comparing only the target function's section"
-# Extract only what's under the <erisim_ver>: label from both binaries
-objdump -d A | awk '/<erisim_ver>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_A.asm
-objdump -d B | awk '/<erisim_ver>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_B.asm
+# Extract only what's under the <grant_access>: label from both binaries
+objdump -d A | awk '/<grant_access>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_A.asm
+objdump -d B | awk '/<grant_access>:/{a=1} a{print} /^$/{if(a)exit}' > erisim_B.asm
 diff erisim_A.asm erisim_B.asm | wc -l    # if 0, the target function stayed the SAME
 ```
 
 If `diff`'s output is **empty** (line count 0), this means the two seeds produced **no difference at all** in
-`erisim_ver` — that is, section 6's claim (diversification happened) is **false**, and the difference `cmp` found
+`grant_access` — that is, section 6's claim (diversification happened) is **false**, and the difference `cmp` found
 across the whole file was only in an insignificant spot (e.g., a compile timestamp). If `diff`'s output is
 **non-empty**, the target function itself has really changed — only then can we say "diversification is proven."
 This two-step verification (first "is something different?" with `cmp`, then "is the target itself different?"
@@ -1225,6 +1285,16 @@ Measure the following for every transform pipeline and write them into S9/S15:
 | Running time | Run an operation many times and average it | Flatten/Virtualise slow it down |
 | Source/CFG complexity | Basic block count in a decompiler (e.g., Ghidra) | An increase before/after |
 
+Let's put all four metrics into one table, for the original program and two diversified variants.
+
+<iframe class="dsanim" src="../anim/obfuscation-measurement.html" title="Measuring obfuscation and diversification: size, time, instruction count, similarity" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Measuring obfuscation and diversification — size, time, instruction count, similarity](anim/obfuscation-measurement.png)
+</div>
+
+Compare the **two-different-seeds**, **large-seeds** and **edge-both-zero** (both "seeds" are really the original)
+presets: cost stays seed-independent while size and similarity vary with the seed.
+
 ```bash title="Simple cost measurement (concept)"
 size ./program_temiz ./program_gizli        # size difference
 # time: run N times with the same input, compare the average
@@ -1249,7 +1319,7 @@ this: the study by Banescu and colleagues measures how much Tigress's transforms
 
 ### Let's complete the size and time measurement: adding to section 5's numbers
 
-In section 5 we traced, step by step, the increase in a single function's (`erisim_ver`) instruction and branch
+In section 5 we traced, step by step, the increase in a single function's (`grant_access`) instruction and branch
 counts (a hypothetical 359.1% cumulative instruction increase, going from 2 branches at step 0 to 7 branches at
 step 4). Let's now distribute these numbers across Collberg's four metrics (the table above) and also add **size**
 and **time**.
@@ -1269,7 +1339,7 @@ transforms together).
 
 !!! danger "Common mistake: measuring the whole `.exe`/binary's size (`ls -l`) and concluding 'it barely changed'"
     In a **small, synthetic** program like this week's demo, the **total file size** measured with
-    `ls -l ornek_temiz ornek_gizli` often comes out nearly the same — because most of the file (a few KB) consists
+    `ls -l access_original access_variant` often comes out nearly the same — because most of the file (a few KB) consists
     of ELF/PE headers, dynamic linking tables, and references to the run-time library; a single small function
     growing by 79 instructions **gets lost in the statistical noise** next to this fixed overhead. Seeing this and
     concluding "obfuscation doesn't increase size" is wrong. **Rule:** in small/synthetic demos, for the size
@@ -1284,8 +1354,8 @@ call the function **a large number of times** (e.g., a million) in a loop and me
 
 ```bash title="Conceptual: time measurement (making it meaningful with a large number of calls)"
 # Pseudocode: the real measurement tool varies by platform (e.g. `time`, a benchmarking loop)
-for i in $(seq 1 1000000); do ./ornek_temiz CEN429-OK >/dev/null; done   # time is measured
-for i in $(seq 1 1000000); do ./ornek_gizli CEN429-OK >/dev/null; done  # time is measured and compared
+for i in $(seq 1 1000000); do ./access_original CEN429-OK >/dev/null; done   # time is measured
+for i in $(seq 1 1000000); do ./access_variant CEN429-OK >/dev/null; done  # time is measured and compared
 ```
 
 Note: the loop above actually also measures the cost of **starting a new process** each time (`fork`/`exec`),
@@ -1356,12 +1426,12 @@ A hypothetical example: say a tool scanning a binary file measures the **branch-
 | Region | Branch instructions per 256 bytes | Interpretation |
 | --- | --- | --- |
 | An ordinary helper function | ~8 | The expected range for a normal C function |
-| `erisim_ver` (before obfuscation) | ~6 | Within the normal range |
-| `erisim_ver` (after Flatten+AddOpaque) | ~34 | **Many times above** the normal range — draws attention |
+| `grant_access` (before obfuscation) | ~6 | Within the normal range |
+| `grant_access` (after Flatten+AddOpaque) | ~34 | **Many times above** the normal range — draws attention |
 
-Interpretation: the obfuscated `erisim_ver`'s branch density is **statistically markedly different** from the
+Interpretation: the obfuscated `grant_access`'s branch density is **statistically markedly different** from the
 file's other ordinary functions. Without having to scan the whole binary, an attacker can go **straight** to
-`erisim_ver` just by looking for "abnormally branch-dense regions" — this means "stealth is dropping": while
+`grant_access` just by looking for "abnormally branch-dense regions" — this means "stealth is dropping": while
 potency and cost increase (section 7's first table), stealth has **decreased**.
 
 ### A numeric example: hypothetical solver time for different transform combinations
@@ -1391,7 +1461,7 @@ for the next copy** — because a different seed produces different opaque-predi
 !!! danger "Common mistake: thinking 'the more I obfuscate, the better'"
     The large percentages in sections 5 and 7 (359% instruction increase, 166.7% complexity increase) may look
     impressive, but this section shows that **overly heavy obfuscation can give away its own presence**. In a real
-    product, lightly obfuscating not just `erisim_ver` but also some **unimportant** functions around it (or adding
+    product, lightly obfuscating not just `grant_access` but also some **unimportant** functions around it (or adding
     bogus functions with `RandomFuns` — section 3) **flattens** the branch-density map and hides the target.
     **Rule:** think about potency and stealth together; obfuscating a single function excessively is like marking
     that function on a map.
@@ -1406,7 +1476,7 @@ and measure the cost of protecting it.
 
 ![In-class flow: obfuscate, verify, measure, diversify](assets/h14-12-sinif-ici-akis.svg)
 
-1. **Setup:** write a small, synthetic program (e.g., an `erisim_ver` check). Show that it works correctly with
+1. **Setup:** write a small, synthetic program (e.g., an `grant_access` check). Show that it works correctly with
    unit tests.
 2. **Obfuscate:** apply a transform pipeline (EncodeLiterals → EncodeArithmetic → Flatten → AddOpaque).
 3. **Verify behaviour:** run the same unit tests against the obfuscated version — the result must be **exactly the
@@ -1422,6 +1492,16 @@ and measure the cost of protecting it.
     Tigress is applied only to **your own** code. The goal is not to analyse someone else's program, but to learn
     to protect **your own** code and measure the cost of doing so. The example program does not harm the student's
     computer; it does not change system settings, and it does nothing on the network. All values are synthetic.
+
+Let's follow the four stages (obfuscate → compare → measure → diversify) alongside `pipeline_check.py`'s real lines.
+
+<iframe class="dsanim" src="../anim/in-class-flow.html" title="In-class flow: obfuscate → compare → measure → diversify" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![In-class flow — obfuscate, compare, measure, diversify](anim/in-class-flow.png)
+</div>
+
+Try the **all-pass** (every token matches, PASSED), **all-pass-many-tokens** (all 14 tokens) and
+**edge-mismatch-and-same-seed** (one mismatch and a reused seed — FAILED) presets.
 
 ### Common mistake: skipping step 3 (verify behaviour) and going straight to step 5 (measure)
 
@@ -1503,11 +1583,11 @@ project's S15 section, after the midterm, documents exactly this:
 Let's unpack the four boxes in the figure (h14-07) (obfuscation, signing, build identity, CI) into a sequential
 list — each step is the **input** to the next, just like in section 4's transform pipeline:
 
-1. **Build (clean):** `temiz.c` (the readable source) is compiled normally; unit tests are run against this build.
+1. **Build (clean):** `source.c` (the readable source) is compiled normally; unit tests are run against this build.
 2. **Obfuscate:** the agreed transform pipeline (section 7) is applied only to the **sensitive** functions marked
    with `--Functions`; **a new `--Seed`** is generated (section 6's "always record the seed" rule kicks in here —
    CI must write the seed it used to a log/artefact).
-3. **Rebuild (obfuscated):** `gizli.c` is compiled normally; the **same** unit tests are run against this build as
+3. **Rebuild (obfuscated):** `variant.c` is compiled normally; the **same** unit tests are run against this build as
    well (the CI counterpart of section 2's STEP 3 — if behaviour hasn't changed, the tests pass; if it has, CI
    must **fail**).
 4. **Measure:** size/instructions/branches (sections 5, 7) are measured automatically and compared against the
@@ -1525,20 +1605,20 @@ pseudocode showing the order of the steps):
 
 ```text title="Conceptual CI skeleton (not the syntax of any specific tool)"
 stage derle_temiz:
-    cc -O2 -o out/temiz temiz.c
+    cc -O2 -o out/temiz source.c
     run_unit_tests out/temiz
 
 stage gizle:
     seed = new_random_seed()
-    tigress --Seed=$seed --Transform=... --Functions=... --out=gizli.c temiz.c
+    tigress --Seed=$seed --Transform=... --Functions=... --out=variant.c source.c
     save seed -> log/release-$RELEASE.txt
 
 stage derle_gizli:
-    cc -O2 -o out/gizli gizli.c
+    cc -O2 -o out/gizli variant.c
     run_unit_tests out/gizli   # CI STOPS if it fails
 
 stage olc:
-    objdump -d out/gizli | olc_komut_dal erisim_ver >> log/release-$RELEASE.txt
+    objdump -d out/gizli | olc_komut_dal grant_access >> log/release-$RELEASE.txt
 
 stage imzala:
     sign out/gizli -> out/gizli.signed
@@ -1551,6 +1631,16 @@ stage kaydet_surum:
 Every line of this skeleton corresponds to a section from this week: `derle_temiz` → section 2, STEP 1; `gizle` →
 section 4 (pipeline) + section 6 (seed); the test step of `derle_gizli` → section 2, STEP 3; `olc` → sections 0/5/7;
 `imzala` → this section's "signing last" rule; `kaydet_surum` → week 12's TOE identity.
+
+Let's follow these six stages across several CI runs, each release with its **own** seed.
+
+<iframe class="dsanim" src="../anim/build-deployment-pipeline.html" title="Placing obfuscation in the build/deployment pipeline: CI, per-release seed" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Placing obfuscation in the build/deployment pipeline — CI, per-release seed](anim/build-deployment-pipeline.png)
+</div>
+
+Try the **three-clean-releases** (v1.0/v1.1/v1.2, same as the S15 worked example), **one-test-failure** (one
+release fails its tests) and **edge-seed-reused** (a release accidentally reuses an old seed) presets.
 
 !!! danger "Common mistake: keeping the seed only on the developer's own machine, outside CI"
     If a developer runs obfuscation by hand on their own computer and, out of habit, uses a fixed value like
@@ -1604,13 +1694,13 @@ changed from v1.1 to v1.2, without having to compare the source code line by lin
 Week 9's section 4 taught writing every protection decision with the template "What it protects / How / Cost /
 Limit." Let's fill in the same template for this week's Tigress pipeline:
 
-```text title="RULE K-04+K-01+K-07-Tigress-applied: automatic transform pipeline applied to the erisim_ver function"
+```text title="RULE K-04+K-01+K-07-Tigress-applied: automatic transform pipeline applied to the grant_access function"
 What does it protect? : The logic of the synthetic access check (which token counts as valid);
                          delays it against reverse engineering.
 How?                   : Tigress --Transform=EncodeLiterals,EncodeArithmetic,Flatten,InitOpaque,AddOpaque
                          (the full command in section 2, STEP 2); a new --Seed is generated every release (section 6).
 Cost                   : ~%359,1 instruction increase, ~%166,7 complexity (potency) increase (section 7,
-                         hypothetical demo numbers; real numbers are measured with `tigress-hatti.sh`).
+                         hypothetical demo numbers; real numbers are measured with `demo.sh`).
 Limit                  : Resilience and stealth were not measured in this demo (section 7); a whitebox-level
                          protection is not claimed without Virtualize on its own (compare with week 11).
 ```
@@ -1626,7 +1716,7 @@ replacing the numbers with your own measurements (all numbers are consistent wit
 examples):
 
 ```text title="Example S9/S15 entry (with hypothetical numbers; replace with your own measurements)"
-Function          : erisim_ver
+Function          : grant_access
 Why sensitive?    : Synthetic token check (the decision flow in section 1: sensitive + medium value)
 Transform pipeline: EncodeLiterals -> EncodeArithmetic -> Flatten -> InitOpaque(main) -> AddOpaque
 Seed (release 1.0): 1001
@@ -1731,7 +1821,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     **diversified**, and **measured**.
 
 ??? question "13. What do the 'instruction count' and 'branch count' measured with objdump represent; what is their relationship to week 9's CFG node/edge count?"
-    `objdump -d` converts a binary into assembly; every line after the target function's label (`<erisim_ver>:`)
+    `objdump -d` converts a binary into assembly; every line after the target function's label (`<grant_access>:`)
     gives the **instruction count**, and the ones among them starting with `j...`/`call` give the **branch/call
     count**. This is the **automatic, finer-grained, compiled-binary** counterpart of the CFG node/edge count drawn
     by hand from source code in [week 9](../week-9/cen429-week-9.md); both measure the question 'how much work is it to analyse this function?'
@@ -1818,7 +1908,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     this recognition harder; moreover, these values themselves can also be encoded with K-02 (arithmetic encoding),
     combining two layers.
 
-??? question "29. What are the four lines of the 'RULE' template in S9/S15? How did we fill them in for `erisim_ver` this week?"
+??? question "29. What are the four lines of the 'RULE' template in S9/S15? How did we fill them in for `grant_access` this week?"
     The template has four lines: **What it protects / How / Cost / Limit**. In section 10's filled-in example: what
     it protects → the access check's logic; how → the five-transform Tigress pipeline + seed; cost → a hypothetical
     359.1% instruction / 166.7% complexity increase; limit → resilience/stealth not measured, whitebox-level
@@ -1860,12 +1950,12 @@ missing, the rest loses its meaning too — just like in section 4's transform p
 ??? question "36. How does the `Split` transform disrupt a reverse engineer's 'map'?"
     A reverse engineer usually draws a map by looking at function boundaries (name, number of parameters,
     inputs/outputs); `Split` makes this map misleading by spreading a single logical operation across several
-    small, generically named functions (e.g., `_adim_a`, `_adim_b`) — understanding how many functions are actually
+    small, generically named functions (e.g., `_step_a`, `_step_b`) — understanding how many functions are actually
     part of **one** operation takes extra effort.
 
 ??? question "37. What is the difference between `cmp -s A B` and an `objdump`-based comparison of the target function; which one actually proves diversification?"
     `cmp` only says whether the two files are **as a whole** the same/different, it doesn't show what's different.
-    Extracting only the target function's (`erisim_ver`) section with `objdump` and running `diff` on it shows
+    Extracting only the target function's (`grant_access`) section with `objdump` and running `diff` on it shows
     whether the difference is really **inside the protected function**; only this second method actually proves
     diversification.
 
@@ -1874,7 +1964,7 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     may not be clearly visible in code review and can be forgotten. In the tool method, the `--Functions` list is
     an auditable document, directly visible in code review, and it's easier to notice a gap.
 
-??? question "39. Is using a list like `--Functions=erisim_ver,anahtar_turet` always correct? When could it be wrong?"
+??? question "39. Is using a list like `--Functions=grant_access,anahtar_turet` always correct? When could it be wrong?"
     It's correct only if the two functions are of **the same value/sensitivity** and deserve the same transform
     pipeline. Applying the same pipeline with the same list to functions of different value (e.g., one critical and
     needing Virtualise, the other light) means skipping section 1's decision flow (is it sensitive, how valuable is
@@ -1897,10 +1987,10 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     seed is generated automatically on every release, tests run automatically, measurement and signing are done
     automatically — reliance on human memory disappears.
 
-??? question "43. Is `erisim_ver` in this week's demo script (`ornek.c`) the same function as the simplified `temiz.c` example in section 5? Why did we use both representations together?"
-    Not exactly: the real `erisim_ver` in `ornek.c` performs a length check and a constant-time XOR comparison (the
-    real code in section 0); the `temiz.c` in sections 4-5 is a simplified, instructive representation with a
-    `jeton_gecerli(...)` call. We used both together because the simplified representation (the `if`/`return`
+??? question "43. Is the real `grant_access` in this week's demo script (`source.c`) the same function as the simplified `grant_access` representation in sections 4-5? Why did we use both representations together?"
+    They share a **name** but not the same body: the real `grant_access` in `source.c` performs a length check and a constant-time XOR comparison (the
+    real code in section 0); the "BEFORE" blocks in sections 4-5 summarize the same idea with a single, simplified
+    `token_is_valid(...)` call — an instructive representation, not a real file. We used both together because the simplified representation (the `if`/`return`
     structure) is clearer for showing the transforms' **idea**; the real code defines what you'll see when you
     **actually run** the script. Section 3's `Split` example uses the real code, most of the other examples use the
     simplified representation — which one is used is always noted in the title.
@@ -1911,13 +2001,13 @@ missing, the rest loses its meaning too — just like in section 4's transform p
     **exact** output of a real Tigress command, but instructive representations that convey the transform's
     **idea**. Not clearly stating this distinction would push students into thinking the real output looks exactly
     like this — which would amount to giving made-up information. **Rule:** to see the real output, run
-    `tigress-hatti.sh` while Tigress is installed and read the `gizli.c` file.
+    `demo.sh` while Tigress is installed and read the `variant.c` file.
 
 ??? question "45. Are all of this week's numeric cost/potency/diversification examples (like 359.1%, 166.7%, 60%) real measurements?"
     No, as clearly stated, they are **hypothetical** — because Tigress was not installed while preparing this note,
     real `objdump`/`cmp` output could not be obtained. These numbers are meant only to show how the arithmetic is
     set up and the orders of magnitude involved. **Rule:** use these table formats in your own project, but
-    **measure the numbers yourself** by running `tigress-hatti.sh` while Tigress is installed; presenting a
+    **measure the numbers yourself** by running `demo.sh` while Tigress is installed; presenting a
     hypothetical number as if it were measured is a dishonesty mistake in the same category as week 9's
     'unbreakable' warning.
 
@@ -1925,10 +2015,16 @@ missing, the rest loses its meaning too — just like in section 4's transform p
 
 - The **Tigress** official site and worksheets (`tigress.wtf`) — transforms, syntax, current version (v4), and
   license. Students verify the current version and terms here.
-- C. Collberg, J. Nagra, *Surreptitious Software* — the obfuscation taxonomy and measurement framework (shared with
-  [week 9](../week-9/cen429-week-9.md)).
+- C. Collberg, C. Thomborson, D. Low, "A Taxonomy of Obfuscating Transformations" (1997) — the obfuscation taxonomy
+  and measurement framework (shared with [week 9](../week-9/cen429-week-9.md)); also the source of this week's
+  `AddOpaque` fallback's quadratic-residue-mod-4 opaque predicate.
+- S. Forrest, A. Somayaji, D. Ackley, "Building Diverse Computer Systems" (HotOS-VI, 1997) — one of the academic
+  roots of diversification (section 6): disrupting buffer-overflow attacks by randomizing stack layout.
+- G. Necula, S. McPeak, S. P. Rahul, W. Weimer, "CIL: Intermediate Language and Tools for Analysis and
+  Transformation of C Programs" (CC 2002) — the C parse/regenerate infrastructure Tigress is built on.
+- P. Junod, J. Rinaldini, J. Wehrli, J. Michielin, "Obfuscator-LLVM — Software Protection for the Masses"
+  (SPRO 2015) — an alternative to compiler-based obfuscation (week 9, K-11).
 - S. Banescu, C. Collberg et al. — measuring the resilience of Tigress transforms to symbolic execution (KLEE).
-- Obfuscator-LLVM (O-LLVM) — an alternative to compiler-based obfuscation (week 9, K-11).
 
 !!! info "Next week"
     **[Week 15](../week-15/cen429-week-15.md) — Final project presentations (RAP2).** The term's content is complete; the final report is expected

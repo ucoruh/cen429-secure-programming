@@ -1,0 +1,9 @@
+#!/bin/sh
+# CEN429 demo: FAKE program that runs instead of the real "date".
+# Harmless: it only prints a warning to the screen. A real attacker could have
+# done anything here, with the privileges of the user running the program.
+echo ""
+echo "  !!! FAKE 'date' ran !!!"
+echo "  The program was fooled through PATH. This line was not written by your"
+echo "  code -- it comes from the fake/date file in the demo folder."
+echo ""

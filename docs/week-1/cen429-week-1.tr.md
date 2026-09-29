@@ -85,7 +85,7 @@ tags:
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming\code
         .\build.ps1
-        cd week-01\01-path-kandirma
+        cd week-01\01-path-spoofing
         .\demo.ps1
         ```
 
@@ -98,7 +98,7 @@ tags:
         git clone https://github.com/ucoruh/cen429-secure-programming.git
         cd cen429-secure-programming/code
         ./build.sh
-        cd week-01/01-path-kandirma
+        cd week-01/01-path-spoofing
         sh demo.sh
         ```
 
@@ -148,10 +148,17 @@ olması bir **zafiyettir**. Hırsızın o arızalı kilidi kullanması bir **sal
 olası ve olursa ne kadar zarar verir?" sorusunun cevabıdır.
 
 !!! note "Kısa tarihçe: güvenli programlama fikri nereden geldi?"
+    - **1972** — James P. Anderson, ABD Hava Kuvvetleri için yazdığı *Computer Security Technology Planning Study*
+      raporunda "güvenilir hesaplama tabanı" (bkz. [§18](#18-korunan-kod-bolumleme-ve-sifreleme-ile-guvenli-isleme))
+      ve saldırgan modeli kavramlarını ilk kez sistemli biçimde tanımlar; modern bilgisayar güvenliğinin başlangıç
+      noktalarından biri kabul edilir.
     - **1975** — Saltzer & Schroeder, güvenli tasarımın **sekiz ilkesini** yayımlar (en az ayrıcalık, derinlemesine savunma, açık tasarım…). Bugün hâlâ temeldir.
     - **1970'ler–80'ler** — **CIA üçlüsü** (gizlilik · bütünlük · erişilebilirlik) askerî/devlet bilgi güvenliğinden doğar ve ortak dil olur.
     - **1998–99** — Microsoft'ta **STRIDE** tehdit sınıflandırması (Kohnfelder & Garg) geliştirilir; aynı yıllarda Bruce Schneier **saldırı ağaçlarını** tanıtır.
+    - **2001** — OWASP (Open Web Application Security Project) kurulur; web ve uygulama güvenliği için ortak bir kaynak, kılavuz ve terminoloji sağlar.
     - **2001–2003** — Viega & McGraw *Building Secure Software* ve Viega & Messier ***Secure Programming Cookbook for C and C++*** (bu dersin ana kaynağı) "güvenliği sonradan ekleme, baştan kur" kültürünü yerleştirir.
+    - **2002 → 2004** — Bill Gates'in çalışanlara yazdığı "Trustworthy Computing" notu (2002) Microsoft'un önceliğini
+      değiştirir; bu çaba 2004'te resmî **Güvenli Geliştirme Yaşam Döngüsü'ne (SDL)** dönüşür ([§19](#19-guvenli-gelistirme-sureci-plani-yasatmak)).
 
     Bu haftanın bütün araçları (CIA, saldırgan modeli, STRIDE, saldırı ağacı) işte bu çizginin ürünüdür.
 
@@ -235,7 +242,7 @@ başka birine karşı işe yaramaz olabilir. Bu yüzden her projede önce **sald
 | **Uzaktaki saldırgan** | Yalnız ağ üzerinden gönderdiği mesajlar | Bozuk/uzun girdi gönderir, trafiği dinler | Web sunucusuna saldıran biri | Girdi doğrulama, TLS |
 | **Yerel kullanıcı** | Aynı bilgisayarda sıradan bir hesap | Dosyaları okur, ortam değişkenlerini değiştirir, programları çalıştırır | Paylaşılan sunucudaki başka bir öğrenci | İzinler, güvenli başlatma |
 | **Kötü niyetli içeriden kişi** | Kaynak koda, sunuculara yetkili erişim | Arka kapı ekler, veri sızdırır | Görevini kötüye kullanan çalışan | Ayrıcalık ayrımı, denetim kaydı |
-| **Cihazın sahibi saldırgan** (beyaz kutu, "Man-At-The-End") | Programın kendisine **tam** erişim | Hata ayıklayıcıyla adım adım izler, belleği döker, ikili dosyayı değiştirir | Mobil ödeme uygulamasını kendi telefonunda kırmaya çalışan biri | Çalışma zamanı koruması, kod gizleme, whitebox kriptografi |
+| **Cihazın sahibi saldırgan** (beyaz kutu, "Man-At-The-End") | Programın kendisine **tam** erişim | Hata ayıklayıcıyla adım adım izler, belleği döker, binary dosyayı değiştirir | Mobil ödeme uygulamasını kendi telefonunda kırmaya çalışan biri | Çalışma zamanı koruması, kod gizleme, whitebox kriptografi |
 
 ![Uzak, yerel ve beyaz kutu saldırgan modellerinin görebildikleri](assets/h01-02-saldirgan-modelleri.svg)
 
@@ -257,7 +264,7 @@ başka birine karşı işe yaramaz olabilir. Bu yüzden her projede önce **sald
 | İlke | Anlamı | Örnek |
 | --- | --- | --- |
 | **En az ayrıcalık** | Her bileşen işini yapmaya yetecek kadar yetkiyle çalışır | Rapor programı yönetici olarak değil, sıradan kullanıcıyla çalışır |
-| **Güvenli varsayılan** | Varsayılan durum "izin yok"tur | Yeni kullanıcının `yonetici` alanı 0 ile başlar |
+| **Güvenli varsayılan** | Varsayılan durum "izin yok"tur | Yeni kullanıcının `admin` alanı 0 ile başlar |
 | **Tam aracılık** | Her erişim her seferinde denetlenir | Yetki bir kez bakılıp önbelleğe yazılmaz |
 | **Açık tasarım** | Güvenlik, tasarımın gizli kalmasına değil anahtarın gizliliğine dayanır (Kerckhoffs) | Kendi şifreleme algoritmanızı yazmazsınız |
 | **Mekanizma ekonomisi** | Basit tasarım daha az hata içerir | 20 satırlık açık bir denetim, 500 satırlık "akıllı" bir denetimden iyidir |
@@ -284,12 +291,12 @@ yeteneğine karşı durur.
 Bir binayı düşünün. Kapıya iyi bir kilit taktınız. Ama pencere açıksa, anahtar paspasın altındaysa ya da içerideki
 kasa şifresizse kilit tek başına bir şey ifade etmez. Yazılımda da durum aynıdır:
 
-- Kodunuz **hatasız** olabilir, ama saldırgan ikili dosyayı açıp **mantığınızı okuyabilir**.
+- Kodunuz **hatasız** olabilir, ama saldırgan binary dosyayı açıp **mantığınızı okuyabilir**.
 - Mantığınızı **gizleyebilirsiniz**, ama saldırgan programı çalışırken bir hata ayıklayıcıyla **durdurup
   belleğini** okuyabilir.
 - Belleği **izlenmeye karşı** koruyabilirsiniz, ama anahtar kodun içinde **düz metin** duruyorsa bir dize taraması
   yeter.
-- Anahtarı gizleyebilirsiniz, ama saldırgan ikili dosyadaki **bir denetimi değiştirip** (ör. "lisans geçerli mi?"
+- Anahtarı gizleyebilirsiniz, ama saldırgan binary dosyadaki **bir denetimi değiştirip** (ör. "lisans geçerli mi?"
   sorusunu her zaman "evet" yapıp) korumayı tamamen atlayabilir.
 
 Her satır, bir önlemin neyi **çözmediğini** gösteriyor. Katmanlı savunmanın mantığı budur: her katman bir öncekinin
@@ -382,7 +389,7 @@ yazarken her katman için şu dört bedeli tartarsınız:
 
 1. **Performans:** Gizlenmiş kod daha yavaş çalışır (ör. kontrol akışı düzleştirme bir fonksiyonu birkaç kat
    yavaşlatabilir). Bütünlük denetimi ve hata ayıklayıcı algılama da işlemci zamanı harcar.
-2. **Boyut:** Gizleme, sanallaştırma ve tablo tabanlı whitebox kriptografi ikili dosyayı büyütür.
+2. **Boyut:** Gizleme, sanallaştırma ve tablo tabanlı whitebox kriptografi binary dosyayı büyütür.
 3. **Geliştirme ve bakım:** Gizlenmiş kodun hatası zor ayıklanır; çökme raporları okunaksız olur. Bu yüzden
    gizleme **yalnız hassas bölümlere** uygulanır ve sembol eşleme dosyaları güvenli yerde saklanır.
 4. **Yanlış pozitif:** Aşırı hassas bir root ya da emülatör algılaması, meşru kullanıcıyı (ör. geliştirici
@@ -411,7 +418,7 @@ Bu haritayı her hafta bir katmanı açarak dolduracağız:
 
 !!! tip "Değerlendirici bu katmanlara nasıl bakar?"
     Bağımsız bir değerlendirici, bir ürünü incelerken bu tabloyu **tersten** okur: önce kolay yolları dener (dize
-    taraması, ikili dosyayı açma, hata ayıklayıcı bağlama), hangi katmanda durdurulduğunu not eder. Durdurulmadığı
+    taraması, binary dosyayı açma, hata ayıklayıcı bağlama), hangi katmanda durdurulduğunu not eder. Durdurulmadığı
     her adım, raporda bir bulgu olur. Sizin projenizin güvenlik kılavuzu da her katman için "hangi önlemi aldım,
     nasıl test ettim" sorusunu cevaplayacak.
 
@@ -445,7 +452,7 @@ dönem projeniz için bunun küçük bir sürümünü yazacaksınız. Planın om
 Plan bir kez yazılıp bırakılmaz: ürün her değiştiğinde (yeni özellik, hata düzeltmesi, yeni sürüm) 1. adıma dönülür
 ve plan güncellenir.
 
-1. **Kapsam:** Neyi değerlendiriyoruz? Yalnız "sürüm 2.1" demek yetmez; hangi ikili dosya, hangi kaynak kod, hangi
+1. **Kapsam:** Neyi değerlendiriyoruz? Yalnız "sürüm 2.1" demek yetmez; hangi binary dosya, hangi kaynak kod, hangi
    özet değeri? Sertifikasyonda buna **değerlendirme hedefi** denir.
 2. **Mimari ve arayüzler:** Bileşenler neler, birbirleriyle hangi kanaldan konuşuyor, her kanalda kimlik nasıl
    doğrulanıyor?
@@ -511,7 +518,7 @@ yöntemlerden biri Microsoft'un geliştirdiği **STRIDE**'dır: her harf bir teh
 | Harf | Tehdit | Bozduğu özellik | Örnek (mobil ödeme mimarisi) |
 | --- | --- | --- | --- |
 | **S** | Spoofing — kimlik taklidi | Kimlik doğrulama | Sahte bir uygulamanın kendini asıl uygulama gibi gösterip güvenlik kütüphanesini çağırması |
-| **T** | Tampering — kurcalama | Bütünlük | Native kütüphanedeki bir denetimin ikili dosyada değiştirilmesi |
+| **T** | Tampering — kurcalama | Bütünlük | Native kütüphanedeki bir denetimin binary dosyada değiştirilmesi |
 | **R** | Repudiation — inkâr | İnkâr edilemezlik | Kullanıcının "bu ödemeyi ben yapmadım" demesi ve kanıt olmaması |
 | **I** | Information disclosure — bilgi sızması | Gizlilik | Ödeme anahtarının bellek dökümünden okunması |
 | **D** | Denial of service — hizmet engelleme | Erişilebilirlik | Sunucuya binlerce sahte kayıt isteği |
@@ -532,6 +539,17 @@ kendiliğinden ortaya çıkar.
 Bu ağaçtan hemen şu sonuçlar çıkar: (1) C yolu **iki** katmanı birden kırmayı gerektirdiği için pahalıdır — işte
 derinlemesine savunma. (2) B yolunun üç alternatifi var; demek ki **bellekteki anahtar** en zayıf nokta ve buna
 karşı özel önlemler (bu hafta Demo 2, [6. hafta](../week-6/cen429-week-6.md) çalışma zamanı koruması, [11. hafta](../week-11/cen429-week-11.md) whitebox) gerekir.
+
+Aşağıdaki animasyon aynı fikri biraz genişletilmiş bir ağaçta (4 dal, 11 yaprak) sayısal olarak hesaplıyor: her
+VE/VEYA düğümünün maliyeti nasıl aşağıdan yukarı hesaplanır, en ucuz yol hangisidir?
+
+<iframe class="dsanim" src="../anim/attack-tree-eval.html" title="Saldırı ağacı: en ucuz yol" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Saldırı ağacı: en ucuz yol — adım adım](anim/attack-tree-eval.png)
+</div>
+
+Örnek seçiciden **payment-key**, **license-check** (kök VE) ve iki uç durumu (zorunlu iki katman / her düğüm VE)
+deneyin; 🎲 ile kendi ağacınızı da değerlendirebilirsiniz.
 
 !!! example "Sınıf alıştırması (15 dakika, 3–4 kişilik gruplar)"
     Bir **"öğrenci not sistemi"** düşünün: öğretim üyesi not girer, öğrenci notunu görür, veriler bir sunucuda durur.
@@ -586,6 +604,17 @@ soruların anlamlı olduğunu gösterir:
 ¹ Veri deposu bir denetim kaydıysa (log), inkâr tehdidi de sorulur: kayıt silinirse ya da değiştirilirse kimin ne
 yaptığı kanıtlanamaz.
 
+Aşağıdaki animasyon bu tabloyu küçük bir sistemin (öğrenci not sistemine benzer, 12 öge) üzerinde öge öge uygular:
+her öge için altı harfin hangilerinin anlamlı olduğunu, nedenini açıklayarak gösterir.
+
+<iframe class="dsanim" src="../anim/threat-model-stride.html" title="DFD ögesi → STRIDE kategorileri" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![DFD ögesi -> STRIDE kategorileri — adım adım](anim/threat-model-stride.png)
+</div>
+
+Örnek seçiciden **grade-system**, **password-vault** ve iki uç durumu (hepsi veri akışı / hepsi dış varlık) deneyin;
+🎲 ile kendi karışık sisteminizi de üretebilirsiniz.
+
 Tablonun mantığı sezgiseldir: bir veri akışı (ör. ağ paketi) **kimlik taklidi yapamaz**, çünkü bir "kimliği" yoktur;
 ama **dinlenebilir** (I), **değiştirilebilir** (T) ya da **kesilebilir** (D). Bir süreç ise altı tehdide de açıktır:
 taklit edilebilir, kodu değiştirilebilir, belleği okunabilir, çökertilebilir, yetkisi kötüye kullanılabilir.
@@ -616,6 +645,17 @@ Bu yüzden her tehdide bir **risk puanı** verilir. En sade yöntem, olasılık 
 | **Olasılık: Yüksek (3)** | 3 — orta | 6 — yüksek | **9 — kritik** |
 | **Olasılık: Orta (2)** | 2 — düşük | 4 — orta | 6 — yüksek |
 | **Olasılık: Düşük (1)** | 1 — düşük | 2 — düşük | 3 — orta |
+
+Aşağıdaki animasyon bir parola kasası uygulamasının 12 tehdidini bu matrise tek tek yerleştirir, sonra hepsini
+puana göre sıralar:
+
+<iframe class="dsanim" src="../anim/risk-scoring.html" title="Risk puanlama: olasılık × etki matrisi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Risk puanlama: olasılık × etki matrisi — adım adım](anim/risk-scoring.png)
+</div>
+
+Örnek seçiciden **vault**, **terminal** ve iki uç durumu (hepsi kritik / hepsi düşük) deneyin; 🎲 ile kendi tehdit
+listenizi de puanlayabilirsiniz.
 
 **Olasılığı** belirlerken saldırganın ihtiyaç duyduğu şeyleri sorun: fiziksel erişim mi gerekiyor, yoksa internetten
 mi yapılabilir? Özel araç ya da uzmanlık gerekiyor mu? Saldırı otomatikleştirilebilir mi? **Etkiyi** belirlerken
@@ -666,7 +706,7 @@ projenizin ilk teslimi için bir **şablon** görevi görecek.
 
 | Alan | Değer |
 | --- | --- |
-| Değerlendirme hedefi | `kasa.exe` / `kasa` sürüm 1.0, çekirdek kütüphane `kasa_cekirdek`, yapılandırma dosyası |
+| Değerlendirme hedefi | `kasa.exe` / `kasa` sürüm 1.0, çekirdek kütüphane `vault_core`, yapılandırma dosyası |
 | Platformlar | Windows 10/11 (x64), Ubuntu 22.04 (x64) |
 | Kapsam dışı | Yedekleme sunucusunun kendi güvenliği (ayrı bir ekip sorumlu), işletim sisteminin kendisi |
 | Güvenlik amacı | Kasa dosyası ve yedekleri, ana parolayı bilmeyen biri için **okunamaz ve fark edilmeden değiştirilemez** olmalı |
@@ -782,7 +822,7 @@ Kaynak kitabımızın ilk bölümü (Viega & Messier, tarif 1.1–1.9) tam olara
 
 ### Demo 1 — PATH ile kandırma
 
-!!! info "Demo 1 · `code/week-01/01-path-kandirma` · CWE-426 (güvenilmeyen arama yolu)"
+!!! info "Demo 1 · `code/week-01/01-path-spoofing` · CWE-426 (güvenilmeyen arama yolu)"
     Program bir sistem komutunu çağırıyor: Linux'ta tarihi yazan `date`, Windows'ta bilgisayar adını yazan
     `hostname`. Soru: **hangi** `date`, **hangi** `hostname`?
 
@@ -796,20 +836,20 @@ gibi uzantıları da dener. Programı hangi klasörden çalıştırdığınız b
 
 Hatalı kod:
 
-```c title="rapor.c"
+```c title="report.c"
 #ifdef _WIN32
-#define KOMUT "hostname"
+#define COMMAND "hostname"
 #else
-#define KOMUT "date"
+#define COMMAND "date"
 #endif
 
 int main(void)
 {
-    printf("=== Aylik Satis Raporu ===\n");
+    printf("=== Monthly Sales Report ===\n");
     fflush(stdout);
 
-    /* HATA: çıplak komut adı + kabuk + devralınan ortam (PATH, ...) */
-    int durum = system(KOMUT);
+    /* BUG: bare command name + shell + inherited environment (PATH, ...) */
+    int status = system(COMMAND);
     ...
 }
 ```
@@ -819,32 +859,32 @@ Demoyu çalıştırın:
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\01-path-kandirma
+    cd code\week-01\01-path-spoofing
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/01-path-kandirma
+    cd code/week-01/01-path-spoofing
     sh demo.sh
     ```
 
 ```text title="Çıktı — WSL (kısaltılmış; Windows'ta aynı akış hostname ile)"
-ADIM 1 — Normal calisma: program gercek date'i buluyor
-=== Aylik Satis Raporu ===
-Rapor tarihi: Sat Sep 19 19:11:32 +03 2026
+STEP 1 - Normal run: the program finds the real date
+=== Monthly Sales Report ===
+Report date: Sat Sep 26 12:05:45 +03 2026
 
-ADIM 2 — Saldiri: PATH'in basina sahte/ klasoru ekleniyor
-$ PATH="$PWD/sahte:$PATH" ./bin/linux/rapor
-=== Aylik Satis Raporu ===
-Rapor tarihi:
-  !!! SAHTE 'date' calisti !!!
-  Program PATH uzerinden kandirildi. ...
+STEP 2 - Attack: the fake/ folder is added to the front of PATH
+$ PATH="$PWD/fake:$PATH" ./bin/linux/report
+=== Monthly Sales Report ===
+Report date:
+  !!! FAKE 'date' ran !!!
+  The program was fooled through PATH. ...
 
-ADIM 3 — Duzeltilmis surum ayni saldiri altinda
-=== Aylik Satis Raporu ===
-Rapor tarihi: Sat Sep 19 19:11:32 +03 2026
+STEP 3 - The fixed version under the same attack
+=== Monthly Sales Report ===
+Report date: Sat Sep 26 12:05:45 +03 2026
 ```
 
 Sahte `date` burada yalnız bir mesaj basıyor. Gerçek bir saldırgan aynı noktada **programı çalıştıran kişinin bütün
@@ -855,28 +895,28 @@ Düzeltilmiş kod üç şeyi birden yapar: **1)** mutlak yol, **2)** kabuk yok, 
 
 === "Linux (posix_spawn)"
 
-    ```c title="rapor_guvenli.c"
-    char *const arguman[]     = { "date", NULL };
-    char *const temiz_ortam[] = { "PATH=/usr/bin:/bin", "LANG=C", NULL };
+    ```c title="report_secure.c"
+    char *const args[]      = { "date", NULL };
+    char *const clean_env[] = { "PATH=/usr/bin:/bin", "LANG=C", NULL };
 
     pid_t pid;
-    int hata = posix_spawn(&pid, "/bin/date", NULL, NULL,
-                           arguman, temiz_ortam);
+    int err = posix_spawn(&pid, "/bin/date", NULL, NULL,
+                          args, clean_env);
     ```
 
 === "Windows (CreateProcessW)"
 
-    ```c title="rapor_guvenli.c"
+    ```c title="report_secure.c"
     /* 1) C:\Windows\System32\hostname.exe — tam yol */
-    GetSystemDirectoryW(sistem, MAX_PATH);
-    swprintf(program, MAX_PATH, L"%ls\\hostname.exe", sistem);
+    GetSystemDirectoryW(system_dir, MAX_PATH);
+    swprintf(program_path, MAX_PATH, L"%ls\\hostname.exe", system_dir);
 
     /* 3) ortam bloğunda yalnız SystemRoot */
-    swprintf(ortam, MAX_PATH + 16, L"SystemRoot=%ls", kok);
+    swprintf(env_block, MAX_PATH + 16, L"SystemRoot=%ls", sys_root);
 
     /* 2) cmd.exe yok: program doğrudan başlatılır */
-    CreateProcessW(program, komut_satiri, NULL, NULL, FALSE,
-                   CREATE_UNICODE_ENVIRONMENT, ortam, NULL, &si, &pi);
+    CreateProcessW(program_path, cmd_line, NULL, NULL, FALSE,
+                   CREATE_UNICODE_ENVIRONMENT, env_block, NULL, &si, &pi);
     ```
 
 !!! success "Kural"
@@ -884,6 +924,19 @@ Düzeltilmiş kod üç şeyi birden yapar: **1)** mutlak yol, **2)** kabuk yok, 
     (`system`, `popen` yerine Linux'ta `posix_spawn`/`execve`, Windows'ta `CreateProcessW`) ve çocuk sürece
     **temizlenmiş, bilinen** bir ortam verin. En iyisi: başka program çalıştırmaya hiç gerek bırakmayın — tarihi
     `time()` ve `strftime()` ile, bilgisayar adını `gethostname()` ya da `GetComputerNameW()` ile kendiniz alın.
+
+Aşağıdaki animasyonda kabuğun `PATH` dizinlerini sırayla nasıl denediğini ve sahte programın nerede kazandığını
+adım adım izleyin.
+
+<iframe class="dsanim" src="../anim/path-lookup.html" title="PATH araması ve sahte komut" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![PATH araması ve sahte komut — adım adım](anim/path-lookup.png)
+</div>
+
+Örnek seçiciden **saldırı yok** (normal), **sahte dizin PATH'in başına eklendi** (zor) ve uç durumlar **sahte dizin
+ortada ama yine de kazanıyor** ile **güvenli sürüm — mutlak yol, arama yok**'u deneyin — ya da 🎲 ile rastgele bir
+`PATH` listesi üretin, ya da kendi dizin listenizi yazın (`dizin:real` / `dizin:fake` işaretleriyle, ya da
+`ABSOLUTE date /bin/date` ile mutlak-yol sürümünü deneyin).
 
 ---
 
@@ -923,17 +976,17 @@ bilemezsiniz. Doğru olan **beyaz listedir**:
 #include <stdlib.h>
 #include <string.h>
 
-static void ortami_temizle(void)
+static void sanitize_environment(void)
 {
-    const char *tz = getenv("TZ");          /* korunacak değişkeni önce kopyala */
-    char tz_kopya[64] = "";
-    if (tz && strlen(tz) < sizeof tz_kopya)
-        strcpy(tz_kopya, tz);
+    const char *tz = getenv("TZ");          /* copy the variable to keep, first */
+    char tz_copy[64] = "";
+    if (tz && strlen(tz) < sizeof tz_copy)
+        strcpy(tz_copy, tz);
 
-    clearenv();                              /* glibc; taşınabilir değil (aşağıya bakın) */
-    setenv("PATH", "/usr/bin:/bin", 1);      /* bilinen, yazılamaz dizinler */
-    if (tz_kopya[0])
-        setenv("TZ", tz_kopya, 1);
+    clearenv();                              /* glibc-specific; not portable (see below) */
+    setenv("PATH", "/usr/bin:/bin", 1);      /* known, non-writable directories */
+    if (tz_copy[0])
+        setenv("TZ", tz_copy, 1);
 }
 ```
 
@@ -960,16 +1013,16 @@ sınırlayın, beklenen biçimde olduğunu doğrulayın (Tarif 3.6). Windows'ta 
 #include <unistd.h>
 #include <stdlib.h>
 
-static void tanitici_duzenle(void)
+static void sanitize_file_descriptors(void)
 {
     for (int fd = 0; fd <= 2; fd++) {
-        if (fcntl(fd, F_GETFD) == -1) {           /* kapalı mı? */
-            int yeni = open("/dev/null", O_RDWR);
-            if (yeni != fd)                        /* tam olarak o numarayı almalı */
+        if (fcntl(fd, F_GETFD) == -1) {           /* closed? */
+            int new_fd = open("/dev/null", O_RDWR);
+            if (new_fd != fd)                        /* must get exactly that number */
                 abort();
         }
     }
-    /* Linux 5.9+ / glibc 2.34+: tek çağrıda 3 ve üstünü kapat */
+    /* Linux 5.9+ / glibc 2.34+: close 3 and above in one call */
     close_range(3, ~0U, 0);
 }
 ```
@@ -982,11 +1035,11 @@ milyon) bu yavaş olabilir, `close_range` bu yüzden eklendi. Kendi açtığın�
 
 ```c
 #include <sys/stat.h>
-umask(077);     /* yeni dosyalar yalnız sahibine açık: rw------- */
+umask(077);     /* new files open only to the owner: rw------- */
 ```
 
 `umask` bir **maskedir**: `open()`'a verdiğiniz izinlerden maskedeki bitler **çıkarılır**. `077` ile grup ve
-diğerleri için hiçbir bit kalmaz. Yine de hassas dosyayı açarken izni açıkça yazın: `open(yol, O_WRONLY |
+diğerleri için hiçbir bit kalmaz. Yine de hassas dosyayı açarken izni açıkça yazın: `open(path, O_WRONLY |
 O_CREAT | O_EXCL, 0600)`. `O_EXCL`, dosya zaten varsa (ör. saldırganın önceden oluşturduğu bir bağlantıysa)
 açmayı reddeder; [2. haftadaki](../week-2/cen429-week-2.md) TOCTOU demosunu hatırlayın.
 
@@ -1002,11 +1055,11 @@ parola tam olarak böyle bulunabilir.
     #include <sys/resource.h>
     #include <sys/prctl.h>
 
-    static void dokumu_kapat(void)
+    static void disable_core_dump(void)
     {
         struct rlimit r = { 0, 0 };
-        setrlimit(RLIMIT_CORE, &r);            /* çekirdek dökümü boyutu 0 */
-        prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);    /* döküm yok, aynı kullanıcı bile ptrace ile bağlanamaz */
+        setrlimit(RLIMIT_CORE, &r);            /* core dump size 0 */
+        prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);    /* no dump; not even the same user can attach via ptrace */
     }
     ```
 
@@ -1019,9 +1072,9 @@ parola tam olarak böyle bulunabilir.
     ```c
     #include <windows.h>
 
-    static void dokumu_kapat(void)
+    static void disable_core_dump(void)
     {
-        /* Çökme iletişim kutusunu ve kritik hata kutularını kapat */
+        /* Close the crash dialog and critical-error dialogs */
         SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
     }
     ```
@@ -1040,17 +1093,17 @@ o işi yaptıktan **hemen sonra** yetkiyi **kalıcı olarak** bırakmalıdır.
 #include <unistd.h>
 #include <stdlib.h>
 
-static void yetkiyi_birak(void)
+static void drop_privileges(void)
 {
     uid_t u = getuid();
     gid_t g = getgid();
 
-    if (setresgid(g, g, g) != 0) abort();   /* önce grup: sonra buna yetkimiz kalmaz */
-    if (setresuid(u, u, u) != 0) abort();   /* gerçek, etkin ve saklı kimliğin üçü de */
+    if (setresgid(g, g, g) != 0) abort();   /* group first: afterward we no longer have permission to change it */
+    if (setresuid(u, u, u) != 0) abort();   /* all three: real, effective and saved identity */
 
     uid_t r, e, s;
     getresuid(&r, &e, &s);
-    if (r != u || e != u || s != u) abort();  /* bıraktığını DOĞRULA */
+    if (r != u || e != u || s != u) abort();  /* VERIFY that it was actually dropped */
 }
 ```
 
@@ -1069,33 +1122,44 @@ yetkisiz bir "kum havuzu" (sandbox) sürecinde çalıştırması bu fikrin bugü
 
 | Hatalı | Neden? | Doğrusu |
 | --- | --- | --- |
-| `system("convert " + dosya)` | Kabuk çalışır; dosya adındaki `;`, `&&`, `$(...)` komut olur ([5. hafta](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, temiz_ortam)` |
+| `system("convert " + file)` | Kabuk çalışır; dosya adındaki `;`, `&&`, `$(...)` komut olur ([5. hafta](../week-5/cen429-week-5.md)) | `execve("/usr/bin/convert", argv, clean_env)` |
 | `execvp("convert", ...)` | `PATH`'te arar (Demo 1) | Tam yol ile `execve` |
 | `CreateProcess(NULL, "C:\Program Files\Araç\a.exe", ...)` | Tırnaksız boşluklu yol: önce `C:\Program.exe` denenir | `lpApplicationName`'e tam yolu ver, komut satırını tırnakla |
-| `LoadLibrary("yardimci.dll")` | Arama sırasında uygulamanın ya da çalışma dizininin içine konmuş sahte DLL yüklenebilir | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` ve tam yol |
-| `dlopen("libyardimci.so")` | `LD_LIBRARY_PATH` ve arama yolları | Tam yol; `LD_*` değişkenleri Adım 1'de temizlenmiş olmalı |
+| `LoadLibrary("helper.dll")` | Arama sırasında uygulamanın ya da çalışma dizininin içine konmuş sahte DLL yüklenebilir | `SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)` ve tam yol |
+| `dlopen("libhelper.so")` | `LD_LIBRARY_PATH` ve arama yolları | Tam yol; `LD_*` değişkenleri Adım 1'de temizlenmiş olmalı |
 
 Windows'taki DLL arama sırası sorunu, `PATH` sorununun ikizidir: program, istediği kütüphaneyi saldırganın
 bıraktığı bir klasörde bulursa o kütüphanenin kodu, programın yetkisiyle çalışır (CWE-427).
 
-### Hepsi bir arada: `guvenli_baslat()`
+### Hepsi bir arada: `secure_startup()`
 
-```c title="guvenli_baslat.c — Linux iskeleti (Windows karşılıkları yorumlarda)"
+```c title="secure_startup.c — Linux iskeleti (Windows karşılıkları yorumlarda)"
 int main(int argc, char **argv)
 {
-    tanitici_duzenle();   /* Adım 2 — Windows: gerek yok, tanıtıcılar varsayılan olarak devralınmaz */
-    ortami_temizle();     /* Adım 1 — Windows: SetDefaultDllDirectories + PATH doğrulaması */
-    umask(077);           /* Adım 3 — Windows: dosyayı açıkça kısıtlı DACL ile oluştur */
-    dokumu_kapat();       /* Adım 4 — Windows: SetErrorMode */
-    yetkiyi_birak();      /* Adım 5 — Windows: kısıtlanmış belirteç / ayrı süreç */
+    sanitize_file_descriptors();   /* Step 2 — Windows: not needed, descriptors are not inherited by default */
+    sanitize_environment();        /* Step 1 — Windows: SetDefaultDllDirectories + PATH validation */
+    umask(077);                    /* Step 3 — Windows: create the file explicitly with a restricted DACL */
+    disable_core_dump();           /* Step 4 — Windows: SetErrorMode */
+    drop_privileges();             /* Step 5 — Windows: restricted token / separate process */
 
-    /* ... programın asıl işi ... */
+    /* ... the program's actual work ... */
     return 0;
 }
 ```
 
 Sıralama rastgele değildir: tanıtıcılar ve ortam, programın **başka hiçbir şey yapmadan önce** düzenlenmelidir;
 çünkü sonraki her adım (ör. bir hata iletisi yazmak) bunlara dayanır.
+
+Aşağıdaki animasyon devralınan tehlikeli bir ortamı (12 değişken) ve tanıtıcı/umask/döküm/yetki durumunu alıp
+`secure_startup()`'ın beş adımını sırayla uygular; sonunda kaç değişkenin hayatta kaldığını gösterir.
+
+<iframe class="dsanim" src="../anim/env-sanitize-startup.html" title="Güvenli başlatma: ortamı, tanıtıcıları, yetkiyi temizle" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Güvenli başlatma — adım adım](anim/env-sanitize-startup.png)
+</div>
+
+Örnek seçiciden **workstation**, **server** ve iki uç durumu (hiçbiri tehlikeli değil / hepsi tehlikeli) deneyin;
+🎲 ile kendi devraldığınız ortamı da temizleyebilirsiniz.
 
 !!! tip "Değerlendirici nasıl test eder?"
     Programı kapalı standart çıktıyla, zehirli `PATH` ve `LD_PRELOAD` ile, `umask 000` ile başlatır; çökme
@@ -1126,72 +1190,83 @@ durumlar sandığınızdan çoktur:
 
 ### Demo 2 — Bellekte kalan parola
 
-!!! info "Demo 2 · `code/week-01/02-bellekte-parola` · CWE-14 (derleyicinin silme kodunu kaldırması), CWE-316"
-    Program parolayı `parola.txt` dosyasından okuyor, onunla bir anahtar hesaplıyor, sonra parolayı silmeye
+!!! info "Demo 2 · `code/week-01/02-password-in-memory` · CWE-14 (derleyicinin silme kodunu kaldırması), CWE-316"
+    Program parolayı `password.txt` dosyasından okuyor, onunla bir anahtar hesaplıyor, sonra parolayı silmeye
     çalışıyor. Demo, programın belleğini bir dosyaya döküp içinde parolayı arıyor: Linux'ta `gdb`'nin `gcore`
     komutuyla, Windows'ta programın kendi belleğini `MiniDumpWriteDump` ile yazmasıyla. Üç sürüm var: **hiç
     silmeyen**, **`memset` ile silen** ve **`explicit_bzero` / `SecureZeroMemory` ile silen**.
 
-```c title="parola.c (özü)"
-unsigned long giris_yap(const char *dosya)
+```c title="password.c (özü)"
+unsigned long log_in(const char *file)
 {
-    char parola[64];
-    /* düşük düzey okuma: parola yalnız bu dizide durur */
-    int fd = dosya_ac(dosya);
-    int n = (int)dosya_oku(fd, parola, sizeof(parola) - 1);
+    char password[64];
+    /* low-level read: the password lives only in this array */
+    int fd = file_open(file);
+    int n = (int)file_read(fd, password, sizeof(password) - 1);
     ...
-    unsigned long anahtar = anahtar_turet(parola, (size_t)n);
+    unsigned long key = derive_key(password, (size_t)n);
 
-#if SILME == 1
-    memset(parola, 0, sizeof(parola));         /* "ölü yazma" */
-#elif SILME == 2
+#if WIPE == 1
+    memset(password, 0, sizeof(password));         /* "dead store" */
+#elif WIPE == 2
   #ifdef _WIN32
-    SecureZeroMemory(parola, sizeof(parola));  /* kaldırılamaz */
+    SecureZeroMemory(password, sizeof(password));  /* cannot be removed */
   #else
-    explicit_bzero(parola, sizeof(parola));    /* kaldırılamaz */
+    explicit_bzero(password, sizeof(password));    /* cannot be removed */
   #endif
 #endif
-    return anahtar;
+    return key;
 }
 ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\02-bellekte-parola
+    cd code\week-01\02-password-in-memory
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/02-bellekte-parola
+    cd code/week-01/02-password-in-memory
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — çıktı (Windows'ta sonuç aynıdır)"
-ADIM 1 — Parolayi hic silmeyen surum
-  SONUC: parola dokumde 1 yerde BULUNDU  ->  Gizli-Parola-2026
+STEP 1 - Version that never wipes the password
+  RESULT: password FOUND in the dump in 1 place(s)  ->  Secret-Password-2026
 
-ADIM 2 — memset ile silen surum (-O2)
-  SONUC: parola dokumde 1 yerde BULUNDU  ->  Gizli-Parola-2026
+STEP 2 - Version that wipes with memset (-O2)
+  RESULT: password FOUND in the dump in 1 place(s)  ->  Secret-Password-2026
 
-ADIM 3 — explicit_bzero ile silen surum (-O2)
-  SONUC: parola dokumde bulunamadi
+STEP 3 - Version that wipes with explicit_bzero (-O2)
+  RESULT: password not found in the dump
 
-Neden? giris_yap() fonksiyonunun makine kodu:
-  memset surumunde silme komutu sayisi    ->  0
-  explicit surumunde explicit_bzero cagrisi ->  1
+Why? machine code of the log_in() function:
+  number of wipe instructions in the memset version    ->  0
+  explicit_bzero calls in the explicit version         ->  1
 ```
 
 **İkinci adım şaşırtıcıdır:** kodda açıkça `memset` yazıyor, ama parola hâlâ bellekte! Nedeni derleyicinin
-optimizasyonudur. Derleyici şöyle düşünür: *"`parola` dizisi bu satırdan sonra hiç okunmuyor; ona sıfır yazmanın
+optimizasyonudur. Derleyici şöyle düşünür: *"`password` dizisi bu satırdan sonra hiç okunmuyor; ona sıfır yazmanın
 programın sonucuna hiçbir etkisi yok. Öyleyse bu yazma gereksiz, silebilirim."* Buna **kullanılmayan yazmanın silinmesi (dead store elimination)** (dead
 store elimination) denir. Normal programlarda hız kazandıran bu optimizasyon, güvenlik kodunda sırrın bellekte
 kalmasına yol açar. Bu yalnız GCC'ye özgü değildir: Windows'ta MSVC `/O2` ile de aynı sonuç çıkar. Makine koduna
-kendiniz bakın: Linux'ta `objdump -d bin/linux/parola_memset | less` ile `giris_yap`'ı arayın; Visual Studio'da
-`giris_yap`'a kesme noktası koyup **Hata Ayıkla > Pencereler > Ayrıştırılmış Kod** (*Disassembly*) penceresini açın.
+kendiniz bakın: Linux'ta `objdump -d bin/linux/password_memset | less` ile `log_in`'i arayın; Visual Studio'da
+`log_in`'e kesme noktası koyup **Hata Ayıkla > Pencereler > Ayrıştırılmış Kod** (*Disassembly*) penceresini açın.
 `memset`'e ait tek bir komut bile yoktur.
+
+Aşağıdaki animasyon aynı 64 baytlık `password[]` dizisini üç `WIPE` modunda da gösterir: bayt bayt yazılır, sonra
+silinmeye çalışılır (ya da çalışılmaz) — dökümde ne kalır?
+
+<iframe class="dsanim" src="../anim/password-wipe.html" title="Bellekte kalan parola: memset vs explicit_bzero" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bellekte kalan parola — adım adım](anim/password-wipe.png)
+</div>
+
+Örnek seçiciden **memset-surprise** (WIPE=1, şaşırtıcı sonuç), **never-wipes** (WIPE=0) ve **explicit-bzero-fix**
+(WIPE=2, gerçek düzeltme) örneklerini deneyin.
 
 !!! success "Kural"
     Sırları silmek için derleyicinin kaldıramayacağı fonksiyonları kullanın:
@@ -1222,16 +1297,28 @@ engellemez ve o bayt bellekte hemen arkada ne varsa onun üzerine yazılır.
 Demo 3'teki yapıya bakalım:
 
 ```c
-struct oturum {
-    char ad[16];
-    int  yonetici;   /* 0 = normal kullanıcı */
+struct session {
+    char name[16];
+    int  admin;          /* 0 = normal user, non-zero = admin */
 };
 ```
 
-![Taşmadan önce ve sonra ad(16) dizisi ile yonetici alanının bellekteki hâli](assets/h01-14-yapi-bellekte.svg)
+![Taşmadan önce ve sonra name(16) dizisi ile admin alanının bellekteki hâli](assets/h01-14-yapi-bellekte.svg)
 
 x86-64 işlemciler **az anlamlı bayt önce** (little-endian) çalışır: bir tamsayının en düşük baytı en düşük adreste durur. Bu
-yüzden `yonetici`'nin ilk baytına yazılan `'B'` (0x42) tamsayıyı 66 yapar — sıfır olmayan her değer "yönetici" demektir.
+yüzden `admin`'in ilk baytına yazılan `'B'` (0x42) tamsayıyı 66 yapar — sıfır olmayan her değer "yönetici" demektir.
+
+`struct session` yalnız yığındaki bir örnek — genel resim daha büyük. Aşağıdaki animasyon 10-16 gerçekçi bildirimi
+(global, static, yerel, `malloc`, dize sabiti, fonksiyon) beş bölgeye (`text`/`data`/`bss`/`heap`/`stack`) dağıtır;
+bölgeyi belirleyenin **tür değil bildirim biçimi** olduğunu gösterir.
+
+<iframe class="dsanim" src="../anim/process-memory-map.html" title="Süreç belleği: text/data/bss/heap/stack" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Süreç belleği — adım adım](anim/process-memory-map.png)
+</div>
+
+Örnek seçiciden **core-ten**, **extended-sixteen** (5 bölgenin hepsi) ve iki uç durumu (hepsi yığında / hepsi
+öbekte) deneyin.
 
 ---
 
@@ -1261,14 +1348,14 @@ Sonuç: sınırı denetlemek tamamen **programcının** sorumluluğundadır. Pro
 Aşağıdaki fonksiyon bir kullanıcı adını küçük bir yerel diziye kopyalıyor:
 
 ```c title="Hatalı: kaynak uzunluğu hiç denetlenmiyor"
-void selamla(const char *ad)
+void greet_user(const char *name)
 {
-    int  yetkili = 0;
-    char tampon[16];
+    int  authorized = 0;
+    char buffer[16];
 
-    strcpy(tampon, ad);          /* ad 16 bayttan uzunsa? */
-    printf("Merhaba %s\n", tampon);
-    if (yetkili) { /* ... */ }
+    strcpy(buffer, name);          /* what if name is longer than 16 bytes? */
+    printf("Hello %s\n", buffer);
+    if (authorized) { /* ... */ }
 }
 ```
 
@@ -1283,7 +1370,7 @@ Basitleştirilmiş bir görünüm (düşük adres yukarıda; gerçek yerleşim d
 | Girdi uzunluğu | Ne olur? | Sonuç |
 | --- | --- | --- |
 | ≤ 15 karakter | Her şey tampona sığar | Program doğru çalışır |
-| Biraz fazla | Taşan baytlar `yetkili`'nin üzerine yazar; `yetkili` artık 0 değildir | **Mantık bozulur**: yetkisiz kullanıcı yetkili sayılır (Demo 3) |
+| Biraz fazla | Taşan baytlar `authorized`'ın üzerine yazar; `authorized` artık 0 değildir | **Mantık bozulur**: yetkisiz kullanıcı yetkili sayılır (Demo 3) |
 | Çok fazla | Dönüş adresi bozulur; fonksiyon bitince işlemci anlamsız bir adrese atlar | Program **çöker** (hizmet engelleme); korumasız bir sistemde akış **ele geçirilebilir** |
 
 Üçüncü satırın son kısmı, taşmayı bu kadar tehlikeli yapan şeydir: dönüş adresini kontrol eden, programın **bir
@@ -1292,6 +1379,20 @@ salgınların çoğunun giriş kapısı buydu ([2. hafta](../week-2/cen429-week-
 zorlaştıran korumalar ekler (aşağıda), ama **hatanın kendisi hâlâ kodunuzdadır** ve korumalar her durumu
 kapatmaz. Bu derste sömürünün nasıl yapılacağıyla değil, hatanın **nasıl oluştuğu, nasıl bulunduğu ve nasıl
 önlendiğiyle** ilgileniyoruz.
+
+!!! note "1996 — teknik yazıya döken makale"
+    Yığın taşmasının dönüş adresini nasıl ele geçirdiği ilk kez bu kadar açık biçimde **Aleph One**'ın *"Smashing
+    the Stack for Fun and Profit"* (Phrack dergisi, sayı 49, 1996) makalesinde anlatıldı. Bugün hâlâ konuyla ilgili
+    en çok anılan kaynaklardan biridir; aşağıdaki animasyon aynı fikri (yığın çerçevesi, kaydedilen çerçeve
+    göstericisi, dönüş adresi) adım adım gösteriyor.
+
+<iframe class="dsanim" src="../anim/stack-frame-overflow.html" title="Yığın çerçevesi ve dönüş adresi" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Yığın çerçevesi ve dönüş adresi — adım adım](anim/stack-frame-overflow.png)
+</div>
+
+Örnek seçiciden **Uyar**, **authorized-flip**, **frame-corrupt** ve **return-corrupt** örneklerini deneyin; 🎲
+düğmesiyle rastgele bir isim üretip kendi taşmanızı da gözlemleyebilirsiniz.
 
 ### Taşma türleri
 
@@ -1314,15 +1415,15 @@ kapatmaz. Bu derste sömürünün nasıl yapılacağıyla değil, hatanın **nas
 ### Bir fazla hatası: en masum görünen taşma
 
 ```c title="Hatalı: sonlandırıcıya yer yok"
-char ad[8];
-for (int i = 0; i <= 8; i++)     /* 9 kez döner: ad[8] dizinin dışında */
-    ad[i] = kaynak[i];
+char name[8];
+for (int i = 0; i <= 8; i++)     /* runs 9 times: name[8] is out of bounds */
+    name[i] = source[i];
 ```
 
 ```c title="Hatalı: strncpy sonlandırıcıyı garanti etmez"
-char ad[8];
-strncpy(ad, kaynak, sizeof ad);  /* kaynak ≥ 8 ise ad '\0' ile BİTMEZ */
-printf("%s\n", ad);              /* printf dizinin sonundan okumaya devam eder */
+char name[8];
+strncpy(name, source, sizeof name);  /* if source >= 8, name does NOT end with '\0' */
+printf("%s\n", name);                 /* printf keeps reading past the end of the array */
 ```
 
 `strncpy` adı yanıltıcıdır: güvenli bir `strcpy` değildir. Kaynak hedeften uzunsa sonlandırıcı koymaz; kısaysa
@@ -1356,17 +1457,17 @@ düşük baytını ya da kaydedilmiş çerçeve adresini değiştirmeye yeter.
 #include <stdio.h>
 #include <string.h>
 
-int selamla(const char *ad)
+int greet_user(const char *name)
 {
-    char tampon[16];
-    size_t n = strnlen(ad, sizeof tampon);
+    char buffer[16];
+    size_t n = strnlen(name, sizeof buffer);
 
-    if (n == sizeof tampon)            /* 15 karakterden uzun: reddet, sessizce kesme */
+    if (n == sizeof buffer)            /* longer than 15 characters: reject, do not silently truncate */
         return -1;
 
-    memcpy(tampon, ad, n);
-    tampon[n] = '\0';
-    printf("Merhaba %s\n", tampon);
+    memcpy(buffer, name, n);
+    buffer[n] = '\0';
+    printf("Hello %s\n", buffer);
     return 0;
 }
 ```
@@ -1386,11 +1487,11 @@ C++'ta aynı işi dil yapar:
 #include <string>
 #include <iostream>
 
-void selamla(const std::string &ad)
+void greet_user(const std::string &name)
 {
-    if (ad.size() > 15) throw std::invalid_argument("ad cok uzun");
-    std::string tampon = ad;                   /* kendi belleğini kendi yönetir */
-    std::cout << "Merhaba " << tampon << '\n';
+    if (name.size() > 15) throw std::invalid_argument("name too long");
+    std::string buffer = name;                 /* manages its own memory */
+    std::cout << "Hello " << buffer << '\n';
 }
 ```
 
@@ -1423,24 +1524,24 @@ akışı ele geçiremese bile programı çökertebilir. Bu da bir hizmet engelle
 
 ### AddressSanitizer ile bir taşmayı yakalamak
 
-Yukarıdaki hatalı `selamla` fonksiyonunu sanitizer açık derleyip 20 karakterlik bir adla çağırdığınızda, taşma
+Yukarıdaki hatalı `greet_user` fonksiyonunu sanitizer açık derleyip 20 karakterlik bir adla çağırdığınızda, taşma
 daha programın mantığı bozulmadan yakalanır. Çıktı şuna benzer (kısaltılmış; adresler her çalıştırmada değişir).
-Aynı türden bir raporu Demo 3'ün `giris_asan` hedefiyle kendiniz üreteceksiniz:
+Aynı türden bir raporu Demo 3'ün `login_asan` hedefiyle kendiniz üreteceksiniz:
 
 ```text
 ==12345==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffd...
 WRITE of size 21 at 0x7ffd... thread T0
     #0 in strcpy
-    #1 in selamla  ornek.c:7
-    #2 in main     ornek.c:15
+    #1 in greet_user  example.c:7
+    #2 in main         example.c:15
 Address 0x7ffd... is located in stack of thread T0 at offset 48 in frame
-    #0 in selamla  ornek.c:3
+    #0 in greet_user  example.c:3
   This frame has 1 object(s):
-    [32, 48) 'tampon' <== Memory access at offset 48 overflows this variable
+    [32, 48) 'buffer' <== Memory access at offset 48 overflows this variable
 ```
 
-Okuma sırası: **ne oldu** (yığın taşması, 21 baytlık yazma), **nerede oldu** (`ornek.c` 7. satır, `strcpy`),
-**hangi değişken** (`tampon`, 16 bayt: 32–48 aralığı; erişim 48'de, yani tam sınırın bir ötesinde başlıyor).
+Okuma sırası: **ne oldu** (yığın taşması, 21 baytlık yazma), **nerede oldu** (`example.c` 7. satır, `strcpy`),
+**hangi değişken** (`buffer`, 16 bayt: 32–48 aralığı; erişim 48'de, yani tam sınırın bir ötesinde başlıyor).
 Sanitizer programı yaklaşık iki kat yavaşlatır ve bellek kullanımını artırır; bu yüzden **test** derlemelerinde
 kullanılır, sürüm derlemesinde kullanılmaz.
 
@@ -1448,7 +1549,7 @@ kullanılır, sürüm derlemesinde kullanılmaz.
     Kaynak kod incelemesinde önce tehlikeli fonksiyonları arar (`grep -nE "strcpy|strcat|sprintf|gets|scanf"`),
     sonra dışarıdan gelen her **uzunluk alanının** kullanılmadan önce doğrulanıp doğrulanmadığına bakar. Dinamik
     testte her girdiye çok uzun değer, sıfır uzunluk, negatif uzunluk ve alanın bildirdiğinden kısa veri verir;
-    programı sanitizer ile çalıştırır ve fuzzing yapar. İkili dosyada yığın koruyucu, NX ve ASLR'nin açık olup
+    programı sanitizer ile çalıştırır ve fuzzing yapar. Binary dosyada yığın koruyucu, NX ve ASLR'nin açık olup
     olmadığını denetler (Linux'ta `checksec`, Windows'ta `dumpbin /headers`).
 
 !!! note "Sahada nasıl uygulanır?"
@@ -1463,82 +1564,82 @@ kullanılır, sürüm derlemesinde kullanılmaz.
 
 ## 15. Demo 3 — Arabellek taşmasıyla yetki yükseltme
 
-!!! info "Demo 3 · `code/week-01/03-tasma-giris` · CWE-121 (yığın tabanlı taşma), CWE-787 (sınır dışına yazma)"
+!!! info "Demo 3 · `code/week-01/03-overflow-input` · CWE-121 (yığın tabanlı taşma), CWE-787 (sınır dışına yazma)"
 
-```c title="giris.c (hatalı)"
-struct oturum o;
-o.yonetici = 0;
+```c title="login.c (hatalı)"
+struct session s;
+s.admin = 0;
 
-strcpy(o.ad, argv[1]);  /* HATA: hedefin 16 bayt olduğu hiç denetlenmiyor */
+strcpy(s.name, argv[1]);  /* BUG: the 16-byte destination size is never checked */
 
-if (o.yonetici)
-    printf(">>> YONETICI paneline erisim verildi! <<<\n");
+if (s.admin)
+    printf(">>> Access granted to the ADMIN panel! <<<\n");
 ```
 
 Demo aynı hatalı kodu dört farklı biçimde derler ve aynı saldırıyı dener:
 
 | Sürüm | Linux / WSL (GCC) | Windows (MSVC) | Ne görmeyi bekliyoruz? |
 | --- | --- | --- | --- |
-| `giris` | `-O0`, koruma yok | `/Od` | Saldırı başarılı |
-| `giris_asan` | `-fsanitize=address` | `/fsanitize=address` | AddressSanitizer yakalar mı? |
-| `giris_denetimli` | `-O2 -D_FORTIFY_SOURCE=2` | `/O2` + `strcpy_s` | Kütüphanenin boyut denetimi yakalar mı? |
-| `giris_guvenli` | Düzeltilmiş kod | Düzeltilmiş kod | Girdi reddedilir |
+| `login` | `-O0`, koruma yok | `/Od` | Saldırı başarılı |
+| `login_asan` | `-fsanitize=address` | `/fsanitize=address` | AddressSanitizer yakalar mı? |
+| `login_checked` | `-O2 -D_FORTIFY_SOURCE=2` | `/O2` + `strcpy_s` | Kütüphanenin boyut denetimi yakalar mı? |
+| `login_secure` | Düzeltilmiş kod | Düzeltilmiş kod | Girdi reddedilir |
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\03-tasma-giris
+    cd code\week-01\03-overflow-input
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/03-tasma-giris
+    cd code/week-01/03-overflow-input
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — çıktı"
-ADIM 1 — Normal giris
-$ ./bin/linux/giris ayse
-Hos geldin, ayse
-yonetici alani = 0 (0x00000000)
-Normal kullanici oturumu.
+STEP 1 - Normal login
+$ ./bin/linux/login alice
+Welcome, alice
+admin field = 0 (0x00000000)
+Normal user session.
 
-ADIM 2 — Saldiri: 16 bayttan 1 bayt fazla ad (17 karakter)
-$ ./bin/linux/giris AAAAAAAAAAAAAAAAB
-Hos geldin, AAAAAAAAAAAAAAAAB
-yonetici alani = 66 (0x00000042)
->>> YONETICI paneline erisim verildi! <<<
+STEP 2 - Attack: a name 1 byte longer than the 16-byte field (17 characters)
+$ ./bin/linux/login AAAAAAAAAAAAAAAAB
+Welcome, AAAAAAAAAAAAAAAAB
+admin field = 66 (0x00000042)
+>>> Access granted to the ADMIN panel! <<<
 
-ADIM 3 — Ayni saldiri, AddressSanitizer ile derlenmis surumde
-$ ./bin/linux/giris_asan AAAAAAAAAAAAAAAAB
-Hos geldin, AAAAAAAAAAAAAAAAB
-yonetici alani = 66 (0x00000042)
->>> YONETICI paneline erisim verildi! <<<
-   ^ ASan sessiz kaldi: tasma yapinin ICINDE kaldi.
+STEP 3 - Same attack, in the AddressSanitizer build
+$ ./bin/linux/login_asan AAAAAAAAAAAAAAAAB
+Welcome, AAAAAAAAAAAAAAAAB
+admin field = 66 (0x00000042)
+>>> Access granted to the ADMIN panel! <<<
+   ^ ASan stayed silent: the overflow stayed INSIDE the struct.
 
-ADIM 4 — Yapinin disina tasan uzun ad, ASan surumu
-==1750==ERROR: AddressSanitizer: stack-buffer-overflow on address ...
-WRITE of size 41 at 0x7fffffffe8c4 thread T0
+STEP 4 - A long name that overflows past the struct, ASan version
+==1784==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fffffffe864 ...
+WRITE of size 41 at 0x7fffffffe864 thread T0
 
-ADIM 5 — Ayni kisa saldiri, _FORTIFY_SOURCE=2 ile derlenmis surumde
-$ ./bin/linux/giris_denetimli AAAAAAAAAAAAAAAAB
+STEP 5 - Same short attack, in the build compiled with _FORTIFY_SOURCE=2
+$ ./bin/linux/login_checked AAAAAAAAAAAAAAAAB
 *** buffer overflow detected ***: terminated
-   (program, derleyicinin ekledigi denetimle durduruldu)
+   (the program was stopped by the check the compiler added)
 
-ADIM 6 — Duzeltilmis surum
-$ ./bin/linux/giris_guvenli AAAAAAAAAAAAAAAAB
-Reddedildi: ad 1-15 karakter; yalniz harf, rakam, _ ve - olabilir.
+STEP 6 - The fixed version
+$ ./bin/linux/login_secure AAAAAAAAAAAAAAAAB
+Rejected: the name must be 1-15 characters; only letters, digits, _ and - are allowed.
 ```
 
 Windows'ta akış aynıdır. Yalnız 5. adımda `strcpy_s`, hedefin 16 bayt olduğunu bildiği için taşmayı görür ve
 programı durdurur:
 
 ```text title=".\demo.ps1 — 5. adım"
-> .\bin\windows\giris_denetimli.exe AAAAAAAAAAAAAAAAB
-*** Guvenli kutuphane islevi tasmayi algiladi: program durduruldu ***
-   (cikis kodu: 3)
+> .\bin\windows\login_checked.exe AAAAAAAAAAAAAAAAB
+*** Secure library function detected an overrun: program terminated ***
+   (exit code: 3)
 ```
 
 Bu demodan çıkan üç ders:
@@ -1546,14 +1647,27 @@ Bu demodan çıkan üç ders:
 1. **Tek bir baytlık taşma bile yeterlidir.** Saldırganın programı çökertmesi gerekmez; bir bayrağı değiştirmesi
    yetki yükseltmek için yeterli olabilir.
 2. **Araçların sınırı vardır.** AddressSanitizer bellekte her **nesnenin** etrafına "yasak bölge" koyar; ama taşma
-   aynı yapının **içinde** kaldığı için (ad → yonetici) bunu göremedi. Taşma yapının dışına çıkınca hemen yakaladı.
-   `_FORTIFY_SOURCE` (Linux) ve `strcpy_s` (Windows) ise hedefin (`o.ad`) 16 bayt olduğunu bildiği için kısa
+   aynı yapının **içinde** kaldığı için (name → admin) bunu göremedi. Taşma yapının dışına çıkınca hemen yakaladı.
+   `_FORTIFY_SOURCE` (Linux) ve `strcpy_s` (Windows) ise hedefin (`s.name`) 16 bayt olduğunu bildiği için kısa
    taşmayı da yakaladı. Tek bir araca güvenmeyin.
 3. **Asıl düzeltme koddadır.** Araçlar hatayı bulur; hatayı gidermek programcının işidir.
 
-```c title="giris_guvenli.c (özü)"
-/* İzin listesi: 1–15 karakter; harf, rakam, '_' ve '-' */
-static int ad_gecerli_mi(const char *s)
+Aşağıdaki animasyonda `strcpy`'nin `argv[1]`'i bayt bayt `struct session`'ın belleğine nasıl kopyaladığını,
+program sayacıyla birlikte adım adım izleyin.
+
+<iframe class="dsanim" src="../anim/overflow-login.html" title="Taşma ile admin olmak" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Taşma ile admin olmak — adım adım](anim/overflow-login.png)
+</div>
+
+Örnek seçiciden **uyan bir kullanıcı adı** (normal), **17 baytlık taşma: `admin` ayarlanıyor** (zor) ve uç durumlar
+**tam 16 bayt: sonlandırıcı NUL taşıyor**, **40 bayt: struct'ın ötesine geçiyor (ASan)** ve **güvenli sürüm
+reddediyor**'u deneyin — ya da 🎲 ile rastgele bir kullanıcı adı üretin, ya da kendi kullanıcı adınızı yazın
+(`SECURE ` ile başlatırsanız güvenli sürüm çalışır).
+
+```c title="login_secure.c (özü)"
+/* Allow-list: 1-15 characters; letters, digits, '_' and '-' */
+static int name_is_valid(const char *s)
 {
     size_t n = strnlen(s, 16);
     if (n == 0 || n >= 16)
@@ -1566,9 +1680,9 @@ static int ad_gecerli_mi(const char *s)
     return 1;
 }
 ...
-if (!ad_gecerli_mi(argv[1])) { /* reddet */ }
-struct oturum o = { .yonetici = 0 };          /* güvenli varsayılan */
-snprintf(o.ad, sizeof(o.ad), "%s", argv[1]);  /* boyutu bilen kopya */
+if (!name_is_valid(argv[1])) { /* reject */ }
+struct session s = { .admin = 0 };            /* secure default */
+snprintf(s.name, sizeof(s.name), "%s", argv[1]);  /* a copy that knows the size */
 ```
 
 !!! note "Gerçek saldırılarda ne olur?"
@@ -1592,17 +1706,17 @@ okunursa **18.446.744.073.709.551.615** olur. `memcpy`, `malloc`, `read` gibi fo
 
 ### Demo 4 — İşaretli uzunluk hatası
 
-!!! info "Demo 4 · `code/week-01/04-isaretli-uzunluk` · CWE-195 (işaretliden işaretsize dönüşüm hatası)"
+!!! info "Demo 4 · `code/week-01/04-signed-length` · CWE-195 (işaretliden işaretsize dönüşüm hatası)"
 
-```c title="kopya.c (hatalı)"
-#define KAYIT_BOYUTU 16
+```c title="copy.c (hatalı)"
+#define RECORD_SIZE 16
 
-static int kaydi_kopyala(char *hedef, const char *kaynak, int uzunluk)
+static int copy_record(char *dest, const char *source, int length)
 {
-    /* HATA: alt sınır (negatif değer) denetlenmiyor */
-    if (uzunluk > KAYIT_BOYUTU)
+    /* BUG: the lower bound (negative value) is never checked */
+    if (length > RECORD_SIZE)
         return -1;
-    memcpy(hedef, kaynak, uzunluk);   /* int -> size_t: -1 -> 2^64 - 1 */
+    memcpy(dest, source, length);   /* int -> size_t: -1 -> 2^64 - 1 */
     return 0;
 }
 ```
@@ -1610,46 +1724,46 @@ static int kaydi_kopyala(char *hedef, const char *kaynak, int uzunluk)
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-01\04-isaretli-uzunluk
+    cd code\week-01\04-signed-length
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-01/04-isaretli-uzunluk
+    cd code/week-01/04-signed-length
     sh demo.sh
     ```
 
 ```text title="sh demo.sh — çıktı"
-ADIM 0 — Derleyici bu hatayi goruyor mu?
-$ gcc -Wall -Wextra -fsyntax-only -I../../common kopya.c
-   -> Uyari yok: -Wall -Wextra bu donusumu bildirmez.
-$ gcc -Wsign-conversion -fsyntax-only -I../../common kopya.c
-kopya.c:21:27: warning: conversion to 'size_t' from 'int'
-               may change the sign of the result [-Wsign-conversion]
+STEP 0 - Does the compiler see this bug?
+$ gcc -Wall -Wextra -fsyntax-only -I../../common copy.c
+   -> No warning: -Wall -Wextra never reports this conversion.
+$ gcc -Wsign-conversion -fsyntax-only -I../../common copy.c
+copy.c:21:26: warning: conversion to 'size_t' {aka 'long unsigned int'} from 'int'
+              may change the sign of the result [-Wsign-conversion]
 
-ADIM 1 — Normal kullanim
-$ ./bin/linux/kopya 8
-Kopyalandi: ORNEK-KA
+STEP 1 - Normal use
+$ ./bin/linux/copy 8
+Copied: SAMPLE-R
 
-ADIM 2 — Cok buyuk uzunluk: denetim yakalar
-$ ./bin/linux/kopya 100
-Reddedildi: uzunluk cok buyuk.
+STEP 2 - A length that's too large: the check catches it
+$ ./bin/linux/copy 100
+Rejected: length is too large.
 
-ADIM 3 — Saldiri: negatif uzunluk denetimi atlatir
-$ ./bin/linux/kopya -1
+STEP 3 - Attack: a negative length slips past the check
+$ ./bin/linux/copy -1
 Segmentation fault
-   (cikis kodu: 139 — 139 = bellek hatasi, SIGSEGV)
+   (exit code: 139 -- 139 = memory error, SIGSEGV)
 
-ADIM 4 — Ayni saldiri, AddressSanitizer ile
-==1823==ERROR: AddressSanitizer: negative-size-param: (size=-1)
+STEP 4 - Same attack, with AddressSanitizer
+==1821==ERROR: AddressSanitizer: negative-size-param: (size=-1)
 
-ADIM 5 — Duzeltilmis surum
-$ ./bin/linux/kopya_guvenli -1 ; ./bin/linux/kopya_guvenli 12abc ; ./bin/linux/kopya_guvenli 8
-Reddedildi: uzunluk 0-16 arasinda bir tamsayi olmali.
-Reddedildi: uzunluk 0-16 arasinda bir tamsayi olmali.
-Kopyalandi (8 bayt): ORNEK-KA
+STEP 5 - The fixed version
+$ ./bin/linux/copy_secure -1 ; ./bin/linux/copy_secure 12abc ; ./bin/linux/copy_secure 8
+Rejected: length must be an integer between 0 and 16.
+Rejected: length must be an integer between 0 and 16.
+Copied (8 bytes): SAMPLE-R
 ```
 
 Windows'ta iki fark görürsünüz. 3. adımda program `0xC0000409` koduyla biter: Windows yığının bozulduğunu fark edip
@@ -1657,10 +1771,10 @@ süreci anında sonlandırır. 0. adımda ise MSVC'nin C derleyicisi `/Wall` ile
 olarak derlenince uyarı çıkar:
 
 ```text title=".\demo.ps1 — 0. adım"
-> cl /Zs /W4 kopya.c                 (C olarak derle)
-   -> Uyari yok: MSVC'nin C derleyicisi bu donusumu /Wall ile bile bildirmez.
-> cl /Zs /W4 /w44365 /TP kopya.c     (ayni kod, C++ olarak)
-kopya.c(21): warning C4365: 'argument': conversion from 'int' to 'size_t', signed/unsigned mismatch
+> cl /Zs /W4 copy.c                  (compile as C)
+   -> No warning: MSVC's C compiler does not report this conversion even with /Wall.
+> cl /Zs /W4 /w44365 /TP copy.c      (same code, as C++)
+copy.c(21): warning C4365: 'argument': conversion from 'int' to 'size_t', signed/unsigned mismatch
 ```
 
 Denetim `uzunluk > 16` sorusunu soruyor; `-1` bu soruya "hayır" dediği için geçiyor. Ağdan gelen bir paketteki
@@ -1669,17 +1783,28 @@ Derleyici bizi **uyarabilirdi**, ama yalnız istersek: GCC'de `-Wsign-conversion
 MSVC'nin C derleyicisinde hiç yoktur. Hangi uyarıların açık olduğunu bilmek ve onları okumak, bedava bir güvenlik
 aracıdır; araçların sessizliği ise kodun doğru olduğunu göstermez.
 
-```c title="kopya_guvenli.c (özü)"
-static int uzunluk_oku(const char *metin, size_t *sonuc)
+Aşağıdaki animasyon gerçek `copy_record`'u 10-16 farklı `length` değeriyle sırayla çağırır ve her negatif değerin
+`size_t`'ye dönüşünce hangi devasa sayıya döndüğünü gösterir.
+
+<iframe class="dsanim" src="../anim/signed-length.html" title="İşaretli uzunluk → size_t" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![İşaretli uzunluk -> size_t — adım adım](anim/signed-length.png)
+</div>
+
+Örnek seçiciden **typical-sweep**, **wide-sweep**, **edge-all-negative** (hepsi geçer!) ve **edge-boundary**
+örneklerini deneyin; 🎲 ile kendi uzunluk taramanızı da yapabilirsiniz.
+
+```c title="copy_secure.c (özü)"
+static int read_length(const char *text, size_t *result)
 {
-    char *son;
+    char *end;
     errno = 0;
-    long deger = strtol(metin, &son, 10);
-    if (errno != 0 || son == metin || *son != '\0')
-        return -1;                       /* sayı değil ya da taştı */
-    if (deger < 0 || deger > KAYIT_BOYUTU)
-        return -1;                       /* hem alt hem üst sınır */
-    *sonuc = (size_t)deger;
+    long value = strtol(text, &end, 10);
+    if (errno != 0 || end == text || *end != '\0')
+        return -1;                       /* not a number, or it overflowed */
+    if (value < 0 || value > RECORD_SIZE)
+        return -1;                       /* both the lower and the upper bound */
+    *result = (size_t)value;
     return 0;
 }
 ```
@@ -1730,26 +1855,26 @@ sınıfı yaşar.
 ### Serbest bıraktıktan sonra kullanma: neden bu kadar tehlikeli?
 
 ```c title="Hatalı: iki işaretçi aynı bloğu gösteriyor"
-typedef struct { char ad[32]; int yetki; } Kullanici;
+typedef struct { char name[32]; int privilege; } User;
 
-Kullanici *aktif = malloc(sizeof *aktif);
-Kullanici *onbellek = aktif;          /* ikinci bir sahip daha */
+User *active = malloc(sizeof *active);
+User *cached = active;                /* a second owner */
 /* ... */
-free(aktif);                          /* oturum kapandı */
-aktif = NULL;                         /* aktif güvende, ama onbellek hâlâ eski adresi tutuyor */
+free(active);                         /* session closed */
+active = NULL;                        /* active is safe, but cached still holds the old address */
 
-char *not = malloc(sizeof(Kullanici));  /* bellek yöneticisi aynı bloğu yeniden verebilir */
-strcpy(not, "....");                    /* not yazılıyor */
+char *note = malloc(sizeof(User));    /* the allocator may hand back the very same block */
+strcpy(note, "....");                 /* writing the note */
 
-if (onbellek->yetki) { /* ... */ }      /* UAF: artık 'not'un baytlarını okuyor */
+if (cached->privilege) { /* ... */ }  /* UAF: this now reads 'note's bytes */
 ```
 
 `free` belleği işletim sistemine geri vermez; bellek yöneticisinin "boş" listesine koyar. Bir sonraki aynı boyutlu
-`malloc` büyük olasılıkla **aynı bloğu** geri verir. Eski işaretçi (`onbellek`) artık tamamen farklı bir nesneye
+`malloc` büyük olasılıkla **aynı bloğu** geri verir. Eski işaretçi (`cached`) artık tamamen farklı bir nesneye
 bakıyordur. Programın mantığı, başka bir amaçla yazılmış baytları "kullanıcının yetkisi" diye okur. Bu yüzden UAF
 hataları tarayıcı ve işletim sistemi açıklarının en büyük sınıflarından biridir.
 
-Örnekteki `aktif = NULL;` satırı **iyi bir alışkanlıktır**, ama yalnız **o** işaretçiyi korur. Asıl sorun aynı
+Örnekteki `active = NULL;` satırı **iyi bir alışkanlıktır**, ama yalnız **o** işaretçiyi korur. Asıl sorun aynı
 bloğa birden fazla işaretçinin sahip çıkmasıdır. Çözüm bir **sahiplik kuralıdır**:
 
 !!! success "Sahiplik kuralı"
@@ -1761,26 +1886,36 @@ bloğa birden fazla işaretçinin sahip çıkmasıdır. Çözüm bir **sahiplik 
 UAF'i C/C++'ta adım adım sömürüp AddressSanitizer ile yakalamayı [4. haftada
 göreceğiz](../week-4/cen429-week-4.md#6-serbest-birakilmis-bellegin-kullanimi-ve-cift-serbest-birakma).
 
+Aşağıdaki animasyon `active`/`cached`/`note` kalıbını 10 küçük oturuma uygular; her oturum temiz, sızıntı, çift
+serbest bırakma ya da UAF'tan biri olur — hangisinin hangisi olduğunu ayır edebilir misiniz?
+
+<iframe class="dsanim" src="../anim/memory-mistakes.html" title="Bellek yönetimi hataları" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bellek yönetimi hataları — adım adım](anim/memory-mistakes.png)
+</div>
+
+Örnek seçiciden **mixed-ten**, **mostly-broken** ve iki uç durumu (hepsi UAF / hepsi temiz) deneyin.
+
 ### Diğer hataların düzeltilmiş halleri
 
 ```c title="NULL denetimi ve taşmasız boyut hesabı"
-/* Hatalı: n büyükse n * sizeof(Kayit) taşar, küçük bir blok ayrılır */
-Kayit *k = malloc(n * sizeof(Kayit));
+/* Wrong: if n is large, n * sizeof(Record) overflows and a too-small block is allocated */
+Record *k = malloc(n * sizeof(Record));
 
-/* Doğru 1: calloc boyut çarpımında taşmayı denetler ve belleği sıfırlar */
-Kayit *k = calloc(n, sizeof(Kayit));
-if (k == NULL) return HATA_BELLEK;
+/* Right 1: calloc checks the size multiplication for overflow and zeroes the memory */
+Record *k = calloc(n, sizeof(Record));
+if (k == NULL) return ERR_MEMORY;
 
-/* Doğru 2: yeniden boyutlandırmada reallocarray (glibc 2.26+, BSD) */
-Kayit *yeni = reallocarray(k, n2, sizeof(Kayit));
-if (yeni == NULL) { free(k); return HATA_BELLEK; }   /* k'yi kaybetme */
-k = yeni;
+/* Right 2: reallocarray for resizing (glibc 2.26+, BSD) */
+Record *resized = reallocarray(k, n2, sizeof(Record));
+if (resized == NULL) { free(k); return ERR_MEMORY; }   /* do not lose k */
+k = resized;
 ```
 
 ```c title="realloc tuzağı"
-/* Hatalı: realloc başarısız olursa NULL döner ve eski blok hâlâ ayrılmış durumdadır;
-   onu gösteren tek işaretçinin üzerine yazdık → sızıntı */
-tampon = realloc(tampon, yeni_boyut);
+/* Wrong: if realloc fails it returns NULL and the old block is still allocated;
+   we just overwrote the only pointer to it -> leak */
+buffer = realloc(buffer, new_size);
 ```
 
 `realloc`'un ikinci bir gizli sorunu daha vardır: blok **taşınırsa** eski blok serbest bırakılır ama
@@ -1801,13 +1936,13 @@ fonksiyonlar kullanılır:
 | C23 | `memset_explicit(p, 0, n)` | Yeni standart |
 | Hiçbiri yoksa | `volatile` işaretçiyle bayt bayt yazma | Taşınabilir yedek yol |
 
-```c title="cen429_sil — taşınabilir güvenli silme"
+```c title="secure_wipe — taşınabilir güvenli silme"
 #include <string.h>
 #ifdef _WIN32
 #  include <windows.h>
 #endif
 
-static void cen429_sil(void *p, size_t n)
+static void secure_wipe(void *p, size_t n)
 {
 #if defined(_WIN32)
     SecureZeroMemory(p, n);
@@ -1845,13 +1980,13 @@ silerseniz silin, o arada diske yazılmış bir kopya kalabilir. Önlem, sır tu
     ```c
     #include <sys/mman.h>
 
-    unsigned char anahtar[32];
-    if (mlock(anahtar, sizeof anahtar) != 0) {
-        /* RLIMIT_MEMLOCK aşılmış olabilir; hatayı raporla ama sırrı yine de sil */
+    unsigned char key[32];
+    if (mlock(key, sizeof key) != 0) {
+        /* RLIMIT_MEMLOCK may have been exceeded; report the error but still wipe the secret */
     }
-    /* ... anahtarı kullan ... */
-    cen429_sil(anahtar, sizeof anahtar);
-    munlock(anahtar, sizeof anahtar);
+    /* ... use the key ... */
+    secure_wipe(key, sizeof key);
+    munlock(key, sizeof key);
     ```
 
     `madvise(p, n, MADV_DONTDUMP)` ile bu sayfaların çekirdek dökümüne girmemesi de sağlanabilir.
@@ -1861,13 +1996,13 @@ silerseniz silin, o arada diske yazılmış bir kopya kalabilir. Önlem, sır tu
     ```c
     #include <windows.h>
 
-    unsigned char anahtar[32];
-    if (!VirtualLock(anahtar, sizeof anahtar)) {
-        /* çalışma kümesi sınırı aşılmış olabilir */
+    unsigned char key[32];
+    if (!VirtualLock(key, sizeof key)) {
+        /* the working-set limit may have been exceeded */
     }
-    /* ... anahtarı kullan ... */
-    SecureZeroMemory(anahtar, sizeof anahtar);
-    VirtualUnlock(anahtar, sizeof anahtar);
+    /* ... use the key ... */
+    SecureZeroMemory(key, sizeof key);
+    VirtualUnlock(key, sizeof key);
     ```
 
 Kilitleme **sayfa** düzeyinde çalışır (genellikle 4 KB). Küçük bir diziyi kilitlediğinizde, onu içeren sayfanın
@@ -1878,41 +2013,41 @@ tutan küçük ve ayrı bir bölgeyi kilitleyin.
 
 Yukarıdaki kuralları tek bir küçük modülde toplamak, her yerde doğru yapmayı kolaylaştırır:
 
-```c title="gizli_tampon.h — sırlar için tek giriş noktası"
+```c title="secret_buffer.h — sırlar için tek giriş noktası"
 typedef struct {
-    unsigned char *veri;
-    size_t         boyut;
-} GizliTampon;
+    unsigned char *data;
+    size_t         size;
+} SecretBuffer;
 
-/* Ayırır, sıfırlar, belleği kilitler. Başarısızsa -1. */
-int  gizli_ayir(GizliTampon *t, size_t boyut);
+/* Allocates, zeroes, locks the memory. -1 on failure. */
+int  secret_alloc(SecretBuffer *t, size_t size);
 
-/* Güvenli siler, kilidi açar, serbest bırakır; t->veri = NULL yapar. İki kez çağrılabilir. */
-void gizli_birak(GizliTampon *t);
+/* Securely wipes, unlocks, releases; sets t->data = NULL. Safe to call twice. */
+void secret_free(SecretBuffer *t);
 ```
 
-```c title="gizli_tampon.c — Linux gerçekleştirimi (Windows: VirtualLock/SecureZeroMemory)"
+```c title="secret_buffer.c — Linux implementation (Windows: VirtualLock/SecureZeroMemory)"
 #include <stdlib.h>
 #include <sys/mman.h>
-#include "gizli_tampon.h"
+#include "secret_buffer.h"
 
-int gizli_ayir(GizliTampon *t, size_t boyut)
+int secret_alloc(SecretBuffer *t, size_t size)
 {
-    t->veri = calloc(1, boyut);
-    if (!t->veri) return -1;
-    t->boyut = boyut;
-    (void)mlock(t->veri, boyut);                 /* başarısızlık ölümcül değil */
+    t->data = calloc(1, size);
+    if (!t->data) return -1;
+    t->size = size;
+    (void)mlock(t->data, size);                 /* not fatal if this fails */
     return 0;
 }
 
-void gizli_birak(GizliTampon *t)
+void secret_free(SecretBuffer *t)
 {
-    if (!t->veri) return;                        /* çift bırakmaya karşı */
-    cen429_sil(t->veri, t->boyut);
-    munlock(t->veri, t->boyut);
-    free(t->veri);
-    t->veri  = NULL;
-    t->boyut = 0;
+    if (!t->data) return;                        /* guards against a double free */
+    secure_wipe(t->data, t->size);
+    munlock(t->data, t->size);
+    free(t->data);
+    t->data = NULL;
+    t->size = 0;
 }
 ```
 
@@ -1920,13 +2055,13 @@ C++'ta aynı fikir bir sınıfın **yıkıcısına** (destructor) konur; böylec
 fırlasa bile silme **otomatik** olarak yapılır. Buna **RAII** (kaynak edinimi ilklendirmedir) denir:
 
 ```cpp title="C++ — RAII ile otomatik silme"
-class GizliAnahtar {
+class SecretKey {
 public:
-    explicit GizliAnahtar(std::size_t n) : v_(n) { kilitle(v_.data(), n); }
-    ~GizliAnahtar() { cen429_sil(v_.data(), v_.size()); kilidi_ac(v_.data(), v_.size()); }
-    GizliAnahtar(const GizliAnahtar&) = delete;              /* kopya yok: sır çoğalmasın */
-    GizliAnahtar& operator=(const GizliAnahtar&) = delete;
-    unsigned char* veri() { return v_.data(); }
+    explicit SecretKey(std::size_t n) : v_(n) { lock(v_.data(), n); }
+    ~SecretKey() { secure_wipe(v_.data(), v_.size()); unlock(v_.data(), v_.size()); }
+    SecretKey(const SecretKey&) = delete;              /* no copy: the secret must not multiply */
+    SecretKey& operator=(const SecretKey&) = delete;
+    unsigned char* data() { return v_.data(); }
 private:
     std::vector<unsigned char> v_;
 };
@@ -1968,9 +2103,9 @@ yerinde silinmesi unutulabilecek ikinci bir kopya demektir.
     1. Hayır; bellek yöneticisinin sürümüne göre fark etmeyebilir. Fark etmese bile iç listeleri bozulur ve sonraki
        iki `malloc` aynı bloğu iki farklı yere verebilir; bu da UAF'e benzer bir duruma yol açar. Modern glibc
        basit çift bırakmayı çoğu zaman yakalayıp programı durdurur (`free(): double free detected`).
-    2. `clear()` yalnız uzunluğu sıfırlar, baytları silmez. `cen429_sil(parola.data(), parola.capacity())`
+    2. `clear()` yalnız uzunluğu sıfırlar, baytları silmez. `secure_wipe(parola.data(), parola.capacity())`
        ile önce içeriği silin; SSO ve daha önceki kopyalar nedeniyle en güvenlisi sırlar için `std::string`
-       yerine özel bir tür (ör. `GizliAnahtar`) kullanmaktır.
+       yerine özel bir tür (ör. `SecretKey`) kullanmaktır.
     3. 4·10⁹ / (100·1000) = 40.000 saniye ≈ 11 saat. **D** (hizmet engelleme). Saldırgan istek hızını artırarak
        bu süreyi kısaltabilir.
 
@@ -2032,21 +2167,21 @@ Bölümlemenin değeri tamamen **sınırdaki arayüzün** kalitesine bağlıdır
 3. **Sınırdan açık veri geçirme.** Sınırı geçmesi gereken hassas veri, şifreli ve bütünlüğü korunmuş halde geçer.
    Aksi halde saldırgan, arayüz fonksiyonuna kanca atarak veriyi **yolda** okur.
 
-```c title="kasa_cekirdek.h — sırrı hiç dışarı vermeyen arayüz"
-typedef struct KasaAnahtari KasaAnahtari;          /* opak tür: içi dışarıdan görünmez */
+```c title="vault_core.h — sırrı hiç dışarı vermeyen arayüz"
+typedef struct VaultKey VaultKey;          /* opaque type: its insides are not visible from outside */
 
-/* Ana paroladan anahtarı türetip çekirdeğin içinde tutar; parolayı siler. */
-int  kasa_ac(const char *parola, size_t parola_uzunlugu,
-             const unsigned char tuz[16], KasaAnahtari **cikti);
+/* Derives the key from the master password and keeps it inside the core; wipes the password. */
+int  vault_open(const char *password, size_t password_length,
+             const unsigned char salt[16], VaultKey **out);
 
-/* Anahtarla şifreler / çözer; anahtarın kendisi hiçbir zaman dışarı çıkmaz. */
-int  kasa_sifrele(KasaAnahtari *a, const unsigned char *acik, size_t n,
-                  unsigned char *sifreli, size_t kapasite, size_t *yazilan);
-int  kasa_coz(KasaAnahtari *a, const unsigned char *sifreli, size_t n,
-              unsigned char *acik, size_t kapasite, size_t *yazilan);
+/* Encrypts / decrypts with the key; the key itself never leaves. */
+int  vault_encrypt(VaultKey *a, const unsigned char *plain, size_t n,
+                  unsigned char *cipher, size_t capacity, size_t *written);
+int  vault_decrypt(VaultKey *a, const unsigned char *cipher, size_t n,
+              unsigned char *plain, size_t capacity, size_t *written);
 
-/* Anahtarı güvenli siler ve serbest bırakır. */
-void kasa_kapat(KasaAnahtari *a);
+/* Securely wipes the key and releases it. */
+void vault_close(VaultKey *a);
 ```
 
 C'de **opak tür** (yalnız bildirilen, tanımı başlık dosyasında olmayan `struct`), çağıran kodun anahtarın
@@ -2057,10 +2192,10 @@ okuyabilir; opak tür **programlama hatalarını** önler, saldırganı değil. 
 
 Anahtarı iyi saklamak yetmez. Saldırgan anahtarı hiç bulmadan **sizin fonksiyonunuzu kullanabilir**:
 
-- **Şifre çözme kâhini (decryption oracle):** Saldırgan `kasa_coz` fonksiyonunu kendi seçtiği verilerle doğrudan
+- **Şifre çözme kâhini (decryption oracle):** Saldırgan `vault_decrypt` fonksiyonunu kendi seçtiği verilerle doğrudan
   çağırır. Anahtar gizli kalır ama saldırgan istediği her şeyi çözdürür.
 - **Kod sökme (code lifting):** Saldırgan korunan fonksiyonu (hatta içine gömülü anahtarıyla birlikte)
-  ikili dosyadan olduğu gibi **kopyalar** ve kendi programında bir "kara kutu" gibi çalıştırır. Anahtarı hiç
+  binary dosyadan olduğu gibi **kopyalar** ve kendi programında bir "kara kutu" gibi çalıştırır. Anahtarı hiç
   çıkarmasına gerek kalmaz.
 
 Karşı önlemler bu nedenle "anahtarı sakla"nın ötesine geçer:
@@ -2095,7 +2230,7 @@ Bunu sağlayan teknikler:
    XOR'lanmış halde tutulur. Bellekte tek bir yerde anahtarın kendisi değil, iki anlamsız parça bulunur.
 3. **Parçalama:** Anahtar ya da bir değer, belleğin farklı yerlerinde (hatta farklı fonksiyonların içinde) duran
    parçalara bölünür; yalnız kullanım anında birleştirilir.
-4. **Kod şifreleme (dinamik şifreleme):** Yalnız veri değil, en hassas **fonksiyonların kodu** da ikili dosyada
+4. **Kod şifreleme (dinamik şifreleme):** Yalnız veri değil, en hassas **fonksiyonların kodu** da binary dosyada
    şifreli durur; çalışma anında belleğe çözülüp çalıştırılır, sonra yeniden şifrelenir. Ayrıntısı 4. ve 9.
    haftalarda.
 5. **Anahtarı hiç açmadan işlem:** Whitebox kriptografide anahtar, hesaplama tablolarının içine öyle gömülür ki
@@ -2106,23 +2241,23 @@ Bunu sağlayan teknikler:
 #include <stddef.h>
 
 typedef struct {
-    uint8_t maske[32];     /* açılışta rastgele üretilir */
-    uint8_t ortulu[32];    /* anahtar XOR maske */
-} OrtuluAnahtar;
+    uint8_t mask[32];      /* generated randomly at start-up */
+    uint8_t masked[32];    /* key XOR mask */
+} MaskedKey;
 
-/* Yalnız kullanım anında, çağıranın verdiği geçici tampona birleştirir. */
-static void anahtari_ac(const OrtuluAnahtar *o, uint8_t gecici[32])
+/* Only at the moment of use, combines into the caller's own temporary buffer. */
+static void unmask_key(const MaskedKey *o, uint8_t temp[32])
 {
     for (size_t i = 0; i < 32; i++)
-        gecici[i] = o->ortulu[i] ^ o->maske[i];
+        temp[i] = o->masked[i] ^ o->mask[i];
 }
 
-void imzala(const OrtuluAnahtar *o, const uint8_t *veri, size_t n, uint8_t etiket[32])
+void sign(const MaskedKey *o, const uint8_t *data, size_t n, uint8_t tag[32])
 {
     uint8_t k[32];
-    anahtari_ac(o, k);
-    kripto_hmac_sha256(k, sizeof k, veri, n, etiket);   /* işlem: code/common/cen429_kripto.h */
-    cen429_sil(k, sizeof k);                     /* açıklık penceresi burada kapanır */
+    unmask_key(o, k);
+    crypto_hmac_sha256(k, sizeof k, data, n, tag);   /* operation: code/common/cen429_crypto.h */
+    crypto_wipe(k, sizeof k);                    /* the exposure window closes here */
 }
 ```
 
@@ -2181,25 +2316,25 @@ SP 800-218), güvenliğin yazılımın **her** aşamasına dağıtılması gerek
 
 ### Benzersiz sürüm kimliği: "incelenen ile dağıtılan aynı mı?"
 
-Bir değerlendirici bir ürünü incelediğinde, raporu **tam olarak o ikili dosya** için geçerlidir. Aynı sürüm
+Bir değerlendirici bir ürünü incelediğinde, raporu **tam olarak o binary dosya** için geçerlidir. Aynı sürüm
 numarasıyla dağıtılan ama tek bir satırı farklı olan bir dosya, incelenmemiş bir üründür. Bu yüzden her derleme
 **benzersiz ve doğrulanabilir** bir kimlik taşımalıdır:
 
 1. **Anlamsal sürüm** (ör. `1.4.2`): insanlar için.
 2. **Kaynak kod kimliği**: derlemenin yapıldığı git işlemesinin (commit) özeti.
-3. **İkili dosyanın özeti**: dağıtılan dosyanın SHA-256 değeri; kullanıcı ya da değerlendirici indirdiği dosyanın
+3. **Binary dosyanın özeti**: dağıtılan dosyanın SHA-256 değeri; kullanıcı ya da değerlendirici indirdiği dosyanın
    bu değerle eşleştiğini kendisi doğrulayabilir.
 
 ```cmake title="CMakeLists.txt — derlemeye git kimliğini göm"
 execute_process(COMMAND git rev-parse --short=12 HEAD
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_KIMLIK OUTPUT_STRIP_TRAILING_WHITESPACE)
-target_compile_definitions(kasa PRIVATE SURUM="1.4.2" GIT_KIMLIK="${GIT_KIMLIK}")
+                OUTPUT_VARIABLE GIT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
+target_compile_definitions(kasa PRIVATE VERSION="1.4.2" GIT_COMMIT="${GIT_COMMIT}")
 ```
 
 ```c title="main.c — sürüm kimliğini yazdır"
-if (argc > 1 && strcmp(argv[1], "--surum") == 0) {
-    printf("kasa %s (%s)\n", SURUM, GIT_KIMLIK);
+if (argc > 1 && strcmp(argv[1], "--version") == 0) {
+    printf("kasa %s (%s)\n", VERSION, GIT_COMMIT);
     return 0;
 }
 ```
@@ -2255,7 +2390,7 @@ cevap veremez ve bir değerlendiricinin gözünde bir **hata** gibi görünür.
 
 | Karar | Seçenekler | Seçilen | Gerekçe | Güvenlik etkisi / kalan risk |
 | --- | --- | --- | --- | --- |
-| Sürüm derlemesinde günlükleme | Açık / seviyeli / tamamen kaldırılmış | Tamamen kaldırılmış (derleme makrosuyla) | Susturulmuş günlük kodu ikili dosyada dize olarak kalır ve yeniden açılabilir | Sahada hata ayıklama zorlaşır; yalnız şifreli bir tanı çıktısı bırakıldı |
+| Sürüm derlemesinde günlükleme | Açık / seviyeli / tamamen kaldırılmış | Tamamen kaldırılmış (derleme makrosuyla) | Susturulmuş günlük kodu binary dosyada dize olarak kalır ve yeniden açılabilir | Sahada hata ayıklama zorlaşır; yalnız şifreli bir tanı çıktısı bırakıldı |
 | Hata kodları | Ayrıntılı kod / yalnız başarılı-başarısız | Yalnız başarılı-başarısız (opak değer) | Ayrıntılı kod saldırgana hangi denetimde takıldığını söyler | Destek ekibi için ayrı, sunucu tarafında bir tanı kanalı gerekir |
 | Native kütüphanenin "hata ayıklanabilir" bayrağı | Kapalı / açık | Açık (gerekçeli istisna) | Kod bütünlüğü denetimi kendi belleğini okuyabilmeli | Hata ayıklayıcı algılama ile telafi edildi |
 | Parola türetme süresi | 50 ms / 250 ms / 1 s | 250 ms | Kullanıcı beklemesi ile kaba kuvvet maliyeti dengesi | Çok zayıf parolalar hâlâ risk (kalan risk listesinde) |
@@ -2294,7 +2429,7 @@ sürenin yarım saniyenin altında kalması gibi somut bir hedef, hangi koruman�
 | `-D_FORTIFY_SOURCE=2` (+ `-O2`) | Boyutu bilinen tamponlara yazan kütüphane çağrılarını çalışma anında denetler | Demo 3 |
 | `-fsanitize=address` (ASan) | Sınır dışı erişim, serbest bırakılmış belleğin kullanımı gibi hataları çalışma anında yakalar | Demo 3, 4 |
 | `gdb`, `gcore` | Hata ayıklayıcı; çalışan sürecin belleğini dosyaya döker | Demo 2 |
-| `strings`, `objdump -d` | İkili dosyadaki metinleri ve makine kodunu gösterir | Demo 2 |
+| `strings`, `objdump -d` | Binary dosyadaki metinleri ve makine kodunu gösterir | Demo 2 |
 | `explicit_bzero` / `SecureZeroMemory` | Derleyicinin kaldıramayacağı bellek silme | Demo 2 |
 | `posix_spawn` + mutlak yol + temiz ortam | Başka bir programı güvenle çalıştırma | Demo 1 |
 | `clearenv`, `close_range`, `umask(077)`, `setrlimit(RLIMIT_CORE)`, `prctl(PR_SET_DUMPABLE)` | Programın ilk satırlarında devralınan durumu temizleme | Güvenli başlatma |
@@ -2337,18 +2472,18 @@ Bu alıştırmalar not verilmez; dersi pekiştirmeniz içindir. Hepsi `code/week
 yalnız kendi bilgisayarınızda yapılır.
 
 ??? question "Alıştırma 1 — Kolay: PATH tuzağının başka bir hali"
-    Linux'ta `rapor.c`'deki `date` komutunu `ls -l rapor.c` yapın; Windows'ta `hostname` komutunu `whoami` yapın.
-    Sahte bir `ls` (ya da `whoami.bat`) hazırlayıp `PATH` ile çalıştırın. Sonra `rapor_guvenli.c`'yi gerçek
+    Linux'ta `report.c`'deki `date` komutunu `ls -l report.c` yapın; Windows'ta `hostname` komutunu `whoami` yapın.
+    Sahte bir `ls` (ya da `whoami.bat`) hazırlayıp `PATH` ile çalıştırın. Sonra `report_secure.c`'yi gerçek
     programı tam yoluyla çalıştıracak biçimde değiştirin.
 
     ??? tip "İpucu"
-        Sahte dosyayı `sahte/` klasörüne koyun; Linux'ta `chmod +x sahte/ls` ile çalıştırılabilir yapın. Güvenli
-        sürümde Linux'ta argüman dizisi `{ "ls", "-l", "rapor.c", NULL }` ve yol `/bin/ls` olur; Windows'ta yol
+        Sahte dosyayı `fake/` klasörüne koyun; Linux'ta `chmod +x fake/ls` ile çalıştırılabilir yapın. Güvenli
+        sürümde Linux'ta argüman dizisi `{ "ls", "-l", "report.c", NULL }` ve yol `/bin/ls` olur; Windows'ta yol
         `GetSystemDirectoryW` + `\whoami.exe` olur. Komut satırından yeniden derleyin (`.\build.ps1` ya da
         `./build.sh`) ve demoyu yeniden çalıştırın.
 
 ??? question "Alıştırma 2 — Kolay: Optimizasyonun etkisi"
-    Demo 2'nin `CMakeLists.txt` dosyasında `parola_memset` satırındaki `MOD optimize`'ı `MOD korumasiz` yapın
+    Demo 2'nin `CMakeLists.txt` dosyasında `password_memset` satırındaki `MOD optimize`'ı `MOD korumasiz` yapın
     (GCC `-O0`, MSVC `/Od`), yeniden derleyip demoyu çalıştırın. `memset` sürümü bu kez parolayı silebiliyor mu? Neden?
 
     ??? success "Beklenen sonuç"
@@ -2357,16 +2492,16 @@ yalnız kendi bilgisayarınızda yapılır.
         yüzden `explicit_bzero` kullanılmalıdır.
 
 ??? question "Alıştırma 3 — Orta: Taşmanın tam sınırı"
-    Demo 3'te `giris` programına (`bin/linux/giris` ya da `bin\windows\giris.exe`) 16, 17, 18, 19 ve 20 karakterlik
-    adlar verin. Her birinde `yonetici` alanının
+    Demo 3'te `login` programına (`bin/linux/login` ya da `bin\windows\login.exe`) 16, 17, 18, 19 ve 20 karakterlik
+    adlar verin. Her birinde `admin` alanının
     değerini tabloya yazın ve 13. bölümdeki bellek çizimiyle açıklayın. 16 karakterlik ad neden de tehlikelidir?
 
     ??? tip "İpucu"
         `strcpy` sonlandırıcı `'\0'` karakterini de kopyalar. 16 karakterlik adın `'\0'`'ı nereye yazılıyor?
 
 ??? question "Alıştırma 4 — Orta: Yeni bir yetki alanı"
-    `struct oturum`'a `int bakiye;` alanını `ad`'dan sonra ekleyin. Taşmayla bakiyeyi 1000'in üzerine çıkarabilir
-    misiniz? Sonra `giris_guvenli.c`'nin bunu nasıl engellediğini gösterin.
+    `struct session`'a `int balance;` alanını `name`'den sonra ekleyin. Taşmayla bakiyeyi 1000'in üzerine çıkarabilir
+    misiniz? Sonra `login_secure.c`'nin bunu nasıl engellediğini gösterin.
 
 ??? question "Alıştırma 5 — Orta: Tehdit modeli"
     Kendi dönem projeniz için bir veri akış diyagramı çizin ve her güven sınırını geçen akış için STRIDE'ın altı
@@ -2384,16 +2519,16 @@ yalnız kendi bilgisayarınızda yapılır.
     WSL/Linux'ta küçük bir C programı yazın; `main()`'in başında açık dosya tanıtıcılarını (`/proc/self/fd`
     klasörünü) ve ortam değişkenlerinin sayısını yazdırsın. Programı önce normal, sonra `env -i ./prog` ile, sonra
     `./prog 1>&-` (standart çıktı kapalı) ile çalıştırın. Ardından "Güvenli başlatma" bölümündeki
-    `tanitici_duzenle()` ve `ortami_temizle()` fonksiyonlarını ekleyip farkı gözlemleyin.
+    `sanitize_file_descriptors()` ve `sanitize_environment()` fonksiyonlarını ekleyip farkı gözlemleyin.
 
     ??? tip "İpucu"
         `opendir("/proc/self/fd")` ile klasördeki girdileri sayın. Standart çıktı kapalıyken `printf` çıktısını
-        göremezsiniz; sonucu `stderr`'e ya da bir dosyaya yazın. `tanitici_duzenle()` eklendiğinde 1 numaralı
+        göremezsiniz; sonucu `stderr`'e ya da bir dosyaya yazın. `sanitize_file_descriptors()` eklendiğinde 1 numaralı
         tanıtıcının `/dev/null`'a bağlandığını `ls -l /proc/<pid>/fd` ile görebilirsiniz.
 
 ??? question "Alıştırma 8 — Kolay: Güvenli silmenin kanıtı"
-    Demo 2'de `parola_explicit` sürümünün belleği gerçekten sildiğini gösterdiniz. Aynı programı bir kez daha,
-    parolayı `std::string` içinde tutacak şekilde C++ ile yazın. `parola.clear()` ile ve `cen429_sil` ile silip
+    Demo 2'de `password_explicit` sürümünün belleği gerçekten sildiğini gösterdiniz. Aynı programı bir kez daha,
+    parolayı `std::string` içinde tutacak şekilde C++ ile yazın. `password.clear()` ile ve `secure_wipe` ile silip
     bellek dökümünde arayın. Hangi durumda parola bulunuyor? Nedenini "Bellek yönetimi ve güvenlik" bölümüyle
     açıklayın.
 
@@ -2436,23 +2571,23 @@ yalnız kendi bilgisayarınızda yapılır.
         ASan sızıntı raporlamaz, bunun için CRT hata ayıklama öbeğini kullanın.
 
 ??? question "Alıştırma 12 — Orta: Opak tutamaçlı bir arayüz tasarlayın"
-    "Korunan kod bölümleme" bölümündeki `kasa_cekirdek.h` örneğine bakarak kendi projenizin en hassas işlemi için
+    "Korunan kod bölümleme" bölümündeki `vault_core.h` örneğine bakarak kendi projenizin en hassas işlemi için
     bir başlık dosyası yazın. Kural: hiçbir fonksiyon anahtarı ya da açık sırrı dışarı döndürmeyecek; her fonksiyon
     başarı/başarısızlık dönecek; her parametrenin nasıl doğrulanacağı yorum olarak yazılacak.
 
 ??? question "Alıştırma 13 — Zor: Bellekte örtülü anahtar"
     "Bellekte örtme" örneğini çalışır hale getirin: açılışta rastgele bir maske üretin (Linux `getrandom`, Windows
-    `BCryptGenRandom`), anahtarı örtün, `imzala()` fonksiyonunu `code/common/cen429_kripto.h` içindeki HMAC ile
+    `BCryptGenRandom`), anahtarı örtün, `imzala()` fonksiyonunu `code/common/cen429_crypto.h` içindeki HMAC ile
     gerçekleştirin. Sonra süreç belleğinin dökümünü alıp anahtarı arayın: iş yapılmıyorken bulunmamalı. İşlem
     sırasında (ör. `imzala()` içinde bir `getchar()` ile bekletip) döküm alırsanız ne görürsünüz?
 
 ??? question "Alıştırma 14 — Zor: Benzersiz sürüm kimliği"
     Kendi projenizin `CMakeLists.txt` dosyasına git kimliğini gömün ve programa `--surum` seçeneği ekleyin. İki
-    ayrı işlemede derleyip çıkan ikili dosyaların SHA-256 değerlerini karşılaştırın. Aynı kaynak koddan iki kez
+    ayrı işlemede derleyip çıkan binary dosyaların SHA-256 değerlerini karşılaştırın. Aynı kaynak koddan iki kez
     derlediğinizde özet aynı mı çıkıyor? Çıkmıyorsa neden? ("yeniden üretilebilir derleme" kavramını araştırın.)
 
     ??? tip "İpucu"
-        Derleyiciler ikili dosyaya zaman damgası, tam dosya yolu gibi bilgiler gömebilir. MSVC'de `/Brepro`,
+        Derleyiciler binary dosyaya zaman damgası, tam dosya yolu gibi bilgiler gömebilir. MSVC'de `/Brepro`,
         GCC'de `-ffile-prefix-map` ve `SOURCE_DATE_EPOCH` ortam değişkeni bu farkları azaltır.
 
 ---
@@ -2467,11 +2602,11 @@ yalnız kendi bilgisayarınızda yapılır.
     **Bütünlük.** Mesaj kimlik doğrulama kodu (MAC) ya da dijital imza; ayrıca TLS.
 
 ??? question "3. 'Beyaz kutu' saldırganı uzaktaki saldırgandan ayıran nedir? Bir örnek verin."
-    Beyaz kutu saldırganı programın çalıştığı cihaza tam erişime sahiptir: belleği okur, hata ayıklayıcı bağlar, ikili
+    Beyaz kutu saldırganı programın çalıştığı cihaza tam erişime sahiptir: belleği okur, hata ayıklayıcı bağlar, binary
     dosyayı değiştirir. Örnek: mobil ödeme uygulamasını kendi (root'lu) telefonunda analiz eden kişi.
 
 ??? question "4. STRIDE'daki 'E' harfi hangi tehdidi anlatır? Bu haftaki hangi demo bunun örneğidir?"
-    **Yetki yükseltme** (Elevation of privilege). Demo 3: uzun kullanıcı adıyla `yonetici` bayrağının değiştirilmesi.
+    **Yetki yükseltme** (Elevation of privilege). Demo 3: uzun kullanıcı adıyla `admin` bayrağının değiştirilmesi.
 
 ??? question "5. Saldırı ağacında VE düğümü ile VEYA düğümünün farkı nedir? Savunma açısından hangisi daha iyidir?"
     VEYA'da tek bir dal yeterlidir, VE'de bütün dallar gerekir. Saldırganı VE düğümlerine zorlamak (birden çok katmanı
@@ -2486,7 +2621,7 @@ yalnız kendi bilgisayarınızda yapılır.
     elimination). `explicit_bzero` derleyicinin kaldıramayacağı biçimde tanımlanmıştır.
 
 ??? question "8. Demo 3'te AddressSanitizer 17 karakterlik saldırıyı neden yakalayamadı?"
-    ASan sınır denetimini **nesne** düzeyinde yapar; taşma aynı yapının içinde (`ad` → `yonetici`) kaldığı için yasak
+    ASan sınır denetimini **nesne** düzeyinde yapar; taşma aynı yapının içinde (`name` → `admin`) kaldığı için yasak
     bölgeye değmedi. Taşma yapının dışına çıkınca yakaladı. `_FORTIFY_SOURCE` ise hedef alanın boyutunu bildiği için
     kısa taşmayı da yakaladı.
 
@@ -2553,8 +2688,8 @@ yalnız kendi bilgisayarınızda yapılır.
     kullanıcıları etkiler.
 
 ??? question "24. Benzersiz sürüm kimliğinin üç bileşeni nedir ve değerlendirici için neden önemlidir?"
-    Anlamsal sürüm, kaynak kod (git) kimliği ve ikili dosyanın SHA-256 özeti. Değerlendirme raporu yalnız incelenen
-    ikili dosya için geçerlidir; dağıtılan dosyanın incelenenle aynı olduğu ancak böyle kanıtlanabilir.
+    Anlamsal sürüm, kaynak kod (git) kimliği ve binary dosyanın SHA-256 özeti. Değerlendirme raporu yalnız incelenen
+    binary dosya için geçerlidir; dağıtılan dosyanın incelenenle aynı olduğu ancak böyle kanıtlanabilir.
 
 ??? question "25. Bir ödünleşim kaydında hangi sütunlar bulunur? Neden yazılı tutulur?"
     Karar, seçenekler, seçilen, gerekçe, güvenlik etkisi/kalan risk. Yazılmamış bir ödünleşim sonradan savunulamaz

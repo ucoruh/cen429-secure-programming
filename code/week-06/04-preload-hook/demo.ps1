@@ -1,0 +1,20 @@
+# CEN429 - Week 6 - Demo 4: LD_PRELOAD / hook detection (Linux / WSL only)
+# This demo uses LD_PRELOAD, dlsym and dladdr; it only runs on WSL/Linux.
+Set-Location $PSScriptRoot
+"=============================================================="
+"Demo 4 (LD_PRELOAD / function hook detection) is a WSL/Linux demo."
+"Symbol interposition via LD_PRELOAD is Unix-specific."
+""
+"To run it (in a WSL Ubuntu window):"
+"   cd ~/<course-repo>/code"
+"   ./build.sh"
+"   cd week-06/04-preload-hook"
+"   sh demo.sh"
+""
+"What the demo shows: once a fake hook library is loaded with LD_PRELOAD,"
+"time() returns a fixed fake value; the application DETECTS this with"
+"dlsym + dladdr (by checking which .so the function actually comes from)."
+""
+"On Windows the equivalent is IAT / inline hook detection; it needs a"
+"different API and is not covered by this demo."
+"=============================================================="

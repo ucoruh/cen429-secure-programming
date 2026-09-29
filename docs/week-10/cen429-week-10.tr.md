@@ -6,7 +6,7 @@
 | **Öğrenme çıktıları** | ÖÇ.2, 4 |
 | **Süre** | 3 saat |
 | **Ön bilgi** | [Hafta 3](../week-3/cen429-week-3.md)'ten AES-GCM, HMAC, anahtar türetme ve TLS'in ne yaptığı; terminalde `openssl` komutunu çalıştırabilmek |
-| **Uygulamalar** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demo; OpenSSL 3 ister; her demo klasöründe `sh demo.sh` |
+| **Uygulamalar** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 11 demo (2 kabuk/OpenSSL, 9 Python); OpenSSL 1.1.1+ ya da 3.x yeterli; her demo klasöründe `sh demo.sh` / `python <demo>.py` |
 
 <!-- materyal:basla -->
 
@@ -30,26 +30,40 @@
 
 <!-- materyal:bitis -->
 
-!!! example "Bu haftanın çalışan demosu"
-    `code/week-10/01-pki-zincir` — OpenSSL ile kok->ara->sunucu zinciri; ara sertifika olmadan `verify` hatasi, ekleyince OK.
-    · `code/week-10/02-imza-dogrulama` — Ed25519 imza/doğrulama: doğru imza kabul, kurcalanan reddedilir; `==1` tuzağı.
+!!! example "Bu haftanın çalışan demoları (11 demo)"
+    `code/week-10/01-pki-chain` — OpenSSL ile kök → ara → sunucu zinciri; ara sertifika olmadan `verify` hatası, ekleyince OK; süresi dolmuş/yanlış kök/CA olmayan imzalayıcı/yanlış ad da reddedilir.
+    · `code/week-10/02-signature-verification` — ECDSA (P-256) imza/doğrulama: doğru imza kabul, kurcalanan reddedilir; sürüm geri alma ve yanlış anahtar tuzakları.
+    · `code/week-10/03-block-cipher-modes` … `11-hsm-key-use` — Python: blok kipleri (ECB/CBC/CTR/GCM benzeri), PKCS#7 dolgu, HMAC iç/dış özet, şifrele-sonra-MAC sırası, oyuncak RSA, oyuncak Diffie–Hellman + araya girme, oyuncak ECDH, CRL/OCSP, HSM/PKCS#11 anahtar kullanımı.
 
-    Çalıştırma: `sh demo.sh` (Linux/WSL) ya da CMake ile derleyip `bin/` altından. Tümüyle sentetik ve güvenlidir; öğrenci bilgisayarına zarar vermez.
+    Çalıştırma: `sh demo.sh` (kabuk demoları) ya da `python <demo>.py` (Python demoları); ikisi de yalnızca kendi geçici klasörlerini kullanır.
 
 
 !!! tip "Demoyu kendiniz çalıştırın — adım adım (kopyala-yapıştır)"
-    Bu iki demo **OpenSSL** ve kabuk betiği kullanır; Windows'ta **WSL** ya da **Git Bash** açın. **`code`** klasöründen:
+    İlk iki demo **OpenSSL** ve kabuk betiği kullanır; Windows'ta **WSL** ya da **Git Bash** açın. **`code`** klasöründen:
 
     ```sh
     # WSL / Linux / Git Bash
-    cd week-10/01-pki-zincir
-    sh demo.sh            # kök CA → ara CA → sunucu sertifikası üretir ve zinciri doğrular
+    cd week-10/01-pki-chain
+    sh demo.sh            # kök CA -> ara CA -> sunucu sertifikası üretir ve zinciri dokuz farklı senaryoda doğrular
 
-    cd ../02-imza-dogrulama
-    sh demo.sh            # Ed25519 ile imzala → doğrula → tek bayt kurcala → doğrulama reddetsin
+    cd ../02-signature-verification
+    sh demo.sh            # ECDSA (P-256) ile imzala -> doğrula -> tek bayt kurcala -> doğrulama reddetsin
     ```
 
-    **Beklenen çıktı:** Birinci demo üç halkalı bir **zincir** kurar; `openssl verify` zinciri **geçerli** bulur, **ara sertifika çıkarılınca doğrulama başarısız** olur (bu haftanın "eksik ara sertifika" kuralı). İkinci demo bir dosyayı imzalayıp doğrular (**OK**), sonra tek bir baytı değiştirir ve doğrulama **reddeder** — imza bütünlüğü böyle yakalar.
+    **Beklenen çıktı:** Birinci demo üç halkalı bir **zincir** kurar; `openssl verify` zinciri **geçerli** bulur, **ara sertifika çıkarılınca doğrulama başarısız** olur (bu haftanın "eksik ara sertifika" kuralı); ayrıca süresi dolmuş, yanlış kök, `CA:FALSE` imzalayıcı ve yanlış ad senaryolarının hepsi ayrı ayrı reddedilir. İkinci demo bir dosyayı imzalayıp doğrular (**OK**), sonra tek bir baytı değiştirir ve doğrulama **reddeder** — imza bütünlüğü böyle yakalar.
+
+    Kalan dokuz demo saf Python'dur, bağımlılık gerekmez:
+
+    ```sh
+    cd ../03-block-cipher-modes
+    python block_modes.py     # ECB/CBC/CTR/bir GCM benzeri kip: zincirleme, IV, tek bit çevirmenin etkisi
+    ```
+
+    Aynı kalıp `04-pkcs7-padding` (`python pkcs7.py`), `05-hmac-construction` (`python hmac_construction.py`),
+    `06-encrypt-then-mac` (`python ordering.py`), `07-rsa-toy` (`python rsa_toy.py`), `08-diffie-hellman`
+    (`python dh_toy.py`), `09-ecdh-toy` (`python ecdh_toy.py`), `10-revocation` (`python revocation.py`) ve
+    `11-hsm-key-use` (`python hsm_sim.py`) için de geçerlidir — her klasörün kendi `README.md`'si "Try it yourself"
+    bölümünde birer öneri verir.
 
 !!! abstract "Bu haftanın sonunda şunları yapabileceksiniz"
     1. Bir uygulama için **algoritma, anahtar uzunluğu ve kip** seçmek ve seçimi güncel standartlara (NIST SP 800-57,
@@ -329,8 +343,8 @@ taraf son baytı okuyup o kadar baytı atar; ama önce dolgunun **geçerli** olu
 
 Sorun burada başlar: çözme hatası "dolgu geçersiz" ve "MAC geçersiz" olarak **ayırt edilebiliyorsa** (farklı hata
 iletisi, farklı yanıt süresi), saldırgan şifreli metnin baytlarını değiştirip sunucunun tepkisini gözleyerek mesajı
-bayt bayt çözebilir. Buna **dolgu kâhini** (padding oracle) saldırısı denir; 2002'de tanımlandı, sonraki yıllarda web
-çerçevelerinde ve TLS'te (POODLE, Lucky Thirteen) tekrar tekrar karşımıza çıktı.
+bayt bayt çözebilir. Buna **dolgu kâhini** (padding oracle) saldırısı denir; Serge Vaudenay 2002'de tanımladı, sonraki
+yıllarda web çerçevelerinde ve TLS'te (POODLE, Lucky Thirteen) tekrar tekrar karşımıza çıktı.
 
 Savunmalar:
 
@@ -393,6 +407,17 @@ gönderir; sunucu "dolgu geçersiz" (ör. son bayt `07` ama önceki 7 bayt `07` 
 geçersiz" hatalarını **farklı** döndürüyorsa, saldırgan bu iki durumu ayırt ederek düz metni bayt bayt yeniden
 kurabilir — anahtara hiç ihtiyaç duymadan.
 
+Dolgunun eklenmesini ve üç denetimin (uzunluk, son bayt aralığı, her dolgu baytının değeri) sırayla nasıl
+çalıştığını, hangisinin hangi bozulmada başarısız olduğunu görerek izleyin:
+
+<iframe class="dsanim" src="../anim/pkcs7-padding.html" title="PKCS#7 dolgu: ekleme ve denetim" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![PKCS#7 dolgu — adım adım](anim/pkcs7-padding.png)
+</div>
+
+**Uyar: dolgu doğru**, **Zor: son bayt bozuldu** ve **Uç durum: uzunluk artık blok katı değil** /
+**Uç durum: bir dolgu baytı bozuldu** örneklerinin hepsini deneyip hangi kontrolün nerede durduğunu karşılaştırın.
+
 ### İşlenmiş örnek: ECB'nin deseni neden sızdırdığını görmek
 
 ECB'de her 16 baytlık blok **bağımsız** şifrelenir; aynı düz metin bloğu her zaman aynı şifreli metin bloğunu üretir.
@@ -418,6 +443,17 @@ aynı kalacak**):
 eder — ki bu genelde başlı başına bir sızıntıdır (ör. bir resmin arka planı, bir formun sabit alanları, tekrarlanan
 bir kayıt yapısı). AES-128-CBC ile aynı deneyi tekrarlarsanız (rastgele IV ile), üç blok da **farklı** çıkar; çünkü
 her blok bir öncekiyle XOR'lanarak zincirlenir.
+
+Dört kipin (ECB, CBC, CTR, GCM benzeri) hepsini aynı küçük mesaj üzerinde, bayt bayt, bir kurcalamanın her kipte
+neye yol açtığını görerek karşılaştırın:
+
+<iframe class="dsanim" src="../anim/block-cipher-modes.html" title="Blok şifreleme kipleri: ECB / CBC / CTR / GCM" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Blok şifreleme kipleri — adım adım](anim/block-cipher-modes.png)
+</div>
+
+Örnek seçiciden **Uyar: ECB, tekrar eden desen sızar**, **Zor: CBC, şifreli metin kurcalandı** ve **Uç durum: GCM
+benzeri, kurcalama REDDEDİLİR** örneklerini deneyin; 🎲 ile rastgele bir mesaj/kip de üretebilirsiniz.
 
 !!! danger "Sık yapılan hata: 'AES kullandık, güvenliyiz' demek"
     Bir kod tabanında kip belirtilmeden yapılan bir çağrı (ör. Java'da `Cipher.getInstance("AES")`), kütüphaneye
@@ -448,7 +484,8 @@ birleştirme sırasını — işliyor.
 "hata sızıntısı" oluşmaz. AES-GCM bu iki adımı tek işlemde yapar.
 
 **MAC** (mesaj kimlik doğrulama kodu), gizli bir anahtar ve bir mesajdan kısa bir etiket üretir; anahtarı bilmeyen biri
-geçerli bir etiket üretemez. **HMAC**, bir özet fonksiyonundan (SHA-256) MAC üretmenin standart yoludur (RFC 2104):
+geçerli bir etiket üretemez. **HMAC**'i Bellare, Canetti ve Krawczyk 1996'da tanımladı; 1997'de RFC 2104 olarak
+standartlaştı. Bir özet fonksiyonundan (SHA-256) MAC üretmenin standart yoludur:
 
 ```text
 HMAC(K, m) = H( (K ⊕ opad) ‖ H( (K ⊕ ipad) ‖ m ) )
@@ -457,6 +494,17 @@ HMAC(K, m) = H( (K ⊕ opad) ‖ H( (K ⊕ ipad) ‖ m ) )
 İç içe iki özet, düz `H(K ‖ m)` yapısının **uzunluk uzatma** zayıflığını ortadan kaldırır: SHA-256 gibi Merkle–Damgård
 yapısındaki özetlerde `H(K ‖ m)` biliniyorsa, anahtarı bilmeden `H(K ‖ m ‖ ek)` hesaplanabilir. Bu yüzden **kendi MAC'inizi
 özetten türetmeyin**; HMAC kullanın (Tarif 6.19'un uyarısı).
+
+İç (ipad) ve dış (opad) özetin anahtarı nasıl iki farklı sabitle karıştırdığını, anahtar bloktan uzun/kısa olduğunda
+ne olduğunu adım adım izleyin:
+
+<iframe class="dsanim" src="../anim/hmac-inner-outer.html" title="HMAC: iç/dış özet yapısı" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HMAC iç/dış özet — adım adım](anim/hmac-inner-outer.png)
+</div>
+
+**Uyar: kısa anahtar**, **Zor: uzun anahtar, önce hashlenir** ve **Uç durum: anahtar tam blok boyunda** örneklerini
+karşılaştırın.
 
 ```bash title="OpenSSL ile HMAC-SHA-256"
 printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(openssl rand -hex 32)
@@ -473,6 +521,18 @@ printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(
 AEAD kipleri bu seçimi sizin yerinize doğru yapar. Kendi birleştirmenizi yapmak zorundaysanız (Tarif 6.18): **iki ayrı
 anahtar** kullanın (biri şifreleme, biri MAC için; HKDF ile tek sırdan türetilebilir), önce şifrele, sonra MAC sırasını izleyin,
 MAC'e IV'yi ve bağlam bilgisini de katın, karşılaştırmayı sabit zamanlı yapın.
+
+Aynı mesajı iki sırayla da koruyup AYNI kurcalamayı uygulayın: önce-şifrele-sonra-MAC tek bir nedenle (MAC
+uyuşmuyor) hemen reddeder; MAC-sonra-şifrele önce çözer/dolguyu denetler, bu yüzden bozulmanın türüne göre İKİ
+FARKLI hata verebilir:
+
+<iframe class="dsanim" src="../anim/encrypt-then-mac-order.html" title="Şifrele-sonra-MAC vs MAC-sonra-şifrele" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Şifrele-sonra-MAC vs MAC-sonra-şifrele — adım adım](anim/encrypt-then-mac-order.png)
+</div>
+
+**Zor: dolguyu bozmayan kurcalama** ile **Uç durum: dolguyu bozan kurcalama** örneklerini yan yana çalıştırıp
+hangi hattın hangi noktada durduğunu karşılaştırın.
 
 ### Yeniden oynatma: geçerli ama eski mesaj
 
@@ -573,12 +633,14 @@ her zaman simetrik şifreyle korunur
 
 ### RSA: doğru dolguyla
 
-RSA'nın matematiği yalın haliyle ("ders kitabı RSA") güvensizdir: aynı mesaj her zaman aynı şifreli metni verir ve
-matematiksel yapısı saldırılara açıktır. Güvenli kullanım, **doğru dolgu şemasına** bağlıdır:
+**RSA**'yı Rivest, Shamir ve Adleman 1977'de yayımladı. Matematiği yalın haliyle ("ders kitabı RSA") güvensizdir:
+aynı mesaj her zaman aynı şifreli metni verir ve matematiksel yapısı saldırılara açıktır. Güvenli kullanım,
+**doğru dolgu şemasına** bağlıdır — PKCS#1 (v1.5) dolgu şeması 1991'de RSA Laboratories tarafından yayımlandı;
+Daniel Bleichenbacher 1998'de v1.5 şifrelemesine karşı pratik bir dolgu kâhini saldırısı yayımladı:
 
 | İş | Doğru şema | Eskimiş şema | Neden? |
 | --- | --- | --- | --- |
-| Şifreleme | **RSA-OAEP** (SHA-256) | PKCS#1 v1.5 şifreleme | v1.5 şifrelemesine yönelik dolgu kâhini saldırıları (1998'den beri, yeniden ortaya çıkan varyantlarıyla) |
+| Şifreleme | **RSA-OAEP** (SHA-256) | PKCS#1 v1.5 şifreleme | Bleichenbacher'ın 1998'deki dolgu kâhini saldırısı ve sonraki yıllarda ortaya çıkan varyantları |
 | İmza | **RSA-PSS** | PKCS#1 v1.5 imza | v1.5 imzası hâlâ yaygın ve kırık değil, ama PSS güvenlik kanıtı olan şemadır |
 
 Kitabın Tarif 7.10–7.13'teki "ham" RSA işlemleri, dolgusuz RSA'nın nasıl çalıştığını anlamak içindir; üretimde
@@ -599,9 +661,21 @@ openssl dgst -sha256 -sign rsa_ozel.pem -sigopt rsa_padding_mode:pss -out belge.
 openssl dgst -sha256 -verify rsa_acik.pem -sigopt rsa_padding_mode:pss -signature belge.sig belge.txt
 ```
 
+3072 bitlik gerçek bir anahtarın matematiği elle izlenemez; aynı işlemleri (üretim, şifreleme, çözme, imzalama,
+doğrulama) **oyuncak asallarla** (Wikipedia'nın klasik `p=61, q=53` örneği) uçtan uca izleyin:
+
+<iframe class="dsanim" src="../anim/rsa-toy.html" title="Oyuncak RSA: üretim, şifreleme, imzalama, doğrulama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Oyuncak RSA — adım adım](anim/rsa-toy.png)
+</div>
+
+**Uyar: klasik örnek** ile başlayıp **Uç durum: imza kurcalandı** ve **Uç durum: yanlış açık anahtarla doğrulama**
+örneklerinde doğrulamanın neden başarısız olduğunu izleyin.
+
 ### Eliptik eğriler: aynı güvenlik, daha kısa anahtar
 
-Eliptik eğri kriptografisi (ECC), 256 bitlik anahtarla 3072 bitlik RSA'nın güvenlik düzeyini sağlar; işlemleri daha
+Eliptik eğri kriptografisi (ECC), birbirinden bağımsız olarak Neal Koblitz (1987) ve Victor Miller (1985)
+tarafından önerildi. 256 bitlik anahtarla 3072 bitlik RSA'nın güvenlik düzeyini sağlar; işlemleri daha
 hızlı, anahtarları ve imzaları çok daha kısadır.
 
 | Algoritma | İş | Not |
@@ -625,6 +699,17 @@ openssl pkey -in ed_ozel.pem -pubout -out ed_acik.pem
 openssl pkeyutl -sign   -inkey ed_ozel.pem -rawin -in belge.txt -out belge.ed.sig
 openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge.txt -sigfile belge.ed.sig
 ```
+
+X25519/Ed25519'un içindeki işlem, eğri üzerinde **nokta toplamadır** — modüler üs alma yerine. Aynı Diffie–Hellman
+fikrini (Bölüm 6), aynı oyuncak ölçekte, küçük bir eğri üzerindeki nokta toplamayla görün:
+
+<iframe class="dsanim" src="../anim/ecdh-toy.html" title="ECDH: küçük bir eğri üzerinde nokta toplama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ECDH nokta toplama — adım adım](anim/ecdh-toy.png)
+</div>
+
+**Zor: büyük özel değerler** örneğinde adım sayısının nasıl arttığını, **Uç durum: Mallory araya giriyor**
+örneğinde ise kimliksiz bir eğri değişiminin de Bölüm 6'daki zayıflığı aynen taşıdığını görün.
 
 ### İşlenmiş örnek: RSA-3072 ile Ed25519'u ölçmek
 
@@ -773,6 +858,23 @@ Belgenin tek bir baytı bile değişince doğrulama **başarısız** oldu ve ç�
 mekanizmanız bu kodu denetlemiyorsa (ya da C kodunda `EVP_DigestVerify`'ın dönüşünü `if (sonuc)` ile yorumluyorsa),
 kurcalanmış bir paketi **çalıştırılabilir** hâle getirmiş olursunuz.
 
+!!! note "`code/week-10/02-signature-verification/demo.sh` neden ECDSA (P-256) kullanıyor, Ed25519 değil"
+    Yukarıdaki komutlar Ed25519 ile (`openssl pkeyutl -sign -rawin`); bu, OpenSSL **3.x** ister. Ders deposundaki
+    `demo.sh` yerine `openssl dgst -sha256 -sign` ile **ECDSA (P-256)** kullanır, çünkü bu komut OpenSSL 1.1.1'de
+    de 3.x'te de aynı şekilde çalışır (WSL/Ubuntu 20.04 gibi eski OpenSSL'li ortamlarda bile). Mantık —
+    imzala/doğrula/kurcala/reddet — birebir aynıdır; yalnız algoritma farklıdır.
+
+Aynı mantığı, gerçek bir imza üzerinde altı senaryoda (doğru imza, kurcalanmış belge, yanlış anahtarla imzalanmış
+bir mesaj) izleyin:
+
+<iframe class="dsanim" src="../anim/digital-signature-tamper.html" title="Dijital imza: doğrulama ve kurcalanmış mesaj" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Dijital imza doğrulama — adım adım](anim/digital-signature-tamper.png)
+</div>
+
+**Uyar: doğru imza, doğru anahtar**, **Zor: belge imzadan sonra kurcalandı** ve **Uç durum: saldırganın kendi
+anahtarıyla imzalanmış** örneklerini karşılaştırın.
+
 ### Sürüm geri alma: imza geçerli ama içerik eski
 
 "İmzanın kapsamı" tuzağını somutlaştıralım. Diyelim ki bir uygulama güncelleme sunucusu her sürümü ayrı ayrı imzalar:
@@ -819,7 +921,16 @@ DH **kimin** ile anlaşıldığını söylemez. Kanalın ortasındaki bir saldı
 
 ![Kimliksiz Diffie-Hellman'da araya girme saldırısı](assets/h10-02-dh-mitm.svg)
 
-İki taraf da "güvenli bir kanalım var" sanır; aslında her mesaj saldırganın elinden geçer.
+İki taraf da "güvenli bir kanalım var" sanır; aslında her mesaj saldırganın elinden geçer. Aşağıda aynı saldırıyı
+küçük sayılarla (klasik `p=23, g=5` örneği) uçtan uca izleyin — Alice ve Bob'un normal değişimiyle, sonra Mallory
+araya girince iki tarafın **farklı** anahtarlara ulaştığını görün:
+
+<iframe class="dsanim" src="../anim/diffie-hellman-mitm.html" title="Diffie–Hellman anahtar değişimi ve ortadaki adam" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Diffie–Hellman ve araya girme — adım adım](anim/diffie-hellman-mitm.png)
+</div>
+
+**Uyar: klasik örnek** ile dürüst değişimi, **Uç durum: Mallory araya giriyor** ile saldırıyı karşılaştırın.
 
 ### Çözüm: kimliği doğrulanmış anahtar değişimi
 
@@ -1053,7 +1164,7 @@ Bir X.509 v3 sertifikası, **imzalanan kısım** (TBSCertificate) ile CA'nın bu
 | Konu açık anahtar bilgisi (SPKI) | Algoritma + açık anahtar; [3. haftadaki](../week-3/cen429-week-3.md#93-sabitleme-pinning-ve-tofu) **sabitleme bunun özetini** kullanır |
 | **Uzantılar** | Temel kısıtlar (`CA:TRUE/FALSE`, yol uzunluğu), anahtar kullanımı, genişletilmiş anahtar kullanımı (sunucu/istemci kimlik doğrulama, kod imzalama), **SAN** (alternatif adlar: DNS adları, IP), CRL dağıtım noktası, OCSP adresi (AIA) |
 
-Sertifikalar ikili **DER** kodlamasıyla ya da onun Base64 ile sarılmış metin biçimi olan **PEM** ile saklanır (Tarif 7.16,
+Sertifikalar binary **DER** kodlamasıyla ya da onun Base64 ile sarılmış metin biçimi olan **PEM** ile saklanır (Tarif 7.16,
 7.17): `-----BEGIN CERTIFICATE-----` ile başlayan dosyalar PEM'dir.
 
 !!! warning "Ad denetimi CN'ye değil SAN'a yapılır"
@@ -1120,8 +1231,8 @@ openssl x509 -in sunucu.crt -outform DER | wc -c
 wc -c sunucu.crt
 ```
 
-DER (ikili) biçim genelde 500–900 bayt civarındadır (eğri tabanlı anahtarlar RSA'dan küçük olduğu için); PEM biçimi
-Base64 kodlaması yüzünden bundan yaklaşık %33 daha büyüktür (Base64, her 3 ikili baytı 4 metin karakterine çevirir).
+DER (binary) biçim genelde 500–900 bayt civarındadır (eğri tabanlı anahtarlar RSA'dan küçük olduğu için); PEM biçimi
+Base64 kodlaması yüzünden bundan yaklaşık %33 daha büyüktür (Base64, her 3 binary baytı 4 metin karakterine çevirir).
 Bir TLS el sıkışmasında sunucunun gönderdiği sertifika **zinciri** (uç + ara), bu boyutların toplamıdır; RSA-3072
 sertifikaları kullanan bir zincirin ECC (P-256/Ed25519) zincirinden **kat kat büyük** olmasının nedeni budur —
 Bölüm 4'teki boyut karşılaştırmasının PKI'daki yansıması.
@@ -1192,6 +1303,18 @@ Her adımda `openssl verify` çıktısını not edin:
 3. `-days 0` ile süresi hemen dolan bir sertifika üretin.
 4. SAN'ı `DNS:baska.ornek` yapıp `openssl s_client -verify_hostname localhost` ile deneyin.
 
+Dört sorunun (imza? köke ulaşıyor mu? süresi geçerli mi? ad uyuyor mu?) altısını — eksik ara, süresi dolmuş, yanlış
+kök, `CA:FALSE` imzalayıcı, yanlış ad ve tam zincir — aynı animasyonda deneyip 3. ve 4. senaryoyu kendiniz çözmeden
+önce fikir edinin:
+
+<iframe class="dsanim" src="../anim/x509-chain-validation.html" title="X.509 zincir doğrulama: yol kurma" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![X.509 zincir doğrulama — adım adım](anim/x509-chain-validation.png)
+</div>
+
+Örnek seçicide **Uç durum: sertifikanın süresi dolmuş** ve **Uç durum: istenen ad SAN listesinde yok** yukarıdaki
+3. ve 4. sorulara karşılık gelir.
+
 ### İşlenmiş örnek: sınıf etkinliğinin iki senaryosunu baştan sona çözmek
 
 Yukarıdaki dört senaryonun ilk ikisini birlikte çözelim; 3. ve 4. senaryoyu siz tamamlayacaksınız.
@@ -1255,7 +1378,7 @@ edilmesi gerekir. İstemcinin bunu öğrenmesinin üç yolu vardır:
 | Yöntem | Nasıl? | Artı | Eksi |
 | --- | --- | --- | --- |
 | **CRL** (iptal listesi) | CA, iptal edilen seri numaralarının imzalı listesini düzenli yayımlar | Basit, çevrimdışı önbelleklenebilir | Liste büyür; güncelleme aralığında iptal fark edilmez |
-| **OCSP** | İstemci CA'nın yanıtlayıcısına "bu seri numarası geçerli mi?" diye sorar | Anlık | Gecikme, gizlilik (CA hangi siteye gidildiğini öğrenir), yanıtlayıcı erişilemezse ne olacak? |
+| **OCSP** (RFC 2560, 1999) | İstemci CA'nın yanıtlayıcısına "bu seri numarası geçerli mi?" diye sorar | Anlık | Gecikme, gizlilik (CA hangi siteye gidildiğini öğrenir), yanıtlayıcı erişilemezse ne olacak? |
 | **OCSP yanıtını iliştirme** (stapling) | Sunucu kendi sertifikasının taze OCSP yanıtını el sıkışmaya ekler | Gizlilik ve hız | Sunucunun yapılandırması gerekir |
 
 ```bash title="Laboratuvar CA'sıyla iptal ve CRL denetimi (özet)"
@@ -1340,6 +1463,17 @@ geçerlilik tarihi hâlâ dolmamış olsa bile.
 
 Bu, Alıştırma 6'nın tam çözümüdür; kendi laboratuvarınızda aynı adımları tekrarlayıp `index.txt` dosyasının içeriğini
 (`cat demoCA/index.txt`) inceleyin — her satır bir sertifikanın kaydını taşır (durum, tarih, seri numarası, konu adı).
+
+CRL'in neden **bayat** olabileceğini (kendi `nextUpdate`'i geçmişse, "iyi" demek yerine "bayat" demesi gerektiğini)
+ve OCSP'nin neden her zaman **anlık** kaldığını, aynı sertifika üzerinde iki yöntemi yan yana çalıştırarak görün:
+
+<iframe class="dsanim" src="../anim/crl-ocsp-revocation.html" title="İptal denetimi: CRL ve OCSP" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![CRL ve OCSP — adım adım](anim/crl-ocsp-revocation.png)
+</div>
+
+**Zor: sertifika iptal edilmiş** ile **Uç durum: CRL bayat — iptal görülmüyor** örneklerini karşılaştırıp CRL'in
+önbelleklenebilirlik kazancının bedelini görün.
 
 ### Sayısal örnek: CRL ne kadar büyür?
 
@@ -1435,6 +1569,16 @@ taşır ("veriyi ver, imzayı al"), ama OpenSSL'de anahtar (dosyadan okunmuşsa)
 anahtar **hiçbir zaman** uygulamanın adres alanına girmez. Bölüm 5'teki `imza_dogrula` fonksiyonunu bir HSM'e
 taşımak, yalnız imzalama tarafını `C_Sign` çağrısına yönlendirmek anlamına gelir — **doğrulama** tarafı zaten yalnız
 açık anahtar kullandığı için HSM'e ihtiyaç duymaz.
+
+Aynı fikri küçük bir simülasyonda görün: `generate_keypair()` yalnız bir **tutamaç** döndürür, `sign(tutamaç, veri)`
+imzayı HSM'in İÇİNDE hesaplar, bilinmeyen ya da yok edilmiş bir tutamaçla imzalama reddedilir:
+
+<iframe class="dsanim" src="../anim/hsm-pkcs11-key-use.html" title="HSM/PKCS#11: anahtar kullanımı, anahtar hiç çıkmaz" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HSM/PKCS#11 anahtar kullanımı — adım adım](anim/hsm-pkcs11-key-use.png)
+</div>
+
+**Zor: imza bir kulpla, doğrulama BAŞKA kulpla** ile **Uç durum: hiç üretilmemiş kulp** örneklerini deneyin.
 
 ### Neden `CKA_EXTRACTABLE` en kritik öznitelik?
 

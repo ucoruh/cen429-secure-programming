@@ -1,0 +1,17 @@
+# CEN429 — Week 2 — Attack tree: "Obtain the payment key"
+# A generic mobile payment app + security library example.
+# Leaf costs are SAMPLE person-day effort figures (synthetic, for teaching).
+# The root GOAL node is an OR: the cheapest path is enough for the attacker.
+# Indentation (two spaces) sets the tree depth.
+
+GOAL: Obtain the payment key
+  AND Copy and decrypt the local database
+    LEAF Gain root privilege             cost=3
+    LEAF Recover the database key        cost=6
+  OR Read it from memory during use
+    LEAF Read memory with a debugger              cost=2
+    LEAF Take a memory dump and search for the key cost=2
+    LEAF Hook the function                         cost=4
+  AND Eavesdrop between the server and the phone
+    LEAF Break TLS / get a fake certificate accepted  cost=7
+    LEAF Break message-level encryption               cost=8

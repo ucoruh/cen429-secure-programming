@@ -104,6 +104,22 @@ class Oge:
             self.sunum_md_en = SLIDES / 'syllabus' / 'cen429-izlence.en.md'
             self.ad = 'cen429-izlence'
             self.baslik_tr, self.baslik_en = 'Ders İzlencesi', 'Syllabus'
+        elif anahtar == 'on-gereksinimler':
+            self.klasor = DOCS / 'prerequisites'
+            self.sayfa_tr = self.klasor / 'index.tr.md'
+            self.sayfa_en = self.klasor / 'index.en.md'
+            self.sunum_md = SLIDES / 'prerequisites' / 'cen429-on-gereksinimler.tr.md'
+            self.sunum_md_en = SLIDES / 'prerequisites' / 'cen429-on-gereksinimler.en.md'
+            self.ad = 'cen429-on-gereksinimler'
+            self.baslik_tr, self.baslik_en = 'Ön Gereksinimler', 'Prerequisites'
+        elif anahtar == 'proje-rehberi':
+            self.klasor = DOCS / 'project-guide'
+            self.sayfa_tr = self.klasor / 'index.tr.md'
+            self.sayfa_en = self.klasor / 'index.en.md'
+            self.sunum_md = SLIDES / 'project-guide' / 'cen429-proje-rehberi.tr.md'
+            self.sunum_md_en = SLIDES / 'project-guide' / 'cen429-proje-rehberi.en.md'
+            self.ad = 'cen429-proje-rehberi'
+            self.baslik_tr, self.baslik_en = 'Proje Rehberi', 'Project Guide'
         else:
             n = int(anahtar)
             self.klasor = DOCS / f'week-{n}'
@@ -122,7 +138,9 @@ class Oge:
 
     @property
     def kod_klasoru(self):
-        return None if self.anahtar == 'izlence' else KOK / 'code' / f'week-{int(self.anahtar):02d}'
+        # Yalnız haftaların kod klasörü vardır; izlence ve diğer içerik-yalnız sayfaların (ör. ön gereksinimler,
+        # proje rehberi) kod klasörü yoktur.
+        return None if not self.anahtar.isdigit() else KOK / 'code' / f'week-{int(self.anahtar):02d}'
 
     def dosya(self, tur, dil='tr'):
         kok, uzanti = self.TURLER[tur].rsplit('.', 1)
@@ -157,6 +175,9 @@ def calistir(komut, **kw):
     # Alt süreç çıktısı boruya yönlenince Windows cp1252 kullanır ve Türkçe
     # karakterli bir log satırı mkdocs'u çökertir; UTF-8'i zorla.
     kw.setdefault('env', {**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'})
+    # marp, standart girdi açık bir boruysa oradan Markdown bekler ve sonsuza dek takılır (arka planda
+    # çalıştırılınca olur); girdiyi her zaman kapat.
+    kw.setdefault('stdin', subprocess.DEVNULL)
     sonuc = subprocess.run(komut, capture_output=True, text=True, encoding='utf-8', errors='replace', **kw)
     if sonuc.returncode != 0:
         print('   HATA:', ' '.join(map(str, komut))[:200])
@@ -254,6 +275,29 @@ def sunum_html(oge, dil='tr'):
         print(f'   sunum html ({dil}):', hedef.relative_to(KOK))
 
 
+_ANIM_CERCEVE_HTML = re.compile(
+    r'<iframe\s+class="dsanim"\s+(?:[^>"]|"[^"]*")*\bsrc="([^"?]+?)(\?[^"]*)?"(?:[^>"]|"[^"]*")*>\s*</iframe>')
+
+
+def animasyon_cercevelerini_degistir(html, dil, taban=None):
+    """Bir slayttaki <iframe class="dsanim" src="anim/AD.html?..."> basılı PDF içinde çalışamaz; onun yerine
+    animasyonun son karesi (anim/AD-son.<dil>.png, tools/dsanim/build.py tarafından üretilir) konur.
+    &example=<on_ayar> varsa o ön ayarın son karesi kullanılır (anim/AD--<on_ayar>-son.<dil>.png; tools/dsanim
+    bunu destelerin &example= ile açtığı her ön ayar için ayrıca üretir). Animasyon adı her zaman iframe'in
+    kendi src'sinden okunur — burada hiçbir animasyon adı sabit yazılmaz."""
+    def degistir(m):
+        src = m.group(1)
+        p = pathlib.PurePosixPath(src)
+        gorsel = p.parent / f'{p.stem}-son.{dil}.png'
+        orn = re.search(r'(?:&amp;|[?&])example=([\w-]+)', m.group(2) or '')
+        if orn and taban is not None:
+            alt = p.parent / f'{p.stem}--{orn.group(1)}-son.{dil}.png'
+            if (pathlib.Path(taban) / str(alt)).exists():
+                gorsel = alt
+        return f'<img class="dsanim" src="{gorsel}" alt="animasyon">'
+    return _ANIM_CERCEVE_HTML.sub(degistir, html)
+
+
 def sunum_pdf(oge, dil='tr'):
     if dil == 'en' and not oge.en_sunum_var():
         return
@@ -266,6 +310,8 @@ def sunum_pdf(oge, dil='tr'):
     # çıkar. Baskı, öğenin kaldırıldığı geçici bir kopyadan alınır (kod satırları kısa, ölçeklemeye gerek yok).
     html = kaynak.read_text(encoding='utf-8')
     html = re.sub(r'<pre is="marp-pre"[^>]*>', '<pre>', html)
+    # Veri yapısı animasyonları: oynatıcı iframe'i basılı PDF içinde çalışamaz, son kareyle değiştirilir.
+    html = animasyon_cercevelerini_degistir(html, dil, kaynak.parent)
     # Baskı kopyası, göreli görsel yolları (assets/...) çözülsün diye HTML ile AYNI klasöre yazılır.
     baski = kaynak.with_name(kaynak.stem + '.baski.html')
     try:
@@ -288,7 +334,7 @@ def sunum_pptx(oge, dil='tr'):
     sys.path.insert(0, str(ARAC))
     import marp_pptx
     hedef = oge.dosya('sunum_pptx', dil)
-    adet = marp_pptx.donustur(str(kaynak), str(hedef), logo=str(TEMA / 'rteu_logo_kucuk.jpg'))
+    adet = marp_pptx.donustur(str(kaynak), str(hedef), logo=str(TEMA / 'rteu_logo_kucuk.jpg'), dil=dil)
     if dil == 'tr' and not oge.en_sunum_var():
         oge.en_kopya('sunum_pptx')
     print(f'   sunum pptx ({dil}): {hedef.relative_to(KOK)} ({adet} slayt)')
@@ -323,8 +369,16 @@ def blok(oge, dil):
     satirlar += ['', '</div>', '']
     if sunum_var:
         baslik = oge.baslik_tr if tr else oge.baslik_en
+        # Markdown [metin](dosya) bağlantılarını mkdocs, kaynak .md'nin ve üretilen sayfanın gerçek
+        # derinliğine göre kendisi "../" ekleyerek çözer (bkz. sunum_pdf/sunum_docx düğmeleri). Ama
+        # <iframe src="..."> ham HTML'dir ve mkdocs bunu YENİDEN YAZMAZ; burada elle hesaplanmalı.
+        # Haftalar/izlence, sayfa dosyası .md adını taşıdığı için (ör. cen429-week-4.md) mkdocs onu bir
+        # klasöre gömer (.../cen429-week-4/index.html) — kardeş dosyalar bir üst klasörde kalır, "../"
+        # gerekir. index.md adlı sayfalarda (ör. ön gereksinimler, proje rehberi) ekstra klasör OLUŞMAZ,
+        # sayfa ve kardeş dosyalar AYNI klasördedir — "../" EKLENMEMELİDİR.
+        onek = '' if oge.sayfa_tr.name.startswith('index.') else '../'
         satirlar += ['<div class="sunum-cercevesi">',
-                     f'<iframe src="../{oge.baglanti("sunum_html")}" title="{baslik}" loading="lazy" allowfullscreen></iframe>',
+                     f'<iframe src="{onek}{oge.baglanti("sunum_html")}" title="{baslik}" loading="lazy" allowfullscreen></iframe>',
                      '</div>', '']
         ipucu = ('Sunumun içine tıklayıp ok tuşlarıyla ilerleyin; tam ekran için sunumun sağ altındaki düğmeyi ya da '
                  'yukarıdaki "Sunumu tam ekran aç" bağlantısını kullanın.') if tr else (
@@ -346,6 +400,13 @@ def basliklar(oge):
         elif oge.anahtar == 'izlence':
             isaret = '## Ders Bilgileri' if dil == 'tr' else '## Course Information'
             metin = metin.replace(isaret, yeni_blok + '\n\n' + isaret, 1)
+        elif oge.anahtar in ('on-gereksinimler', 'proje-rehberi'):
+            # Bu sayfalarda H1'in hemen altında (haftalardaki gibi) bir özet tablosu yok;
+            # blok doğrudan başlığın altına, sayfanın en tepesine eklenir (izlence ile aynı yer).
+            satir = metin.split('\n')
+            h1 = next(i for i, s in enumerate(satir) if s.startswith('# '))
+            satir[h1 + 1:h1 + 1] = ['', yeni_blok]
+            metin = '\n'.join(satir)
         else:
             # ilk H1'den sonraki ilk tablonun bitimine ekle
             satir = metin.split('\n')
@@ -394,6 +455,10 @@ def sayfa_yolu(oge, kok=None, dil='tr'):
     """
     if oge.anahtar == 'izlence':
         son = 'syllabus/syllabus/'
+    elif oge.anahtar == 'on-gereksinimler':
+        son = 'prerequisites/'
+    elif oge.anahtar == 'proje-rehberi':
+        son = 'project-guide/'
     else:
         son = f'week-{oge.anahtar}/cen429-week-{oge.anahtar}/'
     if kok is None:
@@ -494,6 +559,16 @@ def yazdirma_sayfasi(site, oge, dil='tr'):
             ust, tur, kisa, tarih = 'Ders İzlencesi', 'Ders İzlencesi', '2026-2027 Güz', 'Dr. Öğr. Üyesi Uğur CORUH'
         else:
             ust, tur, kisa, tarih = 'Syllabus', 'Syllabus', '2026-2027 Fall', 'Asst. Prof. Dr. Uğur CORUH'
+    elif oge.anahtar == 'on-gereksinimler':
+        if dil == 'tr':
+            ust, tur, kisa, tarih = 'Ön Gereksinimler', 'Ön Gereksinimler', '2026-2027 Güz', 'Dr. Öğr. Üyesi Uğur CORUH'
+        else:
+            ust, tur, kisa, tarih = 'Prerequisites', 'Prerequisites', '2026-2027 Fall', 'Asst. Prof. Dr. Uğur CORUH'
+    elif oge.anahtar == 'proje-rehberi':
+        if dil == 'tr':
+            ust, tur, kisa, tarih = 'Proje Rehberi', 'Proje Rehberi', '2026-2027 Güz', 'Dr. Öğr. Üyesi Uğur CORUH'
+        else:
+            ust, tur, kisa, tarih = 'Project Guide', 'Project Guide', '2026-2027 Fall', 'Asst. Prof. Dr. Uğur CORUH'
     else:
         n = int(oge.anahtar)
         if dil == 'tr':
@@ -674,11 +749,23 @@ def mermaid_png(site, kod, hedef):
     return img.size
 
 
-def docx_on_isle(metin, site, gecici, sayfa_klasor=None):
+def docx_on_isle(metin, site, gecici, sayfa_klasor=None, dil='tr'):
     """MkDocs'a özgü sözdizimini pandoc'un anlayacağı Markdown'a çevirir."""
     metin = re.sub(r'\A---\n.*?\n---\n', '', metin, flags=re.S)                     # ön bilgi
     metin = re.sub(re.escape(BASLA) + r'.*?' + re.escape(BITIR), '', metin, flags=re.S)  # indirme/iframe bloğu
     metin = re.sub(r'\{ *\.md-button[^}]*\}', '', metin)
+
+    # Veri yapısı animasyonları (tools/dsanim): oynatıcı iframe'i Word içinde çalışamaz, o yüzden atılır;
+    # yanındaki <div class="dsanim-baski" markdown> içindeki düz Markdown görseli (ders notu tarafından zaten
+    # yazılmıştır) sarmalayıcısından çıkarılır ki aşağıdaki sıradan görsel işleme adımı onu yakalasın. Not
+    # sayfası iki dilde de AYNI soneksiz `anim/AD.png` yoluna yazar (mkdocs-static-i18n canlı sitede bunu dile
+    # göre çözer); ama bu betik ham kaynak dosyayı doğrudan diskten okur, site yönlendirmesinden geçmez —
+    # bu yüzden dil son eki burada elle eklenir (dosya her zaman ..tr./..en. olarak üretilir, bkz. build.py).
+    metin = re.sub(r'<iframe\s+class="dsanim"(?:[^>"]|"[^"]*")*>\s*</iframe>', '', metin)
+
+    def _baski_ac(m):
+        return re.sub(r'(anim/[\w.-]+?)\.png\b', r'\1.' + dil + '.png', m.group(1))
+    metin = re.sub(r'<div class="dsanim-baski"[^>]*>\s*(.*?)\s*</div>', _baski_ac, metin, flags=re.S)
 
     # Yerel görseller (assets/...): SVG yerine PNG kardeşi geçici klasöre kopyalanır
     # (pandoc/Word SVG'yi güvenilir gömemez). Mermaid'den ÖNCE çalışır ki onun
@@ -772,7 +859,7 @@ def not_docx(oge, site, dil='tr'):
     gecici = pathlib.Path(tempfile.mkdtemp(prefix='cen429-docx-'))
     try:
         md = docx_on_isle(kaynak_sayfa.read_text(encoding='utf-8'), site, gecici,
-                          sayfa_klasor=kaynak_sayfa.parent)
+                          sayfa_klasor=kaynak_sayfa.parent, dil=dil)
         kaynak = gecici / 'not.md'
         kaynak.write_text(md, encoding='utf-8')
         hedef = oge.dosya('not_docx', dil)
@@ -831,7 +918,8 @@ def main():
     ap.add_argument('--hafta', help='virgülle haftalar ve/veya "izlence" (varsayılan: hepsi)')
     arg = ap.parse_args()
     adimlar = ADIMLAR if 'hepsi' in arg.adimlar else arg.adimlar
-    anahtarlar = arg.hafta.split(',') if arg.hafta else ['izlence'] + [str(n) for n in HAFTALAR]
+    anahtarlar = arg.hafta.split(',') if arg.hafta else (
+        ['izlence', 'on-gereksinimler', 'proje-rehberi'] + [str(n) for n in HAFTALAR])
     tema_uret()
     ogeler = [Oge(a.strip()) for a in anahtarlar]
     site = None
@@ -842,7 +930,7 @@ def main():
             site = Site()
         print(f'== {adim}')
         for oge in ogeler:
-            if adim == 'iskelet' and oge.anahtar != 'izlence':
+            if adim == 'iskelet' and oge.anahtar.isdigit():
                 iskelet(oge)
             elif adim == 'sunum':
                 sunum_html(oge)

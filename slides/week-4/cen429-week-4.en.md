@@ -331,11 +331,11 @@ Example: a username may only contain `[a-z0-9_]`.
 
 ```c
 errno = 0;
-long v = strtol(s, &son, 10);
-if (son == s)        return -1;  /* rakam yok */
-if (*son != '\0')    return -1;  /* "12abc" */
-if (errno == ERANGE) return -1;  /* taştı */
-if (v < en_az || v > en_cok) return -1;  /* iş kuralı */
+long value = strtol(s, &end, 10);
+if (end == s)         return -1;  /* no digits at all */
+if (*end != '\0')     return -1;  /* "12abc" */
+if (errno == ERANGE)  return -1;  /* overflowed */
+if (value < min_val || value > max_val) return -1;  /* business rule */
 ```
 
 ---
@@ -353,11 +353,11 @@ if (v < en_az || v > en_cok) return -1;  /* iş kuralı */
 # Principle 3 · a Length-Prefixed Record
 
 ```c
-if (kalan < 3) return -1;                  /* başlık yok */
-uint16_t uzunluk = tampon[1] << 8 | tampon[2];
-if (uzunluk > kalan - 3)      return -1;   /* KAYNAK: bildirilen > gelen */
-if (uzunluk > sizeof k->veri) return -1;   /* HEDEF: sığmıyor */
-memcpy(k->veri, tampon + 3, uzunluk);
+if (remaining < 3) return -1;                     /* not even a header */
+uint16_t length = buffer[1] << 8 | buffer[2];
+if (length > remaining - 3)     return -1;         /* SOURCE: declared > received */
+if (length > sizeof rec->data)  return -1;         /* DEST: doesn't fit */
+memcpy(rec->data, buffer + 3, length);
 ```
 
 ---
@@ -366,7 +366,7 @@ memcpy(k->veri, tampon + 3, uzunluk);
 
 - **Source check:** is the declared length greater than the data that arrived?
 - **Destination check:** does it fit in the destination buffer?
-- Order: `kalan < 3` **first**, so `kalan - 3` does not wrap.
+- Order: `remaining < 3` **first**, so `remaining - 3` does not wrap.
 - In the field: every array coming from JNI is **re-validated** on the native side.
 
 ---
@@ -374,9 +374,9 @@ memcpy(k->veri, tampon + 3, uzunluk);
 # CERT Pair · STR31-C
 
 ```c
-strcpy(kopya, ad);                              /* HATALI */
-int n = snprintf(kopya, sizeof kopya, "%s", ad);/* UYUMLU */
-if (n < 0 || (size_t)n >= sizeof kopya) { /* kesildi */ }
+strcpy(copy, name);                               /* WRONG */
+int n = snprintf(copy, sizeof copy, "%s", name);  /* COMPLIANT */
+if (n < 0 || (size_t)n >= sizeof copy) { /* truncated */ }
 ```
 
 `strcpy` does not know bounds; `snprintf` knows the size and reports **truncation**.
@@ -386,9 +386,9 @@ if (n < 0 || (size_t)n >= sizeof kopya) { /* kesildi */ }
 # CERT Pair · INT30-C
 
 ```c
-size_t kalan = toplam - okunan;   /* HATALI: okunan>toplam → dev sayı */
-if (okunan > toplam) return HATA; /* UYUMLU: önce sırala */
-size_t kalan = toplam - okunan;
+size_t remaining = total - read_count;  /* WRONG: read_count>total → huge number */
+if (read_count > total) return ERROR;   /* COMPLIANT: check order first */
+size_t remaining = total - read_count;
 ```
 
 Unsigned subtraction **wraps**; check the logic first.
@@ -398,20 +398,20 @@ Unsigned subtraction **wraps**; check the logic first.
 # CERT Pair · MEM30-C
 
 ```c
-for (d = bas; d; d = d->sonraki) free(d);       /* HATALI */
-while (d) { Dugum *s = d->sonraki; free(d); d = s; }  /* UYUMLU */
+for (n = head; n; n = n->next) free(n);              /* WRONG */
+while (n) { Node *s = n->next; free(n); n = s; }      /* COMPLIANT */
 ```
 
-Reading `d->sonraki` after `free(d)` = accessing freed memory.
+Reading `n->next` after `free(n)` = accessing freed memory.
 
 ---
 
 # CERT Pair · ERR33-C
 
 ```c
-FILE *f = fopen(yol,"rb"); fread(t,1,n,f);       /* HATALI */
-if (!f) return HATA;
-if (fread(t,1,n,f) < n && ferror(f)) return HATA;/* UYUMLU */
+FILE *f = fopen(path,"rb"); fread(t,1,n,f);        /* WRONG */
+if (!f) return ERROR;
+if (fread(t,1,n,f) < n && ferror(f)) return ERROR; /* COMPLIANT */
 ```
 
 Check **every** return value; `fopen` can return NULL.
@@ -459,11 +459,11 @@ This makes the finding **objective** and **searchable**.
 
 ---
 
-# The Problem · `printf(girdi)`
+# The Problem · `printf(input)`
 
 ```c
-printf(kullanici_girdisi);        /* HATALI */
-printf("%s", kullanici_girdisi);  /* DOĞRU */
+printf(user_input);        /* WRONG */
+printf("%s", user_input);  /* CORRECT */
 ```
 
 In the first case, user input is interpreted as a **format string**.
@@ -475,6 +475,15 @@ In the first case, user input is interpreted as a **format string**.
 `printf` treats the `%` markers in the format string as a **command**.
 
 If the user supplies `%x`, `%s`, `%n`, they make the program do work.
+
+---
+
+# Brief History · Format String Bugs
+
+- **1999–2000** — real vulnerabilities in widely used FTP servers like **wu-ftpd** brought this bug class to wide attention.
+- Attackers used user data that leaked into logging calls as a format string to leak information, even achieve remote code execution.
+- Lesson: a "harmless-looking" marker like `%n` is actually a **write primitive**.
+- Response: `-Wformat-security` at compile time, `_FORTIFY_SOURCE` at run time.
 
 ---
 
@@ -524,6 +533,22 @@ Rule: the format string is **always constant** (FIO30-C).
 | 3 `AAAA%n` | Unprotected Linux crashes; Windows CRT rejects `%n` |
 | 4 | `_FORTIFY_SOURCE`: `%n in writable segment` |
 | 5 | Markers appear only as text |
+
+---
+
+# Animation — %x scans the stack
+
+<iframe class="dsanim" src="anim/format-string.html?mode=slide&lang=en" title="Format string vulnerability: %x scans the stack"></iframe>
+
+<!-- Speaker note: show live how %x scans argument slots in order, where it reaches the secret value, and open the "what %n would do" preset too. -->
+
+---
+
+# Animation — Edge Case: What `%n` Would Do Next
+
+<iframe class="dsanim" src="anim/format-string.html?mode=slide&lang=en&example=percent-n" title="Format string vulnerability: the %n write primitive (edge case)"></iframe>
+
+<!-- Speaker note: open the "percent-n" preset from the selector; emphasize that %n does not just read, it writes — this is why a "harmless-looking" marker is actually a write primitive. -->
 
 ---
 
@@ -594,7 +619,7 @@ Complex ownership → a dangling pointer.
 
 # Demo 2 — UAF and Double Free
 
-`code/week-04/02-kullanim-sonrasi` · CWE-416/415 · MEM30-C
+`code/week-04/02-use-after-free` · CWE-416/415 · MEM30-C
 
 | Step | What Is Seen? |
 | --- | --- |
@@ -606,15 +631,31 @@ Complex ownership → a dangling pointer.
 
 ---
 
+# Animation — a small heap
+
+<iframe class="dsanim" src="anim/use-after-free.html?mode=slide&lang=en" title="Use-after-free and double-free"></iframe>
+
+<!-- Speaker note: show live how a freed block goes onto the free list and how the next malloc hands it back; switch to the "double-free" preset too. -->
+
+---
+
+# Animation — Edge Case: Double Free
+
+<iframe class="dsanim" src="anim/use-after-free.html?mode=slide&lang=en&example=double-free" title="Double-free, edge case"></iframe>
+
+<!-- Speaker note: open the "double-free" preset from the selector; show live how freeing the same pointer a second time corrupts the allocator's free list, and how this usually opens the door to a further heap overflow. -->
+
+---
+
 # ASan Report · Three Stack Traces
 
 ```text
 ERROR: heap-use-after-free
-  #0 oturum_kullan uaf.c:48   <- 1. KULLANIM
+  #0 mode_uaf uaf.c:49   <- 1. USE
 freed here:
-  #1 oturum_kapat  uaf.c:31   <- 2. SERBEST BIRAKMA
+  #1 mode_uaf  uaf.c:38   <- 2. FREE
 allocated here:
-  #1 oturum_ac     uaf.c:22   <- 3. AYIRMA
+  #1 mode_uaf     uaf.c:32   <- 3. ALLOCATION
 ```
 
 The fix is usually at **location 2**: the ownership decision was wrong there.
@@ -641,7 +682,7 @@ The fix is usually at **location 2**: the ownership decision was wrong there.
 | Array | `std::vector`, `std::array` |
 
 ```cpp
-if (auto o = onbellek.lock()) kullan(*o);  // yoksa eski belleğe erişilmez
+if (auto o = cache.lock()) use(*o);  // otherwise stale memory is never accessed
 ```
 
 ⚠️ `get()` is a raw pointer; when a `vector` grows, its iterators are invalidated.
@@ -674,9 +715,9 @@ if (auto o = onbellek.lock()) kullan(*o);  // yoksa eski belleğe erişilmez
 # Why Does It Matter? · Multiplication Overflow
 
 ```c
-uint32_t boyut = adet * 4;   /* adet = 0x40000001 → boyut = 4 */
-dizi = malloc(boyut);        /* küçük blok */
-/* döngü adet kez yazar → öbek taşması */
+uint32_t size = count * 4;   /* count = 0x40000001 → size = 4 */
+array = malloc(size);        /* small block */
+/* loop writes `count` times → heap overflow */
 ```
 
 Writing too much into a small allocated block = an overflow.
@@ -688,8 +729,8 @@ Writing too much into a small allocated block = an overflow.
 **Undefined behaviour (UB):** an operation whose result the C/C++ standard does not define (e.g., signed integer overflow).
 
 ```c
-if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
-    return -1;     /* işaretli taşma UB → derleyici bu dalı SİLEBİLİR */
+if (x + 100 < x)   /* assumes "if it overflows, it gets smaller" */
+    return -1;     /* signed overflow is UB → the compiler MAY DELETE this branch */
 ```
 
 - It "works" at `-O0`, at `-O2` the check **disappears**.
@@ -701,8 +742,8 @@ if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
 
 ```c
 if ((b > 0 && a > INT_MAX - b) ||
-    (b < 0 && a < INT_MIN - b)) return false;   /* taşma öncesi */
-if (__builtin_mul_overflow(a, b, &sonuc)) return false;  /* GCC/Clang */
+    (b < 0 && a < INT_MIN - b)) return false;   /* before the overflow */
+if (__builtin_mul_overflow(a, b, &result)) return false;  /* GCC/Clang */
 /* C23: <stdckdint.h> ckd_add/ckd_mul · MSVC: <intsafe.h> */
 ```
 
@@ -714,7 +755,7 @@ Catch the overflow **before it happens**.
 
 # Demo 3 — UB and UBSan
 
-`code/week-04/03-tanimsiz-davranis` · CWE-190/758
+`code/week-04/03-undefined-behavior` · CWE-190/758
 
 - Signed overflow, invalid shift, misaligned access
 - On x86, most produce a wrong result **silently**
@@ -722,6 +763,22 @@ Catch the overflow **before it happens**.
 - Windows: no UBSan → `/RTC`, `/analyze`, CERT
 
 ⚠️ `-fwrapv` **hides** the logic error; do not use it for diagnosis.
+
+---
+
+# Animation — INT_MAX + add
+
+<iframe class="dsanim" src="anim/integer-overflow.html?mode=slide&lang=en" title="Signed integer overflow: INT_MAX + add"></iframe>
+
+<!-- Speaker note: show live how the unchecked add silently wraps, and how checked_add catches the same overflow before adding. -->
+
+---
+
+# Animation — Edge Case: the Secure Version Rejects the Same Input
+
+<iframe class="dsanim" src="anim/integer-overflow.html?mode=slide&lang=en&example=edge-secure" title="Integer overflow: the secure version rejects the same mix (edge case)"></iframe>
+
+<!-- Speaker note: open the "edge-secure" preset from the selector; compare side by side how the SAME sequence of adds that leads to UB in the buggy version is stopped by checked_add BEFORE adding in the compiled secure version. -->
 
 ---
 
@@ -768,8 +825,8 @@ Catch the overflow **before it happens**.
 # Signal Handler · Rule
 
 ```c
-static volatile sig_atomic_t durdur = 0;
-static void isleyici(int s){ (void)s; durdur = 1; }  /* YALNIZ bayrak */
+static volatile sig_atomic_t stop = 0;
+static void handler(int s){ (void)s; stop = 1; }  /* ONLY a flag */
 ```
 
 - No `printf`, `malloc`, `free` in the handler (SIG30-C).
@@ -876,6 +933,14 @@ Almost no false alarms; but it only finds bugs on the path that **actually execu
 
 ---
 
+# Brief History · AddressSanitizer
+
+- **2012** — Google released **AddressSanitizer** (ASan): compile-time instrumentation + shadow memory catches overflow/UAF **immediately**.
+- Before this, this class of bug usually crashed **silently** or went unnoticed entirely.
+- ASan + fuzzing together catch input that doesn't crash the program but does corrupt memory (this week's Sections 4/11).
+
+---
+
 <!-- _class: yogun -->
 
 # The Sanitizer Family
@@ -902,8 +967,8 @@ Almost no false alarms; but it only finds bugs on the path that **actually execu
 # ASan's Blind Spot
 
 ```c
-struct { char ad[8]; long yetki; } k;
-strcpy(k.ad, uzun_girdi);   /* ad → yetki taşar */
+struct { char name[8]; long role; } k;
+strcpy(k.name, long_input);   /* name → role overflows */
 ```
 
 A field-to-field overflow **inside** the same structure → no poisoned region in between → ASan **cannot see it** (Week 1 Demo 3).
@@ -940,17 +1005,25 @@ An input that opens a new code path is **saved** and worked on further.
 
 ---
 
+# Brief History · Fuzzing
+
+- **1990** — Barton Miller's "Fuzz" study crashed 25-33% of Unix utilities with random input; the academic origin of fuzzing.
+- **2013** — **AFL** (american fuzzy lop) made coverage feedback practical and mainstream.
+- Then came **libFuzzer** (built into the compiler, fast) and OSS-Fuzz (a service that continuously fuzzes major open-source projects).
+
+---
+
 # Writing a Fuzz Target
 
 ```c
-int LLVMFuzzerTestOneInput(const uint8_t *veri, size_t boyut) {
-    ayristir(veri, boyut);   /* sınanacak fonksiyon */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    parse_document((const unsigned char *)data, size);
     return 0;
 }
 ```
 
 ```bash
-clang -g -O1 -fsanitize=fuzzer,address fuzz.c ayristir.c -o f
+clang -g -O1 -fsanitize=fuzzer,address fuzz.c parser.c -o f
 ./f corpus/ -max_total_time=10
 ```
 
@@ -975,13 +1048,45 @@ Four properties:
 
 | Step | What Happens? |
 | --- | --- |
-| 1 | `tohum/normal.bin` is fine |
+| 1 | `seeds/normal.bin` is fine |
 | 2 | libFuzzer ≤ 10 s → a crashing input |
 | 3 | Replay with ASan → full report |
 | 4 | Fixed version → no crash |
-| 5 | `cokerten.bin` is safely rejected |
+| 5 | `crash.bin` is safely rejected |
 
 > "This function was fuzzed for this long" = strong evidence (S16).
+
+---
+
+# Animation — an allow-list parser
+
+<iframe class="dsanim" src="anim/input-validation.html?mode=slide&lang=en" title="Input validation: an allow-list parser"></iframe>
+
+<!-- Speaker note: show live which bound each record violates (or doesn't); contrast with the buggy version reading out of bounds on the same inputs. -->
+
+---
+
+# Animation — Edge Case: Every Record Is Malformed
+
+<iframe class="dsanim" src="anim/input-validation.html?mode=slide&lang=en&example=edge-all-bad" title="Input validation: all 10 records malformed/short (edge case)"></iframe>
+
+<!-- Speaker note: open the "edge-all-bad" preset from the selector; show that NOT ONE record passes, and walk through which principle (length/type/range/format) each one violates and is rejected for. -->
+
+---
+
+# Animation — coverage-guided fuzzing
+
+<iframe class="dsanim" src="anim/fuzzing-loop.html?mode=slide&lang=en" title="Coverage-guided fuzzing loop"></iframe>
+
+<!-- Speaker note: show live whether each candidate opens new coverage, and how the session stops the moment a crash is found. -->
+
+---
+
+# Animation — Edge Case: the Very First Candidate Crashes
+
+<iframe class="dsanim" src="anim/fuzzing-loop.html?mode=slide&lang=en&example=edge-immediate-crash" title="Fuzzing loop: the first candidate crashes (edge case)"></iframe>
+
+<!-- Speaker note: open the "edge-immediate-crash" preset from the selector; make the point that the most valuable input can sometimes appear at the very first step of a session — this is a result of the mutation strategy, not "luck." -->
 
 ---
 
@@ -1033,6 +1138,15 @@ Say a bug slipped through.
 - A **sentinel value** is placed just before the return address.
 - If an overflow corrupts this value, it is noticed before the return and the program **halts**.
 - `-fstack-protector-strong` / MSVC `/GS`.
+
+---
+
+# Brief History · Compiler/OS Protections
+
+- **1998** — **StackGuard**: the first to add the stack-canary idea to a compiler automatically.
+- **2001** — the **PaX** project brought **ASLR** (address space layout randomization) to the Linux kernel.
+- **2003–2004** — **W^X / NX / DEP**: a memory page can no longer be both writable and executable at once.
+- Together, these three form the foundation of today's compiler/OS protections.
 
 ---
 
@@ -1112,17 +1226,33 @@ None of them is enough for a logic error → secure coding comes first.
 
 # Demo 5 — Turning Protections On and Off
 
-`code/week-04/05-derleyici-korumalari` · CWE-121
+`code/week-04/05-compiler-protections` · CWE-121
 
-- The same overflow: `giris_zayif` (off) vs `giris_sert` (on).
+- The same overflow: `overflow_weak` (off) vs `overflow_hardened` (on).
 - Hardened: `*** stack smashing detected ***` / Windows `0xC0000409`.
 - Weak: silent corruption or a crash.
 
 ```bash
 readelf -h p | grep Type          # DYN = PIE
-readelf -d p | grep BIND_NOW      # tam RELRO
-readelf -s p | grep __stack_chk   # kanarya
+readelf -d p | grep BIND_NOW      # full RELRO
+readelf -s p | grep __stack_chk   # canary
 ```
+
+---
+
+# Animation — the stack canary
+
+<iframe class="dsanim" src="anim/compiler-protections.html?mode=slide&lang=en" title="Stack canary: what happens when buffer[64] overflows?"></iframe>
+
+<!-- Speaker note: show live how strcpy fills buffer[64] and reaches the canary, then the frame and return address; highlight the hardened build catching it. -->
+
+---
+
+# Animation — Edge Case: Same Overflow, WEAK Build Has No Canary
+
+<iframe class="dsanim" src="anim/compiler-protections.html?mode=slide&lang=en&example=weak-overflow" title="Stack canary: the same 75 characters, unprotected build (edge case)"></iframe>
+
+<!-- Speaker note: open the "weak-overflow" preset from the selector; show that the exact SAME 75-character input we just saw caught by the canary in the hardened build sails straight through to the return address when the canary is absent — without the flag on, nothing but CERT/sanitizer/fuzzing stops this. -->
 
 ---
 
@@ -1181,7 +1311,7 @@ Every failing step **stops** the merge.
 | `denetimli` | `-O2 -D_FORTIFY_SOURCE=2` |
 | `guvenli` | `-O2` + fixed source |
 
-Most of the protection flags: Demo 5's `giris_sert`.
+Most of the protection flags: Demo 5's `overflow_hardened`.
 
 ---
 
@@ -1245,6 +1375,14 @@ Not making it impossible, but making it **expensive** (Cookbook 12.1):
 
 ---
 
+# Brief History · a Taxonomy of Obfuscation
+
+- **1997** — Collberg, Thomborson, and Low published the work that organized obfuscation techniques into a **systematic taxonomy**: layout, data, control, and preventive transformations.
+- What we saw this week — string/symbol hiding = a **data** transformation; control-flow flattening and the opaque predicate = a **control** transformation.
+- The taxonomy is still the shared vocabulary of academic and industrial obfuscation literature.
+
+---
+
 <!-- _class: yogun -->
 
 # Obfuscation Map
@@ -1280,21 +1418,21 @@ Symbol visibility off · name mangling · constant arithmetic hiding · string e
 # Logging Macro
 
 ```c
-#ifdef GUNLUK_ACIK
-#  define GUNLUK(...) fprintf(stderr, __VA_ARGS__)
+#ifdef LOG_ENABLED
+#  define LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
-#  define GUNLUK(...) ((void)0)   /* dizge de çağrı da yok */
+#  define LOG(...) ((void)0)   /* neither the string nor the call end up in the binary */
 #endif
 ```
 
-`GUNLUK_ACIK` is not defined in the release build → the logging is **never compiled in**.
+`LOG_ENABLED` is not defined in the release build → the logging is **never compiled in**.
 
 ---
 
 # ⚠️ a Runtime Flag Is Not Enough
 
 ```c
-if (hata_ayikla) printf("...");  /* KÖTÜ */
+if (debug_flag) printf("...");  /* BAD */
 ```
 
 - The string **remains** in the binary.
@@ -1316,14 +1454,30 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 
 # Demo 6 — Symbol and String Leakage
 
-`code/week-04/06-sembol-dize` · CWE-200/215
+`code/week-04/06-symbol-strings` · CWE-200/215
 
 | Step | What Happens? |
 | --- | --- |
-| 1 | `gizli_acik` and `gizli_kapali` give the same result |
+| 1 | `secret_exposed` and `secret_hidden` give the same result |
 | 2 `strings` | The license string and `[LOG]` are visible in the open one; not in the closed one |
-| 3 `nm` | `lisans_dogrula` is visible in the open one; no symbol in the closed one |
+| 3 `nm` | `license_verify` is visible in the open one; no symbol in the closed one |
 | 4 | Windows: names are in the PDB; the closed build produces no PDB |
+
+---
+
+# Animation — string + symbol hiding
+
+<iframe class="dsanim" src="anim/symbol-string-hiding.html?mode=slide&lang=en" title="String and symbol hiding: XOR + strip"></iframe>
+
+<!-- Speaker note: show live how every byte is XOR'd with the key, and how the symbols visible with nm differ between the exposed and hidden builds. -->
+
+---
+
+# Animation — Edge Case: a Bad Key Choice (0x00)
+
+<iframe class="dsanim" src="anim/symbol-string-hiding.html?mode=slide&lang=en&example=edge-zero-key" title="String hiding: key 0x00 hides nothing (edge case)"></iframe>
+
+<!-- Speaker note: open the "edge-zero-key" preset from the selector; show live that when the XOR key is 0x00, every byte XORs with itself and stays unchanged — the "hiding" step does nothing at all. Key choice is part of the design too. -->
 
 ---
 
@@ -1336,13 +1490,13 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 # Control-Flow Flattening
 
 ```c
-int durum = 1;
-for (;;) switch (durum) {
-  case 1: durum = 2; break;
-  case 2: durum = (kosul ? 3 : 4); break;
-  case 3: durum = 5; break;
-  case 4: return BASARISIZ;
-  case 5: return BASARILI;
+int state = 1;
+for (;;) switch (state) {
+  case 1: state = 2; break;
+  case 2: state = (condition ? 3 : 4); break;
+  case 3: state = 5; break;
+  case 4: return FAILURE;
+  case 5: return SUCCESS;
 }
 ```
 
@@ -1371,15 +1525,47 @@ The template alone is solved quickly on its own → Week 9 depth.
 
 # Demo 7 — Flattening
 
-`code/week-04/07-akis-duzlestirme`
+`code/week-04/07-flow-flattening`
 
 | Step | What Happens? |
 | --- | --- |
-| 1 | `pin.c` and `pin_duz.c` give the same result (the PIN is synthetic) |
+| 1 | `pin.c` and `pin_flattened.c` give the same result (the PIN is synthetic) |
 | 2 | `objdump`: the flattened version has far more branches |
 | 3 | Timing: the cost of flattening |
 
 ➡️ Automated with Tigress's `Flatten` in Week 14; measuring effectiveness in Week 9.
+
+---
+
+# Animation — the dispatcher state machine
+
+<iframe class="dsanim" src="anim/flow-flattening.html?mode=slide&lang=en" title="Control-flow flattening: the dispatcher state machine"></iframe>
+
+<!-- Speaker note: show live how the plain version takes a direct if-chain while the flattened version walks the dispatcher from state=0 again for every guess. -->
+
+---
+
+# Animation — Edge Case: Every Guess Has the Wrong Length
+
+<iframe class="dsanim" src="anim/flow-flattening.html?mode=slide&lang=en&example=flat-all-wrong-length" title="Control-flow flattening: every guess has the wrong length (edge case)"></iframe>
+
+<!-- Speaker note: open the "flat-all-wrong-length" preset from the selector; even in the flattened version, the dispatcher MUST still pass through the length-check state first — reading stays harder, but the meaning of the flow hasn't changed. -->
+
+---
+
+# Animation — the opaque predicate
+
+<iframe class="dsanim" src="anim/opaque-predicate.html?mode=slide&lang=en" title="Opaque predicate: (x*x) % 4 is never 2"></iframe>
+
+<!-- Speaker note: prove experimentally that (x*x)%4 is never 2 for any integer; highlight that the decoy branch (decoy_branch) never runs. -->
+
+---
+
+# Animation — Edge Case: Values Near the INT Bounds
+
+<iframe class="dsanim" src="anim/opaque-predicate.html?mode=slide&lang=en&example=edge-extremes" title="Opaque predicate: 10 extreme values near INT bounds (edge case)"></iframe>
+
+<!-- Speaker note: open the "edge-extremes" preset from the selector; show that the (x*x)%4 identity still never equals 2 even at values like INT_MAX/INT_MIN (despite the potential for signed overflow) — tie this back to this week's integer overflow section. -->
 
 ---
 
@@ -1421,22 +1607,22 @@ The template alone is solved quickly on its own → Week 9 depth.
 # Buggy Code
 
 ```c
-void selamla(const char *ad) {
-    char tampon[16];
-    strcpy(tampon, ad);          /* sınır yok */
-    printf("Merhaba %s\n", tampon);
+void greet(const char *name) {
+    char buffer[16];
+    strcpy(buffer, name);          /* no bound */
+    printf("Hello %s\n", buffer);
 }
 ```
 
-What happens if `ad` is longer than 16 bytes?
+What happens if `name` is longer than 16 bytes?
 
 ---
 
 # What Happens? · Step by Step
 
-- `tampon` is 16 bytes on the stack.
-- `strcpy` copies `ad` all the way to its end, paying no attention to bounds.
-- An `ad` longer than 16 → neighbouring memory (including the return address) is corrupted.
+- `buffer` is 16 bytes on the stack.
+- `strcpy` copies `name` all the way to its end, paying no attention to bounds.
+- A `name` longer than 16 → neighbouring memory (including the return address) is corrupted.
 
 ---
 
@@ -1451,9 +1637,9 @@ What happens if `ad` is longer than 16 bytes?
 # Fix 1 · Bounded Copying
 
 ```c
-int n = snprintf(tampon, sizeof tampon, "%s", ad);
-if (n < 0 || (size_t)n >= sizeof tampon) {
-    /* ad kesildi: reddet ya da işaretle */
+int n = snprintf(buffer, sizeof buffer, "%s", name);
+if (n < 0 || (size_t)n >= sizeof buffer) {
+    /* truncated: reject or flag it */
 }
 ```
 

@@ -1,0 +1,4 @@
+CEN429-XX-01|met||
+this line has no pipe separators at all
+CEN429-YY-02|unknown|S9|note
+CEN429-ZZ-03|delegated|S10|

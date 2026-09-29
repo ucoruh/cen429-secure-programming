@@ -6,7 +6,7 @@
 | **Learning outcomes** | LO.2, 4 |
 | **Duration** | 3 hours |
 | **Prerequisites** | AES-GCM, HMAC, key derivation and what TLS does, from [Week 3](../week-3/cen429-week-3.md); being able to run the `openssl` command in a terminal |
-| **Labs** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 2 demos; requires OpenSSL 3; `sh demo.sh` in each demo folder |
+| **Labs** | [`code/week-10`](https://github.com/ucoruh/cen429-secure-programming/tree/main/code/week-10) — 11 demos (2 shell/OpenSSL, 9 Python); OpenSSL 1.1.1+ or 3.x is enough; `sh demo.sh` / `python <demo>.py` in each demo folder |
 
 <!-- materyal:basla -->
 
@@ -30,26 +30,40 @@
 
 <!-- materyal:bitis -->
 
-!!! example "This week's working demo"
-    `code/week-10/01-pki-zincir` — root->intermediate->server chain with OpenSSL; `verify` errors without the intermediate certificate, OK once it's added.
-    · `code/week-10/02-imza-dogrulama` — Ed25519 signature/verification: the correct signature is accepted, a tampered one is rejected; the `==1` trap.
+!!! example "This week's working demos (11 demos)"
+    `code/week-10/01-pki-chain` — root->intermediate->server chain with OpenSSL; `verify` errors without the intermediate certificate, OK once it's added; an expired certificate, the wrong root, a non-CA issuer and the wrong hostname are each rejected too.
+    · `code/week-10/02-signature-verification` — ECDSA (P-256) signature/verification: the correct signature is accepted, a tampered one is rejected; the downgrade and wrong-key traps.
+    · `code/week-10/03-block-cipher-modes` … `11-hsm-key-use` — Python: block modes (ECB/CBC/CTR/a GCM-like mode), PKCS#7 padding, HMAC's inner/outer digest, the encrypt-then-MAC order, toy RSA, toy Diffie–Hellman with a man-in-the-middle, toy ECDH, CRL/OCSP, HSM/PKCS#11 key use.
 
-    To run: `sh demo.sh` (Linux/WSL) or build with CMake and run from `bin/`. Entirely synthetic and safe; it does not harm the student's computer.
+    To run: `sh demo.sh` (the shell demos) or `python <demo>.py` (the Python demos); both only ever touch their own temporary folder.
 
 
 !!! tip "Run the demo yourself — step by step (copy-paste)"
-    These two demos use **OpenSSL** and a shell script; on Windows open **WSL** or **Git Bash**. From the **`code`** folder:
+    The first two demos use **OpenSSL** and a shell script; on Windows open **WSL** or **Git Bash**. From the **`code`** folder:
 
     ```sh
     # WSL / Linux / Git Bash
-    cd week-10/01-pki-zincir
-    sh demo.sh            # kök CA → ara CA → sunucu sertifikası üretir ve zinciri doğrular
+    cd week-10/01-pki-chain
+    sh demo.sh            # root CA -> intermediate CA -> server certificate, verified under nine scenarios
 
-    cd ../02-imza-dogrulama
-    sh demo.sh            # Ed25519 ile imzala → doğrula → tek bayt kurcala → doğrulama reddetsin
+    cd ../02-signature-verification
+    sh demo.sh            # sign with ECDSA (P-256) -> verify -> tamper one byte -> verification rejects it
     ```
 
-    **Expected output:** The first demo builds a three-link **chain**; `openssl verify` finds the chain **valid**, and **verification fails once the intermediate certificate is removed** (this week's "missing intermediate certificate" rule). The second demo signs a file and verifies it (**OK**), then changes a single byte, and verification **rejects** it — this is how signature integrity catches tampering.
+    **Expected output:** The first demo builds a three-link **chain**; `openssl verify` finds the chain **valid**, and **verification fails once the intermediate certificate is removed** (this week's "missing intermediate certificate" rule); the expired, wrong-root, `CA:FALSE`-issuer and wrong-hostname scenarios are each rejected separately too. The second demo signs a file and verifies it (**OK**), then changes a single byte, and verification **rejects** it — this is how signature integrity catches tampering.
+
+    The remaining nine demos are pure Python, no dependencies needed:
+
+    ```sh
+    cd ../03-block-cipher-modes
+    python block_modes.py     # ECB/CBC/CTR/a GCM-like mode: chaining, the IV, what a flipped bit does
+    ```
+
+    The same pattern applies to `04-pkcs7-padding` (`python pkcs7.py`), `05-hmac-construction`
+    (`python hmac_construction.py`), `06-encrypt-then-mac` (`python ordering.py`), `07-rsa-toy`
+    (`python rsa_toy.py`), `08-diffie-hellman` (`python dh_toy.py`), `09-ecdh-toy` (`python ecdh_toy.py`),
+    `10-revocation` (`python revocation.py`) and `11-hsm-key-use` (`python hsm_sim.py`) — each folder's own
+    `README.md` gives a "Try it yourself" suggestion.
 
 !!! abstract "By the end of this week you will be able to"
     1. Choose an **algorithm, key length, and mode** for an application and base the choice on current standards
@@ -339,7 +353,7 @@ drops that many bytes; but first it checks whether the padding is **valid**.
 This is where the problem begins: if a decryption failure is **distinguishable** as "invalid padding" versus
 "invalid MAC" (a different error message, a different response time), an attacker can change bytes of the
 ciphertext and, by observing the server's reaction, decrypt the message byte by byte. This is called the
-**padding oracle** attack; it was described in 2002, and it kept reappearing in the following years in web
+**padding oracle** attack; Serge Vaudenay described it in 2002, and it kept reappearing in the following years in web
 frameworks and in TLS (POODLE, Lucky Thirteen).
 
 Defences:
@@ -406,6 +420,17 @@ and sends it to the server; if the server returns "invalid padding" (e.g., the l
 preceding 7 bytes are not `07`) and "padding valid but MAC invalid" as **different** errors, the attacker can
 distinguish these two cases and reconstruct the plaintext byte by byte — without ever needing the key.
 
+Watch padding being added and the three checks (length, last-byte range, every padding byte's value) run in
+order, and see which one fails for which kind of corruption:
+
+<iframe class="dsanim" src="../anim/pkcs7-padding.html" title="PKCS#7 padding: adding it and checking it" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![PKCS#7 padding — step by step](anim/pkcs7-padding.png)
+</div>
+
+Try **Fits: correct padding**, **Hard: last byte corrupted** and both **Edge case: length is no longer a block
+multiple** / **Edge case: one padding byte corrupted** to compare where each check stops.
+
 ### Worked example: seeing why ECB leaks patterns
 
 In ECB, every 16-byte block is encrypted **independently**; the same plaintext block always produces the same
@@ -433,6 +458,17 @@ blocks contain the same plaintext" — which is often a leak in its own right (e
 form's fixed fields, a repeating record structure). If you repeat the same experiment with AES-128-CBC (with a
 random IV), all three blocks come out **different**; because each block is chained by being XORed with the
 previous one.
+
+Compare all four modes (ECB, CBC, CTR, a GCM-like mode) on the same small message, byte by byte, and see what a
+tamper actually does under each one:
+
+<iframe class="dsanim" src="../anim/block-cipher-modes.html" title="Block cipher modes: ECB / CBC / CTR / GCM" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Block cipher modes — step by step](anim/block-cipher-modes.png)
+</div>
+
+Try **Fits: ECB, a repeated pattern leaks**, **Hard: CBC, ciphertext tampered** and **Edge case: GCM-like,
+tampering is REJECTED** from the picker; 🎲 also generates a random message/mode.
 
 !!! danger "Common mistake: saying 'we used AES, so we're secure'"
     A call made in a codebase without specifying the mode (e.g., `Cipher.getInstance("AES")` in Java) can
@@ -464,8 +500,8 @@ MAC/HMAC — and the right order for combining it.
 oracle needs never arises. AES-GCM does these two steps in a single operation.
 
 A **MAC** (message authentication code) produces a short tag from a secret key and a message; someone who
-doesn't know the key cannot produce a valid tag. **HMAC** is the standard way of building a MAC from a hash
-function (SHA-256) (RFC 2104):
+doesn't know the key cannot produce a valid tag. Bellare, Canetti and Krawczyk defined **HMAC** in 1996; it was
+standardized as RFC 2104 in 1997. It is the standard way of building a MAC from a hash function (SHA-256):
 
 ```text
 HMAC(K, m) = H( (K ⊕ opad) ‖ H( (K ⊕ ipad) ‖ m ) )
@@ -474,6 +510,16 @@ HMAC(K, m) = H( (K ⊕ opad) ‖ H( (K ⊕ ipad) ‖ m ) )
 The two nested digests remove the **length-extension** weakness of the plain `H(K ‖ m)` construction: in
 Merkle–Damgård-structured digests like SHA-256, if `H(K ‖ m)` is known, `H(K ‖ m ‖ extra)` can be computed
 without knowing the key. So **don't derive your own MAC from a digest**; use HMAC (the warning in Recipe 6.19).
+
+Watch how the inner (ipad) and outer (opad) digest mix the key with two different constants, and what happens
+when the key is longer or shorter than one block:
+
+<iframe class="dsanim" src="../anim/hmac-inner-outer.html" title="HMAC: the inner/outer hash construction" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HMAC inner/outer digest — step by step](anim/hmac-inner-outer.png)
+</div>
+
+Compare **Fits: short key**, **Hard: long key, hashed down first** and **Edge case: key exactly one block long**.
 
 ```bash title="HMAC-SHA-256 with OpenSSL"
 printf 'tutar=100;alici=TR00' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(openssl rand -hex 32)
@@ -491,6 +537,18 @@ AEAD modes make this choice correctly on your behalf. If you must do your own co
 **two separate keys** (one for encryption, one for the MAC; both can be derived from a single secret with HKDF),
 follow the encrypt-then-MAC order, include the IV and context information in the MAC as well, and make the
 comparison constant-time.
+
+Protect the same message both ways and apply the SAME tamper to each: encrypt-then-MAC rejects it immediately
+for ONE reason (MAC mismatch); MAC-then-encrypt decrypts/checks padding first, so it can report TWO DIFFERENT
+failures depending on what the tamper actually corrupted:
+
+<iframe class="dsanim" src="../anim/encrypt-then-mac-order.html" title="Encrypt-then-MAC vs MAC-then-encrypt" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Encrypt-then-MAC vs MAC-then-encrypt — step by step](anim/encrypt-then-mac-order.png)
+</div>
+
+Run **Hard: a tamper that spares the padding** next to **Edge case: a tamper that corrupts the padding** and
+compare exactly where each path stops.
 
 ### Replay: a valid but old message
 
@@ -593,13 +651,14 @@ cryptography is used for only two jobs (Recipe 7.1): **carrying or agreeing on a
 
 ### RSA: with the right padding
 
-RSA's mathematics in its plain form ("textbook RSA") is insecure: the same message always gives the same
-ciphertext, and its mathematical structure is open to attacks. Secure use depends on the **correct padding
-scheme**:
+Rivest, Shamir and Adleman published **RSA** in 1977. Its mathematics in plain form ("textbook RSA") is insecure:
+the same message always gives the same ciphertext, and its mathematical structure is open to attacks. Secure use
+depends on the **correct padding scheme** — the PKCS#1 (v1.5) padding scheme was published by RSA Laboratories in
+1991; Daniel Bleichenbacher published a practical padding-oracle attack against v1.5 encryption in 1998:
 
 | Job | Correct scheme | Obsolete scheme | Why? |
 | --- | --- | --- | --- |
-| Encryption | **RSA-OAEP** (SHA-256) | PKCS#1 v1.5 encryption | Padding-oracle attacks against v1.5 encryption (since 1998, with recurring variants) |
+| Encryption | **RSA-OAEP** (SHA-256) | PKCS#1 v1.5 encryption | Bleichenbacher's 1998 padding-oracle attack and its later variants |
 | Signature | **RSA-PSS** | PKCS#1 v1.5 signature | v1.5 signing is still widespread and not broken, but PSS is the scheme with a security proof |
 
 The book's "raw" RSA operations in Recipes 7.10–7.13 are there to help you understand how unpadded RSA works;
@@ -621,9 +680,21 @@ openssl dgst -sha256 -sign rsa_ozel.pem -sigopt rsa_padding_mode:pss -out belge.
 openssl dgst -sha256 -verify rsa_acik.pem -sigopt rsa_padding_mode:pss -signature belge.sig belge.txt
 ```
 
+A real 3072-bit key's arithmetic can't be traced by hand; follow the same operations (keygen, encrypt, decrypt,
+sign, verify) end to end with **toy primes** (Wikipedia's classic `p=61, q=53` example):
+
+<iframe class="dsanim" src="../anim/rsa-toy.html" title="Toy RSA: keygen, encrypt, sign, verify" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Toy RSA — step by step](anim/rsa-toy.png)
+</div>
+
+Start with **Fits: the classic example**, then see why verification fails in **Edge case: signature tampered**
+and **Edge case: verifying with the wrong public key**.
+
 ### Elliptic curves: the same security, a shorter key
 
-Elliptic-curve cryptography (ECC) provides the security level of 3072-bit RSA with a 256-bit key; its
+Elliptic-curve cryptography (ECC) was independently proposed by Neal Koblitz (1987) and Victor Miller (1985). It
+provides the security level of 3072-bit RSA with a 256-bit key; its
 operations are faster, and its keys and signatures are much shorter.
 
 | Algorithm | Job | Note |
@@ -649,6 +720,17 @@ openssl pkey -in ed_ozel.pem -pubout -out ed_acik.pem
 openssl pkeyutl -sign   -inkey ed_ozel.pem -rawin -in belge.txt -out belge.ed.sig
 openssl pkeyutl -verify -pubin -inkey ed_acik.pem -rawin -in belge.txt -sigfile belge.ed.sig
 ```
+
+The operation inside X25519/Ed25519 is **point addition** on a curve, not modular exponentiation. See the same
+Diffie–Hellman idea (Section 6), at the same toy scale, as point addition on a small curve:
+
+<iframe class="dsanim" src="../anim/ecdh-toy.html" title="ECDH: point addition on a tiny curve" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ECDH point addition — step by step](anim/ecdh-toy.png)
+</div>
+
+In **Hard: large private values**, watch the step count grow; in **Edge case: Mallory intercepts**, see that an
+unauthenticated curve exchange carries exactly the same weakness as Section 6's.
 
 ### Worked example: measuring RSA-3072 against Ed25519
 
@@ -802,6 +884,23 @@ The moment a single byte of the document changed, verification **failed** and th
 if your update mechanism doesn't check this code (or if the C code interprets `EVP_DigestVerify`'s return with
 `if (sonuc)`), you have made a tampered package **executable**.
 
+!!! note "Why `code/week-10/02-signature-verification/demo.sh` uses ECDSA (P-256), not Ed25519"
+    The commands above use Ed25519 (`openssl pkeyutl -sign -rawin`), which needs OpenSSL **3.x**. The repository's
+    own `demo.sh` uses **ECDSA (P-256)** instead, via `openssl dgst -sha256 -sign`, because that command works
+    identically on OpenSSL 1.1.1 and 3.x (even on older-OpenSSL environments like WSL/Ubuntu 20.04). The logic —
+    sign/verify/tamper/reject — is exactly the same; only the algorithm differs.
+
+Follow that same logic on a real signature across six scenarios (correct signature, a tampered document, a
+message signed with the attacker's own key):
+
+<iframe class="dsanim" src="../anim/digital-signature-tamper.html" title="Digital signature: verification and a tampered message" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Digital signature verification — step by step](anim/digital-signature-tamper.png)
+</div>
+
+Compare **Fits: correct signature, correct key**, **Hard: the document is tampered after signing**, and
+**Edge case: signed with the attackers own key**.
+
 ### Rollback: the signature is valid but the content is old
 
 Let's make the "scope of the signature" trap concrete. Suppose an application update server signs each version
@@ -854,6 +953,15 @@ with each of the two parties:
 ![Man-in-the-middle attack against unauthenticated Diffie-Hellman](assets/h10-02-dh-mitm.svg)
 
 Both parties think "I have a secure channel"; in reality every message passes through the attacker's hands.
+Follow the same attack end to end with small numbers (the classic `p=23, g=5` example) below — first Alice and
+Bob's honest exchange, then watch both sides land on **different** keys once Mallory intercepts:
+
+<iframe class="dsanim" src="../anim/diffie-hellman-mitm.html" title="Diffie–Hellman key exchange and the man-in-the-middle" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Diffie–Hellman and the man-in-the-middle — step by step](anim/diffie-hellman-mitm.png)
+</div>
+
+Compare **Fits: the classic example** (the honest exchange) with **Edge case: Mallory intercepts** (the attack).
 
 ### The fix: authenticated key exchange
 
@@ -1243,6 +1351,18 @@ Note the `openssl verify` output at every step:
 3. Produce a certificate that expires immediately with `-days 0`.
 4. Set the SAN to `DNS:baska.ornek` and try it with `openssl s_client -verify_hostname localhost`.
 
+Try all six of the four questions' cases (signature? reaches the root? still valid? name matches?) — missing
+intermediate, expired, wrong root, a `CA:FALSE` issuer, wrong hostname and the complete chain — in the same
+animation, and get a feel for it before you solve scenarios 3 and 4 yourself:
+
+<iframe class="dsanim" src="../anim/x509-chain-validation.html" title="X.509 chain validation: path building" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![X.509 chain validation — step by step](anim/x509-chain-validation.png)
+</div>
+
+In the picker, **Edge case: the certificate has expired** and **Edge case: the requested name is not in the SAN
+list** correspond to questions 3 and 4 above.
+
 ### Worked example: solving two scenarios of the class activity from start to finish
 
 Let's solve the first two of the four scenarios above together; you will complete scenarios 3 and 4 yourself.
@@ -1308,7 +1428,7 @@ before its validity period expires. There are three ways for the client to learn
 | Method | How? | Pro | Con |
 | --- | --- | --- | --- |
 | **CRL** (revocation list) | The CA regularly publishes a signed list of revoked serial numbers | Simple, can be cached offline | The list grows; a revocation is not noticed within the update interval |
-| **OCSP** | The client asks the CA's responder "is this serial number valid?" | Instant | Latency, privacy (the CA learns which site was visited), what happens if the responder is unreachable? |
+| **OCSP** (RFC 2560, 1999) | The client asks the CA's responder "is this serial number valid?" | Instant | Latency, privacy (the CA learns which site was visited), what happens if the responder is unreachable? |
 | **OCSP stapling** | The server attaches a fresh OCSP response for its own certificate to the handshake | Privacy and speed | Requires server configuration |
 
 ```bash title="Revocation and CRL check with the lab CA (summary)"
@@ -1396,6 +1516,17 @@ validity date has not yet expired.
 This is the complete solution to Exercise 6; repeat the same steps in your own lab and inspect the contents of
 `index.txt` (`cat demoCA/index.txt`) — every line carries a certificate's record (status, date, serial number,
 subject name).
+
+See why a CRL can go **stale** (once its own `nextUpdate` has passed it must say "stale," not "good") and why
+OCSP always stays **current**, by running both methods on the same certificate side by side:
+
+<iframe class="dsanim" src="../anim/crl-ocsp-revocation.html" title="Revocation checking: CRL and OCSP" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![CRL and OCSP — step by step](anim/crl-ocsp-revocation.png)
+</div>
+
+Compare **Hard: the certificate is revoked** with **Edge case: the CRL is stale — the revocation is not seen**
+to see the cost of a CRL's cacheability.
 
 ### Worked example: how big does a CRL get?
 
@@ -1496,6 +1627,17 @@ same idea ("give the data, get the signature"), but in OpenSSL the key (if read 
 memory**; in PKCS#11 the key **never** enters the application's address space. Moving Section 5's
 `imza_dogrula` function to an HSM only means routing the signing side to a `C_Sign` call — the **verification**
 side already only needs the public key, so it does not need the HSM.
+
+See the same idea in a small simulation: `generate_keypair()` returns only a **handle**, `sign(handle, data)`
+computes the signature INSIDE the HSM, and signing is rejected with an unknown or destroyed handle:
+
+<iframe class="dsanim" src="../anim/hsm-pkcs11-key-use.html" title="HSM/PKCS#11: key use, the key never leaves" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![HSM/PKCS#11 key use — step by step](anim/hsm-pkcs11-key-use.png)
+</div>
+
+Try **Hard: signed with one handle, verified with ANOTHER** and **Edge case: a handle that was never
+generated**.
 
 ### Why is `CKA_EXTRACTABLE` the most critical attribute?
 

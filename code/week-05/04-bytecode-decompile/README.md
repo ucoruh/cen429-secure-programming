@@ -1,45 +1,44 @@
-# Demo 4 — Bytecode ve decompile: `.class` içinde ne görünür?
+# Demo 4 — Bytecode and decompiling: what shows up inside `.class`?
 
-**Konu:** Bytecode, tersine mühendislik, sırların koda gömülmesi (CWE-798) ·
-**Hafta:** 5 · **Kitap:** Viega & Messier, Tarif 12.11 (dize gizleme — kavram)
+**Topic:** Bytecode, reverse engineering, secrets embedded in code (CWE-798) ·
+**Week:** 5 · **Book:** Viega & Messier, Recipe 12.11 (string hiding — concept)
 
-## Ne gösteriyor?
+## What it shows
 
-Küçük bir "lisans/PIN denetimi" sınıfı derlenir. Sonra JDK'nin kendi **`javap -c -p`**
-aracıyla `.class` dosyası incelenir. Kaynak kod **olmadan** bile şunların açıkça
-göründüğünü görürsünüz:
+A small "license/PIN check" class is compiled. Then the JDK's own **`javap -c -p`**
+tool inspects the `.class` file. Even **without** the source code, you can plainly see:
 
-- **Sabit dizeler:** `// String 4729` (PIN) ve `// String PRO-2026-DEMO` (lisans
-  anahtarı) sabit havuzunda (constant pool) düz metin durur.
-- **Private alan ve metot adları:** `GECERLI_PIN`, `pinDogru`, `lisansGecerli` —
-  anlamlı adlar mantığı ele verir.
-- **Dallanma mantığı:** `ldc` (sabit yükle) ve `invokevirtual equals` bytecode'u,
-  "girdiyi şu sabitle karşılaştır" mantığını gösterir.
+- **Constant strings:** `// String 4729` (the PIN) and `// String PRO-2026-DEMO`
+  (the license key) sit as plain text in the constant pool.
+- **Field and method names:** `VALID_PIN`, `pinCorrect`, `licenseValid` — meaningful
+  names give the logic away.
+- **Branch logic:** the `ldc` (load constant) and `invokevirtual equals` bytecode
+  shows "compare the input against this constant" plainly.
 
-Bu, gizleme (obfuscation) ihtiyacının **motivasyonudur**: Java bytecode yüksek
-seviyelidir ve `javap`, `jadx`, CFR gibi araçlarla kolayca okunur. Demo 5 bu sızıntıyı
-dize gizleme ve yansıma ile azaltır.
+This is the **motivation** for obfuscation: Java bytecode is high-level and easy to
+read with tools like `javap`, `jadx` or CFR. Demo 5 reduces this leak with string
+hiding and reflection.
 
-## Çalıştırma
+## Running it
 
-| Ortam | Komut |
+| Environment | Command |
 | --- | --- |
-| Windows (PowerShell) | `.\demo.ps1` — ya da `demo.cmd`'ye çift tıklayın |
+| Windows (PowerShell) | `.\demo.ps1` — or double-click `demo.cmd` |
 | WSL / Linux | `sh demo.sh` |
 
-Yalnızca **JDK 17/21** gerekir (`javac`, `javap`). **İndirme gerektirmez.**
+Only **JDK 17/21** is needed (`javac`, `javap`). **No download required.**
 
-## Neden güvenli?
+## Why it's safe
 
-- Program yalnızca ekrana yazar; hiçbir dosyaya/sisteme dokunmaz, ağ kullanmaz.
-- Bütün değerler (`4729`, `PRO-2026-DEMO`) **sentetiktir**; gerçek bir ürün, lisans ya
-  da PIN değildir.
+- The program only prints to the screen; it touches no file/system, uses no network.
+- Every value (`4729`, `PRO-2026-DEMO`) is **synthetic**; not a real product, license
+  or PIN.
 
-## Kendiniz deneyin
+## Try it yourself
 
-1. `javap -c -p LisansDenetimi` çıktısında `ldc` satırlarını bulun. PIN'i hangi satır
-   ele veriyor? Bir saldırgan bu bilgiyle programı nasıl atlatabilir?
-2. `main`'e doğru PIN'i (`4729`) argüman olarak verip çalıştırın. Bytecode'daki mantık
-   ekranda gördüğünüz davranışla nasıl eşleşiyor?
-3. `javap -v` (tam ayrıntı) çalıştırın. Sabit havuzunda (Constant pool) dizeleri
-   listeleyin. `String` girişleri neden ayrı ayrı görünüyor?
+1. In the `javap -c -p LicenseCheck` output, find the `ldc` lines. Which line gives
+   the PIN away? How could an attacker use this information to bypass the program?
+2. Run `main` with the correct PIN (`4729`) as an argument. How does the bytecode's
+   logic match the behavior you see on screen?
+3. Run `javap -v` (full detail). List the strings in the constant pool. Why do the
+   `String` entries show up separately from the code that uses them?

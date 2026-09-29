@@ -59,14 +59,14 @@
 !!! tip "Prepare the lab beforehand"
     This week's demos need **Python 3** and **JDK 17+**. The main part of the SQL demo runs with Python's built-in
     `sqlite3` module, with nothing to download; for the optional Java parts (the JDBC driver, ProGuard) every demo
-    folder has a `hazirla` (prepare) script. The scripts only download into the demo folder; they install nothing on
+    folder has a `prepare` script. The scripts only download into the demo folder; they install nothing on
     the system.
 
     === "Windows"
 
         ```powershell
         java -version; python --version
-        cd cen429-secure-programming\code\week-05\01-sql-enjeksiyonu
+        cd cen429-secure-programming\code\week-05\01-sql-injection
         .\demo.ps1
         ```
 
@@ -74,7 +74,7 @@
 
         ```bash
         sudo apt install -y openjdk-17-jdk python3
-        cd cen429-secure-programming/code/week-05/01-sql-enjeksiyonu
+        cd cen429-secure-programming/code/week-05/01-sql-injection
         sh demo.sh
         ```
 
@@ -187,12 +187,21 @@ behaviour. In **managed** languages such as Java, Kotlin, C#, Python and JavaScr
 !!! note "Brief history: managed languages and the gaps that remain"
     - **1995** — **Java** and the JVM: the garbage collector and bounds checking remove most **memory bugs** at
       the language level.
-    - **1998** — SQL injection is documented for the first time (Rain Forest Puppy); **2003** the **OWASP Top 10**
-      is published — **logic/injection** bugs, not memory bugs, come to the fore.
-    - **2002** — **ProGuard** (Java shrinking/obfuscation), later **R8**: a response to how easily bytecode can be
-      turned back into source.
-    - **2015** — Java **deserialisation** attacks; **2020–21** **SolarWinds** and **Log4Shell** open the age of
-      supply-chain/**SBOM** concerns.
+    - **1998** — SQL injection is documented in detail for the first time: rain.forest.puppy's article
+      "NT Web Technology Vulnerabilities" in *Phrack* issue 54; **2003** the first **OWASP Top 10** is
+      published — **logic/injection** bugs, not memory bugs, come to the fore.
+    - **2002** — **ProGuard** (Java shrinking/obfuscation) is released; **2019** its Android successor **R8**
+      (built by Google) becomes the default in the Android Gradle Plugin.
+    - **2014** — **Shellshock** (CVE-2014-6271): a single bug in how Bash parses environment variables leaves
+      millions of already-deployed systems open to command injection — a reminder of how old and deep shell
+      parsing bugs can run.
+    - **2015** — Chris Frohoff and Gabriel Lawrence's "Marshalling Pickles" talk shows remote code execution
+      through Java `readObject()` by chaining classes (a gadget chain) inside the **Apache Commons Collections**
+      library; **2017** the same class of attack, through an unpatched **Apache Struts** library
+      (CVE-2017-5638), leads to the **Equifax** breach — one of the largest examples of why dependency tracking
+      matters.
+    - **2020–21** **SolarWinds** and **Log4Shell** (CVE-2021-44228) open the age of supply-chain/**SBOM**
+      concerns.
 
     Main idea: the language solves memory bugs, it **does not solve injection or dependency risk**.
 
@@ -223,27 +232,27 @@ In [Week 4](../week-4/cen429-week-4.md) we saw that for a 10-element array such 
 **undefined behaviour** in C, and most of the time silently corrupts adjacent memory with no error at all. Let's
 trace the same bug in Java, step by step.
 
-```java title="DiziTasmasi.java"
-public class DiziTasmasi {
+```java title="ArrayOverflow.java"
+public class ArrayOverflow {
     public static void main(String[] args) {
-        int[] dizi = new int[10];      // a 10-element array: indices 0..9 are valid
-        dizi[9] = 42;                   // valid: the last element
-        System.out.println("dizi[9] = " + dizi[9]);
-        dizi[10] = 99;                  // INVALID: there is no 11th element
+        int[] array = new int[10];      // a 10-element array: indices 0..9 are valid
+        array[9] = 42;                   // valid: the last element
+        System.out.println("array[9] = " + array[9]);
+        array[10] = 99;                  // INVALID: there is no 11th element
     }
 }
 ```
 
-```text title="javac DiziTasmasi.java && java DiziTasmasi"
-dizi[9] = 42
+```text title="javac ArrayOverflow.java && java ArrayOverflow"
+array[9] = 42
 Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException:
     Index 10 out of bounds for length 10
-        at DiziTasmasi.main(DiziTasmasi.java:6)
+        at ArrayOverflow.main(ArrayOverflow.java:6)
 ```
 
 Step by step, what happened:
 
-1. On every array access (`dizi[10]`) the JVM **first** checks whether the index is within the bound
+1. On every array access (`array[10]`) the JVM **first** checks whether the index is within the bound
    `0 ≤ i < length`; this check is a part of the bytecode the compiler generates that runs **before every
    `aload`/`iastore`**.
 2. Because `10` is equal to or greater than the array's length, `10`, the check fails.
@@ -319,27 +328,27 @@ interpreter's escaping rules are different, and forgetting just one is enough.
 
 | Interpreter | Single channel (wrong) | Two channels (correct) |
 | --- | --- | --- |
-| SQL engine | `"SELECT … WHERE ad='" + ad + "'"` | `PreparedStatement` + `?` parameters |
+| SQL engine | `"SELECT … WHERE name='" + name + "'"` | `PreparedStatement` + `?` parameters |
 | Shell | `Runtime.exec("sh -c 'ping " + host + "'")` | `ProcessBuilder("ping", host)` — no shell |
-| Filesystem | `new File(kok, istek)` | Canonicalise + check it is inside the root |
+| Filesystem | `new File(root, request)` | Canonicalise + check it is inside the root |
 | XML | Building XML by string concatenation | Building elements and attributes with the DOM / StAX API |
-| HTML | `"<p>" + yorum + "</p>"` | The template engine's automatic escaping, context-aware encoding |
-| `printf` | `printf(girdi)` | `printf("%s", girdi)` |
+| HTML | `"<p>" + comment + "</p>"` | The template engine's automatic escaping, context-aware encoding |
+| `printf` | `printf(input)` | `printf("%s", input)` |
 
 ### Why does the interpreter mistake input for "code"? Step by step
 
 This is the link students miss the most: **the interpreter does not know which characters of the string it
 receives are "fixed code the programmer wrote" and which are "data the user entered."** All it has is a sequence of
 characters, one after another. Let's make this concrete; let's follow, character by character, how a SQL engine
-reads the string that `"SELECT ... WHERE ad = '" + ad + "'"` builds at run time (assume the `ad` variable holds the
+reads the string that `"SELECT ... WHERE name = '" + name + "'"` builds at run time (assume the `name` variable holds the
 input `x' OR '1'='1`):
 
 1. Java first performs the string concatenation; the result is **a single piece of plain text**:
-   `SELECT ... WHERE ad = 'x' OR '1'='1'`. From this point on, the information "this part was written by the
+   `SELECT ... WHERE name = 'x' OR '1'='1'`. From this point on, the information "this part was written by the
    developer," "this part was entered by the user" has **already been lost** — all that remains is characters.
 2. This plain text is sent to the SQL engine as **a single command**. The engine's parser (lexer/parser) scans the
    string left to right, character by character, and enters a **state** based on each character.
-3. After reading `WHERE ad =`, it meets a space and then a `'` character → the parser moves into the "string
+3. After reading `WHERE name =`, it meets a space and then a `'` character → the parser moves into the "string
    literal started" state. From then on it treats every following character (letter, space, `O`, `R`, …) as the
    **content** of that string literal, up to the next `'` character.
 4. The first `'` in the input (the one the user wrote) satisfies exactly this expectation: the parser says "the
@@ -371,16 +380,16 @@ Imagine that behind a login form there is code like this:
 ![SQL injection forming step by step](assets/h05-03-sql-enjeksiyon.svg)
 
 ```java title="Wrong: the query is built by string concatenation"
-String sql = "SELECT id, rol FROM kullanicilar WHERE ad = '" + ad +
-             "' AND parola_ozeti = '" + ozet + "'";
-ResultSet rs = baglanti.createStatement().executeQuery(sql);
+String sql = "SELECT id, role FROM users WHERE name = '" + name +
+             "' AND password_hash = '" + hash + "'";
+ResultSet rs = connection.createStatement().executeQuery(sql);
 ```
 
-When the username field has `ayse` typed into it, the query behaves as expected. But if the user types
-`ayse' --`, the query turns into this:
+When the username field has `alice` typed into it, the query behaves as expected. But if the user types
+`alice' --`, the query turns into this:
 
 ```sql
-SELECT id, rol FROM kullanicilar WHERE ad = 'ayse' --' AND parola_ozeti = '...'
+SELECT id, role FROM users WHERE name = 'alice' --' AND password_hash = '...'
 ```
 
 `--` means "comment to the end of the line" in SQL: the password check has been **erased** from the query. A
@@ -392,10 +401,10 @@ years (CWE-89).
 ### The fix: a parameterised query
 
 ```java title="Correct: PreparedStatement"
-String sql = "SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?";
-try (PreparedStatement ps = baglanti.prepareStatement(sql)) {
-    ps.setString(1, ad);
-    ps.setString(2, ozet);
+String sql = "SELECT id, role FROM users WHERE name = ? AND password_hash = ?";
+try (PreparedStatement ps = connection.prepareStatement(sql)) {
+    ps.setString(1, name);
+    ps.setString(2, hash);
     try (ResultSet rs = ps.executeQuery()) {
         /* ... */
     }
@@ -407,17 +416,29 @@ separate channel. Whatever the value contains (`'`, `--`, `;`), it is compared o
 the query's structure. This is the exact counterpart of the "two channels" principle from the previous section
 (IDS00-J).
 
+The animation below shows a password value being appended into the query text character by character — and how a
+single quote turns a "data" character into a "code" character — as well as why this can never happen with a
+parameterised query.
+
+<iframe class="dsanim" src="../anim/sql-injection.html" title="SQL injection: string concatenation and a parameterized query" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SQL injection: string concatenation and a parameterized query — step by step](anim/sql-injection.png)
+</div>
+
+Try the **Normal**, **Hard** (`' OR '1'='1`) and **Edge case** examples; use 🎲 to generate a random password, or
+type your own value.
+
 ### Why does a parameterised query work, mechanically?
 
 In Section 3 we saw that the parser works character by character. `PreparedStatement` splits this mechanism into
 **two stages**; that is where the magic hides:
 
-1. **Prepare stage:** when `baglanti.prepareStatement(sql)` is called, only the text
-   `SELECT id, rol FROM kullanicilar WHERE ad = ? AND parola_ozeti = ?` is sent to the database server — the
+1. **Prepare stage:** when `connection.prepareStatement(sql)` is called, only the text
+   `SELECT id, role FROM users WHERE name = ? AND password_hash = ?` is sent to the database server — the
    user's input **does not exist yet**. The server parses this text (with the state machine from Section 3),
    produces a **query plan** and keeps this plan in memory. The `?` marks are **placeholders** inside the plan,
    marked "a value will go here."
-2. **Bind stage:** when `ps.setString(1, ad)` is called, the content of the `ad` variable is **never concatenated
+2. **Bind stage:** when `ps.setString(1, name)` is called, the content of the `name` variable is **never concatenated
    with the SQL text**. The driver sends the value through a separate binary protocol message (the wire protocol
    between JDBC and the database), saying "the value of placeholder 1 is this byte sequence."
 3. When `ps.executeQuery()` runs, the database places the incoming values directly into the plan that has
@@ -425,15 +446,15 @@ In Section 3 we saw that the parser works character by character. `PreparedState
    parser** — parsing is already finished. The characters are only copied over as "the byte sequence to compare
    against this column."
 
-It is instructive to compare this with the `printf("%s", girdi)` example from Section 3: the string put in place of
+It is instructive to compare this with the `printf("%s", input)` example from Section 3: the string put in place of
 `%s` is **not reinterpreted**, the way a `%n` inside a format string would be; it is printed as-is. In a
 parameterised query too, the value put in place of `?` is **not re-parsed**, the way the query text is; it is
 compared as-is. Both mechanisms rest on the same principle: **the parsing that determines structure happens once;
 binding the data is separate, and happens afterwards.**
 
 !!! danger "A common mistake: escaping only the single quote"
-    Some developers write a line like `ad.replace("'", "''")` and believe they have "solved SQL injection." The
-    result: in a numeric field (`WHERE yas = " + yas`) there is no single quote at all, so escaping does nothing;
+    Some developers write a line like `name.replace("'", "''")` and believe they have "solved SQL injection." The
+    result: in a numeric field (`WHERE age = " + age`) there is no single quote at all, so escaping does nothing;
     `%` is a different special character inside a `LIKE` pattern; MySQL, PostgreSQL and Oracle each have different
     escaping rules; some drivers accept sequences in Unicode or multi-byte encodings that bypass the escaping.
     Forgetting a single character class invalidates the entire defence.
@@ -448,7 +469,7 @@ binding the data is separate, and happens afterwards.**
 
 | Case | Why? | Fix |
 | --- | --- | --- |
-| Table or column name (an `ORDER BY` column) | `?` can only stand in for a **value**, not a name | White list: `Map<String,String> izinli = {"ad"→"ad", "tarih"→"kayit_tarihi"}` |
+| Table or column name (an `ORDER BY` column) | `?` can only stand in for a **value**, not a name | White list: `Map<String,String> allowed = {"name"→"name", "date"→"created_at"}` |
 | `LIKE` patterns | `%` and `_` are wildcard characters | Make the value a parameter; escape the wildcards separately |
 | A hand-written query inside an ORM | JPQL / HQL is also a query language; concatenation makes the same mistake | The ORM's parameter-binding interface (`setParameter`) |
 | Dynamic SQL inside a stored procedure | If concatenation happens inside the procedure, the problem has just moved | Use parameters inside the procedure too |
@@ -464,84 +485,84 @@ binding the data is separate, and happens afterwards.**
 
 ### Worked example: reading Demo 1's output line by line
 
-The Python part of Demo 1 (`sqli.py`) sets up an SQLite database with three synthetic users (`ayse`, `mehmet`, and
-an admin, `admin`), and runs the same login query in two ways. Let's follow, step by step, the output you will see
-when you read and run the code; at every step we tie **why** that result came out back to the mechanism from
-Sections 3–4.
+The Python part of Demo 1 (`sql_injection.py`) sets up an SQLite database with three synthetic users (`alice`,
+`bob`, and an admin, `admin`), and runs the same login query in two ways. Let's follow, step by step, the output
+you will see when you read and run the code; at every step we tie **why** that result came out back to the
+mechanism from Sections 3–4.
 
-```text title="ADIM 1 — Dürüst giriş: ad='ayse' parola='parola123'"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = 'parola123'
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
-[IYI YOL]
-   Uretilen SQL (sablon):
-   SELECT id, ad, rol FROM kullanici WHERE ad = ? AND parola = ?   [degerler ayrica gonderilir]
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
+```text title="STEP 1 — Honest login: name='alice' password='password123'"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = 'alice' AND password = 'password123'
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
+[GOOD WAY]
+   Generated SQL (template):
+   SELECT id, name, role FROM user WHERE name = ? AND password = ?   [values sent separately]
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
 ```
 
 As expected: when the input is harmless, both the wrong code and the correct code produce the same result. This is
 exactly why the wrong code **goes unnoticed** during development — testing is done with honest input.
 
-```text title="ADIM 2 — SALDIRI: parola alanina  ' OR '1'='1  yaziliyor"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = 'ayse' AND parola = '' OR '1'='1'
-   -> 3 satir dondu. GIRIS BASARILI:
-      id=1 ad=ayse rol=kullanici
-      id=2 ad=mehmet rol=kullanici
-      id=3 ad=admin rol=yonetici
-   ^ Parola bilinmeden giris yapildi: sorgu yapisi degisti.
-[IYI YOL]
-   -> Sonuc yok. GIRIS REDDEDILDI.
-   ^ Girdi bir DEGER olarak arandi; oyle bir parola yok: RED.
+```text title="STEP 2 — ATTACK: password field set to  ' OR '1'='1"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = 'alice' AND password = '' OR '1'='1'
+   -> 3 row(s) returned. LOGIN SUCCESSFUL:
+      id=1 name=alice role=user
+      id=2 name=bob role=user
+      id=3 name=admin role=admin
+   ^ Logged in without knowing the password: query structure changed.
+[GOOD WAY]
+   -> No rows. LOGIN REJECTED.
+   ^ Input was searched for as a VALUE; no such password exists: rejected.
 ```
 
-Follow the steps from Section 3 here: after `parola = '` is written, the attacker's first `'` character closes the
-string literal; the text ``OR '1'='1'`` that follows is then read as a SQL operator. Because `'1'='1'` is always
-**true**, the right-hand side of the `AND` is true for every row; the query effectively becomes
-`WHERE ad='ayse' OR true`, and **the entire table** is returned. In the correct path, the whole string the
+Follow the steps from Section 3 here: after `password = '` is written, the attacker's first `'` character closes
+the string literal; the text ``OR '1'='1'`` that follows is then read as a SQL operator. Because `'1'='1'` is
+always **true**, the right-hand side of the `AND` is true for every row; the query effectively becomes
+`WHERE name='alice' OR true`, and **the entire table** is returned. In the correct path, the whole string the
 attacker typed (quote, `OR`, equalities and all) goes to the database as a single text **value**; since no one has
 such a password, the result is empty.
 
-```text title="ADIM 3 — SALDIRI: ad alanindan yonetici satirini cekme,  ad = ' OR rol='yonetici' --"
-[KOTU YOL]
-   Uretilen SQL:
-   SELECT id, ad, rol FROM kullanici WHERE ad = '' OR rol='yonetici' --' AND parola = 'farketmez'
-   -> 1 satir dondu. GIRIS BASARILI:
-      id=3 ad=admin rol=yonetici
-   ^ Baska kullanicinin (yonetici) satiri sizdirildi.
-[IYI YOL]
-   -> Sonuc yok. GIRIS REDDEDILDI.
-   ^ Boyle bir ad yok: sizinti yok.
+```text title="STEP 3 — ATTACK: pulling the admin row through the name field,  name = ' OR role='admin' --"
+[BAD WAY]
+   Generated SQL:
+   SELECT id, name, role FROM user WHERE name = '' OR role='admin' --' AND password = 'doesn't matter'
+   -> 1 row(s) returned. LOGIN SUCCESSFUL:
+      id=3 name=admin role=admin
+   ^ Another user's (admin's) row was leaked.
+[GOOD WAY]
+   -> No rows. LOGIN REJECTED.
+   ^ No such name exists: no leak.
 ```
 
 Here the attacker both changed the query structure with `OR` **and** used `--` to turn the rest of the query (the
 password check) into a SQL comment, disabling it; it now **no longer matters at all** what is written in the
-password field. In the parameterised query this string (quote, `OR`, `--` and all) is compared against the `ad`
+password field. In the parameterised query this string (quote, `OR`, `--` and all) is compared against the `name`
 column as a single text value; since no such username exists, the result is empty.
 
 ### Demo 1 — SQL injection: string concatenation and parameterised query
 
-!!! info "Demo 1 · `code/week-05/01-sql-enjeksiyonu` · CWE-89 · IDS00-J · Recipe 3.11"
+!!! info "Demo 1 · `code/week-05/01-sql-injection` · CWE-89 · IDS00-J · Recipe 3.11"
     The demo builds a small SQLite database with synthetic users inside the demo folder, and sets up the same
     login/search query in two ways: by string concatenation and by parameterised query. The main part runs with
     Python's built-in `sqlite3` module and downloads nothing; the optional Java part shows the same idea with a
-    real JDBC `PreparedStatement` (the driver is downloaded into the demo folder by the `hazirla` script).
+    real JDBC `PreparedStatement` (the driver is downloaded into the demo folder by the `prepare` script).
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\01-sql-enjeksiyonu
+    cd code\week-05\01-sql-injection
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/01-sql-enjeksiyonu
+    cd code/week-05/01-sql-injection
     sh demo.sh
     ```
 
@@ -570,9 +591,9 @@ string (`;`, `&&`, `|`, `` ` ``, `$( )`) start new commands:
 ![Shell-based execution compared with ProcessBuilder](assets/h05-04-komut-enjeksiyon.svg)
 
 ```java title="Wrong: a string through the shell"
-String kullanici = istek.getParameter("ad");
-Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Merhaba " + kullanici});
-/* ad = "ayse; <another command>"  →  the shell runs two commands */
+String user = request.getParameter("name");
+Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo Hello " + user});
+/* name = "alice; <another command>"  →  the shell runs two commands */
 ```
 
 The same situation arises on Windows with `cmd /c` and the `&` character. Java's `Runtime.exec(String)` form,
@@ -581,15 +602,15 @@ arguments around by playing with quotes (IDS07-J).
 
 ### How does the shell parse input, step by step?
 
-Let's apply the general principle from Section 3 to the shell (`sh`, `bash`, `cmd`). Suppose the `kullanici`
-variable holds `"ayse; echo SIZDI"`; Java concatenates this string and hands the shell the following **single
-piece of text**: `echo Merhaba ayse; echo SIZDI`. The shell processes it like this:
+Let's apply the general principle from Section 3 to the shell (`sh`, `bash`, `cmd`). Suppose the `user`
+variable holds `"alice; echo LEAKED"`; Java concatenates this string and hands the shell the following **single
+piece of text**: `echo Hello alice; echo LEAKED`. The shell processes it like this:
 
 1. The shell first **splits** the text it receives **into commands**, based on **command separator** characters
    (`;`, `&&`, `||`, end of line). This is the shell's own syntax rule, exactly like the SQL parser changing state
    on a `'` character.
-2. The part up to the `;` character (`echo Merhaba ayse`) is separated out as the **first command**.
-3. The part after the `;` (`echo SIZDI`) is separated out as a **second, independent command**.
+2. The part up to the `;` character (`echo Hello alice`) is separated out as the **first command**.
+3. The part after the `;` (`echo LEAKED`) is separated out as a **second, independent command**.
 4. The shell runs **both commands in sequence** — as if the user had typed two separate lines at the terminal.
 5. The application itself believes it made a single `exec` call; but from the shell's point of view there are
    **two** commands, because the shell re-parsed the text by its own rules.
@@ -601,12 +622,12 @@ string reached the shell.
 ### The fix: no shell, with an argument list
 
 ```java title="Correct: ProcessBuilder + an allow list"
-private static final Pattern AD = Pattern.compile("^[A-Za-z0-9_]{1,32}$");
+private static final Pattern NAME = Pattern.compile("^[A-Za-z0-9_]{1,32}$");
 
-if (!AD.matcher(kullanici).matches()) {
-    throw new IllegalArgumentException("gecersiz ad");       // default: reject
+if (!NAME.matcher(user).matches()) {
+    throw new IllegalArgumentException("invalid name");       // default: reject
 }
-Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
+Process p = new ProcessBuilder("/usr/bin/printf", "Hello %s\n", user)
         .redirectErrorStream(true)
         .start();
 ```
@@ -634,45 +655,55 @@ Process p = new ProcessBuilder("/usr/bin/printf", "Merhaba %s\n", kullanici)
     `subprocess` argument list). An allow list (matching against the expected character set), not a blacklist, is
     the secondary layer.
 
+The animation below shows how the shell tokenizes a single command string, and why a bare `;`/`&` token means
+"end this command and start a new one" instead of "just another argument."
+
+<iframe class="dsanim" src="../anim/command-injection.html" title="Command injection: a shell string vs. an argv list" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Command injection: a shell string vs. an argv list — step by step](anim/command-injection.png)
+</div>
+
+Try the **Normal**, **Hard** (Linux-style `;`) and **Edge case** (Windows-style `&`) examples.
+
 ### Worked example: reading Demo 2's output line by line
 
-The Python part of Demo 2 (`komut.py`) runs a "greeting tool" first through the shell (`shell=True`), then with an
-argument list (`shell=False`). On WSL/Linux, the actual output is as follows:
+The Python part of Demo 2 (`command_injection.py`) runs a "greeting tool" first through the shell (`shell=True`),
+then with an argument list (`shell=False`). On WSL/Linux, the actual output is as follows:
 
-```text title="ADIM 1 — Durust girdi: ad = 'Ayse'"
-[KOTU YOL]
-   Kabuga giden komut:
-   echo "ARAC CIKTISI: Merhaba" Ayse
-   | ARAC CIKTISI: Merhaba Ayse
-[IYI YOL]
-   Arguman listesi:
-   [python, -c, ...] ... 'Ayse'
-   | ARAC CIKTISI: Merhaba Ayse
+```text title="STEP 1 — Honest input: name = 'Alice'"
+[BAD WAY]
+   Command sent to the shell:
+   echo "TOOL OUTPUT: Hello" Alice
+   | TOOL OUTPUT: Hello Alice
+[GOOD WAY]
+   Argument list:
+   [python, -c, ...] ... 'Alice'
+   | TOOL OUTPUT: Hello Alice
 ```
 
-```text title="ADIM 2 — SALDIRI: ad = 'Ayse; echo SIZDI-KOMUT-ENJEKSIYONU'"
-[KOTU YOL]
-   Kabuga giden komut:
-   echo "ARAC CIKTISI: Merhaba" Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
-   | ARAC CIKTISI: Merhaba Ayse
-   | SIZDI-KOMUT-ENJEKSIYONU
-   ^ 'SIZDI...' satiri = enjekte edilen komut kostu.
-[IYI YOL]
-   Izin listesi REDDETTI (^[A-Za-z0-9_]+$):
-   girdi = Ayse; echo SIZDI-KOMUT-ENJEKSIYONU
-   -> Program hic calistirilmadi.
-   ^ Izin listesi bosluk/;/& gordu ve reddetti.
+```text title="STEP 2 — ATTACK: name = 'Alice ; echo LEAKED-COMMAND-INJECTION'"
+[BAD WAY]
+   Command sent to the shell:
+   echo "TOOL OUTPUT: Hello" Alice ; echo LEAKED-COMMAND-INJECTION
+   | TOOL OUTPUT: Hello Alice
+   | LEAKED-COMMAND-INJECTION
+   ^ The 'LEAKED...' line = the injected command ran.
+[GOOD WAY]
+   Allow-list REJECTED it (^[A-Za-z0-9_]+$):
+   input = Alice ; echo LEAKED-COMMAND-INJECTION
+   -> The program was never run.
+   ^ The allow-list saw a space/;/& and rejected it.
 ```
 
 In the wrong path, the shell followed the five steps above, split the string in two at the `;`, and ran **two
-separate commands**; the second line (`SIZDI-...`) is proof that the injected command **actually ran** (the demo
+separate commands**; the second line (`LEAKED-...`) is proof that the injected command **actually ran** (the demo
 uses a harmless `echo`). In the correct path, `ProcessBuilder`/`subprocess` never calls any shell; the input is a
 single argument, and the allow list (`^[A-Za-z0-9_]+$`) rejects this input, which contains a space and a `;`,
 **before** it is ever run.
 
 ### Demo 2 — Command injection
 
-!!! info "Demo 2 · `code/week-05/02-komut-enjeksiyonu` · CWE-78 · IDS07-J · Recipe 1.7–1.8"
+!!! info "Demo 2 · `code/week-05/02-command-injection` · CWE-78 · IDS07-J · Recipe 1.7–1.8"
     A "greeting tool" passes the username to an external program. The wrong version gives the command to the shell
     as a single string (`sh -c`, `cmd /c`, `Runtime.exec(String)` in Java); a `;` or `&` in the input starts a
     second command. The injected command is only a **harmless `echo`**. The correct version uses `ProcessBuilder`
@@ -682,14 +713,14 @@ single argument, and the allow list (`^[A-Za-z0-9_]+$`) rejects this input, whic
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\02-komut-enjeksiyonu
+    cd code\week-05\02-command-injection
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/02-komut-enjeksiyonu
+    cd code/week-05/02-command-injection
     sh demo.sh
     ```
 
@@ -703,27 +734,27 @@ this folder's path, sequences of `../` escape **outside** the root:
 ![Canonicalisation and allow-list steps that close off path traversal](assets/h05-05-yol-gecisi.svg)
 
 ```java title="Wrong"
-Path kok = Paths.get("/srv/veri");
-Path dosya = kok.resolve(istek);                  // istek = "../../etc/passwd"
-return Files.readAllBytes(dosya);                 // a file outside the root is read
+Path root = Paths.get("/srv/data");
+Path file = root.resolve(request);                  // request = "../../etc/passwd"
+return Files.readAllBytes(file);                 // a file outside the root is read
 ```
 
 ### Path normalisation step by step: why does `../` walk back up to the root?
 
-`resolve()`/`normalize()` process a path with a single **stack** algorithm. Let `kok = "/srv/veri"` and
-`istek = "../../etc/passwd"`. The filesystem processes this request segment by segment, like this:
+`resolve()`/`normalize()` process a path with a single **stack** algorithm. Let `root = "/srv/data"` and
+`request = "../../etc/passwd"`. The filesystem processes this request segment by segment, like this:
 
 | Step | Segment read | Stack state | Explanation |
 | --- | --- | --- | --- |
-| 0 | (start) | `[srv, veri]` | Starts from the root path |
-| 1 | `..` | `[srv]` | One segment up (`veri`) is **popped** from the stack |
+| 0 | (start) | `[srv, data]` | Starts from the root path |
+| 1 | `..` | `[srv]` | One segment up (`data`) is **popped** from the stack |
 | 2 | `..` | `[]` | One more segment up (`srv`) is **popped** |
 | 3 | `etc` | `[etc]` | A normal segment is **pushed** onto the stack |
 | 4 | `passwd` | `[etc, passwd]` | A normal segment is pushed |
 
-Result: `/etc/passwd` — a path completely outside the root (`/srv/veri`). The `..` characters are, for the parser,
+Result: `/etc/passwd` — a path completely outside the root (`/srv/data`). The `..` characters are, for the parser,
 the command "go up one folder"; just as `'` in SQL is the command "close the string literal," `..` plays the same
-role in the filesystem. This is why a check that only searches the raw string for `".."` (`istek.contains("..")`)
+role in the filesystem. This is why a check that only searches the raw string for `".."` (`request.contains("..")`)
 is not enough: forms such as `..%2f` (URL-encoded) or `....//` (nested spelling) bypass this search, while still
 ending up outside the root when processed with **the same stack algorithm**. The correct order is therefore to
 **normalise first** (run the stack algorithm to completion), then **check the result** — we check the final stack
@@ -732,16 +763,16 @@ content, not the intermediate steps.
 ### The fix: canonicalise first, then check whether it is inside the root
 
 ```java title="Correct: canonical path + root check (FIO16-J)"
-Path kok = Paths.get("/srv/veri").toRealPath();
-Path aday = kok.resolve(istek).normalize();      // if istek is an absolute path, resolve returns it unchanged
-if (!aday.startsWith(kok)) throw new SecurityException("kok disi");
-Path gercek = aday.toRealPath();                  // also resolves symbolic links
-if (!gercek.startsWith(kok)) throw new SecurityException("kok disi");
-return Files.readAllBytes(gercek);
+Path root = Paths.get("/srv/data").toRealPath();
+Path candidate = root.resolve(request).normalize();      // if request is an absolute path, resolve returns it unchanged
+if (!candidate.startsWith(root)) throw new SecurityException("outside root");
+Path real = candidate.toRealPath();                  // also resolves symbolic links
+if (!real.startsWith(root)) throw new SecurityException("outside root");
+return Files.readAllBytes(real);
 ```
 
 Order matters: first the **canonical** (single, definitive) path is obtained, and only then is it checked.
-Checking the raw string (`istek.contains("..")`) is not enough; `..%2f`, `....//`, `..\` on Windows and absolute
+Checking the raw string (`request.contains("..")`) is not enough; `..%2f`, `....//`, `..\` on Windows and absolute
 paths with a drive letter, Unicode forms, and **symbolic links** can all bypass the check. `toRealPath()` also
 resolves symbolic links to their real targets; because the TOCTOU problem from [Week 2](../week-2/cen429-week-2.md) (the time between check and
 use) still applies, it is most robust to verify again that the file is inside the root after it has been opened.
@@ -753,51 +784,61 @@ use) still applies, it is most robust to verify again that the file is inside th
     root.
 
 !!! danger "A common mistake: searching only for the `..` string"
-    The line `if (istek.contains(".."))` is the "fix" students write most often. But `..%2f` (a URL-encoded dot and
+    The line `if (request.contains(".."))` is the "fix" students write most often. But `..%2f` (a URL-encoded dot and
     slash, which becomes `../` if decoded before reaching the server), `..\` on Windows, absolute paths with a
     drive letter (`C:\...`), and a symbolic link **inside** the root folder that points outside the root — none of
     these are caught by this one-line check. `contains("..")` can also produce a false positive on a legitimate
-    file name (`rapor..v2.txt`).
+    file name (`report..v2.txt`).
 
 !!! success "Rule"
     The only valid pattern against path traversal: **normalise (canonicalise) first, then check that the result
     stays inside the root, and if needed check again after the file is opened.** Searching the raw string for a
     pattern is never enough.
 
+The animation below walks a request path one segment at a time, and shows why, once you are already at the root,
+a `..` counts as an attempt to leave the root.
+
+<iframe class="dsanim" src="../anim/path-traversal.html" title="Path traversal: canonicalization and the root check" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Path traversal: canonicalization and the root check — step by step](anim/path-traversal.png)
+</div>
+
+Try the **Normal**, **Hard** (`../secret.txt`) and **Edge case** examples.
+
 ### Worked example: reading Demo 3's output line by line
 
-The Python part of Demo 3 (`yol.py`) treats the `cikti/veri/` folder as the **root**; outside the root
-(`cikti/gizli.txt`) there is a synthetic "admin note." The actual output:
+The Python part of Demo 3 (`path_traversal.py`) treats the `output/data/` folder as the **root**; outside the root
+(`output/secret.txt`) there is a synthetic "admin note." The actual output:
 
-```text title="ADIM 1 — Mesru istek: 'rapor.txt'"
-[KOTU YOL]
-   Cozulen yol: .../cikti/veri/rapor.txt
-   OKUNDU -> Herkese acik rapor (sentetik).
-[IYI YOL]
-   Cozulen yol: .../cikti/veri/rapor.txt
-   OKUNDU -> Herkese acik rapor (sentetik).
+```text title="STEP 1 — Legitimate request: 'report.txt'"
+[BAD WAY]
+   Resolved path: .../output/data/report.txt
+   READ -> Public report (synthetic).
+[GOOD WAY]
+   Resolved path: .../output/data/report.txt
+   READ -> Public report (synthetic).
 ```
 
-```text title="ADIM 2 — SALDIRI: '../gizli.txt' (kok disi)"
-[KOTU YOL]
-   Cozulen yol: .../cikti/gizli.txt
-   OKUNDU -> GIZLI: sentetik yonetici notu (kok disinda).
-   ^ Kok disindaki gizli dosya sizdirildi.
-[IYI YOL]
-   REDDEDILDI: kok disina cikiyor -> .../cikti/gizli.txt
-   ^ resolve() + kok denetimi engelledi.
+```text title="STEP 2 — ATTACK: '../secret.txt' (outside the root)"
+[BAD WAY]
+   Resolved path: .../output/secret.txt
+   READ -> SECRET: synthetic admin note (outside the root).
+   ^ The secret file outside the root was leaked.
+[GOOD WAY]
+   REJECTED: escapes outside the root -> .../output/secret.txt
+   ^ Canonicalization + root check blocked it.
 ```
 
-In the wrong path, the expression `KOK / "../gizli.txt"` pops the `veri` segment with the stack algorithm above and
-lands directly on `cikti/gizli.txt` — it has climbed to **one folder above the root**. In the correct path, the
-same normalisation happens, but because the result does not start with the root (`cikti/veri`), the request is
-**rejected** before it is ever executed.
+In the wrong path, the expression `ROOT / "../secret.txt"` pops the `data` segment with the stack algorithm above
+and lands directly on `output/secret.txt` — it has climbed to **one folder above the root**. In the correct path,
+the same normalisation happens, but because the result does not start with the root (`output/data`), the request
+is **rejected** before it is ever executed.
 
 ### Demo 3 — Path traversal
 
-!!! info "Demo 3 · `code/week-05/03-yol-gecisi` · CWE-22 · FIO16-J · Recipe 3.7"
-    A "file server" should serve only the files under `cikti/veri/`. The wrong version appends the request directly
-    to the root, and a `../gizli.txt` request leaks the **synthetic** secret file outside the root. The correct
+!!! info "Demo 3 · `code/week-05/03-path-traversal` · CWE-22 · FIO16-J · Recipe 3.7"
+    A "file server" should serve only the files under `output/data/`. The wrong version appends the request directly
+    to the root, and a `../secret.txt` request leaks the **synthetic** secret file outside the root. The correct
     version canonicalises the path (`normalize()` + `toRealPath()`, `resolve()` in Python) and verifies the result
     stays inside the root; an absolute path and a drive letter are also rejected. On Windows both the `..\` and
     `../` separators are handled.
@@ -805,14 +846,14 @@ same normalisation happens, but because the result does not start with the root 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\03-yol-gecisi
+    cd code\week-05\03-path-traversal
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/03-yol-gecisi
+    cd code/week-05/03-path-traversal
     sh demo.sh
     ```
 
@@ -849,9 +890,9 @@ fixed format:
    object stream.
 2. The next two bytes are `00 05` — the version of the stream format.
 3. After that comes an **object block**; this block begins with a **class descriptor**: the class's **fully
-   qualified name** (something like `com.ornek.Ayar`) sits in the stream as **plain text**, with a length prefix.
+   qualified name** (something like `com.example.Setting`) sits in the stream as **plain text**, with a length prefix.
 4. When `ObjectInputStream.readObject()` runs, it first reads this name, then **looks up and loads** the class on
-   the class path with a call resembling `Class.forName(isim)` — no type check has happened yet, because the
+   the class path with a call resembling `Class.forName(name)` — no type check has happened yet, because the
    stream itself is stating what the expected type is.
 5. Once the class is loaded, the JVM **allocates** an object of this class (without an ordinary constructor call,
    through a mechanism specific to deserialisation) and writes the field values from the stream into this object;
@@ -886,59 +927,71 @@ how the chain is built, but steps 3–4 fully explain "why it is possible."
 | 5 | **Dependency hygiene** | Do not leave unused libraries on the class path (Section 14) |
 
 ```java title="Allow-list filter (SER12-J)"
-ObjectInputFilter filtre = ObjectInputFilter.Config.createFilter(
-        "com.ornek.Ayar;java.base/*;maxdepth=5;maxarray=1000;maxbytes=65536;!*");
-try (ObjectInputStream in = new ObjectInputStream(akis)) {
-    in.setObjectInputFilter(filtre);
-    Ayar a = (Ayar) in.readObject();          // unexpected class → InvalidClassException
+ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(
+        "com.example.Setting;java.base/*;maxdepth=5;maxarray=1000;maxbytes=65536;!*");
+try (ObjectInputStream in = new ObjectInputStream(stream)) {
+    in.setObjectInputFilter(filter);
+    Setting s = (Setting) in.readObject();          // unexpected class → InvalidClassException
 }
 ```
 
-The pattern is read left to right: allow classes in `com.ornek.Ayar` and the `java.base` module, apply the limits,
+The pattern is read left to right: allow classes in `com.example.Setting` and the `java.base` module, apply the limits,
 **reject everything else** (`!*`). The last item is the deny-by-default principle; if it is left out, the filter
 turns into a blacklist.
 
+The animation below shows that an unfiltered stream always builds whatever class it names, while a filtered
+stream first checks that name against an allow-list pattern.
+
+<iframe class="dsanim" src="../anim/deserialization.html" title="Unsafe deserialization: the allow-list check" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Unsafe deserialization: the allow-list check — step by step](anim/deserialization.png)
+</div>
+
+Try the **Normal**, **Hard** (a suspicious class name) and **Edge case** examples.
+
 ### Worked example: reading Demo 7's output line by line
 
-Demo 7's Java code (`SeriDemo.java`) defines two harmless classes: the **expected** `Ayar` (carries a name +
-value), and the **unexpected** `BaskaSinif` (in a real attack this would be a "gadget"; here it only carries a
-string). Both are serialised and then deserialised, first without a filter, then with one. The actual output:
+Demo 7's Java code (`SerializationDemo.java`) defines two harmless classes: the **expected** `Setting` (carries a
+name + value), and the **unexpected** `OtherClass` (in a real attack this would be a "gadget"; here it only
+carries a string). Both are serialised and then deserialised, first without a filter, then with one. The actual
+output:
 
-```text title="ADIM 1 — FILTRESIZ cozme: her sinif kabul edilir"
-   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)  (Ayar)
-   [beklenmeyen BaskaSinif] KABUL -> BaskaSinif(yuk=beklenmeyen-sinif)  (BaskaSinif)
-   ^ Filtre olmadan gelen HER sinif olusturulur;
-     gercekte bu bir gadget zinciri olabilirdi.
+```text title="STEP 1 — UNFILTERED deserialization (bad): every class accepted"
+   [expected Setting] ACCEPTED -> Setting(name=timeout, value=30)  (Setting)
+   [unexpected OtherClass] ACCEPTED -> OtherClass(payload=unexpected-class)  (OtherClass)
+   ^ Without a filter, EVERY class in the stream is built;
+     in a real attack this could have been a gadget chain.
 ```
 
-```text title="ADIM 2 — ObjectInputFilter ile: allow-list"
-   [beklenen Ayar] KABUL -> Ayar(ad=zaman-asimi, deger=30)
-   [beklenmeyen BaskaSinif] REDDEDILDI (filtre): beklenmeyen sinif engellendi.
+```text title="STEP 2 — With ObjectInputFilter (good): allow-list"
+   [expected Setting] ACCEPTED -> Setting(name=timeout, value=30)
+   [unexpected OtherClass] REJECTED (filter): unexpected class blocked.
 ```
 
-The filter `"SeriDemo$Ayar;java.base/*;!*"` allows only the `Ayar` class and Java's own core classes. Recall the
-mechanism from Step 1: the filter checks the name read from the stream **before the class is loaded**; because
-`BaskaSinif` is not on the list, the `readObject` call stops with an `InvalidClassException` — the class is never
-instantiated, none of its methods run.
+The filter `"SerializationDemo$Setting;java.base/*;!*"` allows only the `Setting` class and Java's own core
+classes. Recall the mechanism from Step 1: the filter checks the name read from the stream **before the class is
+loaded**; because `OtherClass` is not on the list, the `readObject` call stops with an `InvalidClassException` —
+the class is never instantiated, none of its methods run.
 
 ### Demo 7 — Safe deserialisation
 
-!!! info "Demo 7 · `code/week-05/07-deserializasyon` · CWE-502 · SER12-J"
+!!! info "Demo 7 · `code/week-05/07-deserialization` · CWE-502 · SER12-J"
     The demo **contains no attack chain at all**. The unfiltered version creates every class in the stream: both
-    the expected `Ayar` and the unexpected `BaskaSinif` are accepted. The filtered version uses `ObjectInputFilter`
-    to allow only the expected classes; the unexpected class is rejected with `InvalidClassException`.
+    the expected `Setting` and the unexpected `OtherClass` are accepted. The filtered version uses
+    `ObjectInputFilter` to allow only the expected classes; the unexpected class is rejected with
+    `InvalidClassException`.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\07-deserializasyon
+    cd code\week-05\07-deserialization
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/07-deserializasyon
+    cd code/week-05/07-deserialization
     sh demo.sh
     ```
 
@@ -1042,8 +1095,8 @@ much easier than Java does. The same bug classes appear here under different nam
 
 | Bug | Java | Python | JavaScript / Node.js |
 | --- | --- | --- | --- |
-| SQL injection | `Statement` + concatenation | `cursor.execute(f"... {ad}")` | Query built with a template string |
-| The fix | `PreparedStatement` | `cursor.execute("... ?", (ad,))` | The driver's parameter-binding interface |
+| SQL injection | `Statement` + concatenation | `cursor.execute(f"... {name}")` | Query built with a template string |
+| The fix | `PreparedStatement` | `cursor.execute("... ?", (name,))` | The driver's parameter-binding interface |
 | Command injection | `Runtime.exec(String)` | `os.system`, `subprocess.run(..., shell=True)` | `child_process.exec` |
 | The fix | `ProcessBuilder` | `subprocess.run([...])` (a list, `shell=False`) | `child_process.execFile` / `spawn` (an array) |
 | Running code | Reflection, script engines | `eval`, `exec` | `eval`, `new Function`, `vm` |
@@ -1056,11 +1109,11 @@ The most dangerous feature of interpreted languages is being able to run a strin
 from the user reaching `eval` is the most direct form of injection: the interpreter itself is the command channel.
 
 ```python title="Wrong and correct: reading a number the user entered"
-deger = eval(girdi)                 # WRONG: girdi could be any Python expression
+value = eval(input_text)                 # WRONG: input_text could be any Python expression
 
 import ast
-deger = ast.literal_eval(girdi)     # Better: accepts only LITERALS such as numbers, strings, lists
-deger = int(girdi)                  # Best: parse the expected type directly, catch the error
+value = ast.literal_eval(input_text)     # Better: accepts only LITERALS such as numbers, strings, lists
+value = int(input_text)                  # Best: parse the expected type directly, catch the error
 ```
 
 The rule is simple: **user data must never reach `eval`, `exec`, `new Function`, or a script engine.** If a
@@ -1087,9 +1140,9 @@ libraries' full loaders can create objects in a similar way.
 ```python title="Safe choices"
 import json, yaml
 
-veri = json.loads(metin)            # data only: dict, list, number, string
-ayar = yaml.safe_load(metin)        # only basic YAML types
-# pickle.loads(metin)               # ONLY on data you produced yourself and verified with an HMAC
+data = json.loads(text)             # data only: dict, list, number, string
+config = yaml.safe_load(text)       # only basic YAML types
+# pickle.loads(text)                # ONLY on data you produced yourself and verified with an HMAC
 ```
 
 ### Denial of service through regular expressions (ReDoS)
@@ -1170,7 +1223,7 @@ disproportionate effect" idea from Week 4.
 
 In JavaScript, objects inherit properties from a **prototype** chain. If a function that deep-merges a JSON object
 coming from the user allows writing to a special key such as `__proto__`, a new property gets added to the shared
-prototype of all objects; a check elsewhere in the application such as `if (kullanici.yonetici)` can then come out
+prototype of all objects; a check elsewhere in the application such as `if (user.admin)` can then come out
 unexpectedly true. Defence: reject the keys `__proto__`, `constructor` and `prototype`, use prototype-less objects
 (`Object.create(null)`) or a `Map`, and validate incoming JSON against a **schema**.
 
@@ -1204,13 +1257,13 @@ cover, in depth on the C/C++ side, the very tools used against obfuscation (symb
 recognition) and the principle of **resilience** against them
 ([Week 9, §10](../week-9/cen429-week-9.md#10-deobfuscation-the-other-sides-tools-and-the-resilience-rule)).
 
-```text title="javap -c -p LisansDenetimi.class (abridged)"
-private static final java.lang.String GECERLI_PIN;
-public boolean pinDogru(java.lang.String);
+```text title="javap -c -p LicenseCheck.class (abridged, real output)"
+private static final java.lang.String VALID_PIN;
+static boolean pinCorrect(java.lang.String);
   Code:
-     0: aload_1
-     1: ldc           #7        // String 4729
-     3: invokevirtual #9        // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     0: ldc           #9                  // String 4729
+     2: aload_0
+     3: invokevirtual #11                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
      6: ireturn
 ```
 
@@ -1221,22 +1274,33 @@ Let's make the four lines above readable even for someone who has never seen byt
 
 | Line | Instruction | What does it do? | Stack state (after the operation) |
 | --- | --- | --- | --- |
-| `0` | `aload_1` | **Push** local variable 1 (the method's first parameter, the entered PIN) onto the stack | `[girilenPin]` |
-| `1` | `ldc #7` | **Push** entry 7 from the constant pool (the string `"4729"`) onto the stack | `[girilenPin, "4729"]` |
-| `3` | `invokevirtual #9` | **Pop** two values off the stack, call the `String.equals(...)` method, **push** the result (true/false) onto the stack | `[sonuc]` |
+| `0` | `ldc #9` | **Push** entry 9 from the constant pool (the string `"4729"`, i.e. `VALID_PIN`) onto the stack | `[VALID_PIN]` |
+| `2` | `aload_0` | **Push** local variable 0 (the method's only parameter, `entered`) onto the stack | `[VALID_PIN, entered]` |
+| `3` | `invokevirtual #11` | **Pop** two values off the stack, call the `String.equals(...)` method, **push** the result (true/false) onto the stack | `[result]` |
 | `6` | `ireturn` | Return the integer/boolean value on the stack as the method's **return value** | `[]` |
 
-These four lines are the **exact** counterpart of the source expression `return girilenPin.equals("4729");` — no
-information has been lost. The `// String 4729` comment is `javap` reading and showing entry 7 from the constant
+These four lines are the **exact** counterpart of the source expression `return VALID_PIN.equals(entered);` — no
+information has been lost. The `// String 4729` comment is `javap` reading and showing entry 9 from the constant
 pool; decompilers (jadx, CFR) see these four lines and produce the source code
-`return girilenPin.equals("4729");` directly. In C, in the equivalent machine code after `strip`, neither the
+`return VALID_PIN.equals(entered);` directly. In C, in the equivalent machine code after `strip`, neither the
 constant's value nor which type the `equals` call operates on would remain this obvious (compare with the machine
 code examples from [Week 4](../week-4/cen429-week-4.md)).
 
 Even without the source code, three things are plainly visible: the constant (`4729`), meaningful names
-(`GECERLI_PIN`, `pinDogru`), and the logic ("compare the input to this constant"). A password, API key or server
+(`VALID_PIN`, `pinCorrect`), and the logic ("compare the input to this constant"). A password, API key or server
 address embedded in the code has effectively been handed to everyone who downloads the application (MSC03-J,
 CWE-798).
+
+The animation below shows exactly these four bytecode instructions mapping, one at a time, onto reconstructed
+source fragments — until the whole method has been rebuilt.
+
+<iframe class="dsanim" src="../anim/bytecode-decompile.html" title="From bytecode to source: mapping with javap" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![From bytecode to source: mapping with javap — step by step](anim/bytecode-decompile.png)
+</div>
+
+Try the **Normal** (PIN check, a wrong guess), **Hard** (the correct PIN) and **Edge case** (the license check)
+examples.
 
 !!! danger "A common mistake: thinking 'I'm not giving out the source code, so I'm safe'"
     Distributing a `.jar` or `.apk` file does not mean not giving out the source code: according to the table
@@ -1296,9 +1360,9 @@ jobs:
 Obfuscation's output is a **mapping file** (`mapping.txt`) that matches old names to new ones:
 
 ```text title="mapping.txt (abridged, names synthetic)"
-com.ornek.odeme.KartYoneticisi -> com.ornek.a:
-    android.content.Context baglam -> a
-    boolean varsayilanKartiAyarla(java.lang.String) -> b
+com.example.payment.CardManager -> com.example.a:
+    android.content.Context context -> a
+    boolean setDefaultCard(java.lang.String) -> b
 ```
 
 !!! danger "The mapping file is a secret"
@@ -1328,29 +1392,29 @@ cases the name has to be kept; otherwise the application throws a `ClassNotFound
 | `-dontobfuscate` / `-dontshrink` / `-dontoptimize` | Turns off the corresponding stage |
 
 The golden principle of writing rules is to write **the narrowest rule**. A broad rule like
-`-keep class com.ornek.** { *; }` effectively turns obfuscation off; this is the most common "obfuscation exists
+`-keep class com.example.** { *; }` effectively turns obfuscation off; this is the most common "obfuscation exists
 but doesn't do anything" situation seen in the field.
 
 ### Worked example: why a missing `-keep` crashes the application
 
-If a class's name is called through reflection (`Class.forName("com.ornek.Odeme")`) but there is no `-keep` for
+If a class's name is called through reflection (`Class.forName("com.example.Payment")`) but there is no `-keep` for
 this class in `proguard-rules.pro`, here is what happens, step by step:
 
-1. During compilation, ProGuard/R8 **sees no static call** to the `com.ornek.Odeme` class — because the call is
+1. During compilation, ProGuard/R8 **sees no static call** to the `com.example.Payment` class — because the call is
    written as a **string** inside `Class.forName`; the obfuscator does not count strings as part of the class
    graph.
 2. The obfuscator assumes this class is "unused" and either removes it during the **shrinking** stage or renames
    it to `a.b.c`.
-3. When the application runs, `Class.forName("com.ornek.Odeme")` is called; but the class's name in this release is
+3. When the application runs, `Class.forName("com.example.Payment")` is called; but the class's name in this release is
    now different (or the class does not exist at all).
 4. At run time a `ClassNotFoundException` is thrown (if the class was removed) or a `NoSuchMethodException` (if the
    method's name changed) — this is seen **only in the release build**, because obfuscation is turned off in the
    debug build (Section 13); the developer usually only notices the problem during store testing.
 
 ```text title="A typical crash trace from a missing -keep (illustrative)"
-java.lang.ClassNotFoundException: com.ornek.Odeme
+java.lang.ClassNotFoundException: com.example.Payment
     at java.lang.Class.forName(Class.java:...)
-    at com.ornek.a.b.baslat(Unknown Source:1)
+    at com.example.a.b.start(Unknown Source:1)
 ```
 
 !!! danger "A common mistake: forgetting a class called through reflection"
@@ -1363,6 +1427,16 @@ java.lang.ClassNotFoundException: com.ornek.Odeme
     When you add a new library, first add its official ProGuard/R8 rules (most libraries carry their own
     `consumer-rules.pro` file); then **actually run and test** the release build. "It compiled" and "it works" are
     not the same thing while ProGuard/R8 is turned on.
+
+The animation below shows ProGuard/R8 walking a class's members one at a time, either **keeping** a name because
+it matches a `-keep` rule, or **renaming** it to a short, meaningless one.
+
+<iframe class="dsanim" src="../anim/proguard-renaming.html" title="ProGuard/R8: the member-renaming map" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![ProGuard/R8: the member-renaming map — step by step](anim/proguard-renaming.png)
+</div>
+
+Try the **Normal**, **Hard** (nothing kept) and **Edge case** (`-keep` too broad — obfuscation wasted) examples.
 
 ### Advanced rules: a configuration from the field
 
@@ -1419,8 +1493,8 @@ is decoded at the moment it is used. Meaningless bytes appear in the constant po
 
 ### Worked example: decoding XOR obfuscation by hand
 
-Demo 5's `GizliSabit.java` file scrambles the synthetic string `"sunucu-anahtari-9F3A"` with the XOR key `0x5A`
-(decimal 90) and stores it as a byte array. Let's decode the first three bytes of the source array (`41, 47, 52`)
+Demo 5's `HiddenConstant.java` file scrambles the synthetic string `"server-key-9F3A"` with the XOR key `0x5A`
+(decimal 90) and stores it as a byte array. Let's decode the first three bytes of the source array (`41, 63, 40`)
 by hand; by the definition of XOR, XOR-ing with the same key **twice** returns the original value
 (`x ⊕ k ⊕ k = x`) — this is why encryption and decoding are **the same** operation:
 
@@ -1431,24 +1505,24 @@ by hand; by the definition of XOR, XOR-ing with the same key **twice** returns t
  115 = 0111 0011  =  0x73  =  's'
 ```
 
-```text title="Byte 2: 47 ⊕ 90 = 'u' (0x75)"
-  47 = 0010 1111
+```text title="Byte 2: 63 ⊕ 90 = 'e' (0x65)"
+  63 = 0011 1111
   90 = 0101 1010
   ----------------
- 117 = 0111 0101  =  0x75  =  'u'
+ 101 = 0110 0101  =  0x65  =  'e'
 ```
 
-```text title="Byte 3: 52 ⊕ 90 = 'n' (0x6E)"
-  52 = 0011 0100
+```text title="Byte 3: 40 ⊕ 90 = 'r' (0x72)"
+  40 = 0010 1000
   90 = 0101 1010
   ----------------
- 110 = 0110 1110  =  0x6E  =  'n'
+ 114 = 0111 0010  =  0x72  =  'r'
 ```
 
-The remaining 17 bytes decode with the same operation and give, in order, the characters
-`u, c, u, -, a, n, a, h, t, a, r, i, -, 9, F, 3, A`; joined together, they produce exactly the source string
-`"sunucu-anahtari-9F3A"`. `javap -c -p` shows **not** this string, but only 20 meaningless byte values and the
-`ANAHTAR` constant; a `strings` scan does not find the plain text either. But the key (`0x5A`) and the decoding
+The remaining 12 bytes decode with the same operation and give, in order, the characters
+`v, e, r, -, k, e, y, -, 9, F, 3, A`; joined together, they produce exactly the source string
+`"server-key-9F3A"`. `javap -c -p` shows **not** this string, but only 15 meaningless byte values and the
+`KEY` constant; a `strings` scan does not find the plain text either. But the key (`0x5A`) and the decoding
 loop are **inside the same class** — which is why the warning below applies.
 
 !!! danger "A common mistake: thinking XOR obfuscation is 'encryption'"
@@ -1463,18 +1537,29 @@ loop are **inside the same class** — which is why the warning below applies.
     client code at all; it should be fetched from the server at run time, or protected with dedicated methods such
     as the whitebox cryptography from [Week 11](../week-11/cen429-week-11.md).
 
+The animation below plays out this exact XOR loop byte by byte: starting from the encrypted byte array, it builds
+the decrypted string live.
+
+<iframe class="dsanim" src="../anim/string-decryption.html" title="Runtime string decryption: XOR-based hiding" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Runtime string decryption: XOR-based hiding — step by step](anim/string-decryption.png)
+</div>
+
+Try the **Normal** (the real Demo 5 constant), **Hard** and **Edge case** (a `0x00` key — nothing is hidden at
+all!) examples.
+
 ### Dynamic method invocation (reflection)
 
-Calling a method directly (`nesne.gizliIslem()`) leaves an explicit link (`invokevirtual`) to that method in the
+Calling a method directly (`object.hiddenOperation()`) leaves an explicit link (`invokevirtual`) to that method in the
 bytecode; the decompiler easily reconstructs the graph of "this function is called from here." With
 **reflection**, the method name in the call is generated at run time (and this name can also be obfuscated):
 
 ```java title="Direct and dynamic invocation"
-sonuc = Hesap.gizliIslem(girdi);                                   // an explicit link in the bytecode
+result = Account.hiddenOperation(input);                                   // an explicit link in the bytecode
 
-Method m = Hesap.class.getDeclaredMethod(adiCoz(ADI_BAYTLARI), String.class);
+Method m = Account.class.getDeclaredMethod(resolveName(NAME_BYTES), String.class);
 m.setAccessible(true);
-sonuc = (String) m.invoke(null, girdi);                            // the static call graph is broken
+result = (String) m.invoke(null, input);                            // the static call graph is broken
 ```
 
 Let's be honest about the limits: the method is still defined in the class, and `javap -p` lists it; reflection
@@ -1494,25 +1579,25 @@ handful of genuinely sensitive calls.
 
 ### Demo 5 — String obfuscation, reflection and ProGuard
 
-!!! info "Demo 5 · `code/week-05/05-gizleme` · Recipe 12.11 (concept), 12.9 (indirect call, concept)"
+!!! info "Demo 5 · `code/week-05/05-obfuscation` · Recipe 12.11 (concept), 12.9 (indirect call, concept)"
     Three defences are shown in sequence: **(A)** the same secret string sits as a byte array scrambled with XOR
     instead of plain text, and does not appear in `javap`'s output; **(B)** the method name is generated at run
     time and called through reflection, so no direct call remains in the bytecode; **(C)** optionally, the same jar
     is shrunk and obfuscated with ProGuard: the entry point kept with `-keep` remains, unused private members are
     removed, and the rest are renamed with short names. ProGuard is downloaded into the demo folder by the
-    `hazirla` script.
+    `prepare` script.
 
 === "Windows (PowerShell)"
 
     ```powershell
-    cd code\week-05\05-gizleme
+    cd code\week-05\05-obfuscation
     .\demo.ps1
     ```
 
 === "WSL / Linux"
 
     ```bash
-    cd code/week-05/05-gizleme
+    cd code/week-05/05-obfuscation
     sh demo.sh
     ```
 
@@ -1588,21 +1673,22 @@ Filling in this table for before and after obfuscation and putting it into the s
 ### Worked example: doing the measurement step by step on Demo 5
 
 Let's actually run the first two rows of this table on the jar files Demo 5 produces (if you downloaded ProGuard
-with the demo's `hazirla` script):
+with the demo's `prepare` script):
 
 ```bash title="1) Before obfuscation: count meaningful names"
-cd code/week-05/05-gizleme/cikti
-javap -p -classpath oncesi.jar 'GizliSabit' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Output: every name from the source (class, field, method) appears verbatim
+cd code/week-05/05-obfuscation/output
+javap -p -classpath sample.jar DirectCall | grep -c "hiddenOperation"
+# Output: 1 (the source method name appears verbatim)
 ```
 
 ```bash title="2) After obfuscation: the same search"
-javap -p -classpath sonrasi.jar 'a' | grep -c "GizliSabit\|coz\|GIZLI\|ANAHTAR"
-# Expected: 0 (or only the name of the entry point kept with -keep)
+mkdir -p extracted && (cd extracted && jar -xf ../sample-obfuscated.jar)
+javap -p -classpath extracted DirectCall | grep -c "hiddenOperation"
+# Expected: 0 (the unused private member was removed by shrinking)
 ```
 
 ```bash title="3) Package size"
-ls -la oncesi.jar sonrasi.jar
+ls -la sample.jar sample-obfuscated.jar
 # Shrinking reduces the size depending on the class count; obfuscation alone barely changes the size
 ```
 
@@ -1662,9 +1748,12 @@ like the ingredients list on a food package. At least the following is recorded 
 | Licence | Apache-2.0 | Licence compliance |
 | Supplier, dependency relations | who depends on what | To trace transitive dependencies |
 
-There are two common standards: OWASP's **CycloneDX** (security-focused) and the Linux Foundation's **SPDX**
-(started licence-focused, now the ISO/IEC 5962 standard). The United States' 2021 cybersecurity executive order
-and the European Union's Cyber Resilience Act have begun requiring an SBOM from software suppliers.
+There are two common standards: the Linux Foundation's **SPDX** (Software Package Data Exchange, published in
+**2011**, originally for licence compliance; later became the ISO/IEC 5962 standard) and OWASP's **CycloneDX**
+(published in **2017**, designed from the start around the security/SBOM use case). US Executive Order **EO
+14028** ("Improving the Nation's Cybersecurity", **May 2021**) is one of the first major regulations to require
+an SBOM from federal software suppliers; the European Union's Cyber Resilience Act brings a similar requirement
+to the EU.
 
 ```json title="CycloneDX 1.5 — a single-component excerpt (values synthetic)"
 {
@@ -1672,9 +1761,9 @@ and the European Union's Cyber Resilience Act have begun requiring an SBOM from 
   "specVersion": "1.5",
   "components": [{
     "type": "library",
-    "name": "ornek-json",
+    "name": "example-json",
     "version": "1.2.0",
-    "purl": "pkg:maven/com.ornek/ornek-json@1.2.0",
+    "purl": "pkg:maven/com.example/example-json@1.2.0",
     "hashes": [{ "alg": "SHA-256", "content": "9f86d081884c7d65..." }]
   }]
 }
@@ -1724,46 +1813,57 @@ A match does not always mean "we are affected": the vulnerable function might ne
     SBOM prepared by hand once and attached to a document is correct on the day it was produced, not on the day of
     the next dependency update.
 
+The animation below shows every component in a dependency tree being checked, one at a time, by name **and exact
+version** against a known-vulnerable list — the **same** synthetic list Demo 6 itself uses.
+
+<iframe class="dsanim" src="../anim/sbom-cve-match.html" title="SBOM dependency tree → CVE matching" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![SBOM dependency tree → CVE matching — step by step](anim/sbom-cve-match.png)
+</div>
+
+Try the **Normal** (all four safe), **Hard** (Demo 6's real SBOM, two matches) and **Edge case** (a fixed version
+is no longer flagged) examples.
+
 ### Worked example: reading Demo 6's output line by line
 
 Demo 6 (`sbom.py`) produces small jar files from four synthetic libraries, writes a CycloneDX component for each
 one, and matches them against a small dictionary of "known vulnerable versions." The actual output (the component
 names and versions come from a fixed list in the source code):
 
-```text title="ADIM 1 — SBOM uretildi (4 bilesen)"
-ad                     surum    SHA-256 (ilk 16)
-gunluk-cekirdek        2.14.0   <jar baytlarindan hesaplanir>...
-json-arac              2.5.1    <jar baytlarindan hesaplanir>...
-kayit-kutuphanesi      1.2.0    <jar baytlarindan hesaplanir>...
-sifreleme-yardimci     3.0.4    <jar baytlarindan hesaplanir>...
+```text title="STEP 1 — SBOM generated (4 components)"
+name                   version  SHA-256 (first 16)
+crypto-helper          3.0.4    <computed from the jar bytes>...
+json-tool              2.5.1    <computed from the jar bytes>...
+log-core               2.14.0   <computed from the jar bytes>...
+record-library         1.2.0    <computed from the jar bytes>...
 ```
 
-```text title="ADIM 2 — purl ornekleri"
-pkg:maven/ornek.grup/gunluk-cekirdek@2.14.0
-pkg:maven/ornek.grup/json-arac@2.5.1
-pkg:maven/ornek.grup/kayit-kutuphanesi@1.2.0
-pkg:maven/ornek.grup/sifreleme-yardimci@3.0.4
+```text title="STEP 2 — purl examples"
+pkg:maven/example.group/crypto-helper@3.0.4
+pkg:maven/example.group/json-tool@2.5.1
+pkg:maven/example.group/log-core@2.14.0
+pkg:maven/example.group/record-library@1.2.0
 ```
 
-```text title="ADIM 3 — Bilinen (sentetik) zafiyetli surumlerle eslestirme"
-[UYARI] gunluk-cekirdek 2.14.0  (CEN429-2026-0001)
-        Bicimli mesajda uzaktan kod calistirma (sentetik ornek).
-        Cozum: >= 2.17.1 surumune yukselt.
-[UYARI] json-arac 2.5.1  (CEN429-2026-0002)
-        Guvensiz seri durumdan cikarma (sentetik ornek).
-        Cozum: >= 2.6.0 surumune yukselt.
+```text title="STEP 3 — Matching against the (synthetic) known-vulnerable-version list"
+[WARNING] json-tool 2.5.1  (CEN429-2026-0002)
+          Unsafe deserialization (synthetic example).
+          Fix: upgrade to >= 2.6.0.
+[WARNING] log-core 2.14.0  (CEN429-2026-0001)
+          Remote code execution via a formatted message (synthetic example).
+          Fix: upgrade to >= 2.17.1.
 ```
 
 The SHA-256 values come out **different** on every run (the generated jar's ZIP metadata contains a timestamp);
 this is deliberate, and it is a good supply-chain lesson — the hash verifies **exactly which byte sequence** the
-file is; "the name and version match" alone is not enough. `kayit-kutuphanesi` and `sifreleme-yardimci` are not on
+file is; "the name and version match" alone is not enough. `record-library` and `crypto-helper` are not on
 the synthetic vulnerability list, so they **get no warning** — the part of an SBOM that stays empty is also
 information: it means "these components are not on the known list," not "they are safe."
 
 ### Demo 6 — Generating an SBOM and matching it against vulnerabilities
 
 !!! info "Demo 6 · `code/week-05/06-sbom` · CWE-1104"
-    The demo produces a CycloneDX 1.5 JSON SBOM from its own **synthetic** jar files (`cikti/lib/`): a name,
+    The demo produces a CycloneDX 1.5 JSON SBOM from its own **synthetic** jar files (`output/lib/`): a name,
     version, purl and SHA-256 for every component. It then matches these against a small, **synthetic** "known
     vulnerable versions" list and warns for the two affected components. It does not connect to the internet.
 
@@ -1823,8 +1923,8 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
     whether the called program interprets this input as an option, and add the `--` separator.
 
 ??? question "Exercise 4 — Medium: Path traversal variants"
-    Send Demo 3's safe version the following requests: `..%2fgizli.txt`, `....//gizli.txt`, an absolute path,
-    `..\gizli.txt` and a drive-lettered path on Windows, and a file inside the root that points outside the root
+    Send Demo 3's safe version the following requests: `..%2fsecret.txt`, `....//secret.txt`, an absolute path,
+    `..\secret.txt` and a drive-lettered path on Windows, and a file inside the root that points outside the root
     with a **symbolic link**. Which one is rejected by which check?
 
 ??? question "Exercise 5 — Medium: Deserialisation without and with a filter"
@@ -1906,14 +2006,14 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
     and never pass through the parser again; this is why, whatever their content, they cannot change the query's
     structure.
 
-??? question "15. How many commands does the shell run the string `echo Merhaba ayse; echo SIZDI` as? Why?"
+??? question "15. How many commands does the shell run the string `echo Hello alice; echo LEAKED` as? Why?"
     Two commands. The shell first splits the text it receives into separate commands based on command separators
     such as `;`; this is the shell's own syntax rule, and it has nothing to do with Java's information "this was a
     single username."
 
-??? question "16. Resolve `KOK.resolve(\"../../etc/passwd\")` step by step with the stack algorithm: what is the result?"
+??? question "16. Resolve `ROOT.resolve(\"../../etc/passwd\")` step by step with the stack algorithm: what is the result?"
     Every `..` segment pops the previous segment off the stack; every normal segment is pushed onto the stack. The
-    two `..`'s remove the root's last two segments (`srv`, `veri`); the remaining `etc` and `passwd` are pushed.
+    two `..`'s remove the root's last two segments (`srv`, `data`); the remaining `etc` and `passwd` are pushed.
     Result: `/etc/passwd` — completely outside the root.
 
 ??? question "17. Which information in the stream does `ObjectInputStream` read to decide which class to create? Who determines this information?"
@@ -1954,8 +2054,8 @@ Even if your project is C/C++, two of this week's topics apply directly to your 
     (Vulnerability Exploitability eXchange) documents state, in machine-readable form, whether a known
     vulnerability in a component genuinely affects the product.
 
-??? question "25. In Demo 1's wrong path, with the input `ad = ' OR rol='yonetici' --`, why does the login succeed no matter what is written in the password field?"
-    `--` starts a comment to the end of the line in SQL; the parser never reads the `AND parola_ozeti = '...'`
+??? question "25. In Demo 1's wrong path, with the input `name = ' OR role='admin' --`, why does the login succeed no matter what is written in the password field?"
+    `--` starts a comment to the end of the line in SQL; the parser never reads the `AND password_hash = '...'`
     part that follows this character as part of the query at all. The password check has effectively been erased
     from the query.
 

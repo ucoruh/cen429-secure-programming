@@ -237,6 +237,15 @@ Son üç bayt **`03 03 03`**: eksik bayt sayısı (16 − 13 = 3) kadar, o sayı
 
 ---
 
+# PKCS#7 · dolgu ve denetim — animasyon
+
+<iframe class="dsanim" src="anim/pkcs7-padding.html?mode=slide&lang=tr" title="PKCS#7 dolgu"></iframe>
+
+<!-- Konuşma notu: dolgu eklenmesi + üç denetim (uzunluk, son bayt aralığı, her dolgu baytı). Hangi bozulma
+hangi denetimde durur. -->
+
+---
+
 # GCM · modern tercih (AEAD)
 
 - **AES-GCM:** gizlilik **+** bütünlük birlikte.
@@ -264,6 +273,24 @@ Son üç bayt **`03 03 03`**: eksik bayt sayısı (16 − 13 = 3) kadar, o sayı
 - AES-GCM'e AEAD alternatifi.
 - Donanım AES desteği yoksa hızlı.
 - Aynı nonce kuralı geçerli.
+
+---
+
+# Kipler karşılaştırması — animasyon
+
+<iframe class="dsanim" src="anim/block-cipher-modes.html?mode=slide&lang=tr" title="Blok şifreleme kipleri"></iframe>
+
+<!-- Konuşma notu: Aynı mesaj, dört kip. ECB'de desen sızar (aynı bayt = aynı çıktı). CBC'de bir bit çevirmek
+bu bloğu ÇÖP yapar, bir SONRAKİ bloğu aynı bitte çevirir. CTR'de bir bit çevirmek TAM OLARAK bir bit değiştirir.
+GCM benzeri modda kurcalama etiket uyuşmazlığıyla REDDEDİLİR. -->
+
+---
+
+# Kipler · uç durum
+
+<iframe class="dsanim" src="anim/block-cipher-modes.html?mode=slide&lang=tr&example=edge-gcm-reject" title="GCM benzeri kip: kurcalama reddedilir"></iframe>
+
+<!-- Konuşma notu: GCM'in fail-closed davranışı — hiç plaintext dönmüyor, tag tutmuyorsa. -->
 
 ---
 
@@ -375,6 +402,15 @@ yeni etiket üretemez; alıcı uyuşmazlığı yakalar.
 
 ---
 
+# HMAC · iç/dış özet — animasyon
+
+<iframe class="dsanim" src="anim/hmac-inner-outer.html?mode=slide&lang=tr" title="HMAC iç/dış özet"></iframe>
+
+<!-- Konuşma notu: K' xor ipad -> iç özet (mesajla); K' xor opad -> dış özet (iç özetle) = etiket. Anahtar
+kısa/uzun/tam blok durumlarını karşılaştırın. -->
+
+---
+
 # Sabit zamanlı karşılaştırma
 
 ```c
@@ -414,6 +450,15 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 - **MAC-then-encrypt:** dolgu kâhinine açık.
 - **Encrypt-and-MAC:** MAC düz metni sızdırabilir.
 - Doğrusu: **encrypt-then-MAC** (ya da AEAD, zaten böyle yapar).
+
+---
+
+# Sıra neden önemli — animasyon
+
+<iframe class="dsanim" src="anim/encrypt-then-mac-order.html?mode=slide&lang=tr" title="Encrypt-then-MAC vs MAC-then-encrypt"></iframe>
+
+<!-- Konuşma notu: aynı kurcalama, iki sıra. EtM her zaman AYNI hatayla (MAC) reddeder. MtE, bozulmanın türüne
+göre İKİ FARKLI hata (dolgu / MAC) verebilir — dolgu kâhini şekli budur. -->
 
 ---
 
@@ -476,6 +521,15 @@ karşılaştırın; `memcmp`/`==` bir zamanlama saldırısına açık kapı bır
 
 ---
 
+# Oyuncak RSA · uçtan uca — animasyon
+
+<iframe class="dsanim" src="anim/rsa-toy.html?mode=slide&lang=tr" title="Oyuncak RSA"></iframe>
+
+<!-- Konuşma notu: p=61, q=53, e=17 klasik örneği. n, phi, d hesabı; encrypt/decrypt/sign/verify aynı üs alma
+işlemi, yalnız üs değişiyor. Kurcalanmış imza ve yanlış anahtarla doğrulama neden başarısız. -->
+
+---
+
 # OAEP vs PSS
 
 - **OAEP:** RSA **şifreleme** dolgusu.
@@ -524,6 +578,15 @@ bu yüzden hiçbir zaman doğrudan şifreleme için kullanılmaz.
 - **Ed25519:** modern **imza** algoritması.
 - **X25519:** modern **anahtar anlaşması** (DH).
 - Karıştırma: Ed25519 imza, X25519 anahtar.
+
+---
+
+# ECDH · nokta toplama — animasyon
+
+<iframe class="dsanim" src="anim/ecdh-toy.html?mode=slide&lang=tr" title="ECDH nokta toplama"></iframe>
+
+<!-- Konuşma notu: X25519/Ed25519 içinde üs alma yerine EĞRİ ÜZERİNDE NOKTA TOPLAMA var. Aynı DH fikri, farklı
+matematik. Mallory araya girince yine iki farklı anahtar. -->
 
 ---
 
@@ -638,6 +701,15 @@ Negatif hata değeri de "doğru" sayılır. Doğrusu: `r == 1`.
 
 ---
 
+# İmza doğrulama · üç senaryo — animasyon
+
+<iframe class="dsanim" src="anim/digital-signature-tamper.html?mode=slide&lang=tr" title="Dijital imza doğrulama"></iframe>
+
+<!-- Konuşma notu: doğru imza kabul; belge imzadan sonra kurcalanınca red; saldırganın kendi anahtarıyla
+imzaladığı mesaj GERÇEK açık anahtarla doğrulanınca red. -->
+
+---
+
 # İmza · özet kuralı
 
 - İmza aslında **özetin** imzalanmasıdır.
@@ -722,6 +794,21 @@ Ali ↔ [Saldırgan] ↔ Veli
 ```
 
 Her iki taraf "güvenli kanal kurdum" sanır.
+
+---
+
+# DH ve MITM — animasyon
+
+<iframe class="dsanim" src="anim/diffie-hellman-mitm.html?mode=slide&lang=tr" title="Diffie–Hellman ve araya girme"></iframe>
+
+<!-- Konuşma notu: p=23, g=5 klasik örneği. Önce dürüst değişim (Alice/Bob aynı anahtar). Sonra Mallory araya
+girince: Alice bir anahtar, Bob BAŞKA bir anahtar — ikisi de aslında Mallory ile konuşuyor. -->
+
+---
+
+# DH/MITM · uç durum
+
+<iframe class="dsanim" src="anim/diffie-hellman-mitm.html?mode=slide&lang=tr&example=edge-mitm" title="Mallory araya giriyor"></iframe>
 
 ---
 
@@ -1065,6 +1152,21 @@ Ara sertifikayı verince zincir tamamlanır.
 
 ---
 
+# Zincir doğrulama · altı senaryo — animasyon
+
+<iframe class="dsanim" src="anim/x509-chain-validation.html?mode=slide&lang=tr" title="X.509 zincir doğrulama"></iframe>
+
+<!-- Konuşma notu: eksik ara, süresi dolmuş, yanlış kök, CA:FALSE imzalayıcı, yanlış ad, tam zincir — hepsi
+aynı dört sorunun cevabı. -->
+
+---
+
+# Zincir · uç durum (süresi dolmuş)
+
+<iframe class="dsanim" src="anim/x509-chain-validation.html?mode=slide&lang=tr&example=edge-expired" title="Süresi dolmuş sertifika"></iframe>
+
+---
+
 # Sertifika doğrulamayı kapatma
 
 ```c
@@ -1167,6 +1269,15 @@ iptal denetimi, süre denetiminden **bağımsız** çalışır.
 
 ---
 
+# CRL vs OCSP — animasyon
+
+<iframe class="dsanim" src="anim/crl-ocsp-revocation.html?mode=slide&lang=tr" title="CRL ve OCSP"></iframe>
+
+<!-- Konuşma notu: OCSP her zaman ANLIK. CRL önbelleklenebilir ama BAYATLAYABİLİR — nextUpdate geçince
+"iyi" değil "bayat" demeli. Uç durumda bayat bir CRL iptali GÖSTERMEZ. -->
+
+---
+
 # ⚠️ Fail-open tuzağı
 
 - OCSP'ye ulaşılamayınca sertifikayı **kabul etmek** = fail-open.
@@ -1220,6 +1331,15 @@ iptal denetimi, süre denetiminden **bağımsız** çalışır.
 # PKCS#11 ile imzalama — şema
 
 ![w:900](assets/h10-14-pkcs11-imzalama.svg)
+
+---
+
+# Anahtar hiç çıkmaz — animasyon
+
+<iframe class="dsanim" src="anim/hsm-pkcs11-key-use.html?mode=slide&lang=tr" title="HSM/PKCS#11 anahtar kullanımı"></iframe>
+
+<!-- Konuşma notu: generate_keypair() yalnız bir KULP döndürür. sign(kulp, veri) imzayı HSM İÇİNDE hesaplar.
+Bilinmeyen/yok edilmiş kulpla imzalama reddedilir; bir kulpla imzalanan başka kulpla doğrulanmaz. -->
 
 ---
 

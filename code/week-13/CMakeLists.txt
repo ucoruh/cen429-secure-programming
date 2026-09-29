@@ -1,2 +1,2 @@
-# CEN429 - Hafta 13 demolari (Guvenlik gereksinimleri)
-cen429_hafta_demolari()
+# CEN429 - Week 13 demos (Security requirements)
+cen429_add_week_demos()

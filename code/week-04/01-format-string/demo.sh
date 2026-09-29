@@ -1,36 +1,36 @@
 #!/bin/sh
-# CEN429 - Hafta 4 - Demo 1: Bicim dizisi acigi (Linux / WSL)
-# Once derleyin: ../../build.sh     Sonra: sh demo.sh
-# Cokebilecek adimlar prlimit+timeout ile sinirlanir (core dump yok, zaman siniri var).
+# CEN429 - Week 4 - Demo 1: format string vulnerability (Linux / WSL)
+# Build first: ../../build.sh     Then: sh demo.sh
+# Steps that could crash are bounded with prlimit+timeout (no core dump, a time limit).
 cd "$(dirname "$0")"
 B=bin/linux
-[ -x "$B/sizinti" ] || { echo "Once derleyin: ../../build.sh"; exit 1; }
-CALISTIR="prlimit --core=1:1 timeout 20"
-cizgi() { echo "--------------------------------------------------------------"; }
+[ -x "$B/leak" ] || { echo "Build first: ../../build.sh"; exit 1; }
+RUN="prlimit --core=1:1 timeout 20"
+line() { echo "--------------------------------------------------------------"; }
 
-cizgi; echo "ADIM 0 - Derleyici bu hatayi goruyor mu?"
-echo "\$ gcc -Wformat -Wformat-security -fsyntax-only -I../../common sizinti.c"
-gcc -Wformat -Wformat-security -fsyntax-only -I../../common sizinti.c 2>&1 \
+line; echo "STEP 0 - Does the compiler see this bug?"
+echo "\$ gcc -Wformat -Wformat-security -fsyntax-only -I../../common leak.c"
+gcc -Wformat -Wformat-security -fsyntax-only -I../../common leak.c 2>&1 \
     | grep -i 'format' | head -2
-echo "   -> -Wformat-security sabit olmayan bicim dizisini uyarir."
-cizgi; echo "ADIM 1 - Normal kullanim"
-echo "\$ ./$B/sizinti Merhaba"; "./$B/sizinti" Merhaba
-cizgi; echo "ADIM 2 - Saldiri: %x ile yigindan bellek OKUMA (bilgi sizintisi)"
+echo "   -> -Wformat-security warns about a non-constant format string."
+line; echo "STEP 1 - Normal use"
+echo "\$ ./$B/leak Hello"; "./$B/leak" Hello
+line; echo "STEP 2 - Attack: %x READS memory off the stack (information leak)"
 FMT='%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x'
-echo "\$ ./$B/sizinti '$FMT'"
-CIKTI=$("./$B/sizinti" "$FMT" 2>/dev/null)
-echo "$CIKTI"
-echo "$CIKTI" | grep -oq '5ece7' \
-    && echo "   ^ gizli_deger sizdi -> 0x0005ece7 (yigindan okundu)" \
-    || echo "   ^ hex sozcukleri yigin icerigidir; biri gizli_deger olabilir"
-cizgi; echo "ADIM 3 - Saldiri: %n ile bellege YAZMA denemesi (korumasiz surum)"
-echo "\$ ./$B/sizinti 'AAAA%n'"
-$CALISTIR "./$B/sizinti" 'AAAA%n' 2>&1 || \
-    echo "   (program cokecek/durdurulacak sekilde davrandi; cikis $?)"
-cizgi; echo "ADIM 4 - Ayni %n saldirisi, _FORTIFY_SOURCE=2 ile derlenmis surum"
-echo "\$ ./$B/sizinti_denetimli 'AAAA%n'"
-$CALISTIR "./$B/sizinti_denetimli" 'AAAA%n' 2>&1 || \
-    echo "   (FORTIFY: yazilabilir bellekteki %n reddedildi)"
-cizgi; echo "ADIM 5 - Duzeltilmis surum: %x ve %n artik sadece METIN"
-echo "\$ ./$B/sizinti_guvenli '%x %x %n saldiri denemesi'"
-"./$B/sizinti_guvenli" '%x %x %n saldiri denemesi'
+echo "\$ ./$B/leak '$FMT'"
+OUT=$("./$B/leak" "$FMT" 2>/dev/null)
+echo "$OUT"
+echo "$OUT" | grep -oq '5ece7' \
+    && echo "   ^ secret_value leaked -> 0x0005ece7 (read off the stack)" \
+    || echo "   ^ the hex words are stack contents; one of them may be secret_value"
+line; echo "STEP 3 - Attack: %n tries to WRITE to memory (unprotected version)"
+echo "\$ ./$B/leak 'AAAA%n'"
+$RUN "./$B/leak" 'AAAA%n' 2>&1 || \
+    echo "   (the program crashed/was stopped; exit $?)"
+line; echo "STEP 4 - The same %n attack, built with _FORTIFY_SOURCE=2"
+echo "\$ ./$B/leak_checked 'AAAA%n'"
+$RUN "./$B/leak_checked" 'AAAA%n' 2>&1 || \
+    echo "   (FORTIFY: %n into writable memory was rejected)"
+line; echo "STEP 5 - Fixed version: %x and %n are now just TEXT"
+echo "\$ ./$B/leak_secure '%x %x %n attack attempt'"
+"./$B/leak_secure" '%x %x %n attack attempt'

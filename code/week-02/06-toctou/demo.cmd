@@ -1,3 +1,3 @@
 @echo off
-rem Windows: demo.ps1'i betik izni sormadan calistirir (cift tiklama ya da cmd icin).
+rem Windows: runs demo.ps1 without asking for script permission (for double-click or cmd).
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0demo.ps1"

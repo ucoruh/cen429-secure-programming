@@ -40,7 +40,7 @@ Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz: önce hatasız k
 | 2 | 2–4 | Biçim dizesi (format string) **Demo 1** · UAF **Demo 2** · tamsayı/UB **Demo 3** · hata işleme/sinyaller · statik analiz · sanitizer · fuzzing **Demo 4** |
 | 3 | 5–7 | Derleyici/OS korumaları **Demo 5** · güvenli derleme hattı (CI) · kod gizleme **Demo 6–7** · uçtan uca · proje |
 
-**Öğrenme çıktısı:** ÖÇ.3 (ikili uygulama korumaları)
+**Öğrenme çıktısı:** ÖÇ.3 (binary uygulama korumaları)
 
 <!-- Konuşma notu: Bu hafta kodun kendisini sağlamlaştırıyoruz. Öğrenciler C'yi biliyor ama güvenlik terimlerini bilmiyor varsayıyoruz; her terimi tanımlayacağız. Demolar code/week-04 altında. -->
 
@@ -332,11 +332,11 @@ Sandığınızdan çok yerden. Ve **hepsi güvenilmez**:
 
 ```c
 errno = 0;
-long v = strtol(s, &son, 10);
-if (son == s)        return -1;  /* rakam yok */
-if (*son != '\0')    return -1;  /* "12abc" */
-if (errno == ERANGE) return -1;  /* taştı */
-if (v < en_az || v > en_cok) return -1;  /* iş kuralı */
+long value = strtol(s, &end, 10);
+if (end == s)         return -1;  /* no digits */
+if (*end != '\0')     return -1;  /* "12abc" */
+if (errno == ERANGE)  return -1;  /* overflowed */
+if (value < min_val || value > max_val) return -1;  /* business rule */
 ```
 
 ---
@@ -354,11 +354,11 @@ if (v < en_az || v > en_cok) return -1;  /* iş kuralı */
 # İlke 3 · uzunluk önekli kayıt
 
 ```c
-if (kalan < 3) return -1;                  /* başlık yok */
-uint16_t uzunluk = tampon[1] << 8 | tampon[2];
-if (uzunluk > kalan - 3)      return -1;   /* KAYNAK: bildirilen > gelen */
-if (uzunluk > sizeof k->veri) return -1;   /* HEDEF: sığmıyor */
-memcpy(k->veri, tampon + 3, uzunluk);
+if (remaining < 3) return -1;                    /* no header */
+uint16_t length = buffer[1] << 8 | buffer[2];
+if (length > remaining - 3)       return -1;      /* SOURCE: declared > received */
+if (length > sizeof rec->data)    return -1;      /* DEST: doesn't fit */
+memcpy(rec->data, buffer + 3, length);
 ```
 
 ---
@@ -367,7 +367,7 @@ memcpy(k->veri, tampon + 3, uzunluk);
 
 - **Kaynak denetimi:** bildirilen uzunluk, gelen veriden büyük mü?
 - **Hedef denetimi:** hedef tampona sığıyor mu?
-- Sıra: `kalan - 3` **sarmasın** diye önce `kalan < 3`.
+- Sıra: `remaining - 3` **sarmasın** diye önce `remaining < 3`.
 - Sahada: JNI'den gelen her dizi native tarafta **yeniden** doğrulanır.
 
 ---
@@ -375,9 +375,9 @@ memcpy(k->veri, tampon + 3, uzunluk);
 # CERT çifti · STR31-C
 
 ```c
-strcpy(kopya, ad);                              /* HATALI */
-int n = snprintf(kopya, sizeof kopya, "%s", ad);/* UYUMLU */
-if (n < 0 || (size_t)n >= sizeof kopya) { /* kesildi */ }
+strcpy(copy, name);                               /* WRONG */
+int n = snprintf(copy, sizeof copy, "%s", name);  /* COMPLIANT */
+if (n < 0 || (size_t)n >= sizeof copy) { /* kesildi */ }
 ```
 
 `strcpy` sınır bilmez; `snprintf` boyutu bilir ve **kesilmeyi** bildirir.
@@ -387,9 +387,9 @@ if (n < 0 || (size_t)n >= sizeof kopya) { /* kesildi */ }
 # CERT çifti · INT30-C
 
 ```c
-size_t kalan = toplam - okunan;   /* HATALI: okunan>toplam → dev sayı */
-if (okunan > toplam) return HATA; /* UYUMLU: önce sırala */
-size_t kalan = toplam - okunan;
+size_t remaining = total - read_count;   /* WRONG: read_count>total -> gigantic number */
+if (read_count > total) return ERROR;    /* COMPLIANT: order checked first */
+size_t remaining = total - read_count;
 ```
 
 İşaretsiz çıkarma **sarar**; önce mantığı denetle.
@@ -399,20 +399,20 @@ size_t kalan = toplam - okunan;
 # CERT çifti · MEM30-C
 
 ```c
-for (d = bas; d; d = d->sonraki) free(d);       /* HATALI */
-while (d) { Dugum *s = d->sonraki; free(d); d = s; }  /* UYUMLU */
+for (n = head; n; n = n->next) free(n);              /* WRONG */
+while (n) { Node *s = n->next; free(n); n = s; }      /* COMPLIANT */
 ```
 
-`free(d)`'den sonra `d->sonraki` okumak = bırakılmış belleğe erişim.
+`free(n)`'den sonra `n->next` okumak = bırakılmış belleğe erişim.
 
 ---
 
 # CERT çifti · ERR33-C
 
 ```c
-FILE *f = fopen(yol,"rb"); fread(t,1,n,f);       /* HATALI */
-if (!f) return HATA;
-if (fread(t,1,n,f) < n && ferror(f)) return HATA;/* UYUMLU */
+FILE *f = fopen(path,"rb"); fread(t,1,n,f);        /* WRONG */
+if (!f) return ERROR;
+if (fread(t,1,n,f) < n && ferror(f)) return ERROR; /* COMPLIANT */
 ```
 
 Her dönüş değerini **denetle**; `fopen` NULL dönebilir.
@@ -463,8 +463,8 @@ Böylece bulgu **nesnel** ve **aranabilir** olur.
 # Sorun · `printf(girdi)`
 
 ```c
-printf(kullanici_girdisi);        /* HATALI */
-printf("%s", kullanici_girdisi);  /* DOĞRU */
+printf(user_input);        /* WRONG */
+printf("%s", user_input);  /* CORRECT */
 ```
 
 İlkinde kullanıcı girdisi bir **biçim dizesi** olarak yorumlanır.
@@ -476,6 +476,15 @@ printf("%s", kullanici_girdisi);  /* DOĞRU */
 `printf` biçim dizesindeki `%` belirteçlerini **komut** sayar.
 
 Kullanıcı `%x`, `%s`, `%n` gönderirse programa iş yaptırır.
+
+---
+
+# Kısa tarihçe · biçim dizesi açıkları
+
+- **1999–2000** — **wu-ftpd** gibi yaygın FTP sunucularında gerçek zafiyetler açığı geniş çapta tanıttı.
+- Saldırganlar günlükleme çağrılarına sızan kullanıcı verisini biçim dizesi olarak kullanıp bilgi sızdırdı, hatta uzaktan kod çalıştırdı.
+- Ders: `%n` gibi "zararsız görünen" bir belirteç aslında bir **yazma astarıdır** (write primitive).
+- Karşılık: derleyicide `-Wformat-security`, çalışma anında `_FORTIFY_SOURCE`.
 
 ---
 
@@ -525,6 +534,22 @@ Kural: biçim dizesi **her zaman sabit** (FIO30-C).
 | 3 `AAAA%n` | Linux korumasız çöker; Windows CRT `%n`'i reddeder |
 | 4 | `_FORTIFY_SOURCE`: `%n in writable segment` |
 | 5 | Belirteçler yalnız metin olarak görünür |
+
+---
+
+# Animasyon — %x yığını tarar
+
+<iframe class="dsanim" src="anim/format-string.html?mode=slide&lang=tr" title="Biçim dizesi açığı: %x yığını tarar"></iframe>
+
+<!-- Konuşma notu: %x'in argüman konumlarını sırayla nasıl taradığını, gizli değere nerede ulaştığını canlı gösterin; seçiciden "%n olsaydı" örneğini de açın. -->
+
+---
+
+# Animasyon — uç durum: `%n` bir sonraki adımda
+
+<iframe class="dsanim" src="anim/format-string.html?mode=slide&lang=tr&example=percent-n" title="Biçim dizesi açığı: %n yazma astarı (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "percent-n" ön ayarını açın; %n'in yalnız okumakla kalmayıp yazdığını, bu yüzden "zararsız görünen" bir belirtecin aslında bir yazma astarı (write primitive) olduğunu vurgulayın. -->
 
 ---
 
@@ -595,7 +620,7 @@ Karmaşık sahiplik → askıda işaretçi.
 
 # Demo 2 — UAF ve çift bırakma
 
-`code/week-04/02-kullanim-sonrasi` · CWE-416/415 · MEM30-C
+`code/week-04/02-use-after-free` · CWE-416/415 · MEM30-C
 
 | Adım | Ne görülür? |
 | --- | --- |
@@ -607,15 +632,31 @@ Karmaşık sahiplik → askıda işaretçi.
 
 ---
 
+# Animasyon — küçük bir öbek
+
+<iframe class="dsanim" src="anim/use-after-free.html?mode=slide&lang=tr" title="Serbest bellek kullanımı ve çift serbest bırakma"></iframe>
+
+<!-- Konuşma notu: serbest listeye (free list) nasıl eklendiğini, bir sonraki malloc'un aynı bloğu nasıl geri verdiğini canlı gösterin; "çift serbest bırakma" örneğine de geçin. -->
+
+---
+
+# Animasyon — uç durum: çift serbest bırakma
+
+<iframe class="dsanim" src="anim/use-after-free.html?mode=slide&lang=tr&example=double-free" title="Çift serbest bırakma (double-free), uç durum"></iframe>
+
+<!-- Konuşma notu: seçiciden "double-free" ön ayarını açın; aynı işaretçinin ikinci kez free() edilmesinin, ayırıcının serbest listesini nasıl bozduğunu ve genelde yeni bir öbek taşmasına kapı açtığını canlı gösterin. -->
+
+---
+
 # ASan raporu · üç yığın izi
 
 ```text
 ERROR: heap-use-after-free
-  #0 oturum_kullan uaf.c:48   <- 1. KULLANIM
+  #0 mode_uaf uaf.c:49   <- 1. KULLANIM
 freed here:
-  #1 oturum_kapat  uaf.c:31   <- 2. SERBEST BIRAKMA
+  #1 mode_uaf  uaf.c:38   <- 2. SERBEST BIRAKMA
 allocated here:
-  #1 oturum_ac     uaf.c:22   <- 3. AYIRMA
+  #1 mode_uaf     uaf.c:32   <- 3. AYIRMA
 ```
 
 Düzeltme çoğunlukla **2. konumda**: sahiplik kararı orada yanlış.
@@ -642,7 +683,7 @@ Düzeltme çoğunlukla **2. konumda**: sahiplik kararı orada yanlış.
 | Dizi | `std::vector`, `std::array` |
 
 ```cpp
-if (auto o = onbellek.lock()) kullan(*o);  // yoksa eski belleğe erişilmez
+if (auto o = cache.lock()) use(*o);  // otherwise stale memory is never accessed
 ```
 
 ⚠️ `get()` ham işaretçi; `vector` büyüyünce yineleyici geçersizleşir.
@@ -675,9 +716,9 @@ if (auto o = onbellek.lock()) kullan(*o);  // yoksa eski belleğe erişilmez
 # Neden önemli? · çarpım taşması
 
 ```c
-uint32_t boyut = adet * 4;   /* adet = 0x40000001 → boyut = 4 */
-dizi = malloc(boyut);        /* küçük blok */
-/* döngü adet kez yazar → öbek taşması */
+uint32_t size = count * 4;   /* count = 0x40000001 → size = 4 */
+array = malloc(size);        /* small block */
+/* loop writes `count` times → heap overflow */
 ```
 
 Küçük ayrılan bloğa çok yazmak = taşma.
@@ -689,8 +730,8 @@ Küçük ayrılan bloğa çok yazmak = taşma.
 **Tanımsız davranış (UB):** C/C++ standardının sonucunu tanımlamadığı işlem (ör. işaretli tamsayı taşması).
 
 ```c
-if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
-    return -1;     /* işaretli taşma UB → derleyici bu dalı SİLEBİLİR */
+if (x + 100 < x)   /* assumes "if it overflows, it gets smaller" */
+    return -1;     /* signed overflow is UB → the compiler MAY DELETE this branch */
 ```
 
 - `-O0`'da "çalışır", `-O2`'de denetim **yok olur**.
@@ -702,8 +743,8 @@ if (x + 100 < x)   /* "taşarsa küçülür" sanısı */
 
 ```c
 if ((b > 0 && a > INT_MAX - b) ||
-    (b < 0 && a < INT_MIN - b)) return false;   /* taşma öncesi */
-if (__builtin_mul_overflow(a, b, &sonuc)) return false;  /* GCC/Clang */
+    (b < 0 && a < INT_MIN - b)) return false;   /* before the overflow */
+if (__builtin_mul_overflow(a, b, &result)) return false;  /* GCC/Clang */
 /* C23: <stdckdint.h> ckd_add/ckd_mul · MSVC: <intsafe.h> */
 ```
 
@@ -715,7 +756,7 @@ Taşmayı **olmadan önce** yakala.
 
 # Demo 3 — UB ve UBSan
 
-`code/week-04/03-tanimsiz-davranis` · CWE-190/758
+`code/week-04/03-undefined-behavior` · CWE-190/758
 
 - İşaretli taşma, geçersiz kaydırma, hizasız erişim
 - x86'da çoğu **sessizce** yanlış sonuç
@@ -723,6 +764,22 @@ Taşmayı **olmadan önce** yakala.
 - Windows: UBSan yok → `/RTC`, `/analyze`, CERT
 
 ⚠️ `-fwrapv` mantık hatasını **gizler**; tanı için kullanma.
+
+---
+
+# Animasyon — INT_MAX + add
+
+<iframe class="dsanim" src="anim/integer-overflow.html?mode=slide&lang=tr" title="İşaretli tamsayı taşması: INT_MAX + add"></iframe>
+
+<!-- Konuşma notu: denetimsiz toplamanın sessizce sardığını, checked_add'in aynı taşmayı toplamadan önce nasıl yakaladığını canlı gösterin. -->
+
+---
+
+# Animasyon — uç durum: güvenli sürüm aynı girdiyi reddediyor
+
+<iframe class="dsanim" src="anim/integer-overflow.html?mode=slide&lang=tr&example=edge-secure" title="Tamsayı taşması: güvenli sürüm aynı karışımı reddediyor (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "edge-secure" ön ayarını açın; hatalı sürümde UB'ye yol açan AYNI toplama dizisinin, checked_add ile derlenmiş sürümde toplamadan ÖNCE nasıl durdurulduğunu yan yana karşılaştırın. -->
 
 ---
 
@@ -769,8 +826,8 @@ Taşmayı **olmadan önce** yakala.
 # Sinyal işleyici · kural
 
 ```c
-static volatile sig_atomic_t durdur = 0;
-static void isleyici(int s){ (void)s; durdur = 1; }  /* YALNIZ bayrak */
+static volatile sig_atomic_t stop = 0;
+static void handler(int s){ (void)s; stop = 1; }  /* ONLY a flag */
 ```
 
 - İşleyicide `printf`, `malloc`, `free` **yok** (SIG30-C).
@@ -877,6 +934,14 @@ Yanlış alarm neredeyse **yok**; ama yalnız **çalışan yoldaki** hatayı bul
 
 ---
 
+# Kısa tarihçe · AddressSanitizer
+
+- **2012** — Google, **AddressSanitizer**'ı (ASan) yayımladı: derleme anında enstrümantasyon + gölge bellek ile taşma/UAF'ı **anında** yakalıyor.
+- Öncesinde bu sınıf hata genelde **sessizce** çöküyor ya da hiç fark edilmiyordu.
+- ASan + fuzzing birlikte kullanılınca, çökmeyen ama belleği bozan girdi de yakalanır (bu haftanın Bölüm 4/11'i).
+
+---
+
 <!-- _class: yogun -->
 
 # Sanitizer ailesi
@@ -903,8 +968,8 @@ Yanlış alarm neredeyse **yok**; ama yalnız **çalışan yoldaki** hatayı bul
 # ASan'ın kör noktası
 
 ```c
-struct { char ad[8]; long yetki; } k;
-strcpy(k.ad, uzun_girdi);   /* ad → yetki taşar */
+struct { char name[8]; long role; } k;
+strcpy(k.name, long_input);   /* name → role overflows */
 ```
 
 Aynı yapının **içinde** alandan alana taşma → arada koruma bölgesi yok → ASan **görmez** (1. hafta Demo 3).
@@ -941,17 +1006,25 @@ Yeni kod yolu açan girdi **saklanır** ve üzerinde çalışılır.
 
 ---
 
+# Kısa tarihçe · fuzzing
+
+- **1990** — Barton Miller'ın "Fuzz" çalışması: rastgele girdiyle Unix araçlarının %25-33'ünü çökertti; fuzzing'in akademik başlangıcı.
+- **2013** — **AFL** (american fuzzy lop): kapsam geri beslemesini pratik ve yaygın hâle getirdi.
+- Ardından **libFuzzer** (derlemeye gömülü, hızlı) ve OSS-Fuzz (büyük açık kaynak projelerini sürekli fuzzlayan servis).
+
+---
+
 # Fuzz hedefi yazmak
 
 ```c
-int LLVMFuzzerTestOneInput(const uint8_t *veri, size_t boyut) {
-    ayristir(veri, boyut);   /* sınanacak fonksiyon */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    parse_document((const unsigned char *)data, size);
     return 0;
 }
 ```
 
 ```bash
-clang -g -O1 -fsanitize=fuzzer,address fuzz.c ayristir.c -o f
+clang -g -O1 -fsanitize=fuzzer,address fuzz.c parser.c -o f
 ./f corpus/ -max_total_time=10
 ```
 
@@ -976,13 +1049,45 @@ Dört özellik:
 
 | Adım | Ne olur? |
 | --- | --- |
-| 1 | `tohum/normal.bin` sorunsuz |
+| 1 | `seeds/normal.bin` sorunsuz |
 | 2 | libFuzzer ≤ 10 sn → çökerten girdi |
 | 3 | ASan ile yeniden oynat → tam rapor |
 | 4 | Düzeltilmiş sürüm → çökme yok |
-| 5 | `cokerten.bin` güvenle reddedilir |
+| 5 | `crash.bin` güvenle reddedilir |
 
 > "Şu fonksiyon şu süre fuzzlandı" = güçlü kanıt (S16).
+
+---
+
+# Animasyon — izin listesi ayrıştırıcı
+
+<iframe class="dsanim" src="anim/input-validation.html?mode=slide&lang=tr" title="Girdi doğrulama: izin listesi ayrıştırıcı"></iframe>
+
+<!-- Konuşma notu: her kaydın hangi sınırı ihlal ettiğini (ya da etmediğini) canlı gösterin; hatalı sürümde aynı girdilerin nasıl sınır dışına çıktığını vurgulayın. -->
+
+---
+
+# Animasyon — uç durum: hepsi bozuk kayıt
+
+<iframe class="dsanim" src="anim/input-validation.html?mode=slide&lang=tr&example=edge-all-bad" title="Girdi doğrulama: 10 kaydın hepsi bozuk/eksik (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "edge-all-bad" ön ayarını açın; hiçbir kaydın geçmediğini, her birinin hangi ilkeyi (uzunluk/tür/aralık/biçim) ihlal ettiği için reddedildiğini tek tek gösterin. -->
+
+---
+
+# Animasyon — kapsam güdümlü fuzzing
+
+<iframe class="dsanim" src="anim/fuzzing-loop.html?mode=slide&lang=tr" title="Kapsam güdümlü fuzzing döngüsü"></iframe>
+
+<!-- Konuşma notu: her adayın kapsama yeni bir şey katıp katmadığını, çökmenin bulunduğu anda oturumun nasıl durduğunu canlı gösterin. -->
+
+---
+
+# Animasyon — uç durum: ilk adayda hemen çökme
+
+<iframe class="dsanim" src="anim/fuzzing-loop.html?mode=slide&lang=tr&example=edge-immediate-crash" title="Fuzzing döngüsü: ilk aday çöküyor (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "edge-immediate-crash" ön ayarını açın; bazen en değerli girdinin oturumun daha ilk adımında bulunabileceğini, bunun fuzzer'ın "şansı" değil mutasyon stratejisinin bir sonucu olduğunu vurgulayın. -->
 
 ---
 
@@ -1034,6 +1139,15 @@ Hata kaçtı diyelim.
 - Dönüş adresinden önce bir **nöbetçi değer** konur.
 - Taşma bu değeri bozarsa, dönüşten önce fark edilir ve program **durur**.
 - `-fstack-protector-strong` / MSVC `/GS`.
+
+---
+
+# Kısa tarihçe · derleyici/OS korumaları
+
+- **1998** — **StackGuard**: yığın kanaryası fikrini derleyiciye ilk kez otomatik olarak ekledi.
+- **2001** — **PaX** projesi, Linux çekirdeğine **ASLR**'ı (adres uzayı düzeni rastgeleleştirme) getirdi.
+- **2003–2004** — **W^X / NX / DEP**: bellek sayfaları aynı anda hem yazılabilir hem çalıştırılabilir olamaz.
+- Bu üçü birlikte, günümüz derleyici/OS korumalarının temelini oluşturur.
 
 ---
 
@@ -1113,9 +1227,9 @@ Mantık hatasına **hiçbiri** yetmez → önce güvenli kodlama.
 
 # Demo 5 — korumaları açıp kapatmak
 
-`code/week-04/05-derleyici-korumalari` · CWE-121
+`code/week-04/05-compiler-protections` · CWE-121
 
-- Aynı taşma: `giris_zayif` (kapalı) vs `giris_sert` (açık).
+- Aynı taşma: `overflow_weak` (kapalı) vs `overflow_hardened` (açık).
 - Sert: `*** stack smashing detected ***` / Windows `0xC0000409`.
 - Zayıf: sessiz bozulma ya da çökme.
 
@@ -1124,6 +1238,22 @@ readelf -h p | grep Type          # DYN = PIE
 readelf -d p | grep BIND_NOW      # tam RELRO
 readelf -s p | grep __stack_chk   # kanarya
 ```
+
+---
+
+# Animasyon — yığın kanaryası
+
+<iframe class="dsanim" src="anim/compiler-protections.html?mode=slide&lang=tr" title="Yığın kanaryası: buffer[64] taştığında ne olur?"></iframe>
+
+<!-- Konuşma notu: strcpy'nin buffer[64]'ü doldurup kanaryaya, sonra çerçeveye ve dönüş adresine nasıl ulaştığını canlı gösterin; sert sürümde kanaryanın yakaladığını vurgulayın. -->
+
+---
+
+# Animasyon — uç durum: aynı taşma, ZAYIF sürümde kanarya yok
+
+<iframe class="dsanim" src="anim/compiler-protections.html?mode=slide&lang=tr&example=weak-overflow" title="Yığın kanaryası: aynı 75 karakter, korumasız sürüm (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "weak-overflow" ön ayarını açın; SERT sürümde birazdan gördüğümüz AYNI 75 karakterlik girdinin, kanarya olmayan sürümde hiç yakalanmadan dönüş adresine kadar ilerlediğini gösterin — koruma açık olmadan CERT/sanitizer/fuzzing dışında hiçbir şeyin bunu durdurmadığını vurgulayın. -->
 
 ---
 
@@ -1141,7 +1271,7 @@ readelf -s p | grep __stack_chk   # kanarya
 
 # Koruma tablosu = kanıt
 
-- Değerlendirici her ikili ve `.so` için **koruma tablosu** çıkarır.
+- Değerlendirici her binary ve `.so` için **koruma tablosu** çıkarır.
 - Kapalı koruma bir **bulgudur**; gerekçesi ödünleşim kaydında olmalı.
 - Şema: uygulama, korumaların açık olduğunu **kendisi** de denetleyebilir.
 
@@ -1166,7 +1296,7 @@ Her hatalı adım birleştirmeyi **durdurur**.
 | Derleme | Tek uyarı |
 | Sanitizer'lı test | Herhangi bir rapor |
 | Fuzzing | Yeni çökme (eski corpus = regresyon) |
-| İkili denetimi | Günlük dizesi, sembol, kapalı koruma |
+| Binary denetimi | Günlük dizesi, sembol, kapalı koruma |
 
 ---
 
@@ -1182,7 +1312,7 @@ Her hatalı adım birleştirmeyi **durdurur**.
 | `denetimli` | `-O2 -D_FORTIFY_SOURCE=2` |
 | `guvenli` | `-O2` + düzeltilmiş kaynak |
 
-Koruma bayraklarının çoğu: Demo 5 `giris_sert`.
+Koruma bayraklarının çoğu: Demo 5 `overflow_hardened`.
 
 ---
 
@@ -1246,6 +1376,14 @@ Koruma bayraklarının çoğu: Demo 5 `giris_sert`.
 
 ---
 
+# Kısa tarihçe · kod gizleme taksonomisi
+
+- **1997** — Collberg, Thomborson ve Low, gizleme (obfuscation) tekniklerini **sistematik bir taksonomiye** ayıran çalışmalarını yayımladı: yerleşim (layout), veri (data), kontrol (control) ve önleme (preventive) dönüşümleri.
+- Bu hafta gördüğümüz dize/sembol gizleme = **veri** dönüşümü; kontrol akışı düzleştirme ve opak yüklem = **kontrol** dönüşümü.
+- Taksonomi hâlâ akademik ve endüstriyel gizleme literatürünün ortak dilidir.
+
+---
+
 <!-- _class: yogun -->
 
 # Gizleme haritası
@@ -1281,24 +1419,24 @@ Sembol görünürlüğü kapalı · ad anlamsızlaştırma · sabit aritmetik gi
 # Günlük makrosu
 
 ```c
-#ifdef GUNLUK_ACIK
-#  define GUNLUK(...) fprintf(stderr, __VA_ARGS__)
+#ifdef LOG_ENABLED
+#  define LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
-#  define GUNLUK(...) ((void)0)   /* dizge de çağrı da yok */
+#  define LOG(...) ((void)0)   /* neither the string nor the call end up in the binary */
 #endif
 ```
 
-Sürümde `GUNLUK_ACIK` tanımlı değil → günlük **hiç derlenmez**.
+Sürümde `LOG_ENABLED` tanımlı değil → günlük **hiç derlenmez**.
 
 ---
 
 # ⚠️ Çalışma anı bayrağı yetmez
 
 ```c
-if (hata_ayikla) printf("...");  /* KÖTÜ */
+if (debug_flag) printf("...");  /* BAD */
 ```
 
-- Dize ikili dosyada **kalır**.
+- Dize binary dosyada **kalır**.
 - Saldırgan bayrağı değiştirip günlüğü **yeniden açar**.
 - Doğrusu: derleme anında **çıkar**.
 
@@ -1317,14 +1455,30 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 
 # Demo 6 — sembol ve dize sızıntısı
 
-`code/week-04/06-sembol-dize` · CWE-200/215
+`code/week-04/06-symbol-strings` · CWE-200/215
 
 | Adım | Ne olur? |
 | --- | --- |
-| 1 | `gizli_acik` ve `gizli_kapali` aynı sonuç |
+| 1 | `secret_exposed` ve `secret_hidden` aynı sonuç |
 | 2 `strings` | Açıkta lisans dizesi ve `[LOG]`; kapalıda yok |
-| 3 `nm` | Açıkta `lisans_dogrula`; kapalıda sembol yok |
+| 3 `nm` | Açıkta `license_verify`; kapalıda sembol yok |
 | 4 | Windows: adlar PDB'de; kapalı PDB üretmez |
+
+---
+
+# Animasyon — dize + sembol gizleme
+
+<iframe class="dsanim" src="anim/symbol-string-hiding.html?mode=slide&lang=tr" title="Dize ve sembol gizleme: XOR + strip"></iframe>
+
+<!-- Konuşma notu: her baytın anahtarla nasıl XOR'landığını, nm'de görünen sembollerin açık/kapalı sürümde nasıl değiştiğini canlı gösterin. -->
+
+---
+
+# Animasyon — uç durum: kötü anahtar seçimi (0x00)
+
+<iframe class="dsanim" src="anim/symbol-string-hiding.html?mode=slide&lang=tr&example=edge-zero-key" title="Dize gizleme: anahtar 0x00, hiçbir şey gizlenmiyor (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "edge-zero-key" ön ayarını açın; XOR anahtarı 0x00 olduğunda her baytın kendisiyle değişmeden kaldığını, yani "gizleme" adımının hiçbir şey yapmadığını canlı gösterin — anahtar seçiminin de tasarımın bir parçası olduğunu vurgulayın. -->
 
 ---
 
@@ -1337,13 +1491,13 @@ if (hata_ayikla) printf("...");  /* KÖTÜ */
 # Kontrol akışı düzleştirme
 
 ```c
-int durum = 1;
-for (;;) switch (durum) {
-  case 1: durum = 2; break;
-  case 2: durum = (kosul ? 3 : 4); break;
-  case 3: durum = 5; break;
-  case 4: return BASARISIZ;
-  case 5: return BASARILI;
+int state = 1;
+for (;;) switch (state) {
+  case 1: state = 2; break;
+  case 2: state = (condition ? 3 : 4); break;
+  case 3: state = 5; break;
+  case 4: return FAILURE;
+  case 5: return SUCCESS;
 }
 ```
 
@@ -1372,11 +1526,11 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 
 # Demo 7 — düzleştirme
 
-`code/week-04/07-akis-duzlestirme`
+`code/week-04/07-flow-flattening`
 
 | Adım | Ne olur? |
 | --- | --- |
-| 1 | `pin.c` ve `pin_duz.c` aynı sonuç (PIN sentetik) |
+| 1 | `pin.c` ve `pin_flattened.c` aynı sonuç (PIN sentetik) |
 | 2 | `objdump`: düzleştirilmişte çok daha fazla dal |
 | 3 | Süre: düzleştirmenin **maliyeti** |
 
@@ -1384,11 +1538,43 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 
 ---
 
+# Animasyon — dağıtıcı durum makinesi
+
+<iframe class="dsanim" src="anim/flow-flattening.html?mode=slide&lang=tr" title="Kontrol akışı düzleştirme: dağıtıcı durum makinesi"></iframe>
+
+<!-- Konuşma notu: düz sürümün doğrudan if-zincirini, düzleştirilmiş sürümün her tahmin için dağıtıcıyı state=0'dan yeniden dolaştığını canlı gösterin. -->
+
+---
+
+# Animasyon — uç durum: hepsi yanlış uzunlukta, anında ret
+
+<iframe class="dsanim" src="anim/flow-flattening.html?mode=slide&lang=tr&example=flat-all-wrong-length" title="Kontrol akışı düzleştirme: her tahmin yanlış uzunlukta (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "flat-all-wrong-length" ön ayarını açın; düzleştirilmiş sürümde bile dağıtıcının önce uzunluk denetleyen durumdan geçmek ZORUNDA olduğunu, bu yüzden okumanın hâlâ zorlaştığını ama akışın anlamının değişmediğini vurgulayın. -->
+
+---
+
+# Animasyon — opak yüklem
+
+<iframe class="dsanim" src="anim/opaque-predicate.html?mode=slide&lang=tr" title="Opak yüklem: (x*x) % 4 asla 2 değildir"></iframe>
+
+<!-- Konuşma notu: (x*x)%4'ün hiçbir tam sayı için 2 olmadığını deneysel olarak kanıtlayın; yem dalın (decoy_branch) hiç çalışmadığını vurgulayın. -->
+
+---
+
+# Animasyon — uç durum: INT sınırlarına yakın değerler
+
+<iframe class="dsanim" src="anim/opaque-predicate.html?mode=slide&lang=tr&example=edge-extremes" title="Opak yüklem: INT sınırlarına yakın 10 uç değer (uç durum)"></iframe>
+
+<!-- Konuşma notu: seçiciden "edge-extremes" ön ayarını açın; (x*x)%4 özdeşliğinin INT_MAX/INT_MIN gibi uç değerlerde de (işaretli taşma potansiyeline rağmen) hâlâ 2'ye asla eşit olmadığını gösterin — bu haftanın tamsayı taşması konusuyla bağlantı kurun. -->
+
+---
+
 # Kavram: 9. haftaya bağlanan üç teknik
 
 - **Fonksiyon adı gizleme:** dışa açık adlar anlamsız; okunabilirlik makroyla.
 - **Bellek ayırma gizleme:** "32 bayt = anahtar" izini bulanıklaştır.
-- **Dinamik şifreleme:** hassas kod ikilide şifreli; DEP/NX ile çatışır, seçici.
+- **Dinamik şifreleme:** hassas kod binary'de şifreli; DEP/NX ile çatışır, seçici.
 
 ---
 
@@ -1405,7 +1591,7 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 # Bölüm 6 — cevaplar
 
 1. **Hayır.** Gizleme yalnız tersine mühendisliği zorlaştırır; açık yerinde durur. **Önce düzelt, sonra gizle.**
-2. Dize/kod ikili dosyada kalır; saldırgan bayrağı çevirir/dizeleri okur. Sürümde log'u **derleme zamanında** çıkarın (makro/ölü kod eleme).
+2. Dize/kod binary dosyada kalır; saldırgan bayrağı çevirir/dizeleri okur. Sürümde log'u **derleme zamanında** çıkarın (makro/ölü kod eleme).
 3. **Opak yüklemler** + **sahte bloklar/ölü dallar** + **durum değişkeni şifreleme & rastgele çıkış** (ayrıca ad/dize gizleme).
 
 ---
@@ -1422,22 +1608,22 @@ Tek başına şablon kısa sürede çözülür → 9. hafta derinlik.
 # Hatalı kod
 
 ```c
-void selamla(const char *ad) {
-    char tampon[16];
-    strcpy(tampon, ad);          /* sınır yok */
-    printf("Merhaba %s\n", tampon);
+void greet(const char *name) {
+    char buffer[16];
+    strcpy(buffer, name);          /* no bound */
+    printf("Hello %s\n", buffer);
 }
 ```
 
-`ad` 16 bayttan uzunsa ne olur?
+`name` 16 bayttan uzunsa ne olur?
 
 ---
 
 # Ne oluyor? · adım adım
 
-- `tampon` yığında 16 bayt.
-- `strcpy` `ad`'ı **sonuna kadar** kopyalar, sınıra bakmaz.
-- 16'dan uzun `ad` → komşu bellek (dönüş adresi dahil) bozulur.
+- `buffer` yığında 16 bayt.
+- `strcpy` `name`'ı **sonuna kadar** kopyalar, sınıra bakmaz.
+- 16'dan uzun `name` → komşu bellek (dönüş adresi dahil) bozulur.
 
 ---
 
@@ -1452,9 +1638,9 @@ void selamla(const char *ad) {
 # Düzeltme 1 · sınırlı kopyalama
 
 ```c
-int n = snprintf(tampon, sizeof tampon, "%s", ad);
-if (n < 0 || (size_t)n >= sizeof tampon) {
-    /* ad kesildi: reddet ya da işaretle */
+int n = snprintf(buffer, sizeof buffer, "%s", name);
+if (n < 0 || (size_t)n >= sizeof buffer) {
+    /* truncated: reject or flag it */
 }
 ```
 
@@ -1602,7 +1788,7 @@ Altı hatanın hepsi bu destede işlendi; burada tek bakışta toparlıyoruz.
 
 **Günlüğü çalışma anı bayrağıyla susturmak neden yetmez?**
 
-**Cevap:** Dize ikili dosyada **kalır** ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.
+**Cevap:** Dize binary dosyada **kalır** ve saldırgan bayrağı değiştirip günlüğü yeniden açabilir. Derleme anında çıkarılmalı.
 
 ---
 

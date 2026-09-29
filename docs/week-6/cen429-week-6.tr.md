@@ -77,14 +77,14 @@ tags:
 
 !!! tip "Laboratuvarı önceden hazırlayın"
     Demolar hem **Windows** (Visual Studio 2022 derleyicisi, ek kurulum yok) hem **WSL/Linux** (GCC) üzerinde **aynı
-    kaynaktan** derlenir. Bütünlük ve imza demoları kripto için ortak `cen429_kripto.h` başlığını kullanır (Linux'ta
+    kaynaktan** derlenir. Bütünlük ve imza demoları kripto için ortak `cen429_crypto.h` başlığını kullanır (Linux'ta
     **OpenSSL**, Windows'ta **BCrypt/CNG**); ek kurulum gerekmez. **Demo 4 yalnız Linux/WSL'de** çalışır (LD_PRELOAD).
 
     === "Windows"
         ```powershell
         cd code
         .\build.ps1
-        cd week-06\01-butunluk-hmac
+        cd week-06\01-integrity-hmac
         .\demo.ps1        # ya da demo.cmd dosyasına çift tıklayın
         ```
 
@@ -92,7 +92,7 @@ tags:
         ```bash
         cd code
         ./build.sh
-        cd week-06/01-butunluk-hmac
+        cd week-06/01-integrity-hmac
         sh demo.sh
         ```
 
@@ -105,7 +105,7 @@ tags:
 
 !!! warning "Etik kural — bu derste her hafta geçerli"
     Bu hafta uygulamanın **kendini** koruma tekniklerini ve bunların **atlatılmasını** görüyoruz. Bütün demolar yalnız
-    kendi klasörlerinde dosya üretir, **yönetici yetkisi istemez**, sistem ayarına dokunmaz. "Yama" adımı ikili dosyanın
+    kendi klasörlerinde dosya üretir, **yönetici yetkisi istemez**, sistem ayarına dokunmaz. "Yama" adımı binary dosyanın
     **kendi kopyası** üzerinde yapılır; hata ayıklayıcı yalnız **demonun kendi sürecine** bağlanır; `LD_PRELOAD` yalnız
     **tek bir demo komutunu** etkiler. Öğrendiğiniz teknikleri **yalnız kendi bilgisayarınızda ve verilen demolar
     üzerinde** deneyin. Başkasının uygulamasını izinsiz tersine çevirmek ya da korumasını kırmak yasadışı olabilir.
@@ -216,13 +216,26 @@ RASP üç iş yapar; bu haftanın omurgası bu üçlüdür:
 
 ![RASP döngüsü: algıla, savun, caydır](assets/h06-01-rasp-dongusu.svg)
 
-- **Algılama (detection):** Bir şeyin yanlış olduğunu anlamak — ikili yamalanmış, bir hata ayıklayıcı bağlı, ortam bir
+- **Algılama (detection):** Bir şeyin yanlış olduğunu anlamak — binary yamalanmış, bir hata ayıklayıcı bağlı, ortam bir
   emülatör, uygulama root'lu cihazda, bileşen yeniden paketlenmiş.
 - **Savunma (defense):** Algılamaya **anlamlı** bir yanıt vermek — sırrı sil, işlemi reddet (fail-closed), anahtarı
   cihaza bağla, kritik işlemi kontrol akışına bağla.
 - **Caydırma (deterrence):** Saldırganın işini **pahalılaştırmak** — çökmek yerine sahte (decoy) sonuç döndür, tepkiyi
   geciktir, olayı sunucuya bildir. Amaç kırılmazlık değil; saldırıyı **yeterince yavaşlatmaktır** (Hafta 4'teki
   "gizleme geciktirir, engellemez" ilkesinin RASP hâli).
+
+Bu üçlü, tek bir hat olarak da görülebilir: **algıla → karar ver → tepki ver**. Aşağıdaki animasyon, bir dizi
+bağımsız kontrolün (12 aşamaya kadar) nasıl tek bir "başarısız sayısına" indirgendiğini, bu sayının (ve cihaz
+uyuşmazlığının) nasıl bir duruma (`NORMAL/WARN/DEGRADE/LOCK`) çevrildiğini ve her durumun hangi somut tepkiye yol
+açtığını uçtan uca gösterir (bkz. Bölüm 10, Demo 8'in gerçek motoru):
+
+<iframe class="dsanim" src="../anim/rasp-pipeline.html" title="RASP hattı: algıla → karar ver → tepki ver" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![RASP hattı — adım adım](anim/rasp-pipeline.png)
+</div>
+
+**normal/two-failed/edge** örneklerini deneyin; kaç kontrolün başarısız olduğunu ve cihaz uyuşup uyuşmadığını
+değiştirerek dört durumun her birine ulaşabilirsiniz.
 
 ### 1.1 Saldırgan modeli: MATE ("Man-At-The-End")
 
@@ -237,7 +250,7 @@ MATE saldırganını, Hafta 1'de gördüğümüz diğer saldırgan tiplerinden a
 | --- | --- | --- | --- |
 | Ağ saldırganı | İstemci ile sunucu **arasında** | Yalnız şifreli trafik (TLS varsa) | TLS, kimlik doğrulama |
 | Sunucu saldırganı | Sunucunun **dışında** | Yalnız gönderdiği istekler ve aldığı yanıtlar | Girdi doğrulama, yetkilendirme, hız sınırlama |
-| **MATE (uçtaki saldırgan)** | Uygulamanın çalıştığı cihazın **içinde**, sahibi | Belleği, ikili dosyayı, çalışma anındaki her adımı | RASP: bütünlük, anti-debug, kanca algılama, cihaz bağlama |
+| **MATE (uçtaki saldırgan)** | Uygulamanın çalıştığı cihazın **içinde**, sahibi | Belleği, binary dosyayı, çalışma anındaki her adımı | RASP: bütünlük, anti-debug, kanca algılama, cihaz bağlama |
 
 Bu tablo neden önemli? Çünkü bir MATE saldırganına karşı **ağ saldırganı savunmaları** (TLS, sunucu tarafı
 girdi doğrulama) hiç işe yaramaz — TLS bağlantının **içeriğini** korur, ama saldırgan bağlantıyı açan
@@ -269,10 +282,10 @@ Algılama, savunma ve caydırmanın neden **ayrı** kavramlar olduğunu somutla�
 ödeme anahtarını açmadan hemen önce bir hata ayıklayıcının bağlı olduğunu fark ediyor (Bölüm 4'teki TracerPid
 sinyali > 0). Üç uygulamacı bunu üç farklı şekilde ele alıyor:
 
-1. **Yalnız algılama, tepki yok:** Kod `supheli` değişkenini artırır ama hiçbir yere bakmaz; fonksiyon normal
+1. **Yalnız algılama, tepki yok:** Kod `suspicious` değişkenini artırır ama hiçbir yere bakmaz; fonksiyon normal
    akışına devam eder. Sonuç: hata ayıklayıcı bağlı bir saldırgan anahtarı **doğrudan okur**. Algılama boşa
    gitmiştir — çünkü bir savunmaya bağlanmamıştır.
-2. **Algılama + kaba savunma:** Kod `if (supheli) exit(1);` yazar. Sonuç: saldırgan anahtarı okuyamaz, ama
+2. **Algılama + kaba savunma:** Kod `if (suspicious) exit(1);` yazar. Sonuç: saldırgan anahtarı okuyamaz, ama
    programın **tam olarak hangi satırda** durduğunu görür; birkaç deneme ile o `if`'i yamalar (Bölüm 3'teki
    "checker'ın kendisi de yamalanır" dersiyle aynı zaaf).
 3. **Algılama + savunma + caydırma:** Kod, sinyali doğrudan `exit()`'e değil, anahtar türetme işlemine **veri
@@ -389,7 +402,7 @@ yakalar ve tepki politikası devreye girer (Bölüm 10).
 
 RASP'in ilk ve en temel adımı: **"Ben değiştirildim mi?"** Saldırgan bir lisans kontrolünü, bir `if (odendi)` dalını ya
 da bir kripto çağrısını **yamalayarak** (patching) korumayı atlatmaya çalışır ([Hafta 4](../week-4/cen429-week-4.md)'te gördüğümüz `je → jmp`
-yaması). Savunma: uygulama, kendi ikili dosyasının (ya da korunan bir kod/veri bölgesinin) bir **özetini** çalışma
+yaması). Savunma: uygulama, kendi binary dosyasının (ya da korunan bir kod/veri bölgesinin) bir **özetini** çalışma
 zamanında hesaplar ve önceden bilinen **altın (golden)** değerle karşılaştırır. Tek bir bayt bile değişmişse, yama
 yakalanır.
 
@@ -405,39 +418,50 @@ yakalanır.
 
 ### Demo 1 — Çalışma zamanı bütünlük denetimi ve yama tespiti
 
-!!! info "Demo 1 · `code/week-06/01-butunluk-hmac` · self-hashing, HMAC-SHA-256 (Tarif 12.2 güncellemesi)"
-    Program kendi ikili dosyasının (`oz`) HMAC-SHA-256 özetini hesaplayıp "altın" değer olarak kaydeder, sonra doğrular.
-    Ardından ikili dosyanın bir **kopyası** alınıp bir baytı değiştirilir (yama simülasyonu, demonun kendi `cikti/`
-    klasöründe) ve yamalı kopyanın özeti altın değerle karşılaştırılır.
+!!! info "Demo 1 · `code/week-06/01-integrity-hmac` · self-hashing, HMAC-SHA-256 (Tarif 12.2 güncellemesi)"
+    Program kendi binary dosyasının (`self`) HMAC-SHA-256 özetini hesaplayıp "altın" (golden) değer olarak kaydeder,
+    sonra doğrular. Ardından binary dosyanın bir **kopyası** alınıp bir baytı değiştirilir (yama simülasyonu,
+    demonun kendi `output/` klasöründe) ve yamalı kopyanın özeti altın değerle karşılaştırılır.
 
-Özün kodu (dosyayı okuyup HMAC hesaplar; `cen429_kripto.h`'dan `kripto_hmac_sha256`):
+    Bu bölümün en altındaki animasyon (**normal/patched-mid/edge**, 🎲 rastgele baytlar) tam bu mekanizmayı,
+    12-16 bayt üzerinde, adım adım gösterir.
 
-```c title="butunluk.c (özet)"
+Özün kodu (dosyayı okuyup HMAC hesaplar; `cen429_crypto.h`'dan `crypto_hmac_sha256`):
+
+```c title="integrity.c (özet)"
 /* Kendi yolunu bul: Linux /proc/self/exe, Windows GetModuleFileNameA */
-oz_yol(yol, sizeof(yol));
-dosya_oku(yol, &veri, &boy);
-kripto_hmac_sha256(RASP_ANAHTAR, 32, veri, boy, ozet);   /* HMAC over the file */
+self_path(path, sizeof(path));
+read_file(path, &data, &size);
+crypto_hmac_sha256(RASP_KEY, 32, data, size, digest);   /* HMAC over the file */
 
-/* dogrula: sabit zamanli karsilastirma (zamanlama sizintisini onler) */
-unsigned char fark = 0;
-for (int i = 0; i < 32; i++) fark |= beklenen[i] ^ ozet[i];
-if (fark == 0) { /* BUTUNLUK TAMAM */ } else { /* YAMA ALGILANDI */ }
+/* verify: sabit zamanli karsilastirma (zamanlama sizintisini onler) */
+unsigned char diff = 0;
+for (int i = 0; i < 32; i++) diff |= expected[i] ^ digest[i];
+if (diff == 0) { /* INTEGRITY OK */ } else { /* PATCH DETECTED */ }
 ```
 
-WSL'de alınan **gerçek çıktı** (kısaltılmış):
+<iframe class="dsanim" src="../anim/integrity-hmac.html" title="Öz bütünlük denetimi: bir bayt yamalanınca" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Öz bütünlük denetimi — adım adım](anim/integrity-hmac.png)
+</div>
 
-```text title="sh demo.sh — çıktı"
-ADIM 2 - Normal calisma: butunluk dogrulanir (yama yok)
-Beklenen   : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-Hesaplanan : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-SONUC: BUTUNLUK TAMAM - hedef degismemis.
+**normal**, **patched-mid** ve **edge-first-byte** hazır örneklerini deneyin; 🎲 ile rastgele baytlar üretebilir,
+kendi baytlarınızı da girebilirsiniz.
 
-ADIM 3 - Saldiri: ikili dosyanin bir KOPYASI alinip 1 bayti degistiriliyor
-> ofset 21268 baytini XOR 0xFF ile degistir
-ADIM 4 - Yamali kopyanin HMAC'i altin degerle karsilastiriliyor
-Beklenen   : bae498a6a982279a833bf7e33d2db9cf...ee4d01e6
-Hesaplanan : 05fb42748cb5b57305f3ffacd61ad757...131c6705
-SONUC: YAMA ALGILANDI - hedef degistirilmis! (tamper)   (cikis kodu 3)
+Windows'ta alınan **gerçek çıktı** (kısaltılmış):
+
+```text title=".\demo.ps1 — çıktı"
+STEP 2 - Normal run: integrity verifies OK (no patch)
+Expected   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+Computed   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+RESULT: INTEGRITY OK - target unchanged.
+
+STEP 3 - Attack: a COPY of the binary is made and 1 byte is changed
+> flip byte at offset 22272 (0xCC -> 0x33)
+STEP 4 - The patched copy's HMAC is compared with the golden value
+Expected   : 5aeaf45226dbb29af724cb7101a621419aa58e0630f1fee3d647f76b55115de4
+Computed   : c47c35687dc205b93a2eec33df49c97defecfcb868fb8a23e6c01c2aca0ec8ac
+RESULT: PATCH DETECTED - target was modified! (tamper)   (exit code 3)
 ```
 
 Yama yokken özet altın değerle **birebir** aynı çıktı. Tek bir baytı değiştirince özet tamamen değişti (çığ etkisi) ve
@@ -447,14 +471,14 @@ ilk farklı baytta durup zamanlama sızdırır.
 
 ### 3.1 İşlenmiş örnek: HMAC hangi baytları özetliyor, yama onu nasıl bozuyor?
 
-**Hangi baytlar özetleniyor?** `hedef_hmac()` fonksiyonuna bakınca cevap nettir: `dosya_oku()` hedefin (kendi
-ikili dosyanın) **tamamını** belleğe okur (`fread` ile ofset 0'dan dosya sonuna kadar) ve `kripto_hmac_sha256`
+**Hangi baytlar özetleniyor?** `target_hmac()` fonksiyonuna bakınca cevap nettir: `read_file()` hedefin (kendi
+binary dosyanın) **tamamını** belleğe okur (`fread` ile ofset 0'dan dosya sonuna kadar) ve `crypto_hmac_sha256`
 bu **bütün bayt dizisini** tek seferde özetler — belirli bir fonksiyon ya da bölüm değil, dosyanın **her baytı**.
-`demo.sh`'ın gerçek çıktısında `ofset 21268` değiştiriliyordu; bu, dosyanın **ortasına** (`BOY / 2`) denk gelir —
-demek ki o çalıştırmada ikili dosyanın toplam boyutu yaklaşık `21268 × 2 ≈ 42536` bayttı. Saldırgan dosyanın
+`demo.ps1`'in gerçek çıktısında `ofset 22272` değiştiriliyordu; bu, dosyanın **ortasına** (`SIZE / 2`) denk gelir —
+demek ki o çalıştırmada binary dosyanın toplam boyutu yaklaşık `22272 × 2 ≈ 44544` bayttı. Saldırgan dosyanın
 hangi baytını değiştirirse değiştirsin (başı, ortası, sonu fark etmez), o bayt hesaba dahildir ve özet değişir.
 
-**Yama onu nasıl bozuyor — küçük bir örnekte adım adım.** Aynı çığ etkisini, koca bir ikili dosya yerine
+**Yama onu nasıl bozuyor — küçük bir örnekte adım adım.** Aynı çığ etkisini, koca bir binary dosya yerine
 **tek bir karakterlik** bir metinde görelim; mantık birebir aynıdır. `"MERHABA"` dizesini sabit bir anahtarla
 HMAC-SHA-256'layalım, sonra son karakteri `A`'dan `B`'ye çevirip tekrar hesaplayalım:
 
@@ -471,7 +495,7 @@ SHA2-256(stdin)= 4fbdf8768822083c3fc3797c5f1d278dd1ea58ab0bfde31a8ebf85e260fbcbd
 Girdinin **7 baytından yalnız 1 tanesi** (son karakter, `A`=0x41 → `B`=0x42; bu iki değer yalnız **iki bitte** ayrılır) değişti; ama
 çıktının **32 baytının tamamı** farklı. Bu, kriptografik özet fonksiyonlarının **çığ etkisi**dir: girdide tek bir
 bit değişirse, çıktının ortalama **yarısı** değişir. Demo 1'in gerçek çıktısında gördüğünüz
-`bae498a6...ee4d01e6` → `05fb4274...131c6705` dönüşümü de aynı özelliğin, koca bir ikili dosya üzerindeki
+`5aeaf452...55115de4` → `c47c3568...aca0ec8a` dönüşümü de aynı özelliğin, koca bir binary dosya üzerindeki
 hâlidir: `XOR 0xFF` tek bir baytın **her bitini** ters çevirir, bu da HMAC-SHA-256'nın iç işleyişi (SHA-256'nın
 sıkıştırma fonksiyonunun her turu) yoluyla bütün 256 bit çıktıya yayılır.
 
@@ -483,7 +507,7 @@ sıkıştırma fonksiyonunun her turu) yoluyla bütün 256 bit çıktıya yayıl
     yükseltildiğini görmüştük.
 
 !!! danger "Bütünlük denetimi tek başına neden yeterli değil?"
-    HMAC anahtarı **ikili dosyanın içindedir**. Yeterince kararlı bir saldırgan:
+    HMAC anahtarı **binary dosyanın içindedir**. Yeterince kararlı bir saldırgan:
     1. Denetleyici (checker) fonksiyonun **kendisini** yamalayarak "her zaman TAMAM döndür" yapabilir.
     2. Yamayı yapıp **altın değeri de** yeniden hesaplayabilir (anahtarı bulursa).
 
@@ -499,7 +523,7 @@ sıkıştırma fonksiyonunun her turu) yoluyla bütün 256 bit çıktıya yayıl
 
 !!! note "Sahada nasıl uygulanır? / Değerlendirici nasıl test eder?"
     Örnek mimaride native kütüphane, hem kendi `.so`/`.dll`'inin hem de üst katmanın (ör. Java/DEX) birleşik özetini
-    doğrular; **karşılıklı** (mutual) doğrulama yapar (Katalog K6, Demo 6). Değerlendirici ikili dosyayı yamalayıp
+    doğrular; **karşılıklı** (mutual) doğrulama yapar (Katalog K6, Demo 6). Değerlendirici binary dosyayı yamalayıp
     algılamanın tetiklenip tetiklenmediğine, ardından **denetleyici kodun kendisini** yamalayarak korumayı atlatıp
     atlatamadığına bakar (tek denetleyici mi, ağ mı?).
 
@@ -547,32 +571,40 @@ anlamaya çalışır.
 
 !!! info "2003'ten bugüne: neler eskidi?"
     - **SoftICE (Tarif 12.15) tamamen öldü.** Yerine modern hipervizör/ring-0 hata ayıklayıcıları, x64dbg, WinDbg, gdb,
-      lldb ve özellikle **Frida/DBI** (dinamik ikili enstrümantasyon) geçti (bkz. Bölüm 6).
+      lldb ve özellikle **Frida/DBI** (dinamik binary enstrümantasyon) geçti (bkz. Bölüm 6).
     - `IsDebuggerPresent` (12.14) hâlâ var ama **tek başına zayıf**; yanına PEB `BeingDebugged`/`NtGlobalFlag`,
       `CheckRemoteDebuggerPresent`, timing tabanlı tespit eklenir.
     - `ptrace` tekniği (12.13) hâlâ geçerli; modern eklemeler: `/proc/self/status` **TracerPid** çapraz kontrolü.
 
 ### Demo 2 — Hata ayıklayıcı algılama (Linux ptrace/TracerPid, Windows PEB)
 
-!!! info "Demo 2 · `code/week-06/02-hata-ayiklayici` · anti-debug, yalnız okuma"
+!!! info "Demo 2 · `code/week-06/02-debugger-detection` · anti-debug, yalnız okuma"
     Program birden çok bağımsız sinyale bakar ve **hiçbir şeyi değiştirmez** (kendini `ptrace` ile de izlemez; yalnız
     `/proc` ve PEB alanlarını okur). `demo.sh` programı önce normal, sonra `gdb` altında çalıştırır.
 
 ```c title="antidebug.c (Linux özeti)"
 /* /proc/self/status icinden TracerPid oku; >0 ise izleniyoruz */
 long tp = tracer_pid();
-if (tp > 0) supheli++;      /* bir surec bizi ptrace ile izliyor */
+if (tp > 0) suspicious++;      /* bir surec bizi ptrace ile izliyor */
 ```
 
-```text title="sh demo.sh — gerçek çıktı (WSL)"
-ADIM 1 - Normal calisma (hata ayiklayici YOK): temiz beklenir
-1) /proc/self/status TracerPid           : 0 (izleyen yok)
-2) Ana surec (parent) adi                : sh
-SONUC: Temiz - izleyen bir arac gorunmuyor.
+<iframe class="dsanim" src="../anim/debugger-presence.html" title="Hata ayıklayıcı algılama: TracerPid + ana süreç adı" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Hata ayıklayıcı algılama — adım adım](anim/debugger-presence.png)
+</div>
 
-ADIM 2 - gdb altinda calistir (TracerPid > 0 beklenir)
-1) /proc/self/status TracerPid           : 2909 (IZLENIYOR)
-SONUC: Hata ayiklayici/izleme ARACI algilandi (2 sinyal).
+Animasyonda `/proc/self/status`'un satır satır taranışını ve iki sinyalin (**TracerPid**, ana süreç adı) nasıl
+tartıldığını izleyin; **clean/gdb-attached/edge** örneklerini deneyin.
+
+```text title="sh demo.sh — gerçek çıktı (WSL)"
+STEP 1 - Normal run (NO debugger): clean is expected
+1) /proc/self/status TracerPid           : 0 (no tracer)
+2) Parent process name                   : sh
+RESULT: clean - no tracing tool visible.
+
+STEP 2 - Run under gdb (TracerPid > 0 is expected)
+1) /proc/self/status TracerPid           : 41885 (TRACED)
+RESULT: a debugger/tracing TOOL was detected (2 signal(s)).
 ```
 
 Hata ayıklayıcı yokken TracerPid **0**, gdb altında **>0** çıktı; program iki durumu ayırt etti. Windows'ta Visual
@@ -580,7 +612,7 @@ Studio ile **F5** (hata ayıklayıcıda) çalıştırırsanız `IsDebuggerPresen
 
 ### 4.1 İşlenmiş örnek: TracerPid'in 0'dan sıfır olmayana geçişini adım adım izlemek
 
-Demo 2'nin çıktısında TracerPid'in `0`'dan `2909`'a geçtiğini gördük; şimdi bu geçişin **neden** olduğunu adım
+Demo 2'nin çıktısında TracerPid'in `0`'dan `41885`'a geçtiğini gördük; şimdi bu geçişin **neden** olduğunu adım
 adım açalım. `/proc/self/status`, çekirdeğin her süreç için tuttuğu, o sürecin kendisi tarafından da okunabilen
 bir metin dosyasıdır ([Hafta 1](../week-1/cen429-week-1.md)'de `/proc` dosya sistemini "çekirdeğin sürece açtığı bir pencere" olarak tanımlamıştık).
 İçindeki `TracerPid:` satırı, o süreci `ptrace()` sistem çağrısıyla izleyen sürecin **PID**'ini (Process ID —
@@ -596,8 +628,8 @@ PPid:      4820          <- calistiran kabuk (sh)
 TracerPid: 0             <- kimse ptrace ile izlemiyor
 ```
 
-Program bu satırı okur, sayısal değeri `0` bulur; `tp > 0` koşulu **yanlış** olduğu için `supheli` değişkenini
-artırmaz. Demo çıktısındaki "SONUC: Temiz" satırı buradan gelir.
+Program bu satırı okur, sayısal değeri `0` bulur; `tp > 0` koşulu **yanlış** olduğu için `suspicious` değişkenini
+artırmaz. Demo çıktısındaki "RESULT: clean - no tracing tool visible." satırı buradan gelir.
 
 **Adım 2 — `gdb` altında çalıştırılınca.** `demo.sh` ikinci geçişte programı `gdb` içinden başlatır. `gdb`,
 hedef süreci başlatırken ya da ona bağlanırken çekirdeğe "bu süreci ben izliyorum" der; bu,
@@ -608,16 +640,16 @@ doldurur:
 ```text title="/proc/self/status (gdb ALTINDA, temsili)"
 Name:      antidebug
 Pid:       4821
-PPid:      2909          <- artik ana surec gdb
-TracerPid: 2909          <- gdb bizi ptrace ile izliyor
+PPid:      41885          <- artik ana surec gdb
+TracerPid: 41885          <- gdb bizi ptrace ile izliyor
 ```
 
-Bu, tam olarak demo çıktısında görülen `2909` değeridir. Programın kendisi hiçbir şey **yapmamıştır** — yalnız
+Bu, tam olarak demo çıktısında görülen `41885` değeridir. Programın kendisi hiçbir şey **yapmamıştır** — yalnız
 çekirdeğin zaten tuttuğu bir alanı **okumuştur**; bu yüzden teknik "yalnız okuma" (read-only) olarak
 sınıflandırılır ve hiçbir yan etkisi yoktur (demonun `README`'sindeki güvenlik sözü tam bu nedenle tutulabilir).
 
-**Adım 3 — karar.** `tp > 0` olduğu için `supheli` sayacı 1 artar; ana sürecin adı da `gdb` olduğu için ikinci
-bağımsız bir sinyal (`ana_surec_adi` denetimi) daha eklenir; demo çıktısındaki "algilandi (2 sinyal)" ifadesi bu
+**Adım 3 — karar.** `tp > 0` olduğu için `suspicious` sayacı 1 artar; ana sürecin adı da `gdb` olduğu için ikinci
+bağımsız bir sinyal (`parent_process_name` denetimi) daha eklenir; demo çıktısındaki "algilandi (2 sinyal)" ifadesi bu
 ikisinin toplamıdır. Tek bir alanın okunması yeterli olmasa da, çekirdek düzeyinde tutulan bu bilgi
 **sahtelemesi zor** bir sinyaldir: `TracerPid`'i doğrudan sıfırlamak sürecin kendi belleğinden değil çekirdek
 veri yapısından okunduğu için mümkün değildir — saldırganın bunu gizlemesi ancak `/proc/self/status`'u okuyan
@@ -678,25 +710,33 @@ analizini gerçek cihaz yerine burada yapar, çünkü orada daha kolaydır. RASP
 
 ### Demo 3 — VM/emülatör ve zamanlama algılama (CPUID)
 
-!!! info "Demo 3 · `code/week-06/03-ortam-zamanlama` · yalnız CPU komutu ve saat okur"
+!!! info "Demo 3 · `code/week-06/03-environment-timing` · yalnız CPU komutu ve saat okur"
 
-```text title="sh demo.sh — gerçek çıktı (WSL2)"
-(A) CPUID.1:ECX[31] hipervizor biti : VAR
-    Hipervizor satici imzasi        : (satici imzasi gizli/bos)
-(B) 2.000.000 islem suresi          : 0.806 ms
-SONUC: Hipervizor GORULDU. Ama WSL2/Hyper-V/VBS de boyle gorunur;
-bu TEK basina 'analiz ortami' demek degildir - zayif sinyal.
+<iframe class="dsanim" src="../anim/environment-timing.html" title="VM/emülatör algılama: CPUID + zamanlama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![VM/emülatör algılama — adım adım](anim/environment-timing.png)
+</div>
+
+**bare-metal/kvm/edge-blank-vendor/edge-slow-timing** örneklerini deneyin; 🎲 ile rastgele hipervizör/zamanlama
+değerleri üretebilirsiniz.
+
+```text title=".\demo.ps1 — gerçek çıktı (bir Windows dizüstünde)"
+(A) CPUID.1:ECX[31] hypervisor bit    : PRESENT
+    Hypervisor vendor signature        : "Microsoft Hv"
+(B) time for 2,000,000 iterations      : 0.662 ms  (checksum=4544)
+RESULT: a hypervisor was SEEN. But WSL2/Hyper-V/VBS also look like this;
+this ALONE does not mean 'analysis environment' - it is a weak signal.
 ```
 
 !!! danger "En önemli ders: yanlış pozitif"
-    Yukarıdaki çıktı WSL2 üzerinde alındı ve **hipervizör "VAR"** dedi. Ama bu bir analiz ortamı **değil** — sıradan bir
+    Yukarıdaki çıktı Hyper-V'li sıradan bir Windows dizüstünde alındı ve **hipervizör "PRESENT"** dedi. Ama bu bir analiz ortamı **değil** — sıradan bir
     geliştirici makinesi! Modern Windows'ta **Hyper-V, WSL2 ve sanallaştırma tabanlı güvenlik (VBS)** yüzünden çoğu makine
     hipervizör bildirir. Yani bu bit tek başına "saldırgan analiz ediyor" anlamına **gelmez**. Bir uygulama sırf
     hipervizör gördüğü için çalışmayı reddetseydi, milyonlarca **meşru** kullanıcıyı engellerdi. RASP daima **birden çok
     göstergeyi tartar** ve her birinin **atlatılabileceğini** kabul eder.
 
 !!! success "Kural"
-    Ortam algılamayı bir **risk skoru** olarak kullanın, ikili bir "çalış/çalışma" kararı olarak değil. Birden çok
+    Ortam algılamayı bir **risk skoru** olarak kullanın, binary bir "çalış/çalışma" kararı olarak değil. Birden çok
     göstergeyi birleştirin; yanlış pozitifi (meşru VM/emülatör kullanan gerçek kullanıcıları) hesaba katın; nihai kararı
     **sunucu tarafı risk motoruyla** birlikte verin.
 
@@ -718,13 +758,21 @@ Karar, tek bir `if (hipervizor_var)` değil, bu skorun bir **eşiğin** üstünd
 | Bilinen emülatör dosya izi (mobilde) | `ro.kernel.qemu` benzeri | Yüksek — gerçek cihazda neredeyse hiç olmaz | 40 |
 | Hata ayıklayıcı bağlı | Demo 2 (TracerPid) | Yüksek — meşru kullanıcı çalışırken nadiren olur | 35 |
 
-**Örnek 1 — WSL2'de çalışan bir geliştirici (meşru kullanıcı).** Demo 3'ün gerçek çıktısında gördüğümüz gibi
-hipervizör biti **VAR** ama satıcı imzası **gizli/boş**, zamanlama normal, emülatör izi yok, hata ayıklayıcı
-bağlı değil. Toplam skor: yalnız **15** (yalnız hipervizör biti). Skor düşük; kullanıcı engellenmez.
+**Örnek 1 — Hyper-V'li sıradan bir Windows dizüstünde çalışan bir geliştirici (meşru kullanıcı).** Bölüm 3'teki
+gerçek `demo.ps1` çıktısında gördüğümüz gibi hipervizör biti **PRESENT** VE satıcı imzası **görünür**
+(`"Microsoft Hv"` — bkz. Bölüm 3), zamanlama normal, emülatör izi yok, hata ayıklayıcı bağlı değil. Toplam skor:
+hipervizör biti (15) + satıcı imzası görünür (25) = **40**. Zamanlama ve emülatör/hata-ayıklayıcı sinyalleri
+katkı vermez.
 
 **Örnek 2 — analiz ortamında çalışan bir saldırgan.** Hipervizör biti VAR (15) + satıcı imzası görünür (25) +
 zamanlama anomalisi (20) + hata ayıklayıcı bağlı (35) = toplam **95**. Skor yüksek; işlem reddedilir ya da decoy
 döner (Bölüm 10).
+
+Dikkat: Örnek 1 ile Örnek 2'nin **ilk iki sinyali birebir aynı** (40 puan) — Hyper-V'li bir geliştirici makinesi
+ile bir analiz sanal makinesi, salt bu iki sinyale bakan bir sisteme **aynı** görünebilir! Aradaki fark yalnız
+zamanlama anomalisi ve hata ayıklayıcı sinyalinde ortaya çıkar (Örnek 2'yi 40'tan 95'e taşıyan asıl fark budur).
+Eğer eşik 30 gibi düşük tutulursa (aşağıdaki bankacılık örneği), Örnek 1'in **meşru** geliştiricisi bile
+reddedilir — bu, hemen aşağıdaki "yanlış pozitifin gerçek maliyeti" uyarısının tam olarak anlattığı durumdur.
 
 Aradaki fark **tek bir bitin varlığı değil, kaç bağımsız sinyalin birlikte** göründüğüdür. Eşik nereye
 konulmalı? Bu, üründen ürüne değişen bir **risk iştahı (risk appetite)** kararıdır — "kaç meşru kullanıcıyı
@@ -748,7 +796,7 @@ engellemeye razıyım, karşılığında kaç saldırıyı önlerim" dengesi:
     Ortam/root/debugger sinyallerini **tek bir ikili karar** değil, **ağırlıklı bir risk skoru** olarak toplayın.
     Eşiği varlığın değerine ve ürünün risk iştahına göre **bilinçli** seçin; sabit, herkese uyan bir "endüstri
     standardı eşik" yoktur. Skoru ve eşiği zamanla (sunucudaki telemetriye bakarak) **ayarlanabilir** tutun;
-    ikili dosyaya sabit kodlamayın.
+    binary dosyaya sabit kodlamayın.
 
 ---
 
@@ -765,7 +813,7 @@ değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek 
       hedefe özel araçlardı; her hedef için yeniden yazılması gerekiyordu.
     - **2000'ler** — `LD_PRELOAD` (Linux) ve DLL enjeksiyonu (Windows), genel amaçlı ama **statik** (önceden
       derlenmiş) kanca takma yöntemleri olarak yaygınlaştı.
-    - **2009** — **Frida** projesinin temelleri atıldı; asıl fark, kanca kodunun **JavaScript ile çalışma
+    - **2013–2014** — **Frida** projesi ortaya çıktı; asıl fark, kanca kodunun **JavaScript ile çalışma
       zamanında** yazılıp enjekte edilebilmesiydi — derleme gerektirmiyordu.
     - **2010'lar–bugün** — Frida, mobil güvenlik testinin standart aracı hâline geldi; RASP'in "kanca algılama"
       bölümünün var olma nedeninin büyük kısmı budur.
@@ -781,7 +829,7 @@ değiştirir**. Böylece Demo 2'deki kontrolleri "her zaman temiz" döndürecek 
 | **LD_PRELOAD** | Bir `.so`'yu önyükleyip standart fonksiyonları değiştirme (interposition) | Linux |
 | **PLT/GOT kancası** | Çağrı tablosu girişlerini kendi fonksiyonuna yönlendirme | Linux/ELF |
 | **Satır içi (inline) kanca** | Fonksiyonun ilk baytlarını `jmp` ile ezme | Her yer |
-| **Frida / Xposed** | Dinamik ikili enstrümantasyon çerçeveleri | Mobil/masaüstü |
+| **Frida / Xposed** | Dinamik binary enstrümantasyon çerçeveleri | Mobil/masaüstü |
 
 Algılama fikirleri (Katalog K7/K8/K18):
 
@@ -793,34 +841,43 @@ Algılama fikirleri (Katalog K7/K8/K18):
 
 ### Demo 4 — LD_PRELOAD ile kanca ve `dladdr` ile algılama
 
-!!! info "Demo 4 · `code/week-06/04-preload-kanca` · yalnız Linux/WSL · CWE benzeri: dinamik enstrümantasyon"
-    Demo, `time()` fonksiyonunu ele geçiren küçük bir sahte kanca kütüphanesi (`libsahtekanca.so`) **derler**. `LD_PRELOAD`
+!!! info "Demo 4 · `code/week-06/04-preload-hook` · yalnız Linux/WSL · CWE benzeri: dinamik enstrümantasyon"
+    Demo, `time()` fonksiyonunu ele geçiren küçük bir sahte kanca kütüphanesi (`libfake_hook.so`) **derler**. `LD_PRELOAD`
     ile bu kütüphane **yalnız tek bir demo komutuna** yüklenir. Ana program, fonksiyonun geldiği `.so`'ya bakarak kancayı
     yakalar. Windows'ta `demo.ps1` bunun WSL'de nasıl çalıştırılacağını anlatır (Windows karşılığı IAT/satır-içi kanca
     tespitidir).
 
-```c title="kanca_ana.c (özet)"
+```c title="preload_hook.c (özet)"
 void *p = dlsym(RTLD_DEFAULT, "time");   /* onyuklu kanca varsa onu doner */
 Dl_info info;
 dladdr(p, &info);                        /* fonksiyonu saglayan .so */
-int kanca = !mesru_mi(info.dli_fname);   /* libc/vdso/ld disi = KANCA */
+int hook = !is_legitimate(info.dli_fname);   /* not libc/vdso/ld = HOOK */
 ```
 
+<iframe class="dsanim" src="../anim/preload-hook-resolution.html" title="LD_PRELOAD sembol çözümleme sırası" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![LD_PRELOAD sembol çözümleme sırası — adım adım](anim/preload-hook-resolution.png)
+</div>
+
+Animasyon, `time`'ın yüklü nesneler arasında hangi SIRAYLA arandığını ve LD_PRELOAD kancası varsa neden onun
+**kazandığını** gösterir; **clean/hooked-first/edge** örneklerini deneyin.
+
 ```text title="sh demo.sh — gerçek çıktı (WSL)"
-ADIM 1 - Normal calisma (LD_PRELOAD yok): temiz beklenir
+STEP 1 - Normal run (no LD_PRELOAD): clean is expected
    time     -> linux-vdso.so.1
    getenv   -> /lib/x86_64-linux-gnu/libc.so.6
-   time(NULL) dondurdu : 1789852509
-SONUC: Temiz - preload/kanca gorunmuyor.
+   time(NULL) returned              : 1790690227
+RESULT: clean - no preload/hook visible.
 
-ADIM 2 - Saldiri: sahte kanca LD_PRELOAD ile YALNIZ bu surece yukleniyor
-   time     -> bin/linux/libsahtekanca.so (KANCA!)
-   time(NULL) dondurdu : 1234567890
-SONUC: Fonksiyon kancasi / preload ALGILANDI (2 sinyal).
+STEP 2 - Attack: the fake hook is preloaded ONLY into this process
+   time     -> bin/linux/libfake_hook.so (HOOK!)
+   getenv   -> /lib/x86_64-linux-gnu/libc.so.6
+   time(NULL) returned              : 1234567890
+RESULT: function hook / preload DETECTED (2 signal(s)).
 ```
 
 Temiz koşuda `time`, çekirdeğin **vDSO**'sundan çözüldü (bu meşrudur, kanca değil). Kanca yüklenince aynı `time`
-`libsahtekanca.so`'dan çözüldü ve **sabit sahte değer** (1234567890) döndürdü; `dladdr` fonksiyonun yerini göstererek
+`libfake_hook.so`'dan çözüldü ve **sabit sahte değer** (1234567890) döndürdü; `dladdr` fonksiyonun yerini göstererek
 kancayı yakaladı. Dikkat: temiz koşuda `linux-vdso`'yu **yanlış pozitif** saymamak için algılama libc, vDSO ve dinamik
 yükleyiciyi meşru kaynaklar olarak kabul eder — bu, "algılama yazmak, algılamayı doğru yazmaktan kolaydır" dersidir.
 
@@ -831,7 +888,7 @@ açalım.
 
 **Adım 1 — `dlsym(RTLD_DEFAULT, "time")` ne yapar?** `dlsym`, çalışan sürecin **sembol tablosunda** aranan
 isimde (`"time"`) bir sembol arar ve onun **bellek adresini** döndürür. `RTLD_DEFAULT`, "programın normal sembol
-arama sırasını (kendi ikili, sonra yüklenen kütüphaneler, `LD_PRELOAD`'lı kütüphaneler dâhil) kullan" anlamına
+arama sırasını (kendi binary, sonra yüklenen kütüphaneler, `LD_PRELOAD`'lı kütüphaneler dâhil) kullan" anlamına
 gelen özel bir tanıtıcıdır. Bu adımın çıktısı yalnız bir **sayı** (bir bellek adresi); hangi dosyadan geldiğine
 dair bir bilgi taşımaz.
 
@@ -843,15 +900,15 @@ belleğe yüklenmiş **paylaşımlı nesnelerinin (`.so` dosyalarının)** harit
 **Adım 3 — temiz koşuda.** `LD_PRELOAD` boşken, `time` sembolü normal arama sırasıyla çözülür ve çekirdeğin
 sağladığı **vDSO** (virtual Dynamic Shared Object — çekirdeğin süreç belleğine kendiliğinden eklediği, sistem
 çağrısı yapmadan hızlı okuma sağlayan özel bir sanal `.so`) içinden gelir. Demo çıktısı: `time -> linux-vdso.so.1`.
-`mesru_mi()` fonksiyonu bu ismi tanır (`linux-vdso` alt dizesini arar) ve **kanca değil** der.
+`is_legitimate()` fonksiyonu bu ismi tanır (`linux-vdso` alt dizesini arar) ve **kanca değil** der.
 
-**Adım 4 — `LD_PRELOAD` ile kanca yüklenince.** `demo.sh`, `LD_PRELOAD=./libsahtekanca.so` ortam değişkeniyle
+**Adım 4 — `LD_PRELOAD` ile kanca yüklenince.** `demo.sh`, `LD_PRELOAD=./libfake_hook.so` ortam değişkeniyle
 programı başlatır. Dinamik bağlayıcı (`ld-linux.so`), normal arama sırasının **en başına** bu kütüphaneyi sokar;
 kütüphane kendi `time()` fonksiyonunu tanımladığı için, `dlsym(RTLD_DEFAULT, "time")` artık **vDSO'daki gerçek
-`time`'ı değil, `libsahtekanca.so`'daki sahte `time`'ı** bulur. `dladdr` bu adresin `libsahtekanca.so`'nun
-bellek aralığına düştüğünü görür; `dli_fname` = `"bin/linux/libsahtekanca.so"` döner. `mesru_mi()` bu ismi
-tanımadığı (libc/vDSO/ld değil) için **KANCA** der — tam demo çıktısındaki `time -> bin/linux/libsahtekanca.so
-(KANCA!)` satırı.
+`time`'ı değil, `libfake_hook.so`'daki sahte `time`'ı** bulur. `dladdr` bu adresin `libfake_hook.so`'nun
+bellek aralığına düştüğünü görür; `dli_fname` = `"bin/linux/libfake_hook.so"` döner. `is_legitimate()` bu ismi
+tanımadığı (libc/vDSO/ld değil) için **KANCA** der — tam demo çıktısındaki `time -> bin/linux/libfake_hook.so
+(HOOK!)` satırı.
 
 **Adım 5 — bu, neden `getenv(LD_PRELOAD)` denetiminden daha güçlü?** `getenv` denetimi ortam değişkeninin
 **kendisine** bakar — ama ortam değişkeni yalnız programın **başlatılma anında** kütüphaneyi yüklemek için
@@ -882,6 +939,17 @@ düşmesini önlemeyi,
 [3. haftada](../week-3/cen429-week-3.md#13-kullanimda-veri-bellekte-guvenli-silme-ve-cihaz-baglama) "kullanımda
 veri" katmanlarını gördük. Bu bölüm aynı soruyu çalışma anı saldırganı açısından
 yeniden sorar: saldırgan belleği **izliyor** ya da **değiştiriyorsa** ne yapabiliriz?
+
+!!! note "Kısa tarihçe: bellekteki sır neden 'diskteki sır' gibi düşünülemez"
+    - **2008** — J. Alex Halderman ve ortak yazarları, **"Lest We Remember: Cold Boot Attacks on Encryption
+      Keys"** makalesinde DRAM'in gücü kesildikten **saniyeler-dakikalar sonra bile** içeriğini kısmen koruduğunu
+      (remanans) gösterdi: bir dizüstü bilgisayarı soğutup yeniden başlatarak bellekteki tam disk şifreleme
+      anahtarlarını kurtarmayı başardılar. Bu, "sır yalnız RAM'de, diskte değil" varsayımının tek başına **yeterli
+      olmadığını** kanıtlayan, alanın en çok anılan çalışmalarından biridir — bu bölümün "kısa ömür" ve "asla
+      açık tutma" önlemlerinin doğrudan motivasyonu budur.
+    - Linux çekirdeğinin `prctl(PR_SET_DUMPABLE, ...)` ve `mlock`/`MADV_DONTDUMP` gibi bellek korumaları, aynı
+      genel derste (RASP'ten önce de var olan) işletim sistemi düzeyinde savunma ailesine girer: sürecin kendi
+      belleğini başka bir sürece veya diske karşı korumak.
 
 ![Dinamik bellek korumasının katmanları](assets/h06-13-bellek-koruma-katmanlari.svg)
 
@@ -943,50 +1011,50 @@ etmenin yolu, o veriyi **tek başına** bırakmamaktır:
 
 ```c title="Kritik bir değeri korumalı tutmak: değer + gölge kopya + özet"
 typedef struct {
-    uint32_t deger;        /* asıl değer                          */
-    uint32_t golge;        /* deger XOR çalışma anı maskesi        */
-    uint32_t ozet;         /* deger ve golge üzerinden kısa bir MAC */
-} KorunanSayac;
+    uint32_t value;         /* asıl değer                           */
+    uint32_t shadow;        /* value XOR çalışma anı maskesi        */
+    uint32_t mac;           /* value ve shadow üzerinden kısa bir MAC */
+} ProtectedCounter;
 
 /* Okurken üçünün tutarlılığı denetlenir; tutmuyorsa değer bellekte değiştirilmiştir. */
-int sayac_oku(const KorunanSayac *s, uint32_t *cikti)
+int counter_read(const ProtectedCounter *s, uint32_t *out)
 {
-    if ((s->golge ^ calisma_maskesi) != s->deger) return -1;
-    if (kisa_mac(s->deger, s->golge) != s->ozet)   return -1;
-    *cikti = s->deger;
+    if ((s->shadow ^ runtime_mask) != s->value) return -1;
+    if (short_mac(s->value, s->shadow) != s->mac) return -1;
+    *out = s->value;
     return 0;
 }
 ```
 
-Saldırgan bellekte yalnız `deger` alanını değiştirirse gölge kopya ve özet tutmaz. Üçünü birden tutarlı biçimde
+Saldırgan bellekte yalnız `value` alanını değiştirirse gölge kopya ve özet tutmaz. Üçünü birden tutarlı biçimde
 değiştirmek için maskeyi ve özet anahtarını da bulması gerekir; bu da işin maliyetini artırır. Aynı fikir, [5. haftadaki](../week-5/cen429-week-5.md#12-dize-gizleme-ve-dinamik-yontem-cagrisi)
 cihaz parmak izinin **iki farklı özetle iki farklı yerde** saklanmasında ve
 [2. haftadaki](../week-2/cen429-week-2.md#kurcalamaya-dayanikli-gunluk) kurcalamaya dayanıklı günlükte de vardır.
 
-### 7.1 İşlenmiş örnek: `KorunanSayac` bir saldırıyı nasıl yakalar?
+### 7.1 İşlenmiş örnek: `ProtectedCounter` bir saldırıyı nasıl yakalar?
 
-Yukarıdaki yapıyı sayılarla izleyelim. `calisma_maskesi`, çalışma başında rastgele üretilmiş sabit bir değer
-olsun: `0xA5A5A5A5`. Bir ödeme denemesi sayacı `deger = 3` (üçüncü deneme) olduğunda yapı şöyle doldurulur:
+Yukarıdaki yapıyı sayılarla izleyelim. `runtime_mask`, çalışma başında rastgele üretilmiş sabit bir değer
+olsun: `0xA5A5A5A5`. Bir ödeme denemesi sayacı `value = 3` (üçüncü deneme) olduğunda yapı şöyle doldurulur:
 
 | Alan | Değer | Nasıl hesaplandı |
 | --- | --- | --- |
-| `deger` | `0x00000003` | asıl sayaç |
-| `golge` | `0xA5A5A5A6` | `deger XOR calisma_maskesi` = `0x00000003 XOR 0xA5A5A5A5` |
-| `ozet` | (örnek) `0x7F2C1B90` | `kisa_mac(deger, golge)` |
+| `value` | `0x00000003` | asıl sayaç |
+| `shadow` | `0xA5A5A5A6` | `value XOR runtime_mask` = `0x00000003 XOR 0xA5A5A5A5` |
+| `mac` | (örnek) `0x7F2C1B90` | `short_mac(value, shadow)` |
 
-`sayac_oku()` her okumada `golge XOR calisma_maskesi`'nin `deger`'e eşit olup olmadığına bakar:
-`0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — `deger` ile eşit, tutarlı; fonksiyon `0` döner.
+`counter_read()` her okumada `shadow XOR runtime_mask`'in `value`'ya eşit olup olmadığına bakar:
+`0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — `value` ile eşit, tutarlı; fonksiyon `0` döner.
 
-Şimdi saldırganın bir bellek düzenleyicisiyle yalnız `deger` alanını `0x00000063` (99) yaptığını düşünelim
-(bir deneme sayacını ya da bir puanı sıfırlamaya/artırmaya çalışıyor). `golge` ve `ozet` alanları **değişmedi**.
-Bir sonraki `sayac_oku()` çağrısı: `golge XOR calisma_maskesi = 0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — ama
-`deger` artık `0x00000063`. İkisi **eşleşmiyor**; fonksiyon `-1` döner, tutarsızlık yakalanır. Saldırganın bunu
-atlatabilmesi için `golge`'yi de doğru maskeyle yeniden hesaplaması **ve** `ozet`'i de tutarlı üretmesi gerekir —
-ki `kisa_mac`'in anahtarını bilmediği sürece bu, Bölüm 3.1'deki HMAC altın değerini yeniden üretmekle aynı
+Şimdi saldırganın bir bellek düzenleyicisiyle yalnız `value` alanını `0x00000063` (99) yaptığını düşünelim
+(bir deneme sayacını ya da bir puanı sıfırlamaya/artırmaya çalışıyor). `shadow` ve `mac` alanları **değişmedi**.
+Bir sonraki `counter_read()` çağrısı: `shadow XOR runtime_mask = 0xA5A5A5A6 XOR 0xA5A5A5A5 = 0x00000003` — ama
+`value` artık `0x00000063`. İkisi **eşleşmiyor**; fonksiyon `-1` döner, tutarsızlık yakalanır. Saldırganın bunu
+atlatabilmesi için `shadow`'ı da doğru maskeyle yeniden hesaplaması **ve** `mac`'i de tutarlı üretmesi gerekir —
+ki `short_mac`'in anahtarını bilmediği sürece bu, Bölüm 3.1'deki HMAC altın değerini yeniden üretmekle aynı
 zorluktadır.
 
 !!! warning "Tutarlılık denetimi de bir denetimdir"
-    `sayac_oku`'nun `-1` dönüşünü "hiçbir şey olmamış gibi" yok sayan bir çağıran, bütün korumayı boşa çıkarır; ayrıca
+    `counter_read`'in `-1` dönüşünü "hiçbir şey olmamış gibi" yok sayan bir çağıran, bütün korumayı boşa çıkarır; ayrıca
     denetimin kendisi de yamalanabilir. Bu yüzden tutarsızlık bir tepkiye bağlanır (tepki politikası) ve denetim kodu da
     bütünlük denetiminin kapsamına alınır.
 
@@ -1013,6 +1081,15 @@ Bu sinyallerin hiçbiri tek başına kesin değildir; hepsi tepki politikasında
 
 ## 8. Kök/ayrıcalıklı ortam ve bileşen imza doğrulaması
 
+!!! note "Kısa tarihçe: paket imzalama ve kök göstergesi"
+    - **Android 1.0 (2008)** — orijinal APK imzalama şeması (JAR imzalama, sonradan "v1" olarak anılır) uygulamayı
+      yeniden paketlemeye karşı ilk savunmaydı: değiştirilmiş bir APK, orijinal geliştiricinin özel anahtarıyla
+      üretilmiş imzayı **taşıyamaz**.
+    - **Android 7.0 Nougat (2016)** — Google, **APK Signature Scheme v2**'yi tanıttı: dosyaları tek tek değil,
+      APK'nin **tamamını** (JAR imzalamanın kapsam dışı bıraktığı bazı alanlar dâhil) imzalar; hem daha hızlı
+      doğrulanır hem de v1'in bıraktığı bazı "imzayı bozmadan içerik ekleme" açıklarını kapatır.
+    - **Android 9 Pie (2018)** — **APK Signature Scheme v3**, aynı ilkeye **anahtar döndürme (key rotation)**
+      desteği ekledi.
 
 ![Kök göstergesinden derecelendirilmiş tepkiye](assets/h06-14-kok-gosterge-karar.svg)
 
@@ -1035,17 +1112,25 @@ karar vermek yerine Bölüm 8.1.1'deki risk skoruna eklenmelidir.
 
 ### Demo 7 — Root/ayrıcalıklı ortam göstergesi (yalnız okuma)
 
-!!! info "Demo 7 · `code/week-06/07-ortam-yetki` · root/ayrıcalık göstergesi, salt okuma"
+!!! info "Demo 7 · `code/week-06/07-environment-privilege` · root/ayrıcalık göstergesi, salt okuma"
     Program (1) ayrıcalık seviyesini (root/admin mi) ve (2) bilinen "tehlikeli işaret" yollarının varlığını yalnız
-    **okuyarak** kontrol eder. Demoyu deterministik kılmak için komut satırından sahte bir işaret (`cikti/sahte_su`)
+    **okuyarak** kontrol eder. Demoyu deterministik kılmak için komut satırından sahte bir işaret (`output/fake_su`)
     verilir.
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
-ADIM 2 - Isaretli durum: sahte bir 'su' isaret dosyasi olusturuluyor
-1) Ayricalik seviyesi : normal kullanici
-2) Tehlikeli gosterge taramasi:
-   [BULUNDU] cikti/sahte_su (ek isaret)
-SONUC: Ayricalikli/riskli ortam GOSTERGESI var (1 sinyal).
+<iframe class="dsanim" src="../anim/root-indicator-scan.html" title="Kök/ayrıcalık gösterge taraması" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Kök/ayrıcalık gösterge taraması — adım adım](anim/root-indicator-scan.png)
+</div>
+
+**clean/rooted-one-mark/edge** örneklerini deneyin; animasyon 14 bilinen göstergenin taranışını ve ayrıcalık
+seviyesinin nasıl eklendiğini gösterir.
+
+```text title=".\demo.ps1 — gerçek çıktı (kısaltılmış)"
+STEP 2 - Flagged case: a fake 'su' indicator file is created
+1) Privilege level : normal user
+2) Dangerous-indicator scan:
+   [FOUND] output\fake_su (extra indicator)
+RESULT: an elevated/risky environment INDICATOR is present (1 signal(s)).
 ```
 
 !!! warning "Sinyal, kanıt değil"
@@ -1068,7 +1153,7 @@ pozitif üretebilir** (meşru kullanıcı cihazını gerçekten root'lamıştır
 | Sistem bölümü yazılabilir | Salt-okunur olması gereken alan değiştirilebilir | 30 |
 | `geteuid() == 0` (masaüstü/sunucu karşılığı) | Süreç fiilen yükseltilmiş yetkiyle çalışıyor | 40 |
 
-Demo 7'nin gerçek çıktısındaki tek sinyal (`cikti/sahte_su` bulundu → 1 sinyal) düşük bir skora karşılık gelir;
+Demo 7'nin gerçek çıktısındaki tek sinyal (`output/fake_su` bulundu → 1 sinyal) düşük bir skora karşılık gelir;
 tek başına bir bankacılık uygulamasını durdurmaya **yetmemelidir**. Skorun yüksek çıkması için birden çok
 göstergenin **birlikte** görünmesi beklenir — tıpkı Bölüm 5.1'deki ortam örneğinde olduğu gibi.
 
@@ -1088,23 +1173,31 @@ hâlidir (Katalog K2/K3/K6).
 
 ### Demo 6 — Bileşen imza doğrulaması ve repackaging tespiti
 
-!!! info "Demo 6 · `code/week-06/06-bilesen-imza` · imza/özet doğrulama"
+!!! info "Demo 6 · `code/week-06/06-component-signature` · imza/özet doğrulama"
     Bir "eklenti modülü" dosyası yüklenmeden **önce** ayrık bir imza (HMAC-SHA-256) ile doğrulanır. Modül bir bayt bile
     değişirse imza tutmaz ve yükleme reddedilir.
 
-```text title="sh demo.sh — gerçek çıktı"
-ADIM 3 - Yukleme oncesi dogrulama (modul degismedi): TUTAR
-Modul imzasi TUTTU -> guvenle yuklenebilir.
-ADIM 4 - Saldiri: modul YENIDEN PAKETLENIR (tek bayt eklenir)
-Modul imzasi TUTMADI -> YENIDEN PAKETLENMIS/degistirilmis.
-Yukleme REDDEDILDI.   (cikis kodu 3)
+<iframe class="dsanim" src="../anim/component-signature.html" title="Bileşen imzası doğrulama: repackaging yakalama" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Bileşen imzası doğrulama — adım adım](anim/component-signature.png)
+</div>
+
+**holds/appended-byte/edge** örneklerini deneyin; animasyon üretim-zamanı imzalamayı ve yükleme-öncesi
+doğrulamayı yan yana gösterir.
+
+```text title=".\demo.ps1 — gerçek çıktı"
+STEP 3 - Verify before loading (module unchanged): HOLDS
+Module signature HELD -> safe to load.
+STEP 4 - Attack: the module is REPACKAGED (one character changes)
+Module signature DID NOT HOLD -> REPACKAGED/modified.
+Loading REJECTED.   (exit code 3)
 ```
 
 !!! info "Önemli fark: HMAC vs. asimetrik imza"
     APK v2/v3 **açık anahtar (asimetrik)** imza kullanır (bkz.
     [Hafta 3'teki](../week-3/cen429-week-3.md#24-ozet-mac-ve-imza-hangisi-ne-zaman) dijital imza): doğrulayanın imzalama
     anahtarına değil, yalnız **açık anahtara** ihtiyacı olur. Bu demoda öğretim için **paylaşılan anahtarlı HMAC**
-    kullanıyoruz (basit ve `cen429_kripto.h`'da hazır); asimetrik imza (Ed25519 / RSA-PSS) ve sertifika zincirlerini
+    kullanıyoruz (basit ve `cen429_crypto.h`'da hazır); asimetrik imza (Ed25519 / RSA-PSS) ve sertifika zincirlerini
     [Hafta 10'da](../week-10/cen429-week-10.md#5-dijital-imza-olusturma-dogrulama-ve-kullanim-yerleri) işleyeceğiz.
     İlke aynı: yüklemeden önce **bütünlük + kaynak** doğrulaması.
 
@@ -1144,6 +1237,19 @@ herkes aynı zamanda **üretebilir** de; asimetrik imzada doğrulayan yalnız **
 reddet;`. Saldırganın işi basittir: o **tek atlamayı** (`je → jmp`) yamalayıp kontrolü es geçmek (Bölüm 3'teki yama). O
 hâlde kontrolleri **atlanamaz** kılmanın yolu nedir?
 
+!!! note "Kısa tarihçe: yazılım kurcalamaya dayanıklılığından denetlenebilir kontrol akışına"
+    - **1996** — David Aucsmith, tek bir yama noktasına güvenmemek için birbirini **çapraz doğrulayan**, dağıtık
+      bütünlük kontrolleri fikrini işler (yazılım kurcalamaya dayanıklılığı literatürünün erken katkılarından biri).
+    - **2001** — Christian Collberg ve Clark Thomborson, kod gizleme ve kurcalamaya dayanıklılık üzerine bir
+      taksonomi ve terminoloji yayımlar; aynı dönemde Hoi Chang ve Mikhail Atallah, kontrol akışını izleyen ve
+      birbirini denetleyen küçük kod parçacıkları olan **"guard" (bekçi)** fikrini işler — bu hafta 3.
+      kontrol noktasının atlanmasına karşı kullandığımız "çoklu/örtüşen denetleyici" fikrinin kökü buradadır.
+    - **2005** — Martín Abadi, Mihai Budiu, Úlfar Erlingsson ve Jay Ligatti, **Control-Flow Integrity (CFI)**'yi
+      akademik olarak tanımlar: programın çalışma zamanındaki kontrol akışının, derleme zamanında çıkarılan bir
+      kontrol akışı çizgesine **uyduğunu** doğrulamak. Bu haftanın kontrol akışı sayacı, CFI'nin fikrini (beklenen
+      yoldan sapmayı yakalamak) tam bir çizge yerine **veri bağımlı bir anahtar zinciriyle** basitleştirilmiş
+      şekilde uygular.
+
 Cevap: güvenlik kontrollerini bir **kontrol akışı sayacına / anahtar zincirine** bağlamak (Katalog K17). Kritik işlem,
 doğru sonucu **ancak** bütün kontrol noktalarından **sırayla** geçilmişse üretebilir. Bunu bir **veri bağımlılığıyla**
 kurarız: her kontrol noktası bir anahtar zincirini ilerletir (`acc = HMAC(acc, "asama-i")`); kritik işlem bu zincirden
@@ -1156,43 +1262,53 @@ sonuç üretilemez. Böylece tek bir `jmp` yaması işe yaramaz.
 
 ### Demo 5 — Kontrol akışı sayacı ve skip saldırısı
 
-!!! info "Demo 5 · `code/week-06/05-akis-sayaci` · control-flow integrity (Katalog K17)"
+!!! info "Demo 5 · `code/week-06/05-flow-counter` · control-flow integrity (Katalog K17)"
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
-SENARYO 1 - Normal: butun kontrol noktalari sirayla calisir
-   [gecildi] kontrol noktasi 0, 1, 2
-SONUC: ODEME ONAYLANDI -> "ODEME-ONAYI-TOKEN-4242"
+<iframe class="dsanim" src="../anim/flow-counter.html" title="Kontrol akışı sayacı: beklenen yol ve atlanan kontrol" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Kontrol akışı sayacı — adım adım](anim/flow-counter.png)
+</div>
 
-SENARYO 2 - Saldiri: kontroller tamamen ATLANIR
-   [ATLANDI] hicbir kontrol noktasi calismadi
-   (uyari: sayac=0 iz=0x0 beklenen=3/0x7)
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). ... decoy doner
+Animasyon 10-14 aşamalı bir akışı, altın (golden) zincirle karşılaştırarak gösterir; **in-order/skip-half/edge**
+örneklerini deneyin — hiçbir aşama çalışmasa bile, ya da bütün aşamalar YANLIŞ sırada çalışsa bile zincir bozulur.
 
-SENARYO 4 - Saldiri: kontroller YANLIS SIRADA calisir
-SONUC: ODEME REDDEDILDI (zincir anahtari yanlis). ... decoy doner
+```text title=".\demo.ps1 — gerçek çıktı (kısaltılmış)"
+SCENARIO 1 - normal: every checkpoint runs in order
+   [passed] checkpoint 0 (integrity (Demo 1))
+   [passed] checkpoint 1 (anti-debug (Demo 2))
+   [passed] checkpoint 2 (environment (Demo 3))
+RESULT: PAYMENT APPROVED -> "PAYMENT-APPROVAL-TOKEN-4242"
+
+SCENARIO 2 - skip: the checks are SKIPPED entirely (straight to the critical operation)
+   [SKIPPED] no checkpoint ran
+   (warning: count=0 visited_mask=0x0 expected=3/0x7)
+RESULT: PAYMENT DENIED (wrong chain key).
+
+SCENARIO 4 - reorder: the checks run in the WRONG ORDER
+RESULT: PAYMENT DENIED (wrong chain key).
 ```
 
 Normal akışta üç kontrol sırayla geçildi, zincir doğru oldu ve ödeme onaylandı. Kontroller atlandığında, kısmen
 geçildiğinde ya da yanlış sırada geçildiğinde zincir farklı çıktı; kritik işlem gerçek sonucu **üretemedi** ve sahte
-(decoy) döndü. Program ayrıca bir **çift sayaç** (sayac + iz biti) tutar (K17); bu, anahtar zinciriyle birlikte üçlü bir
-tutarlılık kontrolü sağlar.
+(decoy) döndü. Program ayrıca bir **çift sayaç** (`count` + `visited_mask` biti) tutar (K17); bu, anahtar
+zinciriyle birlikte üçlü bir tutarlılık kontrolü sağlar.
 
 **"Çift sayaç" neden gerekli, `acc` zinciri yetmiyor mu?** `acc` zinciri **hangi aşamaların hangi sırayla**
 çalıştığını dolaylı olarak kanıtlar (yanlış aşama/sıra → yanlış anahtar), ama demo çıktısındaki uyarı satırında
-gördüğümüz gibi (`uyari: sayac=0 iz=0x0 beklenen=3/0x7`) program ayrıca iki **basit** sayaç daha tutar:
-`sayac` (kaç kontrol noktasının çalıştığını sayan düz bir tam sayı) ve `iz` (her kontrol noktasının kendi bit
-konumunu `1` yaptığı bir bit kümesi, ör. 0., 1. ve 2. kontrol geçtiyse `iz = 0b111 = 0x7`). Bunların amacı
+gördüğümüz gibi (`warning: count=0 visited_mask=0x0 expected=3/0x7`) program ayrıca iki **basit** sayaç daha tutar:
+`count` (kaç kontrol noktasının çalıştığını sayan düz bir tam sayı) ve `visited_mask` (her kontrol noktasının kendi bit
+konumunu `1` yaptığı bir bit kümesi, ör. 0., 1. ve 2. kontrol geçtiyse `visited_mask = 0b111 = 0x7`). Bunların amacı
 `acc`'ten **farklıdır**: `acc` kriptografik olarak güçlüdür ama tek başına "kaç kontrol geçti, hangileri" gibi
 **okunabilir bir teşhis bilgisi** vermez (HMAC çıktısından geriye "üç kontrol de geçti" diye çıkarım yapılamaz).
-`sayac` ve `iz`, geliştiriciye ve günlüğe (log) okunabilir bir özet sağlarken, gerçek **yetkilendirme kararı**
-yine yalnız `acc`'ten türeyen anahtara dayanır — `sayac` ve `iz` alanlarının kendisi yamalanıp `3` ve `0x7`
-yapılsa bile, `acc` zinciri yanlış olduğu için anahtar yine yanlış çıkar. Üç değer (acc, sayac, iz) böylece
+`count` ve `visited_mask`, geliştiriciye ve günlüğe (log) okunabilir bir özet sağlarken, gerçek **yetkilendirme kararı**
+yine yalnız `acc`'ten türeyen anahtara dayanır — `count` ve `visited_mask` alanlarının kendisi yamalanıp `3` ve `0x7`
+yapılsa bile, `acc` zinciri yanlış olduğu için anahtar yine yanlış çıkar. Üç değer (`acc`, `count`, `visited_mask`) böylece
 birbirini **çapraz doğrular**: biri tutarsızsa günlükte fark edilir, hiçbiri tek başına yetkilendirme kararını
 değiştiremez.
 
 ### 9.1 İşlenmiş örnek: anahtar zincirini elle hesaplamak
 
-`acc = HMAC(acc, "asama-i")` cümlesini soyut bırakmayalım; gerçek `openssl` komutlarıyla elle hesaplayalım.
+`acc = HMAC(acc, "stage-i")` cümlesini soyut bırakmayalım; gerçek `openssl` komutlarıyla elle hesaplayalım.
 Başlangıç değeri `acc0`, 32 sıfır bayttan oluşan sabit bir anahtarla **boş** veriyi HMAC'leyerek üretilsin
 (gerçek sistemde bu, oturum başına rastgele üretilir):
 
@@ -1211,35 +1327,35 @@ acc0 = b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad
 aşama etiketi veri olarak HMAC'lenir ve sonuç yeni `acc` olur:
 
 ```bash title="Sirali gecis: acc1 -> acc2 -> acc3"
-A1=$(printf 'asama-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
-A2=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
-A3=$(printf 'asama-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
+A1=$(printf 'stage-0' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+A2=$(printf 'stage-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A1 -binary | xxd -p -c 256)
+A3=$(printf 'stage-2' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A2 -binary | xxd -p -c 256)
 echo "acc3 (DOGRU zincir) = $A3"
 ```
 
 ```text
-acc3 (DOGRU zincir) = fc5c2a86e948b190dbe61619375a77bee2aa79911feec3d37f5d7d20615cada8
+acc3 (DOGRU zincir) = e2db3f2ffdeefc8e58749330d64e0bab04e79b8ce63ba185fcd83a8c3e0942ee
 ```
 
 Kritik işlem (ör. ödeme onayı), yalnız `acc3` **tam olarak bu değere eşitse** doğru anahtarı türetir ve gerçek
-sonucu üretir — Demo 5'in SENARYO 1'i.
+sonucu üretir — Demo 5'in `normal` senaryosu.
 
 **Saldırı — kontrol noktaları atlanır, yalnız birinci aşama çalışır.** Saldırgan 0 ve 2 numaralı kontrol
 fonksiyonlarına giden çağrıları bir yamayla es geçer (Bölüm 3'teki `je → jmp` yamasıyla aynı fikir); yalnız
-`asama-1` etiketi işlenir:
+`stage-1` etiketi işlenir:
 
 ```bash title="Atlanmis gecis: yalniz asama-1"
-B1=$(printf 'asama-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
+B1=$(printf 'stage-1' | openssl dgst -sha256 -mac HMAC -macopt hexkey:$A0 -binary | xxd -p -c 256)
 echo "acc (ATLANMIS zincir) = $B1"
 ```
 
 ```text
-acc (ATLANMIS zincir) = bffc11620959254cef65b0e97fc8b54a1fe42cd6afe161b66aca5a758c1e17ff
+acc (ATLANMIS zincir) = 1af937ede233313e8a3765bb48ca09a81970c91652abb42060838fcecb37bf73
 ```
 
-`fc5c2a86...` ile `bffc1162...` **tamamen farklı** iki değerdir. Kritik işlem bu yanlış `acc`'ten türettiği
-anahtarla gerçek sırrı **açamaz**; Demo 5'in SENARYO 2 ve 4'ünde gördüğümüz "ODEME REDDEDILDI ... decoy doner"
-sonucu tam olarak budur. Saldırganın `jmp` yaması **hangi kontrolü atladığını değiştirmiyor bile** — atlanan
+`e2db3f2f...` ile `1af937ed...` **tamamen farklı** iki değerdir. Kritik işlem bu yanlış `acc`'ten türettiği
+anahtarla gerçek sırrı **açamaz**; Demo 5'in `skip` ve `reorder` senaryolarında gördüğümüz "RESULT: PAYMENT DENIED
+... a decoy is returned" sonucu tam olarak budur. Saldırganın `jmp` yaması **hangi kontrolü atladığını değiştirmiyor bile** — atlanan
 her kombinasyon farklı ama hep **yanlış** bir `acc` üretir, çünkü HMAC zinciri girdisindeki her değişikliği çığ
 etkisiyle yayar (Bölüm 3.1'deki aynı özellik, burada zincirlenmiş hâliyle).
 
@@ -1269,7 +1385,7 @@ politikası saldırganı **yavaşlatır ve yanıltır**:
 | Strateji | Ne yapar | Katalog |
 | --- | --- | --- |
 | **Fail-closed** | Şüphede işlemi reddet, güven deposuna düşme | — |
-| **Sırrı sil** | Tamper anında değerli veriyi güvenle sil (`kripto_temizle`) | K15 |
+| **Sırrı sil** | Tamper anında değerli veriyi güvenle sil (`crypto_wipe`) | K15 |
 | **Decoy (sahte) çıktı** | Çökmek yerine rastgele/sahte sonuç döndür; saldırgan gerçekle sahteyi ayıramaz | K16 |
 | **Gecikmeli/örtük tepki** | Tepkiyi zaman/mesafe olarak tetikleyiciden ayır | K15 |
 | **Cihaz/sürüm bağlama** | Sırrı cihaza/sürüme bağla; anahtarlar kopyalansa bile başka cihazda açılmaz | L1/L2 |
@@ -1281,16 +1397,16 @@ sarılır. Telefon klonlansa, dosyalar başka cihaza kopyalansa bile anahtar far
 
 ### 10.1 İşlenmiş örnek: cihaz parmak izinden anahtar türetmek (adım adım HKDF)
 
-Demo 8'in "cihaz/sürüm bağlama" adımını **gerçek değerlerle** elle izleyelim. `kripto_hkdf_sha256`,
+Demo 8'in "cihaz/sürüm bağlama" adımını **gerçek değerlerle** elle izleyelim. `crypto_hkdf_sha256`,
 [Hafta 3'te](../week-3/cen429-week-3.md#7-ana-sirdan-anahtar-turetme-oturum-anahtarlari-ve-ileri-gizlilik) gördüğümüz
 **RFC 5869 HKDF**'in iki adımını (Extract, Expand) uygular; burada `ikm` (girdi anahtar malzemesi)
 cihaz parmak izi, `tuz` (salt) sürüm dizesi, `info` ise sabit bir bağlam etiketidir:
 
 | Parametre | Değer (Demo 8'in `normal` senaryosu) |
 | --- | --- |
-| `ikm` (cihaz parmak izi) | `cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO` |
-| `tuz` (sürüm) | `surum=1.0.0` |
-| `info` (bağlam etiketi) | `rasp-veri-anahtari` |
+| `ikm` (cihaz parmak izi) | `device=SIM-MODEL-A;serial=SN-0001;maker=DEMO` |
+| `tuz` (sürüm) | `version=1.0.0` |
+| `info` (bağlam etiketi) | `rasp-data-key` |
 
 **Adım 1 — Extract.** Bu adım, uzunluğu ve rastgeleliği belirsiz olan `ikm`'i (cihaz parmak izi düz bir metindir,
 kriptografik olarak "iyi dağılmış" olmayabilir) sabit uzunlukta, güvenli bir ara anahtara sıkıştırır; bu ara
@@ -1298,13 +1414,13 @@ anahtarın standart adı **PRK**'dir (Pseudo-Random Key — sözde rastgele anah
 tuz, veri = ikm)`. `openssl` ile aynı hesabı yapalım:
 
 ```bash title="HKDF Adim 1 - Extract (gercek openssl ciktisi)"
-printf '%s' 'cihaz=SIM-MODEL-A;seri=SN-0001;uretici=DEMO' \
-  | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'surum=1.0.0' | xxd -p -c 256) -binary \
+printf '%s' 'device=SIM-MODEL-A;serial=SN-0001;maker=DEMO' \
+  | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(printf '%s' 'version=1.0.0' | xxd -p -c 256) -binary \
   | xxd -p -c 256
 ```
 
 ```text
-PRK (gercek cihaz) = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99562ce
+PRK (gercek cihaz) = cdbff87f64c1f39f778590faf7f1825b1c6caf759cfaa38af5c7b6d386eb00f4
 ```
 
 **Adım 2 — Expand.** İhtiyacımız 32 bayt (tek blok) olduğu için tek bir HMAC yeter:
@@ -1312,7 +1428,7 @@ PRK (gercek cihaz) = a0aaf6995343abfb24d1d44d6aac18b20326fc5b9e84bdd82e89bc7ca99
 32 baytlık **veri anahtarı** olur:
 
 ```text
-anahtar (gercek cihaz) = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc5be175d10
+anahtar (gercek cihaz) = 3c8af67f5d09f3bf2ee6be6164a99e8027a73a208ca43599909a4f63d06d7499
 ```
 
 **Adım 3 — aynı hesabı "başka cihaz" parmak iziyle tekrarlamak.** Yalnız seri numarasını `SN-0001`'den
@@ -1320,49 +1436,77 @@ anahtar (gercek cihaz) = a19f06fd7b93894705615ac8933a2fa9e0b7cd290c7247a39e09dbc
 tekrarlayalım:
 
 ```text
-PRK (baska cihaz)      = b6b88f3dce3ea3099c4ff0673d356c040689ebd72be4cc98fb158bfa4c0ac039
-anahtar (baska cihaz)  = b87e4dee6c5579a1456b977ce8cbf8d14f3363aa4e1c7c1a7198342c7689e220
+PRK (baska cihaz)      = ac53ee1fffc9fc61b5a2d3f874187855f40e6d3514d92a7df955d26e35638cdb
+anahtar (baska cihaz)  = b68e35acc1ce116e1879a5dd6243e5c4a194821dbd234d15c2f0a22f462073d6
 ```
 
-**Sonuç.** İki anahtar (`a19f06fd...` ve `b87e4dee...`) **hiçbir ortak baytları olmayacak kadar** farklıdır — tek
+**Sonuç.** İki anahtar (`3c8af67f...` ve `b68e35ac...`) **hiçbir ortak baytları olmayacak kadar** farklıdır — tek
 bir karakterlik seri numarası farkı, HKDF'in HMAC çekirdeği yüzünden (Bölüm 3.1'deki çığ etkisi) baştan sona
-farklı bir anahtar üretir. Demo 8'in SENARYO 3'ünde ("başka cihaz") gördüğümüz "cihaz/surum baglama tutmadi"
-sonucu tam olarak budur: paketin şifrelendiği anahtar (`a19f06fd...`) ile çözmeye çalışılan anahtar
-(`b87e4dee...`) **aynı olmadığı için** `AES-GCM`'in kimlik doğrulama etiketi tutmaz ve `kripto_gcm_coz` başarısız
-döner — sır **hiçbir zaman açığa çıkmaz**, dosyalar başka cihaza kopyalansa bile.
+farklı bir anahtar üretir. Demo 8'in `other-device` senaryosunda gördüğümüz "device/version binding failed
+(cloned?)" sonucu tam olarak budur: paketin şifrelendiği anahtar (`3c8af67f...`) ile çözmeye çalışılan anahtar
+(`b68e35ac...`) **aynı olmadığı için** `AES-GCM`'in kimlik doğrulama etiketi tutmaz ve `crypto_gcm_decrypt`
+başarısız döner — sır **hiçbir zaman açığa çıkmaz**, dosyalar başka cihaza kopyalansa bile.
 
 ### Demo 8 — RASP motoru: algılama + tepki + cihaz/sürüm bağlama (capstone)
 
-!!! info "Demo 8 · `code/week-06/08-tamper-yanit` · haftanın capstone'u (K15/K16, L1/L2)"
+!!! info "Demo 8 · `code/week-06/08-tamper-response` · haftanın capstone'u (K15/K16, L1/L2)"
     Önceki parçaları tek bir "öz koruma motoru"nda birleştirir: bir dizi kontrol çalışır; sır cihaz-bağlı bir anahtarla
-    (HKDF + AES-GCM) sarılır; tamper algılanınca motor sırrı **siler**, tamper bayrağı kaldırır ve çökmek yerine **decoy**
-    döndürür.
+    (HKDF + AES-GCM) sarılır; sonuç, ikili bir "temiz/tamper" kararı DEĞİL, **dört durumlu bir tepki politikasıdır**
+    (`decide_response()`): `NORMAL` (0 başarısız kontrol) → `WARN` (1) → `DEGRADE` (2) → `LOCK` (3 veya daha fazla,
+    YA DA cihaz/sürüm bağlama hiç tutmadıysa — bu her zaman doğrudan `LOCK`'a sıçrar).
 
-```text title="sh demo.sh — gerçek çıktı (kısaltılmış)"
-SENARYO 1 - Normal: kontroller gecer, cihaz dogru -> sir acilir
-SONUC: TEMIZ. Sir acildi ve islem yapiliyor -> "ODEME-ANAHTARI-7C4A"
-(sir kullanildiktan sonra bellekten guvenle silindi)
+```text title=".\demo.ps1 — gerçek çıktı (kısaltılmış)"
+SCENARIO 1 - normal: 0 failed checks, device matches -> NORMAL
+RESULT: NORMAL. The secret opened and is in use -> "PAYMENT-KEY-7C4A"
+(the secret was safely wiped from memory after use)
 
-SENARYO 2 - Tamper: bir kontrol basarisiz -> sil + decoy + bayrak
-SONUC: TAMPER ALGILANDI -> algilama kontrolu basarisiz (tamper)
-   Politika: sir silindi, tamper bayragi kaldirildi, olay kaydedildi.
-   Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...
+SCENARIO 2 - warn: 1 failed check -> WARN (still opens, just logged)
+RESULT: WARN. One weak signal is not worth degrading service over.
+The secret still opened -> "PAYMENT-KEY-7C4A"
+   Policy: event logged, monitoring tightened, no functionality lost.
 
-SENARYO 3 - Baska cihaz: kontroller gecer ama cihaz anahtari tutmaz
-SONUC: TAMPER ALGILANDI -> cihaz/surum baglama tutmadi (klonlama?)
-   ... decoy doner
+SCENARIO 3 - degrade: 2 failed checks -> DEGRADE (wiped, redacted result)
+RESULT: DEGRADE. Multiple signals -> full trust withdrawn.
+   Policy: secret wiped; a REDACTED result is returned, the full
+   operation is refused, but the application keeps running.
+RESULT-VALUE: PAYM**** (redacted)
+
+SCENARIO 4 - lock: 3 failed checks -> LOCK (wipe + decoy + flag)
+RESULT: LOCK -> detection checks failed (tamper)
+   A DECOY result was returned instead of crashing: 9be972a7...
+
+SCENARIO 5 - other-device: checks pass, device key does not hold -> LOCK
+RESULT: LOCK -> device/version binding failed (cloned?)
+   A DECOY result was returned instead of crashing: 39f368f4...
 ```
 
-Normal akışta kontroller geçti, cihaz doğruydu, sır açıldı, kullanıldı ve hemen silindi. Bir kontrol başarısız olunca
-(tamper) motor sırrı sildi ve decoy döndürdü. Paket **başka bir cihaza** taşındığında kontroller geçse bile cihaz-bağlı
-anahtar tutmadı ve sır açılamadı. Bu, Hafta 3'teki **güvenlik kabuğunun** en iç katmanının (cihaz bağlama) RASP ile
-birleşmiş hâlidir.
+Normal akışta kontroller geçti, cihaz doğruydu, sır açıldı, kullanıldı ve hemen silindi (`NORMAL`). Tek bir kontrol
+başarısız olunca motor **hâlâ** sırrı açtı — ama olayı kaydetti (`WARN`); tek zayıf bir sinyal yüzünden meşru bir
+kullanıcının deneyimini bozmaya değmez. İki kontrol başarısız olunca sır silindi ve yalnız **sansürlü** bir sonuç
+döndü (`DEGRADE`) — uygulama tamamen durmadı, ama artık tam sonucu vermedi. Üç veya daha fazla kontrol başarısız
+olduğunda YA DA paket **başka bir cihaza** taşındığında (kontroller geçse bile) motor tam olarak **kilitlendi**
+(`LOCK`): sır silindi, decoy döndü, bayrak kaldırıldı. Bu, Hafta 3'teki **güvenlik kabuğunun** en iç katmanının
+(cihaz bağlama) RASP'in kademeli tepki politikasıyla birleşmiş hâlidir.
+
+Dört durumu bir **durum makinesi** olarak görselleştirelim: aşağıdaki animasyon, bir izleme zaman çizelgesindeki
+her bağımsız çağrıyı (`decide_response()`'un gerçek karar tablosuyla) NORMAL/WARN/DEGRADE/LOCK durumlarından
+birine sınıflandırır ve hangi durumun ne sıklıkta tetiklendiğini özetler:
+
+<iframe class="dsanim" src="../anim/tamper-response-policy.html" title="Tepki politikası durum makinesi: uyar → düşür → kilitle" loading="lazy"></iframe>
+<div class="dsanim-baski" markdown>
+![Tepki politikası durum makinesi — adım adım](anim/tamper-response-policy.png)
+</div>
+
+**escalating/noisy/edge** örneklerini deneyin; `escalating` örneği bir oturumun zamanla NORMAL'den LOCK'a nasıl
+kötüleşebileceğini, `edge-all-device-mismatch` ise cihaz uyuşmazlığının kontrol sayısından **bağımsız olarak** her
+zaman LOCK'a sıçradığını gösterir.
 
 ### 10.2 İşlenmiş örnek: aynı olaya üç farklı tepki, üç farklı sonuç
 
-Bölüm 1.3'te aynı algılama sinyaline üç farklı tepkiyi kısaca karşılaştırmıştık; şimdi bunu Demo 8'in tamper
-senaryosu üzerinden **sonuç sonuç** karşılaştıralım. Olay: bir anti-debug kontrolü başarısız oldu (Demo 8
-SENARYO 2).
+Bölüm 1.3'te aynı algılama sinyaline üç farklı tepkiyi kısaca karşılaştırmıştık; şimdi bunu Demo 8'in `LOCK`
+senaryosu üzerinden **sonuç sonuç** karşılaştıralım. Olay: üç kontrol başarısız oldu (Demo 8 SCENARIO 4 — `lock`).
+(Yalnızca bir kontrol başarısız olsaydı motor `WARN` durumuna geçer ve sırrı yine de açardı — bkz. Bölüm 10;
+decoy yalnız `LOCK` durumunda devreye girer.)
 
 | Tepki | Saldırgana görünen | Sır ne olur? | Meşru kullanıcıya etkisi | Değerlendirme |
 | --- | --- | --- | --- | --- |
@@ -1371,7 +1515,8 @@ SENARYO 2).
 | **(c) Decoy (sahte sonuç)** — Demo 8'in yaptığı | "İşlem başarılı görünüyor" — ama üretilen `decoy` sonucunun gerçek sırla hiçbir ilişkisi yok; saldırgan başarılı sandığı bir sonuçla vaktini boşa harcayabilir | Silinir, yerine rastgele veri döner | Hiç fark etmez (sır zaten meşru kullanıcı için doğru cihazda açılıyordu) | Saldırgana en az bilgi veren, en caydırıcı seçenek |
 
 Üçü de **aynı algılama koduna** (Bölüm 1.3) dayanır; farkları yalnız **ne zaman ve ne** döndürdükleridir. Demo
-8'in gerçek çıktısında (c) seçeneği uygulanır: "Cokmek yerine SAHTE (decoy) sonuc dondu: 60797327...". Bu sayı
+8'in gerçek çıktısında (c) seçeneği `LOCK` durumunda uygulanır: "A DECOY result was returned instead of
+crashing: 9be972a7...". Bu sayı
 her çalıştırmada **farklıdır** (Alıştırma 7); sabit bir "HATA-0x1234" değeri olsaydı, saldırgan bu sabiti tanır
 ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da engeller.
 
@@ -1379,7 +1524,7 @@ ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da 
     Geliştirme sırasında hızlı geri bildirim almak için genelde (a) seçeneği (hemen çök, konsola hata yaz)
     kullanılır — doğaldır, hata ayıklamak kolaylaşır. Sık yapılan hata, bu davranışı **üretime aynen taşımaktır**.
     Kural: tepki politikasını derleme **yapılandırmasına** bağlayın (hata ayıklama derlemesinde ayrıntılı hata
-    mesajı, üretim derlemesinde sessiz/decoy); üretim ikili dosyasında hiçbir tespit mesajı **stdout/stderr'e**
+    mesajı, üretim derlemesinde sessiz/decoy); üretim binary dosyasında hiçbir tespit mesajı **stdout/stderr'e**
     yazılmamalıdır — saldırgana ücretsiz bir hata ayıklama günlüğü vermeyin.
 
 ![RASP motorunun her kritik işlemdeki karar akışı](assets/h06-05-rasp-motoru.svg)
@@ -1436,7 +1581,7 @@ ve gerçek sonuçtan ayırt ederdi — decoy'un rastgele olması bu ayrımı da 
 
 Bu hafta güvenlik kılavuzunuzun **RASP (öz koruma)** bölümlerini yazacak ve ilk RASP kontrolünüzü projenize
 ekleyeceksiniz. Bu, **vize proje gösteriminin** ([Hafta 7](../week-7/cen429-week-7.md)) ve **Quiz-1'in** ([Hafta 8](../week-8/cen429-week-8.md), 1–6. haftalar) doğrudan konusudur;
-ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğinde **F2.4 İkili Uygulama Korumaları
+ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğinde **F2.4 Binary Uygulama Korumaları
 (15p → ÖÇ.3)** olarak puanlanır.
 
 - [ ] **S10 — RASP algılama envanteri:** Projenizdeki her kritik işlem için hangi RASP kontrollerini (bütünlük,
@@ -1470,19 +1615,19 @@ ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğin
 
 ## 13. Sınıf etkinlikleri
 
-!!! example "Etkinlik 1 — Kancayı kendi elinizle kurun (15 dk, ikili, WSL)"
-    Demo 4'ü WSL'de çalıştırın. Sonra `sahtekanca.c`'ye `getenv`'i de ekleyin (LD_PRELOAD'ı gizlemek için boş döndürsün).
+!!! example "Etkinlik 1 — Kancayı kendi elinizle kurun (15 dk, binary, WSL)"
+    Demo 4'ü WSL'de çalıştırın. Sonra `fake_hook.c`'ye `getenv`'i de ekleyin (LD_PRELOAD'ı gizlemek için boş döndürsün).
     Yeniden derleyip çalıştırın: 1. sinyal (getenv) artık yakalıyor mu? 2. sinyal (`dladdr`) hâlâ yakalıyor mu? Bu neden
     daha sağlam?
 
 !!! example "Etkinlik 2 — Tek `if`'i yamalayın (10 dk, tartışma)"
-    Demo 5'te `atlat` modu gerçek sonucu üretemedi. Şimdi düşünün: kritik işlem yalnız `if (kontroller_gecti) onayla;`
+    Demo 5'te `skip` modu gerçek sonucu üretemedi. Şimdi düşünün: kritik işlem yalnız `if (kontroller_gecti) onayla;`
     olsaydı, saldırgan tek bir `jmp` ile ne yapardı? Anahtar zinciri neden bu yamayı işe yaramaz kılar?
 
 !!! example "Etkinlik 3 — Yanlış pozitif avı (15 dk, 3-4 kişilik grup)"
     Demo 3'ü çalıştırın; muhtemelen "hipervizör VAR" diyecek. Bir uygulama sırf bunun için çalışmayı reddetseydi hangi
     meşru kullanıcılar mağdur olurdu? Root algılama (Demo 7) için de aynı soruyu tartışın. RASP kararları neden **risk
-    skoru** olmalı, ikili "çalış/çalışma" değil?
+    skoru** olmalı, binary "çalış/çalışma" değil?
 
 !!! example "Etkinlik 4 — Tepki politikası tasarımı (10 dk, bireysel)"
     Bir mobil bankacılık uygulaması root algıladı. Üç farklı tepki tasarlayın: (a) hemen çök, (b) işlemi reddet ve
@@ -1507,8 +1652,8 @@ ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğin
 
 !!! question "Okuma 2 — Bu bütünlük denetimi neden zayıf?"
     ```c
-    uint32_t crc = crc32(kod, kod_boy);
-    if (crc != BEKLENEN_CRC) tamper();
+    uint32_t crc = crc32(code, code_len);
+    if (crc != EXPECTED_CRC) tamper();
     ```
     ??? success "Cevap"
         **CRC32 kriptografik değildir**: saldırgan kodu yamalayıp CRC'yi eşleyecek şekilde kolayca ayarlar. Ayrıca tek bir
@@ -1529,8 +1674,8 @@ ara proje rubriğinde **A2.4 RASP Teknikleri (15p → ÖÇ.3)**, final rubriğin
     unsigned int ecx;
     __cpuid_ecx(1, &ecx);
     if (ecx & (1u << 31)) {
-        /* hipervizor biti set */
-        exit(1);           /* "analiz ortami, calismayi reddet" */
+        /* hypervisor bit set */
+        exit(1);           /* "analysis environment, refuse to run" */
     }
     ```
     ??? success "Cevap"
@@ -1550,7 +1695,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     Demo 1'de kopyanın **farklı** bir ofset baytını değiştirin. HMAC yine değişiyor mu? Neden (çığ etkisi)?
 
 ??? question "Alıştırma 2 — Kolay: Altın değeri kurcalayın"
-    Demo 1'de `cikti/altin.hmac` dosyasını saldırgan gibi düzenleyin. Denetim artık neyi yakalayamaz? Bu, "altın değer
+    Demo 1'de `output/golden.hmac` dosyasını saldırgan gibi düzenleyin. Denetim artık neyi yakalayamaz? Bu, "altın değer
     nerede saklanmalı?" sorusunu neden önemli kılar?
 
 ??? question "Alıştırma 3 — Orta: gdb altında Demo 2"
@@ -1558,11 +1703,11 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     tetikleniyor?
 
 ??? question "Alıştırma 4 — Orta: getenv'i de kancalayın"
-    Demo 4'ün `sahtekanca.c`'sine `getenv` ekleyin. Hangi sinyal kör oluyor, hangisi hâlâ yakalıyor? (Etkinlik 1'in kod
+    Demo 4'ün `fake_hook.c`'sine `getenv` ekleyin. Hangi sinyal kör oluyor, hangisi hâlâ yakalıyor? (Etkinlik 1'in kod
     hâli.)
 
 ??? question "Alıştırma 5 — Orta: Zincire beşinci kontrol"
-    Demo 5'te `ASAMA`'yı 5 yapın ve iki kontrol noktası daha ekleyin. Zincir nasıl değişir? Normal akış hâlâ onaylanıyor
+    Demo 5'te `STAGE_COUNT`'yı 5 yapın ve iki kontrol noktası daha ekleyin. Zincir nasıl değişir? Normal akış hâlâ onaylanıyor
     mu?
 
 ??? question "Alıştırma 6 — Orta: Karşılıklı doğrulama"
@@ -1574,7 +1719,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     **rastgele** (her seferinde farklı) olması, sabit bir "hata değeri"nden daha iyidir?
 
 ??? question "Alıştırma 8 — Zor: Cihaz bağlamayı test edin"
-    Demo 8'de `baska-cihaz` modunda sırrı açmanın bir yolu var mı? Cihaz parmak izini değiştirmeden anahtarı türetmek
+    Demo 8'de `other-device` modunda sırrı açmanın bir yolu var mı? Cihaz parmak izini değiştirmeden anahtarı türetmek
     mümkün mü? Bu, çalınan bir veri dosyasını başka telefonda neden işe yaramaz kılar?
 
 ??? question "Alıştırma 9 — Zor: Timing eşiği"
@@ -1592,7 +1737,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
 
 ??? question "Alıştırma 12 — Zor: HKDF'i elle tekrar hesaplayın (Bölüm 10.1)"
     Bölüm 10.1'deki `openssl` komutlarını kendi makinenizde çalıştırın; aynı `PRK` ve anahtar değerlerini elde
-    ediyor musunuz? Şimdi `SURUM` dizesini (`surum=1.0.0` yerine `surum=1.0.1`) değiştirip anahtarı tekrar
+    ediyor musunuz? Şimdi `VERSION_STRING` dizesini (`version=1.0.0` yerine `version=1.0.1`) değiştirip anahtarı tekrar
     hesaplayın. Bu, bir sürüm yükseltmesinin eski verideki sırları neden "kilitlediğini" nasıl açıklar?
 
 ---
@@ -1686,8 +1831,8 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     tetiklendiğini gösterir), gecikmeli sessiz tepki bunu zaman/mesafe olarak bulanıklaştırır, decoy ise
     saldırgana "başarılı" görünen ama işe yaramaz bir sonuç vererek en az bilgi verir (Bölüm 10.2).
 
-??? question "22. `KorunanSayac` yapısındaki gölge kopya ve özet alanları neden ayrı tutulur?"
-    Saldırgan yalnız `deger` alanını bellekte değiştirirse, `golge` (maskelenmiş kopya) ve `ozet` (kısa MAC) eski
+??? question "22. `ProtectedCounter` yapısındaki gölge kopya ve özet alanları neden ayrı tutulur?"
+    Saldırgan yalnız `value` alanını bellekte değiştirirse, `shadow` (maskelenmiş kopya) ve `mac` (kısa MAC) eski
     değerlerle tutarsız kalır; okuma fonksiyonu bu tutarsızlığı yakalar (Bölüm 7.1).
 
 ??? question "23. Kontrol akışı sayacındaki `acc` zincirinin çığ etkisiyle ilişkisi nedir?"
@@ -1704,7 +1849,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     Gerçek saldırganı yakalamaz (ipuçlarını zaten gizlemiştir) ama meşru biçimde root'lamış sıradan kullanıcıyı
     cezalandırır. Kural: göstergeyi bir risk skoruna ekleyin, kararı eşiğe bırakın (Bölüm 8.1.1).
 
-??? question "26. Üretim ikili dosyasında tespit mesajlarının `stdout`/`stderr`'e yazılmaması neden önemlidir?"
+??? question "26. Üretim binary dosyasında tespit mesajlarının `stdout`/`stderr`'e yazılmaması neden önemlidir?"
     Yazılırsa saldırgana ücretsiz bir hata ayıklama günlüğü/ipucu verilmiş olur — hangi kontrolün ne zaman
     tetiklendiğini doğrudan gösterir. Tepki politikası derleme yapılandırmasına bağlanmalı, üretimde sessiz
     kalmalıdır (Bölüm 10.2).
@@ -1729,7 +1874,7 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
        katkı olarak kullanılmalıdır (Bölüm 5.1).
     7. (Doğru/Yanlış) "HMAC ile bütünlük denetimi tek başına, checker'ın kendisinin yamalanmasına karşı korur." →
        **Yanlış**; bu yüzden örtüşen denetleyiciler ve sonucu veri bağımlılığı yapmak gerekir (Bölüm 3).
-    8. (Kısa cevap) Cihaz bağlamada `SURUM` (sürüm) dizesi neden HKDF'e `tuz` (salt) olarak veriliyor? → Sürüm
+    8. (Kısa cevap) Cihaz bağlamada `VERSION_STRING` (sürüm) dizesi neden HKDF'e `tuz` (salt) olarak veriliyor? → Sürüm
        değişince türetilen anahtar da değişsin diye; bu, eski sürümdeki bir zafiyetle üretilmiş veriyi yeni
        sürümde otomatik olarak "kilitler" (Bölüm 10.1, Alıştırma 12).
 
@@ -1757,12 +1902,12 @@ Bu alıştırmalar not verilmez; pekiştirme içindir. Hepsi kendi bilgisayarın
     | Detection / Defense / Deterrence | Algılama / Savunma / Caydırma | RASP'in üç işlevi |
     | MATE | Uçtaki saldırgan | Cihazın sahibi olan saldırgan (beyaz kutu) |
     | Self-hashing | Kendi kodunun özetini denetleme | Uygulamanın kendi kod/dosyasını çalışma zamanında özetleyip doğrulaması |
-    | Tamper | Kurcalama | İkili/veri üzerinde yetkisiz değişiklik |
-    | Patch (yama) | Yama | İkili kodu değiştirerek davranışı değiştirme |
+    | Tamper | Kurcalama | Binary/veri üzerinde yetkisiz değişiklik |
+    | Patch (yama) | Yama | Binary kodu değiştirerek davranışı değiştirme |
     | Anti-debug | Hata ayıklayıcı karşıtı | Bağlı hata ayıklayıcıyı algılama/engelleme |
     | TracerPid | İzleyen süreç kimliği | Linux'ta bir süreci `ptrace` ile izleyen sürecin PID'i |
     | Hooking (kanca) | Kanca takma | Bir fonksiyonu kendi sürümüyle değiştirme (LD_PRELOAD, PLT/GOT, inline) |
-    | DBI / Frida | Dinamik ikili enstrümantasyon | Çalışan programa kod enjekte edip davranışını değiştirme |
+    | DBI / Frida | Dinamik binary enstrümantasyon | Çalışan programa kod enjekte edip davranışını değiştirme |
     | Emulator / VM detection | Emülatör/VM algılama | Analiz ortamını ipuçlarından sezme (CPUID, timing) |
     | Root / jailbreak | Kök erişimi | Cihazın güvenlik kısıtlarının kaldırılmış olması |
     | Attestation | Platform doğrulaması | Cihaz/uygulama bütünlüğünün (çoğu zaman sunucu tarafı) kanıtı |

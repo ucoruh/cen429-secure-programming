@@ -1,0 +1,30 @@
+% Hafta 1 — Uygulama koruma planı: yedi adım
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-04-koruma-plani.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {Uygulama koruma planı: yedi adım};
+  \node[altbaslik] (alt) at (b.south west) {1--3 TANIMLA · 4--7 KORU ve KANITLA};
+
+  \node[kutu=30mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k1) {\kb{1 · Kapsam}\\neyi koruyoruz?};
+  \node[kutu=30mm, right=of k1] (k2) {\kb{2 · Mimari ve arayüzler}\\bileşenler, sınırlar};
+  \node[kutu=30mm, right=of k2] (k3) {\kb{3 · Varlıklar}\\anahtar, veri, kod};
+  \node[uyarikutu=30mm, right=of k3] (k4) {\kb{4 · Tehdit modeli}\\STRIDE, saldırı ağacı};
+
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+  \draw[ok, draw=soluk] (k3.east) -- (k4.west);
+
+  \node[iyikutu=30mm, below=24mm of k1] (k5) {\kb{5 · Karşı önlemler}\\hangi katman?};
+  \node[iyikutu=30mm, right=of k5] (k6) {\kb{6 · Doğrulama}\\test + kanıt};
+  \node[morkutu=30mm, right=of k6] (k7) {\kb{7 · Kalan risk}\\yazılı, onaylı};
+
+  \draw[ok, draw=soluk] (k5.east) -- (k6.west);
+  \draw[ok, draw=soluk] (k6.east) -- (k7.west);
+  \draw[ok, draw=soluk] (k4.south) -- ++(0,-8mm) -| (k5.north);
+
+  \node[dip, text width=140mm, below=9mm of k7.south -| k4, anchor=north]
+    {Bu yedi adım dönem projesinin de iskeletidir (S2--S17).};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,18 @@
+% Hafta 4 — Uzak saldırgan mı, cihazın sahibi mi? (iki tehdit modeli)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-17-iki-saldirgan-modeli.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Uzak saldırgan mı, cihazın sahibi mi?};
+  \node[altbaslik] at (b.south west) {aynı programa iki farklı tehdit modeli};
+
+  \node[kutu=55mm] (sol) at (10mm,-28mm) {%
+    \kb{UZAK SALDIRGAN}\\girdi gönderir\\belleği göremez\\bellek güvenliği + doğrulama yeter\\1--5. haftalar};
+  \node[kotukutu=55mm, right=20mm of sol] (sag) {%
+    \kb{CİHAZIN SAHİBİ (MATE)}\\ikiliyi elinde tutar\\hata ayıklayıcı bağlar\\gizleme + RASP gerekir\\6., 9., 14. haftalar};
+
+  \node[dip, text width=140mm, anchor=north] at ($(sol.south)!0.5!(sag.south)+(0,-9mm)$) {%
+    Gizlemeye buradan geçiyoruz: bellek güvenliği ikinci saldırgana karşı yetmez.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,26 @@
+% Hafta 4 — Yığın (stack) ve öbek (heap)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-13-yigin-obek.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 24mm]
+  \node[baslik] (b) at (0,0) {Yığın (stack) ve öbek (heap)};
+  \node[altbaslik] at (b.south west) {taşmanın sonucu, belleğin hangi bölgesinde olduğuna göre değişir};
+
+  \node[kutu=58mm, below=16mm of b.south west, anchor=north west] (yigin) {%
+    \kb{YIĞIN}\\[2mm]
+    fonksiyonla açılır/kapanır\\
+    otomatik, hızlı\\
+    boyut derleme anında belli\\[3mm]
+    taşma $\rightarrow$ dönüş adresi tehlikede};
+  \node[uyarikutu=58mm, right=of yigin] (obek) {%
+    \kb{ÖBEK}\\[2mm]
+    malloc/free ile yönetilir\\
+    yaşam süresi size bağlı\\
+    boyut çalışma anında\\[3mm]
+    taşma $\rightarrow$ komşu blok / meta veri};
+
+  \node[fit=(yigin)(obek), inner sep=0pt] (grup) {};
+  \node[dip, text width=150mm, below=10mm of grup.south, anchor=north] {Kanarya yığını korur; öbek taşmasını yakalamaz --- bu yüzden ASan gerekir.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,30 @@
+% Hafta 2 — OWASP Top 10 ve MASVS: ne işe yararlar?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-16-owasp-masvs.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 6mm]
+  \node[baslik] (b) at (0,0) {OWASP Top 10 ve MASVS: ne işe yararlar?};
+  \node[altbaslik] at (b.south west) {liste ile gereksinim aynı şey değildir};
+
+  \node[uyarikutu=46mm, minimum height=14mm, below=13mm of b.south west, anchor=north west, xshift=6mm] (k1)
+    {\kb{OWASP Top 10}};
+  \node[font=\sffamily\small, text=soluk, text width=125mm, align=left, right=6mm of k1] (a1)
+    {en yaygın web açıkları --- farkındalık listesi, denetim listesi DEĞİL};
+
+  \node[kutu=46mm, minimum height=14mm, below=5mm of k1] (k2) {\kb{OWASP ASVS}};
+  \node[font=\sffamily\small, text=soluk, text width=125mm, align=left, right=6mm of k2] (a2)
+    {doğrulama gereksinimleri --- seviyelere ayrılmış, denetlenebilir};
+
+  \node[iyikutu=46mm, minimum height=14mm, below=5mm of k2] (k3) {\kb{OWASP MASVS}};
+  \node[font=\sffamily\small, text=soluk, text width=125mm, align=left, right=6mm of k3] (a3)
+    {mobil uygulama güvenlik gereksinimleri --- bu dersin projesine en yakını};
+
+  \node[iyikutu=46mm, minimum height=14mm, below=5mm of k3] (k4) {\kb{MASTG}};
+  \node[font=\sffamily\small, text=soluk, text width=125mm, align=left, right=6mm of k4] (a4)
+    {MASVS'i nasıl test edeceğinizi anlatan rehber};
+
+  \node[dip, text width=190mm, below=10mm of k4.south, anchor=north]
+    {13. haftada uyum matrisini MASVS üzerinden kuracağız.};
+\end{tikzpicture}
+\end{document}

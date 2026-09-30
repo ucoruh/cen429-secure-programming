@@ -1,0 +1,21 @@
+% Hafta 7 — Rubrik nasıl okunur?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-7/assets/h07-04-rubrik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Rubrik nasıl okunur?};
+  \node[altbaslik] at (b.south west) {her puan satırı bir kanıta bağlanır};
+
+  \node[kutu=36mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Kriter}\\rubrik satırı};
+  \node[koyukutu=36mm, right=of n1] (n2) {\kb{Kılavuz bölümü}\\S-numarası};
+  \node[iyikutu=36mm, right=of n2] (n3) {\kb{Kanıt}\\test / çıktı / kod};
+  \node[morkutu=36mm, right=of n3] (n4) {\kb{Puan}\\ÖÇ eşlemesi};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[dip, text width=175mm, below=8mm of n4.south -| n2, anchor=north] {%
+    Kanıtı olmayan satır puanlanmaz --- 13. haftanın uyum matrisi mantığı burada da geçerli.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,30 @@
+% Hafta 5 — Android'de R8 ve gizlemenin etkisini ölçmek
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-14-r8-olcme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Android'de R8 ve gizlemenin etkisini ölçmek};
+  \node[altbaslik] at (b.south west) {ölçmediğiniz gizleme bir iddiadır};
+  \node[kutu=34mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{1 · minifyEnabled}\\build.gradle'da\\açılır};
+  \node[kutu=34mm, right=9mm of n1] (n2)
+    {\kb{2 · Kurallar}\\-keep ile ne\\korunacak yazılır};
+  \node[iyikutu=34mm, right=9mm of n2] (n3)
+    {\kb{3 · Derle}\\R8 küçültür,\\gizler, iyileştirir};
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \node[uyarikutu=34mm, below=14mm of n1] (n4)
+    {\kb{4 · mapping.txt}\\saklanır --- çökme\\raporu için şart};
+  \node[morkutu=34mm, right=9mm of n4] (n5)
+    {\kb{5 · Ölç}\\boyut, sınıf/alan\\adı okunabilirliği};
+  \node[kotukutu=34mm, right=9mm of n5] (n6)
+    {\kb{6 · Test et}\\yansıma bozuldu mu?};
+  \draw[ok] (n4.east) -- (n5.west);
+  \draw[ok] (n5.east) -- (n6.west);
+  \draw[ok, draw=soluk] (n3.south) -- ++(0,-4mm) -| (n4.north);
+  \node[fit=(n1)(n2)(n3)(n4)(n5)(n6), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {mapping.txt kaybolursa üretimdeki çökme raporlarını bir daha çözemezsiniz.};
+\end{tikzpicture}
+\end{document}

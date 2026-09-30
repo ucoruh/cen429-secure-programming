@@ -1,0 +1,26 @@
+% Hafta 10 — Sertifika iptali: CRL, OCSP, zımbalama
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-04-sertifika-iptali.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Sertifika iptali: CRL $\cdot$ OCSP $\cdot$ zımbalama};
+  \node[altbaslik, text width=170mm] at (b.south west) {``bu sertifika hâlâ geçerli mi?''};
+
+  \node[koyukutu=90mm, anchor=north] (top) at (85mm,-14mm) {Sertifika iptal edildi mi?};
+  \coordinate (rowy) at ($(top.south)+(0,-28mm)$);
+  \node[uyarikutu=42mm] (crl) at ($(rowy)+(-58mm,0)$) {\kb{CRL}\\uzun iptal listesi indir};
+  \node[uyarikutu=42mm] (ocsp) at (rowy) {\kb{OCSP}\\tek sertifikayı sor};
+  \node[iyikutu=42mm] (staple) at ($(rowy)+(58mm,0)$) {\kb{OCSP Stapling}\\sunucu taze yanıtı sunar};
+  \draw[ok, draw=soluk] (top.south) -- (crl.north);
+  \draw[ok, draw=soluk] (top.south) -- (ocsp.north);
+  \draw[ok, draw=soluk] (top.south) -- (staple.north);
+
+  \node[etiket, text=uyari, below=3mm of crl.south, anchor=north] {büyük, gecikmeli};
+  \node[etiket, text=uyari, below=3mm of ocsp.south, anchor=north] {gizlilik sızdırır};
+  \node[etiket, text=iyi, below=3mm of staple.south, anchor=north] {hızlı + gizlilik dostu};
+
+  \node[kotukutu=170mm, below=12mm of crl.south -| crl, anchor=north west] {%
+    \kb{FAIL-OPEN TUZAĞI: ``erişilemedi'' = ``geçti'' sayma!}};
+\end{tikzpicture}
+\end{document}

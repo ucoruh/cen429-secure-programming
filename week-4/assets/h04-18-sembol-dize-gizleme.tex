@@ -1,0 +1,26 @@
+% Hafta 4 — Sembol, dize ve günlük gizleme: ilk savunma hattı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-18-sembol-dize-gizleme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Sembol, dize ve günlük gizleme: ilk savunma hattı};
+  \node[altbaslik] at (b.south west) {tersine mühendisliğin en ucuz adımını pahalılaştırmak};
+
+  \node[kutu=35mm] (s1) at (17mm,-28mm) {%
+    \kb{Semboller}\\fonksiyon adları\\strip ile kaldırılır};
+  \node[kutu=35mm, right=of s1] (s2) {%
+    \kb{Dizeler}\\sabit metinler\\kodlanarak saklanır};
+  \node[iyikutu=35mm, right=of s2] (s3) {%
+    \kb{Günlükler}\\sürüm derlemesinde\\kapatılır};
+  \node[morkutu=35mm, right=of s3] (s4) {%
+    \kb{Kalan}\\saldırgan artık\\anlam aramak zorunda};
+
+  \draw[anaok] (s1) -- (s2);
+  \draw[anaok] (s2) -- (s3);
+  \draw[anaok] (s3) -- (s4);
+
+  \node[dip, text width=160mm, anchor=north] at ($(s1.south)!0.5!(s4.south)+(0,-9mm)$) {%
+    En ucuz koruma budur ve çoğu projede eksiktir: \kod{strings} çıktınızı bir kez okuyun.};
+\end{tikzpicture}
+\end{document}

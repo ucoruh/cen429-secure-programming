@@ -1,0 +1,21 @@
+% Hafta 14 — Banescu'nun kuralı: dayanıklılık ↔ maliyet
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-08-dayaniklilik-maliyet.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {Banescu'nun kuralı: dayanıklılık $\leftrightarrow$ maliyet};
+  \node[altbaslik] at (b.south west) {KLEE ile ölçülen deneysel sonuç};
+
+  \node[uyarikutu=62mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{Güçlü dönüşüm}\\[2mm]
+    Virtualize, çok katman\\[3mm]
+    dayanıklılık YÜKSEK\\performans/boyut CEZASI yüksek};
+  \node[kutu=62mm, right=of sol] (sag) {\kb{Hafif dönüşüm}\\[2mm]
+    EncodeLiterals, opak yüklem\\[3mm]
+    dayanıklılık düşük\\maliyet düşük};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=160mm, below=8mm of sol.south -| sag, anchor=north] {%
+    Koruma, varlığın değeriyle ORANTILI seçilir --- her şey en güçlüyle gizlenmez.};
+\end{tikzpicture}
+\end{document}

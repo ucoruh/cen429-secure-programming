@@ -1,0 +1,20 @@
+% Hafta 15 — S16: plan mı, sonuç mu?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-15/assets/h15-04-s16.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {S16: plan mı, sonuç mu?};
+  \node[altbaslik] at (b.south west) {finalde S16'dan GÖZLENEN sonuç beklenir};
+
+  \node[kotukutu=70mm, minimum height=46mm, below=14mm of b.south west, anchor=north west, xshift=8mm] (sol)
+    {\kb{PLAN (yetersiz)}\\[2mm]``Şu testleri yapacağız''\\``Şu araçları kullanacağız''\\[2mm]$\rightarrow$ hiçbir şey kanıtlanmadı};
+  \node[iyikutu=70mm, minimum height=46mm, right=16mm of sol] (sag)
+    {\kb{SONUÇ (beklenen)}\\[2mm]``Şu test çalıştırıldı''\\``Gözlenen çıktı şu''\\``Karar: geçti / kaldı''\\[2mm]$\rightarrow$ kanıt var};
+
+  \draw[draw=cizgi, line width=1.2pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=175mm, below=10mm of sol.south -| sag, anchor=north]
+    {Test kartı: amaç $\cdot$ ön koşul $\cdot$ adımlar $\cdot$ beklenen $\cdot$ GÖZLENEN $\cdot$ karar $\cdot$ kanıt.};
+\end{tikzpicture}
+\end{document}

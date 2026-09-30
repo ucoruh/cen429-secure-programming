@@ -1,0 +1,38 @@
+% Hafta 3 — Dört yaygın yanlış anlama
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-20-yanlis-anlamalar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Dört yaygın yanlış anlama};
+  \node[altbaslik] at (b.south west) {her biri sahada gerçek bir açığa dönüşmüştür};
+
+  \node[kotukutu=56mm, minimum height=15mm, below=12mm of b.south west, anchor=north west, xshift=4mm] (m1)
+    {``Şifreledim, güvendeyim.''};
+  \node[font=\sffamily\small, text=iyi, align=left, text width=92mm, right=14mm of m1] (a1)
+    {Şifreleme yalnız GİZLİLİK verir; bütünlük için AEAD gerekir.};
+  \draw[ok, draw=soluk] (m1.east) -- (a1.west);
+
+  \node[kotukutu=56mm, minimum height=15mm, below=8mm of m1] (m2)
+    {``TLS var, MITM imkânsız.''};
+  \node[font=\sffamily\small, text=iyi, align=left, text width=92mm, right=14mm of m2] (a2)
+    {Doğrulama yapılmazsa TLS kandırılır (Demo 6).};
+  \draw[ok, draw=soluk] (m2.east) -- (a2.west);
+
+  \node[kotukutu=56mm, minimum height=15mm, below=8mm of m2] (m3)
+    {``Kendi algoritmam daha güvenli.''};
+  \node[font=\sffamily\small, text=iyi, align=left, text width=92mm, right=14mm of m3] (a3)
+    {Açık tasarım ilkesi: gizlilik anahtarda, algoritmada değil.};
+  \draw[ok, draw=soluk] (m3.east) -- (a3.west);
+
+  \node[kotukutu=56mm, minimum height=15mm, below=8mm of m3] (m4)
+    {``Anahtarı koda gömdüm, bulunmaz.''};
+  \node[font=\sffamily\small, text=iyi, align=left, text width=92mm, right=14mm of m4] (a4)
+    {\kod{strings} ve entropi taraması saniyeler içinde bulur.};
+  \draw[ok, draw=soluk] (m4.east) -- (a4.west);
+
+  \node[fit=(m1)(m2)(m3)(m4)(a1)(a2)(a3)(a4), inner sep=0] (grp) {};
+  \node[dip, text width=175mm, below=10mm of grp.south, anchor=north]
+    {Dördünün ortak kökü aynı: güvenliği bir ÜRÜN sanmak, oysa o bir KARAR zinciridir.};
+\end{tikzpicture}
+\end{document}

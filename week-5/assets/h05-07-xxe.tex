@@ -1,0 +1,24 @@
+% Hafta 5 — XXE: XML dış varlık saldırısı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-07-xxe.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {XXE: XML dış varlık saldırısı};
+  \node[altbaslik] at (b.south west) {ayrıştırıcının ``yardımsever'' varsayılanı};
+  \node[kotukutu=38mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{XML girdisi}\\\kod{<!DOCTYPE ... SYSTEM}\\\kod{"file:///etc/passwd">}};
+  \node[uyarikutu=32mm, right=9mm of n1] (n2)
+    {\kb{Ayrıştırıcı}\\dış varlığı ÇÖZER};
+  \node[kotukutu=32mm, right=9mm of n2] (n3)
+    {\kb{Dosya okunur}\\sunucudan veri sızar};
+  \node[iyikutu=38mm, right=9mm of n3] (n4)
+    {\kb{Kapatan ayar}\\disallow-doctype-decl\\external entities = false};
+  \draw[kotuok] (n1.east) -- (n2.west);
+  \draw[kotuok] (n2.east) -- (n3.west);
+  \draw[iyiok] (n3.east) -- (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Kural: XML/YAML/şablon ayrıştırıcılarında gereksiz yetenekleri KAPATIN.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,28 @@
+% Hafta 6 — Dinamik bellek koruması: hangi katman neyi kapatır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-13-bellek-koruma-katmanlari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Dinamik bellek koruması: hangi katman neyi kapatır?};
+  \node[altbaslik] at (b.south west) {bellek saldırganın en kolay ulaştığı yerdir};
+  \node[kutu=44mm, anchor=north west] (k1) at (0,-2.4) {\kb{Döküm kapatma}};
+  \node[etiket, anchor=west, text width=100mm, align=left, right=5mm of k1]
+    {\kod{PR\_SET\_DUMPABLE=0} --- çökme dökümünde sır kalmaz};
+  \node[kutu=44mm, below=6mm of k1] (k2) {\kb{Bellek kilidi}};
+  \node[etiket, anchor=west, text width=100mm, align=left, right=5mm of k2]
+    {\kod{mlock} --- sır takas alanına yazılmaz};
+  \node[iyikutu=44mm, below=6mm of k2] (k3) {\kb{Kısa ömür + silme}};
+  \node[etiket, anchor=west, text width=100mm, align=left, right=5mm of k3]
+    {\kod{explicit\_bzero} --- pencere daralır};
+  \node[morkutu=44mm, below=6mm of k3] (k4) {\kb{Bütünlük sayacı}};
+  \node[etiket, anchor=west, text width=100mm, align=left, right=5mm of k4]
+    {korunan değer yanında sağlama tutulur; değişirse yakalanır};
+  \node[uyarikutu=44mm, below=6mm of k4] (k5) {\kb{İzleme tespiti}};
+  \node[etiket, anchor=west, text width=100mm, align=left, right=5mm of k5]
+    {\kod{ptrace} / okuma denemesi algılanır ve puana katılır};
+  \node[fit=(k1)(k2)(k3)(k4)(k5), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Hiçbiri tek başına yetmez; her biri saldırganın bir yolunu pahalılaştırır.};
+\end{tikzpicture}
+\end{document}

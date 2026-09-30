@@ -1,0 +1,25 @@
+% Hafta 9 — Kontrol akışı grafiği (CFG)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-12-cfg.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  \node[baslik] (b) at (0,0) {Kontrol akışı grafiği (CFG)};
+  \node[altbaslik] at (b.south west) {tersine mühendisliğin ilk çıkardığı iskelet};
+
+  \node[kutu=22mm, below=30mm of b.south west, anchor=north west] (giris) {\kb{giriş}};
+  \node[uyarikutu=26mm, right=of giris] (kosul) {\kb{koşul}};
+  \node[iyikutu=30mm, above right=8mm and 26mm of kosul] (evet) {\kb{evet bloğu}};
+  \node[morkutu=30mm, below right=8mm and 26mm of kosul] (hayir) {\kb{hayır bloğu}};
+  \node[kutu=22mm] (cikis) at ($(evet.east)!0.5!(hayir.east)+(22mm,0)$) {\kb{çıkış}};
+
+  \draw[ok, draw=soluk] (giris.east) -- (kosul.west);
+  \draw[iyiok] (kosul.north east) -- node[oketiket, above=3pt] {evet} (evet.west);
+  \draw[ok, draw=mor] (kosul.south east) -- node[oketiket, below=3pt] {hayır} (hayir.west);
+  \draw[ok, draw=soluk] (evet.east) -- (cikis.north west);
+  \draw[ok, draw=soluk] (hayir.east) -- (cikis.south west);
+
+  \node[dip, text width=170mm, below=10mm of hayir.south -| giris, anchor=north west] {%
+    Düzleştirme bu iskeleti tek bir dağıtıcıya indirger: ``hangi blok ne zaman'' bilgisi kaybolur.};
+\end{tikzpicture}
+\end{document}

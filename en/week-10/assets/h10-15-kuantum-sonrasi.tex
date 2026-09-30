@@ -1,0 +1,17 @@
+% Hafta 10 — Kuantum sonrası: neyi değiştiriyor, neyi değiştirmiyor?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-15-kuantum-sonrasi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Kuantum sonrası: neyi değiştiriyor, neyi değiştirmiyor?};
+  \node[altbaslik, text width=170mm] at (b.south west) {NIST seçimi: ML-KEM (Kyber) ve ML-DSA (Dilithium)};
+
+  \node[kotukutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{TEHDİT ALTINDA}\\RSA, DH, ECDH, ECDSA\\``şimdi topla, sonra çöz''\\[2mm]bugünkü trafik ileride çözülebilir\\geçiş bugün planlanır};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{BÜYÜK ÖLÇÜDE GÜVENLİ}\\AES-256 (anahtar boyu yeter)\\SHA-384 / SHA-3\\[2mm]simetrik dünya ayakta\\yalnız anahtar boyu artar};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Uzun ömürlü sırlarınız varsa hibrit anahtar değişimine geçiş bugünün kararıdır.};
+\end{tikzpicture}
+\end{document}

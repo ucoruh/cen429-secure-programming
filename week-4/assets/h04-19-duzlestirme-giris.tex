@@ -1,0 +1,18 @@
+% Hafta 4 — Kontrol akışı düzleştirme ve opak değerler (önce/sonra)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-19-duzlestirme-giris.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Kontrol akışı düzleştirme ve opak değerler};
+  \node[altbaslik] at (b.south west) {aynı davranış, okunamaz grafik};
+
+  \node[iyikutu=55mm] (sol) at (10mm,-28mm) {%
+    \kb{ÖNCE}\\if / else / while\\grafik okunabilir\\algoritmanın iskeleti görünür\\birkaç temel blok};
+  \node[kotukutu=55mm, right=20mm of sol] (sag) {%
+    \kb{SONRA}\\tek switch + durum değişkeni\\sıra değişkende saklı\\opak yüklemler sahte dal ekler\\çok sayıda blok};
+
+  \node[dip, text width=140mm, anchor=north] at ($(sol.south)!0.5!(sag.south)+(0,-9mm)$) {%
+    Maliyeti vardır: boyut ve hız artar. 9. ve 14. haftada ölçmeyi öğreneceğiz.};
+\end{tikzpicture}
+\end{document}

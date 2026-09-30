@@ -1,0 +1,31 @@
+% Hafta 13 — Gereksinim bloğunun alanları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-05-gereksinim-blogu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {Gereksinim bloğunun alanları};
+  \node[altbaslik] (alt) at (b.south west) {her gereksinim bu altı alanla yazılır};
+
+  \node[kutu=42mm, below=8mm of alt.south west, anchor=north west] (n1) {\kb{Kimlik (ID)}};
+  \node[etiket, right=6mm of n1, anchor=west, align=left, text width=85mm] {\kod{CEN429-DR-01} gibi benzersiz};
+
+  \node[kutu=42mm, below=4mm of n1.south west, anchor=north west] (n2) {\kb{Ölçülebilir ifade}};
+  \node[etiket, right=6mm of n2, anchor=west, align=left, text width=85mm] {ne yapılacak};
+
+  \node[morkutu=42mm, below=4mm of n2.south west, anchor=north west] (n3) {\kb{Kaynak / gerekçe}};
+  \node[etiket, right=6mm of n3, anchor=west, align=left, text width=85mm] {hangi tehdit ya da standart};
+
+  \node[kutu=42mm, below=4mm of n3.south west, anchor=north west] (n4) {\kb{İlgili varlık}};
+  \node[etiket, right=6mm of n4, anchor=west, align=left, text width=85mm] {neyi koruyor (S5)};
+
+  \node[iyikutu=42mm, below=4mm of n4.south west, anchor=north west] (n5) {\kb{Doğrulama yöntemi}};
+  \node[etiket, right=6mm of n5, anchor=west, align=left, text width=85mm] {hangi test kanıtlayacak (S16)};
+
+  \node[uyarikutu=42mm, below=4mm of n5.south west, anchor=north west] (n6) {\kb{Durum}};
+  \node[etiket, right=6mm of n6, anchor=west, align=left, text width=85mm] {karşılandı / devredildi / karşılanmadı};
+
+  \node[dip, text width=145mm, below=8mm of n6.south west, anchor=north west] {%
+    Alanlardan biri boşsa gereksinim izlenebilir değildir.};
+\end{tikzpicture}
+\end{document}

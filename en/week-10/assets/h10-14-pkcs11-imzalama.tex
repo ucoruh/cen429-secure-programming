@@ -1,0 +1,30 @@
+% Hafta 10 — PKCS#11 ile imzalama: anahtar hiç dışarı çıkmaz
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-14-pkcs11-imzalama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {PKCS\#11 ile imzalama: anahtar hiç dışarı çıkmaz};
+  \node[altbaslik, text width=170mm] at (b.south west) {uygulama anahtarı değil, anahtarın TUTAMACINI görür};
+
+  \node[koyukutu=28mm] (a1) at (15mm,-18mm) {Uygulama};
+  \node[koyukutu=44mm] (a2) at (90mm,-18mm) {PKCS\#11 kütüphanesi};
+  \node[koyukutu=34mm] (a3) at (165mm,-18mm) {HSM / SoftHSM};
+  \draw[yasam] (a1.south) -- ++(0,-140mm);
+  \draw[yasam] (a2.south) -- ++(0,-140mm);
+  \draw[yasam] (a3.south) -- ++(0,-140mm);
+
+  \draw[ok, draw=ana] (15mm,-34mm) -- node[oketiket, above=1pt] {\kod{C\_OpenSession}} (90mm,-34mm);
+  \draw[ok, draw=ana] (15mm,-50mm) -- node[oketiket, above=1pt] {\kod{C\_Login} (PIN)} (90mm,-50mm);
+  \draw[ok, draw=ana] (90mm,-66mm) -- node[oketiket, above=1pt] {oturum + kimlik} (165mm,-66mm);
+  \draw[ok, draw=ana] (15mm,-82mm) -- node[oketiket, above=1pt] {\kod{C\_SignInit} (anahtar tutamacı)} (90mm,-82mm);
+  \draw[ok, draw=ana] (90mm,-98mm) -- node[oketiket, above=1pt] {imzala: veri} (165mm,-98mm);
+  \draw[ok, draw=iyi, dashed] (165mm,-114mm) -- node[oketiket, above=1pt] {imza} (90mm,-114mm);
+  \draw[ok, draw=iyi, dashed] (90mm,-130mm) -- node[oketiket, above=1pt] {imza} (15mm,-130mm);
+
+  \node[notkutusu, text width=150mm, align=center] at (90mm,-148mm) {özel anahtar HSM'den ÇIKMAZ (\kod{CKA\_EXTRACTABLE} = false)};
+
+  \node[dip, text width=180mm, anchor=north west] at (0mm,-172mm) {%
+    Anahtar çalınamaz; ama HSM'e erişimi olan imzalatabilir --- erişim denetimi yine şarttır.};
+\end{tikzpicture}
+\end{document}

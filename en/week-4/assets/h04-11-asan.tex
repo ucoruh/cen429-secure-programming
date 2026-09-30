@@ -1,0 +1,22 @@
+% Hafta 4 — AddressSanitizer neyi yakalar, neyi kaçırır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-11-asan.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {AddressSanitizer neyi yakalar, neyi kaçırır?};
+  \node[altbaslik] at (b.south west) {nesneler arasına ``zehirli bölge'' (redzone) koyar};
+
+  \node[kutu=22mm, below=34mm of b.south west, anchor=north west] (nesneA) {\kb{nesne A}};
+  \node[kotukutu=14mm, right=of nesneA] (redzone) {\kb{REDZONE}};
+  \node[kutu=22mm, right=of redzone] (nesneB) {\kb{nesne B}};
+
+  \draw[kotuok] (nesneA.north) to[bend left=22] node[oketiket, above] {taşma $\rightarrow$ YAKALANIR} (nesneB.north);
+
+  \node[uyarikutu=24mm, below right=20mm and 20mm of redzone] (alanlar) {\kb{alan1 | alan2}\\aynı struct içinde};
+  \node[font=\sffamily\small, text=kotu, align=center, below=3mm of alanlar] (kacirildi) {aralarında redzone YOK\\$\rightarrow$ KAÇIRILIR};
+
+  \node[fit=(nesneA)(nesneB)(alanlar)(kacirildi), inner sep=0pt] (grup) {};
+  \node[dip, text width=150mm, below=10mm of grup.south, anchor=north] {ASan ayrıca hiç çalışmayan kod yolunu da göremez --- fuzzing bu yüzden gerekir.};
+\end{tikzpicture}
+\end{document}

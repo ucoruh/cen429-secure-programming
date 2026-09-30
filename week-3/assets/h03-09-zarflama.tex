@@ -1,0 +1,19 @@
+% Hafta 3 — Zarflama (envelope encryption)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-09-zarflama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Zarflama (envelope encryption)};
+  \node[altbaslik] at (b.south west) {veriyi DEK, DEK'i KEK şifreler};
+  \node[kutu=28mm] (veri) at (2,-2) {Veri};
+  \node[iyikutu=36mm] (sveri) at (9.2,-2) {Şifreli veri};
+  \node[kutu=28mm] (dek) at (2,-6) {\kb{DEK}\\veri anahtarı};
+  \node[iyikutu=42mm] (sdek) at (9.2,-6) {\kb{Sarılmış DEK}\\şifreli verinin yanında};
+  \node[koyukutu=26mm] (kek) at (14.8,-4) {\kb{KEK}\\HSM'de};
+  \draw[ok, draw=soluk] (veri.east) -- node[oketiket, above=3pt] {AES-GCM(DEK)} (sveri.west);
+  \draw[ok, draw=soluk] (dek.east) -- node[oketiket, above=3pt] {AES-KW(KEK)} (sdek.west);
+  \draw[kesik ok, draw=soluk, line width=1.1pt] (kek.south) -- (sdek.east);
+  \node[dip, text width=165mm] at (8,-9.2) {KEK yenilenince yalnız SARILMIŞ DEK'ler yeniden sarılır --- terabaytlarca veri yerinde kalır.};
+\end{tikzpicture}
+\end{document}

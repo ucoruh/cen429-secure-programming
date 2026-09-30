@@ -1,0 +1,33 @@
+% Hafta 2 — Polimorfik virüs neden imzayla yakalanmaz?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-04-polimorfik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 14mm]
+  \node[baslik] (b) at (0,0) {Polimorfik virüs neden imzayla yakalanmaz?};
+  \node[altbaslik] at (b.south west) {her kopyada baytlar değişir, açılan gövde aynı kalır};
+
+  \node[notrkutu=50mm, draw=kotu, below=20mm of b.south west, anchor=north west, xshift=10mm] (cozucu)
+    {\kb{Çözücü kod}\\her kopyada FARKLI};
+  \node[notrkutu=50mm, draw=kotu, below=of cozucu] (sifreli)
+    {\kb{Şifreli gövde}\\her kopyada FARKLI baytlar};
+  \node[iyikutu=50mm, below=of sifreli] (acik)
+    {\kb{Açık gövde}\\HER ZAMAN AYNI};
+
+  \draw[ok, draw=soluk] (cozucu) -- (sifreli);
+  \draw[ok, draw=soluk] (sifreli) -- node[oketiket, right] {çöz} (acik);
+
+  \begin{pgfonlayer}{background}
+    \node[draw=kotu, fill=kotubg, rounded corners=4pt, line width=1.3pt,
+          fit=(cozucu)(sifreli)(acik), inner sep=8mm,
+          label={[font=\sffamily\bfseries\small, text=kotu]above:Şifreli / polimorfik virüs}] {};
+  \end{pgfonlayer}
+
+  \node[iyikutu=40mm, right=42mm of sifreli] (imza) {\kb{İmza eşleşmesi}\\burada yakalanır};
+  \draw[iyiok] (acik.east) to[out=10, in=-100] node[oketiket, pos=0.55, align=center, text=iyi]
+    {emülasyon\\çözünce} (imza.south);
+
+  \node[dip, text width=170mm, below=12mm of acik.south -| cozucu, anchor=north]
+    {Bu yüzden emülasyon kullanılır: virüsü yalıtılmış ortamda çalıştırıp AÇIK gövdeyi imzalar.};
+\end{tikzpicture}
+\end{document}

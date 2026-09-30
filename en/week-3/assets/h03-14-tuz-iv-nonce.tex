@@ -1,0 +1,25 @@
+% Hafta 3 — Tuz, IV ve nonce: üçü de gizli değil, üçü de farklı iş yapar
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-14-tuz-iv-nonce.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=11mm and 6mm]
+  \node[baslik] (b) at (0,0) {Tuz, IV ve nonce: üçü de gizli değil, üçü de farklı iş yapar};
+  \node[altbaslik] at (b.south west) {karıştırmak en sık yapılan kripto hatasıdır};
+
+  \node[morkutu=38mm, below=14mm of b.south west, anchor=north west] (t1) {\kb{TUZ (salt)}\\paroladan anahtar türetmede};
+  \node[align=left, text width=110mm, right=6mm of t1]
+    {kural: her kayıt için RASTGELE\\[2pt]\textcolor{kotu}{bozulursa: önhesaplı tablolar işe yarar}};
+
+  \node[kutu=38mm, below=of t1] (t2) {\kb{IV}\\CBC gibi kiplerde};
+  \node[align=left, text width=110mm, right=6mm of t2]
+    {kural: öngörülemez olmalı\\[2pt]\textcolor{kotu}{bozulursa: aynı düz metin aynı görünür}};
+
+  \node[kotukutu=38mm, below=of t2] (t3) {\kb{NONCE}\\GCM gibi AEAD kiplerinde};
+  \node[align=left, text width=110mm, right=6mm of t3]
+    {kural: anahtar başına BİR KEZ\\[2pt]\textcolor{kotu}{bozulursa: gizlilik VE bütünlük çöker}};
+
+  \node[dip, text width=165mm, below=9mm of t3, anchor=north] {%
+    Üçü de açıkça saklanabilir; güvenlik gizliliklerinden değil, TEKRARLANMAMALARINDAN gelir.};
+\end{tikzpicture}
+\end{document}

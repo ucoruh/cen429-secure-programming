@@ -1,0 +1,17 @@
+% Hafta 10 — RSA dolgusu: hangisi nerede?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-09-oaep-pss.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {RSA dolgusu: hangisi nerede?};
+  \node[altbaslik, text width=170mm] at (b.south west) {dolgu, algoritmanın güvenliğinin ayrılmaz parçasıdır};
+
+  \node[kutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{OAEP}\\RSA ile ŞİFRELEME\\rastgeleleştirilmiş dolgu\\[2mm]ham RSA asla kullanılmaz};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{PSS}\\RSA ile İMZA\\rastgeleleştirilmiş dolgu\\[2mm]PKCS\#1 v1.5 yerine tercih};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Eliptik eğride karşılıkları: X25519 (anahtar değişimi), Ed25519 (imza).};
+\end{tikzpicture}
+\end{document}

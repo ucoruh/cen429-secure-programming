@@ -1,0 +1,32 @@
+% Hafta 4 — Kirli veri takibi: kaynaktan hedefe
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-14-kirli-veri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  \node[baslik] (b) at (0,0) {Kirli veri takibi: kaynaktan hedefe};
+  \node[altbaslik] at (b.south west) {saldırganın yazdığı bir değer, denetlenmeden tehlikeli bir çağrıya ulaşıyor};
+
+  \node[kotukutu=42mm, below=16mm of b.south west, anchor=north west] (kaynak) {%
+    \kb{KAYNAK (source)}\\
+    \kod{recv(sock, buf, ...)}\\
+    ağdan gelen veri\\
+    güvenilmez};
+  \node[uyarikutu=42mm, right=of kaynak] (tasima) {%
+    \kb{TAŞIMA}\\
+    \kod{len = buf[1]<{}<8 | buf[2]}\\
+    doğrulama YOK\\
+    kirlilik korunur};
+  \node[kotukutu=42mm, right=of tasima] (hedef) {%
+    \kb{HEDEF (sink)}\\
+    \kod{memcpy(out, buf+3, len)}\\
+    sınır denetimi yok\\
+    CWE-787};
+
+  \draw[ok] (kaynak) -- (tasima);
+  \draw[ok] (tasima) -- (hedef);
+
+  \node[fit=(kaynak)(hedef), inner sep=0pt] (grup) {};
+  \node[kotudip, text width=150mm, below=10mm of grup.south, anchor=north] {Bulgu kuralı: kaynak ile hedef arasında doğrulama yoksa, o yol bir zafiyettir.};
+\end{tikzpicture}
+\end{document}

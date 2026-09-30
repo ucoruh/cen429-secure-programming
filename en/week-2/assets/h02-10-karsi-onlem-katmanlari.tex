@@ -1,0 +1,30 @@
+% Hafta 2 — Karşı önlemler: dört katman, dört soru
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-10-karsi-onlem-katmanlari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 6mm]
+  \node[baslik] (b) at (0,0) {Karşı önlemler: dört katman, dört soru};
+  \node[altbaslik] at (b.south west) {her katman ötekinin kaçırdığını yakalar};
+
+  \node[kutu=48mm, minimum height=13mm, below=13mm of b.south west, anchor=north west, xshift=6mm] (k1)
+    {\kb{İmza tabanlı}};
+  \node[font=\sffamily\small, text=soluk, text width=110mm, align=left, right=6mm of k1] (a1)
+    {``bu dosyayı daha önce gördüm mü?'' --- bilinen zararlıyı yakalar};
+
+  \node[kutu=48mm, minimum height=13mm, below=5mm of k1] (k2) {\kb{Sezgisel (heuristic)}};
+  \node[font=\sffamily\small, text=soluk, text width=110mm, align=left, right=6mm of k2] (a2)
+    {``şüpheli görünüyor mu?'' --- benzerini yakalar};
+
+  \node[iyikutu=48mm, minimum height=13mm, below=5mm of k2] (k3) {\kb{Davranış tabanlı}};
+  \node[font=\sffamily\small, text=soluk, text width=110mm, align=left, right=6mm of k3] (a3)
+    {``ne YAPIYOR?'' --- yeni zararlıyı çalışırken yakalar};
+
+  \node[iyikutu=48mm, minimum height=13mm, below=5mm of k3] (k4) {\kb{Bütünlük izleme}};
+  \node[font=\sffamily\small, text=soluk, text width=110mm, align=left, right=6mm of k4] (a4)
+    {``değişti mi?'' --- beyaz liste, kurcalamayı yakalar};
+
+  \node[dip, text width=185mm, below=10mm of k4.south, anchor=north]
+    {Tek katman yetmez: imza yeniyi, davranış sessizi kaçırır.};
+\end{tikzpicture}
+\end{document}

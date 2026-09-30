@@ -1,0 +1,30 @@
+% Hafta 2 — Bir virüsün üç parçası (bulaştırıcı · tetikleyici · yük)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-02-virus-uc-parca.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Bir virüsün üç parçası};
+  \node[altbaslik] at (b.south west) {bulaştırıcı · tetikleyici · yük};
+
+  % Üst sıra: taşıyıcı -> bulaştırıcı -> virüslü program
+  \node[notrkutu=30mm, draw=soluk] (tasiyici) at (1.9,-1.9) {\kb{Taşıyıcı program}\\(temiz)};
+  \node[kotukutu=30mm, right=of tasiyici] (bulas) {\kb{BULAŞTIRICI}\\kendini ekler};
+  \node[uyarikutu=30mm, right=of bulas] (virusl) {\kb{Virüslü program}};
+  \draw[kotuok] (tasiyici) -- (bulas);
+  \draw[kotuok] (bulas) -- (virusl);
+
+  % Tetikleyici ve iki dal
+  \node[morkutu=40mm, below=of virusl] (tetik) {\kb{TETİKLEYİCİ}\\koşul sağlandı mı?};
+  \draw[ok, draw=soluk] (virusl) -- (tetik);
+  \node[iyikutu=38mm, left=22mm of tetik] (yayil) {\kb{Yalnız yayıl}\\başka dosyalara};
+  \draw[iyiok] (tetik) -- node[oketiket, above] {hayır} (yayil);
+  \node[kotukutu=40mm, below=of tetik] (yuk) {\kb{YÜK çalışır}\\asıl zarar};
+  \draw[kotuok] (tetik) -- node[oketiket, right] {evet} (yuk);
+
+  % Dip şeridi
+  \node[dip, text width=150mm, below=8mm of yuk.south -| bulas, anchor=north] {%
+    ``Ne zaman?'' sorusuna TETİKLEYİCİ bakar; koşula bağlı patlayana \emph{mantık bombası} denir.};
+\end{tikzpicture}
+\end{document}

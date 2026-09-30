@@ -1,0 +1,19 @@
+% Hafta 9 — Derleyici ne yapar: kaynaktan ikiliye
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-13-derleme-zinciri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Derleyici ne yapar: kaynaktan ikiliye};
+  \node[altbaslik, text width=170mm] at (b.south west) {gizleme işte bu iki uçtan birinde devreye girer};
+
+  \node[iyikutu=44mm, below=10mm of b.south west, anchor=north west] (k1) {\kb{kaynak.c}\\insan okur\\değişken adları,\\yorumlar, yapı};
+  \node[kutu=44mm, right=of k1] (k2) {\kb{derleyici}\\çevirir ve\\iyileştirir\\adları atar};
+  \node[morkutu=44mm, right=of k2] (k3) {\kb{program (ikili)}\\makine çalıştırır\\yalnız komutlar\\ad/yorum yok};
+  \draw[ok, draw=soluk] (k1.east) -- (k2.west);
+  \draw[ok, draw=soluk] (k2.east) -- (k3.west);
+
+  \node[dip, text width=170mm, below=10mm of k1.south -| k1, anchor=north west] {%
+    Saldırganın elinde yalnız sağdaki kutu vardır; tersine mühendislik soldakini geri kurmaya çalışır.};
+\end{tikzpicture}
+\end{document}

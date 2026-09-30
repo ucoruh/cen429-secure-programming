@@ -1,0 +1,51 @@
+% Hafta 12 — Saldırı potansiyeli: beş faktör
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-03-saldiri-potansiyeli.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Saldırı potansiyeli: beş faktör};
+  \node[altbaslik] at (b.south west) {toplam puan $\rightarrow$ direnç düzeyi};
+
+  % --- Çubuklar (5 satır, soldan başlar, uzunluk yaklaşık orantılı) ---
+  % satır üst-y değerleri: -2.0, -3.1, -4.2, -5.3, -6.4  (adım 1.1cm, çubuk yüksekliği 0.6cm)
+  \node[etiket, anchor=east, align=right, text width=26mm] at (2.8,-2.3) {Geçen zaman};
+  \draw[fill=ana, draw=none, rounded corners=1pt] (3.0,-2.0) rectangle ++(3.2,-0.6);
+
+  \node[etiket, anchor=east, align=right, text width=26mm] at (2.8,-3.4) {Uzmanlık};
+  \draw[fill=ana, draw=none, rounded corners=1pt] (3.0,-3.1) rectangle ++(4.6,-0.6);
+
+  \node[etiket, anchor=east, align=right, text width=26mm] at (2.8,-4.5) {Hedef bilgisi};
+  \draw[fill=ana, draw=none, rounded corners=1pt] (3.0,-4.2) rectangle ++(2.4,-0.6);
+
+  \node[etiket, anchor=east, align=right, text width=26mm] at (2.8,-5.6) {Fırsat (erişim)};
+  \draw[fill=ana, draw=none, rounded corners=1pt] (3.0,-5.3) rectangle ++(4.0,-0.6);
+
+  \node[etiket, anchor=east, align=right, text width=26mm] at (2.8,-6.7) {Ekipman};
+  \draw[fill=ana, draw=none, rounded corners=1pt] (3.0,-6.4) rectangle ++(3.0,-0.6);
+
+  % --- Toplam puan kutusu ---
+  \node[koyukutu=24mm] (toplam) at (9.3,-4.5) {\kb{TOPLAM}\\puan};
+  \draw[ok] (7.9,-4.5) -- (toplam.west);
+
+  % --- Düzey lejantı (4 renkli seviye) ---
+  \node[font=\sffamily\bfseries\small, text=koyu] (duzeybaslik) at (13.0,-2.0) {DÜZEY};
+  \node[rectangle, fill=iyi, minimum width=24mm, minimum height=10mm, text=white,
+        font=\sffamily\bfseries\footnotesize, align=center] (sv1) at (13.0,-2.8) {0--9};
+  \node[rectangle, fill=iyi!45!white, minimum width=24mm, minimum height=10mm, text=yazi,
+        font=\sffamily\bfseries\footnotesize, align=center, below=0mm of sv1] (sv2) {10--13};
+  \node[rectangle, fill=uyari, minimum width=24mm, minimum height=10mm, text=white,
+        font=\sffamily\bfseries\footnotesize, align=center, below=0mm of sv2] (sv3) {14--19};
+  \node[rectangle, fill=kotu, minimum width=24mm, minimum height=10mm, text=white,
+        font=\sffamily\bfseries\footnotesize, align=center, below=0mm of sv3] (sv4) {20+};
+
+  \draw[ok] (toplam.east) -- (11.8,-4.5);
+
+  % --- Uyarı satırı ---
+  \node[font=\sffamily\bfseries\small, text=kotu, align=center, text width=160mm] at (7.7,-7.7) {%
+    DÜŞÜK puan = az zaman/beceri/araç $\rightarrow$ çok saldırgan yapabilir $\rightarrow$ YÜKSEK RİSK};
+
+  \node[dip, text width=160mm, align=center] at (7.7,-8.7) {%
+    Saldırı potansiyeli saldırının ZORLUĞUNU, CVSS ise açığın ETKİSİNİ ölçer.};
+\end{tikzpicture}
+\end{document}

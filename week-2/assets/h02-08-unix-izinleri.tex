@@ -1,0 +1,34 @@
+% Hafta 2 — Unix izin bitleri: -rwxr-x---
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-08-unix-izinleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 10mm]
+  \node[baslik] (b) at (0,0) {Unix izin bitleri: -rwxr-x-{}-{}-};
+  \node[altbaslik] at (b.south west) {üç grup, üçer bit};
+
+  \node[notrkutu=26mm, minimum height=16mm, draw=soluk, text=soluk,
+        font=\sffamily\bfseries\Large, below=13mm of b.south west, anchor=north west, xshift=12mm] (t1) {-};
+  \node[notrkutu=26mm, minimum height=16mm, draw=iyi, text=iyi,
+        font=\sffamily\bfseries\Large, right=of t1] (t2) {rwx};
+  \node[notrkutu=26mm, minimum height=16mm, draw=uyari, text=uyari,
+        font=\sffamily\bfseries\Large, right=of t2] (t3) {r-x};
+  \node[notrkutu=26mm, minimum height=16mm, draw=kotu, text=kotu,
+        font=\sffamily\bfseries\Large, right=of t3] (t4) {-{}-{}-};
+
+  \node[etiket, text width=30mm, below=6mm of t1, text=soluk, font=\sffamily\bfseries\footnotesize] (a1) {dosya türü};
+  \node[etiket, text width=30mm, below=6mm of t2, text=iyi, font=\sffamily\bfseries\footnotesize] (a2) {SAHİP: oku+yaz+çalıştır};
+  \node[etiket, text width=30mm, below=6mm of t3, text=uyari, font=\sffamily\bfseries\footnotesize] (a3) {GRUP: oku+çalıştır};
+  \node[etiket, text width=30mm, below=6mm of t4, text=kotu, font=\sffamily\bfseries\footnotesize] (a4) {DİĞERLERİ: izin yok};
+  \draw[ok, draw=soluk] (t1.south) -- (a1.north);
+  \draw[ok, draw=iyi] (t2.south) -- (a2.north);
+  \draw[ok, draw=uyari] (t3.south) -- (a3.north);
+  \draw[ok, draw=kotu] (t4.south) -- (a4.north);
+
+  \node[font=\sffamily\small, text=yazi, below=8mm of a1.south -| t3, anchor=north, text width=160mm, align=center] (form)
+    {Her grup 3 bit: r=4, w=2, x=1 $\rightarrow$ rwx = 7, r-x = 5, -{}-{}- = 0 $\Rightarrow$ chmod 750};
+
+  \node[dip, text width=170mm, below=8mm of form.south, anchor=north]
+    {En az ayrıcalık: ``diğerleri'' sütununu boş bırakmak çoğu sızıntıyı baştan keser.};
+\end{tikzpicture}
+\end{document}

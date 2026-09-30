@@ -1,0 +1,24 @@
+% Hafta 11 — Anahtar koruma seçenekleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-07-anahtar-koruma.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 8mm]
+  \node[baslik] (b) at (0,0) {Anahtar koruma seçenekleri};
+  \node[altbaslik] at (b.south west) {yukarıdan aşağı: güç azalır, maliyet de azalır};
+
+  \node[koyukutu=58mm, below=14mm of b.south west, anchor=north west] (k1) {\kb{HSM / donanım}};
+  \node[etiket, right=6mm of k1, anchor=west, text width=80mm] {anahtar hiç çıkmaz --- en güçlü, en pahalı};
+  \node[iyikutu=58mm, below=of k1] (k2) {\kb{TEE / Güvenli öğe (SE)}};
+  \node[etiket, right=6mm of k2, anchor=west, text width=80mm] {yalıtılmış işlemci bölgesi};
+  \node[uyarikutu=58mm, below=of k2] (k3) {\kb{WBC + bağlama + yenileme}};
+  \node[etiket, right=6mm of k3, anchor=west, text width=80mm] {geciktirir, tek başına değil};
+  \node[uyarikutu=58mm, below=of k3] (k4) {\kb{Saf yazılım WBC}};
+  \node[etiket, right=6mm of k4, anchor=west, text width=80mm] {yayımlananların hepsi kırıldı};
+  \node[kotukutu=58mm, below=of k4] (k5) {\kb{Düz gömülü anahtar}};
+  \node[etiket, right=6mm of k5, anchor=west, text width=80mm] {koruma DEĞİL};
+
+  \node[dip, text width=150mm, anchor=north west] at ($(k1.west |- k5.south)+(0,-8mm)$) {%
+    Seçim varlığın değerine göre gerekçelendirilir ve S8'e yazılır.};
+\end{tikzpicture}
+\end{document}

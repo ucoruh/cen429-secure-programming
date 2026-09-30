@@ -1,0 +1,28 @@
+% Hafta 1 — Yedi koruma katmanı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-03-yedi-katman.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 3mm]
+  \node[baslik] (b) at (0,0) {Yedi koruma katmanı};
+  \node[altbaslik] (alt) at (b.south west) {aşağıdan yukarı: her katman bir öncekinin üzerine kurulur};
+
+  \node[morkutu=50mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k7) {\kb{7 · Güvence}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k7] {gereksinim, test, sertifikasyon (12--13. hafta)};
+  \node[kutu=50mm, below=of k7] (k6) {\kb{6 · Kriptografik koruma}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k6] {AES, RSA, PKI, whitebox (3, 10, 11. hafta)};
+  \node[kutu=50mm, below=of k6] (k5) {\kb{5 · Çalışma zamanı öz koruması}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k5] {RASP (6. hafta)};
+  \node[kutu=50mm, below=of k5] (k4) {\kb{4 · Kod gizleme ve çeşitlendirme}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k4] {(4, 5, 9, 14. hafta)};
+  \node[kutu=50mm, below=of k4] (k3) {\kb{3 · Derleyici ve OS korumaları}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k3] {kanarya, ASLR, DEP/NX (4. hafta)};
+  \node[iyikutu=50mm, below=of k3] (k2) {\kb{2 · Güvenli kodlama kuralları}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k2] {CERT, girdi doğrulama (1, 4, 5. hafta)};
+  \node[koyukutu=50mm, below=of k2] (k1) {\kb{1 · Güvenli tasarım ve tehdit modeli}};
+  \node[etiket, align=left, text width=85mm, right=3mm of k1] {TEMEL --- burası yanlışsa üstü kurtarmaz};
+
+  \node[dip, text width=150mm, below=9mm of k1, anchor=north]
+    {Bir katman aşılsa bile diğerleri durdurur --- derinlemesine savunma.};
+\end{tikzpicture}
+\end{document}

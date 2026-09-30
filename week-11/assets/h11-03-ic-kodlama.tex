@@ -1,0 +1,23 @@
+% Hafta 11 — İç kodlama ne değiştirir?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-03-ic-kodlama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {İç kodlama ne değiştirir?};
+  \node[altbaslik] at (b.south west) {gizli bijeksiyon G, ara değeri maskeler};
+
+  \node[kotukutu=62mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{Kodlamasız tablo}\\[2mm]
+    T[x] = S-box[x $\oplus$ k]\\[3mm]
+    $S^{-1}$ uygulanabilir\\
+    $\rightarrow$ k geri hesaplanır};
+  \node[iyikutu=62mm, right=of sol] (sag) {\kb{İç kodlamalı tablo}\\[2mm]
+    T'[x] = G( S-box[x $\oplus$ k] )\\[3mm]
+    G bilinmeden $S^{-1}$ yok\\
+    $\rightarrow$ adım 2 kırılır};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=150mm, below=8mm of sol.south -| sag, anchor=north] {%
+    Ardışık tabloların kodlamaları birbirini götürür: sonuç doğru, ara değer karışık.};
+\end{tikzpicture}
+\end{document}

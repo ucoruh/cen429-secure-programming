@@ -1,0 +1,22 @@
+% Hafta 1 — PATH ile kandırma: neden system() tehlikeli?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-08-path-kandirma.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 24mm]
+  \node[baslik] (b) at (0,0) {PATH ile kandırma: neden system() tehlikeli?};
+  \node[altbaslik] (alt) at (b.south west) {kabuk, programı adına göre PATH sırasıyla arar};
+
+  \node[kutu=32mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (s1) {\kod{system("date")}\\kabuk çağrılır};
+  \node[kutu=32mm, right=of s1] (s2) {\kod{/bin/sh date}\\PATH'te arar};
+  \node[kotukutu=34mm, right=of s2] (s3) {PATH[0] = sahte klasör\\date VAR $\rightarrow$ ÇALIŞTIRIR\\saldırganın programı};
+  \node[uyarikutu=32mm, right=of s3] (s4) {PATH[1] = /usr/bin\\hiç bakılmaz};
+
+  \draw[ok, draw=soluk] (s1.east) -- (s2.west);
+  \draw[ok, draw=soluk] (s2.east) -- (s3.west);
+  \draw[ok, draw=soluk] (s3.east) -- (s4.west);
+
+  \node[kotudip, text width=160mm, below=9mm of s4.south -| s2, anchor=north]
+    {Düzeltme: mutlak yol (/bin/date) · kabuksuz çalıştırma (execve) · temiz ortam.};
+\end{tikzpicture}
+\end{document}

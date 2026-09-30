@@ -1,0 +1,19 @@
+% Hafta 7 — Gösterimde sık yapılan hatalar
+% Derleme: py -3.12 tools/latex/derle.py docs/week-7/assets/h07-03-sik-hatalar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 16mm]
+  \node[baslik] (b) at (0,0) {Gösterimde sık yapılan hatalar};
+  \node[altbaslik] at (b.south west) {değerlendirici kanıt arar, iddia değil};
+
+  \node[kotukutu=64mm, below=16mm of b.south west, anchor=north west] (sol) {\kb{YAPMAYIN}\\[2mm]
+    slaytta kod okumak\\``çalışıyor'' deyip göstermemek\\tek kişinin konuşması\\kanıtsız ``güvenli'' iddiası};
+  \node[iyikutu=64mm, right=of sol] (sag) {\kb{YAPIN}\\[2mm]
+    çalışan demoyu göstermek\\kararın GEREKÇESİNİ anlatmak\\ölçüm/kanıt sunmak\\sınırları dürüstçe söylemek};
+  \draw[draw=cizgi, line width=1.6pt] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=8mm of sol.south -| sag, anchor=north] {%
+    ``Şunu yapamadık, nedeni şu'' demek, olmayan bir şeyi var göstermekten iyidir.};
+\end{tikzpicture}
+\end{document}

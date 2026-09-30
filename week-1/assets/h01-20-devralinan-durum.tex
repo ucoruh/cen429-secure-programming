@@ -1,0 +1,24 @@
+% Hafta 1 — Program başlarken ebeveyninden ne devralır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-20-devralinan-durum.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 3mm]
+  \node[baslik] (b) at (0,0) {Program başlarken ebeveyninden ne devralır?};
+  \node[altbaslik] (alt) at (b.south west) {\kod{main()}'in ilk satırlarında yapılacak iş budur};
+
+  \node[kotukutu=60mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k1) {\kb{Ortam değişkenleri}};
+  \node[etiket, align=left, text width=88mm, right=3mm of k1] {PATH, LD\_PRELOAD, LD\_LIBRARY\_PATH --- hangi kod yüklenecek};
+  \node[kotukutu=60mm, below=of k1] (k2) {\kb{Açık dosya tanıtıcıları}};
+  \node[etiket, align=left, text width=88mm, right=3mm of k2] {0/1/2 kapalıysa açtığınız dosya stdin olur};
+  \node[uyarikutu=60mm, below=of k2] (k3) {\kb{umask ve çalışma klasörü}};
+  \node[etiket, align=left, text width=88mm, right=3mm of k3] {oluşturduğunuz dosyanın izinleri buradan gelir};
+  \node[uyarikutu=60mm, below=of k3] (k4) {\kb{Sinyal düzeni ve kaynak sınırları}};
+  \node[etiket, align=left, text width=88mm, right=3mm of k4] {yok sayılan sinyal, düşük core limiti};
+  \node[kotukutu=60mm, below=of k4] (k5) {\kb{Gerçek ve etkin kullanıcı kimliği}};
+  \node[etiket, align=left, text width=88mm, right=3mm of k5] {setuid ise ayrıcalık elinizdedir};
+
+  \node[kotudip, text width=155mm, below=9mm of k5, anchor=north]
+    {Hiçbirine güvenmeyin: gerekeni kendiniz kurun, gerekmeyeni kapatın.};
+\end{tikzpicture}
+\end{document}

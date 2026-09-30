@@ -1,0 +1,41 @@
+% Hafta 1 — Mobil ödeme: mimari ve arayüzler
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-05-mimari-arayuzler.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 40mm]
+  \node[baslik] (b) at (0,0) {Mobil ödeme: mimari ve arayüzler};
+  \node[altbaslik] (alt) at (b.south west) {kırmızı kutu = güvenilmez ortam (saldırgan burada)};
+
+  \node[kutu=46mm, fill=white, below=16mm of alt.south west, anchor=north west, xshift=6mm] (app) {Mobil uygulama};
+  \node[kutu=46mm, below=24mm of app] (java) {Güvenlik kütüphanesi\\--- Java};
+  \node[kutu=46mm, fill=acik, below=24mm of java] (nat) {Güvenlik kütüphanesi\\--- native C/C++};
+  \node[kutu=46mm, fill=white, draw=cizgi, below=24mm of nat] (db) {Yerel veritabanı (şifreli)};
+
+  \draw[ok, draw=soluk] (app.south) -- node[oketiket, right=3pt]{A} (java.north);
+  \draw[ok, draw=soluk] (java.south) -- node[oketiket, right=3pt]{B} (nat.north);
+  \draw[ok, draw=soluk] (nat.south) -- node[oketiket, right=3pt]{C} (db.north);
+
+  \begin{scope}[on background layer]
+    \node[draw=kotu, thick, rounded corners=4pt, fill=kotubg, fit=(app)(java)(nat)(db), inner sep=6mm] (frame_sol) {};
+  \end{scope}
+  \node[font=\sffamily\bfseries, text=kotu, above=1mm of frame_sol.north] {Kullanıcının telefonu --- GÜVENİLMEZ};
+
+  \node[kutu=42mm, fill=white, draw=iyi, right=of nat] (backend) {Arka uç sunucu};
+  \node[kutu=42mm, fill=white, draw=iyi, below=24mm of backend] (hsm) {HSM (anahtar kasası)};
+  \draw[ok, draw=iyi] (backend.south) -- (hsm.north);
+
+  \begin{scope}[on background layer]
+    \node[draw=iyi, thick, rounded corners=4pt, fill=iyibg, fit=(backend)(hsm), inner sep=6mm] (frame_sag) {};
+  \end{scope}
+  \node[font=\sffamily\bfseries, text=iyi, above=1mm of frame_sag.north] {Hizmet sağlayıcı --- GÜVENİLİR};
+
+  \node[uyarikutu=42mm, below=28mm of hsm] (pos) {Ödeme terminali (POS)};
+
+  \draw[anaok] (nat.east) -- node[oketiket, above=3pt, text width=36mm, align=center] {D: TLS + mesaj şifreleme} (backend.west);
+  \draw[ok, draw=uyari] (nat.south east) -- node[oketiket, below=3pt, text=uyari] {E: NFC} (pos.north west);
+
+  \node[dip, text width=160mm, below=9mm of pos.south -| frame_sol, anchor=north]
+    {Her arayüz (A--E) ayrı bir saldırı yüzeyidir: her biri için önlem ve kanıt yazılır.};
+\end{tikzpicture}
+\end{document}

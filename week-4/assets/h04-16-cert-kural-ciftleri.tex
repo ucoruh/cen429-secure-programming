@@ -1,0 +1,37 @@
+% Hafta 4 — Bu haftanın CERT kural çiftleri (6 kural, tablo benzeri liste)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-16-cert-kural-ciftleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Bu haftanın CERT kural çiftleri};
+  \node[altbaslik] at (b.south west) {her biri bir demoya karşılık gelir};
+
+  \node[morkutu=20mm] (k1) at (0,-22mm) {INT30-C};
+  \node[anchor=west] at ($(k1.east)+(6mm,0)$) {işaretsiz tamsayı sarması};
+  \node[anchor=east, etiket] at ($(k1.east)+(13.4cm,0)$) {Demo 3};
+
+  \node[morkutu=20mm, below=12mm of k1] (k2) {INT31-C};
+  \node[anchor=west] at ($(k2.east)+(6mm,0)$) {tür dönüşümünde veri kaybı};
+  \node[anchor=east, etiket] at ($(k2.east)+(13.4cm,0)$) {Demo 3};
+
+  \node[morkutu=20mm, below=12mm of k2] (k3) {STR31-C};
+  \node[anchor=west] at ($(k3.east)+(6mm,0)$) {hedef tampon sonlandırıcıyı almalı};
+  \node[anchor=east, etiket] at ($(k3.east)+(13.4cm,0)$) {Demo 1};
+
+  \node[morkutu=20mm, below=12mm of k3] (k4) {MEM30-C};
+  \node[anchor=west] at ($(k4.east)+(6mm,0)$) {serbest bırakılmış belleği kullanma};
+  \node[anchor=east, etiket] at ($(k4.east)+(13.4cm,0)$) {Demo 2};
+
+  \node[morkutu=20mm, below=12mm of k4] (k5) {MEM31-C};
+  \node[anchor=west] at ($(k5.east)+(6mm,0)$) {her ayrılan bellek serbest bırakılır};
+  \node[anchor=east, etiket] at ($(k5.east)+(13.4cm,0)$) {Demo 2};
+
+  \node[morkutu=20mm, below=12mm of k5] (k6) {FIO30-C};
+  \node[anchor=west] at ($(k6.east)+(6mm,0)$) {kullanıcı girdisini biçim dizisi yapma};
+  \node[anchor=east, etiket] at ($(k6.east)+(13.4cm,0)$) {Demo 1};
+
+  \node[dip, text width=160mm, anchor=north] at ($(k6.south)+(67mm,-8mm)$) {%
+    Kural kimliğini proje belgenize yazın: denetleyiciye ``hangi kurala uydum'' diye cevap verirsiniz.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,28 @@
+% Hafta 14 — S15: derleme ve dağıtım hattı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-07-s15-hatti.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=20mm and 22mm]
+  \node[baslik] (b) at (0,0) {S15: derleme ve dağıtım hattı};
+  \node[altbaslik] at (b.south west) {imza en sonda: önce gizle, sonra imzala};
+
+  \node[kutu=34mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{1 · Kaynak}\\git, sürüm kimliği};
+  \node[kutu=34mm, right=of n1] (n2) {\kb{2 · Statik analiz}};
+  \node[koyukutu=34mm, right=of n2] (n3) {\kb{3 · Gizle}\\yalnız hassas fonksiyonlar};
+  \node[koyukutu=34mm, right=of n3] (n4) {\kb{4 · Çeşitlendir}\\tohum};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+
+  \node[kutu=34mm, below=20mm of n1.south west, anchor=north west] (n5) {\kb{5 · Derle + SBOM}};
+  \node[uyarikutu=34mm, right=of n5] (n6) {\kb{6 · İMZALA}\\en son!};
+  \node[iyikutu=34mm, right=of n6] (n7) {\kb{7 · Dağıt}\\özet değerini kaydet};
+  \draw[ok, draw=soluk] (n5.east) -- (n6.west);
+  \draw[ok, draw=soluk] (n6.east) -- (n7.west);
+  \draw[ok, draw=soluk] (n4.south) -- ++(0,-6mm) -| (n5.north);
+
+  \node[dip, text width=170mm, below=8mm of n7.south -| n3, anchor=north] {%
+    Sıra bozulursa imza geçersizleşir; TOE kimliği (12. hafta) buradan çıkar.};
+\end{tikzpicture}
+\end{document}

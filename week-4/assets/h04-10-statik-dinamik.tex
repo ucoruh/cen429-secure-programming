@@ -1,0 +1,30 @@
+% Hafta 4 — Statik analiz ↔ dinamik analiz
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-10-statik-dinamik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 12mm]
+  \node[baslik] (b) at (0,0) {Statik analiz $\leftrightarrow$ dinamik analiz};
+  \node[altbaslik] at (b.south west) {biri diğerinin yerine geçmez --- ikisi birden kullanılır};
+
+  \node[kutu=62mm, below=16mm of b.south west, anchor=north west] (sol)
+    {\kb{STATİK (çalıştırmadan)}\\[2mm]
+     tüm kod yollarına bakar\\
+     hiç çalışmayan yolu da görür\\[3mm]
+     yanlış pozitif ÇOK\\
+     bağlamı bilmez};
+  \node[iyikutu=62mm, right=22mm of sol] (sag)
+    {\kb{DİNAMİK (çalıştırarak)}\\[2mm]
+     yalnız yürütülen yol\\
+     gerçek hatayı KESİN görür\\[3mm]
+     yanlış pozitif AZ\\
+     kapsam girdiye bağlı};
+
+  \node[fit=(sol)(sag), inner sep=0] (ikifit) {};
+  \coordinate (orta) at ($(sol.east)!0.5!(sag.west)$);
+  \draw[cizgi, line width=1pt] (ikifit.north -| orta) -- (ikifit.south -| orta);
+
+  \node[dip, text width=170mm, below=10mm of ikifit.south, anchor=north]
+    {Fuzzing üçüncü ayaktır: dinamik analizin göreceği YENİ yolları üretir.};
+\end{tikzpicture}
+\end{document}

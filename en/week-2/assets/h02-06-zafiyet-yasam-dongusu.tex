@@ -1,0 +1,27 @@
+% Hafta 2 — Zafiyet yaşam döngüsü ve sorumlu ifşa
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-06-zafiyet-yasam-dongusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  \node[baslik] (b) at (0,0) {Zafiyet yaşam döngüsü ve sorumlu ifşa};
+  \node[altbaslik] at (b.south west) {doğru yol: önce satıcıya bildir, yama çıksın, sonra açıkla};
+
+  \node[uyarikutu=38mm, minimum height=18mm, below=13mm of b.south west, anchor=north west, xshift=10mm] (s1)
+    {\kb{1 $\cdot$ Keşif}\\araştırmacı / saldırgan};
+  \node[kutu=38mm, minimum height=18mm, right=of s1] (s2) {\kb{2 $\cdot$ Özel ifşa}\\satıcıya bildirim};
+  \node[kutu=38mm, minimum height=18mm, right=of s2] (s3) {\kb{3 $\cdot$ Düzeltme}\\yama geliştirilir};
+  \draw[ok, draw=soluk] (s1) -- (s2);
+  \draw[ok, draw=soluk] (s2) -- (s3);
+
+  \node[iyikutu=38mm, minimum height=18mm, below=16mm of s1] (s4) {\kb{4 $\cdot$ Yama yayını}};
+  \node[morkutu=38mm, minimum height=18mm, right=of s4] (s5) {\kb{5 $\cdot$ Kamuya açıklama}\\CVE + ayrıntı};
+  \node[iyikutu=38mm, minimum height=18mm, right=of s5] (s6) {\kb{6 $\cdot$ Yama uygulanması}\\kullanıcılar günceller};
+  \draw[ok, draw=soluk] (s4) -- (s5);
+  \draw[ok, draw=soluk] (s5) -- (s6);
+  \draw[ok, draw=soluk] (s3.south) to[out=-90, in=90] (s4.north);
+
+  \node[kotudip, text width=175mm, below=10mm of s4.south -| s5, anchor=north]
+    {Kötüye giderse: yama yokken saldırı = ZERO-DAY. Bu yüzden ifşa sırası önemlidir.};
+\end{tikzpicture}
+\end{document}

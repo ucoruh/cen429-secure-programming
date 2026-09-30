@@ -1,0 +1,24 @@
+% Hafta 1 — Yığında taşma adım adım
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-15-yiginda-tasma.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 3mm]
+  \node[baslik] (b) at (0,0) {Yığında taşma adım adım};
+  \node[altbaslik] (alt) at (b.south west) {strcpy aşağıdan yukarı yazar};
+
+  \node[kutu=48mm, below=8mm of alt.south west, anchor=south west, xshift=14mm, yshift=-52mm] (tampon) {\kb{tampon[0..15]}};
+  \node[etiket, align=left, text width=80mm, right=3mm of tampon] {strcpy buraya yazmaya başlar};
+  \node[uyarikutu=48mm, above=of tampon] (yetkili) {\kb{yetkili (int)}};
+  \node[etiket, align=left, text width=80mm, right=3mm of yetkili] {16 bayttan sonrası buraya taşar};
+  \node[morkutu=48mm, above=of yetkili] (cerceve) {\kb{kaydedilmiş çerçeve}};
+  \node[etiket, align=left, text width=80mm, right=3mm of cerceve] {saved rbp};
+  \node[kotukutu=48mm, above=of cerceve] (donus) {\kb{DÖNÜŞ ADRESİ}};
+  \node[etiket, align=left, text width=80mm, right=3mm of donus] {buraya ulaşırsa akış ele geçer};
+
+  \draw[ok, draw=kotu, line width=1.6pt] ($(tampon.south west)+(-8mm,0)$) -- node[etiket, rotate=90, text=kotu, above=3pt] {taşma yönü} ($(donus.north west)+(-8mm,0)$);
+
+  \node[dip, text width=155mm, below=9mm of tampon, anchor=north]
+    {Kanarya, dönüş adresinden önce durur: ezilirse program sonlanır (ama yetkili zaten ezilmiştir).};
+\end{tikzpicture}
+\end{document}

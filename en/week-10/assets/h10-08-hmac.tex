@@ -1,0 +1,17 @@
+% Hafta 10 — Neden HMAC, neden H(K||m) değil?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-08-hmac.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Neden HMAC, neden $H(K \Vert m)$ değil?};
+  \node[altbaslik, text width=170mm] at (b.south west) {kendi MAC'inizi kurmayın};
+
+  \node[kotukutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{$H(K \Vert m)$}\\Merkle--Damgård özetlerde\\UZUNLUK UZATMA saldırısı\\[2mm]saldırgan K'yı bilmeden\\$H(K \Vert m \Vert$ ek$)$ üretebilir};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{HMAC}\\iç içe iki özetleme\\ipad / opad ile\\[2mm]uzunluk uzatma KAPALI\\standart ve kanıtlı};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Doğrulamayı sabit zamanlı karşılaştırmayla yapın (\kod{CRYPTO\_memcmp}).};
+\end{tikzpicture}
+\end{document}

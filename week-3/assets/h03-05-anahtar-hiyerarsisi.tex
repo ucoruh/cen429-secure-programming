@@ -1,0 +1,33 @@
+% Hafta 3 — Anahtar hiyerarşisi: her işe ayrı anahtar
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-05-anahtar-hiyerarsisi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 8mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Anahtar hiyerarşisi: her işe ayrı anahtar};
+  \node[altbaslik] at (b.south west) {yukarıdakiler nadiren, aşağıdakiler sık kullanılır};
+
+  % Seviye 0: kök
+  \node[koyukutu=52mm] (kok) at (2,-2.2) {Kök / ana anahtar\\HSM'de, neredeyse hiç kullanılmaz};
+
+  % Seviye 1: KEK ve İmza anahtarı
+  \node[kutu=42mm, below left=26mm and 8mm of kok] (kek) {\kb{Anahtar şifreleme anahtarı (KEK)}\\müşteri / cihaz başına};
+  \node[kutu=38mm, below right=26mm and 8mm of kok] (imza) {\kb{İmza anahtarı}\\güncelleme paketleri};
+  \draw[ok, draw=soluk] (kok.south) -- (kek.north);
+  \draw[ok, draw=soluk] (kok.south) -- (imza.north);
+
+  % Seviye 2: KEK'in çocukları
+  \node[kutu=28mm, below left=26mm and 2mm of kek] (dek) {\kb{Veri anahtarı (DEK)}\\dosya / kayıt başına};
+  \node[kutu=28mm, below right=26mm and 2mm of kek] (oturum) {\kb{Oturum anahtarı}\\dakikalar};
+  \draw[ok, draw=soluk] (kek.south) -- (dek.north);
+  \draw[ok, draw=soluk] (kek.south) -- (oturum.north);
+
+  % Seviye 3: Oturum anahtarının çocuğu
+  \node[iyikutu=40mm, below=24mm of oturum] (tek) {\kb{Tek kullanımlık anahtar}\\işlem başına};
+  \draw[ok, draw=soluk] (oturum.south) -- (tek.north);
+
+  % Yan uyarı notu (kutusuz, kırmızı metin)
+  \node[etiket, text=kotu, align=left, right=14mm of oturum, yshift=8mm] (not) {Üstteki sızarsa\\altındakilerin hepsi\\yenilenir.};
+\end{tikzpicture}
+\end{document}

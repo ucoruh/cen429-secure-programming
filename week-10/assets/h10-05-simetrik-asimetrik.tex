@@ -1,0 +1,17 @@
+% Hafta 10 — Simetrik ve asimetrik: hangisi ne için?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-05-simetrik-asimetrik.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Simetrik ve asimetrik: hangisi ne için?};
+  \node[altbaslik, text width=170mm] at (b.south west) {pratikte HİBRİT: asimetrikle anahtar kur, simetrikle veri şifrele};
+
+  \node[kutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{SİMETRİK (AES)}\\tek anahtar\\ÇOK HIZLI\\[2mm]sorun: anahtarı nasıl paylaşırsın?};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{ASİMETRİK (RSA/EC)}\\açık + gizli anahtar çifti\\YAVAŞ\\[2mm]anahtar dağıtımı ve İMZA çözülür};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    TLS tam olarak bunu yapar: ECDHE ile anahtar, AES-GCM ile veri.};
+\end{tikzpicture}
+\end{document}

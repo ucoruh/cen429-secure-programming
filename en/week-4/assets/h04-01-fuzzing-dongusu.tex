@@ -1,0 +1,37 @@
+% Hafta 4 — Kapsam güdümlü fuzzing döngüsü
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-01-fuzzing-dongusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Kapsam güdümlü fuzzing döngüsü};
+  \node[altbaslik] at (b.south west) {rastgele değil: yeni kod yolu bulan girdiyi saklar};
+
+  % Üst sıra: tohum -> değiştir -> hedefi çalıştır
+  \node[kutu=28mm, below=14mm of b.south west, anchor=north west] (tohum) {\kb{Tohum girdiler}\\(corpus)};
+  \node[morkutu=34mm, right=of tohum] (degistir) {\kb{DEĞİŞTİR}\\bit çevir · bayt sil\\parça ekle · birleştir};
+  \node[koyukutu=32mm, right=of degistir] (calistir) {\kb{HEDEFİ ÇALIŞTIR}\\sanitizer açık};
+
+  \draw[ok] (tohum) -- (degistir);
+  \draw[ok] (degistir) -- (calistir);
+
+  % Karar kutusu ve iki dal
+  \node[uyarikutu=32mm, below=16mm of calistir] (kodyolu) {\kb{Yeni kod yolu?}};
+  \draw[ok] (calistir) -- (kodyolu);
+
+  \node[iyikutu=28mm, below=16mm of degistir] (ekle) {\kb{Corpus'a EKLE}};
+  \draw[iyiok] (kodyolu) -- node[oketiket, above] {evet} (ekle);
+
+  % Geri besleme: corpus'a eklenen girdi yeniden değiştirilir (döngü)
+  \draw[iyiok] (ekle.north) -- node[oketiket, right] {tekrar dene} (degistir.south);
+
+  % Çökme dalı
+  \node[kotukutu=42mm, right=18mm of kodyolu] (cokme) {\kb{ÇÖKME / sanitizer hatası}\\$\rightarrow$ raporla, küçült};
+  \draw[kotuok] (calistir.south east) to[bend left=20] node[oketiket, right] {çökme} (cokme.north);
+
+  % Dip şeridi
+  \node[dip, text width=165mm, below=8mm of kodyolu.south -| tohum, anchor=north] {%
+    İyi fuzz hedefi: hızlı · deterministik · kendine yeterli · dar girdi yüzeyi.};
+\end{tikzpicture}
+\end{document}

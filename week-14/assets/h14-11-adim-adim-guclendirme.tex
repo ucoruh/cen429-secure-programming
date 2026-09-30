@@ -1,0 +1,26 @@
+% Hafta 14 — Bir denetimi adım adım güçlendirmek
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-11-adim-adim-guclendirme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=20mm and 22mm]
+  \node[baslik] (b) at (0,0) {Bir denetimi adım adım güçlendirmek};
+  \node[altbaslik] at (b.south west) {her adımdan sonra ÖLÇ; körlemesine üst üste yığma};
+
+  \node[iyikutu=42mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Temiz kod}\\ölçüm alınır:\\komut / dal};
+  \node[kutu=42mm, right=of n1] (n2) {\kb{+ EncodeLiterals}\\sabitler gizlenir};
+  \node[kutu=42mm, right=of n2] (n3) {\kb{+ EncodeArithmetic}\\hesap MBA'ya döner};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+
+  \node[morkutu=42mm, below=20mm of n1.south west, anchor=north west] (n4) {\kb{+ Flatten}\\akış düzleşir};
+  \node[morkutu=42mm, right=of n4] (n5) {\kb{+ AddOpaque}\\sahte dallar eklenir};
+  \node[uyarikutu=42mm, right=of n5] (n6) {\kb{Ölç ve karar ver}\\kazanç maliyeti\\haklı çıkarıyor mu?};
+  \draw[ok, draw=soluk] (n4.east) -- (n5.west);
+  \draw[ok, draw=soluk] (n5.east) -- (n6.west);
+  \draw[ok, draw=soluk] (n3.south) -- ++(0,-6mm) -| (n4.north);
+
+  \node[dip, text width=170mm, below=8mm of n6.south -| n5, anchor=north] {%
+    Maliyet katlanarak artar; kazanç bir noktadan sonra düzleşir. Durma noktasını ölçüm söyler.};
+\end{tikzpicture}
+\end{document}

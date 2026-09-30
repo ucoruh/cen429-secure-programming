@@ -1,0 +1,29 @@
+% Hafta 4 — Biçim dizisi açığı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-07-bicim-dizisi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 12mm]
+  \node[baslik] (b) at (0,0) {Biçim dizisi açığı};
+  \node[altbaslik] at (b.south west) {tek fark: biçim dizgesini kim belirliyor};
+
+  \node[kotukutu=62mm, below=16mm of b.south west, anchor=north west] (sol)
+    {\kb{printf(girdi)}\\[2mm]
+     girdi BİÇİM DİZGESİ sayılır\\[3mm]
+     \%x $\rightarrow$ yığını okur\\
+     \%n $\rightarrow$ belleğe YAZAR\\[2mm]
+     $\rightarrow$ bilgi sızıntısı, kod akışı};
+  \node[iyikutu=62mm, right=22mm of sol] (sag)
+    {\kb{printf(``\%s'', girdi)}\\[2mm]
+     biçim dizgesi SABİT\\[3mm]
+     girdi yalnız VERİ\\[3mm]
+     güvenli};
+
+  \node[fit=(sol)(sag), inner sep=0] (ikifit) {};
+  \coordinate (orta) at ($(sol.east)!0.5!(sag.west)$);
+  \draw[cizgi, line width=1pt] (ikifit.north -| orta) -- (ikifit.south -| orta);
+
+  \node[dip, text width=170mm, below=10mm of ikifit.south, anchor=north]
+    {En tehlikelisi \%n: yazdığı bayt sayısını belleğe yazar $\rightarrow$ seçili adrese yazma.};
+\end{tikzpicture}
+\end{document}

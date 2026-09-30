@@ -1,0 +1,17 @@
+% Hafta 9 — Kontrol akışı düzleştirme: CFG önce ve sonra
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-04-duzlestirme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Kontrol akışı düzleştirme: CFG önce ve sonra};
+  \node[altbaslik, text width=170mm] at (b.south west) {aynı program, aynı sonuç --- farklı iskelet};
+
+  \node[kotukutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{ÖNCE: okunur akış}\\giriş $\rightarrow$ koşul $\rightarrow$ dallar\\döngü yapısı görünür\\[2mm]analizci mantığı\\doğrudan okur};
+  \node[iyikutu=78mm, right=10mm of sol] (sag) {\kb{SONRA: düzleştirilmiş}\\tek switch (dağıtıcı)\\bloklar durum değişkeniyle\\sırası gizli\\[2mm]yapı bilgisi KAYBOLUR};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Tek başına zayıf: dağıtıcı deseni tanınır $\rightarrow$ opak yüklem + durum şifreleme ekleyin.};
+\end{tikzpicture}
+\end{document}

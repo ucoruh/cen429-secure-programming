@@ -1,0 +1,25 @@
+% Hafta 14 — Kaynaktan kaynağa gizleme hattı (S15)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-01-kaynaktan-kaynaga-hat.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 22mm]
+  \node[baslik] (b) at (0,0) {Kaynaktan kaynağa gizleme hattı (S15)};
+  \node[altbaslik] at (b.south west) {imza EN SON: önce gizle, sonra imzala};
+
+  \node[kutu=24mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{temiz.c}\\okunur kaynak};
+  \node[koyukutu=24mm, right=of n1] (n2) {\kb{TIGRESS}\\+ tohum · dönüşüm};
+  \node[kutu=24mm, right=of n2] (n3) {\kb{gizli.c}\\gizlenmiş kaynak};
+  \node[iyikutu=24mm, right=of n3] (n4) {\kb{derle}\\+ SBOM};
+  \node[uyarikutu=24mm, right=of n4] (n5) {\kb{İMZALA}\\son ikili};
+  \node[morkutu=24mm, right=of n5] (n6) {\kb{dağıt}};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+  \draw[ok, draw=soluk] (n4.east) -- (n5.west);
+  \draw[ok, draw=soluk] (n5.east) -- (n6.west);
+
+  \node[dip, text width=170mm, below=8mm of n6.south -| n3, anchor=north] {%
+    Her hattan sonra: 1) davranışı test et · 2) maliyeti ölç (boyut/hız).};
+\end{tikzpicture}
+\end{document}

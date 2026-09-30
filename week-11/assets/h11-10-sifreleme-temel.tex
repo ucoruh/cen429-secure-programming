@@ -1,0 +1,21 @@
+% Hafta 11 — Şifreleme nedir? İki yönlü, anahtara bağlı dönüşüm
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-10-sifreleme-temel.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=14mm and 40mm]
+  \node[baslik] (b) at (0,0) {Şifreleme nedir? İki yönlü, anahtara bağlı dönüşüm};
+  \node[altbaslik] at (b.south west) {aynı anahtar hem kilitler hem açar (simetrik şifreleme)};
+
+  \node[iyikutu=40mm, below=16mm of b.south west, anchor=north west] (ac) {\kb{açık metin}\\okunabilir veri};
+  \node[morkutu=40mm, right=of ac] (sif) {\kb{şifreli metin}\\gürültüden ayırt edilemez};
+  \draw[anaok] ($(ac.east)+(0,4mm)$) -- node[oketiket, above=3pt] {anahtar ile ŞİFRELE} ($(sif.west)+(0,4mm)$);
+  \draw[anaok] ($(sif.west)+(0,-4mm)$) -- node[oketiket, below=3pt] {anahtar ile ÇÖZ} ($(ac.east)+(0,-4mm)$);
+
+  \coordinate (orta) at ($(ac.south)!0.5!(sif.south)$);
+  \node[kutu=60mm, draw=koyu, below=14mm of orta] (an) {\kb{ANAHTAR}\\gizli olan tek şey budur};
+
+  \node[dip, text width=150mm, below=8mm of an, anchor=north] {%
+    Kerckhoffs ilkesi: algoritma herkesçe bilinebilir; güvenlik yalnız anahtarın gizliliğindedir.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,23 @@
+% Hafta 11 — Dış kodlama: en güçlü koruma, en büyük sınır
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-04-dis-kodlama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 22mm]
+  \node[baslik] (b) at (0,0) {Dış kodlama: en güçlü koruma, en büyük sınır};
+  \node[altbaslik] at (b.south west) {çıktı artık STANDART AES değildir};
+
+  \node[kutu=30mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Girdi}};
+  \node[uyarikutu=30mm, right=of n1] (n2) {\kb{$F^{-1}$}\\(dış kodlama)\\uygulamaya bağlar};
+  \node[koyukutu=30mm, right=of n2] (n3) {\kb{Kodlanmış\\tablo ağı}\\AES turları};
+  \node[uyarikutu=30mm, right=of n3] (n4) {\kb{G}\\(dış kodlama)};
+  \node[kotukutu=34mm, right=of n4] (n5) {\kb{Çıktı}\\$G \circ \mathrm{AES} \circ F^{-1}$};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+  \draw[ok, draw=soluk] (n4.east) -- (n5.west);
+
+  \node[kotudip, text width=160mm, below=8mm of n5.south -| n3, anchor=north] {%
+    Karşı taraf F ve G'yi bilmeden sonuç anlamsız $\rightarrow$ yalnız iki ucu da sizin olduğu protokolde.};
+\end{tikzpicture}
+\end{document}

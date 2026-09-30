@@ -1,0 +1,23 @@
+% Hafta 3 — Tokenizasyon: gerçek değeri kasada tut (dizi diyagramı)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-07-tokenizasyon.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Tokenizasyon: gerçek değeri kasada tut};
+  \node[altbaslik] at (b.south west) {PCI DSS denetim kapsamı kasaya daralır};
+  \node[aktor] (a1) at (0,-2) {UYGULAMA};
+  \node[aktor] (a2) at (6.5,-2) {BELİRTEÇ\\KASASI};
+  \node[aktor] (a3) at (13,-2) {VERİTABANI};
+  \draw[yasam] (a1.south) -- ++(0,-88mm);
+  \draw[yasam] (a2.south) -- ++(0,-88mm);
+  \draw[yasam] (a3.south) -- ++(0,-88mm);
+  \draw[anaok] (0,-3.4) -- node[oketiket, above=3pt] {kart numarası} (6.5,-3.4);
+  \draw[kesik ok, draw=iyi] (6.5,-4.6) -- node[oketiket, above=3pt, text width=45mm, align=center] {belirteç (tok\_7f3a...)} (0,-4.6);
+  \draw[anaok] (0,-5.8) -- node[oketiket, above=3pt] {yalnız BELİRTECİ sakla} (13,-5.8);
+  \node[notkutusu, text width=58mm] at (10.5,-7.0) {Veritabanı çalınsa bile kart numarası YOK};
+  \draw[anaok] (0,-8.2) -- node[oketiket, above=3pt] {ödeme anında belirteç} (6.5,-8.2);
+  \draw[kesik ok, draw=iyi] (6.5,-9.4) -- node[oketiket, above=3pt, text width=55mm, align=center] {yetkili işlem (ya da işlemi kasa yapar)} (0,-9.4);
+  \node[dip, text width=165mm] at (6.5,-11.4) {Gerçek veri tek bir korunan yerde; sistemin geri kalanı anlamsız belirteç taşır.};
+\end{tikzpicture}
+\end{document}

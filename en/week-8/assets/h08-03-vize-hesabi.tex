@@ -1,0 +1,22 @@
+% Hafta 8 — Vize notu nasıl hesaplanır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-8/assets/h08-03-vize-hesabi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Vize notu nasıl hesaplanır?};
+  \node[altbaslik] at (b.south west) {iki bileşen, tek not};
+
+  \node[kutu=36mm, below=16mm of b.south west, anchor=north west] (rap1) {\kb{RAP1}\\ara proje\\gösterimi};
+  \node[font=\sffamily\Large\bfseries, text=soluk, right=8mm of rap1] (plus) {+};
+  \node[uyarikutu=30mm, right=8mm of plus] (quiz1) {\kb{Quiz-1}\\8. hafta};
+  \node[koyukutu=26mm, right=28mm of quiz1] (vize) {\kb{VİZE}};
+  \draw[ok, draw=soluk] (quiz1.east) -- (vize.west);
+
+  \node[etiket, font=\sffamily\bfseries\small, text=koyu, below=3mm of rap1] {$\times$ 0,6};
+  \node[etiket, font=\sffamily\bfseries\small, text=uyari, below=3mm of quiz1] {$\times$ 0,4};
+
+  \node[dip, text width=170mm, anchor=north west] at ($(rap1.west |- rap1.south)+(0,-13mm)$) {%
+    Başarı notu = 0,4 · Vize + 0,6 · Final. Final de aynı biçimde RAP2 ve Quiz-2'den gelir.};
+\end{tikzpicture}
+\end{document}

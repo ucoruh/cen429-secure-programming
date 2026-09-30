@@ -1,0 +1,22 @@
+% Hafta 12 — Raporlama: aynı bulgu, üç farklı okuyucu
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-12-raporlama.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=5mm and 3mm]
+  \node[baslik] (b) at (0,0) {Raporlama: aynı bulgu, üç farklı okuyucu};
+  \node[altbaslik] at (b.south west) {rapor bir liste değil, bir karar belgesidir};
+
+  \node[kutu=52mm, below=16mm of b.south west, anchor=north west, xshift=2mm] (r1) {\kb{Yönetici özeti}};
+  \node[etiket, align=left, text width=95mm, right=3mm of r1] {kaç bulgu, en yüksek risk, karar gerektiren tek cümle};
+  \node[morkutu=52mm, below=of r1] (r2) {\kb{Teknik bulgu kayıtları}};
+  \node[etiket, align=left, text width=95mm, right=3mm of r2] {kanıt, yeniden üretim adımları, CVSS + saldırı potansiyeli};
+  \node[iyikutu=52mm, below=of r2] (r3) {\kb{Düzeltme önerileri}};
+  \node[etiket, align=left, text width=95mm, right=3mm of r3] {somut, önceliklendirilmiş, sahibi belli};
+  \node[uyarikutu=52mm, below=of r3] (r4) {\kb{Kalan risk}};
+  \node[etiket, align=left, text width=95mm, right=3mm of r4] {kabul edilen riskler ve gerekçesi --- imzalanır};
+
+  \node[dip, text width=160mm, below=9mm of r4, anchor=north]
+    {Kanıtı olmayan bulgu iddiadır; sahibi olmayan öneri hiç yapılmaz.};
+\end{tikzpicture}
+\end{document}

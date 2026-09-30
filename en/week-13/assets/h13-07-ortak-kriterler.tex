@@ -1,0 +1,28 @@
+% Hafta 13 — Ortak Kriterler kavramları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-07-ortak-kriterler.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {Ortak Kriterler kavramları};
+  \node[altbaslik] (alt) at (b.south west) {EAL4+ her zaman 'daha güvenli' demek DEĞİLDİR};
+
+  \node[morkutu=48mm, below=8mm of alt.south west, anchor=north west] (n1) {\kb{PP (Protection Profile)}};
+  \node[etiket, right=6mm of n1, anchor=west, align=left, text width=80mm] {ürün SINIFI için standart gereksinim kümesi};
+
+  \node[koyukutu=48mm, below=4mm of n1.south west, anchor=north west] (n2) {\kb{ST (Security Target)}};
+  \node[etiket, right=6mm of n2, anchor=west, align=left, text width=80mm] {BELİRLİ ürünün güvenlik hedefi};
+
+  \node[kutu=48mm, below=4mm of n2.south west, anchor=north west] (n3) {\kb{SFR}};
+  \node[etiket, right=6mm of n3, anchor=west, align=left, text width=80mm] {ürün NE yapacak (fonksiyonel)};
+
+  \node[kutu=48mm, below=4mm of n3.south west, anchor=north west] (n4) {\kb{SAR}};
+  \node[etiket, right=6mm of n4, anchor=west, align=left, text width=80mm] {buna NE KADAR güvenilecek (güvence)};
+
+  \node[uyarikutu=48mm, below=4mm of n4.south west, anchor=north west] (n5) {\kb{EAL}};
+  \node[etiket, right=6mm of n5, anchor=west, align=left, text width=80mm] {güvence DERİNLİĞİ -- güvenlik miktarı değil};
+
+  \node[kotudip, text width=145mm, below=8mm of n5.south west, anchor=north west] {%
+    Kapsam (ST/TOE) darsa yüksek EAL az şey kapsar. Kapsamı bilmeden EAL karşılaştırılmaz.};
+\end{tikzpicture}
+\end{document}

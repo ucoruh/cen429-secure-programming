@@ -1,0 +1,30 @@
+% Hafta 9 — Çeşitlendirme: tek kırık her yeri açmasın
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-07-cesitlendirme.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 14mm]
+  \node[baslik] (b) at (0,0) {Çeşitlendirme: tek kırık her yeri açmasın};
+  \node[altbaslik] at (b.south west) {aynı kaynak, farklı tohum, farklı ikili};
+
+  \node[kutu=30mm, below=16mm of b.south west, anchor=north west, yshift=-18mm] (kaynak) {\kb{temiz.c}\\tek kaynak};
+
+  \node[kutu=26mm, draw=acik, fill=acik!35, above right=6mm and 26mm of kaynak] (ta) {\kb{tohum A}};
+  \node[kutu=26mm, draw=ana!70!acik, fill=ana!30!acik, right=26mm of kaynak] (tb) {\kb{tohum B}};
+  \node[kutu=26mm, draw=ana, fill=ana, text=white, below right=6mm and 26mm of kaynak] (tc) {\kb{tohum C}};
+
+  \node[iyikutu=32mm] (ia) at ($(ta.east)+(26mm,0)$) {\kb{ikili A}\\yapı farklı};
+  \node[iyikutu=32mm] (ib) at ($(tb.east)+(26mm,0)$) {\kb{ikili B}\\yapı farklı};
+  \node[iyikutu=32mm] (ic) at ($(tc.east)+(26mm,0)$) {\kb{ikili C}\\yapı farklı};
+
+  \draw[ok, draw=soluk] (kaynak.east) -- (ta.west);
+  \draw[ok, draw=soluk] (kaynak.east) -- (tb.west);
+  \draw[ok, draw=soluk] (kaynak.east) -- (tc.west);
+  \draw[ok, draw=soluk] (ta.east) -- (ia.west);
+  \draw[ok, draw=soluk] (tb.east) -- (ib.west);
+  \draw[ok, draw=soluk] (tc.east) -- (ic.west);
+
+  \node[dip, text width=170mm, below=10mm of tc.south -| kaynak, anchor=north west] {%
+    Davranış birebir aynı; bir kopyaya yazılan yama diğerlerinde ÇALIŞMAZ.};
+\end{tikzpicture}
+\end{document}

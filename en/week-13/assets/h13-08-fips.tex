@@ -1,0 +1,25 @@
+% Hafta 13 — FIPS 140-3 güvence düzeyleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-08-fips.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 6mm]
+  \node[baslik] (b) at (0,0) {FIPS 140-3 güvence düzeyleri};
+  \node[altbaslik] (alt) at (b.south west) {yukarı çıktıkça fiziksel koruma beklentisi artar};
+
+  \node[koyukutu=32mm, below=8mm of alt.south west, anchor=north west] (n1) {\kb{Düzey 4}};
+  \node[etiket, right=6mm of n1, anchor=west, align=left, text width=95mm] {aktif savunma; çevresel saldırılara direnç};
+
+  \node[kutu=32mm, below=4mm of n1.south west, anchor=north west] (n2) {\kb{Düzey 3}};
+  \node[etiket, right=6mm of n2, anchor=west, align=left, text width=95mm] {kurcalamaya direnç + yanıt; kimlik tabanlı doğrulama};
+
+  \node[kutu=32mm, below=4mm of n2.south west, anchor=north west] (n3) {\kb{Düzey 2}};
+  \node[etiket, right=6mm of n3, anchor=west, align=left, text width=95mm] {kurcalama İZİ + rol tabanlı kimlik doğrulama};
+
+  \node[uyarikutu=32mm, below=4mm of n3.south west, anchor=north west] (n4) {\kb{Düzey 1}};
+  \node[etiket, right=6mm of n4, anchor=west, align=left, text width=95mm] {temel: onaylı algoritmalar};
+
+  \node[kotudip, text width=150mm, below=8mm of n4.south west, anchor=north west] {%
+    'FIPS doğrulanmış kütüphane kullanıyoruz' demek yetmez: doğru kip ve yapılandırma şart.};
+\end{tikzpicture}
+\end{document}

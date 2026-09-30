@@ -1,0 +1,24 @@
+% Hafta 3 — Verinin üç hâli (sunucu · aktarımda · beklemede · kullanımda)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-01-verinin-uc-hali.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 12mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Verinin üç hâli};
+  \node[altbaslik] at (b.south west) {sunucudan çıkıp kullanıcının GÜVENİLMEZ cihazına gider};
+
+  % Akış: sunucu -> aktarımda -> beklemede -> kullanımda
+  \node[iyikutu=32mm] (sunucu) at (2,-2.2) {\kb{SUNUCU}\\güvenilir\\veri kaynağı};
+  \node[kutu=32mm, right=of sunucu] (aktarim) {\kb{AKTARIMDA}\\ağ üzerinde\\TLS 1.3 + mesaj AEAD};
+  \node[uyarikutu=32mm, right=of aktarim] (bekleme) {\kb{BEKLEMEDE}\\cihazda şifreli\\dosya / veritabanı};
+  \node[kotukutu=32mm, right=of bekleme] (kullanim) {\kb{KULLANIMDA}\\RAM'de açık\\kısa ömür + güvenli silme};
+  \draw[ok] (sunucu.east) -- (aktarim.west);
+  \draw[ok] (aktarim.east) -- (bekleme.west);
+  \draw[ok] (bekleme.east) -- (kullanim.west);
+
+  % Dip şeridi
+  \node[dip, text width=160mm, below=10mm of kullanim.south -| aktarim, anchor=north] {%
+    Her hâlin tehdidi ve savunması farklıdır; üçü birden korunmazsa zincir kopar.};
+\end{tikzpicture}
+\end{document}

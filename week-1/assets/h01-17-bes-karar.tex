@@ -1,0 +1,24 @@
+% Hafta 1 — Neden ``güvenli programlama''? Beş karar, kodun içinde
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-17-bes-karar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 3mm]
+  \node[baslik] (b) at (0,0) {Neden ``güvenli programlama''? Beş karar, kodun içinde};
+  \node[altbaslik] (alt) at (b.south west) {güvenlik duvarı hatalı yazılmış programı kurtaramaz};
+
+  \node[kutu=55mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (k1) {\kb{Girdiye güvenme}};
+  \node[etiket, align=left, text width=90mm, right=3mm of k1] {uzunluk, tür, aralık, izin verilen karakterler --- her seferinde};
+  \node[kutu=55mm, below=of k1] (k2) {\kb{Sırrı kısa tut}};
+  \node[etiket, align=left, text width=90mm, right=3mm of k2] {işin bitince güvenle sil; bellekte bekletme};
+  \node[kutu=55mm, below=of k2] (k3) {\kb{Ortama güvenme}};
+  \node[etiket, align=left, text width=90mm, right=3mm of k3] {ortam değişkenleri, dosya izinleri, çağrılan programlar};
+  \node[iyikutu=55mm, below=of k3] (k4) {\kb{Güvenli tarafta kal}};
+  \node[etiket, align=left, text width=90mm, right=3mm of k4] {hata olursa reddet, kapat, sızdırma};
+  \node[iyikutu=55mm, below=of k4] (k5) {\kb{Korumaları aç ve sına}};
+  \node[etiket, align=left, text width=90mm, right=3mm of k5] {derleyici bayrakları, sanitizer, fuzzing};
+
+  \node[dip, text width=155mm, below=9mm of k5, anchor=north]
+    {Saldırgan izin verilen kapıdan girer: programın kendisinden.};
+\end{tikzpicture}
+\end{document}

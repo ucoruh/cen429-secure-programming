@@ -1,0 +1,37 @@
+% Hafta 1 — Bu haftanın araç kutusu
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-23-arac-kutusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 3mm]
+  \node[baslik] (b) at (0,0) {Bu haftanın araç kutusu};
+  \node[altbaslik] (alt) at (b.south west) {hangi araç hangi hatayı yakalar};
+
+  \node[iyikutu=48mm, below=8mm of alt.south west, anchor=north west, xshift=2mm] (r1) {\kod{-Wall -Wextra}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r1] {şüpheli kod uyarısı};
+  \node[etiket, align=right, text width=24mm, right=3mm of r1, xshift=64mm] {derleme};
+
+  \node[iyikutu=48mm, below=of r1] (r2) {\kod{-Wsign-conversion}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r2] {işaretli/işaretsiz dönüşüm};
+  \node[etiket, align=right, text width=24mm, right=3mm of r2, xshift=64mm] {derleme};
+
+  \node[kutu=48mm, below=of r2] (r3) {\kod{-D\_FORTIFY\_SOURCE=2}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r3] {boyutu bilinen tampon denetimi};
+  \node[etiket, align=right, text width=24mm, right=3mm of r3, xshift=64mm] {çalışma};
+
+  \node[kutu=48mm, below=of r3] (r4) {\kod{-fsanitize=address}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r4] {sınır dışı, use-after-free};
+  \node[etiket, align=right, text width=24mm, right=3mm of r4, xshift=64mm] {çalışma};
+
+  \node[morkutu=48mm, below=of r4] (r5) {\kod{gdb / gcore}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r5] {bellek dökümü alma};
+  \node[etiket, align=right, text width=24mm, right=3mm of r5, xshift=64mm] {inceleme};
+
+  \node[morkutu=48mm, below=of r5] (r6) {\kod{strings / objdump -d}};
+  \node[etiket, align=left, text width=60mm, right=3mm of r6] {ikilideki metin ve kod};
+  \node[etiket, align=right, text width=24mm, right=3mm of r6, xshift=64mm] {inceleme};
+
+  \node[dip, text width=160mm, below=9mm of r6, anchor=north]
+    {Derleme zamanı ucuz, çalışma zamanı kesin, inceleme araçları saldırganın da elinde.};
+\end{tikzpicture}
+\end{document}

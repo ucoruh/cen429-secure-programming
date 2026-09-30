@@ -1,0 +1,24 @@
+% Hafta 5 — SQL enjeksiyonu adım adım
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-03-sql-enjeksiyon.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {SQL enjeksiyonu adım adım};
+  \node[altbaslik] at (b.south west) {girdi tırnağı kapatıp kendi mantığını ekliyor};
+  \node[kotukutu=32mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{Girdi}\\\kod{' OR '1'='1}};
+  \node[kotukutu=38mm, right=9mm of n1] (n2)
+    {\kb{Dize birleştirme}\\\kod{"...WHERE ad='"+girdi}};
+  \node[uyarikutu=38mm, right=9mm of n2] (n3)
+    {\kb{Motora giden SQL}\\\kod{WHERE ad='' OR '1'='1'}};
+  \node[kotukutu=34mm, right=9mm of n3] (n4)
+    {\kb{Koşul HEP doğru}\\TÜM satırlar döner};
+  \draw[kotuok] (n1.east) -- (n2.west);
+  \draw[kotuok] (n2.east) -- (n3.west);
+  \draw[kotuok] (n3.east) -- (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[kotudip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Parametreli sorguda motor komutu ÖNCE derler; girdi artık mantık değiştiremez.};
+\end{tikzpicture}
+\end{document}

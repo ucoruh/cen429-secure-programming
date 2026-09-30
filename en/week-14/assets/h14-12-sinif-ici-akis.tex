@@ -1,0 +1,26 @@
+% Hafta 14 — Sınıf içi akış: gizle, karşılaştır, ölç, çeşitlendir
+% Derleme: py -3.12 tools/latex/derle.py docs/week-14/assets/h14-12-sinif-ici-akis.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=20mm and 22mm]
+  \node[baslik] (b) at (0,0) {Sınıf içi akış: gizle, karşılaştır, ölç, çeşitlendir};
+  \node[altbaslik] at (b.south west) {ölçmediğiniz korumayı savunamazsınız};
+
+  \node[kutu=42mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{Gizle}\\\kod{tigress-hatti.sh}\\çalıştırılır};
+  \node[iyikutu=42mm, right=of n1] (n2) {\kb{Davranışı doğrula}\\çıktı değişmedi mi?\\testler geçti mi?};
+  \node[morkutu=42mm, right=of n2] (n3) {\kb{CFG karşılaştır}\\önce / sonra\\düğüm + kenar};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+
+  \node[uyarikutu=42mm, below=20mm of n1.south west, anchor=north west] (n4) {\kb{Maliyet ölç}\\boyut, süre,\\komut sayısı};
+  \node[kutu=42mm, right=of n4] (n5) {\kb{Tohum değiştir}\\ikinci ikiliyi üret};
+  \node[iyikutu=42mm, right=of n5] (n6) {\kb{Farkı kaydet}\\S9 / S15'e yaz};
+  \draw[ok, draw=soluk] (n4.east) -- (n5.west);
+  \draw[ok, draw=soluk] (n5.east) -- (n6.west);
+  \draw[ok, draw=soluk] (n3.south) -- ++(0,-6mm) -| (n4.north);
+
+  \node[dip, text width=170mm, below=8mm of n6.south -| n5, anchor=north] {%
+    Davranış doğrulaması atlanırsa gizleme sessizce programı bozar --- en sık yapılan hata budur.};
+\end{tikzpicture}
+\end{document}

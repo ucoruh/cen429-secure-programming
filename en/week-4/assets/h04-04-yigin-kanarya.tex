@@ -1,0 +1,34 @@
+% Hafta 4 — Yığın taşması ve kanarya
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-04-yigin-kanarya.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=3mm and 3mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Yığın taşması ve kanarya};
+  \node[altbaslik] at (b.south west) {taşma tampondan dönüş adresine doğru yazar};
+
+  % Yığın: en üstte tampon, en altta dönüş adresi
+  \node[kutu=46mm, below=16mm of b.south west, anchor=north west] (buf) {char buf[8]\\(yerel tampon)};
+  \node[uyarikutu=46mm, below=of buf] (kan) {\kb{KANARYA}\\(rastgele nöbetçi)};
+  \node[morkutu=46mm, below=of kan] (rbp) {saved rbp};
+  \node[kotukutu=46mm, below=of rbp] (don) {\kb{DÖNÜŞ ADRESİ}};
+
+  % Taşan yazma oku: yığının solunda, aşağıdan yukarıya kalın kırmızı ok
+  \coordinate (okalt) at ($(don.south west)+(-9mm,2mm)$);
+  \coordinate (oküst) at ($(buf.north west)+(-9mm,-2mm)$);
+  \draw[kotuok, line width=2.5pt] (okalt) -- (oküst);
+  \node[text=kotu, font=\sffamily\bfseries\footnotesize, fill=white, inner sep=1pt, rotate=90]
+    at ($(okalt)!0.5!(oküst)$) {taşan yazma};
+
+  % Sağdaki açıklama metinleri
+  \node[align=left, text width=48mm, right=14mm of kan.north east, anchor=north west] (not1)
+    {Dönüş adresine ulaşmak için önce KANARYA ezilmek zorunda.};
+  \node[align=left, text width=48mm, text=iyi, font=\sffamily\bfseries, below=6mm of not1.south west, anchor=north west] (not2)
+    {Dönüşte kanarya bozuksa program DURUR.};
+
+  % Dip şeridi
+  \node[dip, text width=150mm, below=10mm of don.south -| buf, anchor=north] {%
+    Durdurmaz: hedefli yazma · öbek (heap) taşması · bilgi sızıntısı.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,25 @@
+% Hafta 4 — Kod sağlamlaştırmanın üç katmanı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-05-uc-katman.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Kod sağlamlaştırmanın üç katmanı};
+  \node[altbaslik] at (b.south west) {yalnız en alttaki katman hatayı yok eder};
+
+  \node[uyarikutu=140mm, below=14mm of b.south west, anchor=north west] (k3)
+    {\kb{3 · Kod gizleme} \textperiodcentered{} anlamayı zorlaştırır --- hatayı SİLMEZ};
+  \node[kutu=140mm, below=of k3] (k2)
+    {\kb{2 · Derleyici / OS korumaları} \textperiodcentered{} sömürüyü zorlaştırır --- hatayı SİLMEZ};
+  \node[iyikutu=140mm, below=of k2] (k1)
+    {\kb{1 · Güvenli kodlama} \textperiodcentered{} hatayı GERÇEKTEN ortadan kaldırır};
+
+  \draw[ok] (k3) -- (k2);
+  \draw[ok] (k2) -- (k1);
+
+  % Dip şeridi
+  \node[dip, text width=140mm, below=8mm of k1.south, anchor=north] {%
+    Sıra: önce doğru yaz, sonra derleyiciyle sertleştir, en son gizle.};
+\end{tikzpicture}
+\end{document}

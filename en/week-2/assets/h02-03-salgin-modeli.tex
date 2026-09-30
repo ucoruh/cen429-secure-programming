@@ -1,0 +1,23 @@
+% Hafta 2 — Solucan salgını: SI modeli
+% Derleme: py -3.12 tools/latex/derle.py docs/week-2/assets/h02-03-salgin-modeli.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Solucan salgını: SI modeli};
+  \node[altbaslik] at (b.south west) {yayılma üstel --- insan müdahalesi yetişemez};
+
+  \node[kutu=42mm, minimum height=22mm, below=13mm of b.south west, anchor=north west, xshift=8mm] (acilis)
+    {\kb{1 $\cdot$ AÇILIŞ}\\birkaç makine\\sessiz, fark edilmez};
+  \node[kotukutu=42mm, minimum height=22mm, right=of acilis] (patlama)
+    {\kb{2 $\cdot$ PATLAMA}\\ikiye katlanma\\saniyeler--dakikalar};
+  \node[uyarikutu=42mm, minimum height=22mm, right=of patlama] (doygunluk)
+    {\kb{3 $\cdot$ DOYGUNLUK}\\savunmasız makine\\kalmadı};
+
+  \draw[ok, draw=soluk] (acilis) -- (patlama);
+  \draw[ok, draw=soluk] (patlama) -- (doygunluk);
+
+  \node[kotudip, text width=155mm, below=10mm of patlama.south, anchor=north]
+    {Morris (1988) ve Slammer (2003): dakikalar içinde internetin büyük kısmı etkilendi.};
+\end{tikzpicture}
+\end{document}

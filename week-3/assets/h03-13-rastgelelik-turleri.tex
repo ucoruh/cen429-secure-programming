@@ -1,0 +1,25 @@
+% Hafta 3 — Üç tür "rastgele": hangisi nerede kullanılır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-3/assets/h03-13-rastgelelik-turleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=9mm and 6mm]
+  \node[baslik] (b) at (0,0) {Üç tür ``rastgele'': hangisi nerede kullanılır?};
+  \node[altbaslik, text width=170mm] at (b.south west) {anahtar tahmin edilebilirse algoritmanın gücü anlamsızdır};
+
+  \node[kotukutu=48mm, below=14mm of b.south west, anchor=north west] (l1) {\kb{Sözde rastgele (PRNG)}};
+  \node[etiket, align=left, text width=110mm, right=6mm of l1]
+    {\kod{rand()}, \kod{Math.random()} --- hızlı, tahmin edilebilir; ASLA güvenlikte};
+
+  \node[iyikutu=48mm, below=of l1] (l2) {\kb{Kriptografik (CSPRNG)}};
+  \node[etiket, align=left, text width=110mm, right=6mm of l2]
+    {\kod{getrandom()}, BCryptGenRandom --- anahtar, IV, nonce, tuz için};
+
+  \node[kutu=48mm, below=of l2] (l3) {\kb{Gerçek rastgelelik (TRNG)}};
+  \node[etiket, align=left, text width=110mm, right=6mm of l3]
+    {donanım gürültüsü --- işletim sisteminin havuzunu besler};
+
+  \node[dip, text width=165mm, below=9mm of l3, anchor=north] {%
+    Kural: güvenlikle ilgili her değer CSPRNG'den gelir; kendi üretecinizi yazmayın.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,23 @@
+% Hafta 15 — Final gösteriminin dört adımı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-15/assets/h15-03-gosterim.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 22mm]
+  \node[baslik] (b) at (0,0) {Final gösteriminin dört adımı};
+  \node[altbaslik] at (b.south west) {değerlendirici bu dördünü arar};
+
+  \node[iyikutu=38mm, minimum height=20mm, below=13mm of b.south west, anchor=north west, xshift=6mm] (s1)
+    {\kb{Ürünü göster}\\çalışan demo};
+  \node[kutu=38mm, minimum height=20mm, right=of s1] (s2) {\kb{Kararı gerekçelendir}\\neden bu koruma?};
+  \node[koyukutu=38mm, minimum height=20mm, right=of s2] (s3) {\kb{Ölçümü sun}\\önce/sonra sayılar};
+  \node[uyarikutu=38mm, minimum height=20mm, right=of s3] (s4) {\kb{Sınırı söyle}\\kalan risk};
+
+  \draw[ok, draw=soluk] (s1) -- (s2);
+  \draw[ok, draw=soluk] (s2) -- (s3);
+  \draw[ok, draw=soluk] (s3) -- (s4);
+
+  \node[dip, text width=185mm, below=10mm of s2.south, anchor=north]
+    {Sınırını dürüstçe söyleyen takım, her şeyi `güvenli' diyen takımdan yüksek alır.};
+\end{tikzpicture}
+\end{document}

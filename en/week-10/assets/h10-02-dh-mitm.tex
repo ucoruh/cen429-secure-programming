@@ -1,0 +1,29 @@
+% Hafta 10 — Kimliksiz Diffie–Hellman: araya girme
+% Derleme: py -3.12 tools/latex/derle.py docs/week-10/assets/h10-02-dh-mitm.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Kimliksiz Diffie--Hellman: araya girme};
+  \node[altbaslik, text width=170mm] at (b.south west) {DH kiminle anlaştığınızı SÖYLEMEZ};
+
+  \node[aktor] (a1) at (15mm,-16mm) {İSTEMCİ};
+  \node[aktor] (a2) at (90mm,-16mm) {ARAYA GİREN};
+  \node[aktor] (a3) at (165mm,-16mm) {SUNUCU};
+  \draw[yasam] (a1.south) -- ++(0,-107mm);
+  \draw[yasam] (a2.south) -- ++(0,-107mm);
+  \draw[yasam] (a3.south) -- ++(0,-107mm);
+
+  \draw[ok, draw=ana] (15mm,-32mm) -- node[oketiket, above=1pt] {A'nın açık değeri} (90mm,-32mm);
+  \draw[ok, draw=ana] (90mm,-50mm) -- node[oketiket, above=1pt] {M'nin açık değeri (A gibi davranır)} (165mm,-50mm);
+  \draw[ok, draw=iyi, dashed] (165mm,-68mm) -- node[oketiket, above=1pt] {B'nin açık değeri} (90mm,-68mm);
+  \draw[ok, draw=iyi, dashed] (90mm,-86mm) -- node[oketiket, above=1pt] {M'nin açık değeri (B gibi davranır)} (15mm,-86mm);
+
+  \node[notkutusu, text width=58mm, align=center] at (52mm,-102mm) {İstemci ile araya giren arasında SIR 1};
+  \node[notkutusu, text width=58mm, align=center] at (127mm,-102mm) {Araya giren ile sunucu arasında SIR 2};
+  \node[notkutusu, text width=150mm, align=center] at (90mm,-119mm) {Her iki taraf da ``güvenli konuştuk'' sanıyor --- ortadaki her şeyi okuyor};
+
+  \node[dip, text width=180mm, anchor=north west] at (0mm,-142mm) {%
+    Çözüm: DH'yi kimlik kanıtıyla bağla (sertifika / imzalı DH) --- TLS 1.3 bunu yapar.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,24 @@
+% Hafta 6 — Kök/ayrıcalıklı ortam: göstergeden karara
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-14-kok-gosterge-karar.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Kök/ayrıcalıklı ortam: göstergeden karara};
+  \node[altbaslik] at (b.south west) {tek göstergeyle engellemek meşru kullanıcıyı vurur};
+  \node[kutu=34mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{Gösterge topla}\\root izleri, imza,\\paket adı};
+  \node[kutu=34mm, right=9mm of n1] (n2)
+    {\kb{Puana çevir}\\her gösterge ağırlıklı\\--- tek başına karar YOK};
+  \node[uyarikutu=36mm, right=9mm of n2] (n3)
+    {\kb{Eşikle karşılaştır}\\ürünün risk iştahına\\göre ayarlanır};
+  \node[iyikutu=40mm, right=9mm of n3] (n4)
+    {\kb{Derecelendirilmiş tepki}\\kısıtla · sunucuya bildir\\· sessizce sınırla};
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[ok] (n2.east) -- (n3.west);
+  \draw[iyiok] (n3.east) -- (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Root'lu cihaz suçlu değildir; yalnızca güvence düzeyi düşüktür. Tepkiyi ona göre ölçekleyin.};
+\end{tikzpicture}
+\end{document}

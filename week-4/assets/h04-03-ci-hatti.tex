@@ -1,0 +1,36 @@
+% Hafta 4 — Güvenli derleme hattı (CI)
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-03-ci-hatti.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 8mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Güvenli derleme hattı (CI)};
+  \node[altbaslik] at (b.south west) {her adım geçmeden bir sonrakine geçilmez};
+
+  % 1. sıra: adım 1-4
+  \node[kutu=32mm, below=14mm of b.south west, anchor=north west] (a1) {\kb{1 · Değişiklik}\\pull request};
+  \node[kutu=32mm, right=of a1] (a2) {\kb{2 · Derle}\\uyarı = hata};
+  \node[kutu=32mm, right=of a2] (a3) {\kb{3 · Statik analiz}\\clang-tidy, cppcheck};
+  \node[iyikutu=32mm, right=of a3] (a4) {\kb{4 · Birim testleri}\\ASan + UBSan};
+
+  \draw[ok] (a1) -- (a2);
+  \draw[ok] (a2) -- (a3);
+  \draw[ok] (a3) -- (a4);
+
+  % 2. sıra: adım 5-7 (a1'in altından başlar)
+  \node[iyikutu=32mm, below=16mm of a1] (a5) {\kb{5 · Kısa fuzzing}\\hedef başına 1--5 dk};
+  \node[morkutu=32mm, right=of a5] (a6) {\kb{6 · Sürüm derlemesi}\\korumalar açık};
+  \node[morkutu=32mm, right=of a6] (a7) {\kb{7 · İkili denetimi}\\checksec / imza};
+
+  \draw[ok] (a5) -- (a6);
+  \draw[ok] (a6) -- (a7);
+
+  % Satır sonu bağlantısı: 4'ten 5'e L-şekilli ok
+  \draw[ok] (a4.south) -- ++(0,-8mm) -| (a5.north);
+
+  % Dip şeridi
+  \node[dip, text width=165mm, below=8mm of a5.south -| a1, anchor=north] {%
+    Ucuzdan pahalıya: erken adımlar kolay hataları eler, pahalı adım yalnız kalanlara harcanır.};
+\end{tikzpicture}
+\end{document}

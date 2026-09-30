@@ -1,0 +1,20 @@
+% Hafta 5 — Yönetilen dil neyi çözer, neyi çözmez?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-02-yonetilen-dil.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Yönetilen dil neyi çözer, neyi çözmez?};
+  \node[altbaslik] at (b.south west) {Java/Kotlin/C\# çöp toplayıcı + sınır denetimi};
+  \node[iyikutu=70mm, anchor=north west] (sol) at (0,-2.0)
+    {\kb{ÇÖZER (dil düzeyinde)}\\[2mm]
+     tampon taşması\\use-after-free\\çift serbest bırakma\\ilklendirilmemiş değişken\\[3mm]
+     $\rightarrow$ bellek güvenliği};
+  \node[kotukutu=70mm, right=14mm of sol] (sag)
+    {\kb{ÇÖZMEZ}\\[2mm]
+     enjeksiyon (SQL, komut, XML)\\güvensiz deserialization\\koda gömülü sırlar\\zafiyetli bağımlılıklar\\mantık/yetki hataları};
+  \node[fit=(sol)(sag), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Dil bir hata SINIFINI kaldırır; kalan sınıflar için hâlâ siz sorumlusunuz.};
+\end{tikzpicture}
+\end{document}

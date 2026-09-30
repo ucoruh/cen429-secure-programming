@@ -1,0 +1,45 @@
+% Hafta 1 — Parola kasası: bileşenler ve arayüzler
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-07-kasa-mimari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 26mm]
+  \node[baslik] (b) at (0,0) {Parola kasası: bileşenler ve arayüzler};
+  \node[altbaslik] (alt) at (b.south west) {her ok bir arayüz --- her arayüz doğrulanır};
+
+  \node[notrkutu=26mm, below=16mm of alt.south west, anchor=north west, xshift=2mm] (kullanici) {Kullanıcı};
+
+  \node[kutu=30mm, right=of kullanici] (arayuz) {Arayüz};
+  \node[kutu=30mm, below=24mm of arayuz] (cekirdek) {Çekirdek\\kütüphane};
+  \node[notrkutu=26mm, right=24mm of arayuz] (kasa) {Kasa dosyası};
+  \node[notrkutu=26mm, right=24mm of cekirdek] (pano) {Pano};
+
+  \draw[ok, draw=soluk] (kullanici.east) -- node[oketiket, above=3pt]{A: klavye} (arayuz.west);
+  \draw[ok, draw=soluk] (arayuz.south) -- node[oketiket, right=3pt]{B: çağrı} (cekirdek.north);
+  \draw[ok, draw=soluk] (arayuz.east) -- node[oketiket, above=3pt]{C: dosya} (kasa.west);
+  \draw[ok, draw=soluk] (cekirdek.east) -- node[oketiket, below=3pt]{D: pano} (pano.west);
+
+  \begin{scope}[on background layer]
+    \node[draw=ana, thick, rounded corners=4pt, fill=cokacik, fit=(arayuz)(cekirdek)(kasa)(pano), inner sep=6mm] (frame_bilg) {};
+  \end{scope}
+  \node[font=\sffamily\bfseries, text=koyu, above=1mm of frame_bilg.north] {Kullanıcının bilgisayarı};
+
+  \node[kutu=34mm, fill=white, draw=kotu, right=44mm of kasa] (yedek) {Yedekleme sunucusu};
+  \node[kutu=34mm, fill=white, draw=kotu, below=24mm of yedek] (guncel) {Güncelleme sunucusu};
+
+  \draw[ok, draw=kotu] (kasa.east) -- node[oketiket, above=3pt, text=kotu]{E: TLS} (yedek.west);
+  \coordinate (fx) at ($(frame_bilg.west)+(-8mm,0)$);
+  \coordinate (fy) at ($(frame_bilg.south)+(0,-4mm)$);
+  \draw[ok, draw=kotu]
+    (arayuz.west) -- (fx |- arayuz.west) -- (fx |- fy) -- (guncel.west |- fy) -- (guncel.west);
+  \node[oketiket, text=kotu] at ($(fx |- fy)!0.5!(guncel.west |- fy)$) {F: TLS + imza};
+
+  \begin{scope}[on background layer]
+    \node[draw=kotu, thick, rounded corners=4pt, fill=kotubg, fit=(yedek)(guncel), inner sep=6mm] (frame_int) {};
+  \end{scope}
+  \node[font=\sffamily\bfseries, text=kotu, above=1mm of frame_int.north] {İnternet --- GÜVENİLMEZ};
+
+  \node[dip, text width=170mm, below=10mm of frame_int.south -| frame_bilg, anchor=north]
+    {Güvenilmez tarafa giden her ok (E, F) kimlik doğrulama ve bütünlük ister.};
+\end{tikzpicture}
+\end{document}

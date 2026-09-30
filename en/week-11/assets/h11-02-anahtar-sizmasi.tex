@@ -1,0 +1,19 @@
+% Hafta 11 — Naif tablo anahtarı nasıl sızdırır?
+% Derleme: py -3.12 tools/latex/derle.py docs/week-11/assets/h11-02-anahtar-sizmasi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Naif tablo anahtarı nasıl sızdırır?};
+  \node[altbaslik, text width=140mm] at (b.south west) {T[x] = S-box[x $\oplus$ k] --- tek girdi yeter, 256 deneme bile gerekmez};
+
+  \node[kotukutu=44mm, below=16mm of b.south west, anchor=north west] (a1) {\kb{1 · Tabloyu oku}\\T[0x00] = 0xEB};
+  \node[uyarikutu=44mm, right=of a1] (a2) {\kb{2 · S-box'ı ters çevir}\\$S^{-1}$[0xEB] = 0x3C};
+  \node[kotukutu=44mm, right=of a2] (a3) {\kb{3 · Anahtarı çöz}\\k = 0x00 $\oplus$ 0x3C\\= 0x3C};
+  \draw[ok, draw=soluk] (a1.east) -- (a2.west);
+  \draw[ok, draw=soluk] (a2.east) -- (a3.west);
+
+  \node[kotudip, text width=150mm, below=8mm of a3.south -| a2, anchor=north] {%
+    ``Anahtar kodda görünmüyor'' demek, ``anahtar korunuyor'' demek DEĞİLDİR.};
+\end{tikzpicture}
+\end{document}

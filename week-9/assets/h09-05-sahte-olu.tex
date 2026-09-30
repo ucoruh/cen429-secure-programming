@@ -1,0 +1,17 @@
+% Hafta 9 — Sahte işlem != ölü dal
+% Derleme: py -3.12 tools/latex/derle.py docs/week-9/assets/h09-05-sahte-olu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 10mm]
+  \node[baslik] (b) at (0,0) {Sahte işlem $\neq$ ölü dal};
+  \node[altbaslik, text width=170mm] at (b.south west) {ikisi de sahte iş üretir ama farklı biçimde};
+
+  \node[uyarikutu=78mm, below=10mm of b.south west, anchor=north west] (sol) {\kb{SAHTE İŞLEM (bogus op)}\\ÇALIŞIR\\sonucu kullanılmaz\\[2mm]analizciyi ve aracı yorar\\maliyet: hafif yavaşlama};
+  \node[morkutu=78mm, right=10mm of sol] (sag) {\kb{ÖLÜ DAL (dead branch)}\\HİÇ ÇALIŞMAZ\\opak yüklemle korunur\\[2mm]analizde gerçek görünür\\maliyet: boyut};
+  \draw[draw=cizgi, dashed] ($(sol.north east)!0.5!(sag.north west)$) -- ($(sol.south east)!0.5!(sag.south west)$);
+
+  \node[dip, text width=170mm, below=10mm of sag.south -| sol, anchor=north west] {%
+    Sınav sorusu: hangisi çalışır? $\rightarrow$ Sahte işlem çalışır, ölü dal çalışmaz.};
+\end{tikzpicture}
+\end{document}

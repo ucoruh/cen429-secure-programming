@@ -1,0 +1,23 @@
+% Hafta 16 — Quiz-2'de beklenen cevap kalıbı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-16/assets/h16-03-cevap-kalibi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 22mm]
+  \node[baslik] (b) at (0,0) {Quiz-2'de beklenen cevap kalıbı};
+  \node[altbaslik] at (b.south west) {dört parçayı da söyleyen cevap tam puan alır};
+
+  \node[kutu=38mm, minimum height=20mm, below=13mm of b.south west, anchor=north west, xshift=6mm] (s1)
+    {\kb{Kuralı hatırla}\\ne korur / korumaz};
+  \node[uyarikutu=38mm, minimum height=20mm, right=of s1] (s2) {\kb{Maliyeti söyle}\\boyut, hız, karmaşıklık};
+  \node[kotukutu=38mm, minimum height=20mm, right=of s2] (s3) {\kb{Sınırı söyle}\\neyi yakalamaz};
+  \node[iyikutu=38mm, minimum height=20mm, right=of s3] (s4) {\kb{Kanıtı göster}\\ölçüm / test};
+
+  \draw[ok, draw=soluk] (s1) -- (s2);
+  \draw[ok, draw=soluk] (s2) -- (s3);
+  \draw[ok, draw=soluk] (s3) -- (s4);
+
+  \node[dip, text width=190mm, below=10mm of s2.south, anchor=north]
+    {Bu kalıp aynı zamanda projenizin S9 ve S16 bölümlerinin yazım biçimidir.};
+\end{tikzpicture}
+\end{document}

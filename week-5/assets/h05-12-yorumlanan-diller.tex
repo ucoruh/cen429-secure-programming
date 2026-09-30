@@ -1,0 +1,25 @@
+% Hafta 5 — Yorumlanan dillerde aynı hatalar
+% Derleme: py -3.12 tools/latex/derle.py docs/week-5/assets/h05-12-yorumlanan-diller.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Yorumlanan dillerde aynı hatalar};
+  \node[altbaslik] at (b.south west) {Python, JavaScript, Ruby, PHP --- kök aynı: veri ile kodun karışması};
+  \node[kotukutu=48mm, anchor=north west] (k1) at (0,-2.4) {\kb{eval / exec}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k1]
+    {dizeyi KOD olarak çalıştırır --- girdiyle asla birleştirilmez};
+  \node[kotukutu=48mm, below=6mm of k1] (k2) {\kb{pickle / unserialize}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k2]
+    {veriyi nesneye çevirirken kod çağırır --- güvenilmez veride kullanılmaz};
+  \node[kotukutu=48mm, below=6mm of k2] (k3) {\kb{os.system / shell=True}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k3]
+    {kabuk ayrıştırır --- argüman dizisi kullanın};
+  \node[uyarikutu=48mm, below=6mm of k3] (k4) {\kb{Düzenli ifade (ReDoS)}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k4]
+    {geri izleme üstel büyür --- desen ve girdi uzunluğu sınırlanır};
+  \node[fit=(k1)(k2)(k3)(k4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Dil değişir, kural değişmez: girdiyi asla yorumlayıcıya kod olarak verme.};
+\end{tikzpicture}
+\end{document}

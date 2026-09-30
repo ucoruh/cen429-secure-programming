@@ -1,0 +1,32 @@
+% Hafta 1 — Veri akış diyagramı: dört öğe ve güven sınırı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-1/assets/h01-19-veri-akis-diyagrami.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=24mm and 30mm]
+  \node[baslik] (b) at (0,0) {Veri akış diyagramı: dört öğe ve güven sınırı};
+  \node[altbaslik] (alt) at (b.south west) {tehdit modellemenin çizim dili};
+
+  \node[kotukutu=46mm, below=16mm of alt.south west, anchor=north west, xshift=2mm, text width=40mm] (dis)
+    {\kb{Dış varlık}\\kullanıcı, terminal\\sizin denetiminizde DEĞİL};
+  \node[kutu=46mm, right=of dis, text width=40mm] (surec)
+    {\kb{Süreç}\\veri işleyen kod\\giriş modülü};
+  \node[morkutu=46mm, below=of surec, text width=40mm] (depo)
+    {\kb{Veri deposu}\\dosya, veritabanı};
+  \node[iyikutu=34mm, right=34mm of surec] (akisl)
+    {\kb{Akış}\\ok};
+
+  \draw[ok, draw=soluk] (dis.east) -- node[oketiket, above=3pt] {veri akışı} (surec.west);
+  \draw[ok, draw=soluk] (surec.south) -- (depo.north);
+
+  \begin{scope}[on background layer]
+    \node[draw=kotu, dashed, thick, rounded corners=4pt, fit=(surec)(depo), inner sep=8mm] (sinir) {};
+  \end{scope}
+  \node[font=\sffamily\bfseries, text=kotu, above=1mm of sinir.north] {GÜVEN SINIRI};
+
+  \node[etiket, text=yazi, text width=150mm, below=12mm of depo.south -| dis, anchor=north]
+    {Sınırı geçen her ok bir tehdit adayıdır: orada STRIDE'ın altı harfini tek tek sorun.};
+  \node[dip, text width=150mm, below=6mm of depo.south -| dis, anchor=north, yshift=-14mm]
+    {Kural: güven sınırını çizmeden tehdit listesi çıkarılmaz.};
+\end{tikzpicture}
+\end{document}

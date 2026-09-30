@@ -1,0 +1,31 @@
+% Hafta 4 — Derleyici ve işletim sistemi korumaları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-4/assets/h04-02-derleyici-os-korumalari.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=6mm and 6mm]
+  % Başlık
+  \node[baslik] (b) at (0,0) {Derleyici ve işletim sistemi korumaları};
+  \node[altbaslik] at (b.south west) {saldırgan yukarıdan aşağı her katmanı ayrı ayrı aşmak zorunda};
+
+  \node[kutu=140mm, below=12mm of b.south west, anchor=north west] (k1)
+    {\kb{Yığın kanaryası} \textperiodcentered{} dönüş adresi ezilirse programı durdurur};
+  \node[kutu=140mm, below=of k1] (k2)
+    {\kb{ASLR} \textperiodcentered{} adresler her çalıştırmada değişir};
+  \node[kutu=140mm, below=of k2] (k3)
+    {\kb{DEP / NX} \textperiodcentered{} veri sayfası çalıştırılamaz};
+  \node[kutu=140mm, below=of k3] (k4)
+    {\kb{RELRO · PIE · CFI} \textperiodcentered{} GOT yazılamaz, çağrı akışı denetlenir};
+  \node[kotukutu=140mm, below=of k4] (k5)
+    {\kb{MANTIK HATASI} \textperiodcentered{} hiçbir koruma yakalamaz};
+
+  \draw[kotuok] (k1) -- (k2);
+  \draw[kotuok] (k2) -- (k3);
+  \draw[kotuok] (k3) -- (k4);
+  \draw[kotuok] (k4) -- (k5);
+
+  % Dip şeridi
+  \node[kotudip, text width=140mm, below=8mm of k5.south, anchor=north] {%
+    Bu katmanlar sömürüyü zorlaştırır, HATAYI SİLMEZ --- hatayı güvenli kodlama siler.};
+\end{tikzpicture}
+\end{document}

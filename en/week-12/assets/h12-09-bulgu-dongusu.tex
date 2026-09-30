@@ -1,0 +1,22 @@
+% Hafta 12 — Bulgu → öneri → aksiyon döngüsü
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-09-bulgu-dongusu.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+  \node[baslik] (b) at (0,0) {Bulgu $\rightarrow$ öneri $\rightarrow$ aksiyon döngüsü};
+  \node[altbaslik] at (b.south west) {her bulgu bir sahip ve bir tarih alır};
+
+  \node[kotukutu=32mm, below=16mm of b.south west, anchor=north west] (d1) {\kb{BULGU}\\ne bulundu, kanıtı ne};
+  \node[uyarikutu=32mm, right=of d1] (d2) {\kb{ÖNERİ}\\nasıl düzeltilir};
+  \node[kutu=32mm, right=of d2] (d3) {\kb{AKSİYON}\\kim, ne zaman};
+  \node[iyikutu=32mm, right=of d3] (d4) {\kb{DOĞRULAMA}\\düzeldi mi?};
+
+  \draw[anaok] (d1) -- (d2);
+  \draw[anaok] (d2) -- (d3);
+  \draw[anaok] (d3) -- (d4);
+
+  \node[dip, text width=150mm, below=8mm of d4.south -| d2, anchor=north] {%
+    Bir bulgu, gerçekten sömürülemez olduğu KANITLANIRSA ``etkilenmez'' diye kapanır (VEX).};
+\end{tikzpicture}
+\end{document}

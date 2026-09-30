@@ -1,0 +1,25 @@
+% Hafta 6 — Hata ayıklayıcı algılama yolları
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-07-antidebug.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Hata ayıklayıcı algılama yolları};
+  \node[altbaslik] at (b.south west) {hiçbiri tek başına kesin değil --- sinyaller birlikte tartılır};
+  \node[kutu=52mm, anchor=north west] (k1) at (0,-2.4) {\kb{İşletim sistemi bayrağı}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k1]
+    {Linux /proc/self/status TracerPid · Windows IsDebuggerPresent};
+  \node[kutu=52mm, below=6mm of k1] (k2) {\kb{PEB / NtGlobalFlag}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k2]
+    {Windows süreç yapısındaki izler};
+  \node[uyarikutu=52mm, below=6mm of k2] (k3) {\kb{Zamanlama}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k3]
+    {iki nokta arası süre eşiği aşıyor mu?};
+  \node[kutu=52mm, below=6mm of k3] (k4) {\kb{Kendi kendini izleme}};
+  \node[etiket, anchor=west, text width=95mm, align=left, right=5mm of k4]
+    {\kod{ptrace(PTRACE\_TRACEME)} başarısızsa biri izliyor};
+  \node[fit=(k1)(k2)(k3)(k4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Her sinyal atlatılabilir; güç, birden çok bağımsız sinyalin birlikteliğinden gelir.};
+\end{tikzpicture}
+\end{document}

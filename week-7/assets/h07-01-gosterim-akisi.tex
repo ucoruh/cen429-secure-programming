@@ -1,0 +1,23 @@
+% Hafta 7 — Gösterim günü akışı
+% Derleme: py -3.12 tools/latex/derle.py docs/week-7/assets/h07-01-gosterim-akisi.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 22mm]
+  \node[baslik] (b) at (0,0) {Gösterim günü akışı};
+  \node[altbaslik, text width=160mm] at (b.south west) {toplam 20 dakika · takımın HER üyesi konuşur};
+
+  \node[kutu=32mm, below=16mm of b.south west, anchor=north west] (n1) {\kb{1 · Kurulum}\\depo klonlanır\\derlenir};
+  \node[koyukutu=32mm, right=of n1] (n2) {\kb{2 · Sunum}\\10 dk: ne yaptık,\\neden böyle};
+  \node[iyikutu=32mm, right=of n2] (n3) {\kb{3 · Canlı demo}\\çalışan ürün};
+  \node[uyarikutu=32mm, right=of n3] (n4) {\kb{4 · Sorular}\\her üyeye ayrı};
+  \node[morkutu=32mm, right=of n4] (n5) {\kb{5 · Geri bildirim}\\final için yol haritası};
+  \draw[ok, draw=soluk] (n1.east) -- (n2.west);
+  \draw[ok, draw=soluk] (n2.east) -- (n3.west);
+  \draw[ok, draw=soluk] (n3.east) -- (n4.west);
+  \draw[ok, draw=soluk] (n4.east) -- (n5.west);
+
+  \node[dip, text width=190mm, below=8mm of n5.south -| n3, anchor=north] {%
+    Yazdığınız her satırı açıklayabilmelisiniz; açıklayamadığınız kod puan getirmez.};
+\end{tikzpicture}
+\end{document}

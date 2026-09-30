@@ -1,0 +1,31 @@
+% Hafta 13 — Dersin gereksinim aileleri
+% Derleme: py -3.12 tools/latex/derle.py docs/week-13/assets/h13-11-gereksinim-aileleri.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {Dersin gereksinim aileleri};
+  \node[altbaslik] (alt) at (b.south west) {her gereksinim bir aileye, her aile bir varlığa bağlanır};
+
+  % Sütun merkezleri: 2.0, 6.6, 11.2 (cm) — satır merkezleri: -2.2, -4.8, -7.4 (cm)
+
+  % Satır 1 — mor
+  \node[morkutu=36mm, minimum height=16mm] at (2.0,-2.2) (g1) {\kb{\kod{CEN429-DR}}\\Beklemede veri};
+  \node[morkutu=36mm, minimum height=16mm] at (6.6,-2.2) (g2) {\kb{\kod{CEN429-DT}}\\Aktarımda veri};
+  \node[morkutu=36mm, minimum height=16mm] at (11.2,-2.2) (g3) {\kb{\kod{CEN429-DU}}\\Kullanımda veri};
+
+  % Satır 2 — teal / yeşil
+  \node[kutu=36mm, minimum height=16mm] at (2.0,-4.8) (g4) {\kb{\kod{CEN429-ID}}\\Kimlik doğrulama\\ve bağlama};
+  \node[kutu=36mm, minimum height=16mm] at (6.6,-4.8) (g5) {\kb{\kod{CEN429-AP}}\\Uygulama koruması};
+  \node[iyikutu=36mm, minimum height=16mm] at (11.2,-4.8) (g6) {\kb{\kod{CEN429-AS}}\\Varlık koruması};
+
+  % Satır 3 — yeşil / turuncu
+  \node[iyikutu=36mm, minimum height=16mm] at (2.0,-7.4) (g7) {\kb{\kod{CEN429-CR}}\\Kripto ve anahtarlar};
+  \node[uyarikutu=36mm, minimum height=16mm] at (6.6,-7.4) (g8) {\kb{\kod{CEN429-RP}}\\Raporlama};
+  \node[uyarikutu=36mm, minimum height=16mm] at (11.2,-7.4) (g9) {\kb{\kod{CEN429-DV}}\\Geliştirme süreci};
+
+  \node[fit=(g1)(g9), inner sep=0] (izgara) {};
+  \node[dip, text width=150mm, below=9mm of izgara.south west, anchor=north west] {%
+    Kimlik numarası olmayan gereksinim izlenemez; izlenemeyen gereksinim denetlenemez.};
+\end{tikzpicture}
+\end{document}

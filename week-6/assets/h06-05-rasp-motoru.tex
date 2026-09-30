@@ -1,0 +1,24 @@
+% Hafta 6 — RASP motoru: her kritik işlemde
+% Derleme: py -3.12 tools/latex/derle.py docs/week-6/assets/h06-05-rasp-motoru.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}
+  \node[baslik] (b) at (0,0) {RASP motoru: her kritik işlemde};
+  \node[altbaslik] at (b.south west) {algıla $\rightarrow$ karar ver $\rightarrow$ davran};
+  \node[kutu=40mm, anchor=north west] (n1) at (0,-2.4)
+    {\kb{ALGILA}\\bütünlük + debug + ortam\\+ kanca + root};
+  \node[uyarikutu=30mm, right=24mm of n1] (n2)
+    {\kb{Kurcalama?}};
+  \node[iyikutu=42mm, above right=6mm and 24mm of n2, anchor=west] (n3)
+    {\kb{HAYIR $\rightarrow$ normal}\\cihaz-bağlı anahtarla\\sırrı aç, kullan, SİL};
+  \node[kotukutu=42mm, below right=6mm and 24mm of n2, anchor=west] (n4)
+    {\kb{EVET $\rightarrow$ tepki}\\sırrı SİL\\tamper bayrağı\\decoy döndür · bildir};
+  \draw[ok] (n1.east) -- (n2.west);
+  \draw[iyiok] (n2.east) -- node[oketiket, above=3pt] {hayır} (n3.west);
+  \draw[kotuok] (n2.east) -- node[oketiket, below=3pt] {evet} (n4.west);
+  \node[fit=(n1)(n2)(n3)(n4), inner sep=0pt] (grp) {};
+  \node[dip, text width=155mm, anchor=north west] at ($(grp.south west)+(0,-8mm)$)
+    {Tepki gecikmeli/sessiz olmalı: hemen çökmek saldırgana denetimin yerini gösterir.};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,24 @@
+% Hafta 12 — Zafiyet değerlendirme yöntemleri: ucuzdan pahalıya
+% Derleme: py -3.12 tools/latex/derle.py docs/week-12/assets/h12-07-yontemler.tex
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{cen429-cizim}
+\begin{document}
+\begin{tikzpicture}[node distance=10mm and 9mm]
+  \node[baslik] (b) at (0,0) {Zafiyet değerlendirme yöntemleri: ucuzdan pahalıya};
+  \node[altbaslik, text width=160mm] at (b.south west) {erken adımlar kolay bulguları eler; pahalı adım yalnız kalanlara harcanır};
+
+  \node[kutu=29mm, below=16mm of b.south west, anchor=north west] (y1) {\kb{1 · Kod incelemesi}\\insan gözü};
+  \node[kutu=26mm, right=of y1] (y2) {\kb{2 · SAST}\\çalıştırmadan};
+  \node[kutu=26mm, right=of y2] (y3) {\kb{3 · DAST}\\çalışırken};
+  \node[uyarikutu=26mm, right=of y3] (y4) {\kb{4 · Fuzzing}\\rastgele girdi};
+  \node[kotukutu=26mm, right=of y4] (y5) {\kb{5 · Sızma testi}\\el emeği, pahalı};
+
+  \draw[ok, draw=soluk] (y1) -- (y2);
+  \draw[ok, draw=soluk] (y2) -- (y3);
+  \draw[ok, draw=soluk] (y3) -- (y4);
+  \draw[ok, draw=soluk] (y4) -- (y5);
+
+  \node[dip, text width=160mm, below=8mm of y5.south -| y3, anchor=north] {%
+    Geliştirici önce kendi test ederse değerlendirmeye ``temiz'' gider --- maliyet düşer.};
+\end{tikzpicture}
+\end{document}

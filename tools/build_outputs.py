@@ -879,13 +879,38 @@ def not_docx(oge, site, dil='tr'):
 
 
 # ---------------------------------------------------------------- çevrimdışı paket (ZIP)
+# Pakete giren her dosyada aranan gizli bilgi desenleri (API anahtarları, erişim belirteçleri, özel anahtarlar).
+# Bir eşleşme bulunursa ZIP silinir ve derleme durur: yayımlanan bir pakette gizli bilgi olamaz.
+GIZLI_DESENLER = re.compile(rb'sk-ant-[A-Za-z0-9_-]{20}|sk-proj-[A-Za-z0-9_-]{20}|gh[pousr]_[A-Za-z0-9]{30}'
+                            rb'|github_pat_[A-Za-z0-9_]{30}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10}'
+                            rb'|AIza[0-9A-Za-z_-]{30}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+                            rb'|[A-Z][A-Z0-9_]{2,}_(?:TOKEN|API_KEY|SECRET)=[^\s\x00]{8}')
+
+
+def git_izlenen(kok, yollar):
+    """kok altındaki `yollar` içinde git'in izlediği dosyalar (üretilen, yok sayılan dosyalar asla pakete girmez)."""
+    sonuc = subprocess.run(['git', '-C', str(kok), 'ls-files', '-z', '--', *yollar],
+                           capture_output=True, check=True)
+    return [kok / y for y in sonuc.stdout.decode('utf-8').split('\0') if y]
+
+
+def gizli_tara(zip_yolu):
+    """ZIP içindeki her dosyada gizli bilgi arar; bulunan dosya adlarını döndürür (değerleri asla yazdırmaz)."""
+    import zipfile
+    bulunan = []
+    with zipfile.ZipFile(zip_yolu) as z:
+        for ad in z.namelist():
+            if GIZLI_DESENLER.search(z.read(ad)):
+                bulunan.append(ad)
+    return bulunan
+
+
 def paket(oge, dil='tr'):
-    """Haftanın bütün materyalini ve demo kodlarını tek ZIP'te toplar (derleme çıktıları hariç)."""
+    """Haftanın bütün materyalini ve demo kodlarını tek ZIP'te toplar. Kod tarafında YALNIZ git'in izlediği
+    dosyalar girer: derleme çıktıları, bellek dökümleri, çalışma klasörleri gibi üretilen dosyalar asla girmez."""
     import zipfile
     hedef = oge.dosya('paket', dil)
     kok_ad = oge.ad
-    # .gitignore ile aynı: derleme/çalışma çıktıları ve hazirla betiklerinin indirdiği üçüncü taraf dosyaları pakete girmez
-    atla = {'bin', 'dokum', 'build', '__pycache__', 'cikti', 'lib'}
     with zipfile.ZipFile(hedef, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for tur in ('sunum_html', 'sunum_pdf', 'sunum_pptx', 'not_pdf', 'not_docx'):
             dosya = oge.dosya(tur, dil)
@@ -896,16 +921,16 @@ def paket(oge, dil='tr'):
             # Haftanın demoları + derlemek için gereken ortak altyapı (kök CMake, betikler, cmake/, common/):
             # ZIP açıldığında code/ klasörü kendi başına derlenir.
             kod_koku = kod.parent
-            ortak = [kod_koku / ad for ad in ('CMakeLists.txt', 'CMakePresets.json', 'build.ps1', 'build.sh',
-                                               'README.md', 'README.en.md', '.gitattributes')]
-            for klasor in (kod_koku / 'cmake', kod_koku / 'common', kod):
-                ortak += sorted(klasor.rglob('*'))
-            for yol in ortak:
-                parcalar = set(yol.relative_to(kod_koku).parts)
-                if (yol.is_file() and not (parcalar & atla) and yol.name.lower() != 'desktop.ini'
-                        and yol.suffix.lower() != '.jar'):
+            yollar = ['CMakeLists.txt', 'CMakePresets.json', 'build.ps1', 'build.sh', 'README.md', 'README.en.md',
+                      '.gitattributes', 'cmake', 'common', kod.relative_to(kod_koku).as_posix()]
+            for yol in git_izlenen(kod_koku, yollar):
+                if yol.is_file() and yol.name.lower() != 'desktop.ini':
                     z.write(yol, f'{kok_ad}/code/{yol.relative_to(kod_koku).as_posix()}')
-    print(f'   paket: {hedef.relative_to(KOK)} ({hedef.stat().st_size // 1024} KB)')
+    bulunan = gizli_tara(hedef)
+    if bulunan:
+        hedef.unlink()
+        raise SystemExit(f'   HATA: {hedef.name} gizli bilgi içeriyor, paket silindi: {", ".join(bulunan[:10])}')
+    print(f'   paket: {hedef.relative_to(KOK)} ({hedef.stat().st_size // 1024} KB, gizli bilgi taraması temiz)')
 
 
 # ---------------------------------------------------------------- ana akış

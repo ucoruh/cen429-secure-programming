@@ -43,7 +43,7 @@ kullanılır.
 | **Geliştirme ortamı:** derleyici (GCC/Clang/MSVC), IDE, Windows'ta WSL, CMake ile derleme | [CEN107 (CE103) Hafta 2 — Geliştirme ortamları](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Her haftanın demoları; [1. hafta](../week-1/cen429-week-1.md) laboratuvar kurulumu |
 | **Git ve GitHub:** depo oluşturma, `clone`, `commit`, dal (branch), `pull request`, `.gitignore` | [CEN107 (CE103) Hafta 3 — Git ile sürüm yönetimi](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Proje rehberi](../project-guide/index.md) (plan, kurulum, teslim); 1. hafta değişiklik yönetimi; [12. hafta](../week-12/cen429-week-12.md) sürüm kimliği |
 | **Birim test ve kapsam (coverage) araçları:** test yazma, `ctest` ile çalıştırma, kapsam raporu | [CEN107 (CE103) Hafta 4 — Birim test ve kütüphaneler](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | Projede S16 test sonuçları; [4. hafta](../week-4/cen429-week-4.md) sanitizer ve fuzzing; 12. hafta test planı |
-| **Proje şablonlarının kullanımı:** şablonu çatallamak (fork), derlemek, testleri ve dokümantasyonu üretmek | CEN107 (CE103) Hafta 2–4 | [Proje rehberi · 2. Proje kurulumu](../project-guide/index.md#2-proje-kurulumu) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
+| **Proje şablonlarının kullanımı:** şablondan özel depo oluşturmak ("Use this template", fork değil), derlemek, testleri ve dokümantasyonu üretmek | CEN107 (CE103) Hafta 2–4 | [Proje rehberi · 2. Proje kurulumu](../project-guide/index.md#2-proje-kurulumu) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
 
 İsteğe bağlı başlangıç: [CEN107 (CE103) Hafta 1 — Giriş ve geliştirici yol haritası](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
 
@@ -106,7 +106,7 @@ Aşağıdaki komutların her biri bir sürüm numarası yazmalıdır (sayılar f
     openssl version        # OpenSSL 3.x
     ```
 
-Ardından proje şablonunu kendi hesabınıza çatallayıp (fork) derleyin ve testlerini çalıştırın:
+Ardından proje şablonundan kendi özel deponuzu oluşturun ("Use this template → Create a new repository → Private", fork değil), derleyin ve testlerini çalıştırın:
 
 ```bash
 git clone https://github.com/<kullanici-adiniz>/cpp-cmake-ctest-template.git

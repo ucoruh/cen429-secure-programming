@@ -45,7 +45,7 @@ belgelemektir.
 
     ---
 
-    En çok 3 kişi (tek başınıza da olur) · bir konuyu yalnız bir takım alır · 3. haftadan sonra takım değişmez
+    En çok 5 kişi (tek başınıza da olur) · bir konuyu yalnız bir takım alır · 3. haftadan sonra takım değişmez
 
 -   **Vize kontrolü**
 
@@ -62,7 +62,7 @@ belgelemektir.
 </div>
 
 !!! abstract "Kısaca"
-    - **Takım:** en çok 3 kişi (tek başınıza da yapabilirsiniz); bir konuyu yalnız bir takım alabilir. 3. haftadan (04.10.2026) sonra takım değiştirilemez.
+    - **Takım:** en çok 5 kişi (tek başınıza da yapabilirsiniz); bir konuyu yalnız bir takım alabilir. 3. haftadan (04.10.2026) sonra takım değiştirilemez.
     - **Dil/araçlar:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL.
     - **İki teslim:** **Vize (RAP1)** — ürünün ilk yarısı; **Final (RAP2)** — tam ürün + test **sonuçları**.
     - **Teslimin kalbi:** kodun yanında, sertifikasyon belgesi gibi yazılmış **güvenlik kılavuzu** (S0–S17).
@@ -148,6 +148,9 @@ Ayrıntılar her şablonun README'sinde ve rehberinde; şablonun `docs/guide/` k
 
 ### Gösterim kontrol listesi
 
+**Gösterim saatleri.** Her takımın gösterim günündeki ders saatinde **10 dakikalık** bir yeri vardır (üye başına yaklaşık 2 dakika). Takım seçimi kapanınca Microsoft Teams'te bir saat listesi yayımlanır; saatinize proje derlenmiş ve yerel site açık olarak gelin. Her üye en az bir soruyu yanıtlar.
+
+
 Gösterimde sırayla neyi açıp göstereceğiniz:
 
 1. Yerel sitenin **ana sayfası** (`9-open-site-...`, `http://localhost` adresinde).
@@ -165,7 +168,7 @@ uygulamanın kısa tanımı, temel özellikleri, **korunacak varlıklar** ve o k
 
 !!! info "Nasıl seçilir?"
     1. Aşağıdaki (sayfa sonundaki) listeyi inceleyin ve bir konu seçin.
-    2. Seçiminizi Microsoft Teams'teki **takım ve konu tablosuna** yazın. **Bir konuyu yalnız bir takım alabilir**;
+    2. Seçiminizi paylaşılan **takım ve konu listesine** yazın (bağlantı Microsoft Teams duyurusunda). **Bir konuyu yalnız bir takım alabilir**;
        tabloya ilk yazan takım alır.
     3. Proje planınızla (3. bölüm araçlar ve kurulum ile birlikte hazırlanan plan) birlikte ders sorumlusuna
        onaylatın; onaydan sonra konu değiştirilmez.
@@ -296,7 +299,7 @@ koruma şeması (C/I/I+)**.
 | 5 | Uyum matrisi (S17) + devredilen gereksinimler (S14) | Kılavuz bölümü | Yalnız final; her devredilen madde gerekçeli |
 | 6 | SBOM + bağımlılık taraması | CycloneDX dosyası | Yalnız final; 4.15 ile birlikte teslim edilir |
 | 7 | Sürüm (release) | Git etiketi | Vize: `midterm-v1.0` · Final: `final-v1.0` |
-| 8 | Gösterim | Canlı sunum (~10 dk) | Vize: 7. hafta · Final: 15. hafta |
+| 8 | Gösterim | Canlı sunum (10 dk, saat listesi takım seçiminden sonra) | Vize: 7. hafta · Final: 15. hafta |
 
 ### 6.2 Güvenlik kılavuzu bölümleri (S0–S17)
 
@@ -430,7 +433,7 @@ Her satır bir **kanıt** ister: "karşılandı" diyen satırın kanıtı yoksa 
 ## 12. Sık sorulan sorular
 
 ??? question "Takımı tek başıma kurabilir miyim?"
-    Evet. Takım en çok 3 kişidir; tek başınıza da yapabilirsiniz. Takımlar 3. haftanın sonunda (04.10.2026) kesinleşir ve sonra değiştirilemez. Gereksinimler ve rubrik değişmez.
+    Evet. Takım en çok 5 kişidir; tek başınıza da yapabilirsiniz. Takımlar 3. haftanın sonunda (04.10.2026) kesinleşir ve sonra değiştirilemez. Gereksinimler ve rubrik değişmez.
 
 ??? question "Konumu onaydan sonra değiştirebilir miyim?"
     Hayır. Konu, proje planıyla birlikte onaylandıktan sonra değiştirilmez. Değişiklik gerekiyorsa ders sorumlusuyla

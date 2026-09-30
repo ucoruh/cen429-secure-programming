@@ -39,7 +39,7 @@ of it in a **security guide** (S0–S17).
 
 # At a glance
 
-- **Team:** at most 3 students (working alone is fine); each topic goes to one team only; no team
+- **Team:** at most 5 students (working alone is fine); each topic goes to one team only; no team
   changes after week 3 (04.10.2026)
 - **Language/tools:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL
 - **Two deliveries:** Midterm (RAP1) — first half of the product; Final (RAP2) — full product + test
@@ -211,7 +211,7 @@ Each topic box gives:
 # How to choose
 
 1. Browse the list at the end of the guide page and choose one topic
-2. Record your choice in the **team and topic spreadsheet** on Microsoft Teams — **each topic can be
+2. Record your choice in the shared **team and topic list** (link in the Teams post) — **each topic can be
    taken by only one team**, the first team to record it gets it
 3. Have it approved by the instructor together with your project plan; **once approved, the topic cannot
    be changed**
@@ -599,7 +599,7 @@ Your application must not harm anyone else's system or data.
 # 12. Frequently asked questions (1/2)
 
 **Can I form a team by myself?**
-Yes. The team is at most 3 students; teams are fixed at the end of week 3 (04.10.2026).
+Yes. The team is at most 5 students; teams are fixed at the end of week 3 (04.10.2026).
 
 **Can I change my topic after it is approved?**
 No. Once approved, the topic cannot be changed.

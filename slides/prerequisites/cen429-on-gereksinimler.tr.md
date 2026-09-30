@@ -106,7 +106,7 @@ sorun.
 
 **Nerede öğretildi?** CEN107 (CE103) Hafta 2–4
 
-- Şablonu çatallamak (fork)
+- Şablondan özel depo oluşturmak ("Use this template", fork değil)
 - Derlemek
 - Testleri ve dokümantasyonu üretmek
 
@@ -215,7 +215,7 @@ openssl version         # OpenSSL 3.x
 
 # Şablonu deneyin
 
-Proje şablonunu kendi hesabınıza çatallayıp (fork) derleyin ve testlerini çalıştırın:
+Proje şablonundan kendi özel deponuzu oluşturun ("Use this template → Private", fork değil), derleyin ve testlerini çalıştırın:
 
 ```bash
 git clone https://github.com/<kullanici-adiniz>/cpp-cmake-ctest-template.git
@@ -236,7 +236,7 @@ ctest --test-dir build      # beklenen: 100% tests passed
 | WSL | Windows Subsystem for Linux — Windows içinde Linux çalıştırma |
 | CMake | Çoklu platform derleme sistemi üreticisi |
 | CTest | CMake ile gelen test çalıştırıcı |
-| Fork (çatallamak) | Bir deponun kendi hesabınıza kopyasını almak |
+| Use this template (şablondan depo) | Şablonun dosyalarıyla, geçmişi olmayan yeni bir depo açmak; özel (private) yapılabilir |
 | Coverage (kapsam) | Testlerin kodun ne kadarını çalıştırdığının ölçümü |
 
 ---

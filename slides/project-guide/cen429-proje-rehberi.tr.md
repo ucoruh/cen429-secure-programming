@@ -39,7 +39,7 @@ Amaç: dönem boyunca öğrendiğiniz güvenlik yöntemlerini **tek bir üründe
 
 # Kısaca
 
-- **Takım:** en çok 3 kişi (tek başınıza da olur); bir konuyu yalnız bir takım alır; 3. haftadan
+- **Takım:** en çok 5 kişi (tek başınıza da olur); bir konuyu yalnız bir takım alır; 3. haftadan
   (04.10.2026) sonra takım değişmez
 - **Dil/araçlar:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL
 - **İki teslim:** Vize (RAP1) — ürünün ilk yarısı; Final (RAP2) — tam ürün + test **sonuçları**
@@ -208,7 +208,7 @@ Her konu kutusunda:
 # Nasıl seçilir?
 
 1. Rehber sayfasının sonundaki listeyi inceleyin ve bir konu seçin
-2. Seçiminizi Microsoft Teams'teki **takım ve konu tablosuna** yazın — **bir konuyu yalnız bir takım
+2. Seçiminizi paylaşılan **takım ve konu listesine** yazın (bağlantı Teams duyurusunda) — **bir konuyu yalnız bir takım
    alabilir**, tabloya ilk yazan takım alır
 3. Proje planınızla birlikte ders sorumlusuna onaylatın; **onaydan sonra konu değiştirilmez**
 
@@ -594,7 +594,7 @@ Uygulamanız başkasının sistemine/verisine zarar vermemeli.
 # 12. Sık sorulan sorular (1/2)
 
 **Takımı tek başıma kurabilir miyim?**
-Evet. Takım en çok 3 kişidir; takımlar 3. haftanın sonunda (04.10.2026) kesinleşir.
+Evet. Takım en çok 5 kişidir; takımlar 3. haftanın sonunda (04.10.2026) kesinleşir.
 
 **Konumu onaydan sonra değiştirebilir miyim?**
 Hayır. Onaydan sonra konu değişmez.

@@ -107,7 +107,7 @@ test plan in Week 12
 
 **Where is it taught?** CEN107 (CE103) Weeks 2–4
 
-- Forking a template
+- Creating a private repository from a template ("Use this template", not fork)
 - Building it
 - Producing its tests and documentation
 
@@ -216,7 +216,7 @@ openssl version         # OpenSSL 3.x
 
 # Try the template
 
-Fork the project template to your own account, build it and run its tests:
+Create your own private repository from the project template ("Use this template → Private", not fork), build it and run its tests:
 
 ```bash
 git clone https://github.com/<your-username>/cpp-cmake-ctest-template.git
@@ -237,7 +237,7 @@ ctest --test-dir build      # expected: 100% tests passed
 | WSL | Windows Subsystem for Linux — running Linux inside Windows |
 | CMake | Cross-platform build-system generator |
 | CTest | The test runner that ships with CMake |
-| Fork | Making your own copy of a repository |
+| Use this template | Opening a new repository with the template's files and no history; it can be private |
 | Coverage | A measure of how much of the code the tests exercise |
 
 ---

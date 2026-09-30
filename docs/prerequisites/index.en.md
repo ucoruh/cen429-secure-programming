@@ -44,7 +44,7 @@ are **assumed** in this course.
 | **Development environment:** compiler (GCC/Clang/MSVC), IDE, WSL on Windows, building with CMake | [CEN107 (CE103) Week 2 — Development environments](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-2-setup/ce103-week-2-setup/) | Every week's demos; lab setup in [Week 1](../week-1/cen429-week-1.md) |
 | **Git and GitHub:** creating a repository, `clone`, `commit`, branches, `pull request`, `.gitignore` | [CEN107 (CE103) Week 3 — Version management with Git](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-3-git/ce103-week-3-git/) | [Project guide](../project-guide/index.md) (plan, setup, submission); change management in Week 1; version identity in [Week 12](../week-12/cen429-week-12.md) |
 | **Unit testing and coverage tools:** writing tests, running them with `ctest`, coverage reports | [CEN107 (CE103) Week 4 — Unit testing and libraries](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-4-test/ce103-week-4-test/) | S16 test results in the project; sanitizers and fuzzing in [Week 4](../week-4/cen429-week-4.md); test plan in Week 12 |
-| **Using project templates:** forking a template, building it, producing its tests and documentation | CEN107 (CE103) Weeks 2–4 | [Project guide · 2. Project setup](../project-guide/index.md#2-project-setup) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
+| **Using project templates:** creating a private repository from a template ("Use this template", not fork), building it, producing its tests and documentation | CEN107 (CE103) Weeks 2–4 | [Project guide · 2. Project setup](../project-guide/index.md#2-project-setup) — [`cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) |
 
 Optional starting point: [CEN107 (CE103) Week 1 — Introduction and developer roadmap](https://ucoruh.github.io/ce103-algorithms-and-programming-I/week-1-intro/ce103-week-1-intro/).
 
@@ -108,7 +108,7 @@ Each of the commands below should print a version number (the numbers may differ
     openssl version        # OpenSSL 3.x
     ```
 
-Then fork the project template to your own account, build it and run its tests:
+Then create your own private repository from the project template ("Use this template → Create a new repository → Private", not fork), build it and run its tests:
 
 ```bash
 git clone https://github.com/<your-username>/cpp-cmake-ctest-template.git

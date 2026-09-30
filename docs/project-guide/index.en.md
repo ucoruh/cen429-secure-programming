@@ -45,7 +45,7 @@ guide** (S0–S17).
 
     ---
 
-    At most 3 students (working alone is fine) · each topic goes to one team only · no team changes after week 3
+    At most 5 students (working alone is fine) · each topic goes to one team only · no team changes after week 3
 
 -   **Midterm checkpoint**
 
@@ -62,7 +62,7 @@ guide** (S0–S17).
 </div>
 
 !!! abstract "At a glance"
-    - **Team:** at most 3 students (you may also work alone); each topic can be taken by only one team. Teams cannot change after week 3 (04.10.2026).
+    - **Team:** at most 5 students (you may also work alone); each topic can be taken by only one team. Teams cannot change after week 3 (04.10.2026).
     - **Language/tools:** C++ (DLL/.so), CMake/CTest, SQLite, SoftHSM/PKCS#11, OpenSSL.
     - **Two deliveries:** **Midterm (RAP1)** — first half of the product; **Final (RAP2)** — full product + test
       **results**.
@@ -152,6 +152,9 @@ Each template's README and guide have the details; see the page "Showing your pr
 
 ### Demo checklist
 
+**Demo slots.** Each team has a **10-minute slot** (about 2 minutes per member) during the class hours of the demo day. After team selection closes, a slot list is published on Microsoft Teams; come to your slot with the project already built and the local site open. Every member answers at least one question.
+
+
 What you open and show, in this order:
 
 1. The **home page** of the local site (`9-open-site-...`, on `http://localhost`).
@@ -169,7 +172,7 @@ requirements that stand out** for that topic (using the items in Section 5).
 
 !!! info "How to choose"
     1. Browse the list at the end of the page and choose one topic.
-    2. Record your choice in the **team and topic spreadsheet** on Microsoft Teams. **Each topic can be taken by
+    2. Record your choice in the shared **team and topic list** (link in the Microsoft Teams post). **Each topic can be taken by
        only one team**; the first team to record it gets it.
     3. Have it approved by the instructor together with your project plan (prepared alongside Section 3, Tools and
        setup); once approved, the topic cannot be changed.
@@ -300,7 +303,7 @@ Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen4
 | 5 | Compliance matrix (S17) + deferred requirements (S14) | Guide section | Final only; every deferred item is justified |
 | 6 | SBOM + dependency scan | CycloneDX file | Final only; delivered together with 4.15 |
 | 7 | Release | Git tag | Midterm: `midterm-v1.0` · Final: `final-v1.0` |
-| 8 | Demo | Live presentation (~10 min) | Midterm: Week 7 · Final: Week 15 |
+| 8 | Demo | Live presentation (10 min, slot list after team selection) | Midterm: Week 7 · Final: Week 15 |
 
 ### 6.2 Security guide sections (S0–S17)
 
@@ -434,7 +437,7 @@ Every row needs **evidence**: a "met" row without evidence counts as unmet (Week
 ## 12. Frequently asked questions
 
 ??? question "Can I form a team by myself?"
-    Yes. The team is at most 3 students; you may also work alone. Teams are fixed at the end of week 3 (04.10.2026) and cannot change afterwards. The requirements and rubric do not change.
+    Yes. The team is at most 5 students; you may also work alone. Teams are fixed at the end of week 3 (04.10.2026) and cannot change afterwards. The requirements and rubric do not change.
 
 ??? question "Can I change my topic after it is approved?"
     No. Once a topic is approved together with the project plan, it cannot be changed. If you need a change,

@@ -3,9 +3,8 @@
 # Ders çıktıları (PDF, PPTX, DOCX, sunum HTML) depoda hazır durur; burada yalnız MkDocs sitesi derlenir.
 name: ci
 on:
-  push:
-    branches:
-      - main
+  # Manual only: the site is built and published locally (with the material ZIPs, which are not in git).
+  # A push-triggered deploy would replace the published site with one that has no download packages.
   workflow_dispatch:
 permissions:
   contents: write

@@ -145,14 +145,40 @@ Her iki kontrol de bütün öğrenme çıktılarına dokunur; RAP1 temel/erken d
 
 **Şablon:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
-- Fork edin, `cen429-proje-ad-soyad-cpp` adıyla adlandırın
-- **Özel (private)** yapın
-- Ders sorumlusunu ve varsa takım arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin
+- **Fork etmeyin:** herkese açık bir deponun fork'u özel yapılamaz
+- Şablon sayfasında **Use this template → Create a new repository**; depo adı `cen429-proje-ad-soyad-cpp`, **Private**
+- Ders sorumlusunu (`ucoruh`) ve varsa takım arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin
 
 !!! tip "Şablonu tam kullanın"
 Şablon; derleme, CTest ile birim testi, dokümantasyon üretimi, test/dokümantasyon kapsamı ölçümü ve
 paketlemeyi sağlar. Şablon standartlarına uymayan teslimler kabul edilmez. Sürüm (release) üretin; sürüm
 kimliği ve özet değerlerini kaydedin.
+
+---
+
+# Projenizi yerelde gösterme
+
+GitHub Free'de özel (private) bir depoda GitHub Pages sitesi açılmaz. Her şeyi **kendi bilgisayarınızda** gösterirsiniz:
+
+- `7-build-all-windows.bat` (Linux/WSL: `7-build-all-linux.sh`) derler, test eder, bütün raporları üretir
+- `9-open-site-windows.bat` (Linux: `9-open-site-linux.sh`) tam siteyi `http://localhost` adresinde açar: bütün raporlar (testler, kod kapsamı, dokümantasyon kapsamı; Windows ve Linux) ve API belgeleri
+- `release/` bütün çıktıları tutar: uygulama/exe, kütüphane, raporlar, API belgeleri, `site.zip`, kaynak kod, `ASSETS.md`, `SHA256SUMS.txt`
+- `10-release-windows.bat` (Linux: `10-release-linux.sh`) GitHub Release'i oluşturur; sürümler özel depolarda da çalışır
+
+<!-- Speaker note: Ayrıntılar her şablonun README'sinde ve docs/guide/ klasöründeki "Showing your project without GitHub Pages" sayfasında. -->
+
+---
+
+# Gösterim kontrol listesi
+
+Gösterimde sırayla neyi açıp göstereceğiniz:
+
+1. Yerel sitenin **ana sayfası** (`9-open-site-...`, `http://localhost` adresinde).
+2. **Her rapor sayfası:** testler, kod kapsamı, dokümantasyon kapsamı (Windows ve Linux).
+3. **API belgeleri.**
+4. **`release/` klasörünün** içeriği.
+5. Uygulamayı **release arşivinden çalıştırma.**
+6. Özel deponuzun **GitHub Release sayfası** (ders sorumlusu collaborator olarak ekli).
 
 ---
 
@@ -371,7 +397,7 @@ koruma şeması (C/I/I+)**
 
 | # | Teslim | Biçim |
 | --- | --- | --- |
-| 1 | Kaynak kod | Git deposu (fork), C++ DLL/.so + SQLite + SoftHSM |
+| 1 | Kaynak kod | Git deposu (şablondan oluşturulmuş), C++ DLL/.so + SQLite + SoftHSM |
 | 2 | Birim testleri + CI kaydı | CTest raporu + CI günlüğü |
 | 3 | Güvenlik kılavuzu (S0–S17) | `.docx`/`.pdf` — vizede S0–S5, finalde tam |
 | 4 | Test sonuçları (S16) | Kılavuz bölümü — yalnız final |
@@ -528,7 +554,7 @@ Her satır bir **kanıt** ister: "karşılandı" diyen satırın kanıtı yoksa 
 
 # 10. Gösterimde sorulacaklar (1/2)
 
-- **Git/GitHub:** Şablonu doğru adla fork ettiniz mi? Depo özel mi, ders sorumlusu işbirlikçi mi? Her
+- **Git/GitHub:** Depoyu şablondan doğru adla oluşturdunuz mu? Depo özel mi, ders sorumlusu işbirlikçi mi? Her
   iki üyenin de commit'i var mı?
 - **Kurulum-derleme:** Uygulamayı ve kütüphaneyi Windows'ta ve WSL/Linux'ta derleyin; `lib`/`app`/`test`
   ayrımını gösterin

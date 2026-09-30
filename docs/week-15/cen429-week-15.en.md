@@ -134,6 +134,17 @@ At the final checkpoint, every section is expected to be **complete**:
 
 ![Final demonstration](assets/h15-03-gosterim.svg)
 
+### Demo checklist (local)
+
+A private repository has no GitHub Pages site, so you show the project locally (details: [Project Guide](../project-guide/index.md#showing-your-project-locally)). What you open and show, in this order:
+
+1. The **home page** of the local site (`9-open-site-...`, on `http://localhost`).
+2. **Each report page:** tests, code coverage, documentation coverage (Windows and Linux).
+3. The **API docs**.
+4. The **`release/` folder** listing.
+5. **Run the app** from the release archive.
+6. The **GitHub Release page** of your private repository (the instructor is a collaborator).
+
 ### Sample questions you may be asked during the demonstration
 
 - Which key is this key derived from, where does it live, when is it deleted?

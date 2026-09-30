@@ -147,14 +147,40 @@ level and the full product.
 
 **Template:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
-- Fork it, name it `cen429-project-name-surname-cpp`
-- Make it **private**
-- Add the instructor and your teammate (if any) as **collaborators**
+- **Do not fork:** a fork of a public repository cannot be made private
+- On the template page: **Use this template → Create a new repository**; name `cen429-project-name-surname-cpp`, **Private**
+- Add the instructor (`ucoruh`) and your teammate (if any) as **collaborators**
 
 !!! tip "Use the template fully"
 The template provides build, CTest unit testing, documentation generation, test/documentation coverage,
 and packaging. Deliverables that do not follow the template are not accepted. Produce releases; record
 the version id and digests.
+
+---
+
+# Showing your project locally
+
+A private repository on GitHub Free has no GitHub Pages site. You show everything **on your computer**:
+
+- `7-build-all-windows.bat` (Linux/WSL: `7-build-all-linux.sh`) builds, tests and makes every report
+- `9-open-site-windows.bat` (Linux: `9-open-site-linux.sh`) opens the full site on `http://localhost`: every report (tests, code coverage, documentation coverage, Windows and Linux) and the API docs
+- `release/` holds every output: app/exe, library, reports, API docs, `site.zip`, source, `ASSETS.md`, `SHA256SUMS.txt`
+- `10-release-windows.bat` (Linux: `10-release-linux.sh`) makes the GitHub Release; releases work on private repositories
+
+<!-- Speaker note: Each template's README and its docs/guide/ page "Showing your project without GitHub Pages" have the details. -->
+
+---
+
+# Demo checklist
+
+What you open and show, in this order:
+
+1. The **home page** of the local site (`9-open-site-...`, on `http://localhost`).
+2. **Each report page:** tests, code coverage, documentation coverage (Windows and Linux).
+3. The **API docs**.
+4. The **`release/` folder** listing.
+5. **Run the app** from the release archive.
+6. The **GitHub Release page** of your private repository (the instructor is a collaborator).
 
 ---
 
@@ -376,7 +402,7 @@ default, protection scheme (C/I/I+)**
 
 | # | Deliverable | Format |
 | --- | --- | --- |
-| 1 | Source code | Git repository (fork), C++ DLL/.so + SQLite + SoftHSM |
+| 1 | Source code | Git repository (created from the template), C++ DLL/.so + SQLite + SoftHSM |
 | 2 | Unit tests + CI record | CTest report + CI log |
 | 3 | Security guide (S0–S17) | `.docx`/`.pdf` — midterm: S0–S5, final: complete |
 | 4 | Test results (S16) | Guide section — final only |
@@ -533,7 +559,7 @@ Every row needs **evidence**: a "met" row without evidence counts as unmet.
 
 # 10. Questions asked in the demo (1/2)
 
-- **Git/GitHub:** Did you fork the template with the correct name? Is the repository private, is the
+- **Git/GitHub:** Did you create the repository from the template with the correct name? Is the repository private, is the
   instructor a collaborator? Do both members have commits?
 - **Setup and build:** Build the application and the library on Windows and in WSL/Linux; show the
   `lib`/`app`/`test` split

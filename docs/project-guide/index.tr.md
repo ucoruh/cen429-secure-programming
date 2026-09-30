@@ -118,9 +118,9 @@ Her iki kontrol de bütün öğrenme çıktılarına dokunur; RAP1 temel/erken d
 | Git / GitHub | Sürüm kontrolü, iş birliği | Commit geçmişi, çekme isteği (pull request) | Özel depo, her iki üyenin de commit'i görünür |
 | GitHub Actions | Sürekli entegrasyon (CI) | Yeşil derleme/test rozeti | Birleştirmeden önce CI yeşil |
 
-**Şablon deposu:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) →
-fork edip `cen429-proje-ad-soyad-cpp` adıyla adlandırın, **özel (private)** yapın, ders sorumlusunu ve varsa takım
-arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin.
+**Şablon deposu:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
+
+**Fork etmeyin.** Herkese açık bir deponun fork'u GitHub'da özel (private) yapılamaz; bu yüzden depoyu şablondan yeni bir depo olarak oluşturun: şablon sayfasında **Use this template → Create a new repository**'ye tıklayın, sahibi (owner) seçin, depo adı olarak `cen429-proje-ad-soyad-cpp` yazın, **Private**'ı seçip oluşturun. Sonra ders sorumlusunu (`ucoruh`) ve varsa takım arkadaşınızı **collaborator** olarak ekleyin (*Settings → Collaborators*).
 
 !!! tip "Şablonu tam kullanın"
     Şablon; derleme, **CTest ile birim testi**, dokümantasyon üretimi, test/dokümantasyon kapsamı ölçümü ve
@@ -134,6 +134,28 @@ arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin.
 - `test/` — CTest birim testleri (kripto ve koruma fonksiyonları).
 
 Geliştirme ortamı kurulumu ve ön bilgi için bkz. [Ön gereksinimler](../prerequisites/index.md).
+
+### Projenizi yerelde gösterme
+
+GitHub Free'de özel (private) bir depoda GitHub Pages sitesi açılmaz; bu yüzden projenizi **kendi bilgisayarınızda** gösterirsiniz:
+
+1. `7-build-all-windows.bat` dosyasını çalıştırın (Linux/WSL'de `7-build-all-linux.sh`). Proje derlenir, testler koşar ve bütün raporlar üretilir.
+2. `9-open-site-windows.bat` dosyasını çalıştırın (Linux'ta `9-open-site-linux.sh`). Projenin tam sitesi `http://localhost` adresinde açılır: bütün raporlar (testler, kod kapsamı, dokümantasyon kapsamı; Windows ve Linux için ayrı ayrı) ve API belgeleri burada durur.
+3. `release/` klasörü bütün çıktıları tutar: uygulama/exe, kütüphane, bütün raporlar, API belgeleri, `site.zip`, kaynak kod, `ASSETS.md` ve `SHA256SUMS.txt`.
+4. GitHub Release'i `10-release-windows.bat` (Linux'ta `10-release-linux.sh`) ile oluşturun. Sürümler (release) özel depolarda da çalışır ve collaborator'lar görebilir.
+
+Ayrıntılar her şablonun README'sinde ve rehberinde; şablonun `docs/guide/` klasöründeki "Showing your project without GitHub Pages" (GitHub Pages olmadan projenizi gösterme) sayfasına bakın: [C/C++](https://github.com/ucoruh/cpp-cmake-ctest-template/tree/main/docs/guide).
+
+### Gösterim kontrol listesi
+
+Gösterimde sırayla neyi açıp göstereceğiniz:
+
+1. Yerel sitenin **ana sayfası** (`9-open-site-...`, `http://localhost` adresinde).
+2. **Her rapor sayfası:** testler, kod kapsamı, dokümantasyon kapsamı (Windows ve Linux).
+3. **API belgeleri.**
+4. **`release/` klasörünün** içeriği.
+5. Uygulamayı **release arşivinden çalıştırma.**
+6. Özel deponuzun **GitHub Release sayfası** (ders sorumlusu collaborator olarak ekli).
 
 ## 4. Konu seçimi
 
@@ -267,7 +289,7 @@ koruma şeması (C/I/I+)**.
 
 | # | Teslim | Biçim | Kural |
 | --- | --- | --- | --- |
-| 1 | Kaynak kod | Git deposu (fork) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu; her committe iki üye de görünür |
+| 1 | Kaynak kod | Git deposu (şablondan oluşturulmuş) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu; her committe iki üye de görünür |
 | 2 | Birim testleri + CI kaydı | CTest raporu + CI günlüğü | Kripto ve koruma fonksiyonları test edilir; CI yeşil olmadan birleştirme yok |
 | 3 | Güvenlik kılavuzu (S0–S17) | `.docx`/`.pdf` | Vize: S0–S5 taslak · Final: S0–S17 tam, sertifikasyon belgesinin küçültülmüş modeli |
 | 4 | Test sonuçları (S16) | Kılavuz bölümü | Yalnız final; plan değil, **gözlenen** sonuçlar |
@@ -381,7 +403,7 @@ Her satır bir **kanıt** ister: "karşılandı" diyen satırın kanıtı yoksa 
 
 ## 10. Gösterimde sorulacaklar
 
-- **Git/GitHub:** Şablonu doğru adla fork ettiniz mi? Depo özel mi, ders sorumlusu işbirlikçi mi? Her iki üyenin de
+- **Git/GitHub:** Depoyu şablondan doğru adla oluşturdunuz mu? Depo özel mi, ders sorumlusu işbirlikçi mi? Her iki üyenin de
   commit'i var mı? Dal (branch) kullanıldı mı, birleştirme (merge) nasıl yapıldı?
 - **Kurulum-derleme:** Uygulamayı ve kütüphaneyi Windows'ta ve WSL/Linux'ta derleyin; `lib`/`app`/`test` ayrımını ve
   bağımlılıklarını gösterin.

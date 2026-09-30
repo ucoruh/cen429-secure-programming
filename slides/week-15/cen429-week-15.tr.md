@@ -107,6 +107,19 @@ Konuşma notu: Final gösterim haftası: her takım güvenlik kılavuzunun tamam
 
 ---
 
+# Gösterim kontrol listesi
+
+Gösterimde sırayla neyi açıp göstereceğiniz:
+
+1. Yerel sitenin **ana sayfası** (`9-open-site-...`, `http://localhost` adresinde).
+2. **Her rapor sayfası:** testler, kod kapsamı, dokümantasyon kapsamı (Windows ve Linux).
+3. **API belgeleri.**
+4. **`release/` klasörünün** içeriği.
+5. Uygulamayı **release arşivinden çalıştırma.**
+6. Özel deponuzun **GitHub Release sayfası** (ders sorumlusu collaborator olarak ekli).
+
+---
+
 # Örnek sorular
 
 - Bu anahtar hangi anahtardan türetiliyor, nerede duruyor, ne zaman siliniyor?

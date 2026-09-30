@@ -122,9 +122,9 @@ full product.
 | Git / GitHub | Version control, collaboration | Commit history, pull request | Private repository, both members' commits visible |
 | GitHub Actions | Continuous integration (CI) | Green build/test badge | CI green before merging |
 
-**Template repository:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template) —
-fork it, name it `cen429-project-name-surname-cpp`, make it **private**, and add the instructor and your teammate
-(if any) as **collaborators**.
+**Template repository:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
+
+**Do not fork.** A fork of a public repository cannot be made private on GitHub, so create your own repository from the template instead: on the template page click **Use this template → Create a new repository**, choose the owner, type the repository name `cen429-project-name-surname-cpp`, select **Private** and create it. Then add the instructor (`ucoruh`) and your teammate (if any) as **collaborators** (*Settings → Collaborators*).
 
 !!! tip "Use the template fully"
     The template provides build, **CTest unit testing**, documentation generation, test/documentation coverage, and
@@ -138,6 +138,28 @@ fork it, name it `cen429-project-name-surname-cpp`, make it **private**, and add
 - `test/` — CTest unit tests (crypto and protection functions).
 
 For environment setup and background knowledge, see [Prerequisites](../prerequisites/index.md).
+
+### Showing your project locally
+
+A private repository on GitHub Free has no GitHub Pages site, so you show everything **on your own computer**:
+
+1. Run `7-build-all-windows.bat` (or `7-build-all-linux.sh` on Linux/WSL). It builds the project, runs the tests and produces every report.
+2. Run `9-open-site-windows.bat` (or `9-open-site-linux.sh`). The full project site opens on `http://localhost`: every report (tests, code coverage, documentation coverage, separately for Windows and Linux) and the API docs.
+3. The `release/` folder holds every output: the app/exe, the library, every report, the API docs, `site.zip`, the source, `ASSETS.md` and `SHA256SUMS.txt`.
+4. Make a GitHub Release with `10-release-windows.bat` (or `10-release-linux.sh`). Releases work on private repositories, and collaborators can see them.
+
+Each template's README and guide have the details; see the page "Showing your project without GitHub Pages" in the template's `docs/guide/` folder: [C/C++](https://github.com/ucoruh/cpp-cmake-ctest-template/tree/main/docs/guide).
+
+### Demo checklist
+
+What you open and show, in this order:
+
+1. The **home page** of the local site (`9-open-site-...`, on `http://localhost`).
+2. **Each report page:** tests, code coverage, documentation coverage (Windows and Linux).
+3. The **API docs**.
+4. The **`release/` folder** listing.
+5. **Run the app** from the release archive.
+6. The **GitHub Release page** of your private repository (the instructor is a collaborator).
 
 ## 4. Topic selection
 
@@ -271,7 +293,7 @@ Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen4
 
 | # | Deliverable | Format | Rule |
 | --- | --- | --- | --- |
-| 1 | Source code | Git repository (fork) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM integration; both members' commits visible |
+| 1 | Source code | Git repository (created from the template) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM integration; both members' commits visible |
 | 2 | Unit tests + CI record | CTest report + CI log | Crypto and protection functions are tested; no merge without green CI |
 | 3 | Security guide (S0–S17) | `.docx`/`.pdf` | Midterm: S0–S5 draft · Final: S0–S17 complete, a scaled-down model of a certification document |
 | 4 | Test results (S16) | Guide section | Final only; not a plan, the **observed** results |
@@ -384,7 +406,7 @@ Every row needs **evidence**: a "met" row without evidence counts as unmet (Week
 
 ## 10. Questions asked in the demo
 
-- **Git/GitHub:** Did you fork the template with the correct name? Is the repository private, is the instructor a
+- **Git/GitHub:** Did you create the repository from the template with the correct name? Is the repository private, is the instructor a
   collaborator? Do both members have commits? Were branches used, how were merges resolved?
 - **Setup and build:** Build the application and the library on Windows and in WSL/Linux; show the `lib`/`app`/`test`
   split and their dependencies.

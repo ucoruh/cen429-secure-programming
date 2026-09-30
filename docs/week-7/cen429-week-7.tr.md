@@ -153,6 +153,17 @@ prova edin. Önerilen sıra:
     fonksiyon, bayrak) · **Nasıl kanıtlandı?** (test, komut, çıktı). Cevabı "testini yapmadık" olan önlem, gözünde
     henüz yoktur.
 
+### Gösterim kontrol listesi (yerelde)
+
+Özel depoda GitHub Pages sitesi olmadığı için projeyi yerelde gösterirsiniz (ayrıntılar: [Proje Rehberi](../project-guide/index.md#projenizi-yerelde-gosterme)). Gösterimde sırayla neyi açıp göstereceğiniz:
+
+1. Yerel sitenin **ana sayfası** (`9-open-site-...`, `http://localhost` adresinde).
+2. **Her rapor sayfası:** testler, kod kapsamı, dokümantasyon kapsamı (Windows ve Linux).
+3. **API belgeleri.**
+4. **`release/` klasörünün** içeriği.
+5. Uygulamayı **release arşivinden çalıştırma.**
+6. Özel deponuzun **GitHub Release sayfası** (ders sorumlusu collaborator olarak ekli).
+
 ### Gösterimde sorulabilecek örnek sorular
 
 - Arayüz tablonuzda güven sınırını geçen hangi akış en riskli? Neden?

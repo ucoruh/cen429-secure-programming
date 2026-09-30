@@ -112,6 +112,19 @@ For every control: **What does it protect? · How was it built? · How was it pr
 
 ---
 
+# Demo checklist
+
+What you open and show, in this order:
+
+1. The **home page** of the local site (`9-open-site-...`, on `http://localhost`).
+2. **Each report page:** tests, code coverage, documentation coverage (Windows and Linux).
+3. The **API docs**.
+4. The **`release/` folder** listing.
+5. **Run the app** from the release archive.
+6. The **GitHub Release page** of your private repository (the instructor is a collaborator).
+
+---
+
 <!-- _class: yogun -->
 
 # Sample Questions

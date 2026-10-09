@@ -146,7 +146,7 @@ Her iki kontrol de bütün öğrenme çıktılarına dokunur; RAP1 temel/erken d
 **Şablon:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
 - **Fork etmeyin:** herkese açık bir deponun fork'u özel yapılamaz
-- Şablon sayfasında **Use this template → Create a new repository**; depo adı `cen429-proje-ad-soyad-cpp`, **Private**
+- Şablon sayfasında **Use this template → Create a new repository**; depo adı `cen429-2026-2027-NNN-ad-soyad-cpp`, **Private**
 - Ders sorumlusunu (`ucoruh`) ve varsa takım arkadaşınızı **işbirlikçi (collaborator)** olarak ekleyin
 
 !!! tip "Şablonu tam kullanın"
@@ -438,8 +438,8 @@ koruma şeması (C/I/I+)**
 # Tek ZIP arşivi yapısı
 
 ```text
-cen429-vize-ad-soyad.zip                  # final: cen429-final-ad-soyad.zip
-└── cen429-proje-ad-soyad-cpp/            # GitHub deposunun klonu
+cen429-2026-2027-NNN-midterm.zip                  # final: cen429-2026-2027-NNN-final.zip
+└── cen429-2026-2027-NNN-ad-soyad-cpp/            # GitHub deposunun klonu
     ├── lib/                              # güvenlik kütüphanesi (DLL/.so)
     ├── app/                              # konsol uygulaması
     ├── test/                             # CTest birim testleri
@@ -454,9 +454,9 @@ cen429-vize-ad-soyad.zip                  # final: cen429-final-ad-soyad.zip
 
 # Adlandırma
 
-- **Depo:** `cen429-proje-ad-soyad-cpp`
-- **Arşiv:** `cen429-vize-ad-soyad.zip` / `cen429-final-ad-soyad.zip`
-- **Güvenlik kılavuzu dosyası:** `cen429-guvenlik-kilavuzu-ad-soyad.docx`
+- **Depo:** `cen429-2026-2027-NNN-ad-soyad-cpp`
+- **Arşiv:** `cen429-2026-2027-NNN-midterm.zip` / `cen429-2026-2027-NNN-final.zip`
+- **Güvenlik kılavuzu dosyası:** `cen429-2026-2027-NNN-security-guide.docx`
 
 Rapor/kılavuzun kapak sayfasında **GitHub deposu bağlantısı** bulunur.
 

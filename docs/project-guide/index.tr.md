@@ -115,12 +115,24 @@ Her iki kontrol de bütün öğrenme çıktılarına dokunur; RAP1 temel/erken d
 | SoftHSM / PKCS#11 | Anahtar sarma/saklama benzetimi | Anahtar deposu yapılandırması | Kritik anahtarlar sarılı tutulur |
 | OpenSSL | Kriptografi, TLS, imzalama | Kütüphane bağlantısı + sertifikalar | Doğru algoritma/kip/dolgu |
 | Doxygen | Kod belgelendirmesi | PDF/HTML çıktısı | Şablonun ürettiği biçimde teslim |
-| Git / GitHub | Sürüm kontrolü, iş birliği | Commit geçmişi, çekme isteği (pull request) | Özel depo, her iki üyenin de commit'i görünür |
+| Git / GitHub | Sürüm kontrolü, iş birliği | Commit geçmişi, çekme isteği (pull request) | Özel depo, her üyenin commit'i görünür |
 | GitHub Actions | Sürekli entegrasyon (CI) | Yeşil derleme/test rozeti | Birleştirmeden önce CI yeşil |
 
 **Şablon deposu:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
-**Fork etmeyin.** Herkese açık bir deponun fork'u GitHub'da özel (private) yapılamaz; bu yüzden depoyu şablondan yeni bir depo olarak oluşturun: şablon sayfasında **Use this template → Create a new repository**'ye tıklayın, sahibi (owner) seçin, depo adı olarak `cen429-proje-ad-soyad-cpp` yazın, **Private**'ı seçip oluşturun. Sonra ders sorumlusunu (`ucoruh`) ve varsa takım arkadaşınızı **collaborator** olarak ekleyin (*Settings → Collaborators*).
+**Fork etmeyin.** Herkese açık bir deponun fork'u GitHub'da özel (private) yapılamaz; bu yüzden depoyu şablondan yeni bir depo olarak oluşturun: şablon sayfasında **Use this template → Create a new repository**'ye tıklayın, sahibi (owner) seçin, depo adı olarak `cen429-2026-2027-NNN-ad-soyad-cpp` yazın, **Private**'ı seçip oluşturun. Sonra ders sorumlusunu (`ucoruh`) ve varsa takım arkadaşınızı **collaborator** olarak ekleyin (*Settings → Collaborators*).
+
+!!! info "Depo ve dosya adları — bütün derslerde tek kural"
+    Biçim: `<ders>-<yıl>-<konu no>-<ad-soyad>-<dil>`, örneğin `cen429-2026-2027-002-guleda-kaya-cpp`.
+
+    - Yalnız küçük harf, rakam ve tire. Türkçe karakter yok: ç→c, ğ→g, ı→i, ö→o, ş→s, ü→u.
+    - Yıl: `2026-2027`. Konu no: takım listesindeki konu numaranız, her zaman **üç hane** (`007`, `018`, `139`).
+    - Ad-soyad: yalnız **takım kaptanının** adı ve soyadı (ikinci adı varsa o da yazılır).
+    - Dil eki: `cpp`.
+    - Teslim edilen her dosya aynı kökü ve İngilizce kelimeleri kullanır: `cen429-2026-2027-002-midterm.zip`,
+      `cen429-2026-2027-002-midterm-report.docx`, `cen429-2026-2027-002-final.zip`.
+    - Deponuzu başka bir adla açtıysanız *Settings → General → Repository name* bölümünden yeniden adlandırın. GitHub
+      eski adresi yönlendirir; commit'ler ve collaborator'lar korunur.
 
 !!! tip "Şablonu tam kullanın"
     Şablon; derleme, **CTest ile birim testi**, dokümantasyon üretimi, test/dokümantasyon kapsamı ölçümü ve
@@ -292,7 +304,7 @@ koruma şeması (C/I/I+)**.
 
 | # | Teslim | Biçim | Kural |
 | --- | --- | --- | --- |
-| 1 | Kaynak kod | Git deposu (şablondan oluşturulmuş) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu; her committe iki üye de görünür |
+| 1 | Kaynak kod | Git deposu (şablondan oluşturulmuş) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM entegrasyonu; her üyenin commit'i görünür |
 | 2 | Birim testleri + CI kaydı | CTest raporu + CI günlüğü | Kripto ve koruma fonksiyonları test edilir; CI yeşil olmadan birleştirme yok |
 | 3 | Güvenlik kılavuzu (S0–S17) | `.docx`/`.pdf` | Vize: S0–S5 taslak · Final: S0–S17 tam, sertifikasyon belgesinin küçültülmüş modeli |
 | 4 | Test sonuçları (S16) | Kılavuz bölümü | Yalnız final; plan değil, **gözlenen** sonuçlar |
@@ -318,21 +330,21 @@ koruma şeması (C/I/I+)**.
 ### 6.3 Tek ZIP arşivi yapısı
 
 ```
-cen429-vize-ad-soyad.zip                  # final teslimi: cen429-final-ad-soyad.zip
-└── cen429-proje-ad-soyad-cpp/            # GitHub deposunun klonu (.gitignore uygulanmış)
+cen429-2026-2027-NNN-midterm.zip                  # final teslimi: cen429-2026-2027-NNN-final.zip
+└── cen429-2026-2027-NNN-ad-soyad-cpp/            # GitHub deposunun klonu (.gitignore uygulanmış)
     ├── lib/                              # güvenlik kütüphanesi (DLL/.so)
     ├── app/                              # konsol uygulaması
     ├── test/                             # CTest birim testleri
     ├── docs/                             # Doxygen çıktısı
     ├── security-guide/                   # S0–S17 güvenlik kılavuzu
-    │   └── cen429-guvenlik-kilavuzu-ad-soyad.docx
+    │   └── cen429-2026-2027-NNN-security-guide.docx
     ├── sbom/                             # CycloneDX SBOM + bağımlılık taraması (final)
     ├── test-coverage/                    # CTest kapsam raporu
     └── README.md
 ```
 
-**Adlandırma:** depo `cen429-proje-ad-soyad-cpp`; arşiv `cen429-vize-ad-soyad.zip` / `cen429-final-ad-soyad.zip`;
-güvenlik kılavuzu dosyası `cen429-guvenlik-kilavuzu-ad-soyad.docx`. Rapor/kılavuzun kapak sayfasında **GitHub deposu
+**Adlandırma:** depo `cen429-2026-2027-NNN-ad-soyad-cpp`; arşiv `cen429-2026-2027-NNN-midterm.zip` / `cen429-2026-2027-NNN-final.zip`;
+güvenlik kılavuzu dosyası `cen429-2026-2027-NNN-security-guide.docx`. Rapor/kılavuzun kapak sayfasında **GitHub deposu
 bağlantısı** bulunur.
 
 ## 7. Takım çalışması ve mühendislik uygulamaları
@@ -406,7 +418,7 @@ Her satır bir **kanıt** ister: "karşılandı" diyen satırın kanıtı yoksa 
 
 ## 10. Gösterimde sorulacaklar
 
-- **Git/GitHub:** Depoyu şablondan doğru adla oluşturdunuz mu? Depo özel mi, ders sorumlusu işbirlikçi mi? Her iki üyenin de
+- **Git/GitHub:** Depoyu şablondan doğru adla oluşturdunuz mu? Depo özel mi, ders sorumlusu işbirlikçi mi? Her üyenin
   commit'i var mı? Dal (branch) kullanıldı mı, birleştirme (merge) nasıl yapıldı?
 - **Kurulum-derleme:** Uygulamayı ve kütüphaneyi Windows'ta ve WSL/Linux'ta derleyin; `lib`/`app`/`test` ayrımını ve
   bağımlılıklarını gösterin.

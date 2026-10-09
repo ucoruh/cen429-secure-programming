@@ -148,7 +148,7 @@ level and the full product.
 **Template:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
 - **Do not fork:** a fork of a public repository cannot be made private
-- On the template page: **Use this template → Create a new repository**; name `cen429-project-name-surname-cpp`, **Private**
+- On the template page: **Use this template → Create a new repository**; name `cen429-2026-2027-NNN-name-surname-cpp`, **Private**
 - Add the instructor (`ucoruh`) and your teammate (if any) as **collaborators**
 
 !!! tip "Use the template fully"
@@ -443,8 +443,8 @@ default, protection scheme (C/I/I+)**
 # Single ZIP archive structure
 
 ```text
-cen429-midterm-name-surname.zip           # final: cen429-final-name-surname.zip
-└── cen429-project-name-surname-cpp/      # clone of the GitHub repo
+cen429-2026-2027-NNN-midterm.zip           # final: cen429-2026-2027-NNN-final.zip
+└── cen429-2026-2027-NNN-name-surname-cpp/      # clone of the GitHub repo
     ├── lib/                              # security library (DLL/.so)
     ├── app/                              # console application
     ├── test/                             # CTest unit tests
@@ -459,9 +459,9 @@ cen429-midterm-name-surname.zip           # final: cen429-final-name-surname.zip
 
 # Naming
 
-- **Repository:** `cen429-project-name-surname-cpp`
-- **Archive:** `cen429-midterm-name-surname.zip` / `cen429-final-name-surname.zip`
-- **Security guide file:** `cen429-security-guide-name-surname.docx`
+- **Repository:** `cen429-2026-2027-NNN-name-surname-cpp`
+- **Archive:** `cen429-2026-2027-NNN-midterm.zip` / `cen429-2026-2027-NNN-final.zip`
+- **Security guide file:** `cen429-2026-2027-NNN-security-guide.docx`
 
 The cover page of the report/guide must include the **GitHub repository link**.
 
@@ -560,7 +560,7 @@ Every row needs **evidence**: a "met" row without evidence counts as unmet.
 # 10. Questions asked in the demo (1/2)
 
 - **Git/GitHub:** Did you create the repository from the template with the correct name? Is the repository private, is the
-  instructor a collaborator? Do both members have commits?
+  instructor a collaborator? Does every member have commits?
 - **Setup and build:** Build the application and the library on Windows and in WSL/Linux; show the
   `lib`/`app`/`test` split
 

@@ -119,12 +119,24 @@ full product.
 | SoftHSM / PKCS#11 | Key-wrapping/storage simulation | Key-store configuration | Critical keys stay wrapped |
 | OpenSSL | Cryptography, TLS, signing | Library linkage + certificates | Correct algorithm/mode/padding |
 | Doxygen | Source documentation | PDF/HTML output | Delivered in the template's format |
-| Git / GitHub | Version control, collaboration | Commit history, pull request | Private repository, both members' commits visible |
+| Git / GitHub | Version control, collaboration | Commit history, pull request | Private repository, every member's commits visible |
 | GitHub Actions | Continuous integration (CI) | Green build/test badge | CI green before merging |
 
 **Template repository:** [`ucoruh/cpp-cmake-ctest-template`](https://github.com/ucoruh/cpp-cmake-ctest-template)
 
-**Do not fork.** A fork of a public repository cannot be made private on GitHub, so create your own repository from the template instead: on the template page click **Use this template → Create a new repository**, choose the owner, type the repository name `cen429-project-name-surname-cpp`, select **Private** and create it. Then add the instructor (`ucoruh`) and your teammate (if any) as **collaborators** (*Settings → Collaborators*).
+**Do not fork.** A fork of a public repository cannot be made private on GitHub, so create your own repository from the template instead: on the template page click **Use this template → Create a new repository**, choose the owner, type the repository name `cen429-2026-2027-NNN-name-surname-cpp`, select **Private** and create it. Then add the instructor (`ucoruh`) and your teammate (if any) as **collaborators** (*Settings → Collaborators*).
+
+!!! info "Repository and file names — one rule for every course"
+    Pattern: `<course>-<year>-<topic no>-<name-surname>-<language>`, for example `cen429-2026-2027-002-guleda-kaya-cpp`.
+
+    - Lowercase letters, digits and hyphens only. No Turkish characters: ç→c, ğ→g, ı→i, ö→o, ş→s, ü→u.
+    - Year: `2026-2027`. Topic number: your topic's number in the team list, always **three digits** (`007`, `018`, `139`).
+    - Name-surname: the **team captain's** name only (with a second given name if they have one).
+    - Language suffix: `cpp`.
+    - Every submitted file uses the same stem with English words: `cen429-2026-2027-002-midterm.zip`, `cen429-2026-2027-002-midterm-report.docx`,
+      `cen429-2026-2027-002-final.zip`.
+    - Already created your repository with another name? Rename it in *Settings → General → Repository name*. GitHub
+      keeps the old address as a redirect; commits and collaborators are kept.
 
 !!! tip "Use the template fully"
     The template provides build, **CTest unit testing**, documentation generation, test/documentation coverage, and
@@ -296,7 +308,7 @@ Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen4
 
 | # | Deliverable | Format | Rule |
 | --- | --- | --- | --- |
-| 1 | Source code | Git repository (created from the template) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM integration; both members' commits visible |
+| 1 | Source code | Git repository (created from the template) | CMake/CTest, C++ DLL/.so + SQLite + SoftHSM integration; every member's commits visible |
 | 2 | Unit tests + CI record | CTest report + CI log | Crypto and protection functions are tested; no merge without green CI |
 | 3 | Security guide (S0–S17) | `.docx`/`.pdf` | Midterm: S0–S5 draft · Final: S0–S17 complete, a scaled-down model of a certification document |
 | 4 | Test results (S16) | Guide section | Final only; not a plan, the **observed** results |
@@ -322,21 +334,21 @@ Related weeks: [Week 5](../week-5/cen429-week-5.md) · [Week 14](../week-14/cen4
 ### 6.3 Single ZIP archive structure
 
 ```
-cen429-midterm-name-surname.zip           # final delivery: cen429-final-name-surname.zip
-└── cen429-project-name-surname-cpp/      # clone of the GitHub repo (gitignore applied)
+cen429-2026-2027-NNN-midterm.zip           # final delivery: cen429-2026-2027-NNN-final.zip
+└── cen429-2026-2027-NNN-name-surname-cpp/      # clone of the GitHub repo (gitignore applied)
     ├── lib/                              # security library (DLL/.so)
     ├── app/                              # console application
     ├── test/                             # CTest unit tests
     ├── docs/                             # Doxygen output
     ├── security-guide/                   # S0–S17 security guide
-    │   └── cen429-security-guide-name-surname.docx
+    │   └── cen429-2026-2027-NNN-security-guide.docx
     ├── sbom/                             # CycloneDX SBOM + dependency scan (final)
     ├── test-coverage/                    # CTest coverage report
     └── README.md
 ```
 
-**Naming:** repository `cen429-project-name-surname-cpp`; archive `cen429-midterm-name-surname.zip` /
-`cen429-final-name-surname.zip`; security guide file `cen429-security-guide-name-surname.docx`. The cover page of
+**Naming:** repository `cen429-2026-2027-NNN-name-surname-cpp`; archive `cen429-2026-2027-NNN-midterm.zip` /
+`cen429-2026-2027-NNN-final.zip`; security guide file `cen429-2026-2027-NNN-security-guide.docx`. The cover page of
 the report/guide must include the **GitHub repository link**.
 
 ## 7. Team workflow and engineering practices
@@ -410,7 +422,7 @@ Every row needs **evidence**: a "met" row without evidence counts as unmet (Week
 ## 10. Questions asked in the demo
 
 - **Git/GitHub:** Did you create the repository from the template with the correct name? Is the repository private, is the instructor a
-  collaborator? Do both members have commits? Were branches used, how were merges resolved?
+  collaborator? Does every member have commits? Were branches used, how were merges resolved?
 - **Setup and build:** Build the application and the library on Windows and in WSL/Linux; show the `lib`/`app`/`test`
   split and their dependencies.
 - **Topic (line by line):** Explain your chosen security requirement (e.g. AES-GCM encryption, RASP tamper check, a
